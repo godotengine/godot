@@ -31,6 +31,8 @@
 #ifndef REMOTE_DEBUGGER_H
 #define REMOTE_DEBUGGER_H
 
+#ifdef DEBUGGER_ENABLED
+
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
@@ -122,5 +124,7 @@ public:
 	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
 	~RemoteDebugger();
 };
+
+#endif // DEBUGGER_ENABLED
 
 #endif // REMOTE_DEBUGGER_H

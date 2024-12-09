@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUGGER_ENABLED
+
 #include "remote_debugger.h"
 
 #include "core/config/project_settings.h"
@@ -734,3 +736,5 @@ RemoteDebugger::~RemoteDebugger() {
 	remove_print_handler(&phl);
 	remove_error_handler(&eh);
 }
+
+#endif // DEBUGGER_ENABLED

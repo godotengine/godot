@@ -31,6 +31,8 @@
 #ifndef REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 #define REMOTE_DEBUGGER_PEER_WEBSOCKET_H
 
+#ifdef DEBUGGER_ENABLED
+
 #include "websocket_peer.h"
 
 #include "core/debugger/remote_debugger_peer.h"
@@ -58,5 +60,7 @@ public:
 
 	RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer = Ref<WebSocketPeer>());
 };
+
+#endif // DEBUGGER_ENABLED
 
 #endif // REMOTE_DEBUGGER_PEER_WEBSOCKET_H

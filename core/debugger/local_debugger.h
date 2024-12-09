@@ -31,6 +31,8 @@
 #ifndef LOCAL_DEBUGGER_H
 #define LOCAL_DEBUGGER_H
 
+#ifdef DEBUGGER_ENABLED
+
 #include "core/debugger/engine_debugger.h"
 #include "core/object/script_language.h"
 #include "core/templates/list.h"
@@ -55,5 +57,7 @@ public:
 	LocalDebugger();
 	~LocalDebugger();
 };
+
+#endif // DEBUGGER_ENABLED
 
 #endif // LOCAL_DEBUGGER_H
