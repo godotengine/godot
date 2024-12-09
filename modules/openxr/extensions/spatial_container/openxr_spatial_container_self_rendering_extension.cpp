@@ -120,7 +120,7 @@ void OpenXRSpatialContainerSelfRenderingExtension::on_process() {
 	ERR_FAIL_NULL(openxr_api);
 
 	if (openxr_api->is_running() && has_pending_container) {
-		print_verbose("OpenXR: Adding pending container to render set...");
+		PRINT_VERBOSE("OpenXR: Adding pending container to render set...");
 		_add_spatial_container_to_render_set(pending_container_data);
 	}
 }
@@ -156,7 +156,7 @@ void OpenXRSpatialContainerSelfRenderingExtension::on_spatial_container_closed(c
 void OpenXRSpatialContainerSelfRenderingExtension::_add_spatial_container_to_render_set(const OpenXRSpatialContainerExtension::SpatialContainerData &p_container_data) {
 	// Check if the spatial container is already part of the active render set.
 	if (active_spatial_container == p_container_data.spatial_container_handle) {
-		print_verbose("OpenXR: Spatial container is already part of the active render set.");
+		PRINT_VERBOSE("OpenXR: Spatial container is already part of the active render set.");
 		return;
 	}
 
@@ -166,14 +166,14 @@ void OpenXRSpatialContainerSelfRenderingExtension::_add_spatial_container_to_ren
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 	if (!openxr_api->is_running()) {
-		print_verbose("OpenXR: Session is not running yet...");
+		PRINT_VERBOSE("OpenXR: Session is not running yet...");
 		return;
 	}
 	const XrSession session = openxr_api->get_session();
 
 	if (active_spatial_container != XR_NULL_HANDLE) {
 		// Shouldn't happen, but in case it does...
-		print_verbose("OpenXR: Pre-existing active spatial container. Cleaning it up.");
+		PRINT_VERBOSE("OpenXR: Pre-existing active spatial container. Cleaning it up.");
 		_remove_spatial_container_from_render_set(active_spatial_container);
 	}
 
@@ -193,7 +193,7 @@ void OpenXRSpatialContainerSelfRenderingExtension::_add_spatial_container_to_ren
 	has_pending_container = false;
 
 	// Add the spatial container to the active render set.
-	print_verbose("OpenXR: Setting active spatial container.");
+	PRINT_VERBOSE("OpenXR: Setting active spatial container.");
 	active_spatial_container = p_container_data.spatial_container_handle;
 
 	active_view_locate_info.viewConfigurationType = openxr_api->get_view_configuration();
@@ -208,7 +208,7 @@ void OpenXRSpatialContainerSelfRenderingExtension::_add_spatial_container_to_ren
 void OpenXRSpatialContainerSelfRenderingExtension::_remove_spatial_container_from_render_set(const XrSpatialContainerEXT &p_container) {
 	// Check if the spatial container is in the active render set.
 	if (active_spatial_container != p_container) {
-		print_verbose("OpenXR: Spatial container is not part of the active render set.");
+		PRINT_VERBOSE("OpenXR: Spatial container is not part of the active render set.");
 		return;
 	}
 
@@ -228,7 +228,7 @@ void OpenXRSpatialContainerSelfRenderingExtension::_remove_spatial_container_fro
 	}
 
 	// Reset the active spatial container.
-	print_verbose("OpenXR: Resetting active spatial container.");
+	PRINT_VERBOSE("OpenXR: Resetting active spatial container.");
 	active_spatial_container = XR_NULL_HANDLE;
 
 	active_view_locate_info.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;

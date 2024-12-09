@@ -279,7 +279,7 @@ HRESULT WinRTUtils::activation_factory(const String &p_class_name, REFIID p_iid,
 		res = GD_RoGetActivationFactory(name->get_ptr(), p_iid, p_factory);
 	}
 	if (res == (HRESULT)0x80004001 || res == (HRESULT)0x80004002) {
-		print_verbose(vformat("RoGetActivationFactory(%s) not supported.", p_class_name));
+		PRINT_VERBOSE(vformat("RoGetActivationFactory(%s) not supported.", p_class_name));
 		return res;
 	}
 	ERR_FAIL_COND_V_MSG(FAILED(res), res, vformat("RoGetActivationFactory(%s) failed with error 0x%08ux.", p_class_name, (uint64_t)res));
@@ -334,7 +334,7 @@ bool WinRTUtils::create_queue(const String &p_appid) {
 	ComPtr<ROToastNotificationManagerStatics> toastman_fact;
 	if (SUCCEEDED(activation_factory(ROToastNotificationManagerName, IID_PPV_ARGS(&toastman_fact)))) {
 		res = toastman_fact->CreateToastNotifierWithId(appid->get_ptr(), (void **)notifier.GetAddressOf());
-		print_verbose(vformat("Windows.UI.Notifications.ToastNotificationManager initialized for AppID '%s'.", p_appid));
+		PRINT_VERBOSE(vformat("Windows.UI.Notifications.ToastNotificationManager initialized for AppID '%s'.", p_appid));
 	}
 
 	return true;

@@ -139,7 +139,7 @@ Array OpenXRSpatialContainerExtension::get_supported_bounds_modes() {
 
 void OpenXRSpatialContainerExtension::on_session_created(const XrSession p_session) {
 	if (!can_create_spatial_container()) {
-		print_verbose("OpenXR: Unable to create spatial container!");
+		PRINT_VERBOSE("OpenXR: Unable to create spatial container!");
 		return;
 	}
 
@@ -150,7 +150,7 @@ void OpenXRSpatialContainerExtension::on_session_created(const XrSession p_sessi
 
 void OpenXRSpatialContainerExtension::on_session_destroyed() {
 	if (!can_create_spatial_container()) {
-		print_verbose("OpenXR: Unable to destroy spatial container!");
+		PRINT_VERBOSE("OpenXR: Unable to destroy spatial container!");
 		return;
 	}
 
@@ -187,7 +187,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_CHANGED_EXT: {
 			const XrEventDataSpatialContainerBoundsChangedEXT *event_data = (XrEventDataSpatialContainerBoundsChangedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container bounds changed...");
+				PRINT_VERBOSE("OpenXR: Spatial container bounds changed...");
 				emit_signal(SNAME("spatial_container_bounds_changed"), spatial_container_data.spatial_container_rid, event_data->infiniteBounds, OpenXRSpatialContainerState::_to_bounds_mode(event_data->boundsMode), Vector3(event_data->bounds.width, event_data->bounds.height, event_data->bounds.depth));
 				return true;
 			}
@@ -197,7 +197,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_MODE_REQUEST_DENIED_EXT: {
 			const XrEventDataSpatialContainerBoundsModeRequestDeniedEXT *event_data = (XrEventDataSpatialContainerBoundsModeRequestDeniedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container bounds mode request denied...");
+				PRINT_VERBOSE("OpenXR: Spatial container bounds mode request denied...");
 				emit_signal(SNAME("spatial_container_bounds_mode_request_denied"), spatial_container_data.spatial_container_rid);
 				return true;
 			}
@@ -207,7 +207,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_CLOSED_EXT: {
 			const XrEventDataSpatialContainerClosedEXT *event_data = (XrEventDataSpatialContainerClosedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container closed...");
+				PRINT_VERBOSE("OpenXR: Spatial container closed...");
 				emit_signal(SNAME("spatial_container_closed"), spatial_container_data.spatial_container_rid);
 
 				// Backward compatibility logic.
@@ -222,7 +222,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_INTERACTABLE_CHANGED_EXT: {
 			const XrEventDataSpatialContainerInteractableChangedEXT *event_data = (XrEventDataSpatialContainerInteractableChangedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container interactability changed...");
+				PRINT_VERBOSE("OpenXR: Spatial container interactability changed...");
 				emit_signal(SNAME("spatial_container_interactable_changed"), spatial_container_data.spatial_container_rid, event_data->interactable);
 
 				// Backward compatibility logic.
@@ -242,7 +242,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_CHANGED_EXT: {
 			const XrEventDataSpatialContainerVisibleChangedEXT *event_data = (XrEventDataSpatialContainerVisibleChangedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container visibility changed...");
+				PRINT_VERBOSE("OpenXR: Spatial container visibility changed...");
 				emit_signal(SNAME("spatial_container_visible_changed"), spatial_container_data.spatial_container_rid, event_data->visible);
 
 				if (rendering_mechanism) {
@@ -266,7 +266,7 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 		case XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_REQUEST_DENIED_EXT: {
 			const XrEventDataSpatialContainerVisibleRequestDeniedEXT *event_data = (XrEventDataSpatialContainerVisibleRequestDeniedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
-				print_verbose("OpenXR: Spatial container visibility request denied...");
+				PRINT_VERBOSE("OpenXR: Spatial container visibility request denied...");
 				emit_signal(SNAME("spatial_container_visible_request_denied"), spatial_container_data.spatial_container_rid);
 				return true;
 			}
@@ -293,7 +293,7 @@ Ref<OpenXRSpatialContainerState> OpenXRSpatialContainerExtension::get_spatial_co
 		return container_state;
 	}
 
-	print_verbose("OpenXR: Retrieving Spatial container state...");
+	PRINT_VERBOSE("OpenXR: Retrieving Spatial container state...");
 	XrSpatialContainerStateGetInfoEXT get_info = {
 		XR_TYPE_SPATIAL_CONTAINER_STATE_GET_INFO_EXT, // type
 		nullptr, // next
@@ -317,7 +317,7 @@ Vector3 OpenXRSpatialContainerExtension::get_spatial_container_bounds() {
 		return Vector3();
 	}
 
-	print_verbose("OpenXR: Retrieving spatial container bounds...");
+	PRINT_VERBOSE("OpenXR: Retrieving spatial container bounds...");
 	XrSpatialContainerBoundsGetInfoEXT bounds_get_info = {
 		XR_TYPE_SPATIAL_CONTAINER_BOUNDS_GET_INFO_EXT, // type
 		nullptr, // next
@@ -395,7 +395,7 @@ void OpenXRSpatialContainerExtension::create_spatial_container(Vector3 p_suggest
 	ERR_FAIL_NULL(openxr_api);
 	const XrSession session = openxr_api->get_session();
 
-	print_verbose("OpenXR: Creating spatial container...");
+	PRINT_VERBOSE("OpenXR: Creating spatial container...");
 
 	// Store this as a RID so we can keep track of it.
 	spatial_container_data.spatial_container_rid = spatial_container_owner.make_rid(spatial_container_data);
@@ -421,7 +421,7 @@ void OpenXRSpatialContainerExtension::create_spatial_container(Vector3 p_suggest
 		return;
 	}
 
-	print_verbose("OpenXR: Creating spatial container space...");
+	PRINT_VERBOSE("OpenXR: Creating spatial container space...");
 	XrSpatialContainerSpaceCreateInfoEXT space_create_info = {
 		XR_TYPE_SPATIAL_CONTAINER_SPACE_CREATE_INFO_EXT, // type
 		nullptr, // next
@@ -436,13 +436,13 @@ void OpenXRSpatialContainerExtension::create_spatial_container(Vector3 p_suggest
 
 	openxr_api->set_custom_play_space(spatial_container_data.space_handle);
 
-	print_verbose("OpenXR: Updating spatial container bounds mode...");
+	PRINT_VERBOSE("OpenXR: Updating spatial container bounds mode...");
 	OpenXRSpatialContainerState::BoundsMode bounds_mode = (OpenXRSpatialContainerState::BoundsMode)GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_container/bounds_mode");
 	if (!request_spatial_container_bounds_mode(bounds_mode)) {
 		ERR_PRINT("OpenXR: Failed updating spatial container bounds mode.");
 	}
 
-	print_verbose("OpenXR: Updating spatial container visibility...");
+	PRINT_VERBOSE("OpenXR: Updating spatial container visibility...");
 	if (!request_spatial_container_visible(true)) {
 		ERR_PRINT("OpenXR: Failed updating spatial container visibility.");
 	}
@@ -464,7 +464,7 @@ void OpenXRSpatialContainerExtension::destroy_spatial_container() {
 		ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 		OpenXRAPI::get_singleton()->set_custom_play_space(XR_NULL_HANDLE);
 
-		print_verbose("OpenXR: Destroying spatial container...");
+		PRINT_VERBOSE("OpenXR: Destroying spatial container...");
 		XrResult result = xrDestroySpatialContainerEXT(spatial_container_data.spatial_container_handle);
 		ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to destroy spatial container.");
 
