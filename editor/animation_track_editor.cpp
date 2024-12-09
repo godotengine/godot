@@ -2152,7 +2152,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				if (text.contains("/")) {
 					float text_width = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
 					if (text_width > (limit - ofs - h_separation)) {
-						Vector<String> parts = text.split("/");
+						Vector<String> parts = text.rsplit("/", true, 1);
 						if (parts.size() > 0) {
 							text = ".../" + parts[parts.size() - 1];
 						}
