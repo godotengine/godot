@@ -373,15 +373,15 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 }
 
 void CameraFeedAndroid::onSessionReady(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session ready");
+	PRINT_VERBOSE("Capture session ready");
 }
 
 void CameraFeedAndroid::onSessionActive(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session active");
+	PRINT_VERBOSE("Capture session active");
 }
 
 void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session closed");
+	PRINT_VERBOSE("Capture session closed");
 }
 
 void CameraFeedAndroid::deactivate_feed() {
@@ -413,7 +413,7 @@ void CameraFeedAndroid::onError(void *context, ACameraDevice *p_device, int erro
 }
 
 void CameraFeedAndroid::onDisconnected(void *context, ACameraDevice *p_device) {
-	print_verbose("Camera disconnected");
+	PRINT_VERBOSE("Camera disconnected");
 	auto *feed = static_cast<CameraFeedAndroid *>(context);
 	feed->set_active(false);
 }

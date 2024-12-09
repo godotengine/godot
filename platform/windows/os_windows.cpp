@@ -324,9 +324,9 @@ void OS_Windows::initialize() {
 		}
 	}
 	if (!dwrite_init) {
-		print_verbose("Unable to load IDWriteFactory, system font support is disabled.");
+		PRINT_VERBOSE("Unable to load IDWriteFactory, system font support is disabled.");
 	} else if (!dwrite2_init) {
-		print_verbose("Unable to load IDWriteFactory2, automatic system font fallback is disabled.");
+		PRINT_VERBOSE("Unable to load IDWriteFactory2, automatic system font fallback is disabled.");
 	}
 
 	FileAccessWindows::initialize();
