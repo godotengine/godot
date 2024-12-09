@@ -501,14 +501,19 @@ else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
 
+# This is not part of fast_unsafe because the only downside it has compared to
+# the default is that SCons won't mark files that were changed in the last second
+# as different. This is unlikely to be a problem in any real situation as just booting
+# up scons takes more than that time.
+# Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
+env.Decider("MD5-timestamp")
+
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
 if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
-    # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
-    env.Decider("MD5-timestamp")
     env.SetOption("implicit_cache", 1)
     env.SetOption("max_drift", 60)
 
