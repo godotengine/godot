@@ -1370,6 +1370,13 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 			}
 			// Finish lines and boxes.
+			if (step == DRAW_STEP_BACKGROUND || step == DRAW_STEP_FOREGROUND) {
+				if (last_color.a > 0.0) {
+					Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
+					Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
+				}
+			}
 			if (step == DRAW_STEP_BACKGROUND) {
 				if (sel_start != -1) {
 					Color selection_bg = theme_cache.selection_color;
@@ -1378,13 +1385,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						Rect2 rect = Rect2(sel[i].x + p_ofs.x + off.x, p_ofs.y + off.y - l_ascent, sel[i].y - sel[i].x, l_size.y); // Note: use "off" not "off_step", selection is relative to the line start.
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_bg);
 					}
-				}
-			}
-			if (step == DRAW_STEP_BACKGROUND || step == DRAW_STEP_FOREGROUND) {
-				if (last_color.a > 0.0) {
-					Vector2 rect_off = p_ofs + Vector2(box_start - theme_cache.text_highlight_h_padding, off_step.y - l_ascent - theme_cache.text_highlight_v_padding);
-					Vector2 rect_size = Vector2(off_step.x - box_start + 2 * theme_cache.text_highlight_h_padding, l_size.y + 2 * theme_cache.text_highlight_v_padding);
-					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(rect_off, rect_size), last_color);
 				}
 			}
 			if (step == DRAW_STEP_TEXT) {
