@@ -829,7 +829,7 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	max_low_priority_threads = CLAMP(p_thread_count * p_low_priority_task_ratio, 1, p_thread_count - 1);
 
-	print_verbose(vformat("WorkerThreadPool: %d threads, %d max low-priority.", p_thread_count, max_low_priority_threads));
+	PRINT_VERBOSE(vformat("WorkerThreadPool: %d threads, %d max low-priority.", p_thread_count, max_low_priority_threads));
 
 #ifdef THREADS_ENABLED
 	// Reserve 5 threads in case we need separate threads for 1) 2D physics 2) 3D physics 3) rendering 4) GPU texture compression, 5) all other tasks.
