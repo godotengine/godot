@@ -240,6 +240,6 @@ void _decompress_etc(Image *p_image) {
 		p_image->convert_ra_rgba8_to_rg();
 	}
 
-	print_verbose(vformat("etcpak: Decompression of %dx%d %s image %s with %d mipmaps took %d ms.",
+	PRINT_VERBOSE(vformat("etcpak: Decompression of %dx%d %s image %s with %d mipmaps took %d ms.",
 			p_image->get_width(), p_image->get_height(), Image::get_format_name(source_format), p_image->get_path(), p_image->get_mipmap_count(), OS::get_singleton()->get_ticks_msec() - start_time));
 }

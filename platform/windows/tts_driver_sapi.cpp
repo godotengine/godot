@@ -254,10 +254,10 @@ bool TTSDriverSAPI::init() {
 		ULONGLONG event_mask = SPFEI(SPEI_END_INPUT_STREAM) | SPFEI(SPEI_START_INPUT_STREAM) | SPFEI(SPEI_WORD_BOUNDARY);
 		synth->SetInterest(event_mask, event_mask);
 		synth->SetNotifyCallbackFunction(&speech_event_callback, (WPARAM)(this), 0);
-		print_verbose("Text-to-Speech: SAPI initialized.");
+		PRINT_VERBOSE("Text-to-Speech: SAPI initialized.");
 		return true;
 	} else {
-		print_verbose("Text-to-Speech: Cannot initialize SAPI driver!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize SAPI driver!");
 		return false;
 	}
 }
