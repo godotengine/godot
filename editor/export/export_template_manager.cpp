@@ -1441,7 +1441,7 @@ Error ExportTemplateManager::delete_android_build_directory(const Ref<EditorExpo
 
 	String build_dir = get_android_build_directory(p_preset);
 	String parent_dir = build_dir.get_base_dir();
-	print_verbose("Deleting android build directory " + build_dir);
+	PRINT_VERBOSE("Deleting android build directory " + build_dir);
 
 	ProgressDialog::get_singleton()->add_task("deleting_android_build_dir", TTR("Deleting Android Build Directory"), 1);
 
@@ -1471,7 +1471,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	String build_dir = get_android_build_directory(p_preset);
 	String parent_dir = build_dir.get_base_dir();
-	print_verbose("Installing android build directory " + build_dir);
+	PRINT_VERBOSE("Installing android build directory " + build_dir);
 
 	// Make parent of the build dir (if it does not exist).
 	da->make_dir_recursive(parent_dir);
