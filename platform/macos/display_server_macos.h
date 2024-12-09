@@ -212,7 +212,7 @@ private:
 	Callable system_theme_changed;
 
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
-	void _update_window_style(WindowData p_wd);
+	void _update_window_style(WindowData p_wd, WindowID p_window);
 
 	void _update_displays_arrangement();
 	Point2i _get_native_screen_position(int p_screen) const;
@@ -261,6 +261,8 @@ public:
 	void mouse_enter_window(WindowID p_window);
 	void mouse_exit_window(WindowID p_window);
 	void update_presentation_mode();
+
+	bool is_always_on_top_recursive(WindowID p_window) const;
 
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
