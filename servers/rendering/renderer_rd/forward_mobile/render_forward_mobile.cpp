@@ -327,10 +327,10 @@ void RenderForwardMobile::mesh_generate_pipelines(RID p_mesh, bool p_background_
 		_mesh_compile_pipelines_for_surface(surface, global_pipeline_data_required, RS::PIPELINE_SOURCE_MESH, &pipeline_pairs);
 	}
 
-	// Try to retrieve all the pipeline pairs that were compiled. This will force the loader to wait on all ubershader pipelines to be ready.
+	// Try to wait for all the pipelines that were compiled. This will force the loader to wait on all ubershader pipelines to be ready.
 	if (!p_background_compilation && !pipeline_pairs.is_empty()) {
 		for (ShaderPipelinePair pair : pipeline_pairs) {
-			pair.first->pipeline_hash_map.get_pipeline(pair.second, pair.second.hash(), true, RS::PIPELINE_SOURCE_MESH);
+			pair.first->pipeline_hash_map.wait_for_pipeline(pair.second.hash());
 		}
 	}
 }
