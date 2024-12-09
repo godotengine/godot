@@ -270,7 +270,7 @@
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [param length].
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
 			</description>
 		</method>
 		<method name="max" qualifiers="const">
