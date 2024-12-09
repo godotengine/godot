@@ -837,7 +837,7 @@ void ShaderRD::_initialize_cache() {
 		}
 		shader_cache_dir_valid = true;
 
-		print_verbose("Shader '" + name + "' (group " + itos(E.key) + ") SHA256: " + group_sha256[E.key]);
+		PRINT_VERBOSE("Shader '" + name + "' (group " + itos(E.key) + ") SHA256: " + group_sha256[E.key]);
 	}
 }
 
