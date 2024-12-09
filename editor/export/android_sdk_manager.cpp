@@ -110,18 +110,18 @@ void AndroidSDKManager::_notification(int p_what) {
 								err_output.append_utf8((const char *)buf.ptr(), buf_size);
 
 								if (!output.is_empty()) {
-									print_verbose(output);
+									PRINT_VERBOSE(output);
 									execute_outputs->add_text(output);
 								}
 
 								if (!err_output.is_empty()) {
-									print_verbose(err_output);
+									PRINT_VERBOSE(err_output);
 									execute_outputs->add_text(err_output);
 								}
 							}
 						} else {
 							int exit_code = OS::get_singleton()->get_process_exit_code(setup_android_pid);
-							print_verbose("Exit code: " + itos(exit_code));
+							PRINT_VERBOSE("Exit code: " + itos(exit_code));
 							execute_outputs->add_text("\nExit code: " + itos(exit_code));
 							_android_sdk_installed(exit_code);
 						}
@@ -141,33 +141,33 @@ void AndroidSDKManager::_cancel_setup() {
 		} break;
 
 		case PROMPTING_ANDROID_ONLINE_ACCESS: {
-			print_verbose("Canceling online mode request prompt for Android SDK setup.");
+			PRINT_VERBOSE("Canceling online mode request prompt for Android SDK setup.");
 		} break;
 
 		case PROMPTING_ANDROID_SDK_SETUP: {
-			print_verbose("Canceling Android SDK setup prompt.");
+			PRINT_VERBOSE("Canceling Android SDK setup prompt.");
 		} break;
 
 		case PROMPTING_JAVA_ONLINE_ACCESS: {
-			print_verbose("Canceling online mode request prompt for Java SDK setup.");
+			PRINT_VERBOSE("Canceling online mode request prompt for Java SDK setup.");
 		} break;
 
 		case PROMPTING_JAVA_SDK_SETUP: {
-			print_verbose("Canceling Java SDK setup prompt.");
+			PRINT_VERBOSE("Canceling Java SDK setup prompt.");
 		} break;
 
 		case DOWNLOADING_ANDROID_SDK: {
-			print_verbose("Canceling Android SDK download.");
+			PRINT_VERBOSE("Canceling Android SDK download.");
 			downloader->cancel_request();
 		} break;
 
 		case DOWNLOADING_JAVA_SDK: {
-			print_verbose("Canceling Java SDK download.");
+			PRINT_VERBOSE("Canceling Java SDK download.");
 			downloader->cancel_request();
 		} break;
 
 		case INSTALLING_ANDROID_SDK: {
-			print_verbose("Canceling Android SDK installation.");
+			PRINT_VERBOSE("Canceling Android SDK installation.");
 			int setup_android_pid = setup_process_data["pid"];
 			if (setup_android_pid > 0 && OS::get_singleton()->is_process_running(setup_android_pid)) {
 				OS::get_singleton()->kill(setup_android_pid);
@@ -175,7 +175,7 @@ void AndroidSDKManager::_cancel_setup() {
 		} break;
 
 		case INSTALLING_JAVA_SDK: {
-			print_verbose("Canceling Java SDK installation.");
+			PRINT_VERBOSE("Canceling Java SDK installation.");
 		} break;
 	}
 
@@ -323,12 +323,12 @@ void AndroidSDKManager::_install_android_sdk_packages() {
 	const char **packages = ANDROID_SDK_PACKAGES;
 	while (*packages) {
 		String package = String(*packages);
-		print_verbose("Requesting Android SDK package " + package);
+		PRINT_VERBOSE("Requesting Android SDK package " + package);
 		cli_args.push_back(package);
 		packages++;
 	}
 
-	print_verbose("Installing Android SDK packages to " + default_android_sdk_path);
+	PRINT_VERBOSE("Installing Android SDK packages to " + default_android_sdk_path);
 	setup_process_data = OS::get_singleton()->execute_with_pipe(cli_bin, cli_args, false);
 	if (!setup_process_data.has("pid") || setup_process_data["pid"].operator int() <= 0) {
 		ERR_PRINT("Installation of Android SDK packages failed.");
@@ -360,7 +360,7 @@ void AndroidSDKManager::_android_sdk_installed(int p_exit_code) {
 
 void AndroidSDKManager::_setup_android_sdk() {
 	if (is_android_sdk_setup()) {
-		print_verbose("Android SDK is already setup!");
+		PRINT_VERBOSE("Android SDK is already setup!");
 		return;
 	}
 
@@ -384,7 +384,7 @@ void AndroidSDKManager::_setup_android_sdk() {
 
 void AndroidSDKManager::_setup_java_sdk() {
 	if (is_java_sdk_setup()) {
-		print_verbose("Java SDK is already setup!");
+		PRINT_VERBOSE("Java SDK is already setup!");
 		return;
 	}
 
@@ -428,7 +428,7 @@ void AndroidSDKManager::_download_java_sdk() {
 		ERR_PRINT("Failed to start Java SDK download.");
 		_cancel_setup();
 	} else {
-		print_verbose("Downloading Java SDK from " + url);
+		PRINT_VERBOSE("Downloading Java SDK from " + url);
 		_show_setup_dialog(DOWNLOADING_JAVA_SDK);
 	}
 }
@@ -461,7 +461,7 @@ void AndroidSDKManager::_java_sdk_downloaded(const PackedByteArray &p_body) {
 		ERR_PRINT("Failed to save Java SDK archive.");
 		return;
 	}
-	print_verbose("Storing Java SDK archive to " + archive_path);
+	PRINT_VERBOSE("Storing Java SDK archive to " + archive_path);
 	f->store_buffer(p_body.ptr(), p_body.size());
 	f.unref();
 
@@ -474,7 +474,7 @@ void AndroidSDKManager::_java_sdk_downloaded(const PackedByteArray &p_body) {
 	}
 
 	// Remove temporary archive.
-	print_verbose("Deleting Java SDK archive...");
+	PRINT_VERBOSE("Deleting Java SDK archive...");
 	DirAccess::remove_file_or_error(archive_path);
 
 	_java_sdk_installed();
@@ -495,7 +495,7 @@ void AndroidSDKManager::_java_sdk_installed() {
 }
 
 Error AndroidSDKManager::_extract_java_sdk(const String &p_file, const String &p_target_path) {
-	print_verbose(vformat("Extracting Java SDK from %s to %s", p_file, p_target_path));
+	PRINT_VERBOSE(vformat("Extracting Java SDK from %s to %s", p_file, p_target_path));
 	if (OS::get_singleton()->has_feature("windows")) {
 		Ref<ZIPReader> reader;
 		reader.instantiate();
@@ -594,7 +594,7 @@ void AndroidSDKManager::_download_android_cli() {
 		ERR_PRINT("Failed to start android-cli download.");
 		_cancel_setup();
 	} else {
-		print_verbose("Downloading android-cli from " + url);
+		PRINT_VERBOSE("Downloading android-cli from " + url);
 		_show_setup_dialog(DOWNLOADING_ANDROID_SDK);
 	}
 }
@@ -616,7 +616,7 @@ void AndroidSDKManager::_android_cli_downloaded(const PackedByteArray &p_body) {
 	if (f.is_null()) {
 		ERR_PRINT("Failed to save android-cli binary.");
 	} else {
-		print_verbose("Storing android-cli to " + cli_bin);
+		PRINT_VERBOSE("Storing android-cli to " + cli_bin);
 		f->store_buffer(p_body.ptr(), p_body.size());
 		f.unref();
 

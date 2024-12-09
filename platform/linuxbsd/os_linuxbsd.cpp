@@ -1004,12 +1004,12 @@ void OS_LinuxBSD::run() {
 		if (use_gamemode) {
 			gamemode_status = GameMode::gamemode_request_start_for(OS::get_singleton()->get_process_id());
 			if (gamemode_status >= 0) {
-				print_verbose("GameMode: Enabled successfully.");
+				PRINT_VERBOSE("GameMode: Enabled successfully.");
 			} else {
 				WARN_VERBOSE("GameMode: Failed to enable (check if the daemon is installed and running).");
 			}
 		} else {
-			print_verbose("GameMode: Not enabling, as the project has it disabled.");
+			PRINT_VERBOSE("GameMode: Not enabling, as the project has it disabled.");
 		}
 	}
 #endif
@@ -1378,7 +1378,7 @@ OS_LinuxBSD::OS_LinuxBSD() {
 		bool ver_ok = false;
 		int version = FcGetVersion();
 		ver_ok = ((version / 100 / 100) == 2 && (version / 100 % 100) >= 11) || ((version / 100 / 100) > 2); // 2.11.0
-		print_verbose(vformat("FontConfig %d.%d.%d detected.", version / 100 / 100, version / 100 % 100, version % 100));
+		PRINT_VERBOSE(vformat("FontConfig %d.%d.%d detected.", version / 100 / 100, version / 100 % 100, version % 100));
 		if (!ver_ok) {
 			font_config_initialized = false;
 		}

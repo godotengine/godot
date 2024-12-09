@@ -2885,7 +2885,7 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 			const char *pool_names[3] = { "private", "shared", "shared_wc" };
 			for (uint32_t i = 0; i < 3; i++) {
 				const MetalAllocatorStats::Pool &p = stats.pools[i];
-				print_verbose(vformat("Metal allocator pool %s: %d blocks, %s reserved, %s used, %d live allocations, %d dedicated (%s).",
+				PRINT_VERBOSE(vformat("Metal allocator pool %s: %d blocks, %s reserved, %s used, %d live allocations, %d dedicated (%s).",
 						pool_names[i], p.block_count, String::humanize_size(p.reserved_bytes), String::humanize_size(p.used_bytes),
 						p.allocation_count, p.dedicated_count, String::humanize_size(p.dedicated_bytes)));
 			}
@@ -3014,11 +3014,11 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 		// NOTE: I'm not sure what the limit is as I don't see it referenced anywhere
 		multiview_capabilities.max_instance_count = UINT32_MAX;
 
-		print_verbose("- Metal multiview supported:");
-		print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
-		print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
+		PRINT_VERBOSE("- Metal multiview supported:");
+		PRINT_VERBOSE("  max view count: " + itos(multiview_capabilities.max_view_count));
+		PRINT_VERBOSE("  max instances: " + itos(multiview_capabilities.max_instance_count));
 	} else {
-		print_verbose("- Metal multiview not supported");
+		PRINT_VERBOSE("- Metal multiview not supported");
 	}
 
 	// The Metal renderer requires Apple4 family. This is 2017 era A11 chips and newer.

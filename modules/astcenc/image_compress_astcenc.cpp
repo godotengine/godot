@@ -109,7 +109,7 @@ void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::Compres
 		r_img->resize(width, height, Image::INTERPOLATE_NEAREST);
 	}
 
-	print_verbose(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
+	PRINT_VERBOSE(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
 
 	// Initialize astcenc.
 	const int64_t dest_size = Image::get_image_data_size(width, height, target_format, has_mipmaps);
@@ -188,7 +188,7 @@ void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::Compres
 	// Replace original image with compressed one.
 	r_img->set_data(width, height, has_mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("astcenc: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
+	PRINT_VERBOSE(vformat("astcenc: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
 #endif // TOOLS_ENABLED
 
@@ -310,5 +310,5 @@ void _decompress_astc(Image *r_img) {
 	// Replace original image with compressed one.
 	r_img->set_data(width, height, has_mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("astcenc: Decompression took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
+	PRINT_VERBOSE(vformat("astcenc: Decompression took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
