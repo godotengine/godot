@@ -432,7 +432,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		for (uint32_t classes_idx = 0; classes_idx < classes.size(); classes_idx++) {
 			const String &name = classes[classes_idx];
 			if (!ClassDB::is_class_exposed(name)) {
-				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
+				PRINT_VERBOSE(vformat("Class '%s' is not exposed, skipping.", name));
 				continue;
 			}
 

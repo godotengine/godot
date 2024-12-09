@@ -3105,7 +3105,7 @@ static void _load_script_doc_cache(bool p_changes) {
 
 void EditorHelp::load_script_doc_cache() {
 	if (!ProjectSettings::get_singleton()->is_project_loaded()) {
-		print_verbose("Skipping loading script doc cache since no project is open.");
+		PRINT_VERBOSE("Skipping loading script doc cache since no project is open.");
 		return;
 	}
 
@@ -3116,7 +3116,7 @@ void EditorHelp::load_script_doc_cache() {
 	_wait_for_thread();
 
 	if (!ResourceLoader::exists(get_script_doc_cache_full_path())) {
-		print_verbose("Script documentation cache not found. Regenerating it may take a while for projects with many scripts.");
+		PRINT_VERBOSE("Script documentation cache not found. Regenerating it may take a while for projects with many scripts.");
 		regenerate_script_doc_cache();
 		return;
 	}
@@ -3151,7 +3151,7 @@ void EditorHelp::_load_script_doc_cache_thread(void *p_udata) {
 
 	Ref<Resource> script_doc_cache_res = ResourceLoader::load(get_script_doc_cache_full_path(), "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 	if (script_doc_cache_res.is_null()) {
-		print_verbose("Script doc cache is corrupted. Regenerating it instead.");
+		PRINT_VERBOSE("Script doc cache is corrupted. Regenerating it instead.");
 		_delete_script_doc_cache();
 		callable_mp_static(EditorHelp::regenerate_script_doc_cache).call_deferred();
 		return;
@@ -3244,7 +3244,7 @@ void EditorHelp::_delete_script_doc_cache() {
 
 void EditorHelp::save_script_doc_cache() {
 	if (!_script_docs_loaded.is_set()) {
-		print_verbose("Script docs haven't been properly loaded or regenerated, so don't save them to disk.");
+		PRINT_VERBOSE("Script docs haven't been properly loaded or regenerated, so don't save them to disk.");
 		return;
 	}
 
@@ -3280,7 +3280,7 @@ void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
 	if (p_use_cache && FileAccess::exists(get_cache_full_path())) {
 		worker_thread.start(_load_doc_thread, (void *)p_use_script_cache);
 	} else {
-		print_verbose("Regenerating editor help cache");
+		PRINT_VERBOSE("Regenerating editor help cache");
 		doc->generate();
 		worker_thread.start(_gen_doc_thread, (void *)p_use_script_cache);
 	}

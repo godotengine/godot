@@ -492,7 +492,7 @@ void JoypadApple::add_joypad(GCController *p_controller) {
 	int joy_id = Input::get_singleton()->get_unused_joy_id();
 
 	if (joy_id == -1) {
-		print_verbose("Couldn't retrieve new joy ID.");
+		PRINT_VERBOSE("Couldn't retrieve new joy ID.");
 		return;
 	}
 

@@ -404,7 +404,7 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 		dxil_logger logger = {};
 		logger.log = [](void *p_priv, const char *p_msg) {
 #ifdef DEBUG_ENABLED
-			print_verbose(p_msg);
+			PRINT_VERBOSE(p_msg);
 #endif
 		};
 

@@ -162,12 +162,12 @@ Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> tcp_client) {
 	for (int i = 0; i < tries; i++) {
 		tcp_client->poll();
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
-			print_verbose("Remote Debugger: Connected!");
+			PRINT_VERBOSE("Remote Debugger: Connected!");
 			break;
 		} else {
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
+			PRINT_VERBOSE("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
 		}
 	}
 

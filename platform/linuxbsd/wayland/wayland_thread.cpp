@@ -57,7 +57,7 @@
 
 #define WAYLAND_THREAD_DEBUG_LOGS_ENABLED
 #ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
-#define DEBUG_LOG_WAYLAND_THREAD(...) print_verbose(__VA_ARGS__)
+#define DEBUG_LOG_WAYLAND_THREAD(...) PRINT_VERBOSE(__VA_ARGS__)
 #else
 #define DEBUG_LOG_WAYLAND_THREAD(...)
 #endif
@@ -288,7 +288,7 @@ Ref<InputEventKey> WaylandThread::_seat_state_get_unstuck_key_event(SeatState *p
 	if (p_pressed) {
 		Key *old_key = p_ss->pressed_keycodes.getptr(p_keycode);
 		if (old_key != nullptr && *old_key != p_key) {
-			print_verbose(vformat("%s and %s have same keycode. Generating release event for %s", keycode_get_string(*old_key), keycode_get_string(p_key), keycode_get_string(*old_key)));
+			PRINT_VERBOSE(vformat("%s and %s have same keycode. Generating release event for %s", keycode_get_string(*old_key), keycode_get_string(p_key), keycode_get_string(*old_key)));
 			event = _seat_state_get_key_event(p_ss, p_keycode, false);
 			if (event.is_valid()) {
 				event->set_keycode(*old_key);
@@ -398,7 +398,7 @@ bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 		cursor_theme_name = "default";
 	}
 
-	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme_name, p_cursor_size));
+	PRINT_VERBOSE(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme_name, p_cursor_size));
 
 	wl_cursor_theme = wl_cursor_theme_load(cursor_theme_name.utf8().get_data(), p_cursor_size, registry.wl_shm);
 
@@ -455,7 +455,7 @@ bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 			wl_cursors[i] = cursor;
 		} else {
 			wl_cursors[i] = nullptr;
-			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
+			PRINT_VERBOSE("Failed loading cursor: " + String(cursor_names[i]));
 		}
 	}
 
@@ -467,7 +467,7 @@ void WaylandThread::_update_scale(int p_scale) {
 		return;
 	}
 
-	print_verbose(vformat("Bumping cursor scale to %d", p_scale));
+	PRINT_VERBOSE(vformat("Bumping cursor scale to %d", p_scale));
 
 	// There's some display that's bigger than the cache, let's update it.
 	cursor_scale = p_scale;
@@ -4310,7 +4310,7 @@ void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, b
 		// possible to destroy the frame more than once, by setting the visibility
 		// to false multiple times and thus crashing.
 		if (visible_current != visible_target) {
-			print_verbose(vformat("Setting libdecor frame visibility to %s", visible_target));
+			PRINT_VERBOSE(vformat("Setting libdecor frame visibility to %s", visible_target));
 			libdecor_frame_set_visibility(ws.libdecor_frame, visible_target);
 		}
 	}
@@ -4638,12 +4638,12 @@ Error WaylandThread::init() {
 	bool embedder_enabled = true;
 
 	if (OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_EMBEDDER") == "1") {
-		print_verbose("Disabling Wayland embedder as per GODOT_WAYLAND_DISABLE_EMBEDDER.");
+		PRINT_VERBOSE("Disabling Wayland embedder as per GODOT_WAYLAND_DISABLE_EMBEDDER.");
 		embedder_enabled = false;
 	}
 
 	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
-		print_verbose("Initializing Wayland embedder.");
+		PRINT_VERBOSE("Initializing Wayland embedder.");
 		Error embedder_status = embedder.init();
 		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
@@ -4672,10 +4672,10 @@ Error WaylandThread::init() {
 	}
 
 	if (embedder_socket_path.is_empty()) {
-		print_verbose("Connecting to the default Wayland display.");
+		PRINT_VERBOSE("Connecting to the default Wayland display.");
 		wl_display = wl_display_connect(nullptr);
 	} else {
-		print_verbose("Connecting to the Wayland embedder display.");
+		PRINT_VERBOSE("Connecting to the Wayland embedder display.");
 		wl_display = wl_display_connect(embedder_socket_path.utf8().get_data());
 	}
 
@@ -4742,7 +4742,7 @@ Error WaylandThread::init() {
 	if (libdecor_found) {
 		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
 	} else {
-		print_verbose("libdecor not found. Client-side decorations disabled.");
+		PRINT_VERBOSE("libdecor not found. Client-side decorations disabled.");
 	}
 #endif // LIBDECOR_ENABLED
 
@@ -4750,7 +4750,7 @@ Error WaylandThread::init() {
 
 	unscaled_cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
 	if (unscaled_cursor_size <= 0) {
-		print_verbose("Detected invalid cursor size preference, defaulting to 24.");
+		PRINT_VERBOSE("Detected invalid cursor size preference, defaulting to 24.");
 		unscaled_cursor_size = 24;
 	}
 

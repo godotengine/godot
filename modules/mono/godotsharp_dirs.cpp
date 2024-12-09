@@ -171,7 +171,7 @@ private:
 		String packed_path = "res://.godot/mono/publish/" + arch;
 #ifdef ANDROID_ENABLED
 		api_assemblies_dir = packed_path;
-		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+		PRINT_VERBOSE(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
 #else
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.

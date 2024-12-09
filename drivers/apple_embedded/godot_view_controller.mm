@@ -157,7 +157,7 @@
 
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
-	print_verbose("Did receive memory warning!");
+	PRINT_VERBOSE("Did receive memory warning!");
 }
 
 - (void)viewDidLoad {
@@ -180,11 +180,11 @@
 }
 
 - (void)observeKeyboard {
-	print_verbose("Setting up keyboard input view.");
+	PRINT_VERBOSE("Setting up keyboard input view.");
 	self.keyboardView = [GDTKeyboardInputView new];
 	[self.view addSubview:self.keyboardView];
 
-	print_verbose("Adding observer for keyboard show/hide.");
+	PRINT_VERBOSE("Adding observer for keyboard show/hide.");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(keyboardOnScreen:)
