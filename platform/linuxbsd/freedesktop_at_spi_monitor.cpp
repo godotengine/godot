@@ -122,7 +122,7 @@ FreeDesktopAtSPIMonitor::FreeDesktopAtSPIMonitor() {
 	int dylibloader_verbose = 0;
 #endif
 	if (initialize_dbus(dylibloader_verbose) != 0) {
-		print_verbose("AT-SPI2: Failed to load DBus library!");
+		PRINT_VERBOSE("AT-SPI2: Failed to load DBus library!");
 		supported.clear();
 		return;
 	}
@@ -133,9 +133,9 @@ FreeDesktopAtSPIMonitor::FreeDesktopAtSPIMonitor() {
 	int version_rev = 0;
 	dbus_get_version(&version_major, &version_minor, &version_rev);
 	ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
-	print_verbose(vformat("AT-SPI2: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+	PRINT_VERBOSE(vformat("AT-SPI2: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
 	if (!ver_ok) {
-		print_verbose("AT-SPI2: Unsupported DBus library version!");
+		PRINT_VERBOSE("AT-SPI2: Unsupported DBus library version!");
 		supported.clear();
 		return;
 	}
