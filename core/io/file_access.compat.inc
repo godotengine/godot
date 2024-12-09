@@ -35,19 +35,19 @@ Ref<FileAccess> FileAccess::_open_encrypted_bind_compat_98918(const String &p_pa
 }
 
 void FileAccess::store_8_bind_compat_78289(uint8_t p_dest) {
-	store_8(p_dest);
+	store_u8(p_dest);
 }
 
 void FileAccess::store_16_bind_compat_78289(uint16_t p_dest) {
-	store_16(p_dest);
+	store_u16(p_dest);
 }
 
 void FileAccess::store_32_bind_compat_78289(uint32_t p_dest) {
-	store_32(p_dest);
+	store_u32(p_dest);
 }
 
 void FileAccess::store_64_bind_compat_78289(uint64_t p_dest) {
-	store_64(p_dest);
+	store_u64(p_dest);
 }
 
 void FileAccess::store_buffer_bind_compat_78289(const Vector<uint8_t> &p_buffer) {

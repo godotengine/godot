@@ -165,10 +165,15 @@ public:
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF
 
-	virtual uint8_t get_8() const; ///< get a byte
-	virtual uint16_t get_16() const; ///< get 16 bits uint
-	virtual uint32_t get_32() const; ///< get 32 bits uint
-	virtual uint64_t get_64() const; ///< get 64 bits uint
+	virtual uint8_t get_u8() const;
+	virtual uint16_t get_u16() const;
+	virtual uint32_t get_u32() const;
+	virtual uint64_t get_u64() const;
+
+	virtual int8_t get_s8() const;
+	virtual int16_t get_s16() const;
+	virtual int32_t get_s32() const;
+	virtual int64_t get_s64() const;
 
 	virtual float get_half() const;
 	virtual float get_float() const;
@@ -198,10 +203,16 @@ public:
 
 	virtual Error resize(int64_t p_length) = 0;
 	virtual void flush() = 0;
-	virtual bool store_8(uint8_t p_dest); ///< store a byte
-	virtual bool store_16(uint16_t p_dest); ///< store 16 bits uint
-	virtual bool store_32(uint32_t p_dest); ///< store 32 bits uint
-	virtual bool store_64(uint64_t p_dest); ///< store 64 bits uint
+
+	virtual bool store_u8(uint8_t p_dest);
+	virtual bool store_u16(uint16_t p_dest);
+	virtual bool store_u32(uint32_t p_dest);
+	virtual bool store_u64(uint64_t p_dest);
+
+	virtual bool store_s8(int8_t p_dest);
+	virtual bool store_s16(int16_t p_dest);
+	virtual bool store_s32(int32_t p_dest);
+	virtual bool store_s64(int64_t p_dest);
 
 	virtual bool store_half(float p_dest);
 	virtual bool store_float(float p_dest);

@@ -42,20 +42,20 @@ void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_
 
 Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	f = p_base;
-	cmode = (Compression::Mode)f->get_32();
-	block_size = f->get_32();
+	cmode = (Compression::Mode)f->get_u32();
+	block_size = f->get_u32();
 	if (block_size == 0) {
 		f.unref();
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("Can't open compressed file '%s' with block size 0, it is corrupted.", p_base->get_path()));
 	}
-	read_total = f->get_32();
+	read_total = f->get_u32();
 	uint32_t bc = (read_total / block_size) + 1;
 	uint64_t acc_ofs = f->get_position() + bc * 4;
 	uint32_t max_bs = 0;
 	for (uint32_t i = 0; i < bc; i++) {
 		ReadBlock rb;
 		rb.offset = acc_ofs;
-		rb.csize = f->get_32();
+		rb.csize = f->get_u32();
 		acc_ofs += rb.csize;
 		max_bs = MAX(max_bs, rb.csize);
 		read_blocks.push_back(rb);
@@ -123,13 +123,13 @@ void FileAccessCompressed::_close() {
 
 		CharString mgc = magic.utf8();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
-		f->store_32(cmode); //write compression mode 4
-		f->store_32(block_size); //write block size 4
-		f->store_32(write_max); //max amount of data written 4
+		f->store_u32(cmode); //write compression mode 4
+		f->store_u32(block_size); //write block size 4
+		f->store_u32(write_max); //max amount of data written 4
 		uint32_t bc = (write_max / block_size) + 1;
 
 		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(0); //compressed sizes, will update later
+			f->store_u32(0); //compressed sizes, will update later
 		}
 
 		Vector<int> block_sizes;
@@ -147,7 +147,7 @@ void FileAccessCompressed::_close() {
 
 		f->seek(16); //ok write block sizes
 		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(block_sizes[i]);
+			f->store_u32(block_sizes[i]);
 		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too

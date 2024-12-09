@@ -263,11 +263,11 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
 					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit
-			f->store_32(use_webp ? CompressedTexture2D::DATA_FORMAT_WEBP : CompressedTexture2D::DATA_FORMAT_PNG);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_u32(use_webp ? CompressedTexture2D::DATA_FORMAT_WEBP : CompressedTexture2D::DATA_FORMAT_PNG);
+			f->store_u16(p_image->get_width());
+			f->store_u16(p_image->get_height());
+			f->store_u32(p_image->get_mipmap_count());
+			f->store_u32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
@@ -277,7 +277,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 					data = Image::png_packer(i ? p_image->get_image_from_mipmap(i) : p_image);
 				}
 				int data_len = data.size();
-				f->store_32(data_len);
+				f->store_u32(data_len);
 
 				const uint8_t *r = data.ptr();
 				f->store_buffer(r, data_len);
@@ -285,16 +285,16 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 		} break;
 		case COMPRESS_LOSSY: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_WEBP);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_u32(CompressedTexture2D::DATA_FORMAT_WEBP);
+			f->store_u16(p_image->get_width());
+			f->store_u16(p_image->get_height());
+			f->store_u32(p_image->get_mipmap_count());
+			f->store_u32(p_image->get_format());
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 				int data_len = data.size();
-				f->store_32(data_len);
+				f->store_u32(data_len);
 
 				const uint8_t *r = data.ptr();
 				f->store_buffer(r, data_len);
@@ -305,11 +305,11 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 			image->compress_from_channels(p_compress_format, p_channels);
 
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(image->get_width());
-			f->store_16(image->get_height());
-			f->store_32(image->get_mipmap_count());
-			f->store_32(image->get_format());
+			f->store_u32(CompressedTexture2D::DATA_FORMAT_IMAGE);
+			f->store_u16(image->get_width());
+			f->store_u16(image->get_height());
+			f->store_u32(image->get_mipmap_count());
+			f->store_u32(image->get_format());
 
 			Vector<uint8_t> data = image->get_data();
 			int dl = data.size();
@@ -317,11 +317,11 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_buffer(r, dl);
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_u32(CompressedTexture2D::DATA_FORMAT_IMAGE);
+			f->store_u16(p_image->get_width());
+			f->store_u16(p_image->get_height());
+			f->store_u32(p_image->get_mipmap_count());
+			f->store_u32(p_image->get_format());
 
 			Vector<uint8_t> data = p_image->get_data();
 			int dl = data.size();
@@ -331,14 +331,14 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_u32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL);
+			f->store_u16(p_image->get_width());
+			f->store_u16(p_image->get_height());
+			f->store_u32(p_image->get_mipmap_count());
+			f->store_u32(p_image->get_format());
 			Vector<uint8_t> data = Image::basis_universal_packer(p_image, p_channels);
 			int data_len = data.size();
-			f->store_32(data_len);
+			f->store_u32(data_len);
 			const uint8_t *r = data.ptr();
 			f->store_buffer(r, data_len);
 		} break;
@@ -348,16 +348,16 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
-	f->store_8('G');
-	f->store_8('S');
-	f->store_8('T');
-	f->store_8('2'); //godot streamable texture 2D
+	f->store_u8('G');
+	f->store_u8('S');
+	f->store_u8('T');
+	f->store_u8('2'); //godot streamable texture 2D
 
 	//format version
-	f->store_32(CompressedTexture2D::FORMAT_VERSION);
+	f->store_u32(CompressedTexture2D::FORMAT_VERSION);
 	//texture may be resized later, so original size must be saved first
-	f->store_32(p_image->get_width());
-	f->store_32(p_image->get_height());
+	f->store_u32(p_image->get_width());
+	f->store_u32(p_image->get_height());
 
 	uint32_t flags = 0;
 	if (p_streamable) {
@@ -376,12 +376,12 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
 	}
 
-	f->store_32(flags);
-	f->store_32(p_limit_mipmap);
+	f->store_u32(flags);
+	f->store_u32(p_limit_mipmap);
 	//reserved for future use
-	f->store_32(0);
-	f->store_32(0);
-	f->store_32(0);
+	f->store_u32(0);
+	f->store_u32(0);
+	f->store_u32(0);
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() >= Image::FORMAT_RF) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy

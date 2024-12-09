@@ -103,10 +103,10 @@ int64_t get_image_base(const String &p_path) {
 	}
 	{
 		f->seek(0x3c);
-		uint32_t pe_pos = f->get_32();
+		uint32_t pe_pos = f->get_u32();
 
 		f->seek(pe_pos);
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x00004550) {
 			return 0;
 		}
@@ -114,13 +114,13 @@ int64_t get_image_base(const String &p_path) {
 	int64_t opt_header_pos = f->get_position() + 0x14;
 	f->seek(opt_header_pos);
 
-	uint16_t opt_header_magic = f->get_16();
+	uint16_t opt_header_magic = f->get_u16();
 	if (opt_header_magic == 0x10B) {
 		f->seek(opt_header_pos + 0x1C);
-		return f->get_32();
+		return f->get_u32();
 	} else if (opt_header_magic == 0x20B) {
 		f->seek(opt_header_pos + 0x18);
-		return f->get_64();
+		return f->get_u64();
 	} else {
 		return 0;
 	}

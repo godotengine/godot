@@ -82,9 +82,9 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			// Read RLE-encoded data
 
 			for (int j = 0; j < height; ++j) {
-				int c1 = f->get_8();
-				int c2 = f->get_8();
-				int len = f->get_8();
+				int c1 = f->get_u8();
+				int c2 = f->get_u8();
+				int len = f->get_u8();
 				if (c1 != 2 || c2 != 2 || (len & 0x80)) {
 					// not run-length encoded, so we have to actually use THIS data as a decoded
 					// pixel (note this can't be a valid pixel--one of RGB must be >= 128)
@@ -92,23 +92,23 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 					ptr[(j * width) * 4 + 0] = uint8_t(c1);
 					ptr[(j * width) * 4 + 1] = uint8_t(c2);
 					ptr[(j * width) * 4 + 2] = uint8_t(len);
-					ptr[(j * width) * 4 + 3] = f->get_8();
+					ptr[(j * width) * 4 + 3] = f->get_u8();
 
 					f->get_buffer(&ptr[(j * width + 1) * 4], (width - 1) * 4);
 					continue;
 				}
 				len <<= 8;
-				len |= f->get_8();
+				len |= f->get_u8();
 
 				ERR_FAIL_COND_V_MSG(len != width, ERR_FILE_CORRUPT, "Invalid decoded scanline length, corrupt HDR.");
 
 				for (int k = 0; k < 4; ++k) {
 					int i = 0;
 					while (i < width) {
-						int count = f->get_8();
+						int count = f->get_u8();
 						if (count > 128) {
 							// Run
-							int value = f->get_8();
+							int value = f->get_u8();
 							count -= 128;
 							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = uint8_t(value);

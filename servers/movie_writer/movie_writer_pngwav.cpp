@@ -88,7 +88,7 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	f_wav->store_buffer((const uint8_t *)"RIFF", 4);
 	int total_size = 4 /* WAVE */ + 8 /* fmt+size */ + 16 /* format */ + 8 /* data+size */;
-	f_wav->store_32(total_size); //will store final later
+	f_wav->store_u32(total_size); //will store final later
 	f_wav->store_buffer((const uint8_t *)"WAVE", 4);
 
 	/* FORMAT CHUNK */
@@ -111,11 +111,11 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 			break;
 	}
 
-	f_wav->store_32(16); //standard format, no extra fields
-	f_wav->store_16(1); // compression code, standard PCM
-	f_wav->store_16(channels); //CHANNELS: 2
+	f_wav->store_u32(16); //standard format, no extra fields
+	f_wav->store_u16(1); // compression code, standard PCM
+	f_wav->store_u16(channels); //CHANNELS: 2
 
-	f_wav->store_32(mix_rate);
+	f_wav->store_u32(mix_rate);
 
 	/* useless stuff the format asks for */
 
@@ -125,15 +125,15 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	audio_block_size = (mix_rate / fps) * blockalign;
 
-	f_wav->store_32(bytes_per_sec);
-	f_wav->store_16(blockalign); // block align (unused)
-	f_wav->store_16(bits_per_sample);
+	f_wav->store_u32(bytes_per_sec);
+	f_wav->store_u16(blockalign); // block align (unused)
+	f_wav->store_u16(bits_per_sample);
 
 	/* DATA CHUNK */
 
 	f_wav->store_buffer((const uint8_t *)"data", 4);
 
-	f_wav->store_32(0); //data size... wooh
+	f_wav->store_u32(0); //data size... wooh
 	wav_data_size_pos = f_wav->get_position();
 
 	return OK;
@@ -158,9 +158,9 @@ void MovieWriterPNGWAV::write_end() {
 		uint32_t total_size = 4 /* WAVE */ + 8 /* fmt+size */ + 16 /* format */ + 8 /* data+size */;
 		uint32_t datasize = f_wav->get_position() - wav_data_size_pos;
 		f_wav->seek(4);
-		f_wav->store_32(total_size + datasize);
+		f_wav->store_u32(total_size + datasize);
 		f_wav->seek(0x28);
-		f_wav->store_32(datasize);
+		f_wav->store_u32(datasize);
 	}
 }
 

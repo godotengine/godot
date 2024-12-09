@@ -261,20 +261,20 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	f->store_8('G');
-	f->store_8('S');
-	f->store_8('T');
-	f->store_8('L');
+	f->store_u8('G');
+	f->store_u8('S');
+	f->store_u8('T');
+	f->store_u8('L');
 
-	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
-	f->store_32(p_images.size()); // For 2d layers or 3d depth.
-	f->store_32(mode);
-	f->store_32(0);
+	f->store_u32(CompressedTextureLayered::FORMAT_VERSION);
+	f->store_u32(p_images.size()); // For 2d layers or 3d depth.
+	f->store_u32(mode);
+	f->store_u32(0);
 
-	f->store_32(0);
-	f->store_32(mipmap_images.size()); // Adjust the amount of mipmaps.
-	f->store_32(0);
-	f->store_32(0);
+	f->store_u32(0);
+	f->store_u32(mipmap_images.size()); // Adjust the amount of mipmaps.
+	f->store_u32(0);
+	f->store_u32(0);
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_images[0]->get_format() >= Image::FORMAT_RF) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; // These can't go as lossy.

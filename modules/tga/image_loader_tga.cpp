@@ -262,20 +262,20 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	Error err = OK;
 
 	tga_header_s tga_header;
-	tga_header.id_length = f->get_8();
-	tga_header.color_map_type = f->get_8();
-	tga_header.image_type = static_cast<tga_type_e>(f->get_8());
+	tga_header.id_length = f->get_u8();
+	tga_header.color_map_type = f->get_u8();
+	tga_header.image_type = static_cast<tga_type_e>(f->get_u8());
 
-	tga_header.first_color_entry = f->get_16();
-	tga_header.color_map_length = f->get_16();
-	tga_header.color_map_depth = f->get_8();
+	tga_header.first_color_entry = f->get_u16();
+	tga_header.color_map_length = f->get_u16();
+	tga_header.color_map_depth = f->get_u8();
 
-	tga_header.x_origin = f->get_16();
-	tga_header.y_origin = f->get_16();
-	tga_header.image_width = f->get_16();
-	tga_header.image_height = f->get_16();
-	tga_header.pixel_depth = f->get_8();
-	tga_header.image_descriptor = f->get_8();
+	tga_header.x_origin = f->get_u16();
+	tga_header.y_origin = f->get_u16();
+	tga_header.image_width = f->get_u16();
+	tga_header.image_height = f->get_u16();
+	tga_header.pixel_depth = f->get_u8();
+	tga_header.image_descriptor = f->get_u8();
 
 	bool is_encoded = (tga_header.image_type == TGA_TYPE_RLE_INDEXED || tga_header.image_type == TGA_TYPE_RLE_RGB || tga_header.image_type == TGA_TYPE_RLE_MONOCHROME);
 	bool has_color_map = (tga_header.image_type == TGA_TYPE_RLE_INDEXED || tga_header.image_type == TGA_TYPE_INDEXED);

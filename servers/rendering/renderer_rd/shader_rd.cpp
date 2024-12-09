@@ -456,18 +456,18 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	f->get_buffer((uint8_t *)header, 4);
 	ERR_FAIL_COND_V(header != String(shader_file_header), false);
 
-	uint32_t file_version = f->get_32();
+	uint32_t file_version = f->get_u32();
 	if (file_version != cache_file_version) {
 		return false; // wrong version
 	}
 
-	uint32_t variant_count = f->get_32();
+	uint32_t variant_count = f->get_u32();
 
 	ERR_FAIL_COND_V(variant_count != (uint32_t)group_to_variant_map[p_group].size(), false); //should not happen but check
 
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
-		uint32_t variant_size = f->get_32();
+		uint32_t variant_size = f->get_u32();
 		ERR_FAIL_COND_V(variant_size == 0 && variants_enabled[variant_id], false);
 		if (!variants_enabled[variant_id]) {
 			continue;
@@ -514,12 +514,12 @@ void ShaderRD::_save_to_cache(Version *p_version, int p_group) {
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
-	f->store_32(cache_file_version); // File version.
+	f->store_u32(cache_file_version); // File version.
 	uint32_t variant_count = group_to_variant_map[p_group].size();
-	f->store_32(variant_count); // Variant count.
+	f->store_u32(variant_count); // Variant count.
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
-		f->store_32(p_version->variant_data[variant_id].size()); // Stage count.
+		f->store_u32(p_version->variant_data[variant_id].size()); // Stage count.
 		f->store_buffer(p_version->variant_data[variant_id].ptr(), p_version->variant_data[variant_id].size());
 	}
 }

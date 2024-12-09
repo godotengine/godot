@@ -561,18 +561,18 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), vformat("Unable to open DDS texture file '%s'.", p_path));
 
-	uint32_t magic = f->get_32();
-	uint32_t hsize = f->get_32();
-	uint32_t flags = f->get_32();
-	uint32_t height = f->get_32();
-	uint32_t width = f->get_32();
-	uint32_t pitch = f->get_32();
-	uint32_t depth = f->get_32();
-	uint32_t mipmaps = f->get_32();
+	uint32_t magic = f->get_u32();
+	uint32_t hsize = f->get_u32();
+	uint32_t flags = f->get_u32();
+	uint32_t height = f->get_u32();
+	uint32_t width = f->get_u32();
+	uint32_t pitch = f->get_u32();
+	uint32_t depth = f->get_u32();
+	uint32_t mipmaps = f->get_u32();
 
 	// Skip reserved.
 	for (int i = 0; i < 11; i++) {
-		f->get_32();
+		f->get_u32();
 	}
 
 	// Validate.
@@ -582,22 +582,22 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Invalid or unsupported DDS texture file '%s'.", p_path));
 	}
 
-	/* uint32_t format_size = */ f->get_32();
-	uint32_t format_flags = f->get_32();
-	uint32_t format_fourcc = f->get_32();
-	uint32_t format_rgb_bits = f->get_32();
-	uint32_t format_red_mask = f->get_32();
-	uint32_t format_green_mask = f->get_32();
-	uint32_t format_blue_mask = f->get_32();
-	uint32_t format_alpha_mask = f->get_32();
+	/* uint32_t format_size = */ f->get_u32();
+	uint32_t format_flags = f->get_u32();
+	uint32_t format_fourcc = f->get_u32();
+	uint32_t format_rgb_bits = f->get_u32();
+	uint32_t format_red_mask = f->get_u32();
+	uint32_t format_green_mask = f->get_u32();
+	uint32_t format_blue_mask = f->get_u32();
+	uint32_t format_alpha_mask = f->get_u32();
 
-	/* uint32_t caps_1 = */ f->get_32();
-	uint32_t caps_2 = f->get_32();
-	/* uint32_t caps_3 = */ f->get_32();
-	/* uint32_t caps_4 = */ f->get_32();
+	/* uint32_t caps_1 = */ f->get_u32();
+	uint32_t caps_2 = f->get_u32();
+	/* uint32_t caps_3 = */ f->get_u32();
+	/* uint32_t caps_4 = */ f->get_u32();
 
 	// Skip reserved.
-	f->get_32();
+	f->get_u32();
 
 	if (f->get_position() < 128) {
 		f->seek(128);
@@ -659,11 +659,11 @@ Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_orig
 				dds_format = DDS_RGBA32F;
 			} break;
 			case DDFCC_DX10: {
-				uint32_t dxgi_format = f->get_32();
-				uint32_t dimension = f->get_32();
-				/* uint32_t misc_flags_1 = */ f->get_32();
-				uint32_t array_size = f->get_32();
-				/* uint32_t misc_flags_2 = */ f->get_32();
+				uint32_t dxgi_format = f->get_u32();
+				uint32_t dimension = f->get_u32();
+				/* uint32_t misc_flags_1 = */ f->get_u32();
+				uint32_t array_size = f->get_u32();
+				/* uint32_t misc_flags_2 = */ f->get_u32();
 
 				if (dimension == DX10D_3D) {
 					dds_type = DDST_3D;

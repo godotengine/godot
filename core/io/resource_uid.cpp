@@ -173,14 +173,14 @@ Error ResourceUID::save_to_cache() {
 	}
 
 	MutexLock l(mutex);
-	f->store_32(unique_ids.size());
+	f->store_u32(unique_ids.size());
 
 	cache_entries = 0;
 
 	for (KeyValue<ID, Cache> &E : unique_ids) {
-		f->store_64(E.key);
+		f->store_u64(E.key);
 		uint32_t s = E.value.cs.length();
-		f->store_32(s);
+		f->store_u32(s);
 		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
 		E.value.saved_to_cache = true;
 		cache_entries++;
@@ -201,10 +201,10 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		unique_ids.clear();
 	}
 
-	uint32_t entry_count = f->get_32();
+	uint32_t entry_count = f->get_u32();
 	for (uint32_t i = 0; i < entry_count; i++) {
-		int64_t id = f->get_64();
-		int32_t len = f->get_32();
+		int64_t id = f->get_u64();
+		int32_t len = f->get_u32();
 		Cache c;
 		c.cs.resize(len + 1);
 		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // out of memory
@@ -241,9 +241,9 @@ Error ResourceUID::update_cache() {
 				}
 				f->seek_end();
 			}
-			f->store_64(E.key);
+			f->store_u64(E.key);
 			uint32_t s = E.value.cs.length();
-			f->store_32(s);
+			f->store_u32(s);
 			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
 			E.value.saved_to_cache = true;
 			cache_entries++;
@@ -252,7 +252,7 @@ Error ResourceUID::update_cache() {
 
 	if (f.is_valid()) {
 		f->seek(0);
-		f->store_32(cache_entries); //update amount of entries
+		f->store_u32(cache_entries); //update amount of entries
 	}
 
 	changed = false;

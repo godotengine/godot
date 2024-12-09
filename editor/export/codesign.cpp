@@ -1120,17 +1120,17 @@ void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
 	uint32_t data_offset = 12 + blobs.size() * 8;
 
 	// Write header.
-	p_file->store_32(BSWAP32(0xfade0cc0));
-	p_file->store_32(BSWAP32(size));
-	p_file->store_32(BSWAP32(blobs.size()));
+	p_file->store_u32(BSWAP32(0xfade0cc0));
+	p_file->store_u32(BSWAP32(size));
+	p_file->store_u32(BSWAP32(blobs.size()));
 
 	// Write index.
 	for (int i = 0; i < blobs.size(); i++) {
 		if (blobs[i].is_null()) {
 			return;
 		}
-		p_file->store_32(BSWAP32(blobs[i]->get_index_type()));
-		p_file->store_32(BSWAP32(data_offset));
+		p_file->store_u32(BSWAP32(blobs[i]->get_index_type()));
+		p_file->store_u32(BSWAP32(data_offset));
 		data_offset += blobs[i]->get_size();
 	}
 

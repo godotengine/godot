@@ -33,7 +33,7 @@
 bool LipO::is_lipo(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fb->get_32();
+	uint32_t magic = fb->get_u32();
 	return (magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf);
 }
 
@@ -72,27 +72,27 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 	// Write header.
 	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
 	if (is_64) {
-		fa->store_32(0xbfbafeca);
+		fa->store_u32(0xbfbafeca);
 	} else {
-		fa->store_32(0xbebafeca);
+		fa->store_u32(0xbebafeca);
 	}
-	fa->store_32(BSWAP32(archs.size()));
+	fa->store_u32(BSWAP32(archs.size()));
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
 	for (int i = 0; i < archs.size(); i++) {
 		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
 		if (is_64) {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_64(BSWAP64(archs[i].offset));
-			fa->store_64(BSWAP64(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-			fa->store_32(0);
+			fa->store_u32(BSWAP32(archs[i].cputype));
+			fa->store_u32(BSWAP32(archs[i].cpusubtype));
+			fa->store_u64(BSWAP64(archs[i].offset));
+			fa->store_u64(BSWAP64(archs[i].size));
+			fa->store_u32(BSWAP32(archs[i].align));
+			fa->store_u32(0);
 		} else {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_32(BSWAP32(archs[i].offset));
-			fa->store_32(BSWAP32(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
+			fa->store_u32(BSWAP32(archs[i].cputype));
+			fa->store_u32(BSWAP32(archs[i].cpusubtype));
+			fa->store_u32(BSWAP32(archs[i].offset));
+			fa->store_u32(BSWAP32(archs[i].size));
+			fa->store_u32(BSWAP32(archs[i].align));
 		}
 		offset = archs[i].offset + archs[i].size;
 	}
@@ -106,7 +106,7 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {
-			fa->store_8(0);
+			fa->store_u8(0);
 		}
 		int pages = archs[i].size / 4096;
 		int remain = archs[i].size % 4096;
@@ -166,27 +166,27 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 	// Write header.
 	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
 	if (is_64) {
-		fa->store_32(0xbfbafeca);
+		fa->store_u32(0xbfbafeca);
 	} else {
-		fa->store_32(0xbebafeca);
+		fa->store_u32(0xbebafeca);
 	}
-	fa->store_32(BSWAP32(archs.size()));
+	fa->store_u32(BSWAP32(archs.size()));
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
 	for (int i = 0; i < archs.size(); i++) {
 		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
 		if (is_64) {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_64(BSWAP64(archs[i].offset));
-			fa->store_64(BSWAP64(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-			fa->store_32(0);
+			fa->store_u32(BSWAP32(archs[i].cputype));
+			fa->store_u32(BSWAP32(archs[i].cpusubtype));
+			fa->store_u64(BSWAP64(archs[i].offset));
+			fa->store_u64(BSWAP64(archs[i].size));
+			fa->store_u32(BSWAP32(archs[i].align));
+			fa->store_u32(0);
 		} else {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_32(BSWAP32(archs[i].offset));
-			fa->store_32(BSWAP32(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
+			fa->store_u32(BSWAP32(archs[i].cputype));
+			fa->store_u32(BSWAP32(archs[i].cpusubtype));
+			fa->store_u32(BSWAP32(archs[i].offset));
+			fa->store_u32(BSWAP32(archs[i].size));
+			fa->store_u32(BSWAP32(archs[i].align));
 		}
 		offset = archs[i].offset + archs[i].size;
 	}
@@ -200,7 +200,7 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {
-			fa->store_8(0);
+			fa->store_u8(0);
 		}
 		int pages = archs[i].size / 4096;
 		int remain = archs[i].size % 4096;
@@ -225,58 +225,58 @@ bool LipO::open_file(const String &p_path) {
 	fa = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("LipO: Can't open file: \"%s\".", p_path));
 
-	uint32_t magic = fa->get_32();
+	uint32_t magic = fa->get_u32();
 	if (magic == 0xbebafeca) {
 		// 32-bit fat binary, bswap.
-		uint32_t nfat_arch = BSWAP32(fa->get_32());
+		uint32_t nfat_arch = BSWAP32(fa->get_u32());
 		for (uint32_t i = 0; i < nfat_arch; i++) {
 			FatArch arch;
-			arch.cputype = BSWAP32(fa->get_32());
-			arch.cpusubtype = BSWAP32(fa->get_32());
-			arch.offset = BSWAP32(fa->get_32());
-			arch.size = BSWAP32(fa->get_32());
-			arch.align = BSWAP32(fa->get_32());
+			arch.cputype = BSWAP32(fa->get_u32());
+			arch.cpusubtype = BSWAP32(fa->get_u32());
+			arch.offset = BSWAP32(fa->get_u32());
+			arch.size = BSWAP32(fa->get_u32());
+			arch.align = BSWAP32(fa->get_u32());
 
 			archs.push_back(arch);
 		}
 	} else if (magic == 0xcafebabe) {
 		// 32-bit fat binary.
-		uint32_t nfat_arch = fa->get_32();
+		uint32_t nfat_arch = fa->get_u32();
 		for (uint32_t i = 0; i < nfat_arch; i++) {
 			FatArch arch;
-			arch.cputype = fa->get_32();
-			arch.cpusubtype = fa->get_32();
-			arch.offset = fa->get_32();
-			arch.size = fa->get_32();
-			arch.align = fa->get_32();
+			arch.cputype = fa->get_u32();
+			arch.cpusubtype = fa->get_u32();
+			arch.offset = fa->get_u32();
+			arch.size = fa->get_u32();
+			arch.align = fa->get_u32();
 
 			archs.push_back(arch);
 		}
 	} else if (magic == 0xbfbafeca) {
 		// 64-bit fat binary, bswap.
-		uint32_t nfat_arch = BSWAP32(fa->get_32());
+		uint32_t nfat_arch = BSWAP32(fa->get_u32());
 		for (uint32_t i = 0; i < nfat_arch; i++) {
 			FatArch arch;
-			arch.cputype = BSWAP32(fa->get_32());
-			arch.cpusubtype = BSWAP32(fa->get_32());
-			arch.offset = BSWAP64(fa->get_64());
-			arch.size = BSWAP64(fa->get_64());
-			arch.align = BSWAP32(fa->get_32());
-			fa->get_32(); // Skip, reserved.
+			arch.cputype = BSWAP32(fa->get_u32());
+			arch.cpusubtype = BSWAP32(fa->get_u32());
+			arch.offset = BSWAP64(fa->get_u64());
+			arch.size = BSWAP64(fa->get_u64());
+			arch.align = BSWAP32(fa->get_u32());
+			fa->get_u32(); // Skip, reserved.
 
 			archs.push_back(arch);
 		}
 	} else if (magic == 0xcafebabf) {
 		// 64-bit fat binary.
-		uint32_t nfat_arch = fa->get_32();
+		uint32_t nfat_arch = fa->get_u32();
 		for (uint32_t i = 0; i < nfat_arch; i++) {
 			FatArch arch;
-			arch.cputype = fa->get_32();
-			arch.cpusubtype = fa->get_32();
-			arch.offset = fa->get_64();
-			arch.size = fa->get_64();
-			arch.align = fa->get_32();
-			fa->get_32(); // Skip, reserved.
+			arch.cputype = fa->get_u32();
+			arch.cpusubtype = fa->get_u32();
+			arch.offset = fa->get_u64();
+			arch.size = fa->get_u64();
+			arch.align = fa->get_u32();
+			fa->get_u32(); // Skip, reserved.
 
 			archs.push_back(arch);
 		}

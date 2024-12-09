@@ -46,7 +46,7 @@ KTX_error_code ktx_read(ktxStream *stream, void *dst, const ktx_size_t count) {
 KTX_error_code ktx_skip(ktxStream *stream, const ktx_size_t count) {
 	Ref<FileAccess> *f = reinterpret_cast<Ref<FileAccess> *>(stream->data.custom_ptr.address);
 	for (ktx_size_t i = 0; i < count; ++i) {
-		(*f)->get_8();
+		(*f)->get_u8();
 	}
 	return KTX_SUCCESS;
 }

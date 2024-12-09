@@ -229,7 +229,7 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 		file->store_buffer(u8);
 
 		// Terminate string and fill the remaining part of the original string with the '\0'.
-		// Can be replaced by file->store_8('\0');
+		// Can be replaced by file->store_u8('\0');
 		Vector<uint8_t> padding_buffer;
 		padding_buffer.resize((int64_t)original_path_size - u8.size());
 		padding_buffer.fill('\0');

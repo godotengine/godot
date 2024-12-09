@@ -574,14 +574,14 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 
 	// Read and check ELF magic number.
 	{
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
 			return 0;
 		}
 	}
 
 	// Read program architecture bits from class field.
-	int bits = f->get_8() * 32;
+	int bits = f->get_u8() * 32;
 
 	// Get info about the section header table.
 	int64_t section_table_pos;
@@ -589,16 +589,16 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 	if (bits == 32) {
 		section_header_size = 40;
 		f->seek(0x20);
-		section_table_pos = f->get_32();
+		section_table_pos = f->get_u32();
 		f->seek(0x30);
 	} else { // 64
 		section_header_size = 64;
 		f->seek(0x28);
-		section_table_pos = f->get_64();
+		section_table_pos = f->get_u64();
 		f->seek(0x3c);
 	}
-	int num_sections = f->get_16();
-	int string_section_idx = f->get_16();
+	int num_sections = f->get_u16();
+	int string_section_idx = f->get_u16();
 
 	// Load the strings table.
 	uint8_t *strings;
@@ -611,12 +611,12 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 		int64_t string_data_size;
 		if (bits == 32) {
 			f->seek(f->get_position() + 0x10);
-			string_data_pos = f->get_32();
-			string_data_size = f->get_32();
+			string_data_pos = f->get_u32();
+			string_data_size = f->get_u32();
 		} else { // 64
 			f->seek(f->get_position() + 0x18);
-			string_data_pos = f->get_64();
-			string_data_size = f->get_64();
+			string_data_pos = f->get_u64();
+			string_data_size = f->get_u64();
 		}
 
 		// Read strings data.
@@ -634,14 +634,14 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 		int64_t section_header_pos = section_table_pos + i * section_header_size;
 		f->seek(section_header_pos);
 
-		uint32_t name_offset = f->get_32();
+		uint32_t name_offset = f->get_u32();
 		if (strcmp((char *)strings + name_offset, "pck") == 0) {
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
-				off = f->get_32();
+				off = f->get_u32();
 			} else { // 64
 				f->seek(section_header_pos + 0x18);
-				off = f->get_64();
+				off = f->get_u64();
 			}
 			break;
 		}

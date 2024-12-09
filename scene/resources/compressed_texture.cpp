@@ -46,21 +46,21 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is corrupt (Bad header).");
 	}
 
-	uint32_t version = f->get_32();
+	uint32_t version = f->get_u32();
 
 	if (version > FORMAT_VERSION) {
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
-	r_width = f->get_32();
-	r_height = f->get_32();
-	uint32_t df = f->get_32(); //data format
+	r_width = f->get_u32();
+	r_height = f->get_u32();
+	uint32_t df = f->get_u32(); //data format
 
 	//skip reserved
-	mipmap_limit = int(f->get_32());
+	mipmap_limit = int(f->get_u32());
 	//reserved
-	f->get_32();
-	f->get_32();
-	f->get_32();
+	f->get_u32();
+	f->get_u32();
+	f->get_u32();
 
 #ifdef TOOLS_ENABLED
 
@@ -297,11 +297,11 @@ void CompressedTexture2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_size_limit) {
-	uint32_t data_format = f->get_32();
-	uint32_t w = f->get_16();
-	uint32_t h = f->get_16();
-	uint32_t mipmaps = f->get_32();
-	Image::Format format = Image::Format(f->get_32());
+	uint32_t data_format = f->get_u32();
+	uint32_t w = f->get_u16();
+	uint32_t h = f->get_u16();
+	uint32_t mipmaps = f->get_u32();
+	Image::Format format = Image::Format(f->get_u32());
 
 	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP) {
 		//look for a PNG or WebP file inside
@@ -316,7 +316,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 		bool first = true;
 
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
-			uint32_t size = f->get_32();
+			uint32_t size = f->get_u32();
 
 			if (p_size_limit > 0 && i < (mipmaps - 1) && (sw > p_size_limit || sh > p_size_limit)) {
 				//can't load this due to size limit
@@ -396,7 +396,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 	} else if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		int sw = w;
 		int sh = h;
-		uint32_t size = f->get_32();
+		uint32_t size = f->get_u32();
 		if (p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 			//can't load this due to size limit
 			sw = MAX(sw >> 1, 1);
@@ -516,20 +516,20 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 	ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L', ERR_FILE_UNRECOGNIZED);
 
 	//stored as compressed textures (used for lossless and lossy compression)
-	uint32_t version = f->get_32();
+	uint32_t version = f->get_u32();
 
 	if (version > FORMAT_VERSION) {
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
-	r_depth = f->get_32(); //depth
-	f->get_32(); //ignored (mode)
-	f->get_32(); // ignored (data format)
+	r_depth = f->get_u32(); //depth
+	f->get_u32(); //ignored (mode)
+	f->get_u32(); // ignored (data format)
 
-	f->get_32(); //ignored
-	int mipmap_count = f->get_32();
-	f->get_32(); //ignored
-	f->get_32(); //ignored
+	f->get_u32(); //ignored
+	int mipmap_count = f->get_u32();
+	f->get_u32(); //ignored
+	f->get_u32(); //ignored
 
 	r_mipmaps = mipmap_count != 0;
 
@@ -708,22 +708,22 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture layered file is corrupt (Bad header).");
 	}
 
-	uint32_t version = f->get_32();
+	uint32_t version = f->get_u32();
 
 	if (version > FORMAT_VERSION) {
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Compressed texture file is too new.");
 	}
 
-	uint32_t layer_count = f->get_32(); //layer count
-	uint32_t type = f->get_32(); //layer count
+	uint32_t layer_count = f->get_u32(); //layer count
+	uint32_t type = f->get_u32(); //layer count
 	ERR_FAIL_COND_V((int)type != layered_type, ERR_INVALID_DATA);
 
-	uint32_t df = f->get_32(); //data format
-	mipmap_limit = int(f->get_32());
+	uint32_t df = f->get_u32(); //data format
+	mipmap_limit = int(f->get_u32());
 	//reserved
-	f->get_32();
-	f->get_32();
-	f->get_32();
+	f->get_u32();
+	f->get_u32();
+	f->get_u32();
 
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;

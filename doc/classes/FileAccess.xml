@@ -99,25 +99,25 @@
 				[b]Note:[/b] Only call [method flush] when you actually need it. Otherwise, it will decrease performance due to constant disk writes.
 			</description>
 		</method>
-		<method name="get_8" qualifiers="const">
+		<method name="get_8" qualifiers="const" deprecated="Use [method get_u8] or [method get_s8] instead.">
 			<return type="int" />
 			<description>
 				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
-		<method name="get_16" qualifiers="const">
+		<method name="get_16" qualifiers="const" deprecated="Use [method get_u16] or [method get_s16] instead.">
 			<return type="int" />
 			<description>
 				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
-		<method name="get_32" qualifiers="const">
+		<method name="get_32" qualifiers="const" deprecated="Use [method get_u32] or [method get_s32] instead.">
 			<return type="int" />
 			<description>
 				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
-		<method name="get_64" qualifiers="const">
+		<method name="get_64" qualifiers="const" deprecated="Use [method get_u64] or [method get_s64] instead.">
 			<return type="int" />
 			<description>
 				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
@@ -273,11 +273,59 @@
 				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
+		<method name="get_s8" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 8 bits from the file as a signed integer. See [method store_s8] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_s16" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 16 bits from the file as a signed integer. See [method store_s16] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_s32" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 32 bits from the file as a signed integer. See [method store_s32] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_s64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 64 bits from the file as a signed integer. See [method store_s64] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
 		<method name="get_sha256" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_u8" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 8 bits from the file as an unsigned integer. See [method store_u8] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_u16" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 16 bits from the file as an unsigned integer. See [method store_u16] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_u32" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 32 bits from the file as an unsigned integer. See [method store_u32] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_u64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the next 64 bits from the file as an unsigned integer. See [method store_u64] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
@@ -394,69 +442,37 @@
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
-		<method name="store_8">
+		<method name="store_8" deprecated="Use [method store_u8] or [method store_s8] instead.">
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 8 bits in the file.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
-				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
+				To store a signed integer, use [method store_s8].
 			</description>
 		</method>
-		<method name="store_16">
+		<method name="store_16" deprecated="Use [method store_u16] or [method store_s16] instead.">
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 16 bits in the file.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
-				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
-				[codeblocks]
-				[gdscript]
-				const MAX_15B = 1 &lt;&lt; 15
-				const MAX_16B = 1 &lt;&lt; 16
-
-				func unsigned16_to_signed(unsigned):
-				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
-
-				func _ready():
-				    var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
-				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
-				    f.store_16(121) # In bounds, will store 121.
-				    f.seek(0) # Go back to start to read the stored value.
-				    var read1 = f.get_16() # 65494
-				    var read2 = f.get_16() # 121
-				    var converted1 = unsigned16_to_signed(read1) # -42
-				    var converted2 = unsigned16_to_signed(read2) # 121
-				[/gdscript]
-				[csharp]
-				public override void _Ready()
-				{
-				    using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
-				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
-				    f.Store16(121); // In bounds, will store 121.
-				    f.Seek(0); // Go back to start to read the stored value.
-				    ushort read1 = f.Get16(); // 65494
-				    ushort read2 = f.Get16(); // 121
-				    short converted1 = (short)read1; // -42
-				    short converted2 = (short)read2; // 121
-				}
-				[/csharp]
-				[/codeblocks]
+				To store a signed integer, use [method store_s16].
 			</description>
 		</method>
-		<method name="store_32">
+		<method name="store_32" deprecated="Use [method store_u32] or [method store_s32] instead.">
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
 				Stores an integer as 32 bits in the file.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
-				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
+				To store a signed integer, use [method store_s32].
 			</description>
 		</method>
-		<method name="store_64">
+		<method name="store_64" deprecated="Use [method store_u64] or [method store_s64] instead.">
 			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
@@ -531,12 +547,84 @@
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
+		<method name="store_s8">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores a signed integer as 8 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][-128, 127][/code]. Using any other value is undefined behavior.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_s16">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores a signed integer as 16 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][-32768, 32767][/code]. Using any other value is undefined behavior.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_s32">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores a signed integer as 32 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][-2147483648, 2147483647][/code]. Using any other value is undefined behavior.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_s64">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an integer as 64 bits in the file.
+				[b]Note:[/b] The [param value] must lie in the interval [code][-9223372036854775808, 9223372036854775807][/code] (i.e. be a valid [int] value).
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
 		<method name="store_string">
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
 				Stores [param string] in the file without a newline character ([code]\n[/code]), encoding the text as UTF-8.
 				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_u8">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an unsigned integer as 8 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_u16">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an unsigned integer as 16 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_u32">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an unsigned integer as 32 bits in the file.
+				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_u64">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Stores an unsigned integer as 64 bits in the file.
+				[b]Note:[/b] The [param value] must lie in the interval [code][0, 2^63 - 1][/code] (i.e. be a valid [int] value).
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
