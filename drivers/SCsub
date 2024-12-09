@@ -19,7 +19,7 @@ if env["platform"] == "ios" or env["platform"] == "macos":
 SConscript("pulseaudio/SCsub")
 if env["platform"] == "windows":
     SConscript("wasapi/SCsub")
-    if not env.msvc:
+    if not env.msvc and (env["use_mingw"] or not env["use_llvm"]):
         SConscript("backtrace/SCsub")
 if env["xaudio2"]:
     if "xaudio2" not in supported:

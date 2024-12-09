@@ -74,6 +74,9 @@ if env["windows_subsystem"] == "gui":
     if env.msvc:
         env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env_wrap.Append(LINKFLAGS=["version.lib"])
+    elif not env["use_mingw"] and env["use_llvm"]:
+        env_wrap.Append(LINKFLAGS=["-Wl,-subsystem:console"])
+        env_wrap.Append(LIBS=["version"])
     else:
         env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
         env_wrap.Append(LIBS=["version"])

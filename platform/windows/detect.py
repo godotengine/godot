@@ -194,6 +194,7 @@ def get_opts():
         ),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
+        BoolVariable("use_dwarf", "Produce DWARF debug symbols instead of PDB when using the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("use_ubsan", "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
@@ -331,6 +332,34 @@ def setup_mingw(env: "SConsEnvironment"):
     env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
     print("Using MinGW, arch %s" % (env["arch"]))
+
+
+def setup_llvm(env):
+    """Set up env for use with clang"""
+
+    Version = False
+
+    try:
+        out = subprocess.Popen(
+            "clang --version",
+            shell=True,
+            encoding="utf-8",
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        outs, errs = out.communicate()
+        if out.returncode == 0:
+            import re
+
+            Version = re.search("^clang version ([0-9\\.]+)\n", outs).group(1)
+    except Exception:
+        pass
+
+    if not Version:
+        print_error("CLang could not be found, make sure it is installed and in PATH.")
+        sys.exit(255)
+
+    print("Found clang version %s, arch %s" % (Version, env["arch"]))
 
 
 def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
@@ -900,6 +929,201 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
 
+def configure_llvm(env: "SConsEnvironment"):
+    env.use_windows_spawn_fix()
+
+    if env["target"] != "template_release" and env.dev_build:
+        # Allow big objects. It's supposed not to have drawbacks but seems to break
+        # GCC LTO, so enabling for debug builds only (which are not built with LTO
+        # and are the only ones with too big objects).
+        env.Append(CCFLAGS=["-Wa,-mbig-obj"])
+
+    if env["windows_subsystem"] == "gui":
+        env.Append(LINKFLAGS=["-Wl,-subsystem:windows"])
+    else:
+        env.Append(LINKFLAGS=["-Wl,-subsystem:console"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
+
+    ## Compiler configuration
+
+    if os.name != "nt":
+        env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
+
+    if env["arch"] == "x86_32":
+        if env["use_static_cpp"]:
+            env.Append(LINKFLAGS=["-static"])
+            env.Append(LINKFLAGS=["-static-libgcc"])
+            env.Append(LINKFLAGS=["-static-libstdc++"])
+    else:
+        if env["use_static_cpp"]:
+            env.Append(LINKFLAGS=["-static"])
+
+    # FIXME: Temporarily disabled, because llvm doesn't like the assembly
+    # if env["arch"] in ["x86_32", "x86_64"]:
+    #    env["x86_libtheora_opt_gcc"] = True
+
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
+    env["CC"] = "clang"
+    env["CXX"] = "clang++"
+    env["AS"] = "clang"  # CLang can act as an assembler, so it is not usually bundled with llvm-as
+    env["AR"] = "llvm-ar"
+    env["RANLIB"] = "llvm-ranlib"
+    env.extra_suffix = ".llvm" + env.extra_suffix
+
+    ## LTO
+
+    if env["lto"] == "auto":  # Full LTO for production with LLVM.
+        env["lto"] = "full"
+
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(LINKFLAGS=["-flto"])
+
+    if env["use_asan"]:
+        env.Append(LINKFLAGS=["-Wl,-stack:" + str(STACK_SIZE_SANITIZERS)])
+    else:
+        env.Append(LINKFLAGS=["-Wl,-stack:" + str(STACK_SIZE)])
+
+    # Sanitizers
+
+    if int(env["target_win_version"], 16) < 0x0601:
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)
+
+    if env["use_asan"] or env["use_ubsan"]:
+        if env["arch"] not in ["x86_32", "x86_64"]:
+            print("Sanitizers are only supported for x86_32 and x86_64.")
+            sys.exit(255)
+
+        env.extra_suffix += ".san"
+        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
+        san_flags = []
+        if env["use_asan"]:
+            san_flags.append("-fsanitize=address")
+        if env["use_ubsan"]:
+            san_flags.append("-fsanitize=undefined")
+            # Disable the vptr check since it gets triggered on any COM interface calls.
+            san_flags.append("-fno-sanitize=vptr")
+        env.Append(CFLAGS=san_flags)
+        env.Append(CCFLAGS=san_flags)
+        env.Append(LINKFLAGS=san_flags)
+
+    if os.name == "nt" and methods._colorize:
+        env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
+
+    # FIXME: Using thin AR causes link to fail. Possible incompatibility with MSVC linker. Force use of lld instead?
+    # if get_is_ar_thin_supported(env):
+    #     env.Append(ARFLAGS=["--thin"])
+
+    ## Compile flags
+
+    env.Append(CPPDEFINES=[])
+    env.Append(
+        CPPDEFINES=[
+            "WINDOWS_ENABLED",
+            "WASAPI_ENABLED",
+            "WINMIDI_ENABLED",
+            "TYPED_METHOD_BIND",
+            "WIN32",
+            # Prevent Windows SDK headers from defining min and max macros,
+            # which conflict with min and max templates
+            "NOMINMAX",
+            # The inline assembly trick used for older MSVC versions does not work for LLVM.
+            # Fall back to portable implementation.
+            # An alternative is to define __MINGW32__ but this would influence other libraries
+            "R128_STDC_ONLY",
+            ("WINVER", env["target_win_version"]),
+            ("_WIN32_WINNT", env["target_win_version"]),
+        ]
+    )
+    env.Append(
+        LIBS=[
+            "avrt",
+            "bcrypt",
+            "crypt32",
+            "dinput8",
+            "dsound",
+            "dwmapi",
+            "dwrite",
+            "dxguid",
+            "gdi32",
+            "imm32",
+            "iphlpapi",
+            "kernel32",
+            "ntdll",
+            "ole32",
+            "oleaut32",
+            "sapi",
+            "shell32",
+            "advapi32",
+            "shlwapi",
+            "user32",
+            "uuid",
+            "wbemuuid",
+            "winmm",
+            "ws2_32",
+            "wsock32",
+        ]
+    )
+
+    if env.debug_features:
+        env.Append(LIBS=["psapi", "dbghelp"])
+
+    if env["vulkan"]:
+        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        if not env["use_volk"]:
+            env.Append(LIBS=["vulkan"])
+
+    if env["d3d12"]:
+        # Check whether we have d3d12 dependencies installed.
+        if not os.path.exists(env["mesa_libs"]):
+            print_error(
+                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+            )
+            sys.exit(255)
+
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.Append(LIBS=["dxgi", "dxguid"])
+
+        # PIX
+        if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
+            env["use_pix"] = False
+
+        if env["use_pix"]:
+            arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
+
+            env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
+            env.Append(LIBS=["WinPixEventRuntime"])
+
+        env.Append(LIBPATH=[env["mesa_libs"] + "/bin"])
+        env.Append(LIBS=["libNIR.windows." + env["arch"]])
+        env.Append(LIBS=["version"])  # Mesa dependency.
+
+    if env["opengl3"]:
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
+        if env["angle_libs"] != "":
+            env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
+            env.Append(LIBPATH=[env["angle_libs"]])
+            env.Append(
+                LIBS=[
+                    "EGL.windows." + env["arch"],
+                    "GLES.windows." + env["arch"],
+                    "ANGLE.windows." + env["arch"],
+                ]
+            )
+            env.Append(LIBS=["dxgi", "d3d9", "d3d11"])
+        env.Prepend(CPPPATH=["#thirdparty/angle/include"])
+
+    # resrc
+    env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
+
+
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
@@ -913,7 +1137,10 @@ def configure(env: "SConsEnvironment"):
         env["ENV"]["TMP"] = os.environ["TMP"]
 
     # First figure out which compiler, version, and target arch we're using
-    if os.getenv("VCINSTALLDIR") and detect_build_env_arch() and not env["use_mingw"]:
+    if env["use_llvm"] and not env["use_mingw"]:
+        setup_llvm(env)
+        env.msvc = False
+    elif os.getenv("VCINSTALLDIR") and detect_build_env_arch() and not env["use_mingw"]:
         setup_msvc_manual(env)
         env.msvc = True
         vcvars_msvc_config = True
@@ -928,6 +1155,9 @@ def configure(env: "SConsEnvironment"):
     # Now set compiler/linker flags
     if env.msvc:
         configure_msvc(env, vcvars_msvc_config)
+
+    elif env["use_llvm"]:
+        configure_llvm(env)
 
     else:  # MinGW
         configure_mingw(env)

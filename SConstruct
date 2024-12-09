@@ -139,6 +139,8 @@ elif platform_arg == "web":
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
     custom_tools = ["mingw"]
+elif os.name == "nt" and methods.get_cmdline_bool("use_llvm", False):
+    custom_tools = ["clang", "clangxx", "ar", "link"]
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -731,9 +733,17 @@ if env.msvc:
         env.Append(CCFLAGS=["/Od"])
 else:
     if env["debug_symbols"]:
-        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-        # otherwise addr2line doesn't understand them
-        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env["platform"] == "windows" and env["use_llvm"] and not env["use_dwarf"]:
+            # On Windows when using LLVM the -gcodeview creates debug symbols compatible
+            # with Microsoft debuggers.
+            # Additionally -g must be sent to the linker to make it actually produce
+            # a PDB file containing the debug symbols, otherwise they are discarded.
+            env.Append(CCFLAGS=["-gcodeview"])
+            env.Append(LINKFLAGS=["-g"])
+        else:
+            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+            # otherwise addr2line doesn't understand them
+            env.Append(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
             env.Append(CCFLAGS=["-g3"])
