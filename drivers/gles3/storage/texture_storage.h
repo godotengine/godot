@@ -216,6 +216,9 @@ struct Texture {
 	RenderingServerTypes::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
 	void *detect_roughness_callback_ud = nullptr;
 
+	RenderingServerTypes::TextureDetectCallback detect_height_callback = nullptr;
+	void *detect_height_callback_ud = nullptr;
+
 	CanvasTexture *canvas_texture = nullptr;
 
 	void copy_from(const Texture &o) {
@@ -246,6 +249,8 @@ struct Texture {
 		detect_normal_callback_ud = o.detect_normal_callback_ud;
 		detect_roughness_callback = o.detect_roughness_callback;
 		detect_roughness_callback_ud = o.detect_roughness_callback_ud;
+		detect_height_callback = o.detect_height_callback;
+		detect_height_callback_ud = o.detect_height_callback_ud;
 	}
 
 	// texture state
@@ -591,6 +596,7 @@ public:
 	void texture_set_detect_srgb_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
+	virtual void texture_set_detect_height_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) override;
 

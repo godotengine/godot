@@ -254,6 +254,7 @@ public:
 	FUNC3(texture_set_detect_3d_callback, RID, RenderingServerTypes::TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_normal_callback, RID, RenderingServerTypes::TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_roughness_callback, RID, RenderingServerTypes::TextureDetectRoughnessCallback, void *)
+	FUNC3(texture_set_detect_height_callback, RID, RenderingServerTypes::TextureDetectCallback, void *)
 
 	FUNC2(texture_set_path, RID, const String &)
 	FUNC1RC(String, texture_get_path, RID)

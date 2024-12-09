@@ -1912,6 +1912,14 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, Render
 	texture->detect_roughness_callback_ud = p_userdata;
 }
 
+void TextureStorage::texture_set_detect_height_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(texture);
+
+	texture->detect_height_callback = p_callback;
+	texture->detect_height_callback_ud = p_userdata;
+}
+
 void TextureStorage::texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) {
 	for (const RID &rid : texture_owner.get_owned_list()) {
 		Texture *t = texture_owner.get_or_null(rid);
