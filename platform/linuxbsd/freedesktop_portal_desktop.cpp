@@ -574,7 +574,7 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface, uint
 					dbus_message_iter_recurse(&iter, &iter_ver);
 					dbus_uint32_t ver_code;
 					dbus_message_iter_get_basic(&iter_ver, &ver_code);
-					print_verbose(vformat("PortalDesktop: %s version %d detected, version %d required.", p_iface, ver_code, p_minimum_version));
+					PRINT_VERBOSE(vformat("PortalDesktop: %s version %d detected, version %d required.", p_iface, ver_code, p_minimum_version));
 					supported = ver_code >= p_minimum_version;
 				}
 				dbus_message_unref(reply);

@@ -832,7 +832,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	// Set the compressed data to the image.
 	r_img->set_data(img_width, img_height, r_img->has_mipmaps(), dest_format, dst_data);
 
-	print_verbose(
+	PRINT_VERBOSE(
 			vformat("Betsy: Encoding a %dx%d image with %d mipmaps as %s took %d ms.",
 					img_width,
 					img_height,
