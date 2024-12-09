@@ -458,7 +458,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 	}
 
 	for (const ufbx_mesh *fbx_mesh : fbx_scene->meshes) {
-		print_verbose("FBX: Parsing mesh: " + itos(int64_t(fbx_mesh->typed_id)));
+		PRINT_VERBOSE("FBX: Parsing mesh: " + itos(int64_t(fbx_mesh->typed_id)));
 
 		static const Mesh::PrimitiveType primitive_types[] = {
 			Mesh::PRIMITIVE_TRIANGLES,
@@ -488,7 +488,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 		Vector<float> blend_weights;
 		Vector<int> blend_channels;
 		if (use_blend_shapes) {
-			print_verbose("FBX: Mesh has targets");
+			PRINT_VERBOSE("FBX: Mesh has targets");
 
 			import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
@@ -766,7 +766,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 				Array morphs;
 				//blend shapes
 				if (use_blend_shapes) {
-					print_verbose("FBX: Mesh has targets");
+					PRINT_VERBOSE("FBX: Mesh has targets");
 
 					import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
@@ -905,7 +905,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 		p_state->meshes.push_back(mesh);
 	}
 
-	print_verbose("FBX: Total meshes: " + itos(p_state->meshes.size()));
+	PRINT_VERBOSE("FBX: Total meshes: " + itos(p_state->meshes.size()));
 
 	return OK;
 }
@@ -1100,7 +1100,7 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 		p_state->textures.push_back(texture);
 	}
 
-	print_verbose("FBX: Total images: " + itos(p_state->images.size()));
+	PRINT_VERBOSE("FBX: Total images: " + itos(p_state->images.size()));
 
 	return OK;
 }
@@ -1318,7 +1318,7 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 		p_state->materials.push_back(material);
 	}
 
-	print_verbose("Total materials: " + itos(p_state->materials.size()));
+	PRINT_VERBOSE("Total materials: " + itos(p_state->materials.size()));
 
 	return OK;
 }
@@ -1346,7 +1346,7 @@ Error FBXDocument::_parse_cameras(Ref<FBXState> p_state) {
 		p_state->cameras.push_back(camera);
 	}
 
-	print_verbose("FBX: Total cameras: " + itos(p_state->cameras.size()));
+	PRINT_VERBOSE("FBX: Total cameras: " + itos(p_state->cameras.size()));
 
 	return OK;
 }
@@ -1439,7 +1439,7 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 		p_state->animations.push_back(animation);
 	}
 
-	print_verbose("FBX: Total animations '" + itos(p_state->animations.size()) + "'.");
+	PRINT_VERBOSE("FBX: Total animations '" + itos(p_state->animations.size()) + "'.");
 
 	return OK;
 }
@@ -1471,7 +1471,7 @@ BoneAttachment3D *FBXDocument::_generate_bone_attachment(Ref<FBXState> p_state, 
 	Ref<GLTFNode> fbx_node = p_state->nodes[p_node_index];
 	Ref<GLTFNode> bone_node = p_state->nodes[p_bone_index];
 	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
-	print_verbose("FBX: Creating bone attachment for: " + fbx_node->get_name());
+	PRINT_VERBOSE("FBX: Creating bone attachment for: " + fbx_node->get_name());
 
 	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
 
@@ -1486,7 +1486,7 @@ ImporterMeshInstance3D *FBXDocument::_generate_mesh_instance(Ref<FBXState> p_sta
 	ERR_FAIL_INDEX_V(fbx_node->mesh, p_state->meshes.size(), nullptr);
 
 	ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
-	print_verbose("FBX: Creating mesh for: " + fbx_node->get_name());
+	PRINT_VERBOSE("FBX: Creating mesh for: " + fbx_node->get_name());
 
 	p_state->scene_mesh_instances.insert(p_node_index, mi);
 	Ref<GLTFMesh> mesh = p_state->meshes.write[fbx_node->mesh];
@@ -1506,7 +1506,7 @@ Camera3D *FBXDocument::_generate_camera(Ref<FBXState> p_state, const GLTFNodeInd
 
 	ERR_FAIL_INDEX_V(fbx_node->camera, p_state->cameras.size(), nullptr);
 
-	print_verbose("FBX: Creating camera for: " + fbx_node->get_name());
+	PRINT_VERBOSE("FBX: Creating camera for: " + fbx_node->get_name());
 
 	Ref<GLTFCamera> c = p_state->cameras[fbx_node->camera];
 	return c->to_node();
@@ -1517,7 +1517,7 @@ Light3D *FBXDocument::_generate_light(Ref<FBXState> p_state, const GLTFNodeIndex
 
 	ERR_FAIL_INDEX_V(fbx_node->light, p_state->lights.size(), nullptr);
 
-	print_verbose("FBX: Creating light for: " + fbx_node->get_name());
+	PRINT_VERBOSE("FBX: Creating light for: " + fbx_node->get_name());
 
 	Ref<GLTFLight> l = p_state->lights[fbx_node->light];
 	Light3D *light = nullptr;
@@ -1595,7 +1595,7 @@ Node3D *FBXDocument::_generate_spatial(Ref<FBXState> p_state, const GLTFNodeInde
 	Ref<GLTFNode> fbx_node = p_state->nodes[p_node_index];
 
 	Node3D *spatial = memnew(Node3D);
-	print_verbose("FBX: Converting spatial: " + fbx_node->get_name());
+	PRINT_VERBOSE("FBX: Converting spatial: " + fbx_node->get_name());
 
 	return spatial;
 }
@@ -2361,7 +2361,7 @@ Error FBXDocument::_parse_lights(Ref<FBXState> p_state) {
 		light->set_additional_data("GODOT_fbx_light", additional_data);
 		p_state->lights.push_back(light);
 	}
-	print_verbose("FBX: Total lights: " + itos(p_state->lights.size()));
+	PRINT_VERBOSE("FBX: Total lights: " + itos(p_state->lights.size()));
 	return OK;
 }
 
@@ -2464,7 +2464,7 @@ Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
 		ERR_FAIL_COND_V(SkinTool::_verify_skin(p_state->nodes, skin), ERR_PARSE_ERROR);
 	}
 
-	print_verbose("FBX: Total skins: " + itos(p_state->skins.size()));
+	PRINT_VERBOSE("FBX: Total skins: " + itos(p_state->skins.size()));
 
 	for (HashMap<GLTFNodeIndex, bool>::Iterator it = joint_mapping.begin(); it != joint_mapping.end(); ++it) {
 		GLTFNodeIndex node_index = it->key;

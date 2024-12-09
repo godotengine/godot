@@ -3559,9 +3559,9 @@ RenderForwardMobile::RenderForwardMobile() {
 
 	disable_ubershaders = RD::get_singleton()->get_driver_workarounds().disable_ubershaders;
 	if (disable_ubershaders) {
-		print_verbose("Ubershaders: Disabled");
+		PRINT_VERBOSE("Ubershaders: Disabled");
 	} else {
-		print_verbose("Ubershaders: Enabled");
+		PRINT_VERBOSE("Ubershaders: Enabled");
 	}
 
 	sky.set_texture_format(_render_buffers_get_preferred_color_format());

@@ -246,14 +246,14 @@ void TTSDriverOneCore::stop() {
 
 bool TTSDriverOneCore::init() {
 	if (!ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 1)) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, API contract not present!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, API contract not present!");
 		return false;
 	}
 	if (SpeechSynthesizer::AllVoices().Size() == 0) {
-		print_verbose("Text-to-Speech: Cannot initialize OneCore driver, no voices found!");
+		PRINT_VERBOSE("Text-to-Speech: Cannot initialize OneCore driver, no voices found!");
 		return false;
 	}
-	print_verbose("Text-to-Speech: OneCore initialized.");
+	PRINT_VERBOSE("Text-to-Speech: OneCore initialized.");
 	return true;
 }
 
