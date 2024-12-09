@@ -37,6 +37,7 @@
 #include "core/templates/rid.h"
 #include "core/variant/variant.h"
 #include "rendering_server.h"
+#include "xr_server.compat.inc"
 
 class XRInterface;
 class XRTracker;
@@ -138,12 +139,7 @@ protected:
 
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-	void _add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
-	void _remove_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
-	Ref<XRPositionalTracker> _get_tracker_bind_compat_90645(const StringName &p_name) const;
-#endif
+	COMPAT_HEADER(XRServer)
 
 public:
 	static XRMode get_xr_mode();
