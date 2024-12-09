@@ -934,6 +934,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			push_error(vformat(R"(Could not find nested type "%s" under base "%s".)", p_type->type_chain[1]->name, result.to_string()), p_type->type_chain[1]);
 			return bad_type;
 		}
+	} else {
+		p_type->type_chain[0]->set_datatype(result);
 	}
 
 	if (!p_type->container_types.is_empty()) {

@@ -34,13 +34,16 @@
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
+#include "core/templates/hash_map.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
@@ -49,7 +52,9 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
@@ -375,6 +380,11 @@ void ScriptTextEditor::reload_text() {
 	if (editor_enabled) {
 		_validate_script();
 	}
+}
+
+String ScriptTextEditor::get_text() {
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	return text_editor->get_text();
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
@@ -1202,6 +1212,34 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 }
 
+void ScriptTextEditor::_refactor_rename_symbol_scripts(void *p_ud, const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
+	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
+	ste->_refactor_rename_symbol_script(p_code, p_symbol, p_new_symbol, r_result);
+}
+
+void ScriptTextEditor::_refactor_rename_symbol_script(const String &p_code, const String &p_symbol, const String &p_new_symbol, ScriptLanguage::RefactorRenameSymbolResult &r_result) {
+	r_result.matches.clear();
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base) {
+		base = _find_node_for_script(base, base, script);
+	}
+
+	HashMap<String, String> unsaved_scripts_source_code;
+	LocalVector<ScriptEditorBase *> open_script_editors = ScriptEditor::get_singleton()->get_open_script_editors();
+	Vector<Ref<Script>> open_scripts = ScriptEditor::get_singleton()->get_open_scripts();
+	Vector<String> unsaved_scripts = ScriptEditor::get_singleton()->get_unsaved_scripts();
+	for (const String &unsaved_script : unsaved_scripts) {
+		for (ScriptEditorBase *open_script_editor : open_script_editors) {
+			if (open_script_editor->get_edited_resource()->get_path() == unsaved_script) {
+				unsaved_scripts_source_code[unsaved_script] = open_script_editor->get_text();
+			}
+		}
+	}
+
+	script->get_language()->refactor_rename_symbol_code(p_code, p_symbol, script->get_path(), base, unsaved_scripts_source_code, r_result);
+}
+
 void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->clear();
 	breakpoints_menu->reset_size();
@@ -1816,6 +1854,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_COMPLETE: {
 			tx->request_code_completion(true);
+		} break;
+		case EDIT_REFACTOR_RENAME_SYMBOL: {
+			tx->request_refactor(CodeEdit::RefactorKind::REFACTOR_KIND_RENAME);
 		} break;
 		case EDIT_AUTO_INDENT: {
 			String text = tx->get_text();
@@ -2650,17 +2691,24 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
 		bool goto_definition = false;
+		bool can_rename = false;
 
 		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
+			can_rename = true;
 		} else {
 			Node *base = get_tree()->get_edited_scene_root();
 			if (base) {
 				base = _find_node_for_script(base, base, script);
 			}
-			ScriptLanguage::LookupResult result;
-			if (script->get_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
+			ScriptLanguage::LookupResult lookup_result;
+			if (script->get_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, lookup_result) == OK) {
 				open_docs = true;
+			}
+			ScriptLanguage::RefactorRenameSymbolResult rename_result;
+			_refactor_rename_symbol_script(tx->get_text_for_code_completion(), word_at_pos, "", rename_result);
+			if (!rename_result.has_failed()) {
+				can_rename = true;
 			}
 		}
 
@@ -2738,7 +2786,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				color_position.z = end;
 			}
 		}
-		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
+		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, can_rename, local_pos);
 	}
 }
 
@@ -2767,7 +2815,7 @@ void ScriptTextEditor::_prepare_edit_menu() {
 	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
 }
 
-void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos) {
+void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, bool p_can_rename, Vector2 p_pos) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
@@ -2801,10 +2849,13 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 	}
 
-	if (p_color || p_open_docs || p_goto_definition) {
+	if (p_color || p_open_docs || p_goto_definition || p_can_rename) {
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+		}
+		if (p_can_rename) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/refactor_rename_symbol"), EDIT_REFACTOR_RENAME_SYMBOL);
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2912,6 +2963,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	}
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/refactor_rename_symbol"), EDIT_REFACTOR_RENAME_SYMBOL);
+	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_final_newlines"), EDIT_TRIM_FINAL_NEWLINES);
 	{
@@ -2922,8 +2975,6 @@ void ScriptTextEditor::_enable_code_editor() {
 		sub_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 		edit_menu->get_popup()->add_submenu_node_item(TTRC("Indentation"), sub_menu);
 	}
-	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
-	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
 		sub_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
@@ -2933,6 +2984,9 @@ void ScriptTextEditor::_enable_code_editor() {
 		edit_menu->get_popup()->add_submenu_node_item(TTRC("Convert Case"), sub_menu);
 	}
 	edit_menu->get_popup()->add_submenu_node_item(TTRC("Syntax Highlighter"), highlighter_menu);
+	edit_menu->get_popup()->add_separator();
+
+	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 	highlighter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_change_syntax_highlighter));
 
 	edit_hb->add_child(search_menu);
@@ -2974,6 +3028,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->add_theme_constant_override("separation", 2);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
+	code_editor->set_refactor_rename_symbol_func(_refactor_rename_symbol_scripts, this);
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
@@ -3130,6 +3185,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTRC("Convert Indent to Spaces"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTRC("Convert Indent to Tabs"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTRC("Auto Indent"), KeyModifierMask::CMD_OR_CTRL | Key::I);
+	ED_SHORTCUT_ARRAY("script_text_editor/refactor_rename_symbol", TTR("Rename Symbol"), { int32_t(Key::F2), int32_t(KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R) });
 
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/find", TTRC("Find..."), KeyModifierMask::CMD_OR_CTRL | Key::F);
 
