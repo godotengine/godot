@@ -1012,7 +1012,7 @@ void VariantUtilityFunctions::_print_verbose(const Variant **p_args, int p_arg_c
 			}
 		}
 
-		// No need to use `print_verbose()` as this call already only happens
+		// No need to use `PRINT_VERBOSE()` as this call already only happens
 		// when verbose mode is enabled. This avoids performing string argument concatenation
 		// when not needed.
 		print_line(s);
