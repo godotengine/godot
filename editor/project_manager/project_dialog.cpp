@@ -245,8 +245,10 @@ String ProjectDialog::_get_target_path() {
 	} else if (mode == MODE_IMPORT) {
 		path = install_path->get_text();
 	}
-	if (project_name_suffix->is_visible() || install_name_suffix->is_visible()) {
-		path = path.path_join(auto_dir);
+	if (project_name_suffix->is_visible()) {
+		path = path.path_join(project_name_suffix->get_text());
+	} else if (install_name_suffix->is_visible()) {
+		path = path.path_join(install_name_suffix->get_text());
 	}
 	return path;
 }
@@ -288,9 +290,11 @@ void ProjectDialog::_update_target_auto_dir() {
 
 void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 	if (p_pressed) {
-		project_name_suffix->set_text("/" + auto_dir);
-		install_name_suffix->set_text("/" + auto_dir);
+		project_name_suffix->set_text(auto_dir);
+		install_name_suffix->set_text(auto_dir);
 	}
+	project_name_joining_slash->set_visible(p_pressed && mode == MODE_NEW);
+	install_name_joining_slash->set_visible(p_pressed && mode == MODE_IMPORT);
 	project_name_suffix->set_visible(p_pressed && mode == MODE_NEW);
 	install_name_suffix->set_visible(p_pressed && mode == MODE_IMPORT);
 	_validate_path();
@@ -816,12 +820,24 @@ ProjectDialog::ProjectDialog() {
 	install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	iphb->add_child(install_path);
+	
+	project_name_joining_slash = memnew(Label);
+	project_name_joining_slash->set_text("/");
+	project_name_joining_slash->hide();
+	pphb->add_child(project_name_joining_slash);
+	
+	install_name_joining_slash = memnew(Label);
+	install_name_joining_slash->set_text("/");
+	install_name_joining_slash->hide();
+	iphb->add_child(install_name_joining_slash);
 
-	project_name_suffix = memnew(Label);
+	project_name_suffix = memnew(LineEdit);
+	project_name_suffix->set_expand_to_text_length_enabled(true);
 	project_name_suffix->hide();
 	pphb->add_child(project_name_suffix);
 
-	install_name_suffix = memnew(Label);
+	install_name_suffix = memnew(LineEdit);
+	install_name_suffix->set_expand_to_text_length_enabled(true);
 	install_name_suffix->hide();
 	iphb->add_child(install_name_suffix);
 
@@ -950,6 +966,8 @@ ProjectDialog::ProjectDialog() {
 	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
 	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
 	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	project_name_suffix->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	install_name_suffix->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 

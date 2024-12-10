@@ -79,8 +79,10 @@ private:
 	Ref<ButtonGroup> renderer_button_group;
 
 	Label *msg = nullptr;
-	Label *project_name_suffix = nullptr;
-	Label *install_name_suffix = nullptr;
+	Label *project_name_joining_slash = nullptr;
+	Label *install_name_joining_slash = nullptr;
+	LineEdit *project_name_suffix = nullptr;
+	LineEdit *install_name_suffix = nullptr;
 	LineEdit *project_name = nullptr;
 	LineEdit *project_path = nullptr;
 	LineEdit *install_path = nullptr;
