@@ -432,6 +432,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
+	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }
 	_FORCE_INLINE_ bool containsn(const char *p_str) const { return findn(p_str) != -1; }
 	_FORCE_INLINE_ bool containsn(const String &p_str) const { return findn(p_str) != -1; }
 

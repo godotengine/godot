@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  core_string_names.cpp                                                 */
+/*  color_palette.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core_string_names.h"
+#ifndef COLOR_PALETTE_H
+#define COLOR_PALETTE_H
 
-CoreStringNames *CoreStringNames::singleton = nullptr;
+#include "core/io/resource.h"
 
-CoreStringNames::CoreStringNames() :
-		on_free(StaticCString::create("on_free")),
-		free_(StaticCString::create("free")),
-		changed(StaticCString::create("changed")),
-		_master_script(StaticCString::create("master_script")),
-		script(StaticCString::create("script")),
-		script_changed(StaticCString::create("script_changed")),
-		_iter_init(StaticCString::create("_iter_init")),
-		_iter_next(StaticCString::create("_iter_next")),
-		_iter_get(StaticCString::create("_iter_get")),
-		get_rid(StaticCString::create("get_rid")),
-		_to_string(StaticCString::create("_to_string")),
-		_custom_features(StaticCString::create("_custom_features")),
+class ColorPalette : public Resource {
+	GDCLASS(ColorPalette, Resource)
 
-		x(StaticCString::create("x")),
-		y(StaticCString::create("y")),
-		z(StaticCString::create("z")),
-		w(StaticCString::create("w")),
-		r(StaticCString::create("r")),
-		g(StaticCString::create("g")),
-		b(StaticCString::create("b")),
-		a(StaticCString::create("a")),
-		position(StaticCString::create("position")),
-		size(StaticCString::create("size")),
-		end(StaticCString::create("end")),
-		basis(StaticCString::create("basis")),
-		origin(StaticCString::create("origin")),
-		normal(StaticCString::create("normal")),
-		d(StaticCString::create("d")),
-		h(StaticCString::create("h")),
-		s(StaticCString::create("s")),
-		v(StaticCString::create("v")),
-		r8(StaticCString::create("r8")),
-		g8(StaticCString::create("g8")),
-		b8(StaticCString::create("b8")),
-		a8(StaticCString::create("a8")),
+private:
+	PackedColorArray colors;
 
-		call(StaticCString::create("call")),
-		call_deferred(StaticCString::create("call_deferred")),
-		bind(StaticCString::create("bind")),
-		notification(StaticCString::create("notification")),
-		property_list_changed(StaticCString::create("property_list_changed")) {
-}
+protected:
+	static void _bind_methods();
+
+public:
+	void set_colors(const PackedColorArray &p_colors);
+	PackedColorArray get_colors() const;
+};
+
+#endif // COLOR_PALETTE_H

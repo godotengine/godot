@@ -182,18 +182,7 @@ namespace Godot.Bridge
                     return;
                 }
 
-                var native = GodotObject.InternalGetClassNativeBase(scriptType);
-
-                var field = native.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
-                                                           BindingFlags.Public | BindingFlags.NonPublic);
-
-                if (field == null)
-                {
-                    *outRes = default;
-                    return;
-                }
-
-                var nativeName = (StringName?)field.GetValue(null);
+                var nativeName = GodotObject.InternalGetClassNativeBaseName(scriptType);
 
                 if (nativeName == null)
                 {
@@ -658,9 +647,13 @@ namespace Godot.Bridge
 
         private static unsafe void GetScriptTypeInfo(Type scriptType, godot_csharp_type_info* outTypeInfo)
         {
-            Type native = GodotObject.InternalGetClassNativeBase(scriptType);
-
             godot_string className = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(scriptType));
+
+            StringName? nativeBase = GodotObject.InternalGetClassNativeBaseName(scriptType);
+
+            godot_string_name nativeBaseName = nativeBase != null
+                ? NativeFuncs.godotsharp_string_name_new_copy((godot_string_name)nativeBase.NativeValue)
+                : default;
 
             bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
 
@@ -686,6 +679,7 @@ namespace Godot.Bridge
             godot_string iconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
 
             outTypeInfo->ClassName = className;
+            outTypeInfo->NativeBaseName = nativeBaseName;
             outTypeInfo->IconPath = iconPath;
             outTypeInfo->IsTool = isTool.ToGodotBool();
             outTypeInfo->IsGlobalClass = isGlobalClass.ToGodotBool();

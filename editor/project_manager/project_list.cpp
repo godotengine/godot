@@ -350,7 +350,7 @@ const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
 // Helpers.
 
 bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
-	return p_feature.contains(".") && p_feature.substr(0, 3).is_numeric();
+	return p_feature.contains_char('.') && p_feature.substr(0, 3).is_numeric();
 }
 
 // Notifications.
@@ -581,7 +581,7 @@ void ProjectList::sort_projects() {
 		bool item_visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
-			if (search_term.contains("/")) {
+			if (search_term.contains_char('/')) {
 				// Search path will match the whole path
 				search_path = item.path;
 			} else {
