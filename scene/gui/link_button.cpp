@@ -143,7 +143,7 @@ void LinkButton::pressed() {
 }
 
 Size2 LinkButton::get_minimum_size() const {
-	return text_buf->get_size();
+	return _get_final_minimum_size(text_buf->get_size());
 }
 
 void LinkButton::_notification(int p_what) {

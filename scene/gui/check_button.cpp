@@ -81,7 +81,7 @@ Size2 CheckButton::get_minimum_size() const {
 		minsize = content_size + padding;
 	}
 
-	return minsize;
+	return _get_final_minimum_size(minsize);
 }
 
 void CheckButton::_notification(int p_what) {

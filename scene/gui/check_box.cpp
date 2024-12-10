@@ -77,7 +77,7 @@ Size2 CheckBox::get_minimum_size() const {
 		minsize = content_size + padding;
 	}
 
-	return minsize;
+	return _get_final_minimum_size(minsize);
 }
 
 void CheckBox::_notification(int p_what) {

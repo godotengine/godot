@@ -70,7 +70,7 @@ Size2 OptionButton::get_minimum_size() const {
 		minsize = content_size + padding;
 	}
 
-	return minsize;
+	return _get_final_minimum_size(minsize);
 }
 
 void OptionButton::_notification(int p_what) {

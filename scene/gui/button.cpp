@@ -38,7 +38,7 @@ Size2 Button::get_minimum_size() const {
 		_icon = theme_cache.icon;
 	}
 
-	return get_minimum_size_for_text_and_icon("", _icon);
+	return _get_final_minimum_size(get_minimum_size_for_text_and_icon("", _icon));
 }
 
 void Button::_set_internal_margin(Side p_side, float p_value) {

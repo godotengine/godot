@@ -129,6 +129,12 @@ void BaseButton::_notification(int p_what) {
 			status.press_attempt = false;
 			status.pressing_inside = false;
 		} break;
+
+		case NOTIFICATION_RESIZED: {
+			if (size_mode != SIZE_MODE_IGNORE) {
+				callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+			}
+		} break;
 	}
 }
 
@@ -318,6 +324,20 @@ BaseButton::ActionMode BaseButton::get_action_mode() const {
 	return action_mode;
 }
 
+void BaseButton::set_size_mode(SizeMode p_size_mode) {
+	if (size_mode == p_size_mode) {
+		return;
+	}
+	size_mode = p_size_mode;
+
+	update_minimum_size();
+	queue_redraw();
+}
+
+BaseButton::SizeMode BaseButton::get_size_mode() const {
+	return size_mode;
+}
+
 void BaseButton::set_button_mask(BitField<MouseButtonMask> p_mask) {
 	button_mask = p_mask;
 }
@@ -442,6 +462,16 @@ bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
 
+Size2 BaseButton::_get_final_minimum_size(const Size2 &p_min_size) const {
+	if (size_mode == SIZE_MODE_IGNORE) {
+		return p_min_size;
+	} else if (size_mode == SIZE_MODE_FIT_HEIGHT) {
+		return Size2(MAX(p_min_size.width, get_size().height), p_min_size.height);
+	} else { // size_mode == SIZE_MODE_FIT_WIDTH
+		return Size2(p_min_size.width, MAX(p_min_size.height, get_size().width));
+	}
+}
+
 PackedStringArray BaseButton::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
@@ -463,8 +493,10 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_shortcut_in_tooltip_enabled"), &BaseButton::is_shortcut_in_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &BaseButton::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
-	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
+	ClassDB::bind_method(D_METHOD("set_action_mode", "action_mode"), &BaseButton::set_action_mode);
 	ClassDB::bind_method(D_METHOD("get_action_mode"), &BaseButton::get_action_mode);
+	ClassDB::bind_method(D_METHOD("set_size_mode", "size_mode"), &BaseButton::set_size_mode);
+	ClassDB::bind_method(D_METHOD("get_size_mode"), &BaseButton::get_size_mode);
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
@@ -491,6 +523,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "button_pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_mode", PROPERTY_HINT_ENUM, "Ignore, Fit Width, Fit Height"), "set_size_mode", "get_size_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
@@ -508,6 +541,10 @@ void BaseButton::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
+
+	BIND_ENUM_CONSTANT(SIZE_MODE_IGNORE);
+	BIND_ENUM_CONSTANT(SIZE_MODE_FIT_WIDTH);
+	BIND_ENUM_CONSTANT(SIZE_MODE_FIT_HEIGHT);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
 }
