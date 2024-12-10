@@ -1,5 +1,0 @@
-GDTEST_RUNTIME_ERROR
->> ERROR: Method/function failed. Returning: false
->>   Attempted to set an object into a TypedArray, that does not inherit from 'GDScript'.
->> ERROR: Condition "!_p->typed.validate(value, "set")" is true.
-not ok
