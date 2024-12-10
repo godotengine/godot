@@ -462,6 +462,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_debugger->set_lines_left(1);
 				break;
 
+			} else if (command == "out") {
+				script_debugger->set_depth(1);
+				script_debugger->set_lines_left(1);
+				break;
+
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
