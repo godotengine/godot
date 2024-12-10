@@ -815,37 +815,36 @@ elif env.msvc:
 
 # Configure compiler warnings
 if env.msvc and not methods.using_clang(env):  # MSVC
-    if env["warnings"] == "no":
-        env.Append(CCFLAGS=["/w"])
-    else:
-        if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["/W4"])
-        elif env["warnings"] == "all":
-            # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-            env.Append(CCFLAGS=["/W3", "/w34458"])
-        elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["/W2"])
-        # Disable warnings which we don't plan to fix.
+    # Disable warnings which we don't plan to fix.
+    disabled_warnings = [
+        "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
+        "/wd4127",  # C4127 (conditional expression is constant)
+        "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
+        "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
+        "/wd4245",
+        "/wd4267",
+        "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+        "/wd4324",  # C4820 (structure was padded due to alignment specifier)
+        "/wd4514",  # C4514 (unreferenced inline function has been removed)
+        "/wd4714",  # C4714 (function marked as __forceinline not inlined)
+        "/wd4820",  # C4820 (padding added after construct)
+    ]
 
-        env.Append(
-            CCFLAGS=[
-                "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
-                "/wd4127",  # C4127 (conditional expression is constant)
-                "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
-                "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
-                "/wd4245",
-                "/wd4267",
-                "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
-                "/wd4324",  # C4820 (structure was padded due to alignment specifier)
-                "/wd4514",  # C4514 (unreferenced inline function has been removed)
-                "/wd4714",  # C4714 (function marked as __forceinline not inlined)
-                "/wd4820",  # C4820 (padding added after construct)
-            ]
-        )
+    if env["warnings"] == "extra":
+        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+    elif env["warnings"] == "all":
+        # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+    elif env["warnings"] == "moderate":
+        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+    else:  # 'no'
+        # C4267 is particularly finicky & needs to be explicitly disabled.
+        env.Append(CCFLAGS=["/w", "/wd4267"])
 
     if env["werror"]:
         env.Append(CCFLAGS=["/WX"])
         env.Append(LINKFLAGS=["/WX"])
+
 else:  # GCC, Clang
     common_warnings = []
 
