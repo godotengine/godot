@@ -1223,7 +1223,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 
 void Variant::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
     if (type == Variant::OBJECT) {
-        // Object çağrısı
+        // Call Object
         Object *obj = _get_obj().obj;
         if (!obj) {
             r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
