@@ -32,6 +32,7 @@
 #define SCRIPT_EDITOR_PLUGIN_H
 
 #include "core/object/script_language.h"
+#include "editor/dependency_editor.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
@@ -252,6 +253,7 @@ class ScriptEditor : public PanelContainer {
 		CLOSE_OTHER_TABS,
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
+		FILE_OWNERS,
 		FILE_COPY_PATH,
 		FILE_TOOL_RELOAD_SOFT,
 		SEARCH_IN_FILES,
@@ -341,6 +343,8 @@ class ScriptEditor : public PanelContainer {
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesPanel *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
+
+	DependencyEditorOwners *owners_editor = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 

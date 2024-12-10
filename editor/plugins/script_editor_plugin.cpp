@@ -1584,6 +1584,13 @@ void ScriptEditor::_menu_option(int p_option) {
 					FileSystemDock::get_singleton()->navigate_to_path(path);
 				}
 			} break;
+			case FILE_OWNERS: {
+				const Ref<Resource> scr = current->get_edited_resource();
+				String path = scr->get_path();
+				if (!path.is_empty()) {
+					owners_editor->show(path);
+				}
+			} break;
 			case CLOSE_DOCS: {
 				_close_docs_tab();
 			} break;
@@ -1730,6 +1737,8 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), current_is_doc);
 	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), current_is_doc);
 
+	menu->set_item_disabled(menu->get_item_index(FILE_OWNERS), current_is_doc);
+
 	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), history_pos <= 0);
 	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), history_pos >= history.size() - 1);
 
@@ -1753,6 +1762,8 @@ void ScriptEditor::_file_menu_closed() {
 	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), false);
 	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), false);
 	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_OWNERS), false);
 
 	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), false);
 	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), false);
@@ -3421,6 +3432,8 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
 		context_menu->add_separator();
+	    context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/view_owners"), FILE_OWNERS);
+        context_menu->add_separator();
 	}
 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
@@ -4265,6 +4278,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/view_owners", TTR("View Owners...")), FILE_OWNERS);
+	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KeyModifierMask::ALT | Key::LEFT), WINDOW_PREV);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_next", TTR("History Next"), KeyModifierMask::ALT | Key::RIGHT), WINDOW_NEXT);
@@ -4448,6 +4463,9 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &ScriptEditor::_on_find_in_files_close_button_clicked));
 	find_in_files->hide();
 	find_in_files_button->hide();
+
+	owners_editor = memnew(DependencyEditorOwners());
+	add_child(owners_editor);
 
 	history_pos = -1;
 
