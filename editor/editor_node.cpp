@@ -2781,9 +2781,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				const int saved = _save_external_resources(true);
 				if (saved > 0) {
-					show_accept(
-							vformat(TTR("The current scene has no root node, but %d modified external resource(s) and/or plugin data were saved anyway."), saved),
-							TTR("OK"));
+					EditorToaster::get_singleton()->popup_str(vformat(TTR("The current scene has no root node, but %d modified external resource(s) and/or plugin data were saved anyway."), saved), EditorToaster::SEVERITY_INFO);
 				} else if (p_option == FILE_SAVE_AS_SCENE) {
 					// Don't show this dialog when pressing Ctrl + S to avoid interfering with script saving.
 					show_accept(
