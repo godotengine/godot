@@ -54,7 +54,7 @@ public:
 	const StringName input_event = StaticCString::create("input_event");
 	const StringName gui_input = StaticCString::create("gui_input");
 	const StringName window_input = StaticCString::create("window_input");
-	transform_changed = StaticCString::create("transform_changed");
+	const StringName transform_changed = StaticCString::create("transform_changed");
 
 	const StringName tree_entered = StaticCString::create("tree_entered");
 	const StringName tree_exiting = StaticCString::create("tree_exiting");

@@ -17,13 +17,23 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     revert_show->set_h_size_flags(SIZE_EXPAND_FILL);
     revert_show->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_revert_show_toggled));
     add_child(revert_show);
-    
-    animation_group_tab = memnew(TabBar);
-    animation_group_tab->set_self_modulate(Color(0.958148, 0.603324, 0.533511, 1));
-    animation_group_tab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-    animation_group_tab->set_max_tab_width(80);
-    animation_group_tab->connect("tab_changed", callable_mp(this, &AnimationPreviewPanel::_on_tab_changed));
-    add_child(animation_group_tab);
+    {
+        HBoxContainer* hbc = memnew(HBoxContainer);
+        hbc->add_child(revert_show);
+        add_child(hbc);
+
+        HSeparator* separator = memnew(HSeparator);
+        separator->set_self_modulate(Color(0.349727, 0.355482, 0.26278, 1));
+        separator->set_h_size_flags(SIZE_EXPAND_FILL);
+        add_child(separator);
+
+        animation_group_tab = memnew(TabBar);
+        animation_group_tab->set_self_modulate(Color(0.958148, 0.603324, 0.533511, 1));
+        animation_group_tab->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
+        animation_group_tab->set_max_tab_width(80);
+        animation_group_tab->connect("tab_changed", callable_mp(this, &AnimationPreviewPanel::_on_tab_changed));
+        add_child(animation_group_tab);
+    }
 
     HSeparator* separator = memnew(HSeparator);
     separator->set_self_modulate(Color(0.349727, 0.355482, 0.26278, 1));
@@ -263,6 +273,7 @@ bool AnimationPreviewPanel::update_preview() {
             Ref<AnimationInfo> _data = it.key->data;
             if(_data.is_valid()) {
                 it.value->set_animation_path(_data->animation_path);
+				it.value->process(0);
                 it.key->add_child(it.value);                 
             }
         }

@@ -144,7 +144,6 @@ protected:
     void update_play_state();
 	virtual void _update_theme_item_cache() override ;
 	void _notification(int p_what);
-    void process(double delta) override ;
     Variant get_drag_data_fw(const Point2 &p_point, Control *p_from) ;
 
     bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const ;
@@ -172,6 +171,7 @@ public:
     String get_animation_path() { return animation_path; }
 
     void set_show_by_editor_property(bool p_show) { show_by_editor_property = p_show; }
+	void process(double delta) override;
 
 	AnimationNodePreview();
 

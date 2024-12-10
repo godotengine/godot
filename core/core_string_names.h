@@ -46,6 +46,8 @@ public:
 	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
 
 	const StringName free_ = StaticCString::create("free"); // free would conflict with C++ keyword.
+	const StringName on_free = StaticCString::create("on_free");
+	const StringName _master_script = StaticCString::create("_master_script");
 	const StringName changed = StaticCString::create("changed");
 	const StringName script = StaticCString::create("script");
 	const StringName script_changed = StaticCString::create("script_changed");
