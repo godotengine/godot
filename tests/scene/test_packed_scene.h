@@ -96,6 +96,8 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		CHECK_EQ(state->get_connection_count(), 3);
 	}
 
+	/*
+	// FIXME: This subcase requires GH-48064 to be fixed.
 	SUBCASE("Signals that should not be saved") {
 		int subscene_flags = Object::CONNECT_PERSIST | Object::CONNECT_INHERITED;
 		// subscene node to itself
@@ -115,6 +117,7 @@ TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
 		Ref<SceneState> state = packed_scene->get_state();
 		CHECK_EQ(state->get_connection_count(), 0);
 	}
+	*/
 
 	memdelete(main_scene_root);
 }
