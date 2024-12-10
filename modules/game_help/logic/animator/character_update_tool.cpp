@@ -130,7 +130,7 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
 }
 
 int CharacterAnimationUpdateTool::get_bone_index(const Dictionary& p_bone_map, const NodePath& path) {
-	if (path.get_subname_count() > 0) {
+	if (path.get_subname_count() == 0) {
 		return -1;
 	}
     StringName bone_name = path.get_subname(0);

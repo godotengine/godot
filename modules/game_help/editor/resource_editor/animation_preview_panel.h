@@ -60,7 +60,7 @@ protected:
     
     AnimationNodePreview* get_item_preview() ;
 
-    void update_preview() ;
+    bool update_preview() ;
 
     
 protected:

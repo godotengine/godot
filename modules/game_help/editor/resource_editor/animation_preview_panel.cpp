@@ -60,8 +60,10 @@ void AnimationPreviewPanel::_notification(int what) {
         if(is_dirty) {
             double curr_time = OS::get_singleton()->get_unix_time();
             if(curr_time - last_update_time > 1) {
-                update_preview();
-                is_dirty = false;                
+                if(update_preview()) {
+                    is_dirty = false;    
+                }    
+                last_update_time = curr_time;        
             }
         }
     }
@@ -221,6 +223,9 @@ void AnimationPreviewPanel::on_item_visible_state_change(ItemBoxItem* item,bool 
     }
     animation_info->is_visible = p_visible;
     if(p_visible) {
+		if (animation_preview_list.has(item)) {
+			return;
+		}
         AnimationNodePreview* preview = get_item_preview();
         preview->set_h_size_flags(SIZE_EXPAND_FILL);
         preview->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -236,6 +241,9 @@ void AnimationPreviewPanel::on_item_visible_state_change(ItemBoxItem* item,bool 
             }
             animation_preview_list.erase(it->key);
         }
+		else {
+			return;
+		}
     }
     is_dirty = true;
 }
@@ -249,15 +257,16 @@ AnimationNodePreview* AnimationPreviewPanel::get_item_preview() {
     return memnew(AnimationNodePreview);        
 }
 
-void AnimationPreviewPanel::update_preview() {
+bool AnimationPreviewPanel::update_preview() {
     for(auto& it : animation_preview_list) {
         if(it.value->get_parent() != it.key) {
             Ref<AnimationInfo> _data = it.key->data;
             if(_data.is_valid()) {
                 it.value->set_animation_path(_data->animation_path);
                 it.key->add_child(it.value);     
-                break;               
+                return false;              
             }
         }
     }
+    return true;
 }
