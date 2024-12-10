@@ -1990,10 +1990,10 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			}
 			style_flat_button_pressed->set_bg_color(flat_pressed_color);
 
-			p_theme->set_stylebox(CoreStringName(normal), "FlatButton", style_flat_button);
-			p_theme->set_stylebox("hover", "FlatButton", style_flat_button_hover);
-			p_theme->set_stylebox(SceneStringName(pressed), "FlatButton", style_flat_button_pressed);
-			p_theme->set_stylebox("disabled", "FlatButton", style_flat_button);
+			p_theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), style_flat_button);
+			p_theme->set_stylebox("hover", SceneStringName(FlatButton), style_flat_button_hover);
+			p_theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), style_flat_button_pressed);
+			p_theme->set_stylebox("disabled", SceneStringName(FlatButton), style_flat_button);
 
 			p_theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", style_flat_button);
 			p_theme->set_stylebox("hover", "FlatMenuButton", style_flat_button_hover);
