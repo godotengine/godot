@@ -239,7 +239,7 @@ void AnimationPreviewPanel::on_item_visible_state_change(ItemBoxItem* item,bool 
             if (parent != nullptr) {
                 parent->remove_child(it->value);
             }
-            animation_preview_list.erase(it->key);
+            animation_preview_list.remove(it);
         }
 		else {
 			return;
@@ -263,8 +263,7 @@ bool AnimationPreviewPanel::update_preview() {
             Ref<AnimationInfo> _data = it.key->data;
             if(_data.is_valid()) {
                 it.value->set_animation_path(_data->animation_path);
-                it.key->add_child(it.value);     
-                return false;              
+                it.key->add_child(it.value);                 
             }
         }
     }
