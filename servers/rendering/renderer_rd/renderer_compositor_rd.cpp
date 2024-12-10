@@ -112,10 +112,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	scene->set_time(time, frame_step);
 }
 
-void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-	if (p_swap_buffers) {
-		RD::get_singleton()->swap_buffers();
-	}
+void RendererCompositorRD::end_frame(bool p_present) {
+	RD::get_singleton()->swap_buffers(p_present);
 }
 
 void RendererCompositorRD::initialize() {
@@ -267,7 +265,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->draw_list_end();
 
-	RD::get_singleton()->swap_buffers();
+	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
 	RD::get_singleton()->free(sampler);

@@ -1469,6 +1469,17 @@ private:
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
 
+	// Whenever logic/physics request a graphics operation (not just deleting a resource) that requires
+	// us to flush all graphics commands, we must set frames_pending_resources_for_processing = frames.size().
+	// This is important for when the user requested for the logic loop to still be updated while
+	// graphics should not (e.g. headless Multiplayer servers, minimized windows that need to still
+	// process something on the background).
+	uint32_t frames_pending_resources_for_processing = 0u;
+
+public:
+	bool has_pending_resources_for_processing() const { return frames_pending_resources_for_processing != 0u; }
+
+private:
 	void _free_pending_resources(int p_frame);
 
 	uint64_t texture_memory = 0;
@@ -1520,7 +1531,7 @@ public:
 
 	uint64_t limit_get(Limit p_limit) const;
 
-	void swap_buffers();
+	void swap_buffers(bool p_present);
 
 	uint32_t get_frame_delay() const;
 

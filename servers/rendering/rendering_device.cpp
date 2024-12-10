@@ -6029,6 +6029,8 @@ void RenderingDevice::_free_internal(RID p_id) {
 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
 #endif
 	}
+
+	frames_pending_resources_for_processing = uint32_t(frames.size());
 }
 
 // The full list of resources that can be named is in the VkObjectType enum.
@@ -6131,11 +6133,11 @@ String RenderingDevice::get_device_pipeline_cache_uuid() const {
 	return driver->get_pipeline_cache_uuid();
 }
 
-void RenderingDevice::swap_buffers() {
+void RenderingDevice::swap_buffers(bool p_present) {
 	ERR_RENDER_THREAD_GUARD();
 
 	_end_frame();
-	_execute_frame(true);
+	_execute_frame(p_present);
 
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
@@ -6237,6 +6239,10 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 		buffer_memory -= buffer.size;
 
 		frames[p_frame].buffers_to_dispose_of.pop_front();
+	}
+
+	if (frames_pending_resources_for_processing > 0u) {
+		--frames_pending_resources_for_processing;
 	}
 }
 

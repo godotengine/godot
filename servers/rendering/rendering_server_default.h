@@ -1124,7 +1124,7 @@ public:
 
 	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
-	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void draw(bool p_present, double frame_step) override;
 	virtual void sync() override;
 	virtual bool has_changed() const override;
 	virtual void init() override;
