@@ -1742,6 +1742,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::RIGHT) {
+				_perform_drop();
+				set_input_as_handled();
+				return;
+			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
