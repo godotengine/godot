@@ -1942,6 +1942,9 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 		}
 	}
 
+	render_state.z_near = p_z_near;
+	render_state.z_far = p_z_far;
+
 	// now update our projection
 	return graphics_extension->create_projection_fov(render_state.views[p_view].fov, p_z_near, p_z_far, p_camera_matrix);
 }
@@ -2369,6 +2372,30 @@ RID OpenXRAPI::get_depth_texture() {
 	}
 }
 
+void OpenXRAPI::set_velocity_texture(RID p_render_target) {
+	velocity_texture = p_render_target;
+}
+
+RID OpenXRAPI::get_velocity_texture() {
+	return velocity_texture;
+}
+
+void OpenXRAPI::set_velocity_depth_texture(RID p_render_target) {
+	velocity_depth_texture = p_render_target;
+}
+
+RID OpenXRAPI::get_velocity_depth_texture() {
+	return velocity_depth_texture;
+}
+
+void OpenXRAPI::set_velocity_target_size(const Size2i &p_target_size) {
+	velocity_target_size = p_target_size;
+}
+
+Size2i OpenXRAPI::get_velocity_target_size() {
+	return velocity_target_size;
+}
+
 void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
@@ -2474,6 +2501,20 @@ void OpenXRAPI::end_frame() {
 		render_state.view_count, // viewCount
 		render_state.projection_views, // views
 	};
+
+	if (projection_views_extensions.size() > 0) {
+		for (uint32_t v = 0; v < render_state.view_count; v++) {
+			void *next_pointer = nullptr;
+			for (OpenXRExtensionWrapper *wrapper : projection_views_extensions) {
+				void *np = wrapper->set_projection_views_and_get_next_pointer(v, next_pointer);
+				if (np != nullptr) {
+					next_pointer = np;
+				}
+			}
+			render_state.projection_views[v].next = next_pointer;
+		}
+	}
+
 	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&projection_layer, 0 });
 
 	// Sort our layers.
@@ -2602,6 +2643,14 @@ Size2 OpenXRAPI::get_play_space_bounds() const {
 	ret.height = extents.height;
 
 	return ret;
+}
+
+PackedInt64Array OpenXRAPI::get_supported_swapchain_formats() {
+	PackedInt64Array supported_swapchain_list;
+	for (uint32_t i = 0; i < num_swapchain_formats; i++) {
+		supported_swapchain_list.push_back(supported_swapchain_formats[i]);
+	}
+	return supported_swapchain_list;
 }
 
 OpenXRAPI::OpenXRAPI() {
@@ -3605,6 +3654,14 @@ void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvid
 
 void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
 	composition_layer_providers.erase(provider);
+}
+
+void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_views_extensions.append(p_extension);
+}
+
+void OpenXRAPI::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	projection_views_extensions.erase(p_extension);
 }
 
 const XrEnvironmentBlendMode *OpenXRAPI::get_supported_environment_blend_modes(uint32_t &count) {
