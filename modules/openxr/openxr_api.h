@@ -102,6 +102,9 @@ private:
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
+	// projection views extensions
+	Vector<OpenXRExtensionWrapper *> projection_views_extensions;
+
 	// view configuration
 	uint32_t num_view_configuration_types = 0;
 	XrViewConfigurationType *supported_view_configuration_types = nullptr;
@@ -153,7 +156,6 @@ private:
 	enum OpenXRSwapChainTypes {
 		OPENXR_SWAPCHAIN_COLOR,
 		OPENXR_SWAPCHAIN_DEPTH,
-		// OPENXR_SWAPCHAIN_VELOCITY,
 		OPENXR_SWAPCHAIN_MAX
 	};
 
@@ -164,6 +166,10 @@ private:
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
+
+	RID velocity_texture;
+	RID velocity_depth_texture;
+	Size2i velocity_target_size;
 
 	// When LOCAL_FLOOR isn't supported, we use an approach based on the example code in the
 	// OpenXR spec in order to emulate it.
@@ -346,6 +352,9 @@ private:
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool view_pose_valid = false;
 
+		double z_near = 0.0;
+		double z_far = 0.0;
+
 		Size2i main_swapchain_size;
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
@@ -479,6 +488,12 @@ public:
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
+	void set_velocity_texture(RID p_render_target);
+	RID get_velocity_texture();
+	void set_velocity_depth_texture(RID p_render_target);
+	RID get_velocity_depth_texture();
+	void set_velocity_target_size(const Size2i &p_target_size);
+	Size2i get_velocity_target_size();
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
 
@@ -504,8 +519,12 @@ public:
 	Size2 get_play_space_bounds() const;
 
 	// swapchains
+	PackedInt64Array get_supported_swapchain_formats();
 	int64_t get_color_swapchain_format() const { return color_swapchain_format; }
 	int64_t get_depth_swapchain_format() const { return depth_swapchain_format; }
+
+	double get_render_state_z_near() const { return render_state.z_near; }
+	double get_render_state_z_far() const { return render_state.z_far; }
 
 	// action map
 	String get_default_action_map_resource_name();
@@ -547,6 +566,9 @@ public:
 
 	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+
+	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 
 	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
