@@ -1060,6 +1060,22 @@ namespace Godot.Collections
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
             VariantUtils.ConvertToArray<T>(variant);
 
+        private void SetTypedForUnderlyingArray()
+        {
+            Marshaling.GetTypedCollectionParameterInfo<T>(out var elemVariantType, out var elemClassName, out var elemScriptRef);
+
+            var self = (godot_array)NativeValue;
+
+            using (elemScriptRef)
+            {
+                NativeFuncs.godotsharp_array_set_typed(
+                    ref self,
+                    (uint)elemVariantType,
+                    elemClassName,
+                    elemScriptRef);
+            }
+        }
+
         static unsafe Array()
         {
             VariantUtils.GenericConversion<Array<T>>.ToVariantCb = &ToVariantFunc;
@@ -1083,6 +1099,7 @@ namespace Godot.Collections
         public Array()
         {
             _underlyingArray = new Array();
+            SetTypedForUnderlyingArray();
         }
 
         /// <summary>
@@ -1099,6 +1116,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(collection));
 
             _underlyingArray = new Array();
+            SetTypedForUnderlyingArray();
 
             foreach (T element in collection)
                 Add(element);
@@ -1118,6 +1136,7 @@ namespace Godot.Collections
                 throw new ArgumentNullException(nameof(array));
 
             _underlyingArray = new Array();
+            SetTypedForUnderlyingArray();
 
             foreach (T element in array)
                 Add(element);

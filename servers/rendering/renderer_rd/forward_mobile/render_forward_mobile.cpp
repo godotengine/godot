@@ -294,7 +294,7 @@ void RenderForwardMobile::mesh_generate_pipelines(RID p_mesh, bool p_background_
 		void *mesh_surface = mesh_storage->mesh_get_surface(p_mesh, i);
 		void *mesh_surface_shadow = mesh_surface;
 		SceneShaderForwardMobile::MaterialData *material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(materials[i], RendererRD::MaterialStorage::SHADER_TYPE_3D));
-		if (material == nullptr) {
+		if (material == nullptr || !material->shader_data->is_valid()) {
 			continue;
 		}
 

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_string_names.cpp                                               */
+/*  color_palette.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_string_names.h"
+#include "color_palette.h"
 
-EditorStringNames *EditorStringNames::singleton = nullptr;
+void ColorPalette::set_colors(const PackedColorArray &p_colors) {
+	colors = p_colors;
+}
 
-EditorStringNames::EditorStringNames() {
-	Editor = StaticCString::create("Editor");
-	EditorFonts = StaticCString::create("EditorFonts");
-	EditorIcons = StaticCString::create("EditorIcons");
-	EditorStyles = StaticCString::create("EditorStyles");
+PackedColorArray ColorPalette::get_colors() const {
+	return colors;
+}
+
+void ColorPalette::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_colors", "colors"), &ColorPalette::set_colors);
+	ClassDB::bind_method(D_METHOD("get_colors"), &ColorPalette::get_colors);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "colors"), "set_colors", "get_colors");
 }

@@ -329,21 +329,14 @@ void String::copy_from(const char *p_cstr) {
 
 	resize(len + 1); // include 0
 
+	const char *end = p_cstr + len;
 	char32_t *dst = ptrw();
 
-	for (size_t i = 0; i <= len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0 && i < len) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
+	for (; p_cstr < end; ++p_cstr, ++dst) {
+		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
+		*dst = static_cast<uint8_t>(*p_cstr);
 	}
+	*dst = 0;
 }
 
 void String::copy_from(const char *p_cstr, const int p_clip_to) {
@@ -366,22 +359,14 @@ void String::copy_from(const char *p_cstr, const int p_clip_to) {
 
 	resize(len + 1); // include 0
 
+	const char *end = p_cstr + len;
 	char32_t *dst = ptrw();
 
-	for (int i = 0; i < len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
+	for (; p_cstr < end; ++p_cstr, ++dst) {
+		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
+		*dst = static_cast<uint8_t>(*p_cstr);
 	}
-	dst[len] = 0;
+	*dst = 0;
 }
 
 void String::copy_from(const wchar_t *p_cstr) {
@@ -469,27 +454,25 @@ void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
-	char32_t *dst = ptrw();
-	dst[p_length] = 0;
 
-	for (int i = 0; i < p_length; i++) {
-		if (p_char[i] == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
+	const char32_t *end = p_char + p_length;
+	char32_t *dst = ptrw();
+
+	for (; p_char < end; ++p_char, ++dst) {
+		const char32_t chr = *p_char;
+		if ((chr & 0xfffff800) == 0xd800) {
+			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if ((p_char[i] & 0xfffff800) == 0xd800) {
-			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
+		if (chr > 0x10ffff) {
+			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if (p_char[i] > 0x10ffff) {
-			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
-			continue;
-		}
-		dst[i] = p_char[i];
+		*dst = chr;
 	}
+	*dst = 0;
 }
 
 void String::operator=(const char *p_str) {
@@ -3314,6 +3297,10 @@ int String::find(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
+	if (src_len == 1) {
+		return find_char(p_str[0], p_from); // Optimize with single-char find.
+	}
+
 	const char32_t *src = get_data();
 	const char32_t *str = p_str.get_data();
 
@@ -3352,6 +3339,10 @@ int String::find(const char *p_str, int p_from) const {
 
 	if (len == 0 || src_len == 0) {
 		return -1; // won't find anything!
+	}
+
+	if (src_len == 1) {
+		return find_char(*p_str, p_from); // Optimize with single-char find.
 	}
 
 	const char32_t *src = get_data();
@@ -4081,7 +4072,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.contains("_")) {
+				if (placeholder.contains_char('_')) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
@@ -4608,7 +4599,7 @@ String String::simplify_path() const {
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
-			if (i != 0) {
+			if (i != 0 && dirs[i - 1] != "..") {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;

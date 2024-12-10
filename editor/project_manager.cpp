@@ -834,7 +834,7 @@ void ProjectManager::_set_new_tag_name(const String p_name) {
 		return;
 	}
 
-	if (p_name.contains(" ")) {
+	if (p_name.contains_char(' ')) {
 		tag_error->set_text(TTR("Tag name can't contain spaces."));
 		return;
 	}

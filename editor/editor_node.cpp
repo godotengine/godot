@@ -3441,6 +3441,11 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
+void EditorNode::_palette_quick_open_dialog() {
+	quick_open_color_palette->popup_dialog({ "ColorPalette" }, palette_file_selected_callback);
+	quick_open_color_palette->set_title(TTR("Quick Open Color Palette..."));
+}
+
 void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<Resource>> &p_source_resources, const Vector<Ref<Resource>> &p_target_resource) {
 	List<PropertyInfo> pi;
 	p_object->get_property_list(&pi);
@@ -3900,6 +3905,10 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 
 	p_picker->set_color_mode((ColorPicker::ColorModeType)default_color_mode);
 	p_picker->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
+	p_picker->set_quick_open_callback(callable_mp(this, &EditorNode::_palette_quick_open_dialog));
+	p_picker->set_palette_saved_callback(callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::update_file));
+	palette_file_selected_callback = callable_mp(p_picker, &ColorPicker::_quick_open_palette_file_selected);
 }
 
 bool EditorNode::is_scene_open(const String &p_path) {
@@ -7865,6 +7874,9 @@ EditorNode::EditorNode() {
 
 	quick_open_dialog = memnew(EditorQuickOpenDialog);
 	gui_base->add_child(quick_open_dialog);
+
+	quick_open_color_palette = memnew(EditorQuickOpenDialog);
+	gui_base->add_child(quick_open_color_palette);
 
 	_update_recent_scenes();
 

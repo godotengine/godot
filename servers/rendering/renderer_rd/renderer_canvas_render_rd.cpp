@@ -1517,7 +1517,13 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	MutexLock lock(canvas_singleton->shader.mutex);
 
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+	if (err != OK) {
+		if (version.is_valid()) {
+			canvas_singleton->shader.canvas_shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
@@ -1593,9 +1599,13 @@ uint64_t RendererCanvasRenderRD::CanvasShaderData::get_vertex_input_mask(ShaderV
 }
 
 bool RendererCanvasRenderRD::CanvasShaderData::is_valid() const {
-	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	MutexLock lock(canvas_singleton->shader.mutex);
-	return canvas_singleton->shader.canvas_shader.version_is_valid(version);
+	if (version.is_valid()) {
+		RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
+		MutexLock lock(canvas_singleton->shader.mutex);
+		return canvas_singleton->shader.canvas_shader.version_is_valid(version);
+	} else {
+		return false;
+	}
 }
 
 RendererCanvasRenderRD::CanvasShaderData::CanvasShaderData() {
@@ -2911,11 +2921,12 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 
 		const RID *uniform_set = rid_set_to_uniform_set.getptr(key);
 		if (uniform_set == nullptr) {
-			state.batch_texture_uniforms.write[0] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_batch->tex_info->diffuse);
-			state.batch_texture_uniforms.write[1] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_batch->tex_info->normal);
-			state.batch_texture_uniforms.write[2] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_batch->tex_info->specular);
-			state.batch_texture_uniforms.write[3] = RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, p_batch->tex_info->sampler);
-			state.batch_texture_uniforms.write[4] = RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, state.canvas_instance_data_buffers[state.current_data_buffer_index].instance_buffers[p_batch->instance_buffer_index]);
+			RD::Uniform *uniform_ptrw = state.batch_texture_uniforms.ptrw();
+			uniform_ptrw[0] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_batch->tex_info->diffuse);
+			uniform_ptrw[1] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_batch->tex_info->normal);
+			uniform_ptrw[2] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_batch->tex_info->specular);
+			uniform_ptrw[3] = RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, p_batch->tex_info->sampler);
+			uniform_ptrw[4] = RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, state.canvas_instance_data_buffers[state.current_data_buffer_index].instance_buffers[p_batch->instance_buffer_index]);
 
 			RID rid = RD::get_singleton()->uniform_set_create(state.batch_texture_uniforms, shader.default_version_rd_shader, BATCH_UNIFORM_SET);
 			ERR_FAIL_COND_MSG(rid.is_null(), "Failed to create uniform set for batch.");
