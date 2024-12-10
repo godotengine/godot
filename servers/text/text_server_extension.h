@@ -130,6 +130,11 @@ public:
 	GDVIRTUAL2(_font_set_antialiasing, RID, TextServer::FontAntialiasing);
 	GDVIRTUAL1RC(TextServer::FontAntialiasing, _font_get_antialiasing, RID);
 
+	virtual void font_set_lcd_subpixel_layout(const RID &p_font_rid, TextServer::FontLCDSubpixelLayout p_lcd_subpixel_layout) override;
+	virtual TextServer::FontLCDSubpixelLayout font_get_lcd_subpixel_layout(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_lcd_subpixel_layout, RID, TextServer::FontLCDSubpixelLayout);
+	GDVIRTUAL1RC(TextServer::FontLCDSubpixelLayout, _font_get_lcd_subpixel_layout, RID);
+
 	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) override;
 	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_disable_embedded_bitmaps, RID, bool);

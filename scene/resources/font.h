@@ -186,6 +186,7 @@ class FontFile : public Font {
 	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	TextServer::FontLCDSubpixelLayout lcd_subpixel_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_HRGB;
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
 	bool msdf = false;
@@ -247,6 +248,9 @@ public:
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_lcd_subpixel_layout(TextServer::FontLCDSubpixelLayout p_subpixel_layout);
+	virtual TextServer::FontLCDSubpixelLayout get_lcd_subpixel_layout() const;
 
 	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
 	virtual bool get_disable_embedded_bitmaps() const;
@@ -478,6 +482,7 @@ class SystemFont : public Font {
 	int ftr_italic = 0;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	TextServer::FontLCDSubpixelLayout lcd_subpixel_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_HRGB;
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
 	bool force_autohinter = false;
@@ -505,6 +510,9 @@ public:
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
 
+	virtual void set_lcd_subpixel_layout(TextServer::FontLCDSubpixelLayout p_subpixel_layout);
+	virtual TextServer::FontLCDSubpixelLayout get_lcd_subpixel_layout() const;
+
 	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
 	virtual bool get_disable_embedded_bitmaps() const;
 
@@ -520,7 +528,7 @@ public:
 	virtual void set_hinting(TextServer::Hinting p_hinting);
 	virtual TextServer::Hinting get_hinting() const;
 
-	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
+	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel_positioning);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
 	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);

@@ -595,6 +595,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			cache.write[p_cache_index] = TS->create_font();
 			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
 			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
+			TS->font_set_lcd_subpixel_layout(cache[p_cache_index], lcd_subpixel_layout);
 			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
 			TS->font_set_disable_embedded_bitmaps(cache[p_cache_index], disable_embedded_bitmaps);
 			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
@@ -903,6 +904,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &FontFile::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &FontFile::get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("set_lcd_subpixel_layout", "subpixel_layout"), &FontFile::set_lcd_subpixel_layout);
+	ClassDB::bind_method(D_METHOD("get_lcd_subpixel_layout"), &FontFile::get_lcd_subpixel_layout);
+
 	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &FontFile::set_disable_embedded_bitmaps);
 	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &FontFile::get_disable_embedded_bitmaps);
 
@@ -1042,6 +1046,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR", PROPERTY_USAGE_STORAGE), "set_lcd_subpixel_layout", "get_lcd_subpixel_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_FLAGS, "Bold,Italic,Fixed Size", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
@@ -1410,6 +1415,7 @@ void FontFile::reset_state() {
 	cache.clear();
 
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	lcd_subpixel_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_NONE;
 	mipmaps = false;
 	disable_embedded_bitmaps = true;
 	msdf = false;
@@ -2137,6 +2143,21 @@ TextServer::FontAntialiasing FontFile::get_antialiasing() const {
 	return antialiasing;
 }
 
+void FontFile::set_lcd_subpixel_layout(TextServer::FontLCDSubpixelLayout p_subpixel_layout) {
+	if (lcd_subpixel_layout != p_subpixel_layout) {
+		lcd_subpixel_layout = p_subpixel_layout;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_lcd_subpixel_layout(cache[i], lcd_subpixel_layout);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::FontLCDSubpixelLayout FontFile::get_lcd_subpixel_layout() const {
+	return lcd_subpixel_layout;
+}
+
 void FontFile::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
 	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
 		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
@@ -2287,9 +2308,9 @@ TextServer::Hinting FontFile::get_hinting() const {
 	return hinting;
 }
 
-void FontFile::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel) {
-	if (subpixel_positioning != p_subpixel) {
-		subpixel_positioning = p_subpixel;
+void FontFile::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel_positioning) {
+	if (subpixel_positioning != p_subpixel_positioning) {
+		subpixel_positioning = p_subpixel_positioning;
 		for (int i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
 			TS->font_set_subpixel_positioning(cache[i], subpixel_positioning);
@@ -3089,6 +3110,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &SystemFont::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &SystemFont::get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("set_lcd_subpixel_layout", "subpixel_layout"), &SystemFont::set_lcd_subpixel_layout);
+	ClassDB::bind_method(D_METHOD("get_lcd_subpixel_layout"), &SystemFont::get_lcd_subpixel_layout);
+
 	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &SystemFont::set_disable_embedded_bitmaps);
 	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &SystemFont::get_disable_embedded_bitmaps);
 
@@ -3134,7 +3158,8 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "font_italic"), "set_font_italic", "get_font_italic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_weight", PROPERTY_HINT_RANGE, "100,999,25"), "set_font_weight", "get_font_weight");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25"), "set_font_stretch", "get_font_stretch");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), "set_antialiasing", "get_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), "set_lcd_subpixel_layout", "get_lcd_subpixel_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
@@ -3241,6 +3266,7 @@ void SystemFont::_update_base_font() {
 
 		// Apply font rendering settings.
 		file->set_antialiasing(antialiasing);
+		file->set_lcd_subpixel_layout(lcd_subpixel_layout);
 		file->set_generate_mipmaps(mipmaps);
 		file->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 		file->set_force_autohinter(force_autohinter);
@@ -3285,6 +3311,7 @@ void SystemFont::reset_state() {
 	weight = 400;
 	stretch = 100;
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	lcd_subpixel_layout = TextServer::FONT_LCD_SUBPIXEL_LAYOUT_NONE;
 	mipmaps = false;
 	disable_embedded_bitmaps = true;
 	force_autohinter = false;
@@ -3361,6 +3388,20 @@ TextServer::FontAntialiasing SystemFont::get_antialiasing() const {
 	return antialiasing;
 }
 
+void SystemFont::set_lcd_subpixel_layout(TextServer::FontLCDSubpixelLayout p_subpixel_layout) {
+	if (lcd_subpixel_layout != p_subpixel_layout) {
+		lcd_subpixel_layout = p_subpixel_layout;
+		if (base_font.is_valid()) {
+			base_font->set_lcd_subpixel_layout(lcd_subpixel_layout);
+		}
+		emit_changed();
+	}
+}
+
+TextServer::FontLCDSubpixelLayout SystemFont::get_lcd_subpixel_layout() const {
+	return lcd_subpixel_layout;
+}
+
 void SystemFont::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
 	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
 		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
@@ -3431,9 +3472,9 @@ TextServer::Hinting SystemFont::get_hinting() const {
 	return hinting;
 }
 
-void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel) {
-	if (subpixel_positioning != p_subpixel) {
-		subpixel_positioning = p_subpixel;
+void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel_positioning) {
+	if (subpixel_positioning != p_subpixel_positioning) {
+		subpixel_positioning = p_subpixel_positioning;
 		if (base_font.is_valid()) {
 			base_font->set_subpixel_positioning(subpixel_positioning);
 		}

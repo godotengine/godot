@@ -356,6 +356,13 @@
 				Returns list of language support overrides.
 			</description>
 		</method>
+		<method name="font_get_lcd_subpixel_layout" qualifiers="const">
+			<return type="int" enum="TextServer.FontLCDSubpixelLayout" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+			</description>
+		</method>
 		<method name="font_get_msdf_pixel_range" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -856,6 +863,14 @@
 			<param index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_language_supported].
+			</description>
+		</method>
+		<method name="font_set_lcd_subpixel_layout">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="lcd_subpixel_layout" type="int" enum="TextServer.FontLCDSubpixelLayout" />
+			<description>
+				Sets the LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 			</description>
 		</method>
 		<method name="font_set_msdf_pixel_range">

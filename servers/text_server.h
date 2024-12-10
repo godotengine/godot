@@ -283,6 +283,9 @@ public:
 	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
 	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_lcd_subpixel_layout(const RID &p_font_rid, FontLCDSubpixelLayout p_lcd_subpixel_layout) = 0;
+	virtual FontLCDSubpixelLayout font_get_lcd_subpixel_layout(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_disable_embedded_bitmaps(const RID &p_font_rid, bool p_disable_embedded_bitmaps) = 0;
 	virtual bool font_get_disable_embedded_bitmaps(const RID &p_font_rid) const = 0;
 

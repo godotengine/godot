@@ -237,6 +237,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_antialiasing", "font_rid", "antialiasing"), &TextServer::font_set_antialiasing);
 	ClassDB::bind_method(D_METHOD("font_get_antialiasing", "font_rid"), &TextServer::font_get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("font_set_lcd_subpixel_layout", "font_rid", "lcd_subpixel_layout"), &TextServer::font_set_lcd_subpixel_layout);
+	ClassDB::bind_method(D_METHOD("font_get_lcd_subpixel_layout", "font_rid"), &TextServer::font_get_lcd_subpixel_layout);
+
 	ClassDB::bind_method(D_METHOD("font_set_disable_embedded_bitmaps", "font_rid", "disable_embedded_bitmaps"), &TextServer::font_set_disable_embedded_bitmaps);
 	ClassDB::bind_method(D_METHOD("font_get_disable_embedded_bitmaps", "font_rid"), &TextServer::font_get_disable_embedded_bitmaps);
 

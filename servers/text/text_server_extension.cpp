@@ -81,6 +81,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_antialiasing, "font_rid", "antialiasing");
 	GDVIRTUAL_BIND(_font_get_antialiasing, "font_rid");
 
+	GDVIRTUAL_BIND(_font_set_lcd_subpixel_layout, "font_rid", "subpixel_layout")
+	GDVIRTUAL_BIND(_font_get_lcd_subpixel_layout, "font_rid")
+
 	GDVIRTUAL_BIND(_font_set_disable_embedded_bitmaps, "font_rid", "disable_embedded_bitmaps");
 	GDVIRTUAL_BIND(_font_get_disable_embedded_bitmaps, "font_rid");
 
@@ -537,6 +540,16 @@ void TextServerExtension::font_set_antialiasing(const RID &p_font_rid, TextServe
 TextServer::FontAntialiasing TextServerExtension::font_get_antialiasing(const RID &p_font_rid) const {
 	TextServer::FontAntialiasing ret = TextServer::FONT_ANTIALIASING_NONE;
 	GDVIRTUAL_CALL(_font_get_antialiasing, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_lcd_subpixel_layout(const RID &p_font_rid, TextServer::FontLCDSubpixelLayout p_lcd_subpixel_layout) {
+	GDVIRTUAL_CALL(_font_set_lcd_subpixel_layout, p_font_rid, p_lcd_subpixel_layout);
+}
+
+TextServer::FontLCDSubpixelLayout TextServerExtension::font_get_lcd_subpixel_layout(const RID &p_font_rid) const {
+	TextServer::FontLCDSubpixelLayout ret = TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE;
+	GDVIRTUAL_CALL(_font_get_lcd_subpixel_layout, p_font_rid, ret);
 	return ret;
 }
 
