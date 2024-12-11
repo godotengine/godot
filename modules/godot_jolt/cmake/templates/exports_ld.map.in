@@ -1,7 +1,0 @@
-{
-	global:
-		${PROJECT_ENTRY_POINT};
-
-	local:
-		*;
-};
