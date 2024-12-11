@@ -1515,7 +1515,7 @@ void fragment() {)";
 				vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055),
 				vec3(12.92) * albedo_tex.rgb,
 				lessThan(albedo_tex.rgb, vec3(0.0031308)));
-		vec2 msdf_size = vec2(msdf_pixel_range) / vec2(textureSize(texture_albedo, 0));
+		vec2 msdf_size = vec2(msdf_pixel_range) / vec2(albedo_texture_size));
 )";
 		if (flags[FLAG_USE_POINT_SIZE]) {
 			code += "		vec2 dest_size = vec2(1.0) / fwidth(POINT_COORD);\n";
