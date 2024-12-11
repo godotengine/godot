@@ -737,7 +737,10 @@ if env.msvc:
 else:
     if env["debug_symbols"]:
         if env["platform"] == "windows":
-            env.Append(CCFLAGS=["-gdwarf-5"])
+            if methods.using_clang(env):
+                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+            else:
+                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
         else:
             # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
             # otherwise addr2line doesn't understand them
