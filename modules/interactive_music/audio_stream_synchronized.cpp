@@ -195,22 +195,43 @@ void AudioStreamPlaybackSynchronized::stop() {
 }
 
 void AudioStreamPlaybackSynchronized::start(double p_from_pos) {
-	if (active) {
+	_seek_or_start(p_from_pos, true);
+}
+
+void AudioStreamPlaybackSynchronized::seek(double p_time) {
+	_seek_or_start(p_time, false);
+}
+
+void AudioStreamPlaybackSynchronized::_seek_or_start(double p_from_pos, bool is_start) {
+	p_from_pos = CLAMP(p_from_pos, 0, stream->get_length());
+
+	if (is_start && active) {
 		stop();
 	}
 
 	for (int i = 0; i < stream->stream_count; i++) {
-		if (playback[i].is_valid()) {
-			playback[i]->start(p_from_pos);
-			active = true;
-		}
-	}
-}
+		if (playback[i].is_valid() && stream->audio_streams[i].is_valid()) {
+			double audio_stream_length = stream->audio_streams[i]->get_length();
+			double playback_pos = p_from_pos;
 
-void AudioStreamPlaybackSynchronized::seek(double p_time) {
-	for (int i = 0; i < stream->stream_count; i++) {
-		if (playback[i].is_valid()) {
-			playback[i]->seek(p_time);
+			if (audio_stream_length < playback_pos) {
+				if (!stream->audio_streams[i]->has_loop()) {
+					continue;
+				}
+
+				while (audio_stream_length < playback_pos) {
+					playback_pos -= audio_stream_length;
+				}
+			}
+
+			if (is_start) {
+				playback[i]->start(playback_pos);
+			}
+			else {
+				playback[i]->seek(playback_pos);
+			}
+
+			active = true;
 		}
 	}
 }
