@@ -226,8 +226,7 @@ void AudioStreamPlaybackSynchronized::_seek_or_start(double p_from_pos, bool is_
 
 			if (is_start) {
 				playback[i]->start(playback_pos);
-			}
-			else {
+			} else {
 				playback[i]->seek(playback_pos);
 			}
 
