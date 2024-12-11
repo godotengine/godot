@@ -468,6 +468,10 @@ Files extracted from upstream source:
 - `*.{c,h}` files for Windows platform
 - `LICENSE`
 
+Important: Some files have Godot-made changes to load big debug symbol files.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments and a patch is provided in the `patches` folder.
+
 
 ## libktx
 
