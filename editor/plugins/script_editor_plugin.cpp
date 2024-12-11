@@ -3432,8 +3432,8 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
 		context_menu->add_separator();
-	    context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/view_owners"), FILE_OWNERS);
-        context_menu->add_separator();
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/view_owners"), FILE_OWNERS);
+		context_menu->add_separator();
 	}
 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), WINDOW_MOVE_UP);
