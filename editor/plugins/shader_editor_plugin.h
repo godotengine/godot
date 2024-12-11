@@ -40,6 +40,7 @@ class ShaderEditor;
 class TabContainer;
 class TextShaderEditor;
 class VBoxContainer;
+class HBoxContainer;
 class VisualShaderEditor;
 class WindowWrapper;
 
@@ -74,6 +75,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		CLOSE_OTHER_TABS,
 		SHOW_IN_FILE_SYSTEM,
 		COPY_PATH,
+		TOGGLE_SHADERS_PANEL,
 	};
 
 	enum PopupMenuType {
@@ -84,6 +86,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	HSplitContainer *main_split = nullptr;
 	VBoxContainer *left_panel = nullptr;
+	HBoxContainer *menu_hb = nullptr;
+
 	ItemList *shader_list = nullptr;
 	TabContainer *shader_tabs = nullptr;
 
@@ -124,6 +128,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _window_changed(bool p_visible);
 
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
+	void _switch_to_editor(ShaderEditor *p_editor);
 
 protected:
 	void _notification(int p_what);
