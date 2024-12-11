@@ -460,12 +460,14 @@ Files extracted from upstream source:
 ## libbacktrace
 
 - Upstream: https://github.com/ianlancetaylor/libbacktrace
-- Version: git (4d2dd0b172f2c9192f83ba93425f868f2a13c553, 2022)
+- Version: git (1db85642e3fca189cf4e076f840a45d6934b2456, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `*.{c,h}` files for Windows platform
+- `*.{c,h}` files for Windows platform, i.e. remove the following:
+  * `allocfail.c`, `instrumented_alloc.c`, `*test*.{c,h}`
+  * `elf.c`, `macho.c`, `mmap.c`, `mmapio.c`, `nounwind.c`, `unknown.c`, `xcoff.c`
 - `LICENSE`
 
 Important: Some files have Godot-made changes to load big debug symbol files.
