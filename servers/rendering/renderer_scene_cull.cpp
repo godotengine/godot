@@ -2558,8 +2558,9 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+				real_t z_near = 0.005f;
 				Projection cm;
-				cm.set_perspective(90, 1, radius * 0.005f, radius);
+				cm.set_perspective(90, 1, z_near, radius);
 
 				for (int i = 0; i < 6; i++) {
 					RENDER_TIMESTAMP("Cull OmniLight3D Shadow Cube, Side " + itos(i));
@@ -2647,9 +2648,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 			real_t angle = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
+			real_t z_near = 0.005f;
 
 			Projection cm;
-			cm.set_perspective(angle * 2.0, 1.0, 0.005f * radius, radius);
+			cm.set_perspective(angle * 2.0, 1.0, z_near, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 
