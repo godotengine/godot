@@ -1606,6 +1606,21 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	return window_id;
 }
 
+bool DisplayServerWindows::_is_always_on_top_recursive(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.always_on_top) {
+		return true;
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		return _is_always_on_top_recursive(wd.transient_parent);
+	}
+
+	return false;
+}
+
 void DisplayServerWindows::show_window(WindowID p_id) {
 	ERR_FAIL_COND(!windows.has(p_id));
 
@@ -1633,7 +1648,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	}
-	if (wd.always_on_top) {
+	if (_is_always_on_top_recursive(p_id)) {
 		SetWindowPos(wd.hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 	}
 }
@@ -2256,7 +2271,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 		set_icon(icon);
 	}
 
-	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
+	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
 		RECT rect;
