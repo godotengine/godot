@@ -4441,15 +4441,20 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
-			RenderingServer::get_singleton()->is_render_loop_enabled()) {
+	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
+	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
+								 DisplayServer::get_singleton()->has_additional_outputs()) &&
+			RenderingServer::get_singleton()->is_render_loop_enabled();
+
+	if (wants_present || has_pending_resources_for_processing) {
+		wants_present |= force_redraw_requested;
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
-				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+				RenderingServer::get_singleton()->draw(wants_present, scaled_step); // flush visual commands
 				Engine::get_singleton()->increment_frames_drawn();
 			}
 		} else {
-			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+			RenderingServer::get_singleton()->draw(wants_present, scaled_step); // flush visual commands
 			Engine::get_singleton()->increment_frames_drawn();
 			force_redraw_requested = false;
 		}
