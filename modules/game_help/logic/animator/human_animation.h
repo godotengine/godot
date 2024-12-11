@@ -15,6 +15,7 @@ namespace HumanAnim
         HashMap<StringName,Node3D*> bones;
 
         HashMap<StringName, Vector3> bone_lookat;
+        HashMap<StringName, Quaternion> bone_global_rotation;
 		HashMap<StringName, Vector3> root_position;
 		HashMap<StringName, Vector3> root_lookat;
 
@@ -675,6 +676,38 @@ namespace HumanAnim
             return label_map;
         }
 
+		// 构建真实姿势
+		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config, bool position_by_hip = false) {
+			p_skeleton->_update_bones_nested_set();
+			p_skeleton->force_update_all_bone_transforms(false);
+
+			Vector<StringName> root_bone = p_config.root_bone;
+			Transform3D local_trans;
+			for (auto& it : root_bone) {
+				BonePose& pose = p_config.virtual_pose[it];
+				Transform3D& trans = p_skeleton_config.real_pose[it];
+				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
+
+				local_trans.basis = Basis(pose.rotation);
+				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans, p_skeleton_config);
+			}
+			int spine_bone = -1;
+			bool is_hip = false;
+			for (auto& it : root_bone) {
+				Vector3 bone_foreard = Vector3(0, 0, 1);
+				BonePose* pose = nullptr;
+				{
+					Transform3D& trans = p_skeleton_config.real_pose[it];
+					pose = &p_config.virtual_pose[it];
+					local_trans.basis = trans.basis;
+					p_skeleton_config.root_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
+					p_skeleton_config.root_position[it] = (trans.origin - pose->position);
+					p_skeleton_config.bone_global_rotation[it] = trans.basis.get_rotation_quaternion();
+				}
+				// 臀部的朝向计算到全身的旋转
+				build_skeleton_global_lookat(p_config, *pose, local_trans, p_skeleton_config);
+			}
+		}
      private:
      
         struct SortStringName {
@@ -720,56 +753,6 @@ namespace HumanAnim
             }
             
         }
-		// 构建真实姿势
-		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config,bool position_by_hip = false) {
-			p_skeleton->_update_bones_nested_set();
-			p_skeleton->force_update_all_bone_transforms(false);
-
-            Vector<StringName> root_bone = p_config.root_bone;
-			Transform3D local_trans;
-			for (auto& it : root_bone) {
-				BonePose& pose = p_config.virtual_pose[it];
-				Transform3D& trans = p_skeleton_config.real_pose[it];
-				trans = p_skeleton->get_bone_global_pose(pose.bone_index);
-
-				local_trans.basis = Basis(pose.rotation);
-				build_skeleton_local_pose(p_skeleton, p_config, pose, local_trans,p_skeleton_config);
-			}
-            int spine_bone = -1;
-            bool is_hip = false;
-            if(position_by_hip) {
-                int hip_bone = p_skeleton->find_bone("Hips");
-                if(hip_bone != -1 ) {
-                    is_hip = true;
-                    root_bone.clear();
-                    root_bone.push_back(p_skeleton->get_bone_name(hip_bone));
-                }
-                
-            }
-			for (auto& it : root_bone) {
-				Vector3 bone_foreard = Vector3(0, 0, 1);
-                BonePose* pose = nullptr;
-                if(is_hip) {
-                    StringName hip_bone = StringName("Hips");
-                    StringName root_bone = StringName("Root");
-				    Transform3D& trans = p_skeleton_config.real_pose[hip_bone];
-                    pose = &p_config.virtual_pose[hip_bone];
-                    local_trans.basis = trans.basis;
-                    p_skeleton_config.root_lookat[root_bone] = local_trans.basis.xform(bone_foreard).normalized();
-                    p_skeleton_config.root_position[root_bone] = (trans.origin - pose->position - p_config.virtual_pose[root_bone].position);
-
-                }
-                else {
-				    Transform3D& trans = p_skeleton_config.real_pose[it];
-                    pose = &p_config.virtual_pose[it];
-					local_trans.basis = trans.basis;
-                    p_skeleton_config.root_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
-                    p_skeleton_config.root_position[it] = (trans.origin - pose->position);
-                }
-                // 臀部的朝向计算到全身的旋转
-				build_skeleton_global_lookat(p_config, *pose,local_trans, p_skeleton_config);
-			}
-		}
         static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
             for(auto& it : parent_pose.child_bones) {
                 BonePose& pose = p_config.virtual_pose[it];
@@ -797,6 +780,7 @@ namespace HumanAnim
 					forward = trans.origin - parent_pose.origin;
 				}
                 p_skeleton_config.bone_lookat[it] = trans.origin + forward.normalized();
+                p_skeleton_config.bone_global_rotation[it] = trans.basis.get_rotation_quaternion();
 				build_skeleton_global_lookat(p_config, child_pose,trans, p_skeleton_config);
             }
             
