@@ -2412,12 +2412,13 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
+	if (object_slots == nullptr)return;
 	uint64_t t = p_object->get_instance_id();
 	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
 
 	spin_lock.lock();
-
 	if (object_slots == nullptr)return;
+
 #ifdef DEBUG_ENABLED
 	if (object_slots[slot].object != p_object) {
 		spin_lock.unlock();

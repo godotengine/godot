@@ -13,6 +13,9 @@ class Body;
 class Constraint;
 class BodyID;
 
+JPH_SUPPRESS_WARNING_PUSH
+JPH_GCC_SUPPRESS_WARNING("-Wshadow") // GCC complains about the 'Constraints' value conflicting with the 'Constraints' typedef
+
 /// A bit field that determines which aspects of the simulation to save
 enum class EStateRecorderState : uint8
 {
@@ -23,6 +26,8 @@ enum class EStateRecorderState : uint8
 	Constraints			= 8,														///< Save the state of constraints
 	All					= Global | Bodies | Contacts | Constraints					///< Save all state
 };
+
+JPH_SUPPRESS_WARNING_POP
 
 /// Bitwise OR operator for EStateRecorderState
 constexpr EStateRecorderState operator | (EStateRecorderState inLHS, EStateRecorderState inRHS)

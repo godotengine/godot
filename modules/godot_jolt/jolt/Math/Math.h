@@ -72,7 +72,7 @@ JPH_INLINE constexpr T Sign(T inV)
 template <typename T>
 constexpr bool IsPowerOf2(T inV)
 {
-	return (inV & (inV - 1)) == 0;
+	return inV > 0 && (inV & (inV - 1)) == 0;
 }
 
 /// Align inV up to the next inAlignment bytes
