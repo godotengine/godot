@@ -203,7 +203,9 @@ void AudioStreamPlaybackSynchronized::seek(double p_time) {
 }
 
 void AudioStreamPlaybackSynchronized::_seek_or_start(double p_from_pos, bool is_start) {
-	p_from_pos = CLAMP(p_from_pos, 0, stream->get_length());
+	if (p_from_pos < 0 || p_from_pos > stream->get_length()) {
+		p_from_pos = 0;
+	}
 
 	if (is_start && active) {
 		stop();
