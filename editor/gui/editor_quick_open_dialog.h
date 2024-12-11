@@ -37,6 +37,7 @@
 class Button;
 class CenterContainer;
 class CheckButton;
+class ConfigFile;
 class EditorFileSystemDirectory;
 class LineEdit;
 class HFlowContainer;
@@ -123,6 +124,7 @@ private:
 
 	bool showing_history = false;
 	bool never_opened = true;
+	Ref<ConfigFile> history_file;
 
 	QuickOpenDisplayMode content_display_mode = QuickOpenDisplayMode::LIST;
 	Vector<QuickOpenResultItem *> result_items;
@@ -168,6 +170,8 @@ private:
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
 	void _menu_option(int p_option);
+
+	String _get_cache_file_path() const;
 
 	static void _bind_methods();
 };
