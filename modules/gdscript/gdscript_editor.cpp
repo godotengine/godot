@@ -3861,13 +3861,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		Variant::Type t = Variant::Type(i);
-		if (Variant::get_type_name(t) == p_symbol) {
-			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
-			r_result.class_name = Variant::get_type_name(t);
-			return OK;
-		}
+	if (Variant::get_type_by_name(p_symbol) < Variant::VARIANT_MAX) {
+		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
+		r_result.class_name = p_symbol;
+		return OK;
 	}
 
 	if ("Variant" == p_symbol) {

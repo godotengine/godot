@@ -142,6 +142,7 @@ public:
 	const StringName pressed = StaticCString::create("pressed");
 	const StringName id_pressed = StaticCString::create("id_pressed");
 	const StringName toggled = StaticCString::create("toggled");
+	const StringName hover = StaticCString::create("hover");
 
 	const StringName panel = StaticCString::create("panel");
 	const StringName item_selected = StaticCString::create("item_selected");
@@ -150,6 +151,11 @@ public:
 	const StringName text_changed = StaticCString::create("text_changed");
 	const StringName text_submitted = StaticCString::create("text_submitted");
 	const StringName value_changed = StaticCString::create("value_changed");
+
+	const StringName Start = StaticCString::create("Start");
+	const StringName End = StaticCString::create("End");
+
+	const StringName FlatButton = StaticCString::create("FlatButton");
 };
 
 #define SceneStringName(m_name) SceneStringNames::get_singleton()->m_name
