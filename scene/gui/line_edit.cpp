@@ -1859,8 +1859,12 @@ Array LineEdit::get_structured_text_bidi_override_options() const {
 }
 
 void LineEdit::clear() {
+	bool was_empty = text.is_empty();
 	clear_internal();
-	_text_changed();
+	_clear_redo();
+	if (!was_empty) {
+		_emit_text_change();
+	}
 
 	// This should reset virtual keyboard state if needed.
 	if (editing) {
