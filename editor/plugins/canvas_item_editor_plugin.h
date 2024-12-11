@@ -147,7 +147,8 @@ private:
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
-		SKELETON_SHOW_BONES
+		SKELETON_SHOW_BONES,
+		HIDE_SUBSCENE_GIZMOS,
 	};
 
 	enum DragType {
@@ -214,6 +215,7 @@ private:
 	bool show_origin = true;
 	bool show_viewport = true;
 	bool show_helpers = false;
+	bool hide_subscene_gizmos = false;
 	bool show_position_gizmos = true;
 	bool show_lock_gizmos = true;
 	bool show_group_gizmos = true;

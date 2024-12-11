@@ -3827,7 +3827,9 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
+	const bool is_hidden_subscene_gizmo = hide_subscene_gizmos && !p_node->get_scene_file_path().is_empty();
+
+	if (!is_hidden_subscene_gizmo && show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
@@ -3958,17 +3960,17 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 	}
 
 	RID viewport_ci = viewport->get_canvas_item();
+	const bool is_hidden_subscene_gizmo = hide_subscene_gizmos && !p_node->get_scene_file_path().is_empty();
 	if (ci) {
 		real_t offset = 0;
 
 		Ref<Texture2D> lock = get_editor_theme_icon(SNAME("LockViewport"));
-		if (show_lock_gizmos && p_node->has_meta("_edit_lock_")) {
+		if (!is_hidden_subscene_gizmo && show_lock_gizmos && p_node->has_meta("_edit_lock_")) {
 			lock->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			offset += lock->get_size().x;
 		}
-
 		Ref<Texture2D> group = get_editor_theme_icon(SNAME("GroupViewport"));
-		if (show_group_gizmos && ci->has_meta("_edit_group_")) {
+		if (!is_hidden_subscene_gizmo && show_group_gizmos && ci->has_meta("_edit_group_")) {
 			group->draw(viewport_ci, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			//offset += group->get_size().x;
 		}
@@ -4457,6 +4459,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_viewport = !show_viewport;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
 			view_menu->get_popup()->set_item_checked(idx, show_viewport);
+			viewport->queue_redraw();
+		} break;
+		case HIDE_SUBSCENE_GIZMOS: {
+			hide_subscene_gizmos = !hide_subscene_gizmos;
+			int idx = gizmos_menu->get_item_index(HIDE_SUBSCENE_GIZMOS);
+			gizmos_menu->set_item_checked(idx, hide_subscene_gizmos);
 			viewport->queue_redraw();
 		} break;
 		case SHOW_POSITION_GIZMOS: {
@@ -5581,6 +5589,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	gizmos_menu->set_name("GizmosMenu");
 	gizmos_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	gizmos_menu->set_hide_on_checkable_item_selection(false);
+	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/hide_subscene_gizmos", TTR("Hide Subscene Gizmos")), HIDE_SUBSCENE_GIZMOS);
 	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_position_gizmos", TTR("Position")), SHOW_POSITION_GIZMOS);
 	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_lock_gizmos", TTR("Lock")), SHOW_LOCK_GIZMOS);
 	gizmos_menu->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_group_gizmos", TTR("Group")), SHOW_GROUP_GIZMOS);

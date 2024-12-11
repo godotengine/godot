@@ -209,7 +209,7 @@ void EditorNode3DGizmo::set_node_3d(Node3D *p_node) {
 	spatial_node = p_node;
 }
 
-void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden) {
+void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden, bool p_hide_subscenes) {
 	instance = RS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
 	if (skin_reference.is_valid()) {
@@ -220,6 +220,9 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	}
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
+	if (p_hide_subscenes) {
+		layer = 0;
+	}
 	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
 	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	RS::get_singleton()->instance_geometry_set_flag(instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
@@ -236,7 +239,7 @@ void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p
 	ins.material = p_material;
 	ins.xform = p_xform;
 	if (valid) {
-		ins.create_instance(spatial_node, hidden);
+		ins.create_instance(spatial_node, hidden, (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root())));
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform() * ins.xform);
 		if (ins.material.is_valid()) {
 			RS::get_singleton()->instance_geometry_set_material_override(ins.instance, p_material->get_rid());
@@ -317,7 +320,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 
 	ins.mesh = mesh;
 	if (valid) {
-		ins.create_instance(spatial_node, hidden);
+		ins.create_instance(spatial_node, hidden, (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root())));
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
@@ -374,7 +377,7 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 
 	ins.mesh = mesh;
 	if (valid) {
-		ins.create_instance(spatial_node, hidden);
+		ins.create_instance(spatial_node, hidden, (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root())));
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 
@@ -459,7 +462,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 	ins.mesh = mesh;
 	ins.extra_margin = true;
 	if (valid) {
-		ins.create_instance(spatial_node, hidden);
+		ins.create_instance(spatial_node, hidden, (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root())));
 		RS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
 	}
 	instances.push_back(ins);
@@ -504,7 +507,7 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 	ERR_FAIL_NULL_V(spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
+	if ((hidden && !gizmo_plugin->is_selectable_when_hidden()) || (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root()))) {
 		return false;
 	}
 
@@ -585,7 +588,7 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);
 
-	if (hidden) {
+	if (hidden || (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root()))) {
 		return;
 	}
 
@@ -644,7 +647,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	ERR_FAIL_NULL_V(spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
+	if ((hidden && !gizmo_plugin->is_selectable_when_hidden()) || (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root()))) {
 		return false;
 	}
 
@@ -788,7 +791,7 @@ void EditorNode3DGizmo::create() {
 	valid = true;
 
 	for (int i = 0; i < instances.size(); i++) {
-		instances.write[i].create_instance(spatial_node, hidden);
+		instances.write[i].create_instance(spatial_node, hidden, (hide_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root())));
 	}
 
 	bvh_node_id = Node3DEditor::get_singleton()->insert_gizmo_bvh_node(
@@ -828,6 +831,14 @@ void EditorNode3DGizmo::free() {
 	valid = false;
 }
 
+void EditorNode3DGizmo::set_hidden_subscenes(bool p_subscenes) {
+	hide_subscenes = (p_subscenes && !(spatial_node->get_owner() == spatial_node->get_tree()->get_edited_scene_root()));
+	int layer = hide_subscenes ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
+	for (const Instance &instance : instances) {
+		RS::get_singleton()->instance_set_layer_mask(instance.instance, layer);
+	}
+}
+
 void EditorNode3DGizmo::set_hidden(bool p_hidden) {
 	hidden = p_hidden;
 	int layer = hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
@@ -851,6 +862,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_3d"), &EditorNode3DGizmo::get_node_3d);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorNode3DGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorNode3DGizmo::clear);
+	ClassDB::bind_method(D_METHOD("set_hidden_subscenes", "hidden_subscenes"), &EditorNode3DGizmo::set_hidden_subscenes);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
 	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorNode3DGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorNode3DGizmo::get_subgizmo_selection);
@@ -1056,6 +1068,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
 
 	ref->set_plugin(this);
 	ref->set_node_3d(p_spatial);
+	ref->set_hidden_subscenes(hidden_subscenes);
 	ref->set_hidden(current_state == HIDDEN);
 
 	current_gizmos.insert(ref.ptr());
@@ -1194,6 +1207,13 @@ void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo,
 	}
 
 	GDVIRTUAL_CALL(_commit_subgizmos, Ref<EditorNode3DGizmo>(p_gizmo), p_ids, restore, p_cancel);
+}
+
+void EditorNode3DGizmoPlugin::set_state_subscenes(bool p_hidden_subscenes) {
+	hidden_subscenes = p_hidden_subscenes;
+	for (EditorNode3DGizmo *current : current_gizmos) {
+		current->set_hidden_subscenes(hidden_subscenes);
+	}
 }
 
 void EditorNode3DGizmoPlugin::set_state(int p_state) {
