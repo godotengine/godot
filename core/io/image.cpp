@@ -3320,53 +3320,52 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 }
 
 void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) {
+#define RAW_TO_8BIT(channel) CLAMP((uint8_t)Math::round(channel * 255.0), 0, 255)
 	switch (format) {
 		case FORMAT_L8: {
-			ptr[ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
+			ptr[ofs] = RAW_TO_8BIT(p_color.get_v());
 		} break;
 		case FORMAT_LA8: {
-			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
-			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+			ptr[ofs * 2 + 0] = RAW_TO_8BIT(p_color.get_v());
+			ptr[ofs * 2 + 1] = RAW_TO_8BIT(p_color.a);
 		} break;
 		case FORMAT_R8: {
-			ptr[ofs] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+			ptr[ofs] = RAW_TO_8BIT(p_color.r);
 		} break;
 		case FORMAT_RG8: {
-			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+			ptr[ofs * 2 + 0] = RAW_TO_8BIT(p_color.r);
+			ptr[ofs * 2 + 1] = RAW_TO_8BIT(p_color.g);
 		} break;
 		case FORMAT_RGB8: {
-			ptr[ofs * 3 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 3 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			ptr[ofs * 3 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+			ptr[ofs * 3 + 0] = RAW_TO_8BIT(p_color.r);
+			ptr[ofs * 3 + 1] = RAW_TO_8BIT(p_color.g);
+			ptr[ofs * 3 + 2] = RAW_TO_8BIT(p_color.b);
 		} break;
 		case FORMAT_RGBA8: {
-			ptr[ofs * 4 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			ptr[ofs * 4 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			ptr[ofs * 4 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
-			ptr[ofs * 4 + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
-
+			ptr[ofs * 4 + 0] = RAW_TO_8BIT(p_color.r);
+			ptr[ofs * 4 + 1] = RAW_TO_8BIT(p_color.g);
+			ptr[ofs * 4 + 2] = RAW_TO_8BIT(p_color.b);
+			ptr[ofs * 4 + 3] = RAW_TO_8BIT(p_color.a);
 		} break;
+#undef RAW_TO_8BIT
 		case FORMAT_RGBA4444: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 15.0, 0, 15)) << 12;
-			rgba |= uint16_t(CLAMP(p_color.g * 15.0, 0, 15)) << 8;
-			rgba |= uint16_t(CLAMP(p_color.b * 15.0, 0, 15)) << 4;
-			rgba |= uint16_t(CLAMP(p_color.a * 15.0, 0, 15));
+			rgba = CLAMP((uint16_t)Math::round(p_color.r * 15.0), 0, 15) << 12;
+			rgba |= CLAMP((uint16_t)Math::round(p_color.g * 15.0), 0, 15) << 8;
+			rgba |= CLAMP((uint16_t)Math::round(p_color.b * 15.0), 0, 15) << 4;
+			rgba |= CLAMP((uint16_t)Math::round(p_color.a * 15.0), 0, 15);
 
 			((uint16_t *)ptr)[ofs] = rgba;
-
 		} break;
 		case FORMAT_RGB565: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
-			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 33)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
+			rgba = CLAMP((uint16_t)Math::round(p_color.r * 31.0), 0, 31);
+			rgba |= CLAMP((uint16_t)Math::round(p_color.g * 63.0), 0, 63) << 5;
+			rgba |= CLAMP((uint16_t)Math::round(p_color.b * 31.0), 0, 31) << 11;
 
 			((uint16_t *)ptr)[ofs] = rgba;
-
 		} break;
 		case FORMAT_RF: {
 			((float *)ptr)[ofs] = p_color.r;
@@ -3406,7 +3405,6 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		} break;
 		case FORMAT_RGBE9995: {
 			((uint32_t *)ptr)[ofs] = p_color.to_rgbe9995();
-
 		} break;
 		default: {
 			ERR_FAIL_MSG("Can't set_pixel() on compressed image, sorry.");
