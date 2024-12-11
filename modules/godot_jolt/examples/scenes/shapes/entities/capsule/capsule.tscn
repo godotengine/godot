@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://cxj20ksax0cnv"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_saoys"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_idxhg"]
+
+[node name="Capsule" type="RigidBody3D"]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_idxhg")
+
+[node name="Mesh_Top" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+radial_segments = 36
+rings = 18
+material = ExtResource("1_saoys")
+
+[node name="Mesh_Middle" type="CSGCylinder3D" parent="."]
+height = 1.0
+sides = 36
+material = ExtResource("1_saoys")
+
+[node name="Mesh_Bottom" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+radial_segments = 36
+rings = 18
+material = ExtResource("1_saoys")

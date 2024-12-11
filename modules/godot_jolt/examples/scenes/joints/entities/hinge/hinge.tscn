@@ -1,0 +1,112 @@
+[gd_scene load_steps=6 format=3 uid="uid://byhekkfhi30nh"]
+
+[ext_resource type="Material" uid="uid://bd8s48i3httg2" path="res://scenes/common/materials/grey.tres" id="1_6hjrb"]
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="2_b5hp3"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_0gjpd"]
+radius = 0.05
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0vs5y"]
+friction = 0.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ru8pf"]
+margin = 0.0
+size = Vector3(0.04, 1, 0.9)
+
+[node name="Hinge" type="Node3D"]
+metadata/_edit_group_ = true
+
+[node name="Anchor" type="StaticBody3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Anchor"]
+shape = SubResource("SphereShape3D_0gjpd")
+
+[node name="Mesh_Joint" type="CSGCylinder3D" parent="Anchor"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+radius = 0.05
+height = 1.0
+sides = 24
+material = ExtResource("1_6hjrb")
+
+[node name="Joint" type="HingeJoint3D" parent="Anchor"]
+node_a = NodePath("../../Sheet_Upper")
+node_b = NodePath("..")
+motor/enable = true
+motor/target_velocity = 3.0
+metadata/_edit_group_ = true
+
+[node name="Sheet_Upper" type="RigidBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_0vs5y")
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Sheet_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_ru8pf")
+
+[node name="Mesh_Sheet" type="CSGBox3D" parent="Sheet_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+size = Vector3(0.04, 1, 0.9)
+material = ExtResource("2_b5hp3")
+
+[node name="Mesh_Joint" type="CSGCylinder3D" parent="Sheet_Upper"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -1, 0)
+radius = 0.05
+height = 1.0
+sides = 24
+material = ExtResource("1_6hjrb")
+
+[node name="Joint" type="HingeJoint3D" parent="Sheet_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+node_a = NodePath("..")
+node_b = NodePath("../../Sheet_Middle")
+angular_limit/enable = true
+angular_limit/upper = 2.79253
+angular_limit/lower = -2.79253
+metadata/_edit_group_ = true
+
+[node name="Sheet_Middle" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+physics_material_override = SubResource("PhysicsMaterial_0vs5y")
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Sheet_Middle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_ru8pf")
+
+[node name="Mesh_Sheet" type="CSGBox3D" parent="Sheet_Middle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+size = Vector3(0.04, 1, 0.9)
+material = ExtResource("2_b5hp3")
+
+[node name="Mesh_Joint" type="CSGCylinder3D" parent="Sheet_Middle"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -1, 0)
+radius = 0.05
+height = 1.0
+sides = 24
+material = ExtResource("1_6hjrb")
+
+[node name="Joint" type="HingeJoint3D" parent="Sheet_Middle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+node_a = NodePath("..")
+node_b = NodePath("../../Sheet_Lower")
+angular_limit/enable = true
+angular_limit/upper = 1.309
+angular_limit/lower = -1.309
+metadata/_edit_group_ = true
+
+[node name="Sheet_Lower" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+physics_material_override = SubResource("PhysicsMaterial_0vs5y")
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Sheet_Lower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_ru8pf")
+
+[node name="Mesh" type="CSGBox3D" parent="Sheet_Lower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+size = Vector3(0.04, 1, 0.9)
+material = ExtResource("2_b5hp3")

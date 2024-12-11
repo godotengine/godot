@@ -53,7 +53,9 @@ void FramebufferCacheRD::_invalidate(Cache *p_cache) {
 	cache_instances_used--;
 }
 void FramebufferCacheRD::_framebuffer_invalidation_callback(void *p_userdata) {
-	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
+	if (singleton != nullptr) {
+		singleton->_invalidate(reinterpret_cast<Cache*>(p_userdata));
+	}
 }
 
 RID FramebufferCacheRD::get_cache_multipass_array(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_views) {
@@ -84,4 +86,5 @@ FramebufferCacheRD::~FramebufferCacheRD() {
 	if (cache_instances_used > 0) {
 		ERR_PRINT("At exit: " + itos(cache_instances_used) + " framebuffer cache instance(s) still in use.");
 	}
+	singleton = nullptr;
 }

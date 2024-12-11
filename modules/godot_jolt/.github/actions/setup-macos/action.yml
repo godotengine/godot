@@ -1,0 +1,13 @@
+name: Setup macOS
+
+inputs:
+  version:
+    default: 15.2
+
+runs:
+  using: composite
+  steps:
+    - shell: pwsh
+      run: >
+        sudo ./scripts/ci_setup_macos.ps1
+        -Version ${{ inputs.version }}

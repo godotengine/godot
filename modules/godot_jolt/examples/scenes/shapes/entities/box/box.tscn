@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdo18a3tpxda1"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_b1op1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ouvhb"]
+
+[node name="Box" type="RigidBody3D"]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_ouvhb")
+
+[node name="Mesh" type="CSGBox3D" parent="."]
+material = ExtResource("1_b1op1")

@@ -1,0 +1,55 @@
+# Artifacts
+/**/compile_commands.json
+/build
+/examples/addons
+
+# Godot
+/**/.godot
+
+# CMake
+/**/.cmake
+/**/CMakeCache.txt
+/**/CMakeFiles
+/**/CMakeLists.txt.user
+/**/CMakeScripts
+/**/CMakeSettings.json
+/**/CMakeUserPresets.json
+
+# clangd
+/**/.cache
+
+# Visual Studio Code
+/**/.vscode
+
+# Visual Studio
+/**/.vs
+/**/enc_temp_folder
+
+# CLion
+/**/.idea
+
+# Windows
+/**/[Dd]esktop.ini
+/**/[Tt]humbs.db
+/**/*.lnk
+/**/$Recycle.Bin
+/**/$RECYCLE.BIN
+/**/System Volume Information
+
+# Linux
+/**/.directory
+/**/.fuse_hidden*
+/**/.nfs*
+/**/.Trash-*
+/**/*~
+
+# macOS
+/**/__MACOSX
+/**/._*
+/**/.DocumentRevisions-V100
+/**/.DS_Store
+/**/.fseventsd
+/**/.Spotlight-V100
+/**/.TemporaryItems
+/**/.Trashes
+/**/.VolumeIcon.icns

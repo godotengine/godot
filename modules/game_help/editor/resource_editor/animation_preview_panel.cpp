@@ -11,16 +11,17 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     update_animation_resource->connect("pressed", callable_mp(this, &AnimationPreviewPanel::_on_update_animation_resource));
     add_child(update_animation_resource);
 
-    revert_show = memnew(CheckBox);
-    revert_show->set_text(L"反向选择");
-    revert_show->set_tooltip_text(L"反向选择,用来定位哪些没有分类的动画");
-    revert_show->set_h_size_flags(SIZE_EXPAND_FILL);
-    revert_show->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_revert_show_toggled));
-    add_child(revert_show);
     {
         HBoxContainer* hbc = memnew(HBoxContainer);
-        hbc->add_child(revert_show);
         add_child(hbc);
+
+
+		revert_show = memnew(CheckBox);
+		revert_show->set_text(L"反向选择");
+		revert_show->set_tooltip_text(L"反向选择,用来定位哪些没有分类的动画");
+		revert_show->set_h_size_flags(SIZE_EXPAND_FILL);
+		revert_show->connect("toggled", callable_mp(this, &AnimationPreviewPanel::_on_revert_show_toggled));
+		hbc->add_child(revert_show);
 
         HSeparator* separator = memnew(HSeparator);
         separator->set_self_modulate(Color(0.349727, 0.355482, 0.26278, 1));

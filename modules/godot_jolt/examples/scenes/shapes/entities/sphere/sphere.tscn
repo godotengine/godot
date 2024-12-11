@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://h15mak3p16ck"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_pbysg"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_s1iwo"]
+
+[node name="Sphere" type="RigidBody3D"]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_s1iwo")
+
+[node name="Mesh" type="CSGSphere3D" parent="."]
+radial_segments = 36
+rings = 18
+material = ExtResource("1_pbysg")

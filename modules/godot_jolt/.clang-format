@@ -1,0 +1,205 @@
+---
+# Requires LLVM 16.0
+
+# General
+Language: Cpp
+Standard: c++17
+TabWidth: 4
+UseTab: Always
+LineEnding: LF
+InsertNewlineAtEOF: true
+
+# Braces
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: MultiLine
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+Cpp11BracedListStyle: true
+InsertBraces: true
+
+# Indentation
+AccessModifierOffset: -4
+ColumnLimit: 100
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentExternBlock: NoIndent
+IndentGotoLabels: false
+IndentPPDirectives: None
+IndentRequiresClause: true
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+LambdaBodyIndentation: Signature
+NamespaceIndentation: None
+PPIndentWidth: -1
+RequiresExpressionIndentation: OuterScope
+
+# Spaces
+BitFieldColonSpacing: Both
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: Never
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Newlines/Packing
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BreakAfterAttributes: Always
+BreakBeforeBinaryOperators: None
+BreakBeforeConceptDeclarations: Always
+BreakBeforeInlineASMColon: OnlyMultiline
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+BreakStringLiterals: true
+CommentPragmas: ''
+CompactNamespaces: false
+DeriveLineEnding: false
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+PackConstructorInitializers: Never
+ReflowComments: true
+RequiresClausePosition: OwnLine
+SeparateDefinitionBlocks: Always
+ShortNamespaceLines: 1
+
+# Penalties
+PenaltyBreakAssignment: 1000000
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakComment: 0
+PenaltyBreakFirstLessLess: 1000000
+PenaltyBreakOpenParenthesis: 0
+PenaltyBreakString: 0
+PenaltyBreakTemplateDeclaration: 0
+PenaltyExcessCharacter: 1000000
+PenaltyIndentedWhitespace: 3
+PenaltyReturnTypeOnItsOwnLine: 1000000
+
+# Includes
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^".+"$'
+    Priority: 1
+  - Regex: '^<gdextension_interface.h>$'
+    Priority: 2
+  - Regex: '^<godot_cpp/.+>$'
+    Priority: 3
+  - Regex: '^<Jolt/Jolt.h>$'
+    Priority: 4
+  - Regex: '^<Jolt/.+>$'
+    Priority: 5
+  - Regex: '^<.+\..+>$'
+    Priority: 6
+  - Regex: '^<.+>$'
+    Priority: 7
+SortIncludes: true
+
+# Alignment
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: None
+AlignConsecutiveAssignments: None
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: None
+AlignEscapedNewlines: Left
+AlignOperands: DontAlign
+AlignTrailingComments:
+  Kind: Never
+
+# Macros
+AttributeMacros: []
+ForEachMacros: []
+IfMacros: []
+NamespaceMacros: []
+StatementAttributeLikeMacros: []
+StatementMacros: []
+TypenameMacros: []
+WhitespaceSensitiveMacros: []
+
+# Miscellaneous
+FixNamespaceComments: true
+InsertTrailingCommas: None
+IntegerLiteralSeparator:
+  Binary: 0
+  Decimal: 0
+  Hex: 0
+QualifierAlignment: Left
+RawStringFormats: []
+RemoveSemicolon: false
+SortUsingDeclarations: false
+
+# BasedOnStyle
+# BreakAfterJavaFieldAnnotations
+# BreakArrays
+# DisableFormat
+# IncludeIsMainRegex
+# IncludeIsMainSourceRegex
+# JavaImportGroups
+# JavaScriptQuotes
+# JavaScriptWrapImports
+# MacroBlockBegin
+# MacroBlockEnd
+# ObjCBinPackProtocolList
+# ObjCBlockIndentWidth
+# ObjCBreakBeforeNestedBlockParam
+# ObjCSpaceAfterProperty
+# ObjCSpaceBeforeProtocolList
+# QualifierOrder
+# RemoveBracesLLVM
+# SortJavaStaticImport
+# SpaceBeforeParensOptions
+...

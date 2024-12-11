@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://cqqkfrnystsat"]
+
+[ext_resource type="ArrayMesh" uid="uid://chutsbwjbhepv" path="res://scenes/shapes/entities/convex_polygon/convex_polygon.obj" id="1_8ckho"]
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="2_22ivk"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_pht20"]
+points = PackedVector3Array(0.513514, -0.220629, 0.259261, 0.136317, 0.220554, 0.526645, -0.116909, -3.76701e-05, 0.618101, -0.0802454, -0.419657, 0.246584, 0.209747, -0.419657, 0.152411, 0.209747, -0.419657, -0.152487, 0.419577, -0.259386, -0.000102997, 0.469187, -3.76701e-05, -0.152487, 0.324501, 0.572665, 0.246584, -0.129751, 0.25931, 0.399097, -0.453818, 0.220554, 0.259261, -0.397787, -0.259386, 0.34813, -0.259419, -0.419657, -0.000102997, -0.544544, -0.259386, -0.349759, 0.129585, -0.259386, -0.399174, 0.289909, -3.76701e-05, -0.399174, 0.080079, 0.419582, -0.439922, 0.396792, 0.25931, -0.0782355, -8.32677e-05, 0.493306, -0.110834, -0.209913, 0.419582, -0.152487, -0.419744, 0.25931, -0.000102997, -0.290076, -3.76701e-05, -0.571738, -8.32677e-05, -3.76701e-05, -0.703425)
+
+[node name="ConvexPolygon" type="RigidBody3D"]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_pht20")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_8ckho")
+surface_material_override/0 = ExtResource("2_22ivk")

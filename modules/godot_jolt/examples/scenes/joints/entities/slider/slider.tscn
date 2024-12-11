@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://coe74njl0yehx"]
+
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="1_uisoj"]
+[ext_resource type="PackedScene" uid="uid://22dn1k6ow04" path="res://scenes/joints/entities/rail/rail.tscn" id="2_g088v"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7528f"]
+
+[node name="Slider" type="Node3D"]
+metadata/_edit_group_ = true
+
+[node name="Rail" parent="." instance=ExtResource("2_g088v")]
+
+[node name="Box" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 1, 0)
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Box"]
+shape = SubResource("BoxShape3D_7528f")
+
+[node name="Mesh" type="CSGBox3D" parent="Box"]
+material = ExtResource("1_uisoj")
+
+[node name="Joint" type="SliderJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 1, 0)
+node_a = NodePath("../Box")
+node_b = NodePath("../Rail")
+linear_limit/upper_distance = 0.0
+linear_limit/lower_distance = -2.6

@@ -1,0 +1,89 @@
+[gd_scene load_steps=5 format=3 uid="uid://1qr0mfmdd78x"]
+
+[ext_resource type="Material" uid="uid://bd8s48i3httg2" path="res://scenes/common/materials/grey.tres" id="1_twesm"]
+[ext_resource type="Material" uid="uid://ctm5wb05otmn4" path="res://scenes/common/materials/green.tres" id="2_idrjo"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_2svna"]
+radius = 0.075
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wm2kd"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[node name="Pin" type="Node3D"]
+metadata/_edit_group_ = true
+
+[node name="Anchor" type="StaticBody3D" parent="."]
+collision_layer = 0
+collision_mask = 0
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Anchor"]
+shape = SubResource("SphereShape3D_2svna")
+
+[node name="Mesh_Joint" type="CSGSphere3D" parent="Anchor"]
+radius = 0.075
+radial_segments = 24
+rings = 12
+material = ExtResource("1_twesm")
+
+[node name="Joint" type="PinJoint3D" parent="Anchor"]
+node_a = NodePath("..")
+node_b = NodePath("../../Box_Upper")
+metadata/_edit_group_ = true
+
+[node name="Box_Upper" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Box_Upper"]
+shape = SubResource("BoxShape3D_wm2kd")
+
+[node name="Mesh_Connector_Upper" type="CSGCylinder3D" parent="Box_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+radius = 0.05
+height = 0.25
+sides = 16
+material = ExtResource("1_twesm")
+
+[node name="Mesh_Box" type="CSGBox3D" parent="Box_Upper"]
+size = Vector3(0.5, 0.5, 0.5)
+material = ExtResource("2_idrjo")
+
+[node name="Mesh_Connector_Lower" type="CSGCylinder3D" parent="Box_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.375, 0)
+radius = 0.05
+height = 0.25
+sides = 16
+material = ExtResource("1_twesm")
+
+[node name="Mesh_Joint" type="CSGSphere3D" parent="Box_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+radius = 0.075
+radial_segments = 24
+rings = 12
+material = ExtResource("1_twesm")
+
+[node name="Joint" type="PinJoint3D" parent="Box_Upper"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+node_a = NodePath("..")
+node_b = NodePath("../../Box_Lower")
+exclude_nodes_from_collision = false
+metadata/_edit_group_ = true
+
+[node name="Box_Lower" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, 0)
+metadata/_edit_group_ = true
+
+[node name="Shape" type="CollisionShape3D" parent="Box_Lower"]
+shape = SubResource("BoxShape3D_wm2kd")
+
+[node name="Mesh_Connector" type="CSGCylinder3D" parent="Box_Lower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+radius = 0.05
+height = 0.25
+sides = 16
+material = ExtResource("1_twesm")
+
+[node name="Mesh_Box" type="CSGBox3D" parent="Box_Lower"]
+size = Vector3(0.5, 0.5, 0.5)
+material = ExtResource("2_idrjo")

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>${MACOSX_FRAMEWORK_NAME}</string>
+	<key>CFBundleName</key>
+	<string>${PROJECT_TITLE}</string>
+	<key>CFBundleDisplayName</key>
+	<string>${PROJECT_TITLE}</string>
+	<key>CFBundleIdentifier</key>
+	<string>${PROJECT_BUNDLE_IDENTIFIER}</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>${PROJECT_COPYRIGHT}</string>
+	<key>CFBundleVersion</key>
+	<string>${PROJECT_VERSION}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${PROJECT_VERSION}</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>iPhoneOS</string>
+	</array>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>DTPlatformName</key>
+	<string>iphoneos</string>
+	<key>MinimumOSVersion</key>
+	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
+
+	<!--
+	    HACK(mihe): This is to work around a bug in Godot 4.3-beta1, where it treats Framework
+	    bundles the same as XCFramework bundles, and expects there to be an `AvailableLibraries`
+	    entry, which is really only a thing in XCFramework bundles. Note that we also lie about the
+	    binary path having a `.dylib` extension in order for Godot to correctly identify this as a
+	    dynamically linked bundle.
+	-->
+	<key>AvailableLibraries</key>
+	<array>
+		<dict>
+			<key>BinaryPath</key>
+			<string>${MACOSX_FRAMEWORK_NAME}.dylib</string>
+		</dict>
+	</array>
+</dict>
+</plist>
