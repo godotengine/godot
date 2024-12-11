@@ -349,7 +349,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 	{
 		MutexLock lock(variant_set_mutex);
 
-		p_data.version->variants.write[variant] = RD::get_singleton()->shader_create_from_bytecode(shader_data, p_data.version->variants[variant]);
+		p_data.version->variants.write[variant] = RD::get_singleton()->shader_create_from_bytecode_with_samplers(shader_data, p_data.version->variants[variant], immutable_samplers);
 		p_data.version->variant_data.write[variant] = shader_data;
 	}
 }
@@ -491,7 +491,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		}
 		{
 			MutexLock lock(variant_set_mutex);
-			RID shader = RD::get_singleton()->shader_create_from_bytecode(p_version->variant_data[variant_id], p_version->variants[variant_id]);
+			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
 			if (shader.is_null()) {
 				for (uint32_t j = 0; j < i; j++) {
 					int variant_free_id = group_to_variant_map[p_group][j];
@@ -769,7 +769,8 @@ ShaderRD::ShaderRD() {
 	base_compute_defines = base_compute_define_text.ascii();
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &r_immutable_samplers) {
+	immutable_samplers = r_immutable_samplers;
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 

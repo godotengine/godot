@@ -1079,6 +1079,15 @@
 				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
 			</description>
 		</method>
+		<method name="screen_get_image_rect" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="rect" type="Rect2i" />
+			<description>
+				Returns screenshot of the screen [param rect].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+			</description>
+		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -1913,6 +1922,9 @@
 		<constant name="FEATURE_WINDOW_DRAG" value="27" enum="Feature">
 			The display server supports initiating window drag operation on demand. See [method window_start_drag].
 		</constant>
+		<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28" enum="Feature">
+			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag.
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -2128,7 +2140,12 @@
 			Window style is overridden, forcing sharp corners.
 			[b]Note:[/b] This flag is implemented only on Windows (11).
 		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="9" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
+			Windows is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+		</constant>
+		<constant name="WINDOW_FLAG_MAX" value="10" enum="WindowFlags">
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">

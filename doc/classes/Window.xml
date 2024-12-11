@@ -586,6 +586,9 @@
 		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
 			The screen the window is currently on.
 		</member>
+		<member name="exclude_from_capture" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
 			Needs [member transient] enabled to work.
@@ -853,7 +856,12 @@
 			[b]Note:[/b] This flag has no effect in embedded windows.
 			[b]Note:[/b] This flag is implemented only on Windows (11).
 		</constant>
-		<constant name="FLAG_MAX" value="9" enum="Flags">
+		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
+			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+		</constant>
+		<constant name="FLAG_MAX" value="10" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
