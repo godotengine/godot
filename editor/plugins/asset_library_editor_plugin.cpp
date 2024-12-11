@@ -820,7 +820,7 @@ void EditorAssetLibrary::_image_update(bool p_use_cache, bool p_final, const Pac
 		Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".data", FileAccess::READ);
 		if (file.is_valid()) {
 			PackedByteArray cached_data;
-			int len = file->get_32();
+			int len = file->get_u32();
 			cached_data.resize(len);
 
 			uint8_t *w = cached_data.ptrw();
@@ -917,7 +917,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					const uint8_t *r = p_data.ptr();
 					file = FileAccess::open(cache_filename_base + ".data", FileAccess::WRITE);
 					if (file.is_valid()) {
-						file->store_32(len);
+						file->store_u32(len);
 						file->store_buffer(r, len);
 					}
 

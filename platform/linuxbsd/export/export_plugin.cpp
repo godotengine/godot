@@ -204,14 +204,14 @@ void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_opti
 bool EditorExportPlatformLinuxBSD::is_elf(const String &p_path) const {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("Can't open file: \"%s\".", p_path));
-	uint32_t magic = fb->get_32();
+	uint32_t magic = fb->get_u32();
 	return (magic == 0x464c457f);
 }
 
 bool EditorExportPlatformLinuxBSD::is_shebang(const String &p_path) const {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("Can't open file: \"%s\".", p_path));
-	uint16_t magic = fb->get_16();
+	uint16_t magic = fb->get_u16();
 	return (magic == 0x2123);
 }
 
@@ -255,7 +255,7 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 
 	// Read and check ELF magic number.
 	{
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
 			return "invalid";
 		}
@@ -264,7 +264,7 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 	// Process header.
 	int64_t header_pos = f->get_position();
 	f->seek(header_pos + 14);
-	uint16_t machine = f->get_16();
+	uint16_t machine = f->get_u16();
 	f->close();
 
 	switch (machine) {
@@ -300,7 +300,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 	// Read and check ELF magic number.
 	{
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
@@ -309,7 +309,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 	// Read program architecture bits from class field.
 
-	int bits = f->get_8() * 32;
+	int bits = f->get_u8() * 32;
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
@@ -322,16 +322,16 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	if (bits == 32) {
 		section_header_size = 40;
 		f->seek(0x20);
-		section_table_pos = f->get_32();
+		section_table_pos = f->get_u32();
 		f->seek(0x30);
 	} else { // 64
 		section_header_size = 64;
 		f->seek(0x28);
-		section_table_pos = f->get_64();
+		section_table_pos = f->get_u64();
 		f->seek(0x3c);
 	}
-	int num_sections = f->get_16();
-	int string_section_idx = f->get_16();
+	int num_sections = f->get_u16();
+	int string_section_idx = f->get_u16();
 
 	// Load the strings table.
 	uint8_t *strings;
@@ -344,12 +344,12 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		int64_t string_data_size;
 		if (bits == 32) {
 			f->seek(f->get_position() + 0x10);
-			string_data_pos = f->get_32();
-			string_data_size = f->get_32();
+			string_data_pos = f->get_u32();
+			string_data_size = f->get_u32();
 		} else { // 64
 			f->seek(f->get_position() + 0x18);
-			string_data_pos = f->get_64();
-			string_data_size = f->get_64();
+			string_data_pos = f->get_u64();
+			string_data_size = f->get_u64();
 		}
 
 		// Read strings data.
@@ -368,18 +368,18 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		int64_t section_header_pos = section_table_pos + i * section_header_size;
 		f->seek(section_header_pos);
 
-		uint32_t name_offset = f->get_32();
+		uint32_t name_offset = f->get_u32();
 		if (strcmp((char *)strings + name_offset, "pck") == 0) {
 			// "pck" section found, let's patch!
 
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
-				f->store_32(p_embedded_start);
-				f->store_32(p_embedded_size);
+				f->store_u32(p_embedded_start);
+				f->store_u32(p_embedded_size);
 			} else { // 64
 				f->seek(section_header_pos + 0x18);
-				f->store_64(p_embedded_start);
-				f->store_64(p_embedded_size);
+				f->store_u64(p_embedded_start);
+				f->store_u64(p_embedded_size);
 			}
 
 			found = true;

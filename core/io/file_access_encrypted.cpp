@@ -65,13 +65,13 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 
 		if (use_magic) {
-			uint32_t magic = p_base->get_32();
+			uint32_t magic = p_base->get_u32();
 			ERR_FAIL_COND_V(magic != ENCRYPTED_HEADER_MAGIC, ERR_FILE_UNRECOGNIZED);
 		}
 
 		unsigned char md5d[16];
 		p_base->get_buffer(md5d, 16);
-		length = p_base->get_64();
+		length = p_base->get_u64();
 
 		iv.resize(16);
 		p_base->get_buffer(iv.ptrw(), 16);
@@ -148,11 +148,11 @@ void FileAccessEncrypted::_close() {
 		ctx.set_encode_key(key.ptrw(), 256);
 
 		if (use_magic) {
-			file->store_32(ENCRYPTED_HEADER_MAGIC);
+			file->store_u32(ENCRYPTED_HEADER_MAGIC);
 		}
 
 		file->store_buffer(hash, 16);
-		file->store_64(data.size());
+		file->store_u64(data.size());
 		file->store_buffer(iv.ptr(), 16);
 
 		ctx.encrypt_cfb(len, iv.ptrw(), compressed.ptrw(), compressed.ptrw());

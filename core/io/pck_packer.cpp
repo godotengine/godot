@@ -89,17 +89,17 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 
 	alignment = p_alignment;
 
-	file->store_32(PACK_HEADER_MAGIC);
-	file->store_32(PACK_FORMAT_VERSION);
-	file->store_32(VERSION_MAJOR);
-	file->store_32(VERSION_MINOR);
-	file->store_32(VERSION_PATCH);
+	file->store_u32(PACK_HEADER_MAGIC);
+	file->store_u32(PACK_FORMAT_VERSION);
+	file->store_u32(VERSION_MAJOR);
+	file->store_u32(VERSION_MINOR);
+	file->store_u32(VERSION_PATCH);
 
 	uint32_t pack_flags = 0;
 	if (enc_dir) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
-	file->store_32(pack_flags); // flags
+	file->store_u32(pack_flags); // flags
 
 	files.clear();
 	ofs = 0;
@@ -175,14 +175,14 @@ Error PCKPacker::flush(bool p_verbose) {
 	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	int64_t file_base_ofs = file->get_position();
-	file->store_64(0); // files base
+	file->store_u64(0); // files base
 
 	for (int i = 0; i < 16; i++) {
-		file->store_32(0); // reserved
+		file->store_u32(0); // reserved
 	}
 
 	// write the index
-	file->store_32(files.size());
+	file->store_u32(files.size());
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = file;
@@ -201,14 +201,14 @@ Error PCKPacker::flush(bool p_verbose) {
 		int string_len = files[i].path.utf8().length();
 		int pad = _get_pad(4, string_len);
 
-		fhead->store_32(string_len + pad);
+		fhead->store_u32(string_len + pad);
 		fhead->store_buffer((const uint8_t *)files[i].path.utf8().get_data(), string_len);
 		for (int j = 0; j < pad; j++) {
-			fhead->store_8(0);
+			fhead->store_u8(0);
 		}
 
-		fhead->store_64(files[i].ofs);
-		fhead->store_64(files[i].size); // pay attention here, this is where file is
+		fhead->store_u64(files[i].ofs);
+		fhead->store_u64(files[i].size); // pay attention here, this is where file is
 		fhead->store_buffer(files[i].md5.ptr(), 16); //also save md5 for file
 
 		uint32_t flags = 0;
@@ -218,7 +218,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		if (files[i].removal) {
 			flags |= PACK_FILE_REMOVAL;
 		}
-		fhead->store_32(flags);
+		fhead->store_u32(flags);
 	}
 
 	if (fae.is_valid()) {
@@ -228,12 +228,12 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int header_padding = _get_pad(alignment, file->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		file->store_8(0);
+		file->store_u8(0);
 	}
 
 	int64_t file_base = file->get_position();
 	file->seek(file_base_ofs);
-	file->store_64(file_base); // update files base
+	file->store_u64(file_base); // update files base
 	file->seek(file_base);
 
 	const uint32_t buf_max = 65536;
@@ -271,7 +271,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 		int pad = _get_pad(alignment, file->get_position());
 		for (int j = 0; j < pad; j++) {
-			file->store_8(0);
+			file->store_u8(0);
 		}
 
 		count += 1;

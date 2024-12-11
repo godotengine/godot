@@ -2105,10 +2105,10 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	}
 
-	uint8_t c = f->get_8();
+	uint8_t c = f->get_u8();
 	while (!f->eof_reached()) {
-		fw->store_8(c);
-		c = f->get_8();
+		fw->store_u8(c);
+		c = f->get_u8();
 	}
 
 	bool all_ok = fw->get_error() == OK;

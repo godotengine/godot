@@ -209,7 +209,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	// Avoid trying to load/interpret potential build artifacts from Visual Studio (e.g. when compiling native plugins inside the project tree).
 	// This should only match if it's indeed a COFF file header.
 	// https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#machine-types
-	const int first_bytes = f->get_16();
+	const int first_bytes = f->get_u16();
 	static const Vector<int> coff_header_machines{
 		0x0, // IMAGE_FILE_MACHINE_UNKNOWN
 		0x8664, // IMAGE_FILE_MACHINE_AMD64
@@ -665,7 +665,7 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	if (mesh_lightmap_caches.size()) {
 		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
 		if (f.is_valid()) {
-			f->store_32(mesh_lightmap_caches.size());
+			f->store_u32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
 				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());

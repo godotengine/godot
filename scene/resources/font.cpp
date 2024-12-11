@@ -1480,8 +1480,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 		// Binary BMFont file.
 		ERR_FAIL_COND_V_MSG(magic[3] != 3, ERR_CANT_CREATE, vformat("Version %d of BMFont is not supported (should be 3).", (int)magic[3]));
 
-		uint8_t block_type = f->get_8();
-		uint32_t block_size = f->get_32();
+		uint8_t block_type = f->get_u8();
+		uint32_t block_size = f->get_u32();
 		bool unicode = false;
 		uint8_t encoding = 9;
 		while (!f->eof_reached()) {
@@ -1489,11 +1489,11 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					base_size = ABS(static_cast<int16_t>(f->get_u16()));
 					if (base_size == 0) {
 						base_size = 16;
 					}
-					uint8_t flags = f->get_8();
+					uint8_t flags = f->get_u8();
 					if (flags & (1 << 3)) {
 						st_flags.set_flag(TextServer::FONT_BOLD);
 					}
@@ -1501,7 +1501,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 						st_flags.set_flag(TextServer::FONT_ITALIC);
 					}
 					unicode = (flags & 0x02);
-					uint8_t encoding_id = f->get_8(); // non-unicode charset
+					uint8_t encoding_id = f->get_u8(); // non-unicode charset
 					if (!unicode) {
 						switch (encoding_id) {
 							case 0x00: {
@@ -1536,11 +1536,11 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 							} break;
 						};
 					}
-					f->get_16(); // stretch_h, skip
-					f->get_8(); // aa, skip
-					f->get_32(); // padding, skip
-					f->get_16(); // spacing, skip
-					outline = f->get_8();
+					f->get_u16(); // stretch_h, skip
+					f->get_u8(); // aa, skip
+					f->get_u32(); // padding, skip
+					f->get_u16(); // spacing, skip
+					outline = f->get_u8();
 					// font name
 					PackedByteArray name_data;
 					name_data.resize(block_size - 14);
@@ -1550,16 +1550,16 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				} break;
 				case 2: /* common */ {
 					ERR_FAIL_COND_V_MSG(block_size != 15, ERR_CANT_CREATE, "Invalid BMFont common block size.");
-					height = f->get_16();
-					ascent = f->get_16();
-					f->get_32(); // scale, skip
-					f->get_16(); // pages, skip
-					uint8_t flags = f->get_8();
+					height = f->get_u16();
+					ascent = f->get_u16();
+					f->get_u32(); // scale, skip
+					f->get_u16(); // pages, skip
+					uint8_t flags = f->get_u8();
 					packed = (flags & 0x01);
-					ch[3] = f->get_8();
-					ch[0] = f->get_8();
-					ch[1] = f->get_8();
-					ch[2] = f->get_8();
+					ch[3] = f->get_u8();
+					ch[0] = f->get_u8();
+					ch[1] = f->get_u8();
+					ch[2] = f->get_u8();
 					for (int i = 0; i < 4; i++) {
 						if (ch[i] == 0 && first_gl_ch == -1) {
 							first_gl_ch = i;
@@ -1578,7 +1578,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				case 3: /* pages */ {
 					int page = 0;
 					CharString cs;
-					char32_t c = f->get_8();
+					char32_t c = f->get_u8();
 					while (!f->eof_reached() && f->get_position() <= off + block_size) {
 						if (c == '\0') {
 							String base_dir = p_path.get_base_dir();
@@ -1632,7 +1632,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 						} else {
 							cs += c;
 						}
-						c = f->get_8();
+						c = f->get_u8();
 					}
 				} break;
 				case 4: /* chars */ {
@@ -1643,7 +1643,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 						Vector2 offset;
 						Rect2 uv_rect;
 
-						char32_t idx = f->get_32();
+						char32_t idx = f->get_u32();
 						if (!unicode && encoding < 9) {
 							if (idx >= 0x80 && idx <= 0xFF) {
 								idx = _oem_to_unicode[encoding][idx - 0x80];
@@ -1652,21 +1652,21 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 								idx = 0x00;
 							}
 						}
-						uv_rect.position.x = (int16_t)f->get_16();
-						uv_rect.position.y = (int16_t)f->get_16();
-						uv_rect.size.width = (int16_t)f->get_16();
+						uv_rect.position.x = (int16_t)f->get_u16();
+						uv_rect.position.y = (int16_t)f->get_u16();
+						uv_rect.size.width = (int16_t)f->get_u16();
 						size.width = uv_rect.size.width;
-						uv_rect.size.height = (int16_t)f->get_16();
+						uv_rect.size.height = (int16_t)f->get_u16();
 						size.height = uv_rect.size.height;
-						offset.x = (int16_t)f->get_16();
-						offset.y = (int16_t)f->get_16() - ascent;
-						advance.x = (int16_t)f->get_16();
+						offset.x = (int16_t)f->get_u16();
+						offset.y = (int16_t)f->get_u16() - ascent;
+						advance.x = (int16_t)f->get_u16();
 						if (advance.x < 0) {
 							advance.x = size.width + 1;
 						}
 
-						int texture_idx = f->get_8();
-						uint8_t channel = f->get_8();
+						int texture_idx = f->get_u8();
+						uint8_t channel = f->get_u8();
 
 						int ch_off = 0;
 						if (packed) {
@@ -1705,8 +1705,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 					int pair_count = block_size / 10;
 					for (int i = 0; i < pair_count; i++) {
 						Vector2i kpk;
-						kpk.x = f->get_32();
-						kpk.y = f->get_32();
+						kpk.x = f->get_u32();
+						kpk.y = f->get_u32();
 						if (!unicode && encoding < 9) {
 							if (kpk.x >= 0x80 && kpk.x <= 0xFF) {
 								kpk.x = _oem_to_unicode[encoding][kpk.x - 0x80];
@@ -1721,7 +1721,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 								kpk.y = 0x00;
 							}
 						}
-						set_kerning(0, base_size, kpk, Vector2((int16_t)f->get_16(), 0));
+						set_kerning(0, base_size, kpk, Vector2((int16_t)f->get_u16(), 0));
 					}
 				} break;
 				default: {
@@ -1729,8 +1729,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				} break;
 			}
 			f->seek(off + block_size);
-			block_type = f->get_8();
-			block_size = f->get_32();
+			block_type = f->get_u8();
+			block_size = f->get_u32();
 		}
 
 	} else {

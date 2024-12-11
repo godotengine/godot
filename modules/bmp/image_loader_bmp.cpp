@@ -214,38 +214,38 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	// file header and a minimal info header
 	if (f->get_length() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
 		// File Header
-		bmp_header.bmp_file_header.bmp_signature = f->get_16();
+		bmp_header.bmp_file_header.bmp_signature = f->get_u16();
 		if (bmp_header.bmp_file_header.bmp_signature == BITMAP_SIGNATURE) {
-			bmp_header.bmp_file_header.bmp_file_size = f->get_32();
-			bmp_header.bmp_file_header.bmp_file_padding = f->get_32();
-			bmp_header.bmp_file_header.bmp_file_offset = f->get_32();
+			bmp_header.bmp_file_header.bmp_file_size = f->get_u32();
+			bmp_header.bmp_file_header.bmp_file_padding = f->get_u32();
+			bmp_header.bmp_file_header.bmp_file_offset = f->get_u32();
 
 			// Info Header
-			bmp_header.bmp_info_header.bmp_header_size = f->get_32();
+			bmp_header.bmp_info_header.bmp_header_size = f->get_u32();
 			ERR_FAIL_COND_V_MSG(bmp_header.bmp_info_header.bmp_header_size < BITMAP_INFO_HEADER_MIN_SIZE, ERR_FILE_CORRUPT,
 					vformat("Couldn't parse the BMP info header. The file is likely corrupt: %s", f->get_path()));
 
-			bmp_header.bmp_info_header.bmp_width = f->get_32();
-			bmp_header.bmp_info_header.bmp_height = f->get_32();
+			bmp_header.bmp_info_header.bmp_width = f->get_u32();
+			bmp_header.bmp_info_header.bmp_height = f->get_u32();
 
-			bmp_header.bmp_info_header.bmp_planes = f->get_16();
+			bmp_header.bmp_info_header.bmp_planes = f->get_u16();
 			ERR_FAIL_COND_V_MSG(bmp_header.bmp_info_header.bmp_planes != 1, ERR_FILE_CORRUPT,
 					vformat("Couldn't parse the BMP planes. The file is likely corrupt: %s", f->get_path()));
 
-			bmp_header.bmp_info_header.bmp_bit_count = f->get_16();
-			bmp_header.bmp_info_header.bmp_compression = f->get_32();
-			bmp_header.bmp_info_header.bmp_size_image = f->get_32();
-			bmp_header.bmp_info_header.bmp_pixels_per_meter_x = f->get_32();
-			bmp_header.bmp_info_header.bmp_pixels_per_meter_y = f->get_32();
-			bmp_header.bmp_info_header.bmp_colors_used = f->get_32();
-			bmp_header.bmp_info_header.bmp_important_colors = f->get_32();
+			bmp_header.bmp_info_header.bmp_bit_count = f->get_u16();
+			bmp_header.bmp_info_header.bmp_compression = f->get_u32();
+			bmp_header.bmp_info_header.bmp_size_image = f->get_u32();
+			bmp_header.bmp_info_header.bmp_pixels_per_meter_x = f->get_u32();
+			bmp_header.bmp_info_header.bmp_pixels_per_meter_y = f->get_u32();
+			bmp_header.bmp_info_header.bmp_colors_used = f->get_u32();
+			bmp_header.bmp_info_header.bmp_important_colors = f->get_u32();
 
 			switch (bmp_header.bmp_info_header.bmp_compression) {
 				case BI_BITFIELDS: {
-					bmp_header.bmp_bitfield.red_mask = f->get_32();
-					bmp_header.bmp_bitfield.green_mask = f->get_32();
-					bmp_header.bmp_bitfield.blue_mask = f->get_32();
-					bmp_header.bmp_bitfield.alpha_mask = f->get_32();
+					bmp_header.bmp_bitfield.red_mask = f->get_u32();
+					bmp_header.bmp_bitfield.green_mask = f->get_u32();
+					bmp_header.bmp_bitfield.blue_mask = f->get_u32();
+					bmp_header.bmp_bitfield.alpha_mask = f->get_u32();
 
 					bmp_header.bmp_bitfield.red_mask_width = get_mask_width(bmp_header.bmp_bitfield.red_mask);
 					bmp_header.bmp_bitfield.green_mask_width = get_mask_width(bmp_header.bmp_bitfield.green_mask);

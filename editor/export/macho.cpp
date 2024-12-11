@@ -71,13 +71,13 @@ bool MachO::alloc_signature(uint64_t p_size) {
 			lc_offset = BSWAP32(lc_offset);
 			lc_size = BSWAP32(lc_size);
 		}
-		fa->store_32(lc_offset);
-		fa->store_32(lc_size);
+		fa->store_u32(lc_offset);
+		fa->store_u32(lc_size);
 
 		// Write new command number.
 		fa->seek(0x10);
-		uint32_t ncmds = fa->get_32();
-		uint32_t cmdssize = fa->get_32();
+		uint32_t ncmds = fa->get_u32();
+		uint32_t cmdssize = fa->get_u32();
 		if (swap) {
 			ncmds = BSWAP32(ncmds);
 			cmdssize = BSWAP32(cmdssize);
@@ -89,8 +89,8 @@ bool MachO::alloc_signature(uint64_t p_size) {
 			cmdssize = BSWAP32(cmdssize);
 		}
 		fa->seek(0x10);
-		fa->store_32(ncmds);
-		fa->store_32(cmdssize);
+		fa->store_u32(ncmds);
+		fa->store_u32(cmdssize);
 
 		lc_limit = lc_limit + sizeof(LoadCommandHeader) + 8;
 
@@ -101,14 +101,14 @@ bool MachO::alloc_signature(uint64_t p_size) {
 bool MachO::is_macho(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fb->get_32();
+	uint32_t magic = fb->get_u32();
 	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
 }
 
 uint32_t MachO::get_filetype(const String &p_path) {
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fa->get_32();
+	uint32_t magic = fa->get_u32();
 	MachHeader mach_header;
 
 	// Read MachO header.
@@ -118,7 +118,7 @@ uint32_t MachO::get_filetype(const String &p_path) {
 	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
 		// Thin 64-bit binary.
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-		fa->get_32(); // Skip extra reserved field.
+		fa->get_u32(); // Skip extra reserved field.
 	} else {
 		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
 	}
@@ -128,7 +128,7 @@ uint32_t MachO::get_filetype(const String &p_path) {
 bool MachO::open_file(const String &p_path) {
 	fa = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fa->get_32();
+	uint32_t magic = fa->get_u32();
 	MachHeader mach_header;
 
 	// Read MachO header.
@@ -139,7 +139,7 @@ bool MachO::open_file(const String &p_path) {
 	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
 		// Thin 64-bit binary.
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-		fa->get_32(); // Skip extra reserved field.
+		fa->get_u32(); // Skip extra reserved field.
 	} else {
 		ERR_FAIL_V_MSG(false, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
 	}
@@ -283,9 +283,9 @@ uint64_t MachO::get_signature_offset() {
 
 	fa->seek(signature_offset + 8);
 	if (swap) {
-		return BSWAP32(fa->get_32());
+		return BSWAP32(fa->get_u32());
 	} else {
-		return fa->get_32();
+		return fa->get_u32();
 	}
 }
 
@@ -305,9 +305,9 @@ uint64_t MachO::get_signature_size() {
 
 	fa->seek(signature_offset + 12);
 	if (swap) {
-		return BSWAP32(fa->get_32());
+		return BSWAP32(fa->get_u32());
 	} else {
-		return fa->get_32();
+		return fa->get_u32();
 	}
 }
 
@@ -318,18 +318,18 @@ bool MachO::is_signed() {
 	}
 
 	fa->seek(get_signature_offset());
-	uint32_t magic = BSWAP32(fa->get_32());
+	uint32_t magic = BSWAP32(fa->get_u32());
 	if (magic != 0xfade0cc0) {
 		return false; // No SuperBlob found.
 	}
-	fa->get_32(); // Skip size field, unused.
-	uint32_t count = BSWAP32(fa->get_32());
+	fa->get_u32(); // Skip size field, unused.
+	uint32_t count = BSWAP32(fa->get_u32());
 	for (uint32_t i = 0; i < count; i++) {
-		uint32_t index_type = BSWAP32(fa->get_32());
-		uint32_t offset = BSWAP32(fa->get_32());
+		uint32_t index_type = BSWAP32(fa->get_u32());
+		uint32_t offset = BSWAP32(fa->get_u32());
 		if (index_type == 0x00000000) { // CodeDirectory index type.
 			fa->seek(get_signature_offset() + offset + 12);
-			uint32_t flags = BSWAP32(fa->get_32());
+			uint32_t flags = BSWAP32(fa->get_u32());
 			if (flags & 0x20000) {
 				return false; // Found CD, linker-signed.
 			} else {
@@ -347,24 +347,24 @@ PackedByteArray MachO::get_cdhash_sha1() {
 	}
 
 	fa->seek(get_signature_offset());
-	uint32_t magic = BSWAP32(fa->get_32());
+	uint32_t magic = BSWAP32(fa->get_u32());
 	if (magic != 0xfade0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
-	fa->get_32(); // Skip size field, unused.
-	uint32_t count = BSWAP32(fa->get_32());
+	fa->get_u32(); // Skip size field, unused.
+	uint32_t count = BSWAP32(fa->get_u32());
 	for (uint32_t i = 0; i < count; i++) {
-		fa->get_32(); // Index type, skip.
-		uint32_t offset = BSWAP32(fa->get_32());
+		fa->get_u32(); // Index type, skip.
+		uint32_t offset = BSWAP32(fa->get_u32());
 		uint64_t pos = fa->get_position();
 
 		fa->seek(get_signature_offset() + offset);
-		uint32_t cdmagic = BSWAP32(fa->get_32());
-		uint32_t cdsize = BSWAP32(fa->get_32());
+		uint32_t cdmagic = BSWAP32(fa->get_u32());
+		uint32_t cdsize = BSWAP32(fa->get_u32());
 		if (cdmagic == 0xfade0c02) { // CodeDirectory.
 			fa->seek(get_signature_offset() + offset + 36);
-			uint8_t hash_size = fa->get_8();
-			uint8_t hash_type = fa->get_8();
+			uint8_t hash_size = fa->get_u8();
+			uint8_t hash_type = fa->get_u8();
 			if (hash_size == 0x14 && hash_type == 0x01) { /* SHA-1 */
 				PackedByteArray hash;
 				hash.resize(0x14);
@@ -394,24 +394,24 @@ PackedByteArray MachO::get_cdhash_sha256() {
 	}
 
 	fa->seek(get_signature_offset());
-	uint32_t magic = BSWAP32(fa->get_32());
+	uint32_t magic = BSWAP32(fa->get_u32());
 	if (magic != 0xfade0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
-	fa->get_32(); // Skip size field, unused.
-	uint32_t count = BSWAP32(fa->get_32());
+	fa->get_u32(); // Skip size field, unused.
+	uint32_t count = BSWAP32(fa->get_u32());
 	for (uint32_t i = 0; i < count; i++) {
-		fa->get_32(); // Index type, skip.
-		uint32_t offset = BSWAP32(fa->get_32());
+		fa->get_u32(); // Index type, skip.
+		uint32_t offset = BSWAP32(fa->get_u32());
 		uint64_t pos = fa->get_position();
 
 		fa->seek(get_signature_offset() + offset);
-		uint32_t cdmagic = BSWAP32(fa->get_32());
-		uint32_t cdsize = BSWAP32(fa->get_32());
+		uint32_t cdmagic = BSWAP32(fa->get_u32());
+		uint32_t cdsize = BSWAP32(fa->get_u32());
 		if (cdmagic == 0xfade0c02) { // CodeDirectory.
 			fa->seek(get_signature_offset() + offset + 36);
-			uint8_t hash_size = fa->get_8();
-			uint8_t hash_type = fa->get_8();
+			uint8_t hash_size = fa->get_u8();
+			uint8_t hash_type = fa->get_u8();
 			if (hash_size == 0x20 && hash_type == 0x02) { /* SHA-256 */
 				PackedByteArray hash;
 				hash.resize(0x20);
@@ -441,20 +441,20 @@ PackedByteArray MachO::get_requirements() {
 	}
 
 	fa->seek(get_signature_offset());
-	uint32_t magic = BSWAP32(fa->get_32());
+	uint32_t magic = BSWAP32(fa->get_u32());
 	if (magic != 0xfade0cc0) {
 		return PackedByteArray(); // No SuperBlob found.
 	}
-	fa->get_32(); // Skip size field, unused.
-	uint32_t count = BSWAP32(fa->get_32());
+	fa->get_u32(); // Skip size field, unused.
+	uint32_t count = BSWAP32(fa->get_u32());
 	for (uint32_t i = 0; i < count; i++) {
-		fa->get_32(); // Index type, skip.
-		uint32_t offset = BSWAP32(fa->get_32());
+		fa->get_u32(); // Index type, skip.
+		uint32_t offset = BSWAP32(fa->get_u32());
 		uint64_t pos = fa->get_position();
 
 		fa->seek(get_signature_offset() + offset);
-		uint32_t rqmagic = BSWAP32(fa->get_32());
-		uint32_t rqsize = BSWAP32(fa->get_32());
+		uint32_t rqmagic = BSWAP32(fa->get_u32());
+		uint32_t rqsize = BSWAP32(fa->get_u32());
 		if (rqmagic == 0xfade0c01) { // Requirements.
 			PackedByteArray blob;
 			fa->seek(get_signature_offset() + offset);
@@ -489,16 +489,16 @@ bool MachO::set_signature_size(uint64_t p_size) {
 	if (new_size <= old_size) {
 		fa->seek(get_signature_offset());
 		for (uint64_t i = 0; i < old_size; i++) {
-			fa->store_8(0x00);
+			fa->store_u8(0x00);
 		}
 		return true;
 	}
 
 	fa->seek(signature_offset + 12);
 	if (swap) {
-		fa->store_32(BSWAP32(new_size));
+		fa->store_u32(BSWAP32(new_size));
 	} else {
-		fa->store_32(new_size);
+		fa->store_u32(new_size);
 	}
 
 	uint64_t end = get_signature_offset() + new_size;
@@ -556,7 +556,7 @@ bool MachO::set_signature_size(uint64_t p_size) {
 	}
 	fa->seek(get_signature_offset());
 	for (uint64_t i = 0; i < new_size; i++) {
-		fa->store_8(0x00);
+		fa->store_u8(0x00);
 	}
 	return true;
 }

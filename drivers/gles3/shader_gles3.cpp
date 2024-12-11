@@ -569,25 +569,25 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	f->get_buffer((uint8_t *)header, 4);
 	ERR_FAIL_COND_V(header != String(shader_file_header), false);
 
-	uint32_t file_version = f->get_32();
+	uint32_t file_version = f->get_u32();
 	if (file_version != cache_file_version) {
 		return false; // wrong version
 	}
 
-	int cache_variant_count = static_cast<int>(f->get_32());
+	int cache_variant_count = static_cast<int>(f->get_u32());
 	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
 	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
-		uint32_t cache_specialization_count = f->get_32();
+		uint32_t cache_specialization_count = f->get_u32();
 		OAHashMap<uint64_t, Version::Specialization> variant;
 		for (uint32_t j = 0; j < cache_specialization_count; j++) {
-			uint64_t specialization_key = f->get_64();
-			uint32_t variant_size = f->get_32();
+			uint64_t specialization_key = f->get_u64();
+			uint32_t variant_size = f->get_u32();
 			if (variant_size == 0) {
 				continue;
 			}
-			uint32_t variant_format = f->get_32();
+			uint32_t variant_format = f->get_u32();
 			Vector<uint8_t> variant_bytes;
 			variant_bytes.resize(variant_size);
 
@@ -651,26 +651,26 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE, &error);
 	ERR_FAIL_COND(f.is_null());
 	f->store_buffer((const uint8_t *)shader_file_header, 4);
-	f->store_32(cache_file_version);
-	f->store_32(variant_count);
+	f->store_u32(cache_file_version);
+	f->store_u32(variant_count);
 
 	for (int i = 0; i < variant_count; i++) {
 		int cache_specialization_count = p_version->variants[i].get_num_elements();
-		f->store_32(cache_specialization_count);
+		f->store_u32(cache_specialization_count);
 
 		for (OAHashMap<uint64_t, ShaderGLES3::Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
 			const uint64_t specialization_key = *it.key;
-			f->store_64(specialization_key);
+			f->store_u64(specialization_key);
 
 			const Version::Specialization *specialization = it.value;
 			if (specialization == nullptr) {
-				f->store_32(0);
+				f->store_u32(0);
 				continue;
 			}
 			GLint program_size = 0;
 			glGetProgramiv(specialization->id, GL_PROGRAM_BINARY_LENGTH, &program_size);
 			if (program_size == 0) {
-				f->store_32(0);
+				f->store_u32(0);
 				continue;
 			}
 			PackedByteArray compiled_program;
@@ -678,11 +678,11 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 			GLenum binary_format = 0;
 			glGetProgramBinary(specialization->id, program_size, nullptr, &binary_format, compiled_program.ptrw());
 			if (program_size != compiled_program.size()) {
-				f->store_32(0);
+				f->store_u32(0);
 				continue;
 			}
-			f->store_32(program_size);
-			f->store_32(binary_format);
+			f->store_u32(program_size);
+			f->store_u32(binary_format);
 			f->store_buffer(compiled_program.ptr(), compiled_program.size());
 		}
 	}

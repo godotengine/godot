@@ -912,7 +912,7 @@ public:
 	String get_line(Ref<FileAccess> f) {
 		_line_buffer.clear();
 
-		char32_t c = f->get_8();
+		char32_t c = f->get_u8();
 
 		while (!f->eof_reached()) {
 			if (c == '\n') {
@@ -928,7 +928,7 @@ public:
 				_line_buffer.push_back(c);
 			}
 
-			c = f->get_8();
+			c = f->get_u8();
 		}
 
 		_line_buffer.push_back(0);

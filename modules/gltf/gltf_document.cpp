@@ -306,12 +306,12 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(p_file.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_file->get_position() != 0, ERR_FILE_CANT_READ);
-	uint32_t magic = p_file->get_32();
+	uint32_t magic = p_file->get_u32();
 	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
-	p_file->get_32(); // version
-	p_file->get_32(); // length
-	uint32_t chunk_length = p_file->get_32();
-	uint32_t chunk_type = p_file->get_32();
+	p_file->get_u32(); // version
+	p_file->get_u32(); // length
+	uint32_t chunk_length = p_file->get_u32();
+	uint32_t chunk_type = p_file->get_u32();
 
 	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
 	Vector<uint8_t> json_data;
@@ -333,8 +333,8 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 
 	//data?
 
-	chunk_length = p_file->get_32();
-	chunk_type = p_file->get_32();
+	chunk_length = p_file->get_u32();
+	chunk_type = p_file->get_u32();
 
 	if (p_file->eof_reached()) {
 		return OK; //all good
@@ -7954,7 +7954,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess
 		return FAILED;
 	}
 	p_file->seek(0);
-	uint32_t magic = p_file->get_32();
+	uint32_t magic = p_file->get_u32();
 	if (magic == 0x46546C67) {
 		//binary file
 		//text file
@@ -8076,29 +8076,29 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		const uint32_t binary_chunk_type = 0x004E4942; //BIN
 
 		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_32(magic);
-		file->store_32(p_state->major_version); // version
+		file->store_u32(magic);
+		file->store_u32(p_state->major_version); // version
 		uint32_t total_length = header_size + chunk_header_size + text_chunk_length;
 		if (binary_chunk_length) {
 			total_length += chunk_header_size + binary_chunk_length;
 		}
-		file->store_32(total_length);
+		file->store_u32(total_length);
 
 		// Write the JSON text chunk.
-		file->store_32(text_chunk_length);
-		file->store_32(text_chunk_type);
+		file->store_u32(text_chunk_length);
+		file->store_u32(text_chunk_type);
 		file->store_buffer((uint8_t *)&cs[0], cs.length());
 		for (uint32_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
-			file->store_8(' ');
+			file->store_u8(' ');
 		}
 
 		// Write a single binary chunk.
 		if (binary_chunk_length) {
-			file->store_32(binary_chunk_length);
-			file->store_32(binary_chunk_type);
+			file->store_u32(binary_chunk_length);
+			file->store_u32(binary_chunk_type);
 			file->store_buffer(p_state->buffers[0].ptr(), binary_data_length);
 			for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
-				file->store_8(0);
+				file->store_u8(0);
 			}
 		}
 	} else {

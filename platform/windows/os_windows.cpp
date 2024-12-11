@@ -2017,10 +2017,10 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 	// Process header.
 	{
 		f->seek(0x3c);
-		uint32_t pe_pos = f->get_32();
+		uint32_t pe_pos = f->get_u32();
 
 		f->seek(pe_pos);
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x00004550) {
 			return 0;
 		}
@@ -2031,9 +2031,9 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 		int64_t header_pos = f->get_position();
 
 		f->seek(header_pos + 2);
-		num_sections = f->get_16();
+		num_sections = f->get_u16();
 		f->seek(header_pos + 16);
-		uint16_t opt_header_size = f->get_16();
+		uint16_t opt_header_size = f->get_u16();
 
 		// Skip rest of header + optional header to go to the section headers.
 		f->seek(f->get_position() + 2 + opt_header_size);
@@ -2052,7 +2052,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 		if (strcmp((char *)section_name, "pck") == 0) {
 			f->seek(section_header_pos + 20);
-			off = f->get_32();
+			off = f->get_u32();
 			break;
 		}
 	}

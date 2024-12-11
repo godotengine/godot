@@ -3421,17 +3421,17 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
 	int pos = 0;
 
-	icon_dir->idReserved = f->get_32();
+	icon_dir->idReserved = f->get_u32();
 	pos += sizeof(WORD);
 	f->seek(pos);
 
-	icon_dir->idType = f->get_32();
+	icon_dir->idType = f->get_u32();
 	pos += sizeof(WORD);
 	f->seek(pos);
 
 	ERR_FAIL_COND_MSG(icon_dir->idType != 1, "Invalid icon file format!");
 
-	icon_dir->idCount = f->get_32();
+	icon_dir->idCount = f->get_u32();
 	pos += sizeof(WORD);
 	f->seek(pos);
 

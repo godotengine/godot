@@ -282,7 +282,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(0);
+		pd->f->store_u8(0);
 	}
 
 	// Store MD5 of original file.
@@ -1596,7 +1596,7 @@ Error EditorExportPlatform::_remove_pack_file(void *p_userdata, const String &p_
 	// This padding will likely never be added, as we should already be aligned when removals are added.
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(0);
+		pd->f->store_u8(0);
 	}
 
 	sd.md5.resize(16);
@@ -1895,17 +1895,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		// Ensure embedded PCK starts at a 64-bit multiple
 		int pad = f->get_position() % 8;
 		for (int i = 0; i < pad; i++) {
-			f->store_8(0);
+			f->store_u8(0);
 		}
 	}
 
 	int64_t pck_start_pos = f->get_position();
 
-	f->store_32(PACK_HEADER_MAGIC);
-	f->store_32(PACK_FORMAT_VERSION);
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
-	f->store_32(VERSION_PATCH);
+	f->store_u32(PACK_HEADER_MAGIC);
+	f->store_u32(PACK_FORMAT_VERSION);
+	f->store_u32(VERSION_MAJOR);
+	f->store_u32(VERSION_MINOR);
+	f->store_u32(VERSION_PATCH);
 
 	uint32_t pack_flags = 0;
 	bool enc_pck = p_preset->get_enc_pck();
@@ -1916,17 +1916,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	if (p_embed) {
 		pack_flags |= PACK_REL_FILEBASE;
 	}
-	f->store_32(pack_flags); // flags
+	f->store_u32(pack_flags); // flags
 
 	uint64_t file_base_ofs = f->get_position();
-	f->store_64(0); // files base
+	f->store_u64(0); // files base
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
-		f->store_32(0);
+		f->store_u32(0);
 	}
 
-	f->store_32(pd.file_ofs.size()); //amount of files
+	f->store_u32(pd.file_ofs.size()); //amount of files
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = f;
@@ -2000,14 +2000,14 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
 		uint32_t pad = _get_pad(4, string_len);
 
-		fhead->store_32(string_len + pad);
+		fhead->store_u32(string_len + pad);
 		fhead->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
 		for (uint32_t j = 0; j < pad; j++) {
-			fhead->store_8(0);
+			fhead->store_u8(0);
 		}
 
-		fhead->store_64(pd.file_ofs[i].ofs);
-		fhead->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
+		fhead->store_u64(pd.file_ofs[i].ofs);
+		fhead->store_u64(pd.file_ofs[i].size); // pay attention here, this is where file is
 		fhead->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
 		uint32_t flags = 0;
 		if (pd.file_ofs[i].encrypted) {
@@ -2016,7 +2016,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		if (pd.file_ofs[i].removal) {
 			flags |= PACK_FILE_REMOVAL;
 		}
-		fhead->store_32(flags);
+		fhead->store_u32(flags);
 	}
 
 	if (fae.is_valid()) {
@@ -2026,7 +2026,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		f->store_8(0);
+		f->store_u8(0);
 	}
 
 	uint64_t file_base = f->get_position();
@@ -2035,7 +2035,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		file_base_store -= pck_start_pos;
 	}
 	f->seek(file_base_ofs);
-	f->store_64(file_base_store); // update files base
+	f->store_u64(file_base_store); // update files base
 	f->seek(file_base);
 
 	// Save the rest of the data.
@@ -2065,12 +2065,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		uint64_t embed_end = f->get_position() - embed_pos + 12;
 		uint64_t pad = embed_end % 8;
 		for (uint64_t i = 0; i < pad; i++) {
-			f->store_8(0);
+			f->store_u8(0);
 		}
 
 		uint64_t pck_size = f->get_position() - pck_start_pos;
-		f->store_64(pck_size);
-		f->store_32(PACK_HEADER_MAGIC);
+		f->store_u64(pck_size);
+		f->store_u32(PACK_HEADER_MAGIC);
 
 		if (r_embedded_size) {
 			*r_embedded_size = f->get_position() - embed_pos;

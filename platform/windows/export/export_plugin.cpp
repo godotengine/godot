@@ -66,21 +66,21 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 		}
 
 		// Read ICONDIR.
-		f->get_16(); // Reserved.
-		uint16_t icon_type = f->get_16(); // Image type: 1 - ICO.
-		uint16_t icon_count = f->get_16(); // Number of images.
+		f->get_u16(); // Reserved.
+		uint16_t icon_type = f->get_u16(); // Image type: 1 - ICO.
+		uint16_t icon_count = f->get_u16(); // Number of images.
 		ERR_FAIL_COND_V(icon_type != 1, ERR_CANT_OPEN);
 
 		for (uint16_t i = 0; i < icon_count; i++) {
 			// Read ICONDIRENTRY.
-			uint16_t w = f->get_8(); // Width in pixels.
-			uint16_t h = f->get_8(); // Height in pixels.
-			uint8_t pal_colors = f->get_8(); // Number of colors in the palette (0 - no palette).
-			f->get_8(); // Reserved.
-			uint16_t planes = f->get_16(); // Number of color planes.
-			uint16_t bpp = f->get_16(); // Bits per pixel.
-			uint32_t img_size = f->get_32(); // Image data size in bytes.
-			uint32_t img_offset = f->get_32(); // Image data offset.
+			uint16_t w = f->get_u8(); // Width in pixels.
+			uint16_t h = f->get_u8(); // Height in pixels.
+			uint8_t pal_colors = f->get_u8(); // Number of colors in the palette (0 - no palette).
+			f->get_u8(); // Reserved.
+			uint16_t planes = f->get_u16(); // Number of color planes.
+			uint16_t bpp = f->get_u16(); // Bits per pixel.
+			uint32_t img_size = f->get_u32(); // Image data size in bytes.
+			uint32_t img_offset = f->get_u32(); // Image data offset.
 			if (w != h) {
 				continue;
 			}
@@ -127,23 +127,23 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	// Write ICONDIR.
-	fw->store_16(0); // Reserved.
-	fw->store_16(1); // Image type: 1 - ICO.
-	fw->store_16(valid_icon_count); // Number of images.
+	fw->store_u16(0); // Reserved.
+	fw->store_u16(1); // Image type: 1 - ICO.
+	fw->store_u16(valid_icon_count); // Number of images.
 
 	// Write ICONDIRENTRY.
 	uint32_t img_offset = 6 + 16 * valid_icon_count;
 	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
-			fw->store_8(icon_size[i]); // Width in pixels.
-			fw->store_8(icon_size[i]); // Height in pixels.
-			fw->store_8(di.pal_colors); // Number of colors in the palette (0 - no palette).
-			fw->store_8(0); // Reserved.
-			fw->store_16(di.planes); // Number of color planes.
-			fw->store_16(di.bpp); // Bits per pixel.
-			fw->store_32(di.data.size()); // Image data size in bytes.
-			fw->store_32(img_offset); // Image data offset.
+			fw->store_u8(icon_size[i]); // Width in pixels.
+			fw->store_u8(icon_size[i]); // Height in pixels.
+			fw->store_u8(di.pal_colors); // Number of colors in the palette (0 - no palette).
+			fw->store_u8(0); // Reserved.
+			fw->store_u16(di.planes); // Number of color planes.
+			fw->store_u16(di.bpp); // Bits per pixel.
+			fw->store_u32(di.data.size()); // Image data size in bytes.
+			fw->store_u32(img_offset); // Image data offset.
 
 			img_offset += di.data.size();
 		}
@@ -825,17 +825,17 @@ String EditorExportPlatformWindows::_get_exe_arch(const String &p_path) const {
 	// Jump to the PE header and check the magic number.
 	{
 		f->seek(0x3c);
-		uint32_t pe_pos = f->get_32();
+		uint32_t pe_pos = f->get_u32();
 
 		f->seek(pe_pos);
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x00004550) {
 			return "invalid";
 		}
 	}
 
 	// Process header.
-	uint16_t machine = f->get_16();
+	uint16_t machine = f->get_u16();
 	f->close();
 
 	switch (machine) {
@@ -870,10 +870,10 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	// Jump to the PE header and check the magic number
 	{
 		f->seek(0x3c);
-		uint32_t pe_pos = f->get_32();
+		uint32_t pe_pos = f->get_u32();
 
 		f->seek(pe_pos);
-		uint32_t magic = f->get_32();
+		uint32_t magic = f->get_u32();
 		if (magic != 0x00004550) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
@@ -887,9 +887,9 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		int64_t header_pos = f->get_position();
 
 		f->seek(header_pos + 2);
-		num_sections = f->get_16();
+		num_sections = f->get_u16();
 		f->seek(header_pos + 16);
-		uint16_t opt_header_size = f->get_16();
+		uint16_t opt_header_size = f->get_u16();
 
 		// Skip rest of header + optional header to go to the section headers
 		f->seek(f->get_position() + 2 + opt_header_size);
@@ -913,12 +913,12 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 
 			// Set virtual size to a little to avoid it taking memory (zero would give issues)
 			f->seek(section_header_pos + 8);
-			f->store_32(8);
+			f->store_u32(8);
 
 			f->seek(section_header_pos + 16);
-			f->store_32(p_embedded_size);
+			f->store_u32(p_embedded_size);
 			f->seek(section_header_pos + 20);
-			f->store_32(p_embedded_start);
+			f->store_u32(p_embedded_start);
 
 			found = true;
 			break;

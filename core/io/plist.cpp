@@ -458,28 +458,28 @@ uint64_t PList::read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size)
 	uint64_t ret = 0;
 	switch (p_size) {
 		case 1: {
-			ret = p_file->get_8();
+			ret = p_file->get_u8();
 		} break;
 		case 2: {
-			ret = BSWAP16(p_file->get_16());
+			ret = BSWAP16(p_file->get_u16());
 		} break;
 		case 3: {
-			ret = BSWAP32(p_file->get_32() & 0x00FFFFFF);
+			ret = BSWAP32(p_file->get_u32() & 0x00FFFFFF);
 		} break;
 		case 4: {
-			ret = BSWAP32(p_file->get_32());
+			ret = BSWAP32(p_file->get_u32());
 		} break;
 		case 5: {
-			ret = BSWAP64(p_file->get_64() & 0x000000FFFFFFFFFF);
+			ret = BSWAP64(p_file->get_u64() & 0x000000FFFFFFFFFF);
 		} break;
 		case 6: {
-			ret = BSWAP64(p_file->get_64() & 0x0000FFFFFFFFFFFF);
+			ret = BSWAP64(p_file->get_u64() & 0x0000FFFFFFFFFFFF);
 		} break;
 		case 7: {
-			ret = BSWAP64(p_file->get_64() & 0x00FFFFFFFFFFFFFF);
+			ret = BSWAP64(p_file->get_u64() & 0x00FFFFFFFFFFFFFF);
 		} break;
 		case 8: {
-			ret = BSWAP64(p_file->get_64());
+			ret = BSWAP64(p_file->get_u64());
 		} break;
 		default: {
 			ret = 0;
@@ -500,7 +500,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 	ERR_FAIL_COND_V_MSG(marker_off == 0, Ref<PListNode>(), "Invalid marker size.");
 
 	p_file->seek(marker_off);
-	uint8_t marker = p_file->get_8();
+	uint8_t marker = p_file->get_u8();
 	uint8_t marker_type = marker & 0xF0;
 	uint64_t marker_size = marker & 0x0F;
 
@@ -528,12 +528,12 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0x30: {
 			node->data_type = PL_NODE_TYPE_DATE;
-			node->data_int = BSWAP64(p_file->get_64());
+			node->data_int = BSWAP64(p_file->get_u64());
 			node->data_string = Time::get_singleton()->get_datetime_string_from_unix_time(node->data_real + 978307200.0).utf8();
 		} break;
 		case 0x40: {
 			if (marker_size == 0x0F) {
-				uint8_t ext = p_file->get_8() & 0xF;
+				uint8_t ext = p_file->get_u8() & 0xF;
 				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_DATA;
@@ -544,7 +544,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0x50: {
 			if (marker_size == 0x0F) {
-				uint8_t ext = p_file->get_8() & 0xF;
+				uint8_t ext = p_file->get_u8() & 0xF;
 				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_STRING;
@@ -553,13 +553,13 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0x60: {
 			if (marker_size == 0x0F) {
-				uint8_t ext = p_file->get_8() & 0xF;
+				uint8_t ext = p_file->get_u8() & 0xF;
 				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
 			}
 			Char16String cs16;
 			cs16.resize(marker_size + 1);
 			for (uint64_t i = 0; i < marker_size; i++) {
-				cs16[i] = BSWAP16(p_file->get_16());
+				cs16[i] = BSWAP16(p_file->get_u16());
 			}
 			node->data_type = PL_NODE_TYPE_STRING;
 			node->data_string = String::utf16(cs16.ptr(), cs16.length()).utf8();
@@ -571,7 +571,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0xA0:
 		case 0xC0: {
 			if (marker_size == 0x0F) {
-				uint8_t ext = p_file->get_8() & 0xF;
+				uint8_t ext = p_file->get_u8() & 0xF;
 				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
@@ -588,7 +588,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0xD0: {
 			if (marker_size == 0x0F) {
-				uint8_t ext = p_file->get_8() & 0xF;
+				uint8_t ext = p_file->get_u8() & 0xF;
 				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
@@ -628,11 +628,11 @@ bool PList::load_file(const String &p_filename) {
 
 	if (String((const char *)magic, 8) == "bplist00") {
 		fb->seek_end(-26);
-		trailer.offset_size = fb->get_8();
-		trailer.ref_size = fb->get_8();
-		trailer.object_num = BSWAP64(fb->get_64());
-		trailer.root_offset_idx = BSWAP64(fb->get_64());
-		trailer.offset_table_start = BSWAP64(fb->get_64());
+		trailer.offset_size = fb->get_u8();
+		trailer.ref_size = fb->get_u8();
+		trailer.object_num = BSWAP64(fb->get_u64());
+		trailer.root_offset_idx = BSWAP64(fb->get_u64());
+		trailer.offset_table_start = BSWAP64(fb->get_u64());
 		root = read_bplist_obj(fb, trailer.root_offset_idx);
 
 		return root.is_valid();

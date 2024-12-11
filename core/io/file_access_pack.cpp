@@ -199,7 +199,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 	// Search for the header at the start offset - standalone PCK file.
 	f->seek(p_offset);
-	uint32_t magic = f->get_32();
+	uint32_t magic = f->get_u32();
 	if (magic == PACK_HEADER_MAGIC) {
 		pck_header_found = true;
 	}
@@ -216,7 +216,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 			// Search for the header, in case PCK start and section have different alignment.
 			for (int i = 0; i < 8; i++) {
 				f->seek(pck_off);
-				magic = f->get_32();
+				magic = f->get_u32();
 				if (magic == PACK_HEADER_MAGIC) {
 #ifdef DEBUG_ENABLED
 					print_verbose("PCK header found in executable pck section, loading from offset 0x" + String::num_int64(pck_off - 4, 16));
@@ -238,13 +238,13 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		f->seek_end();
 		f->seek(f->get_position() - 4);
-		magic = f->get_32();
+		magic = f->get_u32();
 
 		if (magic == PACK_HEADER_MAGIC) {
 			f->seek(f->get_position() - 12);
-			uint64_t ds = f->get_64();
+			uint64_t ds = f->get_u64();
 			f->seek(f->get_position() - ds - 8);
-			magic = f->get_32();
+			magic = f->get_u32();
 			if (magic == PACK_HEADER_MAGIC) {
 #ifdef DEBUG_ENABLED
 				print_verbose("PCK header found at the end of executable, loading from offset 0x" + String::num_int64(f->get_position() - 4, 16));
@@ -260,26 +260,26 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 	int64_t pck_start_pos = f->get_position() - 4;
 
-	uint32_t version = f->get_32();
-	uint32_t ver_major = f->get_32();
-	uint32_t ver_minor = f->get_32();
-	f->get_32(); // patch number, not used for validation.
+	uint32_t version = f->get_u32();
+	uint32_t ver_major = f->get_u32();
+	uint32_t ver_minor = f->get_u32();
+	f->get_u32(); // patch number, not used for validation.
 
 	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
 	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
 
-	uint32_t pack_flags = f->get_32();
-	uint64_t file_base = f->get_64();
+	uint32_t pack_flags = f->get_u32();
+	uint64_t file_base = f->get_u64();
 
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
 	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
-		f->get_32();
+		f->get_u32();
 	}
 
-	int file_count = f->get_32();
+	int file_count = f->get_u32();
 
 	if (rel_filebase) {
 		file_base += pck_start_pos;
@@ -302,7 +302,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	}
 
 	for (int i = 0; i < file_count; i++) {
-		uint32_t sl = f->get_32();
+		uint32_t sl = f->get_u32();
 		CharString cs;
 		cs.resize(sl + 1);
 		f->get_buffer((uint8_t *)cs.ptr(), sl);
@@ -311,11 +311,11 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		String path;
 		path.parse_utf8(cs.ptr(), sl);
 
-		uint64_t ofs = f->get_64();
-		uint64_t size = f->get_64();
+		uint64_t ofs = f->get_u64();
+		uint64_t size = f->get_u64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		uint32_t flags = f->get_32();
+		uint32_t flags = f->get_u32();
 
 		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
 			PackedData::get_singleton()->remove_path(path);

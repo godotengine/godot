@@ -152,14 +152,14 @@ void EditorFileServer::poll() {
 		tags.push_back(tag);
 	}
 
-	uint32_t file_buffer_decompressed_size = tcp_peer->get_32();
+	uint32_t file_buffer_decompressed_size = tcp_peer->get_u32();
 	HashMap<String, uint64_t> cached_files;
 
 	if (file_buffer_decompressed_size > 0) {
 		pr.step(TTR("Getting remote file system"), 1, true);
 
 		// Got files cached by client.
-		uint32_t file_buffer_size = tcp_peer->get_32();
+		uint32_t file_buffer_size = tcp_peer->get_u32();
 		print_verbose("EFS: Getting file buffer: compressed - " + String::humanize_size(file_buffer_size) + " decompressed: " + String::humanize_size(file_buffer_decompressed_size));
 
 		ERR_FAIL_COND(tcp_peer->get_status() != StreamPeerTCP::STATUS_CONNECTED);

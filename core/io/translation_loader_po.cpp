@@ -42,17 +42,17 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	Ref<TranslationPO> translation = Ref<TranslationPO>(memnew(TranslationPO));
 	String config;
 
-	uint32_t magic = f->get_32();
+	uint32_t magic = f->get_u32();
 	if (magic == 0x950412de) {
 		// Load binary MO file.
 
-		uint16_t version_maj = f->get_16();
-		uint16_t version_min = f->get_16();
+		uint16_t version_maj = f->get_u16();
+		uint16_t version_min = f->get_u16();
 		ERR_FAIL_COND_V_MSG(version_maj > 1, Ref<Resource>(), vformat("Unsupported MO file %s, version %d.%d.", path, version_maj, version_min));
 
-		uint32_t num_strings = f->get_32();
-		uint32_t id_table_offset = f->get_32();
-		uint32_t trans_table_offset = f->get_32();
+		uint32_t num_strings = f->get_u32();
+		uint32_t id_table_offset = f->get_u32();
+		uint32_t trans_table_offset = f->get_u32();
 
 		// Read string tables.
 		for (uint32_t i = 0; i < num_strings; i++) {
@@ -65,8 +65,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				Vector<uint8_t> data;
 				f->seek(id_table_offset + i * 8);
 				uint32_t str_start = 0;
-				uint32_t str_len = f->get_32();
-				uint32_t str_offset = f->get_32();
+				uint32_t str_len = f->get_u32();
+				uint32_t str_offset = f->get_u32();
 
 				data.resize(str_len + 1);
 				f->seek(str_offset);
@@ -95,8 +95,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			{
 				Vector<uint8_t> data;
 				f->seek(trans_table_offset + i * 8);
-				uint32_t str_len = f->get_32();
-				uint32_t str_offset = f->get_32();
+				uint32_t str_len = f->get_u32();
+				uint32_t str_offset = f->get_u32();
 
 				data.resize(str_len + 1);
 				f->seek(str_offset);

@@ -1309,12 +1309,12 @@ bool EditorExportPlatformIOS::_archive_has_arm64(const String &p_path, uint32_t 
 						}
 
 						// Read file content.
-						uint32_t obj_magic = sim_f->get_32();
+						uint32_t obj_magic = sim_f->get_u32();
 
 						bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
 						if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-							uint32_t cputype = sim_f->get_32();
-							uint32_t cpusubtype = sim_f->get_32();
+							uint32_t cputype = sim_f->get_u32();
+							uint32_t cpusubtype = sim_f->get_u32();
 							if (swap) {
 								cputype = BSWAP32(cputype);
 								cpusubtype = BSWAP32(cpusubtype);
@@ -1369,18 +1369,18 @@ int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path)
 				}
 
 				// Read file content.
-				uint32_t obj_magic = sim_f->get_32();
+				uint32_t obj_magic = sim_f->get_u32();
 
 				bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
 				if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-					uint32_t cputype = sim_f->get_32();
-					uint32_t cpusubtype = sim_f->get_32();
-					uint32_t filetype = sim_f->get_32();
-					uint32_t ncmds = sim_f->get_32();
-					sim_f->get_32(); // Commands total size.
-					sim_f->get_32(); // Commands flags.
+					uint32_t cputype = sim_f->get_u32();
+					uint32_t cpusubtype = sim_f->get_u32();
+					uint32_t filetype = sim_f->get_u32();
+					uint32_t ncmds = sim_f->get_u32();
+					sim_f->get_u32(); // Commands total size.
+					sim_f->get_u32(); // Commands flags.
 					if (obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-						sim_f->get_32(); // Reserved, 64-bit only.
+						sim_f->get_u32(); // Reserved, 64-bit only.
 					}
 					if (swap) {
 						ncmds = BSWAP32(ncmds);
@@ -1392,14 +1392,14 @@ int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path)
 						// ARM64, object file.
 						for (uint32_t i = 0; i < ncmds; i++) {
 							int64_t cmdofs = sim_f->get_position();
-							uint32_t cmdid = sim_f->get_32();
-							uint32_t cmdsize = sim_f->get_32();
+							uint32_t cmdid = sim_f->get_u32();
+							uint32_t cmdsize = sim_f->get_u32();
 							if (swap) {
 								cmdid = BSWAP32(cmdid);
 								cmdsize = BSWAP32(cmdsize);
 							}
 							if (cmdid == MachO::LoadCommandID::LC_BUILD_VERSION) {
-								int64_t platform = sim_f->get_32();
+								int64_t platform = sim_f->get_u32();
 								if (swap) {
 									platform = BSWAP32(platform);
 								}
@@ -1409,7 +1409,7 @@ int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path)
 									if (swap) {
 										new_id = BSWAP32(new_id);
 									}
-									sim_f->store_32(new_id);
+									sim_f->store_u32(new_id);
 									commands_patched++;
 								}
 							}
