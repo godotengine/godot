@@ -3735,14 +3735,12 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 		return 0;
 	}
 	int c = 0;
-	int idx = -1;
-	do {
-		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
-		if (idx != -1) {
-			str = str.substr(idx + slen, str.length() - slen);
-			++c;
-		}
-	} while (idx != -1);
+	int idx = 0;
+	while ((idx = p_case_insensitive ? str.findn(p_string, idx) : str.find(p_string, idx)) != -1) {
+		// Skip the occurrence itself.
+		idx += slen;
+		++c;
+	}
 	return c;
 }
 
@@ -3774,14 +3772,12 @@ int String::_count(const char *p_string, int p_from, int p_to, bool p_case_insen
 		return 0;
 	}
 	int c = 0;
-	int idx = -1;
-	do {
-		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
-		if (idx != -1) {
-			str = str.substr(idx + substring_length, str.length() - substring_length);
-			++c;
-		}
-	} while (idx != -1);
+	int idx = 0;
+	while ((idx = p_case_insensitive ? str.findn(p_string, idx) : str.find(p_string, idx)) != -1) {
+		// Skip the occurrence itself.
+		idx += substring_length;
+		++c;
+	}
 	return c;
 }
 
