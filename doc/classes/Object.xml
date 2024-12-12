@@ -987,12 +987,12 @@
 				[gdscript]
 				var node = Node2D.new()
 				node.set("global_scale", Vector2(8, 2.5))
-				print(node.global_scale) # Prints (8, 2.5)
+				print(node.global_scale) # Prints (8.0, 2.5)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5));
-				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
+				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5f));
+				GD.Print(node.GlobalScale); // Prints (8, 2.5)
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -1047,7 +1047,7 @@
 				var node = Node2D.new()
 				node.set_indexed("position", Vector2(42, 0))
 				node.set_indexed("position:y", -10)
-				print(node.position) # Prints (42, -10)
+				print(node.position) # Prints (42.0, -10.0)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();

@@ -809,10 +809,11 @@ void main() {
 2-radiance
 3-shadow
 4-lightmap textures
-5-screen
-6-depth
-7-reflection probe 1
-8-reflection probe 2
+5-shadowmask textures
+6-screen
+7-depth
+8-reflection probe 1
+9-reflection probe 2
 
 */
 
@@ -887,7 +888,7 @@ uniform float refprobe1_intensity;
 uniform int refprobe1_ambient_mode;
 uniform vec4 refprobe1_ambient_color;
 
-uniform samplerCube refprobe1_texture; // texunit:-7
+uniform samplerCube refprobe1_texture; // texunit:-8
 
 #ifdef SECOND_REFLECTION_PROBE
 
@@ -900,7 +901,7 @@ uniform float refprobe2_intensity;
 uniform int refprobe2_ambient_mode;
 uniform vec4 refprobe2_ambient_color;
 
-uniform samplerCube refprobe2_texture; // texunit:-8
+uniform samplerCube refprobe2_texture; // texunit:-9
 
 #endif // SECOND_REFLECTION_PROBE
 
@@ -1170,9 +1171,16 @@ float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 
 #ifndef DISABLE_LIGHTMAP
 #ifdef USE_LIGHTMAP
 uniform mediump sampler2DArray lightmap_textures; //texunit:-4
+uniform lowp sampler2DArray shadowmask_textures; //texunit:-5
 uniform lowp uint lightmap_slice;
 uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
+uniform uint lightmap_shadowmask_mode;
+
+#define SHADOWMASK_MODE_NONE uint(0)
+#define SHADOWMASK_MODE_REPLACE uint(1)
+#define SHADOWMASK_MODE_OVERLAY uint(2)
+#define SHADOWMASK_MODE_ONLY uint(3)
 
 #ifdef LIGHTMAP_BICUBIC_FILTER
 uniform highp vec2 lightmap_texture_size;
@@ -1189,8 +1197,8 @@ uniform mediump vec4[9] lightmap_captures;
 #endif // !DISABLE_LIGHTMAP
 
 #ifdef USE_MULTIVIEW
-uniform highp sampler2DArray depth_buffer; // texunit:-6
-uniform highp sampler2DArray color_buffer; // texunit:-5
+uniform highp sampler2DArray depth_buffer; // texunit:-7
+uniform highp sampler2DArray color_buffer; // texunit:-6
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
@@ -1198,8 +1206,8 @@ ivec3 multiview_uv(ivec2 uv) {
 	return ivec3(uv, int(ViewIndex));
 }
 #else
-uniform highp sampler2D depth_buffer; // texunit:-6
-uniform highp sampler2D color_buffer; // texunit:-5
+uniform highp sampler2D depth_buffer; // texunit:-7
+uniform highp sampler2D color_buffer; // texunit:-6
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -2278,111 +2286,146 @@ void main() {
 #if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
 
 #ifndef SHADOWS_DISABLED
+// Baked shadowmasks
+#ifdef USE_LIGHTMAP
+	float shadowmask = 1.0f;
+
+	if (lightmap_shadowmask_mode != SHADOWMASK_MODE_NONE) {
+		vec3 uvw;
+		uvw.xy = uv2 * lightmap_uv_scale.zw + lightmap_uv_scale.xy;
+		uvw.z = float(lightmap_slice);
+
+#ifdef LIGHTMAP_BICUBIC_FILTER
+		shadowmask = textureArray_bicubic(shadowmask_textures, uvw, lightmap_texture_size).x;
+#else
+		shadowmask = textureLod(shadowmask_textures, uvw, 0.0).x;
+#endif
+	}
+#endif //USE_LIGHTMAP
+
+	float directional_shadow = 1.0;
+
+#ifdef USE_LIGHTMAP
+	if (lightmap_shadowmask_mode != SHADOWMASK_MODE_ONLY) {
+#endif
 
 // Orthogonal shadows
 #if !defined(LIGHT_USE_PSSM2) && !defined(LIGHT_USE_PSSM4)
-	float directional_shadow = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
+		directional_shadow = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
 #endif // !defined(LIGHT_USE_PSSM2) && !defined(LIGHT_USE_PSSM4)
 
 // PSSM2 shadows
 #ifdef LIGHT_USE_PSSM2
-	float depth_z = -vertex.z;
-	vec4 light_split_offsets = directional_shadows[directional_shadow_index].shadow_split_offsets;
-	//take advantage of prefetch
-	float shadow1 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
-	float shadow2 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord2);
-	float directional_shadow = 1.0;
+		float depth_z = -vertex.z;
+		vec4 light_split_offsets = directional_shadows[directional_shadow_index].shadow_split_offsets;
+		//take advantage of prefetch
+		float shadow1 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
+		float shadow2 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord2);
 
-	if (depth_z < light_split_offsets.y) {
-
-#ifdef LIGHT_USE_PSSM_BLEND
-		float directional_shadow2 = 1.0;
-		float pssm_blend = 0.0;
-		bool use_blend = true;
-#endif
-		if (depth_z < light_split_offsets.x) {
-			directional_shadow = shadow1;
-
-#ifdef LIGHT_USE_PSSM_BLEND
-			directional_shadow2 = shadow2;
-			pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
-#endif
-		} else {
-			directional_shadow = shadow2;
-#ifdef LIGHT_USE_PSSM_BLEND
-			use_blend = false;
-#endif
-		}
-#ifdef LIGHT_USE_PSSM_BLEND
-		if (use_blend) {
-			directional_shadow = mix(directional_shadow, directional_shadow2, pssm_blend);
-		}
-#endif
-	}
-
-#endif //LIGHT_USE_PSSM2
-// PSSM4 shadows
-#ifdef LIGHT_USE_PSSM4
-	float depth_z = -vertex.z;
-	vec4 light_split_offsets = directional_shadows[directional_shadow_index].shadow_split_offsets;
-
-	float shadow1 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
-	float shadow2 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord2);
-	float shadow3 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord3);
-	float shadow4 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord4);
-	float directional_shadow = 1.0;
-
-	if (depth_z < light_split_offsets.w) {
-
-#ifdef LIGHT_USE_PSSM_BLEND
-		float directional_shadow2 = 1.0;
-		float pssm_blend = 0.0;
-		bool use_blend = true;
-#endif
 		if (depth_z < light_split_offsets.y) {
+
+#ifdef LIGHT_USE_PSSM_BLEND
+			float directional_shadow2 = 1.0;
+			float pssm_blend = 0.0;
+			bool use_blend = true;
+#endif
 			if (depth_z < light_split_offsets.x) {
 				directional_shadow = shadow1;
 
 #ifdef LIGHT_USE_PSSM_BLEND
 				directional_shadow2 = shadow2;
-
 				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 			} else {
 				directional_shadow = shadow2;
-
 #ifdef LIGHT_USE_PSSM_BLEND
-				directional_shadow2 = shadow3;
-
-				pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
-#endif
-			}
-		} else {
-			if (depth_z < light_split_offsets.z) {
-				directional_shadow = shadow3;
-
-#if defined(LIGHT_USE_PSSM_BLEND)
-				directional_shadow2 = shadow4;
-				pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
-#endif
-
-			} else {
-				directional_shadow = shadow4;
-
-#if defined(LIGHT_USE_PSSM_BLEND)
 				use_blend = false;
 #endif
 			}
-		}
-#if defined(LIGHT_USE_PSSM_BLEND)
-		if (use_blend) {
-			directional_shadow = mix(directional_shadow, directional_shadow2, pssm_blend);
-		}
+#ifdef LIGHT_USE_PSSM_BLEND
+			if (use_blend) {
+				directional_shadow = mix(directional_shadow, directional_shadow2, pssm_blend);
+			}
 #endif
-	}
+		}
+
+#endif //LIGHT_USE_PSSM2
+// PSSM4 shadows
+#ifdef LIGHT_USE_PSSM4
+		float depth_z = -vertex.z;
+		vec4 light_split_offsets = directional_shadows[directional_shadow_index].shadow_split_offsets;
+
+		float shadow1 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
+		float shadow2 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord2);
+		float shadow3 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord3);
+		float shadow4 = sample_shadow(directional_shadow_atlas, directional_shadows[directional_shadow_index].shadow_atlas_pixel_size, shadow_coord4);
+
+		if (depth_z < light_split_offsets.w) {
+#ifdef LIGHT_USE_PSSM_BLEND
+			float directional_shadow2 = 1.0;
+			float pssm_blend = 0.0;
+			bool use_blend = true;
+#endif
+			if (depth_z < light_split_offsets.y) {
+				if (depth_z < light_split_offsets.x) {
+					directional_shadow = shadow1;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+					directional_shadow2 = shadow2;
+
+					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
+#endif
+				} else {
+					directional_shadow = shadow2;
+
+#ifdef LIGHT_USE_PSSM_BLEND
+					directional_shadow2 = shadow3;
+
+					pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
+#endif
+				}
+			} else {
+				if (depth_z < light_split_offsets.z) {
+					directional_shadow = shadow3;
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+					directional_shadow2 = shadow4;
+					pssm_blend = smoothstep(light_split_offsets.y, light_split_offsets.z, depth_z);
+#endif
+
+				} else {
+					directional_shadow = shadow4;
+
+#if defined(LIGHT_USE_PSSM_BLEND)
+					use_blend = false;
+#endif
+				}
+			}
+#if defined(LIGHT_USE_PSSM_BLEND)
+			if (use_blend) {
+				directional_shadow = mix(directional_shadow, directional_shadow2, pssm_blend);
+			}
+#endif
+		}
 
 #endif //LIGHT_USE_PSSM4
-	directional_shadow = mix(directional_shadow, 1.0, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
+
+#ifdef USE_LIGHTMAP
+		if (lightmap_shadowmask_mode == SHADOWMASK_MODE_REPLACE) {
+			directional_shadow = mix(directional_shadow, shadowmask, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
+		} else if (lightmap_shadowmask_mode == SHADOWMASK_MODE_OVERLAY) {
+			directional_shadow = shadowmask * mix(directional_shadow, 1.0, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
+		} else {
+#endif
+			directional_shadow = mix(directional_shadow, 1.0, smoothstep(directional_shadows[directional_shadow_index].fade_from, directional_shadows[directional_shadow_index].fade_to, vertex.z));
+#ifdef USE_LIGHTMAP
+		}
+
+	} else { // lightmap_shadowmask_mode == SHADOWMASK_MODE_ONLY
+		directional_shadow = shadowmask;
+	}
+#endif
+
 	directional_shadow = mix(1.0, directional_shadow, directional_lights[directional_shadow_index].shadow_opacity);
 
 #else
