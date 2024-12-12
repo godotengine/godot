@@ -804,7 +804,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 	}
 }
 
-LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask, bool p_compress) const {
+LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask) const {
 	Vector<Ref<Image>> images;
 	images.resize(p_is_shadowmask ? p_lightmapper->get_shadowmask_texture_count() : p_lightmapper->get_bake_texture_count());
 
@@ -846,7 +846,7 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 		config->set_value("remap", "type", "CompressedTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
 			// Do not override an existing compression mode.
-			config->set_value("params", "compress/mode", p_compress ? 2 : 3);
+			config->set_value("params", "compress/mode", 2);
 		}
 		config->set_value("params", "compress/channel_pack", 1);
 		config->set_value("params", "mipmaps/generate", false);
@@ -1252,7 +1252,9 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces, bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces, Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces,
+			bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces,
+			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1265,7 +1267,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	// POSTBAKE: Save Textures.
-
 	TypedArray<TextureLayered> lightmap_textures;
 	TypedArray<TextureLayered> shadowmask_textures;
 
@@ -1274,16 +1275,16 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	const bool save_shadowmask = shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE && shadowmask_texture_count > 0;
 
 	// Save the lightmap atlases.
-	BakeError save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename, lightmap_textures, false, false);
+	BakeError save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename, lightmap_textures, false);
 	ERR_FAIL_COND_V(save_err != BAKE_ERROR_OK, save_err);
 
 	if (save_shadowmask) {
 		// Save the shadowmask atlases.
-		save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename + "_shadow", shadowmask_textures, true, true);
+		save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename + "_shadow", shadowmask_textures, true);
 		ERR_FAIL_COND_V(save_err != BAKE_ERROR_OK, save_err);
 	}
 
-	/* POSTBAKE: Save Light Data. */
+	// POSTBAKE: Save Light Data.
 	Ref<LightmapGIData> gi_data;
 
 	if (get_light_data().is_valid()) {
@@ -1320,7 +1321,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	{
-		// create tetrahedrons
+		// Create tetrahedrons.
 		Vector<Vector3> points;
 		Vector<Color> sh;
 		points.resize(lightmapper->get_bake_probe_count());
@@ -1334,11 +1335,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 		}
 
-		//Obtain solved simplices
-
+		// Obtain solved simplices.
 		if (p_bake_step) {
 			p_bake_step(0.8, RTR("Generating Probe Volumes"), p_bake_userdata, true);
 		}
+
 		Vector<Delaunay3D::OutputSimplex> solved_simplices = Delaunay3D::tetrahedralize(points);
 
 		LocalVector<BSPSimplex> bsp_simplices;
