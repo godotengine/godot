@@ -61,7 +61,9 @@ String StringBuilder::as_string() const {
 		return "";
 	}
 
-	char32_t *buffer = memnew_arr(char32_t, string_length);
+	String string;
+	string.resize(string_length + 1);
+	char32_t *buffer = string.ptrw();
 
 	int current_position = 0;
 
@@ -92,10 +94,7 @@ String StringBuilder::as_string() const {
 			c_string_elem++;
 		}
 	}
+	buffer[current_position] = 0;
 
-	String final_string = String(buffer, string_length);
-
-	memdelete_arr(buffer);
-
-	return final_string;
+	return string;
 }
