@@ -1319,7 +1319,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					_node_strip_signal_inheritance(node);
-					_node_strip_resource_inheritance(node);
+					_node_strip_resource_reference(node);
 					NodeDock::get_singleton()->set_node(node); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
@@ -1794,7 +1794,7 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 	}
 }
 
-void SceneTreeDock::_node_strip_resource_inheritance(Node *p_node) {
+void SceneTreeDock::_node_strip_resource_reference(Node *p_node) {
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -1819,7 +1819,7 @@ void SceneTreeDock::_node_strip_resource_inheritance(Node *p_node) {
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_node_strip_resource_inheritance(p_node->get_child(i));
+		_node_strip_resource_reference(p_node->get_child(i));
 	}
 }
 
