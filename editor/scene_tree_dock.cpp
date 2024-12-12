@@ -1854,6 +1854,21 @@ Ref<Resource> SceneTreeDock::_recursively_make_unique_resource(const Ref<Resourc
 		}
 	}
 
+	// Plugins for special objects
+	String className = unique_resource->get_class();
+	ERR_FAIL_COND_V(className.is_empty(), unique_resource);
+
+	if (className == "ArrayMesh") {
+		int surfaceCount = unique_resource->call("get_surface_count");
+		for (int i = 0; i < surfaceCount; i++) {
+			Ref<Material> mat = unique_resource->call("surface_get_material", i);
+			if (mat.is_valid()) {
+				Ref<Material> uniqueMat = _recursively_make_unique_resource(mat, true);
+				unique_resource->call("surface_set_material", i, uniqueMat);
+			}
+		}
+	}
+
 	return unique_resource;
 }
 
