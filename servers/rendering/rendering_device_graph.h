@@ -252,6 +252,7 @@ private:
 	};
 
 	struct ComputeInstructionList : InstructionList {
+		bool has_dispatches = false;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		uint32_t breadcrumb;
 #endif
@@ -269,6 +270,7 @@ private:
 		uint32_t breadcrumb;
 #endif
 		bool split_cmd_buffer = false;
+		bool has_draws = false;
 	};
 
 	struct RecordedCommandSort {

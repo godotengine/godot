@@ -43,7 +43,18 @@ class RenderingDeviceCommons : public Object {
 	// with RenderingDeviceDriver.
 	////////////////////////////////////////////
 public:
+	// Setting it to false disables Reset Command Pools (old behavior). See PR#99257
+	// Useful for debugging bugs and regressions.
+	// Possibly once it becomes well tested, the boolean could be removed entirely.
 	static const bool command_pool_reset_enabled = true;
+
+	// This boolean optimizes how shadow maps are cleared and grouped together in Mobile renderer for
+	// more efficient BW utilization.
+	//
+	// Useful for debugging bugs and regressions.
+	// There's no other reason for this boolean.
+	// Possibly once it becomes well tested, the boolean could be removed entirely.
+	static const bool render_pass_opts_enabled = true;
 
 	/*****************/
 	/**** GENERIC ****/

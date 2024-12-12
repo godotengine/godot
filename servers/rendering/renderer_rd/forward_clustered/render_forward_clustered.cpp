@@ -1503,8 +1503,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		}
 
 		if (p_render_data->directional_shadows.size()) {
-			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
+			// Clear the shadow map now to overlap with some async compute.
 			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
 			RD::get_singleton()->draw_list_end();
 		}

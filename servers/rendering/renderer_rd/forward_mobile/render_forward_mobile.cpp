@@ -710,10 +710,12 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 		}
 
 		if (p_render_data->directional_shadows.size()) {
-			//open the pass for directional shadows
 			light_storage->update_directional_shadow_atlas();
-			RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
-			RD::get_singleton()->draw_list_end();
+			if (!RenderingDeviceCommons::render_pass_opts_enabled) {
+				// Clear the shadow map now to overlap with some async compute.
+				RD::get_singleton()->draw_list_begin(light_storage->direction_shadow_get_fb(), RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f);
+				RD::get_singleton()->draw_list_end();
+			}
 		}
 	}
 
@@ -1383,7 +1385,7 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 
 	if (render_cubemap) {
 		//rendering to cubemap
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, p_lod_distance_multiplier, p_screen_mesh_lod_threshold, Rect2(), false, true, true, true, p_render_info, p_main_cam_transform);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake, light_storage->light_get_type(base), light_storage->light_omni_get_shadow_mode(base), p_lod_distance_multiplier, p_screen_mesh_lod_threshold, Rect2(), false, true, true, true, p_render_info, p_main_cam_transform);
 		if (finalize_cubemap) {
 			_render_shadow_process();
 			_render_shadow_end();
@@ -1402,7 +1404,7 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 
 	} else {
 		//render shadow
-		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, p_lod_distance_multiplier, p_screen_mesh_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass, p_render_info, p_main_cam_transform);
+		_render_shadow_append(render_fb, p_instances, light_projection, light_transform, zfar, 0, 0, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake, light_storage->light_get_type(base), light_storage->light_omni_get_shadow_mode(base), p_lod_distance_multiplier, p_screen_mesh_lod_threshold, atlas_rect, flip_y, p_clear_region, p_open_pass, p_close_pass, p_render_info, p_main_cam_transform);
 	}
 }
 
@@ -1414,7 +1416,7 @@ void RenderForwardMobile::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 }
 
-void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RenderingMethod::RenderInfo *p_render_info, const Transform3D &p_main_cam_transform) {
+void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, RS::LightType p_light_type, RenderingServer::LightOmniShadowMode p_omni_shadow_mode, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end, RenderingMethod::RenderInfo *p_render_info, const Transform3D &p_main_cam_transform) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -1478,6 +1480,8 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 		shadow_pass.framebuffer = p_framebuffer;
 		shadow_pass.clear_depth = p_begin || p_clear_region;
 		shadow_pass.rect = p_rect;
+		shadow_pass.light_type = p_light_type;
+		shadow_pass.omni_shadow_mode = p_omni_shadow_mode;
 
 		scene_state.shadow_passes.push_back(shadow_pass);
 	}
@@ -1498,9 +1502,70 @@ void RenderForwardMobile::_render_shadow_process() {
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
-	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
-		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
-		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
+	if (RenderingDeviceCommons::render_pass_opts_enabled) {
+		// Render all cascades in the same pass since they render on different regions
+		uint32_t curr_shadow_index = 0;
+
+		while (curr_shadow_index < scene_state.shadow_passes.size()) {
+			uint32_t pass_amount = 0;
+			SceneState::ShadowPass start_shadow_pass = scene_state.shadow_passes[curr_shadow_index];
+			switch (start_shadow_pass.light_type) {
+				case RS::LIGHT_DIRECTIONAL: {
+					uint32_t i = 0;
+					while (i < scene_state.shadow_passes.size() && scene_state.shadow_passes[i].light_type == RS::LIGHT_DIRECTIONAL) {
+						i++;
+						pass_amount++;
+					}
+					break;
+				}
+				// A cubemap is made of 6 faces, a dual paraboloid requires 2 passes (one for each hemisphere).
+				case RS::LIGHT_OMNI:
+					pass_amount = start_shadow_pass.omni_shadow_mode == RS::LIGHT_OMNI_SHADOW_CUBE ? 6 : 2;
+					break;
+				// A spotlight requires only one pass
+				case RS::LIGHT_SPOT:
+					pass_amount = 1;
+					break;
+			}
+
+			// Use one drawlist per face, the render target has to change
+			if (start_shadow_pass.light_type == RS::LIGHT_OMNI || start_shadow_pass.light_type == RS::LIGHT_SPOT) {
+				for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
+					SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
+					RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+					_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
+				}
+			} else {
+				RID framebuffer = scene_state.shadow_passes[curr_shadow_index].framebuffer;
+				Size2 fb_size = RD::get_singleton()->framebuffer_get_size(framebuffer);
+				RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
+				RD::DrawListID draw_list;
+
+				draw_list = RD::get_singleton()->draw_list_begin(
+						framebuffer, RD::DRAW_IGNORE_COLOR_ALL | RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0, 0,
+						Rect2(0, 0, fb_size.x, fb_size.y),
+						RenderingDeviceCommons::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL);
+
+				for (uint32_t j = 0; j < pass_amount && curr_shadow_index + j < scene_state.shadow_passes.size(); j++) {
+					SceneState::ShadowPass shadow_pass = scene_state.shadow_passes[curr_shadow_index + j];
+					// Change viewport and scissors for the next cascade
+					RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
+					RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(0, 0, shadow_pass.rect.size.x, shadow_pass.rect.size.y));
+
+					RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+					render_list_parameters.framebuffer_format = fb_format;
+					_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+				}
+
+				RD::get_singleton()->draw_list_end();
+			}
+			curr_shadow_index += pass_amount;
+		}
+	} else {
+		for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
+			RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+			_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
+		}
 	}
 
 	RD::get_singleton()->draw_command_end_label();

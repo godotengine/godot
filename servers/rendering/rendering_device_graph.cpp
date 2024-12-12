@@ -922,6 +922,16 @@ void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_
 	DEV_ASSERT(p_attachment_operations.size() == p_attachment_clear_values.size());
 
 	draw_instruction_list.clear();
+
+	const uint32_t num_attachment_ops = p_attachment_operations.size();
+	for (uint32_t i = 0u; i < num_attachment_ops; ++i) {
+		if (p_attachment_operations[i] == ATTACHMENT_OPERATION_CLEAR) {
+			// We are forced to start the render pass if a clear operation is requested
+			draw_instruction_list.has_draws = true;
+			break;
+		}
+	}
+
 	draw_instruction_list.index++;
 	draw_instruction_list.framebuffer_cache = p_framebuffer_cache;
 	draw_instruction_list.render_pass = p_render_pass;
@@ -1685,6 +1695,7 @@ void RenderingDeviceGraph::add_driver_callback(RDD::DriverCallback p_callback, v
 
 void RenderingDeviceGraph::add_compute_list_begin(RDD::BreadcrumbMarker p_phase, uint32_t p_breadcrumb_data) {
 	compute_instruction_list.clear();
+	compute_instruction_list.has_dispatches = false;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	compute_instruction_list.breadcrumb = p_breadcrumb_data | (p_phase & ((1 << 16) - 1));
 #endif
@@ -1724,6 +1735,8 @@ void RenderingDeviceGraph::add_compute_list_dispatch(uint32_t p_x_groups, uint32
 	instruction->x_groups = p_x_groups;
 	instruction->y_groups = p_y_groups;
 	instruction->z_groups = p_z_groups;
+
+	compute_instruction_list.has_dispatches = true;
 }
 
 void RenderingDeviceGraph::add_compute_list_dispatch_indirect(RDD::BufferID p_buffer, uint32_t p_offset) {
@@ -1732,6 +1745,8 @@ void RenderingDeviceGraph::add_compute_list_dispatch_indirect(RDD::BufferID p_bu
 	instruction->buffer = p_buffer;
 	instruction->offset = p_offset;
 	compute_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT);
+
+	compute_instruction_list.has_dispatches = true;
 }
 
 void RenderingDeviceGraph::add_compute_list_set_push_constant(RDD::ShaderID p_shader, const void *p_data, uint32_t p_data_size) {
@@ -1778,6 +1793,10 @@ void RenderingDeviceGraph::add_compute_list_usages(VectorView<ResourceTracker *>
 }
 
 void RenderingDeviceGraph::add_compute_list_end() {
+	if (RenderingDeviceCommons::render_pass_opts_enabled && !compute_instruction_list.has_dispatches) {
+		return;
+	}
+
 	int32_t command_index;
 	uint32_t instruction_data_size = compute_instruction_list.data.size();
 	uint32_t command_size = sizeof(RecordedComputeListCommand) + instruction_data_size;
@@ -1871,6 +1890,8 @@ void RenderingDeviceGraph::add_draw_list_clear_attachments(VectorView<RDD::Attac
 	for (uint32_t i = 0; i < instruction->attachments_clear_rect_count; i++) {
 		attachments_clear_rect[i] = p_attachments_clear_rect[i];
 	}
+
+	draw_instruction_list.has_draws = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count) {
@@ -1878,6 +1899,8 @@ void RenderingDeviceGraph::add_draw_list_draw(uint32_t p_vertex_count, uint32_t 
 	instruction->type = DrawListInstruction::TYPE_DRAW;
 	instruction->vertex_count = p_vertex_count;
 	instruction->instance_count = p_instance_count;
+
+	draw_instruction_list.has_draws = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index) {
@@ -1886,6 +1909,8 @@ void RenderingDeviceGraph::add_draw_list_draw_indexed(uint32_t p_index_count, ui
 	instruction->index_count = p_index_count;
 	instruction->instance_count = p_instance_count;
 	instruction->first_index = p_first_index;
+
+	draw_instruction_list.has_draws = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_draw_indirect(RDD::BufferID p_buffer, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
@@ -1912,6 +1937,8 @@ void RenderingDeviceGraph::add_draw_list_execute_commands(RDD::CommandBufferID p
 	DrawListExecuteCommandsInstruction *instruction = reinterpret_cast<DrawListExecuteCommandsInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListExecuteCommandsInstruction)));
 	instruction->type = DrawListInstruction::TYPE_EXECUTE_COMMANDS;
 	instruction->command_buffer = p_command_buffer;
+
+	draw_instruction_list.has_draws = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_next_subpass(RDD::CommandBufferType p_command_buffer_type) {
@@ -1986,6 +2013,9 @@ void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_
 }
 
 void RenderingDeviceGraph::add_draw_list_end() {
+	if (RenderingDeviceCommons::render_pass_opts_enabled && !draw_instruction_list.has_draws) {
+		return;
+	}
 	FramebufferCache *framebuffer_cache = draw_instruction_list.framebuffer_cache;
 	int32_t command_index;
 	uint32_t clear_values_size = sizeof(RDD::RenderPassClearValue) * draw_instruction_list.attachment_clear_values.size();
