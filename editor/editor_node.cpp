@@ -4855,8 +4855,8 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 									   ->class_get_icon_path(p_class)
 									   .get_file()
 									   .get_basename();
-			if (theme->has_icon(icon_path, EditorStringName(EditorIcons))) {
-				return theme->get_icon(icon_path, EditorStringName(EditorIcons));
+			if (theme->has_icon(icon_name, EditorStringName(EditorIcons))) {
+				return theme->get_icon(icon_name, EditorStringName(EditorIcons));
 			}
 		}
 
