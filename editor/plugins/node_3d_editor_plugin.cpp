@@ -6630,9 +6630,12 @@ void Node3DEditor::_snap_changed() {
 }
 
 void Node3DEditor::_snap_update() {
-	snap_translate->set_text(String::num(snap_translate_value));
-	snap_rotate->set_text(String::num(snap_rotate_value));
-	snap_scale->set_text(String::num(snap_scale_value));
+	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	int snap_step_decimals = Math::range_step_decimals(snap);
+
+	snap_translate->set_text(String::num(snap_translate_value, snap_step_decimals));
+	snap_rotate->set_text(String::num(snap_rotate_value, snap_step_decimals));
+	snap_scale->set_text(String::num(snap_scale_value, snap_step_decimals));
 }
 
 void Node3DEditor::_xform_dialog_action() {
