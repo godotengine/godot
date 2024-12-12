@@ -70,14 +70,6 @@ def configure(env: "SConsEnvironment"):
     supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
-    ## Build type
-
-    if env["target"] == "template_release":
-        if env["arch"] != "arm64":
-            env.Prepend(CCFLAGS=["-msse2"])
-    elif env.dev_build:
-        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
-
     ## Compiler configuration
 
     # Save this in environment for use by other modules
@@ -97,6 +89,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
+    env.Append(CCFLAGS=["-fobjc-arc"])
 
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
@@ -106,7 +99,8 @@ def configure(env: "SConsEnvironment"):
     if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    if env.dev_build:
+        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
