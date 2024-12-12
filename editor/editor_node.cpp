@@ -168,6 +168,10 @@
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
+#ifdef ANDROID_ENABLED
+#include "editor/gui/touch_actions_panel.h"
+#endif
+
 #include <stdlib.h>
 
 EditorNode *EditorNode::singleton = nullptr;
@@ -7778,6 +7782,11 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
+
+#ifdef ANDROID_ENABLED
+	// Add TouchActionsPanel node.
+	add_child(memnew(TouchActionsPanel));
+#endif
 
 	// Bottom panels.
 
