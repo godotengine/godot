@@ -203,20 +203,18 @@ void AudioStreamPlaybackSynchronized::seek(double p_time) {
 }
 
 void AudioStreamPlaybackSynchronized::_seek_or_start(double p_from_pos, bool is_start) {
-	if (p_from_pos < 0 || p_from_pos > stream->get_length()) {
-		p_from_pos = 0;
-	}
-
 	if (is_start && active) {
 		stop();
 	}
+
+	bool is_pos_within_range = p_from_pos >= 0 && p_from_pos < stream->get_length();
 
 	for (int i = 0; i < stream->stream_count; i++) {
 		if (playback[i].is_valid() && stream->audio_streams[i].is_valid()) {
 			double audio_stream_length = stream->audio_streams[i]->get_length();
 			double playback_pos = p_from_pos;
 
-			if (audio_stream_length < playback_pos) {
+			if (is_pos_within_range && audio_stream_length < playback_pos) {
 				if (!stream->audio_streams[i]->has_loop()) {
 					continue;
 				}
