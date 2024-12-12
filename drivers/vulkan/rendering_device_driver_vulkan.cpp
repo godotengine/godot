@@ -1384,9 +1384,9 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
 
 	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
-	// Which eventually run out of memory. in such case we should not be using linear allocated pools
-	// Bug introduced in driver 512.597.0 and fixed in 512.671.0
-	// Confirmed by Qualcomm
+	// Which eventually run out of memory. In such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
+	// Confirmed by Qualcomm.
 	if (linear_descriptor_pools_enabled) {
 		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
 		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
@@ -1749,7 +1749,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 			// VUID-VkImageCreateInfo-usage-00963 :
 			// If usage includes VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
 			// then bits other than VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set
+			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set.
 			create_info.usage &= (VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
 		} else {
 			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
@@ -5925,7 +5925,7 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 	}
 	vmaDestroyAllocator(allocator);
 
-	// Destroy linearly allocated descriptor pools
+	// Destroy linearly allocated descriptor pools.
 	for (KeyValue<int, DescriptorSetPools> &pool_map : linear_descriptor_set_pools) {
 		for (KeyValue<DescriptorSetPoolKey, HashMap<VkDescriptorPool, uint32_t>> pools : pool_map.value) {
 			for (KeyValue<VkDescriptorPool, uint32_t> descriptor_pool : pools.value) {
