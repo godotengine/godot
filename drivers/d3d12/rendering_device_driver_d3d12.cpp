@@ -3830,7 +3830,7 @@ static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_typ
 }
 
 RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
-	// p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
+	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
 
 	// Pre-bookkeep.
 	UniformSetInfo *uniform_set_info = VersatileResource::allocate<UniformSetInfo>(resources_allocator);

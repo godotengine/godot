@@ -4037,7 +4037,7 @@ Error RenderingDevice::screen_create(DisplayServer::WindowID p_screen) {
 Error RenderingDevice::screen_prepare_for_drawing(DisplayServer::WindowID p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	// After submitting work, acquire the swapchain image(s)
+	// After submitting work, acquire the swapchain image(s).
 	HashMap<DisplayServer::WindowID, RDD::SwapChainID>::ConstIterator it = screen_swap_chains.find(p_screen);
 	ERR_FAIL_COND_V_MSG(it == screen_swap_chains.end(), ERR_CANT_CREATE, "A swap chain was not created for the screen.");
 
@@ -4640,18 +4640,18 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		}
 
 		if (!dl->state.sets[i].bound) {
-			// Batch contiguous descriptor sets in a single call
+			// Batch contiguous descriptor sets in a single call.
 			if (descriptor_set_batching) {
 				// All good, see if this requires re-binding.
 				if (i - last_set_index > 1) {
-					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch.
 					draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 
 					first_set_index = i;
 					valid_set_count = 1;
 					valid_descriptor_ids[0] = dl->state.sets[i].uniform_set_driver_id;
 				} else {
-					// Otherwise, keep storing in the current batch
+					// Otherwise, keep storing in the current batch.
 					valid_descriptor_ids[valid_set_count] = dl->state.sets[i].uniform_set_driver_id;
 					valid_set_count++;
 				}
@@ -4668,7 +4668,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 		}
 	}
 
-	// Bind the remaining batch
+	// Bind the remaining batch.
 	if (descriptor_set_batching && valid_set_count > 0) {
 		draw_graph.add_draw_list_bind_uniform_sets(dl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 	}
@@ -5213,14 +5213,14 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			if (descriptor_set_batching) {
 				// All good, see if this requires re-binding.
 				if (i - last_set_index > 1) {
-					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+					// If the descriptor sets are not contiguous, bind the previous ones and start a new batch.
 					draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 
 					first_set_index = i;
 					valid_set_count = 1;
 					valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
 				} else {
-					// Otherwise, keep storing in the current batch
+					// Otherwise, keep storing in the current batch.
 					valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
 					valid_set_count++;
 				}
@@ -5237,7 +5237,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 		}
 	}
 
-	// Bind the remaining batch
+	// Bind the remaining batch.
 	if (valid_set_count > 0) {
 		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 	}
@@ -5358,14 +5358,14 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 		if (!cl->state.sets[i].bound) {
 			// All good, see if this requires re-binding.
 			if (i - last_set_index > 1) {
-				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch
+				// If the descriptor sets are not contiguous, bind the previous ones and start a new batch.
 				draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 
 				first_set_index = i;
 				valid_set_count = 1;
 				valid_descriptor_ids[0] = cl->state.sets[i].uniform_set_driver_id;
 			} else {
-				// Otherwise, keep storing in the current batch
+				// Otherwise, keep storing in the current batch.
 				valid_descriptor_ids[valid_set_count] = cl->state.sets[i].uniform_set_driver_id;
 				valid_set_count++;
 			}
@@ -5380,7 +5380,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 		}
 	}
 
-	// Bind the remaining batch
+	// Bind the remaining batch.
 	if (valid_set_count > 0) {
 		draw_graph.add_compute_list_bind_uniform_sets(cl->state.pipeline_shader_driver_id, valid_descriptor_ids, first_set_index, valid_set_count);
 	}

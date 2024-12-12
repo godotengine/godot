@@ -2570,7 +2570,7 @@ void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
 /*********************/
 
 RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
-	// p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
+	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
 
 	MDUniformSet *set = new MDUniformSet();
 	Vector<BoundUniform> bound_uniforms;
