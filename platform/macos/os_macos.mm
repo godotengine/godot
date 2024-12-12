@@ -89,23 +89,8 @@ bool OS_MacOS::is_sandboxed() const {
 	return has_environment("APP_SANDBOX_CONTAINER_ID");
 }
 
-Vector<String> OS_MacOS::get_granted_permissions() const {
-	Vector<String> ret;
-
-	if (is_sandboxed()) {
-		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-		for (id bookmark in bookmarks) {
-			NSError *error = nil;
-			BOOL isStale = NO;
-			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-			if (!error && !isStale) {
-				String url_string;
-				url_string.parse_utf8([[url path] UTF8String]);
-				ret.push_back(url_string);
-			}
-		}
-	}
-
+Vector<int> OS_MacOS::get_granted_permissions() const {
+	Vector<int> ret;
 	return ret;
 }
 

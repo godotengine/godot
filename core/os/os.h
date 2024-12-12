@@ -331,9 +331,15 @@ public:
 	bool is_restart_on_exit_set() const;
 	List<String> get_restart_on_exit_arguments() const;
 
-	virtual bool request_permission(const String &p_name) { return true; }
+	enum PermissionType {
+		PERMISSION_CAMERA,
+		PERMISSION_RECORD_AUDIO,
+		PERMISSION_VIBRATE,
+	};
+
+	virtual bool request_permission(int p_type) { return true; }
 	virtual bool request_permissions() { return true; }
-	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
+	virtual Vector<int> get_granted_permissions() const { return Vector<int>(); }
 	virtual void revoke_granted_permissions() {}
 
 	// For recording / measuring benchmark data. Only enabled with tools

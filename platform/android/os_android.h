@@ -113,9 +113,9 @@ public:
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 
-	virtual bool request_permission(const String &p_name) override;
+	virtual bool request_permission(int p_type) override;
 	virtual bool request_permissions() override;
-	virtual Vector<String> get_granted_permissions() const override;
+	virtual Vector<int> get_granted_permissions() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title) override;
 

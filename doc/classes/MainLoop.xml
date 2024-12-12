@@ -93,7 +93,7 @@
 	</methods>
 	<signals>
 		<signal name="on_request_permissions_result">
-			<param index="0" name="permission" type="String" />
+			<param index="0" name="permission" type="int" />
 			<param index="1" name="granted" type="bool" />
 			<description>
 				Emitted when a user responds to a permission request.

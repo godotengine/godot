@@ -150,16 +150,35 @@ GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
 	return godot_io_java;
 }
 
-bool OS_Android::request_permission(const String &p_name) {
-	return godot_java->request_permission(p_name);
+bool OS_Android::request_permission(int p_type) {
+	switch (p_type) {
+		case PERMISSION_CAMERA:
+			return godot_java->request_permission("CAMERA");
+		case PERMISSION_RECORD_AUDIO:
+			return godot_java->request_permission("RECORD_AUDIO");
+		case PERMISSION_VIBRATE:
+			return godot_java->request_permission("VIBRATE");
+	}
+	return false;
 }
 
 bool OS_Android::request_permissions() {
 	return godot_java->request_permissions();
 }
 
-Vector<String> OS_Android::get_granted_permissions() const {
-	return godot_java->get_granted_permissions();
+Vector<int> OS_Android::get_granted_permissions() const {
+	Vector<int> granted_enum;
+	Vector<String> granted_string = godot_java->get_granted_permissions();
+	for (String string : granted_string) {
+		if (string == "CAMERA") {
+			granted_enum.append(PERMISSION_CAMERA);
+		} else if (string == "RECORD_AUDIO") {
+			granted_enum.append(PERMISSION_RECORD_AUDIO);
+		} else if (string == "VIBRATE") {
+			granted_enum.append(PERMISSION_RECORD_AUDIO);
+		}
+	}
+	return granted_enum;
 }
 
 bool OS_Android::copy_dynamic_library(const String &p_library_path, const String &p_target_dir, String *r_copy_path) {

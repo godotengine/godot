@@ -271,9 +271,15 @@ public:
 	bool has_feature(const String &p_feature) const;
 	bool is_sandboxed() const;
 
-	bool request_permission(const String &p_name);
+	enum PermissionType {
+		PERMISSION_CAMERA,
+		PERMISSION_RECORD_AUDIO,
+		PERMISSION_VIBRATE,
+	};
+
+	bool request_permission(PermissionType p_type);
 	bool request_permissions();
-	Vector<String> get_granted_permissions() const;
+	TypedArray<int> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
 	static OS *get_singleton() { return singleton; }
@@ -661,6 +667,7 @@ VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
 VARIANT_ENUM_CAST(core_bind::OS::StdHandleType);
+VARIANT_ENUM_CAST(core_bind::OS::PermissionType);
 
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);

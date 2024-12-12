@@ -606,16 +606,16 @@ Key OS::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 
-bool OS::request_permission(const String &p_name) {
-	return ::OS::get_singleton()->request_permission(p_name);
+bool OS::request_permission(PermissionType p_type) {
+	return ::OS::get_singleton()->request_permission(p_type);
 }
 
 bool OS::request_permissions() {
 	return ::OS::get_singleton()->request_permissions();
 }
 
-Vector<String> OS::get_granted_permissions() const {
-	return ::OS::get_singleton()->get_granted_permissions();
+TypedArray<int> OS::get_granted_permissions() const {
+	return TypedArray<int>(::OS::get_singleton()->get_granted_permissions());
 }
 
 void OS::revoke_granted_permissions() {
@@ -726,7 +726,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "tag_name"), &OS::has_feature);
 	ClassDB::bind_method(D_METHOD("is_sandboxed"), &OS::is_sandboxed);
 
-	ClassDB::bind_method(D_METHOD("request_permission", "name"), &OS::request_permission);
+	ClassDB::bind_method(D_METHOD("request_permission", "type"), &OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
@@ -759,6 +759,10 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_FILE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_PIPE);
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
+
+	BIND_ENUM_CONSTANT(PERMISSION_CAMERA);
+	BIND_ENUM_CONSTANT(PERMISSION_RECORD_AUDIO);
+	BIND_ENUM_CONSTANT(PERMISSION_VIBRATE);
 }
 
 ////// Geometry2D //////

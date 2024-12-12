@@ -118,7 +118,7 @@ public:
 	virtual String get_model_name() const override;
 
 	virtual bool is_sandboxed() const override;
-	virtual Vector<String> get_granted_permissions() const override;
+	virtual Vector<int> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;

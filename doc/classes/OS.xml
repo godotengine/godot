@@ -289,10 +289,9 @@
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="int[]" />
 			<description>
 				On Android devices: Returns the list of dangerous permissions that have been granted.
-				On macOS: Returns the list of user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -734,10 +733,10 @@
 		</method>
 		<method name="request_permission">
 			<return type="bool" />
-			<param index="0" name="name" type="String" />
+			<param index="0" name="type" type="int" enum="OS.PermissionType" />
 			<description>
-				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has been successfully granted.
-				[b]Note:[/b] This method is currently only implemented on Android, to specifically request permission for [code]"RECORD_AUDIO"[/code] by [code]AudioDriverOpenSL[/code].
+				Requests permission from the OS for the given [param type]. See the [enum PermissionType] constants for available permissions. Returns [code]true[/code] if the permission has been successfully granted.
+				[b]Note:[/b] This method is currently only implemented on Android, to specifically request permission for [constant PERMISSION_RECORD_AUDIO] by [code]AudioDriverOpenSL[/code].
 			</description>
 		</method>
 		<method name="request_permissions">
@@ -886,6 +885,15 @@
 		</constant>
 		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
 			Standard I/O device type is unknown.
+		</constant>
+		<constant name="PERMISSION_CAMERA" value="0" enum="PermissionType">
+			Permission for accessing the camera device.
+		</constant>
+		<constant name="PERMISSION_RECORD_AUDIO" value="1" enum="PermissionType">
+			Permission for recording audio.
+		</constant>
+		<constant name="PERMISSION_VIBRATE" value="2" enum="PermissionType">
+			Permission for accessing vibration.
 		</constant>
 	</constants>
 </class>

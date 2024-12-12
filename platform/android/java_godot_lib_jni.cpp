@@ -570,8 +570,19 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 		AudioDriver::get_singleton()->input_start();
 	}
 
+	OS::PermissionType permission_enum;
+	if (permission == "android.permission.CAMERA") {
+		permission_enum = OS::PERMISSION_CAMERA;
+	} else if (permission == "android.permission.RECORD_AUDIO") {
+		permission_enum = OS::PERMISSION_RECORD_AUDIO;
+	} else if (permission == "android.permission.VIBRATE") {
+		permission_enum = OS::PERMISSION_VIBRATE;
+	} else {
+		return;
+	}
+
 	if (os_android->get_main_loop()) {
-		os_android->get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), permission, p_result == JNI_TRUE);
+		os_android->get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), permission_enum, p_result == JNI_TRUE);
 	}
 }
 
