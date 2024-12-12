@@ -213,7 +213,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	return id;
 }
 
-void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
+void DisplayServerMacOS::_update_window_style(WindowData p_wd, WindowID p_window) {
 	bool borderless_full = false;
 
 	if (p_wd.borderless) {
@@ -233,13 +233,28 @@ void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
-		if (p_wd.on_top && !p_wd.fullscreen) {
+		if (is_always_on_top_recursive(p_window) && !p_wd.fullscreen) {
 			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:NO];
 	}
+}
+
+bool DisplayServerMacOS::is_always_on_top_recursive(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.on_top) {
+		return true;
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		return is_always_on_top_recursive(wd.transient_parent);
+	}
+
+	return false;
 }
 
 void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window) {
@@ -2112,7 +2127,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 
 	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 	update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 }
 
@@ -2250,7 +2265,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 
 	[wd.window_object setFrame:new_frame display:YES];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 }
 
 Size2i DisplayServerMacOS::window_get_size(WindowID p_window) const {
@@ -2547,7 +2562,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
 				[wd.window_object setFrame:frameRect display:NO];
 			}
-			_update_window_style(wd);
+			_update_window_style(wd, p_window);
 			if (was_visible || [wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
@@ -2632,11 +2647,7 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			if (wd.fullscreen) {
-				return wd.on_top;
-			} else {
-				return [(NSWindow *)wd.window_object level] == NSFloatingWindowLevel;
-			}
+			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;

@@ -246,11 +246,16 @@ directional_lights;
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
+#define LIGHTMAP_SHADOWMASK_MODE_NONE 0
+#define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1
+#define LIGHTMAP_SHADOWMASK_MODE_OVERLAY 2
+#define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
+
 struct Lightmap {
 	mediump mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
-	float pad;
+	uint flags;
 };
 
 layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
@@ -330,7 +335,7 @@ layout(set = 1, binding = 4) uniform highp texture2D shadow_atlas;
 layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 
 // this needs to change to providing just the lightmap we're using..
-layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;

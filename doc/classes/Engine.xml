@@ -209,10 +209,10 @@
 				print(Engine.has_singleton("Unknown"))     # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print(Engine.HasSingleton("OS"));          // Prints true
-				GD.Print(Engine.HasSingleton("Engine"));      // Prints true
-				GD.Print(Engine.HasSingleton("AudioServer")); // Prints true
-				GD.Print(Engine.HasSingleton("Unknown"));     // Prints false
+				GD.Print(Engine.HasSingleton("OS"));          // Prints True
+				GD.Print(Engine.HasSingleton("Engine"));      // Prints True
+				GD.Print(Engine.HasSingleton("AudioServer")); // Prints True
+				GD.Print(Engine.HasSingleton("Unknown"));     // Prints False
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Global singletons are not the same as autoloaded nodes, which are configurable in the project settings.
