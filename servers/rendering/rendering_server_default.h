@@ -729,6 +729,7 @@ public:
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_force_motion_vectors, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
