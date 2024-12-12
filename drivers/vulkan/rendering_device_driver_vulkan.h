@@ -405,7 +405,8 @@ private:
 		// Version 2: Added shader name.
 		// Version 3: Added writable.
 		// Version 4: 64-bit vertex input mask.
-		static const uint32_t VERSION = 4;
+		// Version 5: Add 4 bytes padding to align the Data struct after the change in version 4.
+		static const uint32_t VERSION = 5;
 
 		struct DataBinding {
 			uint32_t type = 0;

@@ -228,6 +228,7 @@ int32_t RenderingDeviceGraph::_add_to_write_list(int32_t p_command_index, Rect2i
 
 RenderingDeviceGraph::RecordedCommand *RenderingDeviceGraph::_allocate_command(uint32_t p_command_size, int32_t &r_command_index) {
 	uint32_t command_data_offset = command_data.size();
+	command_data_offset = STEPIFY(command_data_offset, 8);
 	command_data_offsets.push_back(command_data_offset);
 	command_data.resize(command_data_offset + p_command_size);
 	r_command_index = command_count++;
