@@ -705,88 +705,62 @@ void FileSystemDock::_set_current_path_line_edit_text(const String &p_path) {
 }
 
 void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
+	String target_path = p_path;
 	bool is_directory = false;
-	if (p_path == "Favorites") {
-		current_path = p_path;
-	} else {
-		String target_path = p_path;
-		// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
-		if (target_path.ends_with("/")) {
-			target_path = target_path.trim_suffix("/");
-		}
+
+	if (p_path.is_empty()) {
+		target_path = "res://";
+		is_directory = true;
+	} else if (p_path != "Favorites") {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (da->file_exists(p_path)) {
-			current_path = target_path;
-		} else if (da->dir_exists(p_path)) {
-			current_path = target_path + "/";
+		if (da->dir_exists(p_path)) {
 			is_directory = true;
-		} else {
+			if (!p_path.ends_with("/")) {
+				target_path += "/";
+			}
+		} else if (!da->file_exists(p_path)) {
 			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
 	}
 
+	current_path = target_path;
 	_set_current_path_line_edit_text(current_path);
 	_push_to_history();
 
-	const String file_name = is_directory ? p_path.trim_suffix("/").get_file() + "/" : p_path.get_file();
-	bool found = false;
-
-	TreeItem **base_dir_ptr;
-	{
-		const String base_dir = current_path.get_base_dir();
-		if (base_dir == "res://") {
-			base_dir_ptr = folder_map.getptr(base_dir);
-		} else if (is_directory) {
-			base_dir_ptr = folder_map.getptr(base_dir.get_base_dir() + "/");
-		} else {
-			base_dir_ptr = folder_map.getptr(base_dir + "/");
-		}
+	String base_dir_path = target_path.get_base_dir();
+	if (base_dir_path != "res://") {
+		base_dir_path += "/";
 	}
 
-	if (base_dir_ptr) {
-		TreeItem *directory = *base_dir_ptr;
-		{
-			TreeItem *entry = directory->get_first_child();
-			while (entry) {
-				if (entry->get_metadata(0).operator String().ends_with(file_name)) {
-					tree->deselect_all();
-					entry->select(0);
-					found = true;
-					break;
-				}
-				entry = entry->get_next();
-			}
-		}
-
-		while (directory) {
-			directory->set_collapsed(false);
-			directory = directory->get_parent();
-		}
-	}
-
-	if (!found) {
+	TreeItem **directory_ptr = folder_map.getptr(base_dir_path);
+	if (!directory_ptr) {
 		return;
 	}
 
-	tree->ensure_cursor_is_visible();
-	if (display_mode != DISPLAY_MODE_TREE_ONLY) {
-		_update_file_list(false);
-
-		// Reset the scroll for a directory.
-		if (is_directory) {
-			files->get_v_scroll_bar()->set_value(0);
-		}
+	// Unfold all folders along the path.
+	TreeItem *ti = *directory_ptr;
+	while (ti) {
+		ti->set_collapsed(false);
+		ti = ti->get_parent();
 	}
 
-	if (!file_name.is_empty()) {
-		for (int i = 0; i < files->get_item_count(); i++) {
-			if (files->get_item_text(i) == file_name) {
-				files->select(i, true);
-				files->ensure_current_is_visible();
+	// Select the file or directory in the tree.
+	tree->deselect_all();
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+		const String file_name = is_directory ? target_path.trim_suffix("/").get_file() + "/" : target_path.get_file();
+		TreeItem *item = is_directory ? *directory_ptr : (*directory_ptr)->get_first_child();
+		while (item) {
+			if (item->get_metadata(0).operator String().ends_with(file_name)) {
+				item->select(0);
 				break;
 			}
+			item = item->get_next();
 		}
+	} else {
+		(*directory_ptr)->select(0);
+		_update_file_list(false);
 	}
+	tree->ensure_cursor_is_visible();
 }
 
 bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
