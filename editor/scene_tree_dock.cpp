@@ -1319,6 +1319,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					_node_strip_signal_inheritance(node);
+					_node_strip_resource_inheritance(node);
 					NodeDock::get_singleton()->set_node(node); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
@@ -1791,6 +1792,69 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_node_strip_signal_inheritance(p_node->get_child(i));
 	}
+}
+
+void SceneTreeDock::_node_strip_resource_inheritance(Node *p_node) {
+	List<PropertyInfo> props;
+	p_node->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+			continue;
+		}
+
+		Variant v = p_node->get(E.name);
+
+		if (v.is_ref_counted()) {
+			Ref<Resource> res = v;
+			static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
+
+			if (res.is_valid()) {
+				print_line("Stripping resource inheritance for: " + res->get_class());
+				bool shouldDuplicate = !unique_exceptions.has(res->get_class());
+				Ref<Resource> unique_resource = _recursively_make_unique_resource(res, shouldDuplicate);
+				p_node->set(E.name, unique_resource);
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_node_strip_resource_inheritance(p_node->get_child(i));
+	}
+}
+
+Ref<Resource> SceneTreeDock::_recursively_make_unique_resource(const Ref<Resource> res, bool duplicate) {
+	Ref<Resource> unique_resource = res;
+	if (duplicate) {
+		unique_resource = res->duplicate();
+		ERR_FAIL_COND_V(unique_resource.is_null(), res);
+	}
+
+	List<PropertyInfo> props;
+	unique_resource->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+			continue;
+		}
+
+		print_line("Checking property: " + E.name + " of type: " + Variant::get_type_name(E.type));
+		Variant v = unique_resource->get(E.name);
+
+		if (v.is_ref_counted()) {
+			Ref<Resource> subres = v;
+			static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
+
+			if (subres.is_valid()) {
+				print_line("Stripping resource inheritance for: " + subres->get_class());
+				bool shouldDuplicate = !unique_exceptions.has(subres->get_class());
+				Ref<Resource> dupe = _recursively_make_unique_resource(subres, shouldDuplicate);
+				unique_resource->set(E.name, dupe);
+			}
+		}
+	}
+
+	return unique_resource;
 }
 
 void SceneTreeDock::_load_request(const String &p_path) {
