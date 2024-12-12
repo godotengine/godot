@@ -787,6 +787,7 @@ public:
 	bool is_selection_enabled() const;
 	int get_selection_from() const;
 	int get_selection_to() const;
+	float get_selection_line_offset() const;
 	String get_selected_text() const;
 	void select_all();
 	void selection_copy();
