@@ -2174,7 +2174,7 @@ bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFor
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(Span<const VertexAttribute> p_vertex_attribs) {
 	// Pre-bookkeep.
 	VertexFormatInfo *vf_info = VersatileResource::allocate<VertexFormatInfo>(resources_allocator);
 
@@ -2250,9 +2250,9 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<MemoryBarrier> p_memory_barriers,
-		VectorView<BufferBarrier> p_buffer_barriers,
-		VectorView<TextureBarrier> p_texture_barriers) {
+		Span<const MemoryBarrier> p_memory_barriers,
+		Span<const BufferBarrier> p_buffer_barriers,
+		Span<const TextureBarrier> p_texture_barriers) {
 	VkMemoryBarrier *vk_memory_barriers = ALLOCA_ARRAY(VkMemoryBarrier, p_memory_barriers.size());
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
 		vk_memory_barriers[i] = {};
@@ -2473,7 +2473,7 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	return CommandQueueID(command_queue);
 }
 
-Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
+Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueueID p_cmd_queue, Span<const SemaphoreID> p_wait_semaphores, Span<const CommandBufferID> p_cmd_buffers, Span<const SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, Span<const SwapChainID> p_swap_chains) {
 	DEV_ASSERT(p_cmd_queue.id != 0);
 
 	VkResult err;
@@ -2783,7 +2783,7 @@ void RenderingDeviceDriverVulkan::command_buffer_end(CommandBufferID p_cmd_buffe
 	vkEndCommandBuffer((VkCommandBuffer)p_cmd_buffer.id);
 }
 
-void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
+void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, Span<const CommandBufferID> p_secondary_cmd_buffers) {
 	vkCmdExecuteCommands((VkCommandBuffer)p_cmd_buffer.id, p_secondary_cmd_buffers.size(), (const VkCommandBuffer *)p_secondary_cmd_buffers.ptr());
 }
 
@@ -3290,7 +3290,7 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 /**** FRAMEBUFFER ****/
 /*********************/
 
-RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
+RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID p_render_pass, Span<const TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
 	VkImageView *vk_img_views = ALLOCA_ARRAY(VkImageView, p_attachments.size());
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
 		vk_img_views[i] = ((const TextureInfo *)p_attachments[i].id)->vk_view;
@@ -3344,7 +3344,7 @@ String RenderingDeviceDriverVulkan::shader_get_binary_cache_key() {
 	return "Vulkan-SV" + uitos(ShaderBinary::VERSION);
 }
 
-Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
+Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(Span<const ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
 	ShaderReflection shader_refl;
 	if (_reflect_spirv(p_spirv, shader_refl) != OK) {
 		return Vector<uint8_t>();
@@ -3958,7 +3958,7 @@ void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSet
 	}
 }
 
-RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(Span<const BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
 	if (!linear_descriptor_pools_enabled) {
 		p_linear_pool_index = -1;
 	}
@@ -4277,13 +4277,13 @@ void RenderingDeviceDriverVulkan::command_clear_buffer(CommandBufferID p_cmd_buf
 	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_size, 0);
 }
 
-void RenderingDeviceDriverVulkan::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
+void RenderingDeviceDriverVulkan::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, Span<const BufferCopyRegion> p_regions) {
 	const BufferInfo *src_buf_info = (const BufferInfo *)p_src_buffer.id;
 	const BufferInfo *dst_buf_info = (const BufferInfo *)p_dst_buffer.id;
 	vkCmdCopyBuffer((VkCommandBuffer)p_cmd_buffer.id, src_buf_info->vk_buffer, dst_buf_info->vk_buffer, p_regions.size(), (const VkBufferCopy *)p_regions.ptr());
 }
 
-void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) {
+void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<const TextureCopyRegion> p_regions) {
 	VkImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
@@ -4349,7 +4349,7 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
 }
 
-void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, Span<const BufferTextureCopyRegion> p_regions) {
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
@@ -4365,7 +4365,7 @@ void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID
 	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
-void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
+void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, Span<const BufferTextureCopyRegion> p_regions) {
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
@@ -4391,7 +4391,7 @@ void RenderingDeviceDriverVulkan::pipeline_free(PipelineID p_pipeline) {
 
 // ----- BINDING -----
 
-void RenderingDeviceDriverVulkan::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, VectorView<uint32_t> p_data) {
+void RenderingDeviceDriverVulkan::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, Span<const uint32_t> p_data) {
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	vkCmdPushConstants((VkCommandBuffer)p_cmd_buffer.id, shader_info->vk_pipeline_layout, shader_info->vk_push_constant_stages, p_dst_first_index * sizeof(uint32_t), p_data.size() * sizeof(uint32_t), p_data.ptr());
 }
@@ -4524,7 +4524,7 @@ static void _attachment_reference_to_vk(const RDD::AttachmentReference &p_attach
 	r_vk_attachment_reference->aspectMask = (VkImageAspectFlags)p_attachment_reference.aspect;
 }
 
-RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(Span<const Attachment> p_attachments, Span<const Subpass> p_subpasses, Span<const SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
 	// These are only used if we use multiview but we need to define them in scope.
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
@@ -4658,7 +4658,7 @@ void RenderingDeviceDriverVulkan::render_pass_free(RenderPassID p_render_pass) {
 
 static_assert(ARRAYS_COMPATIBLE_FIELDWISE(RDD::RenderPassClearValue, VkClearValue));
 
-void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_clear_values) {
+void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, Span<const RenderPassClearValue> p_clear_values) {
 	Framebuffer *framebuffer = (Framebuffer *)(p_framebuffer.id);
 	if (framebuffer->swap_chain_acquired) {
 		// Insert a barrier to wait for the acquisition of the framebuffer before the render pass begins.
@@ -4708,7 +4708,7 @@ void RenderingDeviceDriverVulkan::command_next_render_subpass(CommandBufferID p_
 	vkCmdNextSubpass((VkCommandBuffer)p_cmd_buffer.id, vk_subpass_contents);
 }
 
-void RenderingDeviceDriverVulkan::command_render_set_viewport(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_viewports) {
+void RenderingDeviceDriverVulkan::command_render_set_viewport(CommandBufferID p_cmd_buffer, Span<const Rect2i> p_viewports) {
 	VkViewport *vk_viewports = ALLOCA_ARRAY(VkViewport, p_viewports.size());
 	for (uint32_t i = 0; i < p_viewports.size(); i++) {
 		vk_viewports[i] = {};
@@ -4722,11 +4722,11 @@ void RenderingDeviceDriverVulkan::command_render_set_viewport(CommandBufferID p_
 	vkCmdSetViewport((VkCommandBuffer)p_cmd_buffer.id, 0, p_viewports.size(), vk_viewports);
 }
 
-void RenderingDeviceDriverVulkan::command_render_set_scissor(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_scissors) {
+void RenderingDeviceDriverVulkan::command_render_set_scissor(CommandBufferID p_cmd_buffer, Span<const Rect2i> p_scissors) {
 	vkCmdSetScissor((VkCommandBuffer)p_cmd_buffer.id, 0, p_scissors.size(), (VkRect2D *)p_scissors.ptr());
 }
 
-void RenderingDeviceDriverVulkan::command_render_clear_attachments(CommandBufferID p_cmd_buffer, VectorView<AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) {
+void RenderingDeviceDriverVulkan::command_render_clear_attachments(CommandBufferID p_cmd_buffer, Span<const AttachmentClear> p_attachment_clears, Span<const Rect2i> p_rects) {
 	VkClearAttachment *vk_clears = ALLOCA_ARRAY(VkClearAttachment, p_attachment_clears.size());
 	for (uint32_t i = 0; i < p_attachment_clears.size(); i++) {
 		vk_clears[i] = {};
@@ -4759,7 +4759,7 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferI
 	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, Span<const UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -4912,11 +4912,11 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 		PipelineMultisampleState p_multisample_state,
 		PipelineDepthStencilState p_depth_stencil_state,
 		PipelineColorBlendState p_blend_state,
-		VectorView<int32_t> p_color_attachments,
+		Span<const int32_t> p_color_attachments,
 		BitField<PipelineDynamicStateFlags> p_dynamic_state,
 		RenderPassID p_render_pass,
 		uint32_t p_render_subpass,
-		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+		Span<const PipelineSpecializationConstant> p_specialization_constants) {
 	// Vertex.
 	const VkPipelineVertexInputStateCreateInfo *vertex_input_state_create_info = nullptr;
 	if (p_vertex_format.id) {
@@ -5191,7 +5191,7 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_set(CommandBuffer
 	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, Span<const UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -5219,7 +5219,7 @@ void RenderingDeviceDriverVulkan::command_compute_dispatch_indirect(CommandBuffe
 
 // ----- PIPELINE -----
 
-RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_shader, Span<const PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 
 	VkComputePipelineCreateInfo pipeline_create_info = {};

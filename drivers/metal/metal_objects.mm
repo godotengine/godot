@@ -223,7 +223,7 @@ void MDCommandBuffer::render_bind_uniform_set(RDD::UniformSetID p_uniform_set, R
 	}
 }
 
-void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void MDCommandBuffer::render_bind_uniform_sets(Span<const RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	for (size_t i = 0u; i < p_set_count; ++i) {
@@ -243,7 +243,7 @@ void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_u
 	}
 }
 
-void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) {
+void MDCommandBuffer::render_clear_attachments(Span<const RDD::AttachmentClear> p_attachment_clears, Span<const Rect2i> p_rects) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	const MDSubpass &subpass = render.get_subpass();
@@ -384,7 +384,7 @@ void MDCommandBuffer::_render_set_dirty_state() {
 	render.dirty.clear();
 }
 
-void MDCommandBuffer::render_set_viewport(VectorView<Rect2i> p_viewports) {
+void MDCommandBuffer::render_set_viewport(Span<const Rect2i> p_viewports) {
 	render.viewports.resize(p_viewports.size());
 	for (uint32_t i = 0; i < p_viewports.size(); i += 1) {
 		Rect2i const &vp = p_viewports[i];
@@ -401,7 +401,7 @@ void MDCommandBuffer::render_set_viewport(VectorView<Rect2i> p_viewports) {
 	render.dirty.set_flag(RenderState::DIRTY_VIEWPORT);
 }
 
-void MDCommandBuffer::render_set_scissor(VectorView<Rect2i> p_scissors) {
+void MDCommandBuffer::render_set_scissor(Span<const Rect2i> p_scissors) {
 	render.scissors.resize(p_scissors.size());
 	for (uint32_t i = 0; i < p_scissors.size(); i += 1) {
 		Rect2i const &vp = p_scissors[i];
@@ -501,7 +501,7 @@ void MDCommandBuffer::_render_bind_uniform_sets() {
 	}
 }
 
-void MDCommandBuffer::_populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects) {
+void MDCommandBuffer::_populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, Span<const Rect2i> p_rects) {
 	uint32_t idx = 0;
 	for (uint32_t i = 0; i < p_rects.size(); i++) {
 		Rect2i const &rect = p_rects[i];
@@ -564,7 +564,7 @@ uint32_t MDCommandBuffer::_populate_vertices(simd::float4 *p_vertices, uint32_t 
 	return idx;
 }
 
-void MDCommandBuffer::render_begin_pass(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_frameBuffer, RDD::CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RDD::RenderPassClearValue> p_clear_values) {
+void MDCommandBuffer::render_begin_pass(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_frameBuffer, RDD::CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, Span<const RDD::RenderPassClearValue> p_clear_values) {
 	DEV_ASSERT(commandBuffer != nil);
 	end();
 
@@ -641,7 +641,7 @@ void MDCommandBuffer::_render_clear_render_area() {
 		return;
 	}
 
-	render_clear_attachments(clears, { render.render_area });
+	render_clear_attachments(clears.view(), const_span(render.render_area));
 }
 
 void MDCommandBuffer::render_next_subpass() {
@@ -984,7 +984,7 @@ void MDCommandBuffer::compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, 
 	}
 }
 
-void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void MDCommandBuffer::compute_bind_uniform_sets(Span<const RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
 	id<MTLComputeCommandEncoder> enc = compute.encoder;
@@ -1056,7 +1056,7 @@ MDComputeShader::MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, M
 		MDShader(p_name, p_sets), kernel(p_kernel) {
 }
 
-void MDComputeShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
+void MDComputeShader::encode_push_constant_data(Span<const uint32_t> p_data, MDCommandBuffer *p_cb) {
 	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Compute);
 	if (push_constants.binding == (uint32_t)-1) {
 		return;
@@ -1077,7 +1077,7 @@ MDRenderShader::MDRenderShader(CharString p_name,
 		MDShader(p_name, p_sets), needs_view_mask_buffer(p_needs_view_mask_buffer), vert(p_vert), frag(p_frag) {
 }
 
-void MDRenderShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
+void MDRenderShader::encode_push_constant_data(Span<const uint32_t> p_data, MDCommandBuffer *p_cb) {
 	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Render);
 	id<MTLRenderCommandEncoder> enc = p_cb->render.encoder;
 

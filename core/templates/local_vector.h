@@ -34,6 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
+#include "core/templates/span.h"
 #include "core/templates/vector.h"
 
 #include <initializer_list>
@@ -49,13 +50,11 @@ private:
 	T *data = nullptr;
 
 public:
-	T *ptr() {
-		return data;
-	}
-
-	const T *ptr() const {
-		return data;
-	}
+	T *ptrw() { return data; }
+	T *ptr() { return data; }
+	const T *ptr() const { return data; }
+	Span<T> vieww() { return Span(ptrw(), size()); }
+	Span<const T> view() const { return Span(ptr(), size()); }
 
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {

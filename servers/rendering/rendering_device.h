@@ -505,8 +505,8 @@ private:
 		}
 	};
 
-	static RDD::RenderPassID _render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
-	static RDD::RenderPassID _render_pass_create_from_graph(RenderingDeviceDriver *p_driver, VectorView<RDD::AttachmentLoadOp> p_load_ops, VectorView<RDD::AttachmentStoreOp> p_store_ops, void *p_user_data);
+	static RDD::RenderPassID _render_pass_create(RenderingDeviceDriver *p_driver, const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, Span<const RDD::AttachmentLoadOp> p_load_ops, Span<const RDD::AttachmentStoreOp> p_store_ops, uint32_t p_view_count = 1, Vector<TextureSamples> *r_samples = nullptr);
+	static RDD::RenderPassID _render_pass_create_from_graph(RenderingDeviceDriver *p_driver, Span<const RDD::AttachmentLoadOp> p_load_ops, Span<const RDD::AttachmentStoreOp> p_store_ops, void *p_user_data);
 
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
@@ -1313,7 +1313,7 @@ private:
 	TransferWorker *_acquire_transfer_worker(uint32_t p_transfer_size, uint32_t p_required_align, uint32_t &r_staging_offset);
 	void _release_transfer_worker(TransferWorker *p_transfer_worker);
 	void _end_transfer_worker(TransferWorker *p_transfer_worker);
-	void _submit_transfer_worker(TransferWorker *p_transfer_worker, VectorView<RDD::SemaphoreID> p_signal_semaphores = VectorView<RDD::SemaphoreID>());
+	void _submit_transfer_worker(TransferWorker *p_transfer_worker, Span<const RDD::SemaphoreID> p_signal_semaphores = Span<const RDD::SemaphoreID>());
 	void _wait_for_transfer_worker(TransferWorker *p_transfer_worker);
 	void _flush_barriers_for_transfer_worker(TransferWorker *p_transfer_worker);
 	void _check_transfer_worker_operation(uint32_t p_transfer_worker_index, uint64_t p_transfer_worker_operation);

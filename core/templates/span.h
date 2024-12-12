@@ -47,6 +47,10 @@ public:
 	Span(pointer start, size_t n) :
 			data_(start), count_(n) {}
 
+	// Convenience function to create a span from a single element.
+	explicit Span(T &t) :
+			data_(&t), count_(1) {}
+
 	pointer ptrw() { return data_; }
 	const_pointer ptr() const { return data_; }
 
@@ -96,6 +100,12 @@ private:
 	pointer data_ = {};
 	size_t count_ = 0;
 };
+
+// Convenience function for Span<const T>(x), i.e. to omit the type.
+template <typename T>
+Span<const T> const_span(const T &p_val) {
+	return Span(p_val);
+}
 
 template <typename T>
 size_t Span<T>::find(const T &p_val, std::ptrdiff_t p_from) const {
