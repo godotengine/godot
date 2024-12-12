@@ -467,7 +467,7 @@ Error StreamPeerExtension::put_data(const uint8_t *p_data, int p_bytes) {
 
 Error StreamPeerExtension::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
 	Error err;
-	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &r_sent, err)) {
+	if (GDVIRTUAL_CALL(_put_partial_data, p_data, p_bytes, &r_sent, err)) {
 		return err;
 	}
 	WARN_PRINT_ONCE("StreamPeerExtension::_put_partial_data is unimplemented!");
