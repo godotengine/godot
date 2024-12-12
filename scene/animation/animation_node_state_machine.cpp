@@ -1579,16 +1579,8 @@ void AnimationNodeStateMachine::remove_transition(const StringName &p_from, cons
 
 void AnimationNodeStateMachine::remove_transition_by_index(const int p_transition) {
 	ERR_FAIL_INDEX(p_transition, transitions.size());
-	Transition tr = transitions[p_transition];
 	transitions.write[p_transition].transition->disconnect("advance_condition_changed", callable_mp(this, &AnimationNodeStateMachine::_tree_changed));
 	transitions.remove_at(p_transition);
-
-	Vector<String> path_from = String(tr.from).split("/");
-	Vector<String> path_to = String(tr.to).split("/");
-
-	List<Vector<String>> paths;
-	paths.push_back(path_from);
-	paths.push_back(path_to);
 }
 
 void AnimationNodeStateMachine::_remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition) {
