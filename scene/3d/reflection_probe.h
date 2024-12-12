@@ -62,6 +62,9 @@ private:
 	float ambient_color_energy = 1.0;
 	float mesh_lod_threshold = 1.0;
 
+	bool distance_fade_enabled = false;
+	real_t distance_fade_begin = 40.0;
+	real_t distance_fade_length = 10.0;
 	uint32_t cull_mask = (1 << 20) - 1;
 	uint32_t reflection_mask = (1 << 20) - 1;
 	UpdateMode update_mode = UPDATE_ONCE;
@@ -110,6 +113,15 @@ public:
 
 	void set_enable_shadows(bool p_enable);
 	bool are_shadows_enabled() const;
+
+	void set_enable_distance_fade(bool p_enable);
+	bool is_distance_fade_enabled() const;
+
+	void set_distance_fade_begin(real_t p_distance);
+	real_t get_distance_fade_begin() const;
+
+	void set_distance_fade_length(real_t p_length);
+	real_t get_distance_fade_length() const;
 
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;

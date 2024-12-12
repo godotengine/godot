@@ -638,6 +638,7 @@ public:
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
+	virtual void reflection_probe_set_distance_fade(RID p_probe, bool p_enabled, float p_begin, float p_length) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;

@@ -3171,6 +3171,16 @@
 				Sets the render cull mask for this reflection probe. Only instances with a matching layer will be reflected by this probe. Equivalent to [member ReflectionProbe.cull_mask].
 			</description>
 		</method>
+		<method name="reflection_probe_set_distance_fade">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="begin" type="float" />
+			<param index="3" name="length" type="float" />
+			<description>
+				Sets the distance fade for this reflection probe. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member ReflectionProbe.distance_fade_enabled], [member ReflectionProbe.distance_fade_begin], and [member ReflectionProbe.distance_fade_length].
+			</description>
+		</method>
 		<method name="reflection_probe_set_enable_box_projection">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
