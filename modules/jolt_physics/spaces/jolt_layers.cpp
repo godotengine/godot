@@ -191,6 +191,10 @@ JoltLayers::JoltLayers() {
 	_allocate_object_layer(0);
 }
 
+// MinGW GCC using LTO will emit errors during linking if this is defined in the header file, implicitly or otherwise.
+// Likely caused by this GCC bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94156
+JoltLayers::~JoltLayers() = default;
+
 JPH::ObjectLayer JoltLayers::to_object_layer(JPH::BroadPhaseLayer p_broad_phase_layer, uint32_t p_collision_layer, uint32_t p_collision_mask) {
 	const uint64_t collision = encode_collision(p_collision_layer, p_collision_mask);
 
