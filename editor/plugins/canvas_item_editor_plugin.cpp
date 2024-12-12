@@ -3855,6 +3855,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 
 void CanvasItemEditor::_draw_hover() {
 	LocalVector<Rect2> previous_rects;
+	previous_rects.reserve(hovering_results.size());
 	Vector2 icon_size = Vector2(1, 1) * get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	for (int i = 0; i < hovering_results.size(); i++) {

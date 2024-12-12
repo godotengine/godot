@@ -2609,6 +2609,7 @@ void SceneTreeDock::_toggle_placeholder_from_selection() {
 
 void SceneTreeDock::_reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner) {
 	LocalVector<Node *> nodes;
+	nodes.reserve(p_nodes.size());
 	for (int i = 0; i < p_nodes.size(); i++) {
 		Node *node = Object::cast_to<Node>(p_nodes[i]);
 		ERR_FAIL_NULL(node);

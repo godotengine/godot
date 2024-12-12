@@ -113,6 +113,7 @@ void AnimationLibrary::_animation_changed(const StringName &p_name) {
 
 void AnimationLibrary::get_animation_list(List<StringName> *p_animations) const {
 	LocalVector<StringName> anims;
+	anims.reserve(animations.size());
 
 	for (const KeyValue<StringName, Ref<Animation>> &E : animations) {
 		anims.push_back(E.key);

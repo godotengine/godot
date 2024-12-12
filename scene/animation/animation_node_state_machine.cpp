@@ -1429,6 +1429,7 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	LocalVector<StringName> nodes;
+	nodes.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		nodes.push_back(E.key);
 	}
@@ -1697,6 +1698,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 
 void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) const {
 	LocalVector<StringName> names;
+	names.reserve(states.size());
 	for (const KeyValue<StringName, State> &E : states) {
 		names.push_back(E.key);
 	}

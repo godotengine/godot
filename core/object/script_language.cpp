@@ -484,6 +484,7 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	LocalVector<StringName> classes;
+	classes.reserve(r_global_classes->size());
 	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
 		classes.push_back(E.key);
 	}

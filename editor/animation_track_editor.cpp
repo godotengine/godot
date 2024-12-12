@@ -6296,6 +6296,7 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Paste Keys"));
 		LocalVector<Pair<int, float>> new_selection_values;
+		new_selection_values.reserve(key_clipboard.keys.size());
 
 		for (int i = 0; i < key_clipboard.keys.size(); i++) {
 			const KeyClipboard::Key key = key_clipboard.keys[i];

@@ -271,6 +271,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			LocalVector<DictKey> sortk;
+			sortk.reserve(keys.size());
 
 			for (const Variant &key : keys) {
 				DictKey dk;

@@ -1741,6 +1741,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			// Store first else we will be removing as we loop.
 			LocalVector<int> lines;
+			lines.reserve(file_item->get_child_count());
 			for (TreeItem *breakpoint_item = file_item->get_first_child(); breakpoint_item; breakpoint_item = breakpoint_item->get_next()) {
 				lines.push_back(breakpoint_item->get_meta("line"));
 			}

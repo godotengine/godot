@@ -123,6 +123,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		{ //constants
 
 			LocalVector<StringName> snames;
+			snames.reserve(t->constant_map.size());
 
 			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
 				snames.push_back(F.key);
@@ -148,6 +149,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		{ //signals
 
 			LocalVector<StringName> snames;
+			snames.reserve(t->signal_map.size());
 
 			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
 				snames.push_back(F.key);
@@ -181,6 +183,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		{ //properties
 
 			LocalVector<StringName> snames;
+			snames.reserve(t->property_setget.size());
 
 			for (const KeyValue<StringName, ClassDB::PropertySetGet> &F : t->property_setget) {
 				snames.push_back(F.key);

@@ -1745,6 +1745,7 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 
 void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	LocalVector<StringName> names;
+	names.reserve(nodes.size());
 	for (const KeyValue<StringName, Node> &E : nodes) {
 		names.push_back(E.key);
 	}

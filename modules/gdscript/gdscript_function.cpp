@@ -86,6 +86,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	}
 
 	LocalVector<_GDFKCS> stackpositions;
+	stackpositions.reserve(sdmap.size());
 	for (const KeyValue<StringName, _GDFKC> &E : sdmap) {
 		_GDFKCS spp;
 		spp.id = E.key;
