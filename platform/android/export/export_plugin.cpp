@@ -214,10 +214,23 @@ static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch
 
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
+// This template string must always match the content of 'platform/android/java/lib/res/mipmap-anydpi-v26/icon.xml'.
+static const String ICON_XML_TEMPLATE =
+		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+		"<adaptive-icon xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+		"    <background android:drawable=\"@mipmap/icon_background\"/>\n"
+		"    <foreground android:drawable=\"@mipmap/icon_foreground\"/>\n"
+		"%s" // Placeholder for the optional monochrome tag.
+		"</adaptive-icon>";
+
+static const String ICON_XML_PATH = "res/mipmap-anydpi-v26/icon.xml";
+static const String THEMED_ICON_XML_PATH = "res/mipmap-anydpi-v26/themed_icon.xml";
+
 static const int icon_densities_count = 6;
 static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
 static const char *launcher_adaptive_icon_foreground_option = PNAME("launcher_icons/adaptive_foreground_432x432");
 static const char *launcher_adaptive_icon_background_option = PNAME("launcher_icons/adaptive_background_432x432");
+static const char *launcher_adaptive_icon_monochrome_option = PNAME("launcher_icons/adaptive_monochrome_432x432");
 
 static const LauncherIcon launcher_icons[icon_densities_count] = {
 	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
@@ -244,6 +257,15 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap-hdpi-v4/icon_background.png", 162 },
 	{ "res/mipmap-mdpi-v4/icon_background.png", 108 },
 	{ "res/mipmap/icon_background.png", 432 }
+};
+
+static const LauncherIcon launcher_adaptive_icon_monochromes[icon_densities_count] = {
+	{ "res/mipmap-xxxhdpi-v4/icon_monochrome.png", 432 },
+	{ "res/mipmap-xxhdpi-v4/icon_monochrome.png", 324 },
+	{ "res/mipmap-xhdpi-v4/icon_monochrome.png", 216 },
+	{ "res/mipmap-hdpi-v4/icon_monochrome.png", 162 },
+	{ "res/mipmap-mdpi-v4/icon_monochrome.png", 108 },
+	{ "res/mipmap/icon_monochrome.png", 432 }
 };
 
 static const int EXPORT_FORMAT_APK = 0;
@@ -1640,12 +1662,13 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 	}
 }
 
-void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
+void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
 	String project_icon_path = GLOBAL_GET("application/config/icon");
 
 	icon.instantiate();
 	foreground.instantiate();
 	background.instantiate();
+	monochrome.instantiate();
 
 	// Regular icon: user selection -> project icon -> default.
 	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
@@ -1673,13 +1696,23 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
 	}
+
+	// Adaptive monochrome: user selection -> default.
+	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
+	if (!path.is_empty()) {
+		print_verbose("Loading adaptive monochrome icon from " + path);
+		ImageLoader::load_image(path, monochrome);
+	}
 }
 
 void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 		const Ref<Image> &p_main_image,
 		const Ref<Image> &p_foreground,
-		const Ref<Image> &p_background) {
+		const Ref<Image> &p_background,
+		const Ref<Image> &p_monochrome) {
 	String gradle_build_dir = ExportTemplateManager::get_android_build_directory(p_preset);
+
+	String monochrome_tag = "";
 
 	// Prepare images to be resized for the icons. If some image ends up being uninitialized,
 	// the default image from the export template will be used.
@@ -1707,7 +1740,19 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 					launcher_adaptive_icon_backgrounds[i].dimensions, data);
 			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_backgrounds[i].export_path), data);
 		}
+
+		if (p_monochrome.is_valid() && !p_monochrome->is_empty()) {
+			print_verbose("Processing launcher adaptive icon p_monochrome for dimension " + itos(launcher_adaptive_icon_monochromes[i].dimensions) + " into " + launcher_adaptive_icon_monochromes[i].export_path);
+			Vector<uint8_t> data;
+			_process_launcher_icons(launcher_adaptive_icon_monochromes[i].export_path, p_monochrome,
+					launcher_adaptive_icon_monochromes[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_monochromes[i].export_path), data);
+			monochrome_tag = "    <monochrome android:drawable=\"@mipmap/icon_monochrome\"/>\n";
+		}
 	}
+
+	// Finalize the icon.xml by formatting the template with the optional monochrome tag.
+	store_string_at_path(gradle_build_dir.path_join(ICON_XML_PATH), vformat(ICON_XML_TEMPLATE, monochrome_tag));
 }
 
 Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
@@ -1871,6 +1916,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_background_option, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_monochrome_option, PROPERTY_HINT_FILE, "*.png"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
@@ -3012,8 +3058,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	Ref<Image> main_image;
 	Ref<Image> foreground;
 	Ref<Image> background;
+	Ref<Image> monochrome;
 
-	load_icon_refs(p_preset, main_image, foreground, background);
+	load_icon_refs(p_preset, main_image, foreground, background, monochrome);
 
 	Vector<uint8_t> command_line_flags;
 	// Write command line flags into the command_line_flags variable.
@@ -3084,7 +3131,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res/*.xml files with project name."));
 		}
 		// Copies the project icon files into the appropriate Gradle project directory.
-		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background);
+		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
 		_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 
@@ -3369,6 +3416,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
 	Vector<ABI> invalid_abis(enabled_abis);
+
+	//To temporarily store icon xml data.
+	Vector<uint8_t> themed_icon_xml_data;
+	int icon_xml_compression_method = -1;
+
 	while (ret == UNZ_OK) {
 		//get filename
 		unz_file_info info;
@@ -3398,6 +3450,20 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			_fix_resources(p_preset, data);
 		}
 
+		if (file == THEMED_ICON_XML_PATH) {
+			// Store themed_icon.xml data.
+			themed_icon_xml_data = data;
+			skip = true;
+		}
+
+		if (file == ICON_XML_PATH) {
+			if (monochrome.is_valid() && !monochrome->is_empty()) {
+				// Defer processing of icon.xml until after themed_icon.xml is read.
+				icon_xml_compression_method = info.compression_method;
+				skip = true;
+			}
+		}
+
 		if (file.ends_with(".png") && file.contains("mipmap")) {
 			for (int i = 0; i < icon_densities_count; ++i) {
 				if (main_image.is_valid() && !main_image->is_empty()) {
@@ -3413,6 +3479,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				if (background.is_valid() && !background->is_empty()) {
 					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
 						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+					}
+				}
+				if (monochrome.is_valid() && !monochrome->is_empty()) {
+					if (file == launcher_adaptive_icon_monochromes[i].export_path) {
+						_process_launcher_icons(file, monochrome, launcher_adaptive_icon_monochromes[i].dimensions, data);
 					}
 				}
 			}
@@ -3460,6 +3531,28 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		ret = unzGoToNextFile(pkg);
+	}
+
+	// Process deferred icon.xml and replace it's data with themed_icon.xml.
+	if (monochrome.is_valid() && !monochrome->is_empty()) {
+		print_line("ADDING: " + ICON_XML_PATH + " (replacing with themed_icon.xml data)");
+
+		const bool uncompressed = icon_xml_compression_method == 0;
+		zip_fileinfo zipfi = get_zip_fileinfo();
+
+		zipOpenNewFileInZip(unaligned_apk,
+				ICON_XML_PATH.utf8().get_data(),
+				&zipfi,
+				nullptr,
+				0,
+				nullptr,
+				0,
+				nullptr,
+				uncompressed ? 0 : Z_DEFLATED,
+				Z_DEFAULT_COMPRESSION);
+
+		zipWriteInFileInZip(unaligned_apk, themed_icon_xml_data.ptr(), themed_icon_xml_data.size());
+		zipCloseFileInZip(unaligned_apk);
 	}
 
 	if (!invalid_abis.is_empty()) {
