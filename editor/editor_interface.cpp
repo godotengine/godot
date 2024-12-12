@@ -32,6 +32,7 @@
 #include "editor_interface.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "editor/create_dialog.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
@@ -512,6 +513,45 @@ void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedAr
 	quick_open->popup_dialog(base_types, callable_mp(this, &EditorInterface::_quick_open).bind(p_callback));
 }
 
+void EditorInterface::popup_create_dialog(const Callable &p_callback, const StringName &p_base_type, const String &p_current_type, const String &p_dialog_title, const TypedArray<StringName> &p_custom_type_blocklist, const Dictionary &p_custom_suffix) {
+	if (!create_dialog) {
+		create_dialog = memnew(CreateDialog);
+		get_base_control()->add_child(create_dialog);
+	}
+
+	HashSet<StringName> blocklist;
+	for (const Variant &E : p_custom_type_blocklist) {
+		blocklist.insert(E);
+	}
+	create_dialog->set_type_blocklist(blocklist);
+
+	HashMap<StringName, String> suffix_map;
+	List<Variant> keys;
+	p_custom_suffix.get_key_list(&keys);
+	for (Variant &k : keys) {
+		const StringName key = k;
+		if (key.is_empty()) {
+			continue;
+		}
+		suffix_map.insert(key, p_custom_suffix[key]);
+	}
+	create_dialog->set_type_suffixes(suffix_map);
+
+	String safe_base_type = p_base_type;
+	if (p_base_type.is_empty() || (!ClassDB::class_exists(p_base_type) && !ScriptServer::is_global_class(p_base_type))) {
+		ERR_PRINT(vformat("Invalid base type '%s'. The base type has fallen back to 'Object'.", p_base_type));
+		safe_base_type = "Object";
+	}
+
+	create_dialog->set_base_type(safe_base_type);
+	create_dialog->popup_create(false, true, p_current_type, "");
+	create_dialog->set_title(p_dialog_title.is_empty() ? vformat(TTR("Create New %s"), p_base_type) : p_dialog_title);
+
+	const Callable callback = callable_mp(this, &EditorInterface::_create_dialog_item_selected);
+	create_dialog->connect(SNAME("create"), callback.bind(false, p_callback), CONNECT_DEFERRED);
+	create_dialog->connect(SNAME("canceled"), callback.bind(true, p_callback), CONNECT_DEFERRED);
+}
+
 void EditorInterface::_node_selected(const NodePath &p_node_path, const Callable &p_callback) {
 	const Callable callback = callable_mp(this, &EditorInterface::_node_selected);
 	node_selector->disconnect(SNAME("selected"), callback);
@@ -553,6 +593,13 @@ void EditorInterface::_quick_open(const String &p_file_path, const Callable &p_c
 	EditorQuickOpenDialog *quick_open = EditorNode::get_singleton()->get_quick_open_dialog();
 	quick_open->disconnect(SNAME("canceled"), callable_mp(this, &EditorInterface::_quick_open));
 	_call_dialog_callback(p_callback, p_file_path, "quick open");
+}
+
+void EditorInterface::_create_dialog_item_selected(bool p_is_canceled, const Callable &p_callback) {
+	const Callable callback = callable_mp(this, &EditorInterface::_create_dialog_item_selected);
+	create_dialog->disconnect(SNAME("create"), callback);
+	create_dialog->disconnect(SNAME("canceled"), callback);
+	_call_dialog_callback(p_callback, p_is_canceled ? "" : create_dialog->get_selected_type(), "create dialog");
 }
 
 void EditorInterface::_call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context) {
@@ -773,6 +820,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
+	ClassDB::bind_method(D_METHOD("popup_create_dialog", "callback", "base_type", "current_type", "dialog_title", "type_blocklist", "type_suffixes"), &EditorInterface::popup_create_dialog, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(TypedArray<StringName>()), DEFVAL(Dictionary()));
 
 	// Editor docks.
 

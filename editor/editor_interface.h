@@ -37,6 +37,7 @@
 #include "core/object/script_language.h"
 
 class Control;
+class CreateDialog;
 class EditorCommandPalette;
 class EditorFileSystem;
 class EditorInspector;
@@ -69,11 +70,13 @@ class EditorInterface : public Object {
 	PropertySelector *property_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
 	SceneTreeDialog *node_selector = nullptr;
+	CreateDialog *create_dialog = nullptr;
 
 	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
 	void _property_selected(const String &p_property_name, const Callable &p_callback);
 	void _method_selected(const String &p_property_name, const Callable &p_callback);
 	void _quick_open(const String &p_file_path, const Callable &p_callback);
+	void _create_dialog_item_selected(bool p_is_canceled, const Callable &p_callback);
 	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
 
 	// Editor tools.
@@ -145,6 +148,7 @@ public:
 	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array(), const String &p_current_value = String());
 	void popup_method_selector(Object *p_object, const Callable &p_callback, const String &p_current_value = String());
 	void popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types = TypedArray<StringName>());
+	void popup_create_dialog(const Callable &p_callback, const StringName &p_base_type = "", const String &p_current_type = "", const String &p_dialog_title = "", const TypedArray<StringName> &p_custom_type_blocklist = TypedArray<String>(), const Dictionary &p_custom_suffix = Dictionary());
 
 	// Editor docks.
 
