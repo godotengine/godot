@@ -53,21 +53,21 @@
 
 static String _get_device_vendor_name(const RenderingContextDriver::Device &p_device) {
 	switch (p_device.vendor) {
-		case RenderingContextDriver::VENDOR_AMD:
+		case RenderingContextDriver::Vendor::VENDOR_AMD:
 			return "AMD";
-		case RenderingContextDriver::VENDOR_IMGTEC:
+		case RenderingContextDriver::Vendor::VENDOR_IMGTEC:
 			return "ImgTec";
-		case RenderingContextDriver::VENDOR_APPLE:
+		case RenderingContextDriver::Vendor::VENDOR_APPLE:
 			return "Apple";
-		case RenderingContextDriver::VENDOR_NVIDIA:
+		case RenderingContextDriver::Vendor::VENDOR_NVIDIA:
 			return "NVIDIA";
-		case RenderingContextDriver::VENDOR_ARM:
+		case RenderingContextDriver::Vendor::VENDOR_ARM:
 			return "ARM";
-		case RenderingContextDriver::VENDOR_MICROSOFT:
+		case RenderingContextDriver::Vendor::VENDOR_MICROSOFT:
 			return "Microsoft";
-		case RenderingContextDriver::VENDOR_QUALCOMM:
+		case RenderingContextDriver::Vendor::VENDOR_QUALCOMM:
 			return "Qualcomm";
-		case RenderingContextDriver::VENDOR_INTEL:
+		case RenderingContextDriver::Vendor::VENDOR_INTEL:
 			return "Intel";
 		default:
 			return "Unknown";
@@ -2371,7 +2371,7 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 	}
 
 	LocalVector<RDD::Attachment> attachments;
-	LocalVector<int> attachment_remap;
+	LocalVector<uint32_t> attachment_remap;
 
 	for (int i = 0; i < p_attachments.size(); i++) {
 		if (p_attachments[i].usage_flags == AttachmentFormat::UNUSED_ATTACHMENT) {
