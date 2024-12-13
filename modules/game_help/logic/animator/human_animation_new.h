@@ -68,6 +68,9 @@ public:
         output.animation_rotation = p_rotation;
         output.is_set_animation_rotation = true;
     }
+
+    bool apply_animation(Ref<Animation> p_animation,Animation::Track* const* tracks_ptr,float time,double delta) ;
+
     void retarget() {
         Basis global_basis;
         for(auto& it : root_bone) {
@@ -133,5 +136,7 @@ private:
 
     HashMap<StringName, HumanBonePoseOutput> post;
 	Vector<StringName> root_bone;
+    HashMap<StringName, Vector3> root_global_move_add;
+    HashMap<StringName, Quaternion> root_global_rotation_add;
 
 };

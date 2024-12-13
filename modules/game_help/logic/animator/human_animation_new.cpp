@@ -186,5 +186,101 @@ Ref<Animation> HumanBonePostRotation::build_human_animation(Skeleton3D* p_skelet
 
 
 }
+static Vector3 compute_lookat_position_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
+        Vector3 loc,loc2;
+        Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
+        err = p_animation->try_position_track_interpolate(track_index, time_end, &loc2);
+        return loc2 - loc;
+    
+}
+static Quaternion compute_lookat_rotation_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
+        Quaternion loc,loc2;
+        Error err = p_animation->try_rotation_track_interpolate(track_index, time_start, &loc);
+        err = p_animation->try_rotation_track_interpolate(track_index, time_end, &loc2);
+        return rot[0].inverse() * rot[1];
+    
+}
+
+bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,Animation::Track* const* tracks_ptr,int track_index,float time,double delta) {        
+    StringName path_name = tracks_ptr->path.get_name(0);        
+    if (path_name.begins_with("hm.g.")) {
+        HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+        Quaternion rot;
+        Error err = a->try_rotation_track_interpolate(track_index, time, &rot);
+        set_animation_rotation(rot,mapping->get_bone_name(name));
+        
+        return true;
+    }
+    else if(path_name.begins_with("hm.p.")) { 
+        if(delta == 0) return true;
+
+        Vector3 q;
+
+        double last_time = time - delta;
+
+        if(delta >= 0) {
+            if(last_time < 0) {
+                q = compute_lookat_position_add(p_animation,track_index, 0, time) + compute_lookat_position_add(p_animation,track_index, p_animation->get_length() + last_time, p_animation->get_length());
+            }
+            else {
+                q = compute_lookat_position_add(p_animation,track_index, last_time, time);
+            }
+        } else {
+            if(last_time > p_animation->get_length()) {
+                q = compute_lookat_position_add(p_animation,track_index, time, p_animation->get_length()) + compute_lookat_position_add(p_animation,track_index, last_time - p_animation->get_length(), 0);
+            }
+            else {
+                q = compute_lookat_position_add(p_animation,track_index, last_time , time);
+            }
+
+        }
+        StringName name;
+        
+        HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+        if(mapping != nullptr) {
+            name = mapping->get_bone_name(path_name);
+        }
+        else {
+            name = p_bone.substr(5);
+        }
+        root_global_move_add[name] = q;
+        return true;
+    }
+    else if(name.begins_with("hm.gr.")) {  
+        if(delta == 0) return true;
+
+        Basis q;
+
+        double last_time = time - delta;
+
+        if(delta >= 0) {
+            if(last_time < 0) {
+                q = compute_lookat_rotation_add(p_animation,track_index, 0, time) * compute_lookat_rotation_add(p_animation,track_index, p_animation->get_length() + last_time, p_animation->get_length());
+            }
+            else {
+                q = compute_lookat_rotation_add(p_animation,track_index, last_time, time);
+            }
+        } else {
+            if(last_time > p_animation->get_length()) {
+                q = compute_lookat_rotation_add(p_animation,track_index, time, p_animation->get_length()) * compute_lookat_rotation_add(p_animation,track_index, last_time - p_animation->get_length(), 0);
+            }
+            else {
+                q = compute_lookat_rotation_add(p_animation,track_index, last_time , time);
+            }
+
+        }
+        StringName name;
+        HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+        if(mapping != nullptr) {
+            name = mapping->get_bone_name(path_name);
+        }
+        else {
+            name = p_bone.substr(6);
+        }
+        root_global_rotation_add[name] = q;
+        return true;
+    }
+    return false;
+}
 
 
