@@ -582,6 +582,13 @@
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_version_alias" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the branded version used in marketing, followed by the build number (on Windows) or the version number (on macOS). Examples include [code]11 (build 22000)[/code] and [code]Sequoia (15.0.0)[/code]. This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				[b]Note:[/b] This method is only supported on Windows and macOS. On other operating systems, it returns the same value as [method get_version].
+			</description>
+		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
