@@ -47,6 +47,7 @@
 
 #include <climits>
 #include <initializer_list>
+#include <utility>
 
 template <typename T>
 class VectorWriteProxy {
@@ -147,9 +148,8 @@ public:
 		insert(i, p_val);
 	}
 
-	_FORCE_INLINE_ void operator=(const Vector &p_from) {
-		_cowdata._ref(p_from._cowdata);
-	}
+	_FORCE_INLINE_ void operator=(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
 	_FORCE_INLINE_ Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
@@ -304,6 +304,8 @@ public:
 		}
 	}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector(Vector &&p_from) :
+			_cowdata(std::move(p_from._cowdata)) {}
 
 	_FORCE_INLINE_ ~Vector() {}
 };

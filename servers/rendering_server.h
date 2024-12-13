@@ -625,6 +625,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) = 0;
 
 	enum ReflectionProbeAmbientMode {
 		REFLECTION_PROBE_AMBIENT_DISABLED,
@@ -1027,6 +1028,8 @@ public:
 	virtual void viewport_set_use_taa(RID p_viewport, bool p_use_taa) = 0;
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
+
+	virtual void viewport_set_force_motion_vectors(RID p_viewport, bool p_force_motion_vectors) = 0;
 
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 

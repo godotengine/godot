@@ -4542,7 +4542,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 	}
 }

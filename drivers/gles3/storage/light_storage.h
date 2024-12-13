@@ -118,6 +118,7 @@ struct ReflectionProbe {
 	RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 	int resolution = 256;
 	float intensity = 1.0;
+	float blend_distance = 1.0;
 	RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
 	Color ambient_color;
 	float ambient_color_energy = 1.0;
@@ -642,6 +643,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
