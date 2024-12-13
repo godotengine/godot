@@ -959,6 +959,7 @@
 			A create dialog will set a custom suffix to a specific type name. The suffix will follow the name of the type item with braces.
 			If a type is global and comes from a script, whose suffix should have been its file name, the suffix will be set to the mapped one.
 			[b]Note:[/b] As built-in types and GDExtension types does not have a suffix, the custom suffix will be removed if the type is not in the map list.
+			[b]Note:[/b] The keys of the dictionary should be [StringName]s and the values should be [String]s, otherwise it would lead to unexpected behaviors.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
