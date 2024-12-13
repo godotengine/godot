@@ -1742,6 +1742,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::RIGHT) {
+				_perform_drop();
+				set_input_as_handled();
+				return;
+			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
@@ -3894,6 +3899,16 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	return (canvas_cull_mask & (1 << p_layer));
 }
 
+#ifdef TOOLS_ENABLED
+bool Viewport::is_visible_subviewport() const {
+	if (!is_sub_viewport()) {
+		return true;
+	}
+	SubViewportContainer *container = Object::cast_to<SubViewportContainer>(get_parent());
+	return container && container->is_visible_in_tree();
+}
+#endif // TOOLS_ENABLED
+
 void Viewport::_update_audio_listener_2d() {
 	if (AudioServer::get_singleton()) {
 		AudioServer::get_singleton()->notify_listener_changed();
@@ -4527,7 +4542,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 	}
 }

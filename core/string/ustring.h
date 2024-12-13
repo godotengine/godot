@@ -39,6 +39,8 @@
 #include "core/typedefs.h"
 #include "core/variant/array.h"
 
+#include <utility>
+
 /*************************************************************************/
 /*  Utility Functions                                                    */
 /*************************************************************************/
@@ -193,7 +195,10 @@ public:
 
 	_FORCE_INLINE_ Char16String() {}
 	_FORCE_INLINE_ Char16String(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ Char16String(Char16String &&p_str) :
+			_cowdata(std::move(p_str._cowdata)) {}
 	_FORCE_INLINE_ void operator=(const Char16String &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ void operator=(Char16String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 	_FORCE_INLINE_ Char16String(const char16_t *p_cstr) { copy_from(p_cstr); }
 
 	void operator=(const char16_t *p_cstr);
@@ -235,7 +240,10 @@ public:
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ CharString(CharString &&p_str) :
+			_cowdata(std::move(p_str._cowdata)) {}
 	_FORCE_INLINE_ void operator=(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ void operator=(CharString &&p_str) { _cowdata = std::move(p_str._cowdata); }
 	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
 	void operator=(const char *p_cstr);
@@ -594,7 +602,10 @@ public:
 
 	_FORCE_INLINE_ String() {}
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ String(String &&p_str) :
+			_cowdata(std::move(p_str._cowdata)) {}
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata._ref(p_str._cowdata); }
+	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
 	Vector<uint8_t> to_ascii_buffer() const;
 	Vector<uint8_t> to_utf8_buffer() const;

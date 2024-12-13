@@ -215,3 +215,16 @@ Validate extension JSON: Error: Field 'classes/Control/properties/offset_right':
 Validate extension JSON: Error: Field 'classes/Control/properties/offset_top': type changed value in new API, from "int" to "float".
 
 Property type changed to float to match the actual internal API and documentation.
+
+
+GH-100129
+---------
+Validate extension JSON: Error: Field 'classes/NavigationServer2D/methods/query_path': is_const changed value in new API, from true to false.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/query_path': is_const changed value in new API, from true to false.
+Validate extension JSON: Error: Field 'classes/NavigationServer2D/methods/query_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/query_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/NavigationServer2D/methods/map_get_path': is_const changed value in new API, from true to false.
+Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/map_get_path': is_const changed value in new API, from true to false.
+
+`query_path` and `map_get_path` methods changed to be non const due to internal compatibility and server changes.
+Added optional callback parameters to `query_path` functions. Compatibility methods registered.
