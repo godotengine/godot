@@ -156,7 +156,6 @@ void AnimationNodePreview::stop() {
     }
     play_state = Play_State::PS_Stop;
     preview_character->set_editor_pause_animation(false);
-    preview_character->get_animator()->editor_stop_animation();
     update_play_state();
 }
 
@@ -561,7 +560,7 @@ AnimationNodePreview::AnimationNodePreview()
             tag_enum->set_object_and_property(this, StringName("resource_tag"));
             tag_enum->set_modulate(Color(1,0.8,1.0,1));
             tag_enum->setup({});
-            tag_enum->set_dynamic(true, "get_animation_groups");
+            tag_enum->set_dynamic(true, "get_animation_tags");
             hb->add_child(tag_enum);
 
         }

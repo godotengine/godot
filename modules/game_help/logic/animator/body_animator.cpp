@@ -100,9 +100,9 @@ void CharacterAnimatorLayer::_process_logic(const Ref<Blackboard>& p_playback_in
 // 处理动画
 void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback_info,double p_delta,bool is_first)
 {
-    if(editor_stop) {
+    if(editor_stop_animation) {
         m_AnimationInstances.clear();
-        editor_stop = false;
+		editor_stop_animation = false;
     }
 	//clear_animation_instances();
     
@@ -197,7 +197,7 @@ void CharacterAnimatorLayer::play_animation(const Ref<Animation>& p_anim, bool p
 	play_animation(anim_node);
 }
 
-bool CharacterAnimatorLayer::play_animation(Ref<CharacterAnimatorNodeBase> p_node)
+bool CharacterAnimatorLayer::play_animation(const Ref<CharacterAnimatorNodeBase>& p_node)
 {
     if(p_node.is_null())
     {

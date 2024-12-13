@@ -45,9 +45,29 @@ public:
 
     void _scroll_changed(float ) override{
         Rect2 rect = get_global_rect();
+        rect.position = Vector2(0,0);
+        Rect2 child_rect = Rect2(0,0,item_size.x,item_size.y);
+		if (rect.size.x < 5) {
+			for (auto it : items) {
+				// 一行第一個能顯示，剩餘的都能顯示
+				item_visible_change_cb.call(it, false);
+			}
+			return;
+		}
+        int h_count = rect.size.x / item_size.x;
+		
+        int h_diff = rect.size.x - (h_count * item_size.x);
+		if (h_count == 0) {
+			h_count = 1;
+		}
+        int v_move = get_v_scroll() * get_vertical_custom_step();
+        int i = 0;
         for(auto it : items) {
-            bool _visible = rect.intersects(it->get_global_rect());
+            // 一行第一個能顯示，剩餘的都能顯示
+            child_rect.position.y = i / h_count * item_size.y + v_move;
+            bool _visible = rect.intersects(child_rect);
             item_visible_change_cb.call(it,_visible);
+            ++i;
         }
         is_dirty = false;
     }

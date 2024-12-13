@@ -1,4 +1,5 @@
 #include "animation_preview_panel.h"
+#include "scene/gui/scroll_container.h"
 
 
 AnimationPreviewPanel::AnimationPreviewPanel() {
@@ -44,11 +45,19 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     hbc->set_v_size_flags(SIZE_EXPAND_FILL);
     add_child(hbc);
 
-    animation_tag_list = memnew(VFlowContainer);
-    animation_tag_list->set_modulate(Color(0.895463, 0.702431, 0.0326403, 1));
-    animation_tag_list->set_custom_minimum_size(Vector2(80, 0));
-    animation_tag_list->set_reverse_fill(true);
-    hbc->add_child(animation_tag_list);
+    {
+        ScrollContainer* hsc = memnew(ScrollContainer);
+        hsc->set_v_size_flags(SIZE_EXPAND_FILL);
+        hsc->set_custom_minimum_size(Vector2(180, 0));
+        hbc->add_child(hsc);
+
+        animation_tag_list = memnew(HFlowContainer);
+        animation_tag_list->set_modulate(Color(0.895463, 0.702431, 0.0326403, 1));
+        animation_tag_list->set_custom_minimum_size(Vector2(80, 0));
+        hsc->add_child(animation_tag_list);
+
+    }
+
 
     VSeparator* vs = memnew(VSeparator);
     vs->set_self_modulate(Color(0.349727, 0.355482, 0.26278, 1));
@@ -69,14 +78,10 @@ void AnimationPreviewPanel::_notification(int what) {
     }
     else if (what == NOTIFICATION_PROCESS) {
         if(is_dirty) {
-            double curr_time = OS::get_singleton()->get_unix_time();
-            if(curr_time - last_update_time > 1) {
-                if(update_preview()) {
-                    is_dirty = false;    
-                }    
-                last_update_time = curr_time;        
+            if(update_preview()) {
+                is_dirty = false;
             }
-        }
+		}
     }
     else if (what == NOTIFICATION_EXIT_TREE) {
         animation_list->clear();

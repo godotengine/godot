@@ -383,10 +383,6 @@ public:
 	DECL_MEMBER_BUTTON(audio_add_socket);
 
 
-    // 技能相关
-public:
-    bool play_skill(String p_skill_name);
-    void stop_skill();
 
 public:
     void set_character_ai(const Ref<CharacterAI> &p_ai);

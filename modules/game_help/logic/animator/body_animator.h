@@ -289,7 +289,7 @@ public:
     }
 
 	void play_animation(const Ref<Animation>& p_anim, bool p_is_loop);
-    bool play_animation(Ref<CharacterAnimatorNodeBase> p_node);
+    bool play_animation(const Ref<CharacterAnimatorNodeBase>& p_node);
     void play_animation(const StringName& p_node_name);
     void change_state(const StringName& p_state_name)
     {
@@ -303,11 +303,11 @@ public:
     ~CharacterAnimatorLayer();
 public:
     void set_config(const Ref<CharacterAnimatorLayerConfig>& _config) { config = _config; }
-    Ref<CharacterAnimatorLayerConfig> get_config() { return config; }
+    const Ref<CharacterAnimatorLayerConfig>& get_config() { return config; }
 public:
-    void editor_stop_animation()
+    void set_editor_stop_animation(bool p_v)
     {
-        editor_stop = true;
+		editor_stop_animation = p_v;
     }
 public:
     Vector<Vector2> m_ChildInputVectorArray;
@@ -326,7 +326,7 @@ protected:
     List<CharacterAnimationInstance> m_AnimationInstances;
     class CharacterAnimator* m_Animator = nullptr;
     float blend_weight = 1.0f;
-    bool editor_stop = false;
+    bool editor_stop_animation = false;
 };
 
 // 动画逻辑节点
@@ -582,16 +582,17 @@ public:
 	}
 public:
 
-    void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
+    void editor_play_animation(const Ref<CharacterAnimatorNodeBase>& p_node) {
         layer->play_animation(p_node);
     }
-    void editor_play_animation(Ref<Animation> p_node) {
+    void editor_play_animation(const Ref<Animation>& p_node) {
+		play_animation = p_node;
         layer->play_animation(p_node,true);
     }
 
-    void editor_stop_animation() {
+    void set_editor_stop_animation(bool p_v) {
 		if (layer != nullptr) {
-			layer->editor_stop_animation();
+			layer->set_editor_stop_animation(p_v);
 		}
     }
 
@@ -701,24 +702,24 @@ public:
     }
 public:
 
-    void editor_play_animation(Ref<Animation> p_node) {
+    void editor_play_animation(const Ref<Animation>& p_node) {
         if(m_LayerConfigInstanceList.size() == 0) {
             return;
         }
 		m_LayerConfigInstanceList.front()->get()->editor_play_animation(p_node);
     }
-    void editor_play_animation(Ref<CharacterAnimatorNodeBase> p_node) {
+    void editor_play_animation(const Ref<CharacterAnimatorNodeBase>& p_node) {
         if(m_LayerConfigInstanceList.size() == 0) {
             return;
         }
 		m_LayerConfigInstanceList.front()->get()->editor_play_animation(p_node);
     }
 
-    void editor_stop_animation() {
+    void set_editor_stop_animation(bool v) {
         if(m_LayerConfigInstanceList.size() == 0) {
             return;
         }
-		m_LayerConfigInstanceList.front()->get()->editor_stop_animation();
+		m_LayerConfigInstanceList.front()->get()->set_editor_stop_animation(v);
     }
 };
 VARIANT_ENUM_CAST(CharacterAnimatorNodeBase::LoopType)

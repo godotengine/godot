@@ -72,7 +72,7 @@ protected:
     CheckBox* revert_show = nullptr;
     Button* update_animation_resource = nullptr;
     TabBar* animation_group_tab= nullptr;
-    VFlowContainer* animation_tag_list= nullptr;
+    HFlowContainer* animation_tag_list= nullptr;
     ItemBox* animation_list= nullptr;
     LocalVector<String> animation_list_paths = {"res://Assets/public/animation/", "res://Assets/public/human_animation/"};
     List<Ref<AnimationInfo>> animations;
