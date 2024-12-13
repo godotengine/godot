@@ -184,7 +184,7 @@ Error RenderingContextDriverD3D12::_initialize_devices() {
 
 		Device &device = driver_devices[i];
 		device.name = desc.Description;
-		device.vendor = Vendor(desc.VendorId);
+		device.vendor = desc.VendorId;
 		device.workarounds = Workarounds();
 
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {

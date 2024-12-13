@@ -259,7 +259,7 @@ public:
 	struct InstanceData {
 		// Store instance pointer as well as common instance processing information,
 		// to make processing more cache friendly.
-		enum Flags {
+		enum Flags : uint32_t {
 			FLAG_BASE_TYPE_MASK = 0xFF,
 			FLAG_CAST_SHADOWS = (1 << 8),
 			FLAG_CAST_SHADOWS_ONLY = (1 << 9),
