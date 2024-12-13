@@ -1810,7 +1810,6 @@ void SceneTreeDock::_node_strip_resource_reference(Node *p_node) {
 			static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
 
 			if (res.is_valid()) {
-				print_line("Stripping resource inheritance for: " + res->get_class());
 				bool shouldDuplicate = !unique_exceptions.has(res->get_class());
 				Ref<Resource> unique_resource = _recursively_make_unique_resource(res, shouldDuplicate);
 				p_node->set(E.name, unique_resource);
@@ -1838,7 +1837,6 @@ Ref<Resource> SceneTreeDock::_recursively_make_unique_resource(const Ref<Resourc
 			continue;
 		}
 
-		print_line("Checking property: " + E.name + " of type: " + Variant::get_type_name(E.type));
 		Variant v = unique_resource->get(E.name);
 
 		if (v.is_ref_counted()) {
@@ -1846,7 +1844,6 @@ Ref<Resource> SceneTreeDock::_recursively_make_unique_resource(const Ref<Resourc
 			static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
 
 			if (subres.is_valid()) {
-				print_line("Stripping resource inheritance for: " + subres->get_class());
 				bool shouldDuplicate = !unique_exceptions.has(subres->get_class());
 				Ref<Resource> dupe = _recursively_make_unique_resource(subres, shouldDuplicate);
 				unique_resource->set(E.name, dupe);
