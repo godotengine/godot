@@ -47,12 +47,12 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 
 	inline static JoltPhysicsServer3D *singleton = nullptr;
 
-	mutable RID_PtrOwner<JoltSpace3D> space_owner;
-	mutable RID_PtrOwner<JoltArea3D> area_owner;
-	mutable RID_PtrOwner<JoltBody3D> body_owner;
-	mutable RID_PtrOwner<JoltSoftBody3D> soft_body_owner;
-	mutable RID_PtrOwner<JoltShape3D> shape_owner;
-	mutable RID_PtrOwner<JoltJoint3D> joint_owner;
+	mutable RID_PtrOwner<JoltSpace3D, true> space_owner;
+	mutable RID_PtrOwner<JoltArea3D, true> area_owner;
+	mutable RID_PtrOwner<JoltBody3D, true> body_owner;
+	mutable RID_PtrOwner<JoltSoftBody3D, true> soft_body_owner;
+	mutable RID_PtrOwner<JoltShape3D, true> shape_owner;
+	mutable RID_PtrOwner<JoltJoint3D, true> joint_owner;
 
 	HashSet<JoltSpace3D *> active_spaces;
 
