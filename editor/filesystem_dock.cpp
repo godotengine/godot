@@ -3565,9 +3565,6 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 		String fpath = files->get_item_metadata(current);
 		if (!fpath.ends_with("/")) {
 			current_path = fpath;
-			if (display_mode != DISPLAY_MODE_TREE_ONLY) {
-				_update_tree(get_uncollapsed_paths());
-			}
 		}
 	}
 
