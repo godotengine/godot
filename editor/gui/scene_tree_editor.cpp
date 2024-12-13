@@ -266,6 +266,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
 				// Disable button on custom scripts (pure visual cue).
 				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
+				// Assign custom script meta
+				p_node->set_meta(SceneStringName(_custom_type_script), scr);
 			}
 		}
 	}
