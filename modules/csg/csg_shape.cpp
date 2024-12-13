@@ -848,6 +848,10 @@ void CSGShape3D::_notification(int p_what) {
 			parent_shape = nullptr;
 		} break;
 
+		case NOTIFICATION_CHILD_ORDER_CHANGED: {
+			_make_dirty();
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_root_shape() && last_visible != is_visible()) {
 				// Update this node's parent only if its own visibility has changed, not the visibility of parent nodes
