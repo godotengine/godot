@@ -57,13 +57,14 @@ Ref<FileAccess> FileAccess::create(AccessType p_access) {
 }
 
 bool FileAccess::exists(const String &p_name) {
-	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name)) {
+	const String name = ResourceUID::ensure_path(p_name);
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(name)) {
 		return true;
 	}
 
 	// Using file_exists because it's faster than trying to open the file.
-	Ref<FileAccess> ret = create_for_path(p_name);
-	return ret->file_exists(p_name);
+	Ref<FileAccess> ret = create_for_path(name);
+	return ret->file_exists(name);
 }
 
 void FileAccess::_set_access_type(AccessType p_access) {

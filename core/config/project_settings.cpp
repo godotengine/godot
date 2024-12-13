@@ -148,7 +148,7 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 #endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
-	String path = p_path.simplify_path();
+	String path = ResourceUID::ensure_path(p_path).simplify_path();
 
 	if (resource_path.is_empty() || (path.is_absolute_path() && !path.begins_with(resource_path))) {
 		return path;
