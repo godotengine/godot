@@ -277,7 +277,7 @@ void ParticleProcessMaterial::_update_shader() {
 		}
 	}
 
-	if (sub_emitter_mode != SUB_EMITTER_DISABLED && !RenderingServer::get_singleton()->is_low_end()) {
+	if (sub_emitter_mode != SUB_EMITTER_DISABLED && !RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		if (sub_emitter_mode == SUB_EMITTER_CONSTANT) {
 			code += "uniform float sub_emitter_frequency;\n";
 		}
@@ -1114,7 +1114,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
 
-	if (sub_emitter_mode != SUB_EMITTER_DISABLED && !RenderingServer::get_singleton()->is_low_end()) {
+	if (sub_emitter_mode != SUB_EMITTER_DISABLED && !RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		code += "	int emit_count = 0;\n";
 		switch (sub_emitter_mode) {
 			case SUB_EMITTER_CONSTANT: {
@@ -1861,7 +1861,7 @@ void ParticleProcessMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_
 	sub_emitter_mode = p_sub_emitter_mode;
 	_queue_shader_change();
 	notify_property_list_changed();
-	if (sub_emitter_mode != SUB_EMITTER_DISABLED && RenderingServer::get_singleton()->is_low_end()) {
+	if (sub_emitter_mode != SUB_EMITTER_DISABLED && RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		WARN_PRINT_ONCE_ED("Sub-emitter modes other than SUB_EMITTER_DISABLED are not supported in the Compatibility renderer.");
 	}
 }

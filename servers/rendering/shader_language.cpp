@@ -3629,7 +3629,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 				}
 
 				if (!fail) {
-					if (RenderingServer::get_singleton()->is_low_end()) {
+					if (RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 						if (builtin_func_defs[idx].high_end) {
 							fail = true;
 							unsupported_builtin = true;
@@ -11166,7 +11166,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				int idx = 0;
-				bool low_end = RenderingServer::get_singleton()->is_low_end();
+				bool using_gl_compatibility = RenderingServer::get_singleton()->is_using_gl_compatibility();
 
 				if (stages) {
 					// Stage functions can be used in custom functions as well, that why need to check them all.
@@ -11181,7 +11181,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				while (builtin_func_defs[idx].name) {
-					if ((low_end && builtin_func_defs[idx].high_end) || _check_restricted_func(builtin_func_defs[idx].name, skip_function)) {
+					if ((using_gl_compatibility && builtin_func_defs[idx].high_end) || _check_restricted_func(builtin_func_defs[idx].name, skip_function)) {
 						idx++;
 						continue;
 					}
@@ -11192,10 +11192,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 			} else { // sub-class
 				int idx = 0;
-				bool low_end = RenderingServer::get_singleton()->is_low_end();
+				bool using_gl_compatibility = RenderingServer::get_singleton()->is_using_gl_compatibility();
 
 				while (builtin_func_defs[idx].name) {
-					if (low_end && builtin_func_defs[idx].high_end) {
+					if (using_gl_compatibility && builtin_func_defs[idx].high_end) {
 						idx++;
 						continue;
 					}
@@ -11352,10 +11352,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			}
 
 			int idx = 0;
-			bool low_end = RenderingServer::get_singleton()->is_low_end();
+			bool using_gl_compatibility = RenderingServer::get_singleton()->is_using_gl_compatibility();
 
 			while (builtin_func_defs[idx].name) {
-				if ((low_end && builtin_func_defs[idx].high_end) || _check_restricted_func(builtin_func_defs[idx].name, block_function)) {
+				if ((using_gl_compatibility && builtin_func_defs[idx].high_end) || _check_restricted_func(builtin_func_defs[idx].name, block_function)) {
 					idx++;
 					continue;
 				}

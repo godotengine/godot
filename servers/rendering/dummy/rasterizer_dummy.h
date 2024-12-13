@@ -104,7 +104,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
-		low_end = false;
+		using_gl_compatibility = false;
 	}
 
 	uint64_t get_frame_number() const override { return frame; }

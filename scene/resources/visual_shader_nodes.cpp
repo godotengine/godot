@@ -1679,7 +1679,7 @@ String VisualShaderNodeLinearSceneDepth::generate_code(Shader::Mode p_mode, Visu
 	code += "	{\n";
 
 	code += "		float __log_depth = textureLod(" + make_unique_id(p_type, p_id, "depth_tex") + ", SCREEN_UV, 0.0).x;\n";
-	if (!RenderingServer::get_singleton()->is_low_end()) {
+	if (!RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, __log_depth, 1.0);\n";
 	} else {
 		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __log_depth) * 2.0 - 1.0, 1.0);\n";
@@ -1746,7 +1746,7 @@ String VisualShaderNodeWorldPositionFromDepth::generate_code(Shader::Mode p_mode
 	code += "	{\n";
 
 	code += "		float __log_depth = textureLod(" + make_unique_id(p_type, p_id, "depth_tex") + ", " + uv + ", 0.0).x;\n";
-	if (!RenderingServer::get_singleton()->is_low_end()) {
+	if (!RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(" + uv + " * 2.0 - 1.0, __log_depth, 1.0);\n";
 	} else {
 		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(vec3(" + uv + ", __log_depth) * 2.0 - 1.0, 1.0);\n";
@@ -3245,7 +3245,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 			break;
 		case FUNC_LINEAR_TO_SRGB:
 			code += "	{\n";
-			if (RenderingServer::get_singleton()->is_low_end()) {
+			if (RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		" + p_output_vars[0] + " = max(vec3(1.055) * pow(c, vec3(0.416666667)) - vec3(0.055), vec3(0.0));\n";
 			} else {
@@ -3257,7 +3257,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 			break;
 		case FUNC_SRGB_TO_LINEAR:
 			code += "	{\n";
-			if (RenderingServer::get_singleton()->is_low_end()) {
+			if (RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 				code += "		vec3 c = " + p_input_vars[0] + ";\n";
 				code += "		" + p_output_vars[0] + " = c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878);\n";
 			} else {
@@ -8000,7 +8000,7 @@ String VisualShaderNodeProximityFade::generate_code(Shader::Mode p_mode, VisualS
 	code += "	{\n";
 
 	code += "		float __depth_tex = texture(" + make_unique_id(p_type, p_id, "depth_tex") + ", SCREEN_UV).r;\n";
-	if (!RenderingServer::get_singleton()->is_low_end()) {
+	if (!RenderingServer::get_singleton()->is_using_gl_compatibility()) {
 		code += "		vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, __depth_tex, 1.0);\n";
 	} else {
 		code += "		vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __depth_tex) * 2.0 - 1.0, 1.0);\n";

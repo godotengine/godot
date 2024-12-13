@@ -833,7 +833,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 			// render standard mono camera
 			_draw_viewport(vp);
 
-			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
+			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_using_gl_compatibility())) {
 				//copy to screen if set as such
 				BlitToScreen blit;
 				blit.render_target = vp->render_target;
@@ -902,7 +902,7 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport->shadow_atlas = RSG::light_storage->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
 
-	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
+	viewport->fsr_enabled = !RSG::rasterizer->is_using_gl_compatibility() && !viewport->disable_3d;
 }
 
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
@@ -1038,7 +1038,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 	if (p_screen != DisplayServer::INVALID_WINDOW_ID) {
 		// If using OpenGL we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
-		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
+		if (RSG::rasterizer->is_using_gl_compatibility() && viewport->viewport_render_direct_to_screen) {
 			RSG::texture_storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->view_count);
 			RSG::texture_storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
 		}
@@ -1047,7 +1047,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		viewport->viewport_to_screen = p_screen;
 	} else {
 		// if render_direct_to_screen was used, reset size and position
-		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
+		if (RSG::rasterizer->is_using_gl_compatibility() && viewport->viewport_render_direct_to_screen) {
 			RSG::texture_storage->render_target_set_position(viewport->render_target, 0, 0);
 			RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->view_count);
 		}
@@ -1075,7 +1075,7 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 	viewport->viewport_render_direct_to_screen = p_enable;
 
 	// if attached to screen already, setup screen size and position, this needs to happen after setting flag to avoid an unnecessary buffer allocation
-	if (RSG::rasterizer->is_low_end() && viewport->viewport_to_screen_rect != Rect2() && p_enable) {
+	if (RSG::rasterizer->is_using_gl_compatibility() && viewport->viewport_to_screen_rect != Rect2() && p_enable) {
 		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->view_count);
 		RSG::texture_storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
 	}

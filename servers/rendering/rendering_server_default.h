@@ -1165,7 +1165,7 @@ public:
 	virtual bool has_os_feature(const String &p_feature) const override;
 	virtual void set_debug_generate_wireframes(bool p_generate) override;
 
-	virtual bool is_low_end() const override;
+	virtual bool is_using_gl_compatibility() const override;
 
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
