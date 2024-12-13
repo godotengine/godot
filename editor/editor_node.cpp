@@ -4977,7 +4977,7 @@ String EditorNode::_get_system_info() const {
 	if (distribution_name.is_empty()) {
 		distribution_name = "Other";
 	}
-	const String distribution_version = OS::get_singleton()->get_version();
+	const String distribution_version = OS::get_singleton()->get_version_alias();
 
 	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
 	if (String(VERSION_BUILD) != "official") {

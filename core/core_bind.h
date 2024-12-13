@@ -208,6 +208,7 @@ public:
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
+	String get_version_alias() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 

@@ -582,13 +582,71 @@ String OS_Windows::get_distribution_name() const {
 String OS_Windows::get_version() const {
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
-		RTL_OSVERSIONINFOW fow;
+		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
 		fow.dwOSVersionInfoSize = sizeof(fow);
 		if (version_ptr(&fow) == 0x00000000) {
 			return vformat("%d.%d.%d", (int64_t)fow.dwMajorVersion, (int64_t)fow.dwMinorVersion, (int64_t)fow.dwBuildNumber);
 		}
 	}
+	return "";
+}
+
+String OS_Windows::get_version_alias() const {
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	if (version_ptr != nullptr) {
+		RTL_OSVERSIONINFOEXW fow;
+		ZeroMemory(&fow, sizeof(fow));
+		fow.dwOSVersionInfoSize = sizeof(fow);
+		if (version_ptr(&fow) == 0x00000000) {
+			String windows_string;
+			if (fow.wProductType != VER_NT_WORKSTATION && fow.dwMajorVersion == 10 && fow.dwBuildNumber >= 26100) {
+				windows_string = "Server 2025";
+			} else if (fow.dwMajorVersion == 10 && fow.dwBuildNumber >= 20348) {
+				// Builds above 20348 correspond to Windows 11 / Windows Server 2022.
+				// Their major version numbers are still 10 though, not 11.
+				if (fow.wProductType != VER_NT_WORKSTATION) {
+					windows_string += "Server 2022";
+				} else {
+					windows_string += "11";
+				}
+			} else if (fow.dwMajorVersion == 10) {
+				if (fow.wProductType != VER_NT_WORKSTATION && fow.dwBuildNumber >= 17763) {
+					windows_string += "Server 2019";
+				} else {
+					if (fow.wProductType != VER_NT_WORKSTATION) {
+						windows_string += "Server 2016";
+					} else {
+						windows_string += "10";
+					}
+				}
+			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 3) {
+				if (fow.wProductType != VER_NT_WORKSTATION) {
+					windows_string = "Server 2012 R2";
+				} else {
+					windows_string += "8.1";
+				}
+			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 2) {
+				if (fow.wProductType != VER_NT_WORKSTATION) {
+					windows_string += "Server 2012";
+				} else {
+					windows_string += "8";
+				}
+			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 1) {
+				if (fow.wProductType != VER_NT_WORKSTATION) {
+					windows_string = "Server 2008 R2";
+				} else {
+					windows_string += "7";
+				}
+			} else {
+				windows_string += "Unknown";
+			}
+			// Windows versions older than 7 cannot run Godot.
+
+			return vformat("%s (build %d)", windows_string, (int64_t)fow.dwBuildNumber);
+		}
+	}
+
 	return "";
 }
 
