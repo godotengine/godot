@@ -30,6 +30,7 @@
 
 #include "create_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
@@ -127,6 +128,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true; // Do not show editor nodes.
 	}
 
+	PackedStringArray gtbl = GLOBAL_GET("editor/create_dialog/global_type_blocklist");
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -150,6 +152,11 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 				return true; // Parent type is excluded in custom type blocklist.
 			}
 		}
+		for (const String &G : gtbl) {
+			if (ClassDB::is_parent_class(p_type, StringName(G))) {
+				return true; // Parent type is excluded in global custom type blocklist.
+			}
+		}
 	} else {
 		if (!ScriptServer::is_global_class(p_type)) {
 			return true;
@@ -163,6 +170,8 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 			if (!ClassDB::can_instantiate(native_type)) {
 				return true;
 			} else if (custom_type_blocklist.has(p_type) || custom_type_blocklist.has(native_type)) {
+				return true;
+			} else if (gtbl.has(p_type) || gtbl.has(native_type)) {
 				return true;
 			}
 		}
@@ -290,13 +299,17 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
+	Dictionary gts = GLOBAL_GET("editor/create_dialog/global_type_suffixes");
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
+		String suffix;
 		if (custom_type_suffixes.has(p_type)) {
-			String suffix = custom_type_suffixes.get(p_type);
-			if (!suffix.is_empty()) {
-				r_item->set_suffix(0, "(" + suffix + ")");
-			}
+			suffix = custom_type_suffixes.get(p_type);
+		} else if (gts.has(p_type)) {
+			suffix = gts[p_type];
+		}
+		if (!suffix.is_empty()) {
+			r_item->set_suffix(0, "(" + suffix + ")");
 		}
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
 		r_item->set_text(0, "\"" + p_type + "\"");
@@ -306,8 +319,12 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
 		String suffix = script_path.get_file();
-		if (scr.is_valid() && custom_type_suffixes.has(p_type)) {
-			suffix = custom_type_suffixes.get(p_type);
+		if (scr.is_valid()) {
+			if (custom_type_suffixes.has(p_type)) {
+				suffix = custom_type_suffixes.get(p_type);
+			} else if (gts.has(p_type)) {
+				suffix = gts[p_type];
+			}
 		}
 		if (!suffix.is_empty()) {
 			r_item->set_suffix(0, "(" + suffix + ")");

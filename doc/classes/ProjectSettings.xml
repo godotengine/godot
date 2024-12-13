@@ -951,6 +951,15 @@
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
 		</member>
+		<member name="editor/create_dialog/global_type_blocklist" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+			A create dialog will hide all types in the blocklist.
+			[b]Note:[/b] Trying to list the base type (the root item in the dialog tree item component) will hide all types derived from the base type from the create dialog.
+		</member>
+		<member name="editor/create_dialog/global_type_suffixes" type="Dictionary" setter="" getter="" default="{}">
+			A create dialog will set a custom suffix to a specific type name. The suffix will follow the name of the type item with braces.
+			If a type is global and comes from a script, whose suffix should have been its file name, the suffix will be set to the mapped one.
+			[b]Note:[/b] As built-in types and GDExtension types does not have a suffix, the custom suffix will be removed if the type is not in the map list.
+		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
 			[b]Note:[/b] Because a resource's file extension may change in an exported project, it is heavily recommended to use [method @GDScript.load] or [ResourceLoader] instead of [FileAccess] to load resources dynamically.

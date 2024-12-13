@@ -270,6 +270,9 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 
 	// For correct doc generation.
+	GLOBAL_DEF(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/create_dialog/global_type_blocklist", PROPERTY_HINT_NONE, ""), PackedStringArray());
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "editor/create_dialog/global_type_suffixes", PROPERTY_HINT_NONE, ""), Dictionary());
+
 	GLOBAL_DEF("editor/run/main_run_args", "");
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
