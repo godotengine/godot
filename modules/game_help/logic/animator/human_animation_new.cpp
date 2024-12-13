@@ -194,20 +194,20 @@ static Vector3 compute_lookat_position_add(Ref<Animation> p_animation,int track_
     
 }
 static Quaternion compute_lookat_rotation_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
-        Quaternion loc,loc2;
-        Error err = p_animation->try_rotation_track_interpolate(track_index, time_start, &loc);
-        err = p_animation->try_rotation_track_interpolate(track_index, time_end, &loc2);
-        return rot[0].inverse() * rot[1];
+        Quaternion rot, rot2;
+        Error err = p_animation->try_rotation_track_interpolate(track_index, time_start, &rot);
+        err = p_animation->try_rotation_track_interpolate(track_index, time_end, &rot2);
+        return rot.inverse() * rot2;
     
 }
 
-bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,Animation::Track* const* tracks_ptr,int track_index,float time,double delta) {        
+bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,const Animation::Track*  tracks_ptr,int track_index,float time,double delta) {        
     StringName path_name = tracks_ptr->path.get_name(0);        
     if (path_name.begins_with("hm.g.")) {
         HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
         Quaternion rot;
-        Error err = a->try_rotation_track_interpolate(track_index, time, &rot);
-        set_animation_rotation(rot,mapping->get_bone_name(name));
+        Error err = p_animation->try_rotation_track_interpolate(track_index, time, &rot);
+        set_animation_rotation(rot,mapping->get_bone_name(path_name));
         
         return true;
     }
@@ -241,12 +241,12 @@ bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,Animation
             name = mapping->get_bone_name(path_name);
         }
         else {
-            name = p_bone.substr(5);
+            name = path_name.substr(5);
         }
         root_global_move_add[name] = q;
         return true;
     }
-    else if(name.begins_with("hm.gr.")) {  
+    else if(path_name.begins_with("hm.gr.")) {
         if(delta == 0) return true;
 
         Basis q;
@@ -275,7 +275,7 @@ bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,Animation
             name = mapping->get_bone_name(path_name);
         }
         else {
-            name = p_bone.substr(6);
+            name = path_name.substr(6);
         }
         root_global_rotation_add[name] = q;
         return true;

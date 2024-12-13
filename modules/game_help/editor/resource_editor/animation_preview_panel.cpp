@@ -81,7 +81,7 @@ void AnimationPreviewPanel::_notification(int what) {
     else if (what == NOTIFICATION_EXIT_TREE) {
         animation_list->clear();
         for(auto& it : unuse_preview_list) {
-            it->get()->queue_free();
+            it->queue_free();
         }
         unuse_preview_list.clear();
         animations.clear();

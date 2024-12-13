@@ -69,7 +69,7 @@ public:
         output.is_set_animation_rotation = true;
     }
 
-    bool apply_animation(Ref<Animation> p_animation,Animation::Track* const* tracks_ptr,float time,double delta) ;
+    bool apply_animation(Ref<Animation> p_animation, const Animation::Track* tracks_ptr, int track_index, float time, double delta) ;
 
     void retarget() {
         Basis global_basis;

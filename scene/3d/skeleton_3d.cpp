@@ -814,7 +814,7 @@ Vector<int> Skeleton3D::get_parentless_bones() const {
 Vector<int> Skeleton3D::get_root_bones() const
 {
 	Vector<int> rs;
-	for (int i = 0; i < bones.size(); i++) {
+	for (uint32_t i = 0; i < bones.size(); i++) {
 		if (bones[i].parent < 0) {
 			rs.push_back(i);
 		}
@@ -2478,7 +2478,7 @@ void Skeleton3D::set_human_bone_mapping(const Dictionary &p_human_bone_mapping)
 Vector<String> Skeleton3D::get_bone_names() const
 {
 	Vector<String> bone_names;
-	for (int i = 0; i < bones.size(); i++) {
+	for (uint32_t i = 0; i < bones.size(); i++) {
 		bone_names.push_back(get_bone_name(i));
 	}
 	return bone_names;
