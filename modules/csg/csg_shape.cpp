@@ -237,38 +237,6 @@ static void _unpack_manifold(
 	r_mesh_merge->_regen_face_aabbs();
 }
 
-// Errors matching `thirdparty/manifold/include/manifold/manifold.h`.
-static String manifold_error_to_string(const manifold::Manifold::Error &p_error) {
-	switch (p_error) {
-		case manifold::Manifold::Error::NoError:
-			return "No Error";
-		case manifold::Manifold::Error::NonFiniteVertex:
-			return "Non Finite Vertex";
-		case manifold::Manifold::Error::NotManifold:
-			return "Not Manifold";
-		case manifold::Manifold::Error::VertexOutOfBounds:
-			return "Vertex Out Of Bounds";
-		case manifold::Manifold::Error::PropertiesWrongLength:
-			return "Properties Wrong Length";
-		case manifold::Manifold::Error::MissingPositionProperties:
-			return "Missing Position Properties";
-		case manifold::Manifold::Error::MergeVectorsDifferentLengths:
-			return "Merge Vectors Different Lengths";
-		case manifold::Manifold::Error::MergeIndexOutOfBounds:
-			return "Merge Index Out Of Bounds";
-		case manifold::Manifold::Error::TransformWrongLength:
-			return "Transform Wrong Length";
-		case manifold::Manifold::Error::RunIndexWrongLength:
-			return "Run Index Wrong Length";
-		case manifold::Manifold::Error::FaceIDWrongLength:
-			return "Face ID Wrong Length";
-		case manifold::Manifold::Error::InvalidConstruction:
-			return "Invalid Construction";
-		default:
-			return "Unknown Error";
-	}
-}
-
 #ifdef DEV_ENABLED
 static String _export_meshgl_as_json(const manifold::MeshGL64 &p_mesh) {
 	Dictionary mesh_dict;
@@ -400,16 +368,6 @@ static void _pack_manifold(
 	print_verbose(_export_meshgl_as_json(mesh));
 #endif // DEV_ENABLED
 	r_manifold = manifold::Manifold(mesh);
-	manifold::Manifold::Error error = r_manifold.Status();
-	if (error == manifold::Manifold::Error::NoError) {
-		return;
-	}
-	if (p_csg_shape->get_owner()) {
-		NodePath path = p_csg_shape->get_owner()->get_path_to(p_csg_shape, true);
-		print_error(vformat("CSGShape3D manifold creation from mesh failed at %s: %s.", path, manifold_error_to_string(error)));
-	} else {
-		print_error(vformat("CSGShape3D manifold creation from mesh failed at .: %s.", manifold_error_to_string(error)));
-	}
 }
 
 struct ManifoldOperation {
@@ -941,6 +899,19 @@ Array CSGShape3D::get_meshes() const {
 	}
 
 	return Array();
+}
+
+PackedStringArray CSGShape3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+	const CSGShape3D *current_shape = this;
+	while (current_shape) {
+		if (!current_shape->brush || current_shape->brush->faces.is_empty()) {
+			warnings.push_back(RTR("The CSGShape3D has an empty shape.\nCSGShape3D empty shapes typically occur because the mesh is not manifold.\nA manifold mesh forms a solid object without gaps, holes, or loose edges.\nEach edge must be a member of exactly two faces."));
+			break;
+		}
+		current_shape = current_shape->parent_shape;
+	}
+	return warnings;
 }
 
 void CSGShape3D::_bind_methods() {
