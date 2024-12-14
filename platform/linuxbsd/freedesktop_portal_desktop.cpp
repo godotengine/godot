@@ -49,6 +49,7 @@
 #define BUS_OBJECT_NAME "org.freedesktop.portal.Desktop"
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
 
+#define BUS_INTERFACE_CAMERA "org.freedesktop.portal.Camera"
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 
@@ -127,6 +128,92 @@ bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char 
 	dbus_connection_unref(bus);
 
 	return success;
+}
+
+bool FreeDesktopPortalDesktop::access_camera() {
+	if (unsupported) {
+		return false;
+	}
+
+	ERR_FAIL_NULL_V(monitor_connection, false);
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	CryptoCore::RandomGenerator rng;
+	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
+	uint8_t uuid[64];
+	Error rng_err = rng.get_random_bytes(uuid, 64);
+	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
+
+	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(monitor_connection));
+	String token = String::hex_encode_buffer(uuid, 64);
+	String path = vformat("/org/freedesktop/portal/desktop/request/%s/%s", dbus_unique_name.replace(".", "_").replace(":", ""), token);
+
+	AccessCameraData data;
+	data.path = path;
+	data.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
+	dbus_bus_add_match(monitor_connection, data.filter.utf8().get_data(), &err);
+	if (dbus_error_is_set(&err)) {
+		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+		dbus_error_free(&err);
+		return false;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_CAMERA, "AccessCamera");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		DBusMessageIter arr_iter;
+		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+
+		append_dbus_dict_string(&arr_iter, "handle_token", token);
+
+		dbus_message_iter_close_container(&iter, &arr_iter);
+	}
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_INFINITE, &err);
+	dbus_message_unref(message);
+
+	if (!reply || dbus_error_is_set(&err)) {
+		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
+		dbus_error_free(&err);
+		dbus_bus_remove_match(monitor_connection, data.filter.utf8().get_data(), &err);
+		return false;
+	}
+
+	// Update signal path.
+	{
+		DBusMessageIter iter;
+		if (dbus_message_iter_init(reply, &iter)) {
+			if (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_OBJECT_PATH) {
+				const char *new_path = nullptr;
+				dbus_message_iter_get_basic(&iter, &new_path);
+				if (String::utf8(new_path) != path) {
+					dbus_bus_remove_match(monitor_connection, data.filter.utf8().get_data(), &err);
+					if (dbus_error_is_set(&err)) {
+						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
+						dbus_error_free(&err);
+						return false;
+					}
+					data.filter = String::utf8(new_path);
+					dbus_bus_add_match(monitor_connection, data.filter.utf8().get_data(), &err);
+					if (dbus_error_is_set(&err)) {
+						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+						dbus_error_free(&err);
+						return false;
+					}
+				}
+			}
+		}
+	}
+	dbus_message_unref(reply);
+
+	MutexLock lock(access_camera_mutex);
+	access_camera_data.push_back(data);
+
+	return true;
 }
 
 uint32_t FreeDesktopPortalDesktop::get_appearance_color_scheme() {
@@ -580,8 +667,28 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 					}
 				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
 					String path = String::utf8(dbus_message_get_path(msg));
-					MutexLock lock(portal->file_dialog_mutex);
+					for (int i = 0; i < portal->access_camera_data.size(); i++) {
+						MutexLock lock(portal->access_camera_mutex);
+						FreeDesktopPortalDesktop::AccessCameraData &data = portal->access_camera_data.write[i];
+						if (data.path == path) {
+							DBusMessageIter iter;
+							if (dbus_message_iter_init(msg, &iter)) {
+								dbus_uint32_t resp_code;
+								dbus_message_iter_get_basic(&iter, &resp_code);
+								OS::get_singleton()->get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), "CAMERA", resp_code == 0);
+							}
+
+							DBusError err;
+							dbus_error_init(&err);
+							dbus_bus_remove_match(portal->monitor_connection, data.filter.utf8().get_data(), &err);
+							dbus_error_free(&err);
+
+							portal->access_camera_data.remove_at(i);
+							break;
+						}
+					}
 					for (int i = 0; i < portal->file_dialogs.size(); i++) {
+						MutexLock lock(portal->file_dialog_mutex);
 						FreeDesktopPortalDesktop::FileDialogData &fd = portal->file_dialogs.write[i];
 						if (fd.path == path) {
 							DBusMessageIter iter;
