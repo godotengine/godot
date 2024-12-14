@@ -138,27 +138,27 @@ struct [[nodiscard]] Transform3D {
 };
 
 _FORCE_INLINE_ Vector3 Transform3D::right() const {
-	return basis[0].normalized();
+	return basis.get_column(0).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::left() const {
-	return -basis[0].normalized();
+	return -basis.get_column(0).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::up() const {
-	return basis[1].normalized();
+	return basis.get_column(1).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::down() const {
-	return -basis[1].normalized();
+	return -basis.get_column(1).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::forward() const {
-	return -basis[2].normalized();
+	return -basis.get_column(2).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::back() const {
-	return basis[2].normalized();
+	return basis.get_column(2).normalized();
 }
 
 _FORCE_INLINE_ Vector3 Transform3D::xform(const Vector3 &p_vector) const {
