@@ -159,19 +159,19 @@ struct [[nodiscard]] Transform2D {
 };
 
 Vector2 Transform2D::right() const {
-    return columns[0].normalized();
+	return columns[0].normalized();
 }
 
 Vector2 Transform2D::left() const {
-    return -columns[0].normalized();
+	return -columns[0].normalized();
 }
 
 Vector2 Transform2D::up() const {
-    return columns[1].normalized();
+	return columns[1].normalized();
 }
 
 Vector2 Transform2D::down() const {
-    return -columns[1].normalized();
+	return -columns[1].normalized();
 }
 
 Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
