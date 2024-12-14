@@ -33,8 +33,8 @@
 
 #include "scene/animation/animation_tree.h"
 
-class AnimationNodeExtension : public AnimationRootNode {
-	GDCLASS(AnimationNodeExtension, AnimationRootNode);
+class AnimationNodeExtension : public AnimationNode {
+	GDCLASS(AnimationNodeExtension, AnimationNode);
 
 public:
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
