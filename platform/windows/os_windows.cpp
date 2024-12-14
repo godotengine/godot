@@ -45,6 +45,7 @@
 #include "drivers/windows/file_access_windows_pipe.h"
 #include "drivers/windows/ip_windows.h"
 #include "drivers/windows/net_socket_winsock.h"
+#include "drivers/windows/thread_windows.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -247,6 +248,10 @@ void OS_Windows::initialize() {
 	error_handlers.errfunc = _error_handler;
 	error_handlers.userdata = this;
 	add_error_handler(&error_handlers);
+#endif
+
+#ifdef THREADS_ENABLED
+	init_thread_win();
 #endif
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
