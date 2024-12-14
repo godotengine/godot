@@ -242,6 +242,10 @@ private:
 	Node *target_node = nullptr;
 	Point2 drop_pos;
 
+	ObjectID target;
+	bool collision_checked = false;
+	bool create_temp_collision = false;
+
 	EditorSelection *editor_selection = nullptr;
 
 	Button *translation_preview_button = nullptr;
@@ -292,6 +296,8 @@ private:
 		real_t depth = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
+
+	bool has_collision(Node *node);
 
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
