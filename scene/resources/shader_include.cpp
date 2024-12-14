@@ -140,10 +140,7 @@ Error ResourceFormatSaverShaderInclude::save(const Ref<Resource> &p_resource, co
 
 	ERR_FAIL_COND_V_MSG(error, error, "Cannot save shader include '" + p_path + "'.");
 
-	file->store_string(source);
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
-	}
+	FAIL_ON_WRITE_ERR_V(file, store_string(source), ERR_CANT_CREATE);
 
 	return OK;
 }

@@ -57,10 +57,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	const uint8_t *reader = buffer.ptr();
 
-	file->store_buffer(reader, buffer.size());
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
-	}
+	FAIL_ON_WRITE_ERR_V(file, store_buffer(reader, buffer.size()), ERR_CANT_CREATE);
 
 	return OK;
 }

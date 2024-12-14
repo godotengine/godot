@@ -909,10 +909,11 @@ void ResourceLoaderBinary::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-static void save_ustring(Ref<FileAccess> f, const String &p_string) {
+static bool save_ustring(Ref<FileAccess> f, const String &p_string) {
 	CharString utf8 = p_string.utf8();
-	f->store_32(utf8.length() + 1);
-	f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	FAIL_ON_WRITE_ERR_V(f, store_32(utf8.length() + 1), false);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1), false);
+	return true;
 }
 
 static String get_ustring(Ref<FileAccess> f) {
@@ -1343,7 +1344,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.depren'.", p_path));
 
 		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
-		fw->store_buffer(magic, 4);
+		FAIL_ON_WRITE_ERR_V(fw, store_buffer(magic, 4), ERR_FILE_CANT_WRITE);
 	}
 
 	bool big_endian = f->get_32();
@@ -1351,12 +1352,12 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
 #ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(!big_endian), ERR_FILE_CANT_WRITE);
 #else
-	fw->store_32(big_endian);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(big_endian), ERR_FILE_CANT_WRITE);
 #endif
 	fw->set_big_endian(big_endian != 0);
-	fw->store_32(use_real64); //use real64
+	FAIL_ON_WRITE_ERR_V(fw, store_32(use_real64), ERR_FILE_CANT_WRITE); //use real64
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -1402,44 +1403,50 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	// Since we're not actually converting the file contents, leave the version
 	// numbers in the file untouched.
-	fw->store_32(ver_major);
-	fw->store_32(ver_minor);
-	fw->store_32(ver_format);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_major), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_minor), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_format), ERR_FILE_CANT_WRITE);
 
-	save_ustring(fw, get_ustring(f)); //type
+	if (!save_ustring(fw, get_ustring(f))) { //type
+		return ERR_FILE_CANT_WRITE;
+	}
 
 	uint64_t md_ofs = f->get_position();
 	uint64_t importmd_ofs = f->get_64();
-	fw->store_64(0); //metadata offset
+	FAIL_ON_WRITE_ERR_V(fw, store_64(0), ERR_FILE_CANT_WRITE); //metadata offset
 
 	uint32_t flags = f->get_32();
 	bool using_uids = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS);
 	uint64_t uid_data = f->get_64();
 
-	fw->store_32(flags);
-	fw->store_64(uid_data);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(flags), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_64(uid_data), ERR_FILE_CANT_WRITE);
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
-		save_ustring(fw, get_ustring(f));
+		if (!save_ustring(fw, get_ustring(f))) {
+			return ERR_FILE_CANT_WRITE;
+		}
 	}
 
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
-		fw->store_32(0); // reserved
+		FAIL_ON_WRITE_ERR_V(fw, store_32(0), ERR_FILE_CANT_WRITE); // reserved
 		f->get_32();
 	}
 
 	//string table
 	uint32_t string_table_size = f->get_32();
 
-	fw->store_32(string_table_size);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(string_table_size), ERR_FILE_CANT_WRITE);
 
 	for (uint32_t i = 0; i < string_table_size; i++) {
 		String s = get_ustring(f);
-		save_ustring(fw, s);
+		if (!save_ustring(fw, s)) {
+			return ERR_FILE_CANT_WRITE;
+		}
 	}
 
 	//external resources
 	uint32_t ext_resources_size = f->get_32();
-	fw->store_32(ext_resources_size);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ext_resources_size), ERR_FILE_CANT_WRITE);
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
 		String type = get_ustring(f);
 		String path = get_ustring(f);
@@ -1472,12 +1479,16 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 			path = local_path.path_to_file(path);
 		}
 
-		save_ustring(fw, type);
-		save_ustring(fw, path);
+		if (!save_ustring(fw, type)) {
+			return ERR_FILE_CANT_WRITE;
+		}
+		if (!save_ustring(fw, path)) {
+			return ERR_FILE_CANT_WRITE;
+		}
 
 		if (using_uids) {
 			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
-			fw->store_64(uid);
+			FAIL_ON_WRITE_ERR_V(fw, store_64(uid), ERR_FILE_CANT_WRITE);
 		}
 	}
 
@@ -1485,19 +1496,21 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	//internal resources
 	uint32_t int_resources_size = f->get_32();
-	fw->store_32(int_resources_size);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(int_resources_size), ERR_FILE_CANT_WRITE);
 
 	for (uint32_t i = 0; i < int_resources_size; i++) {
 		String path = get_ustring(f);
 		uint64_t offset = f->get_64();
-		save_ustring(fw, path);
-		fw->store_64(offset + size_diff);
+		if (!save_ustring(fw, path)) {
+			return ERR_FILE_CANT_WRITE;
+		}
+		FAIL_ON_WRITE_ERR_V(fw, store_64(offset + size_diff), ERR_FILE_CANT_WRITE);
 	}
 
 	//rest of file
 	uint8_t b = f->get_8();
 	while (!f->eof_reached()) {
-		fw->store_8(b);
+		FAIL_ON_WRITE_ERR_V(fw, store_8(b), ERR_FILE_CANT_WRITE);
 		b = f->get_8();
 	}
 	f.unref();
@@ -1505,7 +1518,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool all_ok = fw->get_error() == OK;
 
 	fw->seek(md_ofs);
-	fw->store_64(importmd_ofs + size_diff);
+	FAIL_ON_WRITE_ERR_V(fw, store_64(importmd_ofs + size_diff), ERR_FILE_CANT_WRITE);
 
 	if (!all_ok) {
 		return ERR_CANT_CREATE;
@@ -1585,35 +1598,36 @@ bool ResourceFormatLoaderBinary::has_custom_uid_support() const {
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 
-void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_bytes) {
+bool ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_bytes) {
 	int extra = 4 - (p_bytes % 4);
 	if (extra < 4) {
 		for (int i = 0; i < extra; i++) {
-			f->store_8(0); //pad to 32
+			FAIL_ON_WRITE_ERR_V(f, store_8(0), false); //pad to 32
 		}
 	}
+	return true;
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
+bool ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
-			f->store_32(VARIANT_NIL);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_NIL), false);
 			// don't store anything
 		} break;
 		case Variant::BOOL: {
-			f->store_32(VARIANT_BOOL);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_BOOL), false);
 			bool val = p_property;
-			f->store_32(val);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val), false);
 		} break;
 		case Variant::INT: {
 			int64_t val = p_property;
 			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
-				f->store_32(VARIANT_INT64);
-				f->store_64(val);
+				FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_INT64), false);
+				FAIL_ON_WRITE_ERR_V(f, store_64(val), false);
 
 			} else {
-				f->store_32(VARIANT_INT);
-				f->store_32(int32_t(p_property));
+				FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_INT), false);
+				FAIL_ON_WRITE_ERR_V(f, store_32(int32_t(p_property)), false);
 			}
 
 		} break;
@@ -1621,403 +1635,422 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			double d = p_property;
 			float fl = d;
 			if (double(fl) != d) {
-				f->store_32(VARIANT_DOUBLE);
-				f->store_double(d);
+				FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_DOUBLE), false);
+				FAIL_ON_WRITE_ERR_V(f, store_double(d), false);
 			} else {
-				f->store_32(VARIANT_FLOAT);
-				f->store_real(fl);
+				FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_FLOAT), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(fl), false);
 			}
 
 		} break;
 		case Variant::STRING: {
-			f->store_32(VARIANT_STRING);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_STRING), false);
 			String val = p_property;
-			save_unicode_string(f, val);
+			if (!save_unicode_string(f, val)) {
+				return false;
+			}
 
 		} break;
 		case Variant::VECTOR2: {
-			f->store_32(VARIANT_VECTOR2);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR2), false);
 			Vector2 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.y), false);
 
 		} break;
 		case Variant::VECTOR2I: {
-			f->store_32(VARIANT_VECTOR2I);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR2I), false);
 			Vector2i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.y), false);
 
 		} break;
 		case Variant::RECT2: {
-			f->store_32(VARIANT_RECT2);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_RECT2), false);
 			Rect2 val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.position.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.position.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.size.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.size.y), false);
 
 		} break;
 		case Variant::RECT2I: {
-			f->store_32(VARIANT_RECT2I);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_RECT2I), false);
 			Rect2i val = p_property;
-			f->store_32(val.position.x);
-			f->store_32(val.position.y);
-			f->store_32(val.size.x);
-			f->store_32(val.size.y);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.position.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.position.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.size.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.size.y), false);
 
 		} break;
 		case Variant::VECTOR3: {
-			f->store_32(VARIANT_VECTOR3);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR3), false);
 			Vector3 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.z), false);
 
 		} break;
 		case Variant::VECTOR3I: {
-			f->store_32(VARIANT_VECTOR3I);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR3I), false);
 			Vector3i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
-			f->store_32(val.z);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.z), false);
 
 		} break;
 		case Variant::VECTOR4: {
-			f->store_32(VARIANT_VECTOR4);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR4), false);
 			Vector4 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.w), false);
 
 		} break;
 		case Variant::VECTOR4I: {
-			f->store_32(VARIANT_VECTOR4I);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_VECTOR4I), false);
 			Vector4i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
-			f->store_32(val.z);
-			f->store_32(val.w);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.w), false);
 
 		} break;
 		case Variant::PLANE: {
-			f->store_32(VARIANT_PLANE);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PLANE), false);
 			Plane val = p_property;
-			f->store_real(val.normal.x);
-			f->store_real(val.normal.y);
-			f->store_real(val.normal.z);
-			f->store_real(val.d);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.normal.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.normal.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.normal.z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.d), false);
 
 		} break;
 		case Variant::QUATERNION: {
-			f->store_32(VARIANT_QUATERNION);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_QUATERNION), false);
 			Quaternion val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.w), false);
 
 		} break;
 		case Variant::AABB: {
-			f->store_32(VARIANT_AABB);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_AABB), false);
 			AABB val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.position.z);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
-			f->store_real(val.size.z);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.position.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.position.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.position.z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.size.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.size.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.size.z), false);
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			f->store_32(VARIANT_TRANSFORM2D);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_TRANSFORM2D), false);
 			Transform2D val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].y), false);
 
 		} break;
 		case Variant::BASIS: {
-			f->store_32(VARIANT_BASIS);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_BASIS), false);
 			Basis val = p_property;
-			f->store_real(val.rows[0].x);
-			f->store_real(val.rows[0].y);
-			f->store_real(val.rows[0].z);
-			f->store_real(val.rows[1].x);
-			f->store_real(val.rows[1].y);
-			f->store_real(val.rows[1].z);
-			f->store_real(val.rows[2].x);
-			f->store_real(val.rows[2].y);
-			f->store_real(val.rows[2].z);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[0].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[0].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[0].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[1].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[1].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[1].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[2].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[2].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.rows[2].z), false);
 
 		} break;
 		case Variant::TRANSFORM3D: {
-			f->store_32(VARIANT_TRANSFORM3D);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_TRANSFORM3D), false);
 			Transform3D val = p_property;
-			f->store_real(val.basis.rows[0].x);
-			f->store_real(val.basis.rows[0].y);
-			f->store_real(val.basis.rows[0].z);
-			f->store_real(val.basis.rows[1].x);
-			f->store_real(val.basis.rows[1].y);
-			f->store_real(val.basis.rows[1].z);
-			f->store_real(val.basis.rows[2].x);
-			f->store_real(val.basis.rows[2].y);
-			f->store_real(val.basis.rows[2].z);
-			f->store_real(val.origin.x);
-			f->store_real(val.origin.y);
-			f->store_real(val.origin.z);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[0].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[0].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[0].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[1].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[1].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[1].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[2].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[2].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.basis.rows[2].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.origin.x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.origin.y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.origin.z), false);
 
 		} break;
 		case Variant::PROJECTION: {
-			f->store_32(VARIANT_PROJECTION);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PROJECTION), false);
 			Projection val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[0].z);
-			f->store_real(val.columns[0].w);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[1].z);
-			f->store_real(val.columns[1].w);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
-			f->store_real(val.columns[2].z);
-			f->store_real(val.columns[2].w);
-			f->store_real(val.columns[3].x);
-			f->store_real(val.columns[3].y);
-			f->store_real(val.columns[3].z);
-			f->store_real(val.columns[3].w);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[0].w), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[1].w), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[2].w), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[3].x), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[3].y), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[3].z), false);
+			FAIL_ON_WRITE_ERR_V(f, store_real(val.columns[3].w), false);
 
 		} break;
 		case Variant::COLOR: {
-			f->store_32(VARIANT_COLOR);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_COLOR), false);
 			Color val = p_property;
 			// Color are always floats
-			f->store_float(val.r);
-			f->store_float(val.g);
-			f->store_float(val.b);
-			f->store_float(val.a);
+			FAIL_ON_WRITE_ERR_V(f, store_float(val.r), false);
+			FAIL_ON_WRITE_ERR_V(f, store_float(val.g), false);
+			FAIL_ON_WRITE_ERR_V(f, store_float(val.b), false);
+			FAIL_ON_WRITE_ERR_V(f, store_float(val.a), false);
 
 		} break;
 		case Variant::STRING_NAME: {
-			f->store_32(VARIANT_STRING_NAME);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_STRING_NAME), false);
 			String val = p_property;
-			save_unicode_string(f, val);
+			if (!save_unicode_string(f, val)) {
+				return false;
+			}
 
 		} break;
 
 		case Variant::NODE_PATH: {
-			f->store_32(VARIANT_NODE_PATH);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_NODE_PATH), false);
 			NodePath np = p_property;
-			f->store_16(np.get_name_count());
+			FAIL_ON_WRITE_ERR_V(f, store_16(np.get_name_count()), false);
 			uint16_t snc = np.get_subname_count();
 			if (np.is_absolute()) {
 				snc |= 0x8000;
 			}
-			f->store_16(snc);
+			FAIL_ON_WRITE_ERR_V(f, store_16(snc), false);
 			for (int i = 0; i < np.get_name_count(); i++) {
 				if (string_map.has(np.get_name(i))) {
-					f->store_32(string_map[np.get_name(i)]);
+					FAIL_ON_WRITE_ERR_V(f, store_32(string_map[np.get_name(i)]), false);
 				} else {
-					save_unicode_string(f, np.get_name(i), true);
+					if (!save_unicode_string(f, np.get_name(i), true)) {
+						return false;
+					}
 				}
 			}
 			for (int i = 0; i < np.get_subname_count(); i++) {
 				if (string_map.has(np.get_subname(i))) {
-					f->store_32(string_map[np.get_subname(i)]);
+					FAIL_ON_WRITE_ERR_V(f, store_32(string_map[np.get_subname(i)]), false);
 				} else {
-					save_unicode_string(f, np.get_subname(i), true);
+					if (!save_unicode_string(f, np.get_subname(i), true)) {
+						return false;
+					}
 				}
 			}
 
 		} break;
 		case Variant::RID: {
-			f->store_32(VARIANT_RID);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_RID), false);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;
-			f->store_32(val.get_id());
+			FAIL_ON_WRITE_ERR_V(f, store_32(val.get_id()), false);
 		} break;
 		case Variant::OBJECT: {
-			f->store_32(VARIANT_OBJECT);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_OBJECT), false);
 			Ref<Resource> res = p_property;
 			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
-				f->store_32(OBJECT_EMPTY);
-				return; // Don't save it.
+				FAIL_ON_WRITE_ERR_V(f, store_32(OBJECT_EMPTY), false);
+				return true; // Don't save it.
 			}
 
 			if (!res->is_built_in()) {
-				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
-				f->store_32(external_resources[res]);
+				FAIL_ON_WRITE_ERR_V(f, store_32(OBJECT_EXTERNAL_RESOURCE_INDEX), false);
+				FAIL_ON_WRITE_ERR_V(f, store_32(external_resources[res]), false);
 			} else {
 				if (!resource_map.has(res)) {
-					f->store_32(OBJECT_EMPTY);
-					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
+					FAIL_ON_WRITE_ERR_V(f, store_32(OBJECT_EMPTY), false);
+					ERR_FAIL_V_MSG(true, "Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
-				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(resource_map[res]);
+				FAIL_ON_WRITE_ERR_V(f, store_32(OBJECT_INTERNAL_RESOURCE), false);
+				FAIL_ON_WRITE_ERR_V(f, store_32(resource_map[res]), false);
 				//internal resource
 			}
 
 		} break;
 		case Variant::CALLABLE: {
-			f->store_32(VARIANT_CALLABLE);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_CALLABLE), false);
 			WARN_PRINT("Can't save Callables.");
 		} break;
 		case Variant::SIGNAL: {
-			f->store_32(VARIANT_SIGNAL);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_SIGNAL), false);
 			WARN_PRINT("Can't save Signals.");
 		} break;
 
 		case Variant::DICTIONARY: {
-			f->store_32(VARIANT_DICTIONARY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_DICTIONARY), false);
 			Dictionary d = p_property;
-			f->store_32(uint32_t(d.size()));
+			FAIL_ON_WRITE_ERR_V(f, store_32(uint32_t(d.size())), false);
 
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
 			for (const Variant &E : keys) {
-				write_variant(f, E, resource_map, external_resources, string_map);
-				write_variant(f, d[E], resource_map, external_resources, string_map);
+				if (!write_variant(f, E, resource_map, external_resources, string_map)) {
+					return false;
+				}
+				if (!write_variant(f, d[E], resource_map, external_resources, string_map)) {
+					return false;
+				}
 			}
 
 		} break;
 		case Variant::ARRAY: {
-			f->store_32(VARIANT_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_ARRAY), false);
 			Array a = p_property;
-			f->store_32(uint32_t(a.size()));
+			FAIL_ON_WRITE_ERR_V(f, store_32(uint32_t(a.size())), false);
 			for (const Variant &var : a) {
-				write_variant(f, var, resource_map, external_resources, string_map);
+				if (!write_variant(f, var, resource_map, external_resources, string_map)) {
+					return false;
+				}
 			}
 
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
-			f->store_32(VARIANT_PACKED_BYTE_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_BYTE_ARRAY), false);
 			Vector<uint8_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const uint8_t *r = arr.ptr();
-			f->store_buffer(r, len);
-			_pad_buffer(f, len);
+			FAIL_ON_WRITE_ERR_V(f, store_buffer(r, len), false);
+			if (!_pad_buffer(f, len)) {
+				return false;
+			}
 
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT32_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_INT32_ARRAY), false);
 			Vector<int32_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const int32_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_32(r[i]);
+				FAIL_ON_WRITE_ERR_V(f, store_32(r[i]), false);
 			}
 
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT64_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_INT64_ARRAY), false);
 			Vector<int64_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const int64_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_64(r[i]);
+				FAIL_ON_WRITE_ERR_V(f, store_64(r[i]), false);
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_FLOAT32_ARRAY), false);
 			Vector<float> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const float *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i]);
+				FAIL_ON_WRITE_ERR_V(f, store_float(r[i]), false);
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_FLOAT64_ARRAY), false);
 			Vector<double> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const double *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_double(r[i]);
+				FAIL_ON_WRITE_ERR_V(f, store_double(r[i]), false);
 			}
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-			f->store_32(VARIANT_PACKED_STRING_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_STRING_ARRAY), false);
 			Vector<String> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const String *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				save_unicode_string(f, r[i]);
+				if (!save_unicode_string(f, r[i])) {
+					return false;
+				}
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_VECTOR2_ARRAY), false);
 			Vector<Vector2> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const Vector2 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].x), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].y), false);
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_VECTOR3_ARRAY), false);
 			Vector<Vector3> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const Vector3 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].x), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].y), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].z), false);
 			}
 		} break;
 
 		case Variant::PACKED_COLOR_ARRAY: {
-			f->store_32(VARIANT_PACKED_COLOR_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_COLOR_ARRAY), false);
 			Vector<Color> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const Color *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i].r);
-				f->store_float(r[i].g);
-				f->store_float(r[i].b);
-				f->store_float(r[i].a);
+				FAIL_ON_WRITE_ERR_V(f, store_float(r[i].r), false);
+				FAIL_ON_WRITE_ERR_V(f, store_float(r[i].g), false);
+				FAIL_ON_WRITE_ERR_V(f, store_float(r[i].b), false);
+				FAIL_ON_WRITE_ERR_V(f, store_float(r[i].a), false);
 			}
 
 		} break;
 		case Variant::PACKED_VECTOR4_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
+			FAIL_ON_WRITE_ERR_V(f, store_32(VARIANT_PACKED_VECTOR4_ARRAY), false);
 			Vector<Vector4> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			FAIL_ON_WRITE_ERR_V(f, store_32(len), false);
 			const Vector4 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
-				f->store_real(r[i].w);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].x), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].y), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].z), false);
+				FAIL_ON_WRITE_ERR_V(f, store_real(r[i].w), false);
 			}
 
 		} break;
 		default: {
-			ERR_FAIL_MSG("Invalid variant.");
+			ERR_FAIL_V_MSG(false, "Invalid variant.");
 		}
 	}
+	return true;
 }
 
 void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant, bool p_main) {
@@ -2112,14 +2145,15 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> p_f, const String &p_string, bool p_bit_on_len) {
+bool ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> p_f, const String &p_string, bool p_bit_on_len) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		p_f->store_32((utf8.length() + 1) | 0x80000000);
+		FAIL_ON_WRITE_ERR_V(p_f, store_32((utf8.length() + 1) | 0x80000000), false);
 	} else {
-		p_f->store_32(utf8.length() + 1);
+		FAIL_ON_WRITE_ERR_V(p_f, store_32(utf8.length() + 1), false);
 	}
-	p_f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	FAIL_ON_WRITE_ERR_V(p_f, store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1), false);
+	return true;
 }
 
 int ResourceFormatSaverBinaryInstance::get_string_index(const String &p_string) {
@@ -2177,27 +2211,27 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
 		//save header compressed
 		static const uint8_t header[4] = { 'R', 'S', 'R', 'C' };
-		f->store_buffer(header, 4);
+		FAIL_ON_WRITE_ERR_V(f, store_buffer(header, 4), ERR_FILE_CANT_WRITE);
 	}
 
 	if (big_endian) {
-		f->store_32(1);
+		FAIL_ON_WRITE_ERR_V(f, store_32(1), ERR_FILE_CANT_WRITE);
 		f->set_big_endian(true);
 	} else {
-		f->store_32(0);
+		FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE);
 	}
 
-	f->store_32(0); //64 bits file, false for now
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
-	f->store_32(FORMAT_VERSION);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); //64 bits file, false for now
+	FAIL_ON_WRITE_ERR_V(f, store_32(VERSION_MAJOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(VERSION_MINOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(FORMAT_VERSION), ERR_FILE_CANT_WRITE);
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
 		return ERR_CANT_CREATE;
 	}
 
-	save_unicode_string(f, _resource_get_class(p_resource));
-	f->store_64(0); //offset to import metadata
+	ERR_FAIL_COND_V(!save_unicode_string(f, _resource_get_class(p_resource)), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_64(0), ERR_FILE_CANT_WRITE); //offset to import metadata
 
 	String script_class;
 	{
@@ -2215,16 +2249,16 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 			}
 		}
 
-		f->store_32(format_flags);
+		FAIL_ON_WRITE_ERR_V(f, store_32(format_flags), ERR_FILE_CANT_WRITE);
 	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
-	f->store_64(uid);
+	FAIL_ON_WRITE_ERR_V(f, store_64(uid), ERR_FILE_CANT_WRITE);
 	if (!script_class.is_empty()) {
-		save_unicode_string(f, script_class);
+		ERR_FAIL_COND_V(!save_unicode_string(f, script_class), ERR_FILE_CANT_WRITE);
 	}
 
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
-		f->store_32(0); // reserved
+		FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // reserved
 	}
 
 	List<ResourceData> resources;
@@ -2284,13 +2318,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	f->store_32(strings.size()); //string table size
+	FAIL_ON_WRITE_ERR_V(f, store_32(strings.size()), ERR_FILE_CANT_WRITE); //string table size
 	for (int i = 0; i < strings.size(); i++) {
-		save_unicode_string(f, strings[i]);
+		ERR_FAIL_COND_V(!save_unicode_string(f, strings[i]), ERR_FILE_CANT_WRITE);
 	}
 
 	// save external resource table
-	f->store_32(external_resources.size()); //amount of external resources
+	FAIL_ON_WRITE_ERR_V(f, store_32(external_resources.size()), ERR_FILE_CANT_WRITE); //amount of external resources
 	Vector<Ref<Resource>> save_order;
 	save_order.resize(external_resources.size());
 
@@ -2299,15 +2333,15 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {
-		save_unicode_string(f, save_order[i]->get_save_class());
+		ERR_FAIL_COND_V(!save_unicode_string(f, save_order[i]->get_save_class()), ERR_FILE_CANT_WRITE);
 		String res_path = save_order[i]->get_path();
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
-		save_unicode_string(f, res_path);
+		ERR_FAIL_COND_V(!save_unicode_string(f, res_path), ERR_FILE_CANT_WRITE);
 		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
-		f->store_64(ruid);
+		FAIL_ON_WRITE_ERR_V(f, store_64(ruid), ERR_FILE_CANT_WRITE);
 	}
 	// save internal resource table
-	f->store_32(saved_resources.size()); //amount of internal resources
+	FAIL_ON_WRITE_ERR_V(f, store_32(saved_resources.size()), ERR_FILE_CANT_WRITE); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
 	HashSet<String> used_unique_ids;
 
@@ -2341,7 +2375,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 				used_unique_ids.insert(new_id);
 			}
 
-			save_unicode_string(f, "local://" + r->get_scene_unique_id());
+			ERR_FAIL_COND_V(!save_unicode_string(f, "local://" + r->get_scene_unique_id()), ERR_FILE_CANT_WRITE);
 			if (takeover_paths) {
 				r->set_path(p_path + "::" + r->get_scene_unique_id(), true);
 			}
@@ -2349,10 +2383,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 			r->set_edited(false);
 #endif
 		} else {
-			save_unicode_string(f, r->get_path()); //actual external
+			ERR_FAIL_COND_V(!save_unicode_string(f, r->get_path()), ERR_FILE_CANT_WRITE); //actual external
 		}
 		ofs_pos.push_back(f->get_position());
-		f->store_64(0); //offset in 64 bits
+		FAIL_ON_WRITE_ERR_V(f, store_64(0), ERR_FILE_CANT_WRITE); //offset in 64 bits
 		resource_map[r] = res_index++;
 	}
 
@@ -2361,23 +2395,23 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	//now actually save the resources
 	for (const ResourceData &rd : resources) {
 		ofs_table.push_back(f->get_position());
-		save_unicode_string(f, rd.type);
-		f->store_32(rd.properties.size());
+		ERR_FAIL_COND_V(!save_unicode_string(f, rd.type), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_32(rd.properties.size()), ERR_FILE_CANT_WRITE);
 
 		for (const Property &p : rd.properties) {
-			f->store_32(p.name_idx);
-			write_variant(f, p.value, resource_map, external_resources, string_map, p.pi);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p.name_idx), ERR_FILE_CANT_WRITE);
+			ERR_FAIL_COND_V(!write_variant(f, p.value, resource_map, external_resources, string_map, p.pi), ERR_FILE_CANT_WRITE);
 		}
 	}
 
 	for (int i = 0; i < ofs_table.size(); i++) {
 		f->seek(ofs_pos[i]);
-		f->store_64(ofs_table[i]);
+		FAIL_ON_WRITE_ERR_V(f, store_64(ofs_table[i]), ERR_FILE_CANT_WRITE);
 	}
 
 	f->seek_end();
 
-	f->store_buffer((const uint8_t *)"RSRC", 4); //magic at end
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"RSRC", 4), ERR_FILE_CANT_WRITE); //magic at end
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
 		return ERR_CANT_CREATE;
@@ -2420,19 +2454,19 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
-		fw->store_buffer(magich, 4);
+		FAIL_ON_WRITE_ERR_V(fw, store_buffer(magich, 4), ERR_FILE_CANT_WRITE);
 	}
 
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
 #ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(!big_endian), ERR_FILE_CANT_WRITE);
 #else
-	fw->store_32(big_endian);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(big_endian), ERR_FILE_CANT_WRITE);
 #endif
 	fw->set_big_endian(big_endian != 0);
-	fw->store_32(use_real64); //use real64
+	FAIL_ON_WRITE_ERR_V(fw, store_32(use_real64), ERR_FILE_CANT_WRITE); //use real64
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2460,29 +2494,29 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 	// Since we're not actually converting the file contents, leave the version
 	// numbers in the file untouched.
-	fw->store_32(ver_major);
-	fw->store_32(ver_minor);
-	fw->store_32(ver_format);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_major), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_minor), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(ver_format), ERR_FILE_CANT_WRITE);
 
-	save_ustring(fw, get_ustring(f)); //type
+	ERR_FAIL_COND_V(!save_ustring(fw, get_ustring(f)), ERR_FILE_CANT_WRITE); //type
 
-	fw->store_64(f->get_64()); //metadata offset
+	FAIL_ON_WRITE_ERR_V(fw, store_64(f->get_64()), ERR_FILE_CANT_WRITE); //metadata offset
 
 	uint32_t flags = f->get_32();
 	flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS;
 	f->get_64(); // Skip previous UID
 
-	fw->store_32(flags);
-	fw->store_64(p_uid);
+	FAIL_ON_WRITE_ERR_V(fw, store_32(flags), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(fw, store_64(p_uid), ERR_FILE_CANT_WRITE);
 
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
-		save_ustring(fw, get_ustring(f));
+		ERR_FAIL_COND_V(!save_ustring(fw, get_ustring(f)), ERR_FILE_CANT_WRITE);
 	}
 
 	//rest of file
 	uint8_t b = f->get_8();
 	while (!f->eof_reached()) {
-		fw->store_8(b);
+		FAIL_ON_WRITE_ERR_V(fw, store_8(b), ERR_FILE_CANT_WRITE);
 		b = f->get_8();
 	}
 

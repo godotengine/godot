@@ -484,7 +484,7 @@ void EditorFileSystem::_save_filesystem_cache() {
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 
-	f->store_line(filesystem_settings_version_for_import);
+	FAIL_ON_WRITE_ERR(f, store_line(filesystem_settings_version_for_import));
 	_save_filesystem_cache(filesystem, f);
 }
 
@@ -1265,7 +1265,10 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
 					fi->uid = ResourceUID::get_singleton()->create_id();
-					f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid));
+					if (!f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid))) {
+						f->abort_backup_save_and_close();
+						ERR_PRINT("Cannot write file '" + path + ".uid'.");
+					}
 				}
 			}
 		}
@@ -1728,7 +1731,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	if (!p_dir) {
 		return; //none
 	}
-	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
+	FAIL_ON_WRITE_ERR(p_file, store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time)));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
 		const EditorFileSystemDirectory::FileInfo *file_info = p_dir->files[i];
@@ -1752,7 +1755,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(String("<>").join({ file_info->script_class_name, file_info->script_class_extends, file_info->script_class_icon_path, file_info->import_md5, String("<*>").join(file_info->import_dest_paths) }));
 		cache_string.append(String("<>").join(file_info->deps));
 
-		p_file->store_line(String("::").join(cache_string));
+		FAIL_ON_WRITE_ERR(p_file, store_line(String("::").join(cache_string)));
 	}
 
 	for (int i = 0; i < p_dir->subdirs.size(); i++) {
@@ -1935,7 +1938,7 @@ void EditorFileSystem::_save_late_updated_files() {
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 	for (const String &E : late_update_files) {
-		f->store_line(E);
+		FAIL_ON_WRITE_ERR(f, store_line(E));
 	}
 }
 
@@ -2517,50 +2520,50 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open import file '" + file + ".import'.");
 
 			//write manually, as order matters ([remap] has to go first for performance).
-			f->store_line("[remap]");
-			f->store_line("");
-			f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+			FAIL_ON_WRITE_ERR_V(f, store_line("[remap]"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("importer=\"" + importer->get_importer_name() + "\""), ERR_FILE_CANT_WRITE);
 			int version = importer->get_format_version();
 			if (version > 0) {
-				f->store_line("importer_version=" + itos(version));
+				FAIL_ON_WRITE_ERR_V(f, store_line("importer_version=" + itos(version)), ERR_FILE_CANT_WRITE);
 			}
 			if (!importer->get_resource_type().is_empty()) {
-				f->store_line("type=\"" + importer->get_resource_type() + "\"");
+				FAIL_ON_WRITE_ERR_V(f, store_line("type=\"" + importer->get_resource_type() + "\""), ERR_FILE_CANT_WRITE);
 			}
 
 			if (uid == ResourceUID::INVALID_ID) {
 				uid = ResourceUID::get_singleton()->create_id();
 			}
 
-			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
+			FAIL_ON_WRITE_ERR_V(f, store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""), ERR_FILE_CANT_WRITE); // Store in readable format.
 
 			if (err == OK) {
 				String path = base_path + "." + importer->get_save_extension();
-				f->store_line("path=\"" + path + "\"");
+				FAIL_ON_WRITE_ERR_V(f, store_line("path=\"" + path + "\""), ERR_FILE_CANT_WRITE);
 				dest_paths.push_back(path);
 			}
 
-			f->store_line("group_file=" + Variant(p_group_file).get_construct_string());
+			FAIL_ON_WRITE_ERR_V(f, store_line("group_file=" + Variant(p_group_file).get_construct_string()), ERR_FILE_CANT_WRITE);
 
 			if (err == OK) {
-				f->store_line("valid=true");
+				FAIL_ON_WRITE_ERR_V(f, store_line("valid=true"), ERR_FILE_CANT_WRITE);
 			} else {
-				f->store_line("valid=false");
+				FAIL_ON_WRITE_ERR_V(f, store_line("valid=false"), ERR_FILE_CANT_WRITE);
 			}
-			f->store_line("[deps]\n");
+			FAIL_ON_WRITE_ERR_V(f, store_line("[deps]\n"), ERR_FILE_CANT_WRITE);
 
-			f->store_line("");
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
-			f->store_line("source_file=" + Variant(file).get_construct_string());
+			FAIL_ON_WRITE_ERR_V(f, store_line("source_file=" + Variant(file).get_construct_string()), ERR_FILE_CANT_WRITE);
 			if (dest_paths.size()) {
 				Array dp;
 				for (int i = 0; i < dest_paths.size(); i++) {
 					dp.push_back(dest_paths[i]);
 				}
-				f->store_line("dest_files=" + Variant(dp).get_construct_string() + "\n");
+				FAIL_ON_WRITE_ERR_V(f, store_line("dest_files=" + Variant(dp).get_construct_string() + "\n"), ERR_FILE_CANT_WRITE);
 			}
-			f->store_line("[params]");
-			f->store_line("");
+			FAIL_ON_WRITE_ERR_V(f, store_line("[params]"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
 			//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
@@ -2575,7 +2578,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 				}
 				String value;
 				VariantWriter::write_to_string(v, value);
-				f->store_line(base + "=" + value);
+				FAIL_ON_WRITE_ERR_V(f, store_line(base + "=" + value), ERR_FILE_CANT_WRITE);
 			}
 		}
 
@@ -2584,9 +2587,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
 			ERR_FAIL_COND_V_MSG(md5s.is_null(), ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
 
-			md5s->store_line("source_md5=\"" + FileAccess::get_md5(file) + "\"");
+			FAIL_ON_WRITE_ERR_V(md5s, store_line("source_md5=\"" + FileAccess::get_md5(file) + "\""), ERR_FILE_CANT_WRITE);
 			if (dest_paths.size()) {
-				md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+				FAIL_ON_WRITE_ERR_V(md5s, store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n"), ERR_FILE_CANT_WRITE);
 			}
 		}
 
@@ -2772,18 +2775,18 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open file from path '" + p_file + ".import'.");
 
 		// Write manually, as order matters ([remap] has to go first for performance).
-		f->store_line("[remap]");
-		f->store_line("");
-		f->store_line("importer=\"" + importer->get_importer_name() + "\"");
+		FAIL_ON_WRITE_ERR_V(f, store_line("[remap]"), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_line("importer=\"" + importer->get_importer_name() + "\""), ERR_FILE_CANT_WRITE);
 		int version = importer->get_format_version();
 		if (version > 0) {
-			f->store_line("importer_version=" + itos(version));
+			FAIL_ON_WRITE_ERR_V(f, store_line("importer_version=" + itos(version)), ERR_FILE_CANT_WRITE);
 		}
 		if (!importer->get_resource_type().is_empty()) {
-			f->store_line("type=\"" + importer->get_resource_type() + "\"");
+			FAIL_ON_WRITE_ERR_V(f, store_line("type=\"" + importer->get_resource_type() + "\""), ERR_FILE_CANT_WRITE);
 		}
 
-		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
+		FAIL_ON_WRITE_ERR_V(f, store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""), ERR_FILE_CANT_WRITE); // Store in readable format.
 
 		if (err == OK) {
 			if (importer->get_save_extension().is_empty()) {
@@ -2793,30 +2796,30 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 				for (const String &E : import_variants) {
 					String path = base_path.c_escape() + "." + E + "." + importer->get_save_extension();
 
-					f->store_line("path." + E + "=\"" + path + "\"");
+					FAIL_ON_WRITE_ERR_V(f, store_line("path." + E + "=\"" + path + "\""), ERR_FILE_CANT_WRITE);
 					dest_paths.push_back(path);
 				}
 			} else {
 				String path = base_path + "." + importer->get_save_extension();
-				f->store_line("path=\"" + path + "\"");
+				FAIL_ON_WRITE_ERR_V(f, store_line("path=\"" + path + "\""), ERR_FILE_CANT_WRITE);
 				dest_paths.push_back(path);
 			}
 
 		} else {
-			f->store_line("valid=false");
+			FAIL_ON_WRITE_ERR_V(f, store_line("valid=false"), ERR_FILE_CANT_WRITE);
 		}
 
 		if (meta != Variant()) {
-			f->store_line("metadata=" + meta.get_construct_string());
+			FAIL_ON_WRITE_ERR_V(f, store_line("metadata=" + meta.get_construct_string()), ERR_FILE_CANT_WRITE);
 		}
 
 		if (generator_parameters != Variant()) {
-			f->store_line("generator_parameters=" + generator_parameters.get_construct_string());
+			FAIL_ON_WRITE_ERR_V(f, store_line("generator_parameters=" + generator_parameters.get_construct_string()), ERR_FILE_CANT_WRITE);
 		}
 
-		f->store_line("");
+		FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
-		f->store_line("[deps]\n");
+		FAIL_ON_WRITE_ERR_V(f, store_line("[deps]\n"), ERR_FILE_CANT_WRITE);
 
 		if (gen_files.size()) {
 			Array genf;
@@ -2827,23 +2830,23 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 			String value;
 			VariantWriter::write_to_string(genf, value);
-			f->store_line("files=" + value);
-			f->store_line("");
+			FAIL_ON_WRITE_ERR_V(f, store_line("files=" + value), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 		}
 
-		f->store_line("source_file=" + Variant(p_file).get_construct_string());
+		FAIL_ON_WRITE_ERR_V(f, store_line("source_file=" + Variant(p_file).get_construct_string()), ERR_FILE_CANT_WRITE);
 
 		if (dest_paths.size()) {
 			Array dp;
 			for (int i = 0; i < dest_paths.size(); i++) {
 				dp.push_back(dest_paths[i]);
 			}
-			f->store_line("dest_files=" + Variant(dp).get_construct_string());
+			FAIL_ON_WRITE_ERR_V(f, store_line("dest_files=" + Variant(dp).get_construct_string()), ERR_FILE_CANT_WRITE);
 		}
-		f->store_line("");
+		FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
-		f->store_line("[params]");
-		f->store_line("");
+		FAIL_ON_WRITE_ERR_V(f, store_line("[params]"), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
 		// Store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
@@ -2851,7 +2854,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			String base = E.option.name;
 			String value;
 			VariantWriter::write_to_string(params[base], value);
-			f->store_line(base + "=" + value);
+			FAIL_ON_WRITE_ERR_V(f, store_line(base + "=" + value), ERR_FILE_CANT_WRITE);
 		}
 	}
 
@@ -2860,9 +2863,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(md5s.is_null(), ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
 
-		md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
+		FAIL_ON_WRITE_ERR_V(md5s, store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\""), ERR_FILE_CANT_WRITE);
 		if (dest_paths.size()) {
-			md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
+			FAIL_ON_WRITE_ERR_V(md5s, store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n"), ERR_FILE_CANT_WRITE);
 		}
 	}
 

@@ -211,7 +211,7 @@ Error EditorFeatureProfile::save_to_file(const String &p_path) {
 
 	JSON json;
 	String text = json.stringify(data, "\t");
-	f->store_string(text);
+	FAIL_ON_WRITE_ERR_V(f, store_string(text), ERR_FILE_CANT_WRITE);
 	return OK;
 }
 

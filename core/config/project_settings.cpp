@@ -888,7 +888,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Couldn't save project.binary at '%s'.", p_file));
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
-	file->store_buffer(hdr, 4);
+	FAIL_ON_WRITE_ERR_V(file, store_buffer(hdr, 4), ERR_FILE_CANT_WRITE);
 
 	int count = 0;
 
@@ -898,25 +898,31 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 	if (!p_custom_features.is_empty()) {
 		// Store how many properties are saved, add one for custom features, which must always go first.
-		file->store_32(count + 1);
+		FAIL_ON_WRITE_ERR_V(file, store_32(count + 1), ERR_FILE_CANT_WRITE);
 		String key = CoreStringName(_custom_features);
-		file->store_pascal_string(key);
+		FAIL_ON_WRITE_ERR_V(file, store_pascal_string(key), ERR_FILE_CANT_WRITE);
 
 		int len;
 		err = encode_variant(p_custom_features, nullptr, len, false);
-		ERR_FAIL_COND_V(err != OK, err);
+		if (err != OK) {
+			file->abort_backup_save_and_close();
+			ERR_FAIL_V_MSG(err, "Error when trying to encode Variant.");
+		}
 
 		Vector<uint8_t> buff;
 		buff.resize(len);
 
 		err = encode_variant(p_custom_features, buff.ptrw(), len, false);
-		ERR_FAIL_COND_V(err != OK, err);
-		file->store_32(len);
-		file->store_buffer(buff.ptr(), buff.size());
+		if (err != OK) {
+			file->abort_backup_save_and_close();
+			ERR_FAIL_V_MSG(err, "Error when trying to encode Variant.");
+		}
+		FAIL_ON_WRITE_ERR_V(file, store_32(len), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(file, store_buffer(buff.ptr(), buff.size()), ERR_FILE_CANT_WRITE);
 
 	} else {
 		// Store how many properties are saved.
-		file->store_32(count);
+		FAIL_ON_WRITE_ERR_V(file, store_32(count), ERR_FILE_CANT_WRITE);
 	}
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
@@ -932,22 +938,27 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 				value = get(k);
 			}
 
-			file->store_pascal_string(k);
+			FAIL_ON_WRITE_ERR_V(file, store_pascal_string(k), ERR_FILE_CANT_WRITE);
 
 			int len;
 			err = encode_variant(value, nullptr, len, true);
-			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
+			if (err != OK) {
+				file->abort_backup_save_and_close();
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Error when trying to encode Variant.");
+			}
 
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
 			err = encode_variant(value, buff.ptrw(), len, true);
-			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
-			file->store_32(len);
-			file->store_buffer(buff.ptr(), buff.size());
+			if (err != OK) {
+				file->abort_backup_save_and_close();
+				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Error when trying to encode Variant.");
+			}
+			FAIL_ON_WRITE_ERR_V(file, store_32(len), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(file, store_buffer(buff.ptr(), buff.size()), ERR_FILE_CANT_WRITE);
 		}
 	}
-
 	return OK;
 }
 
@@ -957,28 +968,28 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Couldn't save project.godot - %s.", p_file));
 
-	file->store_line("; Engine configuration file.");
-	file->store_line("; It's best edited using the editor UI and not directly,");
-	file->store_line("; since the parameters that go here are not all obvious.");
-	file->store_line(";");
-	file->store_line("; Format:");
-	file->store_line(";   [section] ; section goes between []");
-	file->store_line(";   param=value ; assign values to parameters");
-	file->store_line("");
+	FAIL_ON_WRITE_ERR_V(file, store_line("; Engine configuration file."), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line("; It's best edited using the editor UI and not directly,"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line("; since the parameters that go here are not all obvious."), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line(";"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line("; Format:"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line(";   [section] ; section goes between []"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line(";   param=value ; assign values to parameters"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line(""), ERR_FILE_CANT_WRITE);
 
-	file->store_string("config_version=" + itos(CONFIG_VERSION) + "\n");
+	FAIL_ON_WRITE_ERR_V(file, store_string("config_version=" + itos(CONFIG_VERSION) + "\n"), ERR_FILE_CANT_WRITE);
 	if (!p_custom_features.is_empty()) {
-		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
+		FAIL_ON_WRITE_ERR_V(file, store_string("custom_features=\"" + p_custom_features + "\"\n"), ERR_FILE_CANT_WRITE);
 	}
-	file->store_string("\n");
+	FAIL_ON_WRITE_ERR_V(file, store_string("\n"), ERR_FILE_CANT_WRITE);
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
 		if (E.key != p_props.begin()->key) {
-			file->store_string("\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string("\n"), ERR_FILE_CANT_WRITE);
 		}
 
 		if (!E.key.is_empty()) {
-			file->store_string("[" + E.key + "]\n\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string("[" + E.key + "]\n\n"), ERR_FILE_CANT_WRITE);
 		}
 		for (const String &F : E.value) {
 			String key = F;
@@ -994,7 +1005,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
-			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string(F.property_name_encode() + "=" + vstr + "\n"), ERR_FILE_CANT_WRITE);
 		}
 	}
 

@@ -131,7 +131,7 @@ public:
 	virtual int get_size() const = 0;
 	virtual uint32_t get_index_type() const = 0;
 
-	virtual void write_to_file(Ref<FileAccess> p_file) const = 0;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const = 0;
 };
 
 /*************************************************************************/
@@ -167,7 +167,7 @@ public:
 	virtual int get_size() const override;
 
 	virtual uint32_t get_index_type() const override { return 0x00000002; }
-	virtual void write_to_file(Ref<FileAccess> p_file) const override;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const override;
 };
 
 /*************************************************************************/
@@ -189,7 +189,7 @@ public:
 	virtual int get_size() const override;
 
 	virtual uint32_t get_index_type() const override { return 0x00000005; }
-	virtual void write_to_file(Ref<FileAccess> p_file) const override;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const override;
 };
 
 /*************************************************************************/
@@ -211,7 +211,7 @@ public:
 	virtual int get_size() const override;
 
 	virtual uint32_t get_index_type() const override { return 0x00000007; }
-	virtual void write_to_file(Ref<FileAccess> p_file) const override;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const override;
 };
 
 /*************************************************************************/
@@ -313,7 +313,7 @@ public:
 	virtual int get_size() const override;
 	virtual uint32_t get_index_type() const override { return 0x00000000; }
 
-	virtual void write_to_file(Ref<FileAccess> p_file) const override;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const override;
 };
 
 /*************************************************************************/
@@ -332,7 +332,7 @@ public:
 	virtual int get_size() const override;
 	virtual uint32_t get_index_type() const override { return 0x00010000; }
 
-	virtual void write_to_file(Ref<FileAccess> p_file) const override;
+	virtual bool write_to_file(Ref<FileAccess> p_file) const override;
 };
 
 /*************************************************************************/
@@ -346,7 +346,7 @@ public:
 	bool add_blob(const Ref<CodeSignBlob> &p_blob);
 
 	int get_size() const;
-	void write_to_file(Ref<FileAccess> p_file) const;
+	bool write_to_file(Ref<FileAccess> p_file) const;
 };
 
 /*************************************************************************/

@@ -564,7 +564,10 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
 		}
 
-		f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+		if (!f->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
+			f->abort_backup_save_and_close();
+			ERR_PRINT("Cannot write file '" + to_write + "'.");
+		}
 		f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
@@ -804,7 +807,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		// Add identifier, to ensure building won't work if the current template doesn't match.
 		Ref<FileAccess> f = FileAccess::open(parent_dir.path_join(".build_version"), FileAccess::WRITE);
 		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
-		f->store_line(get_android_template_identifier(p_preset));
+		FAIL_ON_WRITE_ERR_V(f, store_line(get_android_template_identifier(p_preset)), ERR_FILE_CANT_WRITE);
 	}
 
 	// Create the android build directory.
@@ -814,7 +817,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		// Add an empty .gdignore file to avoid scan.
 		Ref<FileAccess> f = FileAccess::open(build_dir.path_join(".gdignore"), FileAccess::WRITE);
 		ERR_FAIL_COND_V(f.is_null(), ERR_CANT_CREATE);
-		f->store_line("");
+		FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 	}
 
 	// Uncompress source template.
@@ -867,7 +870,10 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			String to_write = build_dir.path_join(path);
 			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 			if (f.is_valid()) {
-				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+				if (!f->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
+					f->abort_backup_save_and_close();
+					ERR_PRINT("Cannot write file '" + to_write + "'.");
+				}
 				f.unref(); // close file.
 #ifndef WINDOWS_ENABLED
 				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);

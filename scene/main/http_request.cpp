@@ -437,8 +437,7 @@ bool HTTPRequest::_update_connection() {
 			if (chunk.size()) {
 				if (file.is_valid()) {
 					const uint8_t *r = chunk.ptr();
-					file->store_buffer(r, chunk.size());
-					if (file->get_error() != OK) {
+					if (!file->store_buffer(r, chunk.size())) {
 						_defer_done(RESULT_DOWNLOAD_FILE_WRITE_ERROR, response_code, response_headers, PackedByteArray());
 						return true;
 					}

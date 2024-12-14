@@ -424,13 +424,20 @@ void CreateDialog::_confirmed() {
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("create_recent." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
-			f->store_line(selected_item);
-
-			constexpr int RECENT_HISTORY_SIZE = 15;
-			for (int i = 0; i < MIN(RECENT_HISTORY_SIZE - 1, recent->get_item_count()); i++) {
-				if (recent->get_item_text(i) != selected_item) {
-					f->store_line(recent->get_item_text(i));
+			bool write_ok = true;
+			if (f->store_line(selected_item)) {
+				constexpr int RECENT_HISTORY_SIZE = 15;
+				for (int i = 0; i < MIN(RECENT_HISTORY_SIZE - 1, recent->get_item_count()); i++) {
+					if (recent->get_item_text(i) != selected_item) {
+						if (!f->store_line(recent->get_item_text(i))) {
+							write_ok = false;
+							break;
+						}
+					}
 				}
+			}
+			if (!write_ok) {
+				f->abort_backup_save_and_close();
 			}
 		}
 	}
@@ -706,13 +713,17 @@ void CreateDialog::_save_and_update_favorite_list() {
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
+			bool write_ok = true;
 			for (int i = 0; i < favorite_list.size(); i++) {
 				String l = favorite_list[i];
 				String name = l.get_slicec(' ', 0);
 				if (!EditorNode::get_editor_data().is_type_recognized(name)) {
 					continue;
 				}
-				f->store_line(l);
+				if (!f->store_line(l)) {
+					write_ok = false;
+					break;
+				}
 
 				if (_is_class_disabled_by_feature_profile(name)) {
 					continue;
@@ -721,6 +732,9 @@ void CreateDialog::_save_and_update_favorite_list() {
 				TreeItem *ti = favorites->create_item(root);
 				ti->set_text(0, l);
 				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
+			}
+			if (!write_ok) {
+				f->abort_backup_save_and_close();
 			}
 		}
 	}

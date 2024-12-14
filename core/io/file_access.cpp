@@ -960,6 +960,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pascal_string"), &FileAccess::get_pascal_string);
 
 	ClassDB::bind_method(D_METHOD("close"), &FileAccess::close);
+	ClassDB::bind_method(D_METHOD("abort_backup_save_and_close"), &FileAccess::abort_backup_save_and_close);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);

@@ -221,6 +221,7 @@ public:
 	bool store_var(const Variant &p_var, bool p_full_objects = false);
 
 	virtual void close() = 0;
+	virtual void abort_backup_save_and_close() { close(); }
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 

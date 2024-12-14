@@ -1502,7 +1502,7 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::WRITE);
 	if (f.is_valid()) {
 		for (int i = 0; i < favorites.size(); i++) {
-			f->store_line(favorites[i]);
+			FAIL_ON_WRITE_ERR(f, store_line(favorites[i]));
 		}
 	}
 }

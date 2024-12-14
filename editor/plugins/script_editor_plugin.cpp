@@ -2449,7 +2449,7 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save text file '" + p_path + "'.");
 
-		file->store_string(source);
+		FAIL_ON_WRITE_ERR_V(file, store_string(source), ERR_FILE_CANT_WRITE);
 		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 			return ERR_CANT_CREATE;
 		}

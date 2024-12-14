@@ -435,7 +435,7 @@ bool CodeSignCodeResources::save_to_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("CodeSign/CodeResources: Can't open file: \"%s\".", p_path));
 
 	CharString cs = text.utf8();
-	fa->store_buffer((const uint8_t *)cs.ptr(), cs.length());
+	FAIL_ON_WRITE_ERR_V(fa, store_buffer((const uint8_t *)cs.ptr(), cs.length()), false);
 	return true;
 }
 
@@ -808,9 +808,10 @@ int CodeSignRequirements::get_size() const {
 	return blob.size();
 }
 
-void CodeSignRequirements::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/Requirements: Invalid file handle.");
-	p_file->store_buffer(blob.ptr(), blob.size());
+bool CodeSignRequirements::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/Requirements: Invalid file handle.");
+	FAIL_ON_WRITE_ERR_V(p_file, store_buffer(blob.ptr(), blob.size()), false);
+	return true;
 }
 
 /*************************************************************************/
@@ -862,9 +863,10 @@ int CodeSignEntitlementsText::get_size() const {
 	return blob.size();
 }
 
-void CodeSignEntitlementsText::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/EntitlementsText: Invalid file handle.");
-	p_file->store_buffer(blob.ptr(), blob.size());
+bool CodeSignEntitlementsText::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/EntitlementsText: Invalid file handle.");
+	FAIL_ON_WRITE_ERR_V(p_file, store_buffer(blob.ptr(), blob.size()), false);
+	return true;
 }
 
 /*************************************************************************/
@@ -917,9 +919,10 @@ int CodeSignEntitlementsBinary::get_size() const {
 	return blob.size();
 }
 
-void CodeSignEntitlementsBinary::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/EntitlementsBinary: Invalid file handle.");
-	p_file->store_buffer(blob.ptr(), blob.size());
+bool CodeSignEntitlementsBinary::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/EntitlementsBinary: Invalid file handle.");
+	FAIL_ON_WRITE_ERR_V(p_file, store_buffer(blob.ptr(), blob.size()), false);
+	return true;
 }
 
 /*************************************************************************/
@@ -1039,9 +1042,10 @@ int CodeSignCodeDirectory::get_size() const {
 	return blob.size();
 }
 
-void CodeSignCodeDirectory::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/CodeDirectory: Invalid file handle.");
-	p_file->store_buffer(blob.ptr(), blob.size());
+bool CodeSignCodeDirectory::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/CodeDirectory: Invalid file handle.");
+	FAIL_ON_WRITE_ERR_V(p_file, store_buffer(blob.ptr(), blob.size()), false);
+	return true;
 }
 
 /*************************************************************************/
@@ -1085,9 +1089,10 @@ int CodeSignSignature::get_size() const {
 	return blob.size();
 }
 
-void CodeSignSignature::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/Signature: Invalid file handle.");
-	p_file->store_buffer(blob.ptr(), blob.size());
+bool CodeSignSignature::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/Signature: Invalid file handle.");
+	FAIL_ON_WRITE_ERR_V(p_file, store_buffer(blob.ptr(), blob.size()), false);
+	return true;
 }
 
 /*************************************************************************/
@@ -1114,30 +1119,31 @@ int CodeSignSuperBlob::get_size() const {
 	return size;
 }
 
-void CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
-	ERR_FAIL_COND_MSG(p_file.is_null(), "CodeSign/SuperBlob: Invalid file handle.");
+bool CodeSignSuperBlob::write_to_file(Ref<FileAccess> p_file) const {
+	ERR_FAIL_COND_V_MSG(p_file.is_null(), false, "CodeSign/SuperBlob: Invalid file handle.");
 	uint32_t size = get_size();
 	uint32_t data_offset = 12 + blobs.size() * 8;
 
 	// Write header.
-	p_file->store_32(BSWAP32(0xfade0cc0));
-	p_file->store_32(BSWAP32(size));
-	p_file->store_32(BSWAP32(blobs.size()));
+	FAIL_ON_WRITE_ERR_V(p_file, store_32(BSWAP32(0xfade0cc0)), false);
+	FAIL_ON_WRITE_ERR_V(p_file, store_32(BSWAP32(size)), false);
+	FAIL_ON_WRITE_ERR_V(p_file, store_32(BSWAP32(blobs.size())), false);
 
 	// Write index.
 	for (int i = 0; i < blobs.size(); i++) {
 		if (blobs[i].is_null()) {
-			return;
+			return false;
 		}
-		p_file->store_32(BSWAP32(blobs[i]->get_index_type()));
-		p_file->store_32(BSWAP32(data_offset));
+		FAIL_ON_WRITE_ERR_V(p_file, store_32(BSWAP32(blobs[i]->get_index_type())), false);
+		FAIL_ON_WRITE_ERR_V(p_file, store_32(BSWAP32(data_offset)), false);
 		data_offset += blobs[i]->get_size();
 	}
 
 	// Write blobs.
 	for (int i = 0; i < blobs.size(); i++) {
-		blobs[i]->write_to_file(p_file);
+		ERR_FAIL_COND_V(!blobs[i]->write_to_file(p_file), false);
 	}
+	return true;
 }
 
 /*************************************************************************/
@@ -1503,7 +1509,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 		}
 		sb.add_blob(cs);
 		mh.get_file()->seek(mh.get_signature_offset());
-		sb.write_to_file(mh.get_file());
+		ERR_FAIL_COND_V_MSG(!sb.write_to_file(mh.get_file()), FAILED, "CodeSign: Failed to write signature superblob.");
 	}
 	if (files_to_sign.size() > 1) {
 		print_verbose("CodeSign: Rebuilding fat executable...");

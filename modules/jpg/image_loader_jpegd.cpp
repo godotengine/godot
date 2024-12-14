@@ -138,8 +138,7 @@ public:
 	Ref<FileAccess> f;
 
 	virtual bool put_buf(const void *Pbuf, int len) {
-		f->store_buffer((const uint8_t *)Pbuf, len);
-		return true;
+		return f->store_buffer((const uint8_t *)Pbuf, len);
 	}
 };
 

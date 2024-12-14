@@ -91,11 +91,16 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		String dst = p_dir.path_join(file.replace("godot", p_name));
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not open file: \"%s\"."), dst));
+			unzClose(pkg);
+			return ERR_FILE_CANT_WRITE;
+		}
+		if (!f->store_buffer(data.ptr(), data.size())) {
+			f->abort_backup_save_and_close();
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
 			unzClose(pkg);
 			return ERR_FILE_CANT_WRITE;
 		}
-		f->store_buffer(data.ptr(), data.size());
 
 	} while (unzGoToNextFile(pkg) == UNZ_OK);
 	unzClose(pkg);
@@ -108,7 +113,7 @@ Error EditorExportPlatformWeb::_write_or_error(const uint8_t *p_content, int p_s
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
 		return ERR_FILE_CANT_WRITE;
 	}
-	f->store_buffer(p_content, p_size);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(p_content, p_size), ERR_FILE_CANT_WRITE);
 	return OK;
 }
 

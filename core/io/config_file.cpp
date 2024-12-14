@@ -205,16 +205,16 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 		if (first) {
 			first = false;
 		} else {
-			file->store_string("\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string("\n"), ERR_FILE_CANT_WRITE);
 		}
 		if (!E.key.is_empty()) {
-			file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string("[" + E.key.replace("]", "\\]") + "]\n\n"), ERR_FILE_CANT_WRITE);
 		}
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
 			VariantWriter::write_to_string(F.value, vstr);
-			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
+			FAIL_ON_WRITE_ERR_V(file, store_string(F.key.property_name_encode() + "=" + vstr + "\n"), ERR_FILE_CANT_WRITE);
 		}
 	}
 

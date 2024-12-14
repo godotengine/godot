@@ -91,6 +91,7 @@ public:
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
 
 	virtual void close() override;
+	virtual void abort_backup_save_and_close() override;
 
 	FileAccessUnix() {}
 	virtual ~FileAccessUnix();

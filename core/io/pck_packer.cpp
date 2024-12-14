@@ -89,17 +89,17 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 
 	alignment = p_alignment;
 
-	file->store_32(PACK_HEADER_MAGIC);
-	file->store_32(PACK_FORMAT_VERSION);
-	file->store_32(VERSION_MAJOR);
-	file->store_32(VERSION_MINOR);
-	file->store_32(VERSION_PATCH);
+	FAIL_ON_WRITE_ERR_V(file, store_32(PACK_HEADER_MAGIC), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_32(PACK_FORMAT_VERSION), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_32(VERSION_MAJOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_32(VERSION_MINOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_32(VERSION_PATCH), ERR_FILE_CANT_WRITE);
 
 	uint32_t pack_flags = 0;
 	if (enc_dir) {
 		pack_flags |= PACK_DIR_ENCRYPTED;
 	}
-	file->store_32(pack_flags); // flags
+	FAIL_ON_WRITE_ERR_V(file, store_32(pack_flags), ERR_FILE_CANT_WRITE); // flags
 
 	files.clear();
 	ofs = 0;
@@ -175,14 +175,14 @@ Error PCKPacker::flush(bool p_verbose) {
 	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	int64_t file_base_ofs = file->get_position();
-	file->store_64(0); // files base
+	FAIL_ON_WRITE_ERR_V(file, store_64(0), ERR_FILE_CANT_WRITE); // files base
 
 	for (int i = 0; i < 16; i++) {
-		file->store_32(0); // reserved
+		FAIL_ON_WRITE_ERR_V(file, store_32(0), ERR_FILE_CANT_WRITE); // reserved
 	}
 
 	// write the index
-	file->store_32(files.size());
+	FAIL_ON_WRITE_ERR_V(file, store_32(files.size()), ERR_FILE_CANT_WRITE);
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = file;
@@ -201,15 +201,15 @@ Error PCKPacker::flush(bool p_verbose) {
 		int string_len = files[i].path.utf8().length();
 		int pad = _get_pad(4, string_len);
 
-		fhead->store_32(string_len + pad);
-		fhead->store_buffer((const uint8_t *)files[i].path.utf8().get_data(), string_len);
+		FAIL_ON_WRITE_ERR_V(fhead, store_32(string_len + pad), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(fhead, store_buffer((const uint8_t *)files[i].path.utf8().get_data(), string_len), ERR_FILE_CANT_WRITE);
 		for (int j = 0; j < pad; j++) {
-			fhead->store_8(0);
+			FAIL_ON_WRITE_ERR_V(fhead, store_8(0), ERR_FILE_CANT_WRITE);
 		}
 
-		fhead->store_64(files[i].ofs);
-		fhead->store_64(files[i].size); // pay attention here, this is where file is
-		fhead->store_buffer(files[i].md5.ptr(), 16); //also save md5 for file
+		FAIL_ON_WRITE_ERR_V(fhead, store_64(files[i].ofs), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(fhead, store_64(files[i].size), ERR_FILE_CANT_WRITE); // pay attention here, this is where file is
+		FAIL_ON_WRITE_ERR_V(fhead, store_buffer(files[i].md5.ptr(), 16), ERR_FILE_CANT_WRITE); //also save md5 for file
 
 		uint32_t flags = 0;
 		if (files[i].encrypted) {
@@ -218,7 +218,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		if (files[i].removal) {
 			flags |= PACK_FILE_REMOVAL;
 		}
-		fhead->store_32(flags);
+		FAIL_ON_WRITE_ERR_V(fhead, store_32(flags), ERR_FILE_CANT_WRITE);
 	}
 
 	if (fae.is_valid()) {
@@ -228,12 +228,12 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int header_padding = _get_pad(alignment, file->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		file->store_8(0);
+		FAIL_ON_WRITE_ERR_V(file, store_8(0), ERR_FILE_CANT_WRITE);
 	}
 
 	int64_t file_base = file->get_position();
 	file->seek(file_base_ofs);
-	file->store_64(file_base); // update files base
+	FAIL_ON_WRITE_ERR_V(file, store_64(file_base), ERR_FILE_CANT_WRITE); // update files base
 	file->seek(file_base);
 
 	const uint32_t buf_max = 65536;
@@ -260,7 +260,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 		while (to_write > 0) {
 			uint64_t read = src->get_buffer(buf, MIN(to_write, buf_max));
-			ftmp->store_buffer(buf, read);
+			FAIL_ON_WRITE_ERR_V(ftmp, store_buffer(buf, read), ERR_FILE_CANT_WRITE);
 			to_write -= read;
 		}
 
@@ -271,7 +271,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 		int pad = _get_pad(alignment, file->get_position());
 		for (int j = 0; j < pad; j++) {
-			file->store_8(0);
+			FAIL_ON_WRITE_ERR_V(file, store_8(0), ERR_FILE_CANT_WRITE);
 		}
 
 		count += 1;

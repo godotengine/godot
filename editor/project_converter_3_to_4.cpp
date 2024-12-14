@@ -352,7 +352,7 @@ bool ProjectConverter3To4::convert() {
 		Ref<FileAccess> file = FileAccess::open("project.godot", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(file.is_null(), false, "Unable to open \"project.godot\".");
 
-		file->store_string(converter_text + "\n" + project_godot_content);
+		FAIL_ON_WRITE_ERR_V(file, store_string(converter_text + "\n" + project_godot_content), false);
 	}
 
 	Vector<String> collected_files = check_for_files();
@@ -507,7 +507,11 @@ bool ProjectConverter3To4::convert() {
 
 				Ref<FileAccess> file = FileAccess::open(file_name, FileAccess::WRITE);
 				ERR_CONTINUE_MSG(file.is_null(), vformat("Unable to apply changes to \"%s\", no writing access.", file_name));
-				file->store_string(file_content_after);
+				if (!file->store_string(file_content_after)) {
+					file->abort_backup_save_and_close();
+					ERR_PRINT("Cannot write file '" + file_name + "'.");
+					continue;
+				}
 				reason.append(vformat("    File was changed, conversion took %d ms.", end_time - start_time));
 			} else {
 				reason.append(vformat("    File was left unchanged, checking took %d ms.", end_time - start_time));

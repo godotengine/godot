@@ -134,7 +134,7 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			"\"Content-Type: text/plain; charset=UTF-8\\n\"\n"
 			"\"Content-Transfer-Encoding: 8-bit\\n\"\n";
 
-	file->store_string(header);
+	FAIL_ON_WRITE_ERR(file, store_string(header));
 
 	for (const KeyValue<String, Vector<MsgidData>> &E_pair : all_translation_strings) {
 		String msgid = E_pair.key;
@@ -146,27 +146,27 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			const HashSet<String> &comments = v_msgid_data[i].comments;
 
 			// Put the blank line at the start, to avoid a double at the end when closing the file.
-			file->store_line("");
+			FAIL_ON_WRITE_ERR(file, store_line(""));
 
 			// Write comments.
 			bool is_first_comment = true;
 			for (const String &E : comments) {
 				if (is_first_comment) {
-					file->store_line("#. TRANSLATORS: " + E.replace("\n", "\n#. "));
+					FAIL_ON_WRITE_ERR(file, store_line("#. TRANSLATORS: " + E.replace("\n", "\n#. ")));
 				} else {
-					file->store_line("#. " + E.replace("\n", "\n#. "));
+					FAIL_ON_WRITE_ERR(file, store_line("#. " + E.replace("\n", "\n#. ")));
 				}
 				is_first_comment = false;
 			}
 
 			// Write file locations.
 			for (const String &E : locations) {
-				file->store_line("#: " + E.trim_prefix("res://").replace("\n", "\\n"));
+				FAIL_ON_WRITE_ERR(file, store_line("#: " + E.trim_prefix("res://").replace("\n", "\\n")));
 			}
 
 			// Write context.
 			if (!context.is_empty()) {
-				file->store_line("msgctxt " + context.json_escape().quote());
+				FAIL_ON_WRITE_ERR(file, store_line("msgctxt " + context.json_escape().quote()));
 			}
 
 			// Write msgid.
@@ -175,10 +175,10 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 			// Write msgid_plural.
 			if (!plural.is_empty()) {
 				_write_msgid(file, plural, true);
-				file->store_line("msgstr[0] \"\"");
-				file->store_line("msgstr[1] \"\"");
+				FAIL_ON_WRITE_ERR(file, store_line("msgstr[0] \"\""));
+				FAIL_ON_WRITE_ERR(file, store_line("msgstr[1] \"\""));
 			} else {
-				file->store_line("msgstr \"\"");
+				FAIL_ON_WRITE_ERR(file, store_line("msgstr \"\""));
 			}
 		}
 	}
@@ -186,13 +186,13 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural) {
 	if (p_plural) {
-		r_file->store_string("msgid_plural ");
+		FAIL_ON_WRITE_ERR(r_file, store_string("msgid_plural "));
 	} else {
-		r_file->store_string("msgid ");
+		FAIL_ON_WRITE_ERR(r_file, store_string("msgid "));
 	}
 
 	if (p_id.is_empty()) {
-		r_file->store_line("\"\"");
+		FAIL_ON_WRITE_ERR(r_file, store_line("\"\""));
 		return;
 	}
 
@@ -204,15 +204,15 @@ void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool
 	}
 
 	if (pot_line_count > 1) {
-		r_file->store_line("\"\"");
+		FAIL_ON_WRITE_ERR(r_file, store_line("\"\""));
 	}
 
 	for (int i = 0; i < lines.size() - 1; i++) {
-		r_file->store_line((lines[i] + "\n").json_escape().quote());
+		FAIL_ON_WRITE_ERR(r_file, store_line((lines[i] + "\n").json_escape().quote()));
 	}
 
 	if (!last_line.is_empty()) {
-		r_file->store_line(last_line.json_escape().quote());
+		FAIL_ON_WRITE_ERR(r_file, store_line(last_line.json_escape().quote()));
 	}
 }
 

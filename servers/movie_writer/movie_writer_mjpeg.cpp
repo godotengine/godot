@@ -62,74 +62,74 @@ Error MovieWriterMJPEG::write_begin(const Size2i &p_movie_size, uint32_t p_fps, 
 
 	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
 
-	f->store_buffer((const uint8_t *)"RIFF", 4);
-	f->store_32(0); // Total length (update later)
-	f->store_buffer((const uint8_t *)"AVI ", 4);
-	f->store_buffer((const uint8_t *)"LIST", 4);
-	f->store_32(300); // 4 + 4 + 4 + 56 + 4 + 4 + 132 + 4 + 4 + 84
-	f->store_buffer((const uint8_t *)"hdrl", 4);
-	f->store_buffer((const uint8_t *)"avih", 4);
-	f->store_32(56);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"RIFF", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Total length (update later)
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"AVI ", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"LIST", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(300), ERR_FILE_CANT_WRITE); // 4 + 4 + 4 + 56 + 4 + 4 + 132 + 4 + 4 + 84
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"hdrl", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"avih", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(56), ERR_FILE_CANT_WRITE);
 
-	f->store_32(1000000 / p_fps); // Microsecs per frame.
-	f->store_32(7000); // Max bytes per second
-	f->store_32(0); // Padding Granularity
-	f->store_32(16);
+	FAIL_ON_WRITE_ERR_V(f, store_32(1000000 / p_fps), ERR_FILE_CANT_WRITE); // Microsecs per frame.
+	FAIL_ON_WRITE_ERR_V(f, store_32(7000), ERR_FILE_CANT_WRITE); // Max bytes per second
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Padding Granularity
+	FAIL_ON_WRITE_ERR_V(f, store_32(16), ERR_FILE_CANT_WRITE);
 	total_frames_ofs = f->get_position();
-	f->store_32(0); // Total frames (update later)
-	f->store_32(0); // Initial frames
-	f->store_32(1); // Streams
-	f->store_32(0); // Suggested buffer size
-	f->store_32(p_movie_size.width); // Movie Width
-	f->store_32(p_movie_size.height); // Movie Height
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Total frames (update later)
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Initial frames
+	FAIL_ON_WRITE_ERR_V(f, store_32(1), ERR_FILE_CANT_WRITE); // Streams
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Suggested buffer size
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_movie_size.width), ERR_FILE_CANT_WRITE); // Movie Width
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_movie_size.height), ERR_FILE_CANT_WRITE); // Movie Height
 	for (uint32_t i = 0; i < 4; i++) {
-		f->store_32(0); // Reserved.
+		FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Reserved.
 	}
-	f->store_buffer((const uint8_t *)"LIST", 4);
-	f->store_32(132); // 4 + 4 + 4 + 48 + 4 + 4 + 40 + 4 + 4 + 16
-	f->store_buffer((const uint8_t *)"strl", 4);
-	f->store_buffer((const uint8_t *)"strh", 4);
-	f->store_32(48);
-	f->store_buffer((const uint8_t *)"vids", 4);
-	f->store_buffer((const uint8_t *)"MJPG", 4);
-	f->store_32(0); // Flags
-	f->store_16(0); // Priority
-	f->store_16(0); // Language
-	f->store_32(0); // Initial Frames
-	f->store_32(1); // Scale
-	f->store_32(p_fps); // FPS
-	f->store_32(0); // Start
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"LIST", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(132), ERR_FILE_CANT_WRITE); // 4 + 4 + 4 + 48 + 4 + 4 + 40 + 4 + 4 + 16
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strl", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strh", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(48), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"vids", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"MJPG", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Flags
+	FAIL_ON_WRITE_ERR_V(f, store_16(0), ERR_FILE_CANT_WRITE); // Priority
+	FAIL_ON_WRITE_ERR_V(f, store_16(0), ERR_FILE_CANT_WRITE); // Language
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Initial Frames
+	FAIL_ON_WRITE_ERR_V(f, store_32(1), ERR_FILE_CANT_WRITE); // Scale
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_fps), ERR_FILE_CANT_WRITE); // FPS
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Start
 	total_frames_ofs2 = f->get_position();
-	f->store_32(0); // Number of frames (to be updated later)
-	f->store_32(0); // Suggested Buffer Size
-	f->store_32(0); // Quality
-	f->store_32(0); // Sample Size
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Number of frames (to be updated later)
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Suggested Buffer Size
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Quality
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Sample Size
 
-	f->store_buffer((const uint8_t *)"strf", 4);
-	f->store_32(40); // Size.
-	f->store_32(40); // Size.
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strf", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(40), ERR_FILE_CANT_WRITE); // Size.
+	FAIL_ON_WRITE_ERR_V(f, store_32(40), ERR_FILE_CANT_WRITE); // Size.
 
-	f->store_32(p_movie_size.width); // Width
-	f->store_32(p_movie_size.height); // Width
-	f->store_16(1); // Planes
-	f->store_16(24); // Bitcount
-	f->store_buffer((const uint8_t *)"MJPG", 4); // Compression
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_movie_size.width), ERR_FILE_CANT_WRITE); // Width
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_movie_size.height), ERR_FILE_CANT_WRITE); // Width
+	FAIL_ON_WRITE_ERR_V(f, store_16(1), ERR_FILE_CANT_WRITE); // Planes
+	FAIL_ON_WRITE_ERR_V(f, store_16(24), ERR_FILE_CANT_WRITE); // Bitcount
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"MJPG", 4), ERR_FILE_CANT_WRITE); // Compression
 
-	f->store_32(((p_movie_size.width * 24 / 8 + 3) & 0xFFFFFFFC) * p_movie_size.height); // SizeImage
-	f->store_32(0); // XPelsXMeter
-	f->store_32(0); // YPelsXMeter
-	f->store_32(0); // ClrUsed
-	f->store_32(0); // ClrImportant
+	FAIL_ON_WRITE_ERR_V(f, store_32(((p_movie_size.width * 24 / 8 + 3) & 0xFFFFFFFC) * p_movie_size.height), ERR_FILE_CANT_WRITE); // SizeImage
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // XPelsXMeter
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // YPelsXMeter
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // ClrUsed
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // ClrImportant
 
-	f->store_buffer((const uint8_t *)"LIST", 4);
-	f->store_32(16);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"LIST", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(16), ERR_FILE_CANT_WRITE);
 
-	f->store_buffer((const uint8_t *)"odml", 4);
-	f->store_buffer((const uint8_t *)"dmlh", 4);
-	f->store_32(4); // sizes
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"odml", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"dmlh", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(4), ERR_FILE_CANT_WRITE); // sizes
 
 	total_frames_ofs3 = f->get_position();
-	f->store_32(0); // Number of frames (to be updated later)
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Number of frames (to be updated later)
 
 	// Audio //
 
@@ -151,41 +151,41 @@ Error MovieWriterMJPEG::write_begin(const Size2i &p_movie_size, uint32_t p_fps, 
 	}
 	uint32_t blockalign = bit_depth / 8 * channels;
 
-	f->store_buffer((const uint8_t *)"LIST", 4);
-	f->store_32(84); // 4 + 4 + 4 + 48 + 4 + 4 + 16
-	f->store_buffer((const uint8_t *)"strl", 4);
-	f->store_buffer((const uint8_t *)"strh", 4);
-	f->store_32(48);
-	f->store_buffer((const uint8_t *)"auds", 4);
-	f->store_32(0); // Handler
-	f->store_32(0); // Flags
-	f->store_16(0); // Priority
-	f->store_16(0); // Language
-	f->store_32(0); // Initial Frames
-	f->store_32(blockalign); // Scale
-	f->store_32(mix_rate * blockalign); // mix rate
-	f->store_32(0); // Start
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"LIST", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(84), ERR_FILE_CANT_WRITE); // 4 + 4 + 4 + 48 + 4 + 4 + 16
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strl", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strh", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(48), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"auds", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Handler
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Flags
+	FAIL_ON_WRITE_ERR_V(f, store_16(0), ERR_FILE_CANT_WRITE); // Priority
+	FAIL_ON_WRITE_ERR_V(f, store_16(0), ERR_FILE_CANT_WRITE); // Language
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Initial Frames
+	FAIL_ON_WRITE_ERR_V(f, store_32(blockalign), ERR_FILE_CANT_WRITE); // Scale
+	FAIL_ON_WRITE_ERR_V(f, store_32(mix_rate * blockalign), ERR_FILE_CANT_WRITE); // mix rate
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Start
 	total_audio_frames_ofs4 = f->get_position();
-	f->store_32(0); // Number of frames (to be updated later)
-	f->store_32(12288); // Suggested Buffer Size
-	f->store_32(0xFFFFFFFF); // Quality
-	f->store_32(blockalign); // Block Align to 32 bits
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Number of frames (to be updated later)
+	FAIL_ON_WRITE_ERR_V(f, store_32(12288), ERR_FILE_CANT_WRITE); // Suggested Buffer Size
+	FAIL_ON_WRITE_ERR_V(f, store_32(0xFFFFFFFF), ERR_FILE_CANT_WRITE); // Quality
+	FAIL_ON_WRITE_ERR_V(f, store_32(blockalign), ERR_FILE_CANT_WRITE); // Block Align to 32 bits
 
 	audio_block_size = (mix_rate / fps) * blockalign;
 
-	f->store_buffer((const uint8_t *)"strf", 4);
-	f->store_32(16); // Standard format, no extra fields
-	f->store_16(1); // Compression code, standard PCM
-	f->store_16(channels);
-	f->store_32(mix_rate); // Samples (frames) / Sec
-	f->store_32(mix_rate * blockalign); // Bytes / sec
-	f->store_16(blockalign); // Bytes / sec
-	f->store_16(bit_depth); // Bytes / sec
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"strf", 4), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(16), ERR_FILE_CANT_WRITE); // Standard format, no extra fields
+	FAIL_ON_WRITE_ERR_V(f, store_16(1), ERR_FILE_CANT_WRITE); // Compression code, standard PCM
+	FAIL_ON_WRITE_ERR_V(f, store_16(channels), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(mix_rate), ERR_FILE_CANT_WRITE); // Samples (frames) / Sec
+	FAIL_ON_WRITE_ERR_V(f, store_32(mix_rate * blockalign), ERR_FILE_CANT_WRITE); // Bytes / sec
+	FAIL_ON_WRITE_ERR_V(f, store_16(blockalign), ERR_FILE_CANT_WRITE); // Bytes / sec
+	FAIL_ON_WRITE_ERR_V(f, store_16(bit_depth), ERR_FILE_CANT_WRITE); // Bytes / sec
 
-	f->store_buffer((const uint8_t *)"LIST", 4);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"LIST", 4), ERR_FILE_CANT_WRITE);
 	movi_data_ofs = f->get_position();
-	f->store_32(0); // Number of frames (to be updated later)
-	f->store_buffer((const uint8_t *)"movi", 4);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE); // Number of frames (to be updated later)
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"movi", 4), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }
@@ -196,18 +196,18 @@ Error MovieWriterMJPEG::write_frame(const Ref<Image> &p_image, const int32_t *p_
 	Vector<uint8_t> jpg_buffer = p_image->save_jpg_to_buffer(quality);
 	uint32_t s = jpg_buffer.size();
 
-	f->store_buffer((const uint8_t *)"00db", 4); // Stream 0, Video
-	f->store_32(jpg_buffer.size()); // sizes
-	f->store_buffer(jpg_buffer.ptr(), jpg_buffer.size());
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"00db", 4), ERR_FILE_CANT_WRITE); // Stream 0, Video
+	FAIL_ON_WRITE_ERR_V(f, store_32(jpg_buffer.size()), ERR_FILE_CANT_WRITE); // sizes
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(jpg_buffer.ptr(), jpg_buffer.size()), ERR_FILE_CANT_WRITE);
 	if (jpg_buffer.size() & 1) {
-		f->store_8(0);
+		FAIL_ON_WRITE_ERR_V(f, store_8(0), ERR_FILE_CANT_WRITE);
 		s++;
 	}
 	jpg_frame_sizes.push_back(s);
 
-	f->store_buffer((const uint8_t *)"01wb", 4); // Stream 1, Audio.
-	f->store_32(audio_block_size);
-	f->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)"01wb", 4), ERR_FILE_CANT_WRITE); // Stream 1, Audio.
+	FAIL_ON_WRITE_ERR_V(f, store_32(audio_block_size), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)p_audio_data, audio_block_size), ERR_FILE_CANT_WRITE);
 
 	frame_count++;
 
@@ -217,22 +217,22 @@ Error MovieWriterMJPEG::write_frame(const Ref<Image> &p_image, const int32_t *p_
 void MovieWriterMJPEG::write_end() {
 	if (f.is_valid()) {
 		// Finalize the file (frame indices)
-		f->store_buffer((const uint8_t *)"idx1", 4);
-		f->store_32(8 * 4 * frame_count);
+		FAIL_ON_WRITE_ERR(f, store_buffer((const uint8_t *)"idx1", 4));
+		FAIL_ON_WRITE_ERR(f, store_32(8 * 4 * frame_count));
 		uint32_t ofs = 4;
 		uint32_t all_data_size = 0;
 		for (uint32_t i = 0; i < frame_count; i++) {
-			f->store_buffer((const uint8_t *)"00db", 4);
-			f->store_32(16); // AVI_KEYFRAME
-			f->store_32(ofs);
-			f->store_32(jpg_frame_sizes[i]);
+			FAIL_ON_WRITE_ERR(f, store_buffer((const uint8_t *)"00db", 4));
+			FAIL_ON_WRITE_ERR(f, store_32(16)); // AVI_KEYFRAME
+			FAIL_ON_WRITE_ERR(f, store_32(ofs));
+			FAIL_ON_WRITE_ERR(f, store_32(jpg_frame_sizes[i]));
 
 			ofs += jpg_frame_sizes[i] + 8;
 
-			f->store_buffer((const uint8_t *)"01wb", 4);
-			f->store_32(16); // AVI_KEYFRAME
-			f->store_32(ofs);
-			f->store_32(audio_block_size);
+			FAIL_ON_WRITE_ERR(f, store_buffer((const uint8_t *)"01wb", 4));
+			FAIL_ON_WRITE_ERR(f, store_32(16)); // AVI_KEYFRAME
+			FAIL_ON_WRITE_ERR(f, store_32(ofs));
+			FAIL_ON_WRITE_ERR(f, store_32(audio_block_size));
 
 			ofs += audio_block_size + 8;
 			all_data_size += jpg_frame_sizes[i] + audio_block_size;
@@ -240,17 +240,17 @@ void MovieWriterMJPEG::write_end() {
 
 		uint32_t file_size = f->get_position();
 		f->seek(4);
-		f->store_32(file_size - 78);
+		FAIL_ON_WRITE_ERR(f, store_32(file_size - 78));
 		f->seek(total_frames_ofs);
-		f->store_32(frame_count);
+		FAIL_ON_WRITE_ERR(f, store_32(frame_count));
 		f->seek(total_frames_ofs2);
-		f->store_32(frame_count);
+		FAIL_ON_WRITE_ERR(f, store_32(frame_count));
 		f->seek(total_frames_ofs3);
-		f->store_32(frame_count);
+		FAIL_ON_WRITE_ERR(f, store_32(frame_count));
 		f->seek(total_audio_frames_ofs4);
-		f->store_32(frame_count * mix_rate / fps);
+		FAIL_ON_WRITE_ERR(f, store_32(frame_count * mix_rate / fps));
 		f->seek(movi_data_ofs);
-		f->store_32(all_data_size + 4 + 16 * frame_count);
+		FAIL_ON_WRITE_ERR(f, store_32(all_data_size + 4 + 16 * frame_count));
 
 		f.unref();
 	}

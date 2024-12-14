@@ -910,15 +910,20 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					String new_etag = headers[i].substr(headers[i].find_char(':') + 1, headers[i].length()).strip_edges();
 					Ref<FileAccess> file = FileAccess::open(cache_filename_base + ".etag", FileAccess::WRITE);
 					if (file.is_valid()) {
-						file->store_line(new_etag);
+						if (!file->store_line(new_etag)) {
+							file->abort_backup_save_and_close();
+							ERR_PRINT("Cannot write file '" + cache_filename_base + ".etag'.");
+						}
 					}
 
 					int len = p_data.size();
 					const uint8_t *r = p_data.ptr();
 					file = FileAccess::open(cache_filename_base + ".data", FileAccess::WRITE);
 					if (file.is_valid()) {
-						file->store_32(len);
-						file->store_buffer(r, len);
+						if (!file->store_32(len) || !file->store_buffer(r, len)) {
+							file->abort_backup_save_and_close();
+							ERR_PRINT("Cannot write file '" + cache_filename_base + ".data'.");
+						}
 					}
 
 					break;

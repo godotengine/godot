@@ -72,27 +72,27 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 	// Write header.
 	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
 	if (is_64) {
-		fa->store_32(0xbfbafeca);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(0xbfbafeca), false);
 	} else {
-		fa->store_32(0xbebafeca);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(0xbebafeca), false);
 	}
-	fa->store_32(BSWAP32(archs.size()));
+	FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs.size())), false);
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
 	for (int i = 0; i < archs.size(); i++) {
 		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
 		if (is_64) {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_64(BSWAP64(archs[i].offset));
-			fa->store_64(BSWAP64(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-			fa->store_32(0);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cputype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cpusubtype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_64(BSWAP64(archs[i].offset)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_64(BSWAP64(archs[i].size)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].align)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(0), false);
 		} else {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_32(BSWAP32(archs[i].offset));
-			fa->store_32(BSWAP32(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cputype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cpusubtype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].offset)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].size)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].align)), false);
 		}
 		offset = archs[i].offset + archs[i].size;
 	}
@@ -106,7 +106,7 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {
-			fa->store_8(0);
+			FAIL_ON_WRITE_ERR_V(fa, store_8(0), false);
 		}
 		int pages = archs[i].size / 4096;
 		int remain = archs[i].size % 4096;
@@ -114,12 +114,12 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		for (int j = 0; j < pages; j++) {
 			uint64_t br = fb->get_buffer(step, 4096);
 			if (br > 0) {
-				fa->store_buffer(step, br);
+				FAIL_ON_WRITE_ERR_V(fa, store_buffer(step, br), false);
 			}
 		}
 		uint64_t br = fb->get_buffer(step, remain);
 		if (br > 0) {
-			fa->store_buffer(step, br);
+			FAIL_ON_WRITE_ERR_V(fa, store_buffer(step, br), false);
 		}
 	}
 	return true;
@@ -166,27 +166,27 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 	// Write header.
 	bool is_64 = (max_size >= std::numeric_limits<uint32_t>::max());
 	if (is_64) {
-		fa->store_32(0xbfbafeca);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(0xbfbafeca), false);
 	} else {
-		fa->store_32(0xbebafeca);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(0xbebafeca), false);
 	}
-	fa->store_32(BSWAP32(archs.size()));
+	FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs.size())), false);
 	uint64_t offset = archs.size() * (is_64 ? 32 : 20) + 8;
 	for (int i = 0; i < archs.size(); i++) {
 		archs.write[i].offset = offset + PAD(offset, uint64_t(1) << archs[i].align);
 		if (is_64) {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_64(BSWAP64(archs[i].offset));
-			fa->store_64(BSWAP64(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
-			fa->store_32(0);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cputype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cpusubtype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_64(BSWAP64(archs[i].offset)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_64(BSWAP64(archs[i].size)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].align)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(0), false);
 		} else {
-			fa->store_32(BSWAP32(archs[i].cputype));
-			fa->store_32(BSWAP32(archs[i].cpusubtype));
-			fa->store_32(BSWAP32(archs[i].offset));
-			fa->store_32(BSWAP32(archs[i].size));
-			fa->store_32(BSWAP32(archs[i].align));
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cputype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].cpusubtype)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].offset)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].size)), false);
+			FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(archs[i].align)), false);
 		}
 		offset = archs[i].offset + archs[i].size;
 	}
@@ -200,7 +200,7 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		}
 		uint64_t cur = fa->get_position();
 		for (uint64_t j = cur; j < archs[i].offset; j++) {
-			fa->store_8(0);
+			FAIL_ON_WRITE_ERR_V(fa, store_8(0), false);
 		}
 		int pages = archs[i].size / 4096;
 		int remain = archs[i].size % 4096;
@@ -208,12 +208,12 @@ bool LipO::create_file(const String &p_output_path, const Vector<String> &p_file
 		for (int j = 0; j < pages; j++) {
 			uint64_t br = fb->get_buffer(step, 4096);
 			if (br > 0) {
-				fa->store_buffer(step, br);
+				FAIL_ON_WRITE_ERR_V(fa, store_buffer(step, br), false);
 			}
 		}
 		uint64_t br = fb->get_buffer(step, remain);
 		if (br > 0) {
-			fa->store_buffer(step, br);
+			FAIL_ON_WRITE_ERR_V(fa, store_buffer(step, br), false);
 		}
 	}
 	return true;
@@ -319,12 +319,12 @@ bool LipO::extract_arch(int p_index, const String &p_path) {
 	for (int i = 0; i < pages; i++) {
 		uint64_t br = fa->get_buffer(step, 4096);
 		if (br > 0) {
-			fb->store_buffer(step, br);
+			FAIL_ON_WRITE_ERR_V(fb, store_buffer(step, br), false);
 		}
 	}
 	uint64_t br = fa->get_buffer(step, remain);
 	if (br > 0) {
-		fb->store_buffer(step, br);
+		FAIL_ON_WRITE_ERR_V(fb, store_buffer(step, br), false);
 	}
 	return true;
 }

@@ -193,7 +193,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	}
 #endif
 
-	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
+	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
 		// Note: do not use GetTempFileNameW, it's not long path aware!
@@ -230,6 +230,22 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		last_error = OK;
 		flags = p_mode_flags;
 		return OK;
+	}
+}
+
+void FileAccessWindows::abort_backup_save_and_close() {
+	if (!f) {
+		return;
+	}
+
+	fclose(f);
+	f = nullptr;
+
+	if (!save_path.is_empty()) {
+		save_path = "";
+
+		const Char16String &path_utf16 = path.utf16();
+		DeleteFileW((LPCWSTR)(path_utf16.get_data()));
 	}
 }
 

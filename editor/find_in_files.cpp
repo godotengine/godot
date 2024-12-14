@@ -993,7 +993,7 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 	Error err = f->reopen(fpath, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
-	f->store_string(buffer);
+	FAIL_ON_WRITE_ERR(f, store_string(buffer));
 }
 
 String FindInFilesPanel::get_replace_text() {

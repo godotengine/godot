@@ -1308,7 +1308,7 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path, bool
 	String text = json->stringify(api, "\t", false) + "\n";
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
-	fa->store_string(text);
+	ERR_FAIL_COND_MSG(!fa->store_string(text), vformat("Cannot write to file '%s'.", p_path));
 }
 
 static bool compare_value(const String &p_path, const String &p_field, const Variant &p_old_value, const Variant &p_new_value, bool p_allow_name_change) {

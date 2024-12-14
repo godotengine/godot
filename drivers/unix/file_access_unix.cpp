@@ -166,6 +166,26 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
+void FileAccessUnix::abort_backup_save_and_close() {
+	if (!f) {
+		return;
+	}
+
+	fclose(f);
+	f = nullptr;
+
+	if (!save_path.is_empty()) {
+		save_path = "";
+
+		const CharString &path_utf8 = path.utf8();
+		::unlink(path_utf8.ptr());
+	}
+
+	if (close_notification_func) {
+		close_notification_func(path, flags);
+	}
+}
+
 void FileAccessUnix::_close() {
 	if (!f) {
 		return;

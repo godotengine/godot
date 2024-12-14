@@ -315,7 +315,10 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 			// Extensions were added or removed.
 			Ref<FileAccess> f = FileAccess::open(extension_list_config_file, FileAccess::WRITE);
 			for (const String &E : p_extensions) {
-				f->store_line(E);
+				if (!f->store_line(E)) {
+					f->abort_backup_save_and_close();
+					break;
+				}
 			}
 		}
 	} else {

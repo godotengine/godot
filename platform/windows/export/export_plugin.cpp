@@ -127,23 +127,23 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	// Write ICONDIR.
-	fw->store_16(0); // Reserved.
-	fw->store_16(1); // Image type: 1 - ICO.
-	fw->store_16(valid_icon_count); // Number of images.
+	FAIL_ON_WRITE_ERR_V(fw, store_16(0), ERR_FILE_CANT_WRITE); // Reserved.
+	FAIL_ON_WRITE_ERR_V(fw, store_16(1), ERR_FILE_CANT_WRITE); // Image type: 1 - ICO.
+	FAIL_ON_WRITE_ERR_V(fw, store_16(valid_icon_count), ERR_FILE_CANT_WRITE); // Number of images.
 
 	// Write ICONDIRENTRY.
 	uint32_t img_offset = 6 + 16 * valid_icon_count;
 	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
-			fw->store_8(icon_size[i]); // Width in pixels.
-			fw->store_8(icon_size[i]); // Height in pixels.
-			fw->store_8(di.pal_colors); // Number of colors in the palette (0 - no palette).
-			fw->store_8(0); // Reserved.
-			fw->store_16(di.planes); // Number of color planes.
-			fw->store_16(di.bpp); // Bits per pixel.
-			fw->store_32(di.data.size()); // Image data size in bytes.
-			fw->store_32(img_offset); // Image data offset.
+			FAIL_ON_WRITE_ERR_V(fw, store_8(icon_size[i]), ERR_FILE_CANT_WRITE); // Width in pixels.
+			FAIL_ON_WRITE_ERR_V(fw, store_8(icon_size[i]), ERR_FILE_CANT_WRITE); // Height in pixels.
+			FAIL_ON_WRITE_ERR_V(fw, store_8(di.pal_colors), ERR_FILE_CANT_WRITE); // Number of colors in the palette (0 - no palette).
+			FAIL_ON_WRITE_ERR_V(fw, store_8(0), ERR_FILE_CANT_WRITE); // Reserved.
+			FAIL_ON_WRITE_ERR_V(fw, store_16(di.planes), ERR_FILE_CANT_WRITE); // Number of color planes.
+			FAIL_ON_WRITE_ERR_V(fw, store_16(di.bpp), ERR_FILE_CANT_WRITE); // Bits per pixel.
+			FAIL_ON_WRITE_ERR_V(fw, store_32(di.data.size()), ERR_FILE_CANT_WRITE); // Image data size in bytes.
+			FAIL_ON_WRITE_ERR_V(fw, store_32(img_offset), ERR_FILE_CANT_WRITE); // Image data offset.
 
 			img_offset += di.data.size();
 		}
@@ -153,7 +153,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
-			fw->store_buffer(di.data.ptr(), di.data.size());
+			FAIL_ON_WRITE_ERR_V(fw, store_buffer(di.data.ptr(), di.data.size()), ERR_FILE_CANT_WRITE);
 		}
 	}
 	return OK;
@@ -913,12 +913,12 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 
 			// Set virtual size to a little to avoid it taking memory (zero would give issues)
 			f->seek(section_header_pos + 8);
-			f->store_32(8);
+			FAIL_ON_WRITE_ERR_V(f, store_32(8), ERR_FILE_CANT_WRITE);
 
 			f->seek(section_header_pos + 16);
-			f->store_32(p_embedded_size);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_embedded_size), ERR_FILE_CANT_WRITE);
 			f->seek(section_header_pos + 20);
-			f->store_32(p_embedded_start);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_embedded_start), ERR_FILE_CANT_WRITE);
 
 			found = true;
 			break;
@@ -1097,7 +1097,11 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(run_script);
+		if (!f->store_string(run_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+			;
+		}
 	}
 
 	{
@@ -1112,7 +1116,11 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(clean_script);
+		if (!f->store_string(clean_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+			;
+		}
 	}
 
 	print_line("Uploading scripts...");

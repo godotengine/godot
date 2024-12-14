@@ -558,7 +558,10 @@ void ProjectDialog::ok_pressed() {
 			_set_message(TTR("Couldn't create icon.svg in project path."), MESSAGE_ERROR);
 			return;
 		}
-		fa_icon->store_string(get_default_project_icon());
+		if (!fa_icon->store_string(get_default_project_icon())) {
+			fa_icon->abort_backup_save_and_close();
+			ERR_PRINT("Cannot write file '" + path.path_join("icon.svg") + "'.");
+		}
 
 		EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), path);
 
@@ -569,12 +572,18 @@ void ProjectDialog::ok_pressed() {
 			// .editorconfig isn't so critical.
 			ERR_PRINT("Couldn't create .editorconfig in project path.");
 		} else {
-			f->store_line("root = true");
-			f->store_line("");
-			f->store_line("[*]");
-			f->store_line("charset = utf-8");
-			f->close();
-			FileAccess::set_hidden_attribute(editor_config_path, true);
+			bool res = true;
+			res &= f->store_line("root = true");
+			res &= f->store_line("");
+			res &= f->store_line("[*]");
+			res &= f->store_line("charset = utf-8");
+			if (res) {
+				f->close();
+				FileAccess::set_hidden_attribute(editor_config_path, true);
+			} else {
+				f->abort_backup_save_and_close();
+				ERR_PRINT("Cannot write file '" + editor_config_path + "'.");
+			}
 		}
 	}
 
@@ -673,10 +682,11 @@ void ProjectDialog::ok_pressed() {
 					unzCloseCurrentFile(pkg);
 
 					Ref<FileAccess> f = FileAccess::open(path.path_join(rel_path), FileAccess::WRITE);
-					if (f.is_valid()) {
-						f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
-					} else {
+					if (!f.is_valid()) {
 						failed_files.push_back(rel_path);
+					} else if (!f->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
+						failed_files.push_back(rel_path);
+						f->abort_backup_save_and_close();
 					}
 				}
 

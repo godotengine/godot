@@ -1116,7 +1116,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		{
 			Ref<FileAccess> file = FileAccess::open(trash_path + "/info/" + file_name + ".trashinfo", FileAccess::WRITE, &err);
 			ERR_FAIL_COND_V_MSG(err != OK, err, "Can't create trashinfo file: \"" + trash_path + "/info/" + file_name + ".trashinfo\"");
-			file->store_string(trash_info);
+			FAIL_ON_WRITE_ERR_V(file, store_string(trash_info), ERR_FILE_CANT_WRITE);
 		}
 
 		// Rename our resource before moving it to the trash can.

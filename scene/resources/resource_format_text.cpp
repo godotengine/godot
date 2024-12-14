@@ -976,13 +976,13 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				}
 
 				if (is_scene) {
-					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					FAIL_ON_WRITE_ERR_V(fw, store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n"), ERR_FILE_CANT_WRITE);
 				} else {
 					String script_res_text;
 					if (!script_class.is_empty()) {
 						script_res_text = "script_class=\"" + script_class + "\" ";
 					}
-					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n");
+					FAIL_ON_WRITE_ERR_V(fw, store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + uid_text + "]\n"), ERR_FILE_CANT_WRITE);
 				}
 			}
 
@@ -1025,7 +1025,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 			}
 			s += " path=\"" + path + "\" id=\"" + id + "\"]";
-			fw->store_line(s); // Bundled.
+			FAIL_ON_WRITE_ERR_V(fw, store_line(s), ERR_FILE_CANT_WRITE); // Bundled.
 
 			tag_end = f->get_position();
 		}
@@ -1044,15 +1044,15 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 	if (*buffer == '\n') {
 		// Skip first newline character since we added one.
 		if (num_read > 1) {
-			fw->store_buffer(buffer + 1, num_read - 1);
+			FAIL_ON_WRITE_ERR_V(fw, store_buffer(buffer + 1, num_read - 1), ERR_FILE_CANT_WRITE);
 		}
 	} else {
-		fw->store_buffer(buffer, num_read);
+		FAIL_ON_WRITE_ERR_V(fw, store_buffer(buffer, num_read), ERR_FILE_CANT_WRITE);
 	}
 
 	while (!f->eof_reached()) {
 		num_read = f->get_buffer(buffer, buffer_size);
-		fw->store_buffer(buffer, num_read);
+		FAIL_ON_WRITE_ERR_V(fw, store_buffer(buffer, num_read), ERR_FILE_CANT_WRITE);
 	}
 
 	bool all_ok = fw->get_error() == OK;
@@ -1772,8 +1772,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			title += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
 
-		f->store_string(title);
-		f->store_line("]\n"); // One empty line.
+		FAIL_ON_WRITE_ERR_V(f, store_string(title), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_line("]\n"), ERR_FILE_CANT_WRITE); // One empty line.
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1843,11 +1843,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			s += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
 		}
 		s += " path=\"" + p + "\" id=\"" + sorted_er[i].id + "\"]\n";
-		f->store_string(s); // Bundled.
+		FAIL_ON_WRITE_ERR_V(f, store_string(s), ERR_FILE_CANT_WRITE); // Bundled.
 	}
 
 	if (external_resources.size()) {
-		f->store_line(String()); // Separate.
+		FAIL_ON_WRITE_ERR_V(f, store_line(String()), ERR_FILE_CANT_WRITE); // Separate.
 	}
 
 	HashSet<String> used_unique_ids;
@@ -1875,7 +1875,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		}
 
 		if (main) {
-			f->store_line("[resource]");
+			FAIL_ON_WRITE_ERR_V(f, store_line("[resource]"), ERR_FILE_CANT_WRITE);
 		} else {
 			String line = "[sub_resource ";
 			if (res->get_scene_unique_id().is_empty()) {
@@ -1894,7 +1894,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			String id = res->get_scene_unique_id();
 			line += "type=\"" + _resource_get_class(res) + "\" id=\"" + id;
-			f->store_line(line + "\"]");
+			FAIL_ON_WRITE_ERR_V(f, store_line(line + "\"]"), ERR_FILE_CANT_WRITE);
 			if (takeover_paths) {
 				res->set_path(p_path + "::" + id, true);
 			}
@@ -1951,12 +1951,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 				String vars;
 				VariantWriter::write_to_string(value, vars, _write_resources, this, use_compat);
-				f->store_string(name.property_name_encode() + " = " + vars + "\n");
+				FAIL_ON_WRITE_ERR_V(f, store_string(name.property_name_encode() + " = " + vars + "\n"), ERR_FILE_CANT_WRITE);
 			}
 		}
 
 		if (E->next()) {
-			f->store_line(String());
+			FAIL_ON_WRITE_ERR_V(f, store_line(String()), ERR_FILE_CANT_WRITE);
 		}
 	}
 
@@ -2009,39 +2009,39 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				header += sgroups;
 			}
 
-			f->store_string(header);
+			FAIL_ON_WRITE_ERR_V(f, store_string(header), ERR_FILE_CANT_WRITE);
 
 			if (!instance_placeholder.is_empty()) {
 				String vars;
-				f->store_string(" instance_placeholder=");
+				FAIL_ON_WRITE_ERR_V(f, store_string(" instance_placeholder="), ERR_FILE_CANT_WRITE);
 				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, use_compat);
-				f->store_string(vars);
+				FAIL_ON_WRITE_ERR_V(f, store_string(vars), ERR_FILE_CANT_WRITE);
 			}
 
 			if (instance.is_valid()) {
 				String vars;
-				f->store_string(" instance=");
+				FAIL_ON_WRITE_ERR_V(f, store_string(" instance="), ERR_FILE_CANT_WRITE);
 				VariantWriter::write_to_string(instance, vars, _write_resources, this, use_compat);
-				f->store_string(vars);
+				FAIL_ON_WRITE_ERR_V(f, store_string(vars), ERR_FILE_CANT_WRITE);
 			}
 
-			f->store_line("]");
+			FAIL_ON_WRITE_ERR_V(f, store_line("]"), ERR_FILE_CANT_WRITE);
 
 			for (int j = 0; j < state->get_node_property_count(i); j++) {
 				String vars;
 				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, use_compat);
 
-				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
+				FAIL_ON_WRITE_ERR_V(f, store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n"), ERR_FILE_CANT_WRITE);
 			}
 
 			if (i < state->get_node_count() - 1) {
-				f->store_line(String());
+				FAIL_ON_WRITE_ERR_V(f, store_line(String()), ERR_FILE_CANT_WRITE);
 			}
 		}
 
 		for (int i = 0; i < state->get_connection_count(); i++) {
 			if (i == 0) {
-				f->store_line("");
+				FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 			}
 
 			String connstr = "[connection";
@@ -2060,22 +2060,22 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 
 			Array binds = state->get_connection_binds(i);
-			f->store_string(connstr);
+			FAIL_ON_WRITE_ERR_V(f, store_string(connstr), ERR_FILE_CANT_WRITE);
 			if (binds.size()) {
 				String vars;
 				VariantWriter::write_to_string(binds, vars, _write_resources, this, use_compat);
-				f->store_string(" binds= " + vars);
+				FAIL_ON_WRITE_ERR_V(f, store_string(" binds= " + vars), ERR_FILE_CANT_WRITE);
 			}
 
-			f->store_line("]");
+			FAIL_ON_WRITE_ERR_V(f, store_line("]"), ERR_FILE_CANT_WRITE);
 		}
 
 		Vector<NodePath> editable_instances = state->get_editable_instances();
 		for (int i = 0; i < editable_instances.size(); i++) {
 			if (i == 0) {
-				f->store_line("");
+				FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 			}
-			f->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
+			FAIL_ON_WRITE_ERR_V(f, store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]"), ERR_FILE_CANT_WRITE);
 		}
 	}
 
@@ -2095,19 +2095,19 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 
 	fw = FileAccess::open(local_path + ".uidren", FileAccess::WRITE);
 	if (is_scene) {
-		fw->store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		FAIL_ON_WRITE_ERR_V(fw, store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]"), ERR_FILE_CANT_WRITE);
 	} else {
 		String script_res_text;
 		if (!script_class.is_empty()) {
 			script_res_text = "script_class=\"" + script_class + "\" ";
 		}
 
-		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		FAIL_ON_WRITE_ERR_V(fw, store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]"), ERR_FILE_CANT_WRITE);
 	}
 
 	uint8_t c = f->get_8();
 	while (!f->eof_reached()) {
-		fw->store_8(c);
+		FAIL_ON_WRITE_ERR_V(fw, store_8(c), ERR_FILE_CANT_WRITE);
 		c = f->get_8();
 	}
 

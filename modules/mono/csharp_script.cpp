@@ -2896,11 +2896,7 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
 
-		file->store_string(source);
-
-		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-			return ERR_CANT_CREATE;
-		}
+		FAIL_ON_WRITE_ERR_V(file, store_string(source), ERR_CANT_CREATE);
 	}
 
 #ifdef TOOLS_ENABLED

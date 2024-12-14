@@ -1067,7 +1067,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	}
 
 	CharString json_utf8 = json_description.utf8();
-	json_file->store_buffer((const uint8_t *)json_utf8.get_data(), json_utf8.length());
+	FAIL_ON_WRITE_ERR_V(json_file, store_buffer((const uint8_t *)json_utf8.get_data(), json_utf8.length()), ERR_FILE_CANT_WRITE);
 
 	Ref<FileAccess> sizes_file = FileAccess::open(p_iconset_dir + "sizes", FileAccess::WRITE);
 	if (sizes_file.is_null()) {
@@ -1076,7 +1076,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	}
 
 	CharString sizes_utf8 = sizes.utf8();
-	sizes_file->store_buffer((const uint8_t *)sizes_utf8.get_data(), sizes_utf8.length());
+	FAIL_ON_WRITE_ERR_V(sizes_file, store_buffer((const uint8_t *)sizes_utf8.get_data(), sizes_utf8.length()), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }
@@ -1409,7 +1409,7 @@ int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path)
 									if (swap) {
 										new_id = BSWAP32(new_id);
 									}
-									sim_f->store_32(new_id);
+									FAIL_ON_WRITE_ERR_V(sim_f, store_32(new_id), 0);
 									commands_patched++;
 								}
 							}
@@ -1544,7 +1544,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 
 		Ref<FileAccess> f = FileAccess::open(p_destination.path_join("Info.plist"), FileAccess::WRITE);
 		if (f.is_valid()) {
-			f->store_string(info_plist);
+			FAIL_ON_WRITE_ERR_V(f, store_string(info_plist), ERR_FILE_CANT_WRITE);
 		}
 	} else {
 		String file_name = p_destination.get_basename().get_file();
@@ -1599,7 +1599,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 
 			Ref<FileAccess> f = FileAccess::open(p_destination.path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
-				f->store_string(info_plist);
+				FAIL_ON_WRITE_ERR_V(f, store_string(info_plist), ERR_FILE_CANT_WRITE);
 			}
 		}
 	}
@@ -2404,10 +2404,15 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
 				if (f.is_null()) {
 					unzClose(src_pkg_zip);
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open a file at path \"%s\"."), file));
+					return ERR_CANT_CREATE;
+				}
+				if (!f->store_buffer(data.ptr(), data.size())) {
+					f->abort_backup_save_and_close();
+					unzClose(src_pkg_zip);
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write to a file at path \"%s\"."), file));
 					return ERR_CANT_CREATE;
-				};
-				f->store_buffer(data.ptr(), data.size());
+				}
 			}
 
 #if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
@@ -2514,12 +2519,12 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			String fname = binary_dir + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-			f->store_line("/* Localized versions of Info.plist keys */");
-			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
-			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
-			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
-			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
+			FAIL_ON_WRITE_ERR_V(f, store_line("/* Localized versions of Info.plist keys */"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 		}
 
 		HashSet<String> languages;
@@ -2534,19 +2539,19 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			String fname = binary_dir + "/" + lang + ".lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-			f->store_line("/* Localized versions of Info.plist keys */");
-			f->store_line("");
+			FAIL_ON_WRITE_ERR_V(f, store_line("/* Localized versions of Info.plist keys */"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 			if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (photolibrary_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 		}
 	}
@@ -2613,7 +2618,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write to a file at path \"%s\"."), project_file_name));
 			return ERR_CANT_CREATE;
 		};
-		f->store_buffer(project_file_data.ptr(), project_file_data.size());
+		FAIL_ON_WRITE_ERR_V(f, store_buffer(project_file_data.ptr(), project_file_data.size()), ERR_FILE_CANT_WRITE);
 	}
 
 #ifdef MACOS_ENABLED

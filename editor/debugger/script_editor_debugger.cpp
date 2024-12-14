@@ -182,7 +182,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			}
-			file->store_csv_line(line);
+			FAIL_ON_WRITE_ERR(file, store_csv_line(line));
 
 			// values
 			Vector<List<float>::Element *> iterators;
@@ -203,13 +203,13 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 					}
 					continue_iteration = continue_iteration || iterators[i];
 				}
-				file->store_csv_line(line);
+				FAIL_ON_WRITE_ERR(file, store_csv_line(line));
 			}
-			file->store_string("\n");
+			FAIL_ON_WRITE_ERR(file, store_string("\n"));
 
 			Vector<Vector<String>> profiler_data = profiler->get_data_as_csv();
 			for (int i = 0; i < profiler_data.size(); i++) {
-				file->store_csv_line(profiler_data[i]);
+				FAIL_ON_WRITE_ERR(file, store_csv_line(profiler_data[i]));
 			}
 		} break;
 		case SAVE_VRAM_CSV: {
@@ -226,7 +226,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			for (int i = 0; i < vmem_tree->get_columns(); ++i) {
 				headers.write[i] = vmem_tree->get_column_title(i);
 			}
-			file->store_csv_line(headers);
+			FAIL_ON_WRITE_ERR(file, store_csv_line(headers));
 
 			if (vmem_tree->get_root()) {
 				TreeItem *ti = vmem_tree->get_root()->get_first_child();
@@ -236,7 +236,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 					for (int i = 0; i < vmem_tree->get_columns(); ++i) {
 						values.write[i] = ti->get_text(i);
 					}
-					file->store_csv_line(values);
+					FAIL_ON_WRITE_ERR(file, store_csv_line(values));
 
 					ti = ti->get_next();
 				}

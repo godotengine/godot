@@ -258,7 +258,7 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 	String text = JSON::stringify(data, "\t");
-	f->store_string(text);
+	FAIL_ON_WRITE_ERR_V(f, store_string(text), ERR_FILE_CANT_WRITE);
 	return OK;
 }
 
@@ -511,7 +511,10 @@ void EditorBuildProfileManager::_detect_classes() {
 			l += c;
 			used_classes.insert(c);
 		}
-		f->store_line(l);
+		if (!f->store_line(l)) {
+			f->abort_backup_save_and_close();
+			break;
+		}
 	}
 
 	f.unref();

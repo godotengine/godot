@@ -365,16 +365,16 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 		if (f.is_null()) {
 			ERR_FAIL_MSG("Couldn't create .gitignore in project path.");
 		} else {
-			f->store_line("# Godot 4+ specific ignores");
-			f->store_line(".godot/");
-			f->store_line("/android/");
+			FAIL_ON_WRITE_ERR(f, store_line("# Godot 4+ specific ignores"));
+			FAIL_ON_WRITE_ERR(f, store_line(".godot/"));
+			FAIL_ON_WRITE_ERR(f, store_line("/android/"));
 		}
 		f = FileAccess::open(p_dir.path_join(".gitattributes"), FileAccess::WRITE);
 		if (f.is_null()) {
 			ERR_FAIL_MSG("Couldn't create .gitattributes in project path.");
 		} else {
-			f->store_line("# Normalize EOL for all files that Git considers text files.");
-			f->store_line("* text=auto eol=lf");
+			FAIL_ON_WRITE_ERR(f, store_line("# Normalize EOL for all files that Git considers text files."));
+			FAIL_ON_WRITE_ERR(f, store_line("* text=auto eol=lf"));
 		}
 	}
 }

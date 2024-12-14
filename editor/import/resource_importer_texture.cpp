@@ -266,17 +266,17 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
-void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
+bool ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") || !Image::_webp_mem_loader_func; // WebP module disabled or png is forced.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit.
 
-			f->store_32(use_webp ? CompressedTexture2D::DATA_FORMAT_WEBP : CompressedTexture2D::DATA_FORMAT_PNG);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			FAIL_ON_WRITE_ERR_V(f, store_32(use_webp ? CompressedTexture2D::DATA_FORMAT_WEBP : CompressedTexture2D::DATA_FORMAT_PNG), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_width()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_height()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_mipmap_count()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_format()), false);
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
@@ -288,24 +288,24 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 				const uint64_t data_size = data.size();
 
-				f->store_32(data_size);
-				f->store_buffer(data.ptr(), data_size);
+				FAIL_ON_WRITE_ERR_V(f, store_32(data_size), false);
+				FAIL_ON_WRITE_ERR_V(f, store_buffer(data.ptr(), data_size), false);
 			}
 
 		} break;
 		case COMPRESS_LOSSY: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_WEBP);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			FAIL_ON_WRITE_ERR_V(f, store_32(CompressedTexture2D::DATA_FORMAT_WEBP), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_width()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_height()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_mipmap_count()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_format()), false);
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
 				const uint64_t data_size = data.size();
 
-				f->store_32(data_size);
-				f->store_buffer(data.ptr(), data_size);
+				FAIL_ON_WRITE_ERR_V(f, store_32(data_size), false);
+				FAIL_ON_WRITE_ERR_V(f, store_buffer(data.ptr(), data_size), false);
 			}
 
 		} break;
@@ -313,55 +313,56 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			Ref<Image> image = p_image->duplicate();
 			image->compress_from_channels(p_compress_format, p_channels);
 
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(image->get_width());
-			f->store_16(image->get_height());
-			f->store_32(image->get_mipmap_count());
-			f->store_32(image->get_format());
-			f->store_buffer(image->get_data());
+			FAIL_ON_WRITE_ERR_V(f, store_32(CompressedTexture2D::DATA_FORMAT_IMAGE), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(image->get_width()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(image->get_height()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(image->get_mipmap_count()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(image->get_format()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_buffer(image->get_data()), false);
 
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
-			f->store_buffer(p_image->get_data());
+			FAIL_ON_WRITE_ERR_V(f, store_32(CompressedTexture2D::DATA_FORMAT_IMAGE), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_width()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_height()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_mipmap_count()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_format()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_buffer(p_image->get_data()), false);
 
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			FAIL_ON_WRITE_ERR_V(f, store_32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_width()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_16(p_image->get_height()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_mipmap_count()), false);
+			FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_format()), false);
 
 			Vector<uint8_t> data = Image::basis_universal_packer(p_image, p_channels);
 			const uint64_t data_size = data.size();
 
-			f->store_32(data_size);
-			f->store_buffer(data.ptr(), data_size);
+			FAIL_ON_WRITE_ERR_V(f, store_32(data_size), false);
+			FAIL_ON_WRITE_ERR_V(f, store_buffer(data.ptr(), data_size), false);
 		} break;
 	}
+	return true;
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+bool ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	ERR_FAIL_COND(f.is_null());
+	ERR_FAIL_COND_V(f.is_null(), false);
 
 	// Godot Streamable Texture 2D.
-	f->store_8('G');
-	f->store_8('S');
-	f->store_8('T');
-	f->store_8('2');
+	FAIL_ON_WRITE_ERR_V(f, store_8('G'), false);
+	FAIL_ON_WRITE_ERR_V(f, store_8('S'), false);
+	FAIL_ON_WRITE_ERR_V(f, store_8('T'), false);
+	FAIL_ON_WRITE_ERR_V(f, store_8('2'), false);
 
 	// Current format version.
-	f->store_32(CompressedTexture2D::FORMAT_VERSION);
+	FAIL_ON_WRITE_ERR_V(f, store_32(CompressedTexture2D::FORMAT_VERSION), false);
 
 	// Texture may be resized later, so original size must be saved first.
-	f->store_32(p_image->get_width());
-	f->store_32(p_image->get_height());
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_width()), false);
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_image->get_height()), false);
 
 	uint32_t flags = 0;
 	if (p_streamable) {
@@ -380,13 +381,13 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
 	}
 
-	f->store_32(flags);
-	f->store_32(p_limit_mipmap);
+	FAIL_ON_WRITE_ERR_V(f, store_32(flags), false);
+	FAIL_ON_WRITE_ERR_V(f, store_32(p_limit_mipmap), false);
 
 	// Reserved.
-	f->store_32(0);
-	f->store_32(0);
-	f->store_32(0);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), false);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), false);
+	FAIL_ON_WRITE_ERR_V(f, store_32(0), false);
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() >= Image::FORMAT_RF) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
@@ -426,14 +427,15 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		used_channels = image->detect_used_channels(comp_source);
 	}
 
-	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
+	return save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
 }
 
-void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {
+bool ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
-	ERR_FAIL_COND(f.is_null());
+	ERR_FAIL_COND_V(f.is_null(), false);
 
-	f->store_var(p_metadata);
+	FAIL_ON_WRITE_ERR_V(f, store_var(p_metadata), false);
+	return true;
 }
 
 Dictionary ResourceImporterTexture::_load_editor_meta(const String &p_path) const {
@@ -693,8 +695,10 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		}
 
 		if (force_uncompressed) {
-			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+			if (!_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+						mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel)) {
+				return FAILED;
+			}
 		} else {
 			if (can_s3tc_bptc) {
 				Image::CompressMode image_compress_mode;
@@ -707,8 +711,10 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					image_compress_format = "s3tc";
 				}
 
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				if (!_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
+							detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel)) {
+					return FAILED;
+				}
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -723,20 +729,26 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					image_compress_format = "etc2";
 				}
 
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				if (!_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
+							detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel)) {
+					return FAILED;
+				}
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
-		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+		if (!_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel)) {
+			return FAILED;
+		}
 	}
 
 	if (editor_image.is_valid()) {
-		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+		if (!_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel)) {
+			return FAILED;
+		}
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;
@@ -749,7 +761,9 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 			editor_meta["editor_dark_theme"] = EditorThemeManager::is_dark_theme();
 		}
 
-		_save_editor_meta(editor_meta, p_save_path + ".editor.meta");
+		if (!_save_editor_meta(editor_meta, p_save_path + ".editor.meta")) {
+			return FAILED;
+		}
 	}
 
 	if (r_metadata) {

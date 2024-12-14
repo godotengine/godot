@@ -716,7 +716,10 @@ bool GDScriptTest::generate_output() {
 	String output = result.output.strip_edges(); // TODO: may be hacky.
 	output += "\n"; // Make sure to insert newline for CI static checks.
 
-	out_file->store_string(output);
+	if (!out_file->store_string(output)) {
+		out_file->abort_backup_save_and_close();
+		return false;
+	}
 
 	return true;
 }

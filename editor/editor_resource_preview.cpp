@@ -383,12 +383,12 @@ void EditorResourcePreview::_iterate() {
 }
 
 void EditorResourcePreview::_write_preview_cache(Ref<FileAccess> p_file, int p_thumbnail_size, bool p_has_small_texture, uint64_t p_modified_time, const String &p_hash, const Dictionary &p_metadata) {
-	p_file->store_line(itos(p_thumbnail_size));
-	p_file->store_line(itos(p_has_small_texture));
-	p_file->store_line(itos(p_modified_time));
-	p_file->store_line(p_hash);
-	p_file->store_line(VariantUtilityFunctions::var_to_str(p_metadata).replace("\n", " "));
-	p_file->store_line(itos(CURRENT_METADATA_VERSION));
+	FAIL_ON_WRITE_ERR(p_file, store_line(itos(p_thumbnail_size)));
+	FAIL_ON_WRITE_ERR(p_file, store_line(itos(p_has_small_texture)));
+	FAIL_ON_WRITE_ERR(p_file, store_line(itos(p_modified_time)));
+	FAIL_ON_WRITE_ERR(p_file, store_line(p_hash));
+	FAIL_ON_WRITE_ERR(p_file, store_line(VariantUtilityFunctions::var_to_str(p_metadata).replace("\n", " ")));
+	FAIL_ON_WRITE_ERR(p_file, store_line(itos(CURRENT_METADATA_VERSION)));
 }
 
 void EditorResourcePreview::_read_preview_cache(Ref<FileAccess> p_file, int *r_thumbnail_size, bool *r_has_small_texture, uint64_t *r_modified_time, String *r_hash, Dictionary *r_metadata, bool *r_outdated) {
