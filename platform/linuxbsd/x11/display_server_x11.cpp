@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server_x11.h"
+#include "os_linuxbsd.h"
 
 #ifdef X11_ENABLED
 
@@ -7350,7 +7351,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	screensaver = memnew(FreeDesktopScreenSaver);
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	portal_desktop = ((OS_LinuxBSD *)OS::get_singleton())->get_portal_desktop();
 	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 #endif // DBUS_ENABLED
 	XSetErrorHandler(&default_window_error_handler);
@@ -7485,7 +7486,6 @@ DisplayServerX11::~DisplayServerX11() {
 
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
-	memdelete(portal_desktop);
 	memdelete(atspi_monitor);
 #endif
 }
