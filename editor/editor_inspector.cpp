@@ -281,7 +281,7 @@ void EditorProperty::_notification(int p_what) {
 			} else {
 				color = get_theme_color(is_read_only() ? SNAME("readonly_color") : SNAME("property_color"));
 			}
-			if (label.contains(".")) {
+			if (label.contains_char('.')) {
 				// FIXME: Move this to the project settings editor, as this is only used
 				// for project settings feature tag overrides.
 				color.a = 0.5;
@@ -1096,6 +1096,21 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_focusable", "control"), &EditorProperty::add_focusable);
 	ClassDB::bind_method(D_METHOD("set_bottom_editor", "editor"), &EditorProperty::set_bottom_editor);
 
+	ClassDB::bind_method(D_METHOD("set_selectable", "selectable"), &EditorProperty::set_selectable);
+	ClassDB::bind_method(D_METHOD("is_selectable"), &EditorProperty::is_selectable);
+
+	ClassDB::bind_method(D_METHOD("set_use_folding", "use_folding"), &EditorProperty::set_use_folding);
+	ClassDB::bind_method(D_METHOD("is_using_folding"), &EditorProperty::is_using_folding);
+
+	ClassDB::bind_method(D_METHOD("set_name_split_ratio", "ratio"), &EditorProperty::set_name_split_ratio);
+	ClassDB::bind_method(D_METHOD("get_name_split_ratio"), &EditorProperty::get_name_split_ratio);
+
+	ClassDB::bind_method(D_METHOD("deselect"), &EditorProperty::deselect);
+	ClassDB::bind_method(D_METHOD("is_selected"), &EditorProperty::is_selected);
+	ClassDB::bind_method(D_METHOD("select", "focusable"), &EditorProperty::select, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_object_and_property", "object", "property"), &EditorProperty::set_object_and_property);
+	ClassDB::bind_method(D_METHOD("set_label_reference", "control"), &EditorProperty::set_label_reference);
+
 	ClassDB::bind_method(D_METHOD("emit_changed", "property", "value", "field", "changing"), &EditorProperty::emit_changed, DEFVAL(StringName()), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
@@ -1105,6 +1120,9 @@ void EditorProperty::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keying"), "set_keying", "is_keying");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deletable"), "set_deletable", "is_deletable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_folding"), "set_use_folding", "is_using_folding");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "name_split_ratio"), "set_name_split_ratio", "get_name_split_ratio");
 
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::STRING_NAME, "field"), PropertyInfo(Variant::BOOL, "changing")));
 	ADD_SIGNAL(MethodInfo("multiple_properties_changed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "properties"), PropertyInfo(Variant::ARRAY, "value")));
@@ -3177,7 +3195,7 @@ void EditorInspector::update_tree() {
 		}
 
 		// Get the property label's string.
-		String name_override = (path.contains("/")) ? path.substr(path.rfind_char('/') + 1) : path;
+		String name_override = (path.contains_char('/')) ? path.substr(path.rfind_char('/') + 1) : path;
 		String feature_tag;
 		{
 			const int dot = name_override.find_char('.');
@@ -3326,7 +3344,7 @@ void EditorInspector::update_tree() {
 				array_element_prefix = class_name_components[0];
 				editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 
-				String array_label = path.contains("/") ? path.substr(path.rfind_char('/') + 1) : path;
+				String array_label = path.contains_char('/') ? path.substr(path.rfind_char('/') + 1) : path;
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style, p.name, doc_name);
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
@@ -4029,7 +4047,11 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		if (valid) {
-			undo_redo->add_undo_property(object, p_name, value);
+			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
+				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
+			} else {
+				undo_redo->add_undo_property(object, p_name, value);
+			}
 		}
 
 		List<StringName> linked_properties;
@@ -4437,6 +4459,7 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			ERR_FAIL_NULL(EditorFeatureProfileManager::get_singleton());
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
@@ -4633,6 +4656,8 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
+
+	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));

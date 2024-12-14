@@ -433,6 +433,18 @@ Files generated from upstream source:
 5. Copy `source/data/out/icudt76l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt76l.dat`
 
 
+## jolt_physics
+
+- Upstream: https://github.com/jrouwe/JoltPhysics
+- Version: 5.2.1 (e3d3cdf644389b621914bb6e73d52ee3137591a7, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
+- `LICENSE`
+
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
@@ -455,6 +467,10 @@ Files extracted from upstream source:
 
 - `*.{c,h}` files for Windows platform
 - `LICENSE`
+
+Important: Some files have Godot-made changes to load big debug symbol files.
+They are marked with `/* GODOT start */` and `/* GODOT end */`
+comments and a patch is provided in the `patches` folder.
 
 
 ## libktx
@@ -561,7 +577,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.1 (71c569d44bf3a8bd53d874c81ee8ac644dd6e9e3, 2024)
+- Version: 3.6.2 (107ea89daaefb9867ea9121002fbbdf926780e98, 2024)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -923,6 +939,8 @@ Files extracted from upstream source:
 
 See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
 number and run the script.
+
+Patches in the `patches/` directory should be re-applied after updating.
 
 
 ## ufbx

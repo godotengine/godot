@@ -182,7 +182,7 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(Button);
-	bake->set_theme_type_variation("FlatButton");
+	bake->set_theme_type_variation(SceneStringName(FlatButton));
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
 	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));

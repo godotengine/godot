@@ -134,10 +134,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float ccNdotL = max(min(A + dot(vertex_normal, L), 1.0), 0.0);
 		float ccNdotH = clamp(A + dot(vertex_normal, H), 0.0, 1.0);
 		float ccNdotV = max(dot(vertex_normal, V), 1e-4);
-
-#if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
-#endif
+
 		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
 		float Gr = 0.25 / (cLdotH * cLdotH);
 		float Fr = mix(.04, 1.0, cLdotH5);
@@ -212,7 +210,9 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 			float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
 	   // F
+#if !defined(LIGHT_CLEARCOAT_USED)
 			float cLdotH5 = SchlickFresnel(cLdotH);
+#endif
 			// Calculate Fresnel using specular occlusion term from Filament:
 			// https://google.github.io/filament/Filament.html#lighting/occlusion/specularocclusion
 			float f90 = clamp(dot(f0, vec3(50.0 * 0.33)), metallic, 1.0);
@@ -875,12 +875,15 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 		return;
 	}
 
-	vec3 inner_pos = abs(local_pos / box_extents);
-	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
-	//make blend more rounded
-	blend = mix(length(inner_pos), blend, blend);
-	blend *= blend;
-	blend = max(0.0, 1.0 - blend);
+	float blend = 1.0;
+	if (reflections.data[ref_index].blend_distance != 0.0) {
+		vec3 axis_blend_distance = min(vec3(reflections.data[ref_index].blend_distance), box_extents);
+		vec3 blend_axes = abs(local_pos) - box_extents + axis_blend_distance;
+		blend_axes /= axis_blend_distance;
+		blend_axes = clamp(1.0 - blend_axes, vec3(0.0), vec3(1.0));
+
+		blend = pow(blend_axes.x * blend_axes.y * blend_axes.z, 2.0);
+	}
 
 	if (reflections.data[ref_index].intensity > 0.0) { // compute reflection
 

@@ -65,15 +65,6 @@ const char16_t Char16String::_null = 0;
 const char32_t String::_null = 0;
 const char32_t String::_replacement_char = 0xfffd;
 
-// strlen equivalent function for char32_t * arguments.
-_FORCE_INLINE_ size_t strlen(const char32_t *p_str) {
-	const char32_t *ptr = p_str;
-	while (*ptr != 0) {
-		++ptr;
-	}
-	return ptr - p_str;
-}
-
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	const String &s = p_s;
 	int beg = CLAMP(p_col, 0, s.length());
@@ -313,95 +304,32 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::copy_from(const char *p_cstr) {
-	// copy Latin-1 encoded c-string directly
-	if (!p_cstr) {
+void String::copy_from(const StrRange<char> &p_cstr) {
+	if (p_cstr.len == 0) {
 		resize(0);
 		return;
 	}
 
-	const size_t len = strlen(p_cstr);
+	resize(p_cstr.len + 1); // include 0
 
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	resize(len + 1); // include 0
-
+	const char *src = p_cstr.c_str;
+	const char *end = src + p_cstr.len;
 	char32_t *dst = ptrw();
 
-	for (size_t i = 0; i <= len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0 && i < len) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
+	for (; src < end; ++src, ++dst) {
+		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
+		*dst = static_cast<uint8_t>(*src);
 	}
+	*dst = 0;
 }
 
-void String::copy_from(const char *p_cstr, const int p_clip_to) {
-	// copy Latin-1 encoded c-string directly
-	if (!p_cstr) {
+void String::copy_from(const StrRange<char32_t> &p_cstr) {
+	if (p_cstr.len == 0) {
 		resize(0);
 		return;
 	}
 
-	int len = 0;
-	const char *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
-	}
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	resize(len + 1); // include 0
-
-	char32_t *dst = ptrw();
-
-	for (int i = 0; i < len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_cstr[i];
-#else
-		uint8_t c = p_cstr[i] >= 0 ? p_cstr[i] : uint8_t(256 + p_cstr[i]);
-#endif
-		if (c == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
-	}
-	dst[len] = 0;
-}
-
-void String::copy_from(const wchar_t *p_cstr) {
-#ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr);
-#else
-	// wchar_t is 32-bit, copy directly
-	copy_from((const char32_t *)p_cstr);
-#endif
-}
-
-void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
-#ifdef WINDOWS_ENABLED
-	// wchar_t is 16-bit, parse as UTF-16
-	parse_utf16((const char16_t *)p_cstr, p_clip_to);
-#else
-	// wchar_t is 32-bit, copy directly
-	copy_from((const char32_t *)p_cstr, p_clip_to);
-#endif
+	copy_from_unchecked(p_cstr.c_str, p_cstr.len);
 }
 
 void String::copy_from(const char32_t &p_char) {
@@ -427,81 +355,31 @@ void String::copy_from(const char32_t &p_char) {
 	dst[1] = 0;
 }
 
-void String::copy_from(const char32_t *p_cstr) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	const int len = strlen(p_cstr);
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	copy_from_unchecked(p_cstr, len);
-}
-
-void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
-	if (!p_cstr) {
-		resize(0);
-		return;
-	}
-
-	int len = 0;
-	const char32_t *ptr = p_cstr;
-	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
-		len++;
-	}
-
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	copy_from_unchecked(p_cstr, len);
-}
-
 // assumes the following have already been validated:
 // p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
 void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
+
+	const char32_t *end = p_char + p_length;
 	char32_t *dst = ptrw();
-	dst[p_length] = 0;
 
-	for (int i = 0; i < p_length; i++) {
-		if (p_char[i] == 0) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
+	for (; p_char < end; ++p_char, ++dst) {
+		const char32_t chr = *p_char;
+		if ((chr & 0xfffff800) == 0xd800) {
+			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if ((p_char[i] & 0xfffff800) == 0xd800) {
-			print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
+		if (chr > 0x10ffff) {
+			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)chr));
+			*dst = _replacement_char;
 			continue;
 		}
-		if (p_char[i] > 0x10ffff) {
-			print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char[i]));
-			dst[i] = _replacement_char;
-			continue;
-		}
-		dst[i] = p_char[i];
+		*dst = chr;
 	}
-}
-
-void String::operator=(const char *p_str) {
-	copy_from(p_str);
-}
-
-void String::operator=(const char32_t *p_str) {
-	copy_from(p_str);
-}
-
-void String::operator=(const wchar_t *p_str) {
-	copy_from(p_str);
+	*dst = 0;
 }
 
 String String::operator+(const String &p_str) const {
@@ -714,7 +592,7 @@ bool String::operator==(const String &p_str) const {
 	return true;
 }
 
-bool String::operator==(const StrRange &p_str_range) const {
+bool String::operator==(const StrRange<char32_t> &p_str_range) const {
 	int len = p_str_range.len;
 
 	if (length() != len) {
@@ -2529,37 +2407,6 @@ Char16String String::utf16() const {
 	return utf16s;
 }
 
-String::String(const char *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const wchar_t *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const char32_t *p_str) {
-	copy_from(p_str);
-}
-
-String::String(const char *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const wchar_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const char32_t *p_str, int p_clip_to_len) {
-	copy_from(p_str, p_clip_to_len);
-}
-
-String::String(const StrRange &p_range) {
-	if (!p_range.c_str) {
-		return;
-	}
-	copy_from(p_range.c_str, p_range.len);
-}
-
 int64_t String::hex_to_int() const {
 	int len = length();
 	if (len == 0) {
@@ -3314,6 +3161,10 @@ int String::find(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
+	if (src_len == 1) {
+		return find_char(p_str[0], p_from); // Optimize with single-char find.
+	}
+
 	const char32_t *src = get_data();
 	const char32_t *str = p_str.get_data();
 
@@ -3352,6 +3203,10 @@ int String::find(const char *p_str, int p_from) const {
 
 	if (len == 0 || src_len == 0) {
 		return -1; // won't find anything!
+	}
+
+	if (src_len == 1) {
+		return find_char(*p_str, p_from); // Optimize with single-char find.
 	}
 
 	const char32_t *src = get_data();
@@ -3880,14 +3735,12 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 		return 0;
 	}
 	int c = 0;
-	int idx = -1;
-	do {
-		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
-		if (idx != -1) {
-			str = str.substr(idx + slen, str.length() - slen);
-			++c;
-		}
-	} while (idx != -1);
+	int idx = 0;
+	while ((idx = p_case_insensitive ? str.findn(p_string, idx) : str.find(p_string, idx)) != -1) {
+		// Skip the occurrence itself.
+		idx += slen;
+		++c;
+	}
 	return c;
 }
 
@@ -3919,14 +3772,12 @@ int String::_count(const char *p_string, int p_from, int p_to, bool p_case_insen
 		return 0;
 	}
 	int c = 0;
-	int idx = -1;
-	do {
-		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
-		if (idx != -1) {
-			str = str.substr(idx + substring_length, str.length() - substring_length);
-			++c;
-		}
-	} while (idx != -1);
+	int idx = 0;
+	while ((idx = p_case_insensitive ? str.findn(p_string, idx) : str.find(p_string, idx)) != -1) {
+		// Skip the occurrence itself.
+		idx += substring_length;
+		++c;
+	}
 	return c;
 }
 
@@ -4005,17 +3856,17 @@ float String::similarity(const String &p_string) const {
 		return 0.0f;
 	}
 
-	Vector<String> src_bigrams = bigrams();
-	Vector<String> tgt_bigrams = p_string.bigrams();
+	const int src_size = length() - 1;
+	const int tgt_size = p_string.length() - 1;
 
-	int src_size = src_bigrams.size();
-	int tgt_size = tgt_bigrams.size();
-
-	int sum = src_size + tgt_size;
+	const int sum = src_size + tgt_size;
 	int inter = 0;
 	for (int i = 0; i < src_size; i++) {
+		const char32_t i0 = get(i);
+		const char32_t i1 = get(i + 1);
+
 		for (int j = 0; j < tgt_size; j++) {
-			if (src_bigrams[i] == tgt_bigrams[j]) {
+			if (i0 == p_string.get(j) && i1 == p_string.get(j + 1)) {
 				inter++;
 				break;
 			}
@@ -4081,7 +3932,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
-				if (placeholder.contains("_")) {
+				if (placeholder.contains_char('_')) {
 					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 				} else {
 					new_string = new_string.replace_first(placeholder, val);
@@ -4608,7 +4459,7 @@ String String::simplify_path() const {
 			dirs.remove_at(i);
 			i--;
 		} else if (d == "..") {
-			if (i != 0) {
+			if (i != 0 && dirs[i - 1] != "..") {
 				dirs.remove_at(i);
 				dirs.remove_at(i - 1);
 				i -= 2;

@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
@@ -1951,30 +1952,38 @@ void EditorFileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (flow_checkbox_options->get_child_count() > 0) {
+		Node *child = flow_checkbox_options->get_child(0);
+		flow_checkbox_options->remove_child(child);
 		child->queue_free();
 	}
+	while (grid_select_options->get_child_count() > 0) {
+		Node *child = grid_select_options->get_child(0);
+		grid_select_options->remove_child(child);
+		child->queue_free();
+	}
+
 	selected_options.clear();
 
 	for (const EditorFileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			cb->set_text(opt.name);
+			flow_checkbox_options->add_child(cb);
 			cb->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			grid_select_options->add_child(lbl);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			grid_select_options->add_child(ob);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -2266,11 +2275,13 @@ void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
 void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
 	if (p_native_dlg) {
 		pathhb->set_visible(false);
-		grid_options->set_visible(false);
+		flow_checkbox_options->set_visible(false);
+		grid_select_options->set_visible(false);
 		list_hb->set_visible(false);
 	} else {
 		pathhb->set_visible(true);
-		grid_options->set_visible(true);
+		flow_checkbox_options->set_visible(true);
+		grid_select_options->set_visible(true);
 		list_hb->set_visible(true);
 	}
 }
@@ -2309,13 +2320,13 @@ EditorFileDialog::EditorFileDialog() {
 	vbc->add_child(pathhb);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_theme_type_variation("FlatButton");
+	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_prev->set_tooltip_text(TTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_theme_type_variation("FlatButton");
+	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(TTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_theme_type_variation("FlatButton");
+	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
@@ -2338,13 +2349,13 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir);
 
 	refresh = memnew(Button);
-	refresh->set_theme_type_variation("FlatButton");
+	refresh->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh->set_tooltip_text(TTR("Refresh files."));
 	refresh->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
-	favorite->set_theme_type_variation("FlatButton");
+	favorite->set_theme_type_variation(SceneStringName(FlatButton));
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite current folder."));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_pressed));
@@ -2361,7 +2372,7 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(makedir_sep);
 
 	makedir = memnew(Button);
-	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_theme_type_variation(SceneStringName(FlatButton));
 	makedir->set_tooltip_text(TTR("Create a new folder."));
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
@@ -2372,10 +2383,15 @@ EditorFileDialog::EditorFileDialog() {
 	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(body_hsplit);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbc->add_child(grid_options);
+	flow_checkbox_options = memnew(HFlowContainer);
+	flow_checkbox_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	flow_checkbox_options->set_alignment(FlowContainer::ALIGNMENT_CENTER);
+	vbc->add_child(flow_checkbox_options);
+
+	grid_select_options = memnew(GridContainer);
+	grid_select_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	grid_select_options->set_columns(2);
+	vbc->add_child(grid_select_options);
 
 	list_hb = memnew(HSplitContainer);
 	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2397,11 +2413,11 @@ EditorFileDialog::EditorFileDialog() {
 
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
-	fav_up->set_theme_type_variation("FlatButton");
+	fav_up->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_up);
 	fav_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
-	fav_down->set_theme_type_variation("FlatButton");
+	fav_down->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_down);
 	fav_down->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
@@ -2444,7 +2460,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(l);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_theme_type_variation("FlatButton");
+	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
@@ -2457,7 +2473,7 @@ EditorFileDialog::EditorFileDialog() {
 	view_mode_group.instantiate();
 
 	mode_thumbnails = memnew(Button);
-	mode_thumbnails->set_theme_type_variation("FlatButton");
+	mode_thumbnails->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_thumbnails->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
@@ -2466,7 +2482,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(mode_thumbnails);
 
 	mode_list = memnew(Button);
-	mode_list->set_theme_type_variation("FlatButton");
+	mode_list->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_list->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
@@ -2482,7 +2498,7 @@ EditorFileDialog::EditorFileDialog() {
 	file_sort_button->set_tooltip_text(TTR("Sort files"));
 
 	show_search_filter_button = memnew(Button);
-	show_search_filter_button->set_theme_type_variation("FlatButton");
+	show_search_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_search_filter_button->set_toggle_mode(true);
 	show_search_filter_button->set_pressed(false);
 	show_search_filter_button->set_tooltip_text(TTR("Toggle the visibility of the filter for file names."));

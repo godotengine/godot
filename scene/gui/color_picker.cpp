@@ -33,16 +33,20 @@
 #include "core/io/image.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/color_palette.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
@@ -88,6 +92,7 @@ void ColorPicker::_notification(int p_what) {
 			_update_drop_down_arrow(btn_preset->is_pressed(), btn_preset);
 			_update_drop_down_arrow(btn_recent_preset->is_pressed(), btn_recent_preset);
 			btn_add_preset->set_button_icon(theme_cache.add_preset);
+			menu_btn->set_button_icon(theme_cache.menu_option);
 
 			btn_pick->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 			btn_shape->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
@@ -110,7 +115,7 @@ void ColorPicker::_notification(int p_what) {
 				mode_btns[i]->begin_bulk_theme_override();
 				mode_btns[i]->add_theme_style_override(SceneStringName(pressed), theme_cache.mode_button_pressed);
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
-				mode_btns[i]->add_theme_style_override(SNAME("hover"), theme_cache.mode_button_hover);
+				mode_btns[i]->add_theme_style_override(SceneStringName(hover), theme_cache.mode_button_hover);
 				mode_btns[i]->end_bulk_theme_override();
 			}
 
@@ -152,7 +157,19 @@ void ColorPicker::_notification(int p_what) {
 			if (!is_picking_color) {
 				return;
 			}
-			set_pick_color(DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position()));
+			DisplayServer *ds = DisplayServer::get_singleton();
+			Vector2 ofs = ds->mouse_get_position();
+			picker_window->set_position(ofs - Vector2(28, 28));
+
+			Color c = DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position());
+
+			picker_preview_style_box_color->set_bg_color(c);
+			picker_preview_style_box->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+
+			Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+			picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_preview_img));
+
+			set_pick_color(c);
 		}
 	}
 }
@@ -496,6 +513,15 @@ void ColorPicker::set_editor_settings(Object *p_editor_settings) {
 	_update_presets();
 	_update_recent_presets();
 }
+
+void ColorPicker::set_quick_open_callback(const Callable &p_file_selected) {
+	quick_open_callback = p_file_selected;
+}
+
+void ColorPicker::set_palette_saved_callback(const Callable &p_palette_saved) {
+	palette_saved_callback = p_palette_saved;
+}
+
 #endif
 
 HSlider *ColorPicker::get_slider(int p_idx) {
@@ -673,16 +699,34 @@ void ColorPicker::_update_presets() {
 
 #ifdef TOOLS_ENABLED
 	if (editor_settings) {
-		// Rebuild swatch color buttons, keeping the add-preset button in the first position.
-		for (int i = 1; i < preset_container->get_child_count(); i++) {
-			preset_container->get_child(i)->queue_free();
+		String cached_name = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_name", String());
+		palette_path = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_path", String());
+		bool palette_edited = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "palette_edited", false);
+		if (!cached_name.is_empty()) {
+			palette_name->set_text(cached_name);
+			if (btn_preset->is_pressed() && !presets.is_empty()) {
+				palette_name->show();
+			}
+
+			if (palette_edited) {
+				palette_name->set_text(vformat("%s*", palette_name->get_text().replace("*", "")));
+				palette_name->set_tooltip_text(ETR("The changes to this palette have not been saved to a file."));
+			}
 		}
-		for (const Color &preset : preset_cache) {
-			_add_preset_button(preset_size, preset);
-		}
-		_notification(NOTIFICATION_VISIBILITY_CHANGED);
 	}
 #endif
+
+	// Rebuild swatch color buttons, keeping the add-preset button in the first position.
+	for (int i = 1; i < preset_container->get_child_count(); i++) {
+		preset_container->get_child(i)->queue_free();
+	}
+
+	presets = preset_cache;
+	for (const Color &preset : preset_cache) {
+		_add_preset_button(preset_size, preset);
+	}
+
+	_notification(NOTIFICATION_VISIBILITY_CHANGED);
 }
 
 void ColorPicker::_update_recent_presets() {
@@ -791,6 +835,107 @@ void ColorPicker::_add_recent_preset_button(int p_size, const Color &p_color) {
 	btn_preset_new->connect(SceneStringName(toggled), callable_mp(this, &ColorPicker::_recent_preset_pressed).bind(btn_preset_new));
 }
 
+void ColorPicker::_load_palette() {
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("ColorPalette", &extensions);
+
+	file_dialog->set_title(RTR("Load Color Palette"));
+	file_dialog->clear_filters();
+	for (const String &K : extensions) {
+		file_dialog->add_filter("*." + K);
+	}
+
+	file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
+	file_dialog->set_current_file("");
+	file_dialog->popup_centered_ratio();
+}
+
+void ColorPicker::_save_palette(bool p_is_save_as) {
+	if (!p_is_save_as && !palette_path.is_empty()) {
+		file_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);
+		_palette_file_selected(palette_path);
+		return;
+	} else {
+		List<String> extensions;
+		ResourceLoader::get_recognized_extensions_for_type("ColorPalette", &extensions);
+
+		file_dialog->set_title(RTR("Save Color Palette"));
+		file_dialog->clear_filters();
+		for (const String &K : extensions) {
+			file_dialog->add_filter("*." + K);
+		}
+
+		file_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);
+		file_dialog->set_current_file("new_palette.tres");
+		file_dialog->popup_centered_ratio();
+	}
+}
+
+void ColorPicker::_quick_open_palette_file_selected(const String &p_path) {
+	if (!file_dialog) {
+		file_dialog = memnew(FileDialog);
+		add_child(file_dialog, false, INTERNAL_MODE_FRONT);
+		file_dialog->force_parent_owned();
+		file_dialog->connect("file_selected", callable_mp(this, &ColorPicker::_palette_file_selected));
+		file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+		file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
+	}
+	file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
+	_palette_file_selected(p_path);
+}
+
+void ColorPicker::_palette_file_selected(const String &p_path) {
+	switch (file_dialog->get_file_mode()) {
+		case FileDialog::FileMode::FILE_MODE_OPEN_FILE: {
+			Ref<ColorPalette> palette = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+			ERR_FAIL_COND_MSG(palette.is_null(), vformat("Cannot open color palette file for reading at: %s", p_path));
+			preset_cache.clear();
+			presets.clear();
+
+			PackedColorArray saved_presets = palette->get_colors();
+			for (const Color &saved_preset : saved_presets) {
+				preset_cache.push_back(saved_preset);
+				presets.push_back(saved_preset);
+			}
+
+#ifdef TOOLS_ENABLED
+			if (editor_settings) {
+				const StringName set_project_metadata = SNAME("set_project_metadata");
+				editor_settings->call(set_project_metadata, "color_picker", "presets", saved_presets);
+				editor_settings->call(set_project_metadata, "color_picker", "palette_edited", false);
+			}
+#endif
+		} break;
+		case FileDialog::FileMode::FILE_MODE_SAVE_FILE: {
+			ColorPalette *palette = memnew(ColorPalette);
+			palette->set_colors(get_presets());
+			Error error = ResourceSaver::save(palette, p_path);
+			ERR_FAIL_COND_MSG(error != Error::OK, vformat("Cannot open color palette file for writing at: %s", p_path));
+#ifdef TOOLS_ENABLED
+			if (palette_saved_callback.is_valid()) {
+				palette_saved_callback.call_deferred(p_path);
+			}
+#endif // TOOLS_ENABLED
+		} break;
+		default:
+			break;
+	}
+
+	palette_name->set_text(p_path.get_file().get_basename());
+	palette_name->set_tooltip_text("");
+	palette_name->show();
+	palette_path = p_path;
+	btn_preset->set_pressed(true);
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_name", palette_name->get_text());
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_path", palette_path);
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_edited", false);
+	}
+#endif
+	_update_presets();
+}
+
 void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_preset, Container *p_preset_container) {
 	if (p_is_btn_pressed) {
 		p_preset_container->show();
@@ -798,6 +943,11 @@ void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_
 		p_preset_container->hide();
 	}
 	_update_drop_down_arrow(p_is_btn_pressed, p_btn_preset);
+
+	palette_name->hide();
+	if (btn_preset->is_pressed() && !palette_name->get_text().is_empty()) {
+		palette_name->show();
+	}
 }
 
 void ColorPicker::_update_drop_down_arrow(const bool &p_is_btn_pressed, Button *p_btn_preset) {
@@ -874,10 +1024,17 @@ void ColorPicker::add_preset(const Color &p_color) {
 		_add_preset_button(_get_preset_size(), p_color);
 	}
 
+	if (!palette_name->get_text().is_empty()) {
+		palette_name->set_text(vformat("%s*", palette_name->get_text().trim_suffix("*")));
+		palette_name->set_tooltip_text(ETR("The changes to this palette have not been saved to a file."));
+	}
+
 #ifdef TOOLS_ENABLED
 	if (editor_settings) {
 		PackedColorArray arr_to_save = get_presets();
-		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "presets", arr_to_save);
+		const StringName set_project_metadata = SNAME("set_project_metadata");
+		editor_settings->call(set_project_metadata, "color_picker", "presets", arr_to_save);
+		editor_settings->call(set_project_metadata, "color_picker", "palette_edited", true);
 	}
 #endif
 }
@@ -918,10 +1075,22 @@ void ColorPicker::erase_preset(const Color &p_color) {
 			}
 		}
 
+		palette_name->set_text(vformat("%s*", palette_name->get_text().replace("*", "")));
+		palette_name->set_tooltip_text(ETR("The changes to this palette have not been saved to a file."));
+		if (presets.is_empty()) {
+			palette_name->set_text("");
+			palette_path = String();
+			palette_name->hide();
+		}
+
 #ifdef TOOLS_ENABLED
 		if (editor_settings) {
 			PackedColorArray arr_to_save = get_presets();
-			editor_settings->call(SNAME("set_project_metadata"), "color_picker", "presets", arr_to_save);
+			const StringName set_project_metadata = SNAME("set_project_metadata");
+			editor_settings->call(set_project_metadata, "color_picker", "presets", arr_to_save);
+			editor_settings->call(set_project_metadata, "color_picker", "palette_edited", true);
+			editor_settings->call(set_project_metadata, "color_picker", "palette_name", palette_name->get_text());
+			editor_settings->call(set_project_metadata, "color_picker", "palette_path", palette_path);
 		}
 #endif
 	}
@@ -1530,15 +1699,52 @@ void ColorPicker::_add_preset_pressed() {
 
 void ColorPicker::_pick_button_pressed() {
 	is_picking_color = true;
-	set_process_internal(true);
 
 	if (!picker_window) {
 		picker_window = memnew(Popup);
-		picker_window->set_size(Vector2i(1, 1));
+		picker_window->set_size(Vector2i(55, 72));
 		picker_window->connect(SceneStringName(visibility_changed), callable_mp(this, &ColorPicker::_pick_finished));
+		picker_window->connect(SceneStringName(window_input), callable_mp(this, &ColorPicker::_target_gui_input));
+
+		picker_window->set_flag(Window::FLAG_EXCLUDE_FROM_CAPTURE, true);
+
+		picker_preview = memnew(Panel);
+		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview->set_size(Vector2i(55, 72));
+		picker_window->add_child(picker_preview);
+
+		picker_preview_color = memnew(Panel);
+		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
+		picker_preview->add_child(picker_preview_color);
+
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+		picker_preview->add_child(picker_texture_zoom);
+
+		picker_preview_style_box.instantiate();
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+
+		picker_preview_style_box_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
+
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
 	}
+	set_process_internal(true);
+
 	picker_window->popup();
+}
+
+void ColorPicker::_target_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> mouse_event = p_event;
+	if (mouse_event.is_valid() && mouse_event->is_pressed()) {
+		picker_window->hide();
+		_pick_finished();
+	}
 }
 
 void ColorPicker::_pick_finished() {
@@ -1556,6 +1762,106 @@ void ColorPicker::_pick_finished() {
 	picker_window->hide();
 }
 
+void ColorPicker::_update_menu_items() {
+	if (!options_menu) {
+		options_menu = memnew(PopupMenu);
+		add_child(options_menu, false, INTERNAL_MODE_FRONT);
+		options_menu->force_parent_owned();
+		options_menu->connect("id_pressed", callable_mp(this, &ColorPicker::_options_menu_cbk));
+	}
+
+	options_menu->clear();
+	options_menu->reset_size();
+
+	if (!presets.is_empty()) {
+		options_menu->add_icon_item(get_theme_icon(SNAME("save"), SNAME("FileDialog")), RTR("Save"), static_cast<int>(MenuOption::MENU_SAVE));
+		options_menu->set_item_tooltip(-1, ETR("Save the current color palette to reuse later."));
+	}
+	if (!palette_path.is_empty()) {
+		options_menu->add_icon_item(get_theme_icon(SNAME("save"), SNAME("FileDialog")), RTR("Save As"), static_cast<int>(MenuOption::MENU_SAVE_AS));
+		options_menu->set_item_tooltip(-1, ETR("Save the current color palette as a new to reuse later."));
+	}
+	options_menu->add_icon_item(get_theme_icon(SNAME("load"), SNAME("FileDialog")), RTR("Load"), static_cast<int>(MenuOption::MENU_LOAD));
+	options_menu->set_item_tooltip(-1, ETR("Load existing color palette."));
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		options_menu->add_icon_item(get_theme_icon(SNAME("load"), SNAME("FileDialog")), RTR("Quick Load"), static_cast<int>(MenuOption::MENU_QUICKLOAD));
+		options_menu->set_item_tooltip(-1, ETR("Load existing color palette."));
+	}
+
+	if (!presets.is_empty()) {
+		options_menu->add_icon_item(get_theme_icon(SNAME("clear"), SNAME("FileDialog")), RTR("Clear"), static_cast<int>(MenuOption::MENU_CLEAR));
+		options_menu->set_item_tooltip(-1, ETR("Clear the currently loaded color palettes in the picker."));
+	}
+}
+
+void ColorPicker::_update_menu() {
+	_update_menu_items();
+	Rect2 gt = menu_btn->get_screen_rect();
+	menu_btn->reset_size();
+	int min_size = menu_btn->get_minimum_size().width;
+	Vector2 popup_pos = gt.get_end() - Vector2(min_size, 0);
+	options_menu->set_position(popup_pos);
+	options_menu->popup();
+}
+
+void ColorPicker::_options_menu_cbk(int p_which) {
+	if (!file_dialog) {
+		file_dialog = memnew(FileDialog);
+		add_child(file_dialog, false, INTERNAL_MODE_FRONT);
+		file_dialog->force_parent_owned();
+		file_dialog->connect("file_selected", callable_mp(this, &ColorPicker::_palette_file_selected));
+		file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+		file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
+	}
+
+	MenuOption option = static_cast<MenuOption>(p_which);
+	switch (option) {
+		case MenuOption::MENU_SAVE:
+			_save_palette(false);
+			break;
+		case MenuOption::MENU_SAVE_AS:
+			_save_palette(true);
+			break;
+		case MenuOption::MENU_LOAD:
+			_load_palette();
+			break;
+
+#ifdef TOOLS_ENABLED
+		case MenuOption::MENU_QUICKLOAD:
+			if (quick_open_callback.is_valid()) {
+				file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
+				quick_open_callback.call_deferred();
+			}
+			break;
+#endif // TOOLS_ENABLED
+		case MenuOption::MENU_CLEAR: {
+			PackedColorArray colors = get_presets();
+			for (Color c : colors) {
+				erase_preset(c);
+			}
+
+			palette_name->set_text("");
+			palette_name->set_tooltip_text("");
+			palette_path = String();
+			btn_preset->set_pressed(false);
+
+#ifdef TOOLS_ENABLED
+			if (editor_settings) {
+				editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_name", palette_name->get_text());
+				editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_path", palette_path);
+				editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_edited", false);
+			}
+#endif // TOOLS_ENABLED
+
+		}
+
+		break;
+		default:
+			break;
+	}
+}
+
 void ColorPicker::_pick_button_pressed_legacy() {
 	if (!is_inside_tree()) {
 		return;
@@ -1570,27 +1876,46 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
 		picker_texture_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		picker_texture_rect->set_default_cursor_shape(Control::CURSOR_CROSS);
 		picker_window->add_child(picker_texture_rect);
-		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
-		picker_preview_label = memnew(Label);
-		picker_preview_label->set_anchors_preset(Control::PRESET_CENTER_TOP);
-		picker_preview_label->set_text(ETR("Color Picking active"));
+		picker_preview = memnew(Panel);
+		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview->set_size(Vector2i(55, 72));
+		picker_window->add_child(picker_preview);
+
+		picker_preview_color = memnew(Panel);
+		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
+		picker_preview->add_child(picker_preview_color);
+
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+		picker_preview->add_child(picker_texture_zoom);
 
 		picker_preview_style_box.instantiate();
-		picker_preview_style_box->set_bg_color(Color(1.0, 1.0, 1.0));
-		picker_preview_style_box->set_content_margin_all(4.0);
-		picker_preview_label->add_theme_style_override(CoreStringName(normal), picker_preview_style_box);
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
 
-		picker_window->add_child(picker_preview_label);
+		picker_preview_style_box_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
 	}
 
 	Rect2i screen_rect;
 	if (picker_window->is_embedded()) {
+		Ref<ImageTexture> tx = ImageTexture::create_from_image(picker_window->get_embedder()->get_texture()->get_image());
 		screen_rect = picker_window->get_embedder()->get_visible_rect();
 		picker_window->set_position(Point2i());
-		picker_texture_rect->set_texture(ImageTexture::create_from_image(picker_window->get_embedder()->get_texture()->get_image()));
+		picker_texture_rect->set_texture(tx);
+
+		Ref<AtlasTexture> atlas;
+		atlas.instantiate();
+		atlas->set_atlas(tx);
+		picker_texture_zoom->set_texture(atlas);
 	} else {
 		screen_rect = picker_window->get_parent_rect();
 		picker_window->set_position(screen_rect.position);
@@ -1619,7 +1944,6 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	}
 
 	picker_window->set_size(screen_rect.size);
-	picker_preview_label->set_custom_minimum_size(screen_rect.size / 10); // 10% of size in each axis.
 	picker_window->popup();
 }
 
@@ -1640,9 +1964,17 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_position();
+			picker_preview->set_position(ofs - Vector2(28, 28));
+			Vector2 scale = picker_texture_rect->get_size() / img->get_size();
+			ofs /= scale;
 			picker_color = img->get_pixel(ofs.x, ofs.y);
-			picker_preview_style_box->set_bg_color(picker_color);
-			picker_preview_label->add_theme_color_override(SceneStringName(font_color), picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_style_box_color->set_bg_color(picker_color);
+			picker_preview_style_box->set_bg_color(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+
+			Ref<AtlasTexture> atlas = picker_texture_zoom->get_texture();
+			if (atlas.is_valid()) {
+				atlas->set_region(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+			}
 		}
 	}
 }
@@ -1805,6 +2137,7 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ColorPicker, center_slider_grabbers);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, menu_option);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, screen_picker);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, expanded_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, folded_arrow);
@@ -2004,13 +2337,34 @@ ColorPicker::ColorPicker() {
 
 	preset_group.instantiate();
 
-	btn_preset = memnew(Button(ETR("Swatches")));
+	HBoxContainer *palette_box = memnew(HBoxContainer);
+	palette_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	real_vbox->add_child(palette_box);
+
+	btn_preset = memnew(Button);
+	btn_preset->set_text("Swatches");
 	btn_preset->set_flat(true);
 	btn_preset->set_toggle_mode(true);
 	btn_preset->set_focus_mode(FOCUS_NONE);
 	btn_preset->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	btn_preset->connect(SceneStringName(toggled), callable_mp(this, &ColorPicker::_show_hide_preset).bind(btn_preset, preset_container));
-	real_vbox->add_child(btn_preset);
+	palette_box->add_child(btn_preset);
+
+	HBoxContainer *padding_box = memnew(HBoxContainer);
+	padding_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	palette_box->add_child(padding_box);
+
+	menu_btn = memnew(Button);
+	menu_btn->set_flat(true);
+	menu_btn->set_tooltip_text(ETR("Show all options available."));
+	menu_btn->set_focus_mode(FOCUS_NONE);
+	menu_btn->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_update_menu));
+	palette_box->add_child(menu_btn);
+
+	palette_name = memnew(Label);
+	palette_name->hide();
+	palette_name->set_mouse_filter(MOUSE_FILTER_PASS);
+	real_vbox->add_child(palette_name);
 
 	real_vbox->add_child(preset_container);
 

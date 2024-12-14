@@ -1592,7 +1592,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		tmp_app_path_name = p_path;
 		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
+		tmp_base_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name);
 		tmp_app_path_name = tmp_base_path_name.path_join(tmp_app_dir_name);
 		scr_path = tmp_base_path_name.path_join(pkg_name + ".command");
 	}
@@ -1987,9 +1987,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
-		String hlp_ent_path = sandbox ? EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + "_helper.entitlements") : ent_path;
+		String hlp_ent_path = sandbox ? EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name + "_helper.entitlements") : ent_path;
 		if (sign_enabled && (ent_path.is_empty())) {
-			ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".entitlements");
+			ent_path = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name + ".entitlements");
 
 			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
 			if (ent_f.is_valid()) {
@@ -2269,7 +2269,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		} else if (export_format == "app" && noto_enabled) {
 			// Create temporary ZIP.
 			if (err == OK) {
-				noto_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".zip");
+				noto_path = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name + ".zip");
 
 				if (ep.step(TTR("Making ZIP"), 3)) {
 					return ERR_SKIP;
@@ -2554,7 +2554,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 
 	EditorProgress ep("run", TTR("Running..."), 5);
 
-	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("macos");
+	const String dest = EditorPaths::get_singleton()->get_temp_dir().path_join("macos");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);

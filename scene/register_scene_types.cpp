@@ -37,6 +37,7 @@
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_mixer.h"
+#include "scene/animation/animation_node_extension.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -113,6 +114,7 @@
 #include "scene/resources/bone_map.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/camera_texture.h"
+#include "scene/resources/color_palette.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
@@ -513,6 +515,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeBlendSpace2D);
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
+	GDREGISTER_VIRTUAL_CLASS(AnimationNodeExtension);
 
 	GDREGISTER_INTERNAL_CLASS(AnimationNodeStartState);
 	GDREGISTER_INTERNAL_CLASS(AnimationNodeEndState);
@@ -969,6 +972,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FontFile);
 	GDREGISTER_CLASS(FontVariation);
 	GDREGISTER_CLASS(SystemFont);
+	GDREGISTER_CLASS(ColorPalette);
 
 	GDREGISTER_CLASS(Curve);
 

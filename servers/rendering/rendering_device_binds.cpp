@@ -36,7 +36,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	ERR_FAIL_NULL_V_MSG(
 			RenderingDevice::get_singleton(),
 			ERR_UNAVAILABLE,
-			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility backend.");
+			"Cannot import custom .glsl shaders when running without a RenderingDevice. This can happen if you are using the headless more or the Compatibility renderer.");
 
 	Vector<String> lines = p_text.split("\n");
 
@@ -106,11 +106,11 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		if (reading_versions) {
 			String l = line.strip_edges();
 			if (!l.is_empty()) {
-				if (!l.contains("=")) {
+				if (!l.contains_char('=')) {
 					base_error = "Missing `=` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
 				}
-				if (!l.contains(";")) {
+				if (!l.contains_char(';')) {
 					// We don't require a semicolon per se, but it's needed for clang-format to handle things properly.
 					base_error = "Missing `;` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
