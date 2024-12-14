@@ -2380,6 +2380,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	bool keep_color = false;
+	bool draw_canvas = false;
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
@@ -2421,7 +2422,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				draw_sky = !render_data.transparent_bg;
 			} break;
 			case RS::ENV_BG_CANVAS: {
-				keep_color = true;
+				draw_canvas = true;
 			} break;
 			case RS::ENV_BG_KEEP: {
 				keep_color = true;
@@ -2429,6 +2430,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			case RS::ENV_BG_CAMERA_FEED: {
 				camera_feed_id = environment_get_camera_feed_id(render_data.environment);
 				draw_feed = true;
+				keep_color = true;
 			} break;
 			default: {
 			}
@@ -2540,10 +2542,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (!keep_color && !draw_feed) {
+	// Need to clear framebuffer unless:
+	// a) We explicitly request not to (i.e. ENV_BG_KEEP).
+	// b) We are rendering to a non-intermediate framebuffer with ENV_BG_CANVAS (shared between 2D and 3D).
+	if (!keep_color && (!draw_canvas || fbo != rt->fbo)) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
-	} else if (fbo != rt->fbo) {
+	}
+	if ((keep_color || draw_canvas) && fbo != rt->fbo) {
 		// Need to copy our current contents to our intermediate/MSAA buffer
 		GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
 
