@@ -6,6 +6,7 @@
 #include "scene/3d/human_anim/human.h"
 #include "animation_help.h"
 #include "human_animation.h"
+#include "human_animation_new.h"
 
 
 // 动画遮罩
@@ -167,7 +168,7 @@ protected:
     HumanAnim::HumanSkeleton human_skeleton;
 
 
-    HashSet<ObjectID> animation_cache;
+    HashMap<ObjectID,Ref<HumanBonePostRotation>> animation_cache;
     LocalVector<AnimationMixer::AnimationInstance> animation_instances;
     ObjectID skeleton_id;
     Skeleton3D *skeleton = nullptr;

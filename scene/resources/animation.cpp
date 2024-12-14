@@ -4190,6 +4190,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_tag"), &Animation::set_animation_tag);
 	ClassDB::bind_method(D_METHOD("get_animation_tag"), &Animation::get_animation_tag);
 
+	ClassDB::bind_method(D_METHOD("set_human_config", "human_config"), &Animation::set_human_config);
+	ClassDB::bind_method(D_METHOD("get_human_config"), &Animation::get_human_config);
+
 	ClassDB::bind_method(D_METHOD("editor_get_animation_Group"), &Animation::editor_get_animation_Group);
 
 	ClassDB::bind_method(D_METHOD("editor_get_animation_tags"), &Animation::editor_get_animation_tags);
@@ -4211,10 +4214,11 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_human", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_is_human_animation", "get_is_human_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "human_bone_mask", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_human_bone_mask", "get_human_bone_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "capture_included", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "is_capture_included");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "preview_prefab_path", PROPERTY_HINT_DIR), "set_preview_prefab_path", "get_preview_prefab_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "show_name"), "set_show_name", "get_show_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_tag",PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_tags"), "set_animation_tag", "get_animation_tag");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation_group", PROPERTY_HINT_ENUM_DYNAMIC_LIST, "editor_get_animation_Group"), "set_animation_group", "get_animation_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "human_config", PROPERTY_HINT_RESOURCE_TYPE,MAKE_RESOURCE_TYPE_HINT("HumanBoneConfig")), "set_human_config", "get_human_config");
 
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_POSITION_3D);

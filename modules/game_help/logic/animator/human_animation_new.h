@@ -133,6 +133,21 @@ private:
         }
         
     }
+    void apply(Skeleton3D *p_skeleton,const HashMap<String, float>& bone_blend_weight,float p_weight) {
+        for(auto& it : post) {
+            int bone_index = p_skeleton->find_bone(it.key);
+            if(!it.value.is_set_animation_rotation) {
+                continue;
+            }
+            if (bone_index >= 0) {
+                float weight = 1.0f;
+                if(bone_blend_weight.has(it.key)) {
+                    weight = bone_blend_weight[it.key];
+                }
+                p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value.local_post_rotation,p_weight * weight));
+            }
+        }
+    }
 
     HashMap<StringName, HumanBonePoseOutput> post;
 	Vector<StringName> root_bone;

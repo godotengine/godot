@@ -150,7 +150,10 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
     if (animation_cache.has(p_anim->get_instance_id())) {
         return;
     }
-    animation_cache.insert(p_anim->get_instance_id());
+    Ref<HumanBonePostRotation> post_rotation = memnew(HumanBonePostRotation);
+    animation_cache.insert(p_anim->get_instance_id(),post_rotation);
+
+
     Ref<Animation> anim = p_anim;
     for (int i = 0; i < anim->get_track_count(); i++) {
         NodePath path = anim->track_get_path(i);

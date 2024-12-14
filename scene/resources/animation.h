@@ -388,6 +388,7 @@ public:
 	String preview_prefab_path;
 	// 显示的名称
 	String show_name;
+	Ref<Resource> human_config;
 
 	template <typename T>
 	void _clear(T &p_keys);
@@ -720,6 +721,13 @@ public:
 	}
 	StringName get_animation_tag() const {
 		return animation_tag;
+	}
+
+	void set_human_config(const Ref<Resource>& p_human_config) {
+		human_config = p_human_config;
+	}
+	Ref<Resource> get_human_config() const {
+		return human_config;
 	}
 
 	void clear();
