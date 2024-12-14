@@ -37,12 +37,15 @@ class JoltConcavePolygonShape3D final : public JoltShape3D {
 	AABB aabb;
 	PackedVector3Array faces;
 	bool back_face_collision = false;
+	JPH::ShapeRefC prebuilt_shape;
 
 	virtual JPH::ShapeRefC _build() const override;
 
 	AABB _calculate_aabb() const;
 
 public:
+	static JoltConcavePolygonShape3D *create_with_data(const Variant &p_data);
+
 	virtual ShapeType get_type() const override { return ShapeType::SHAPE_CONCAVE_POLYGON; }
 	virtual bool is_convex() const override { return false; }
 

@@ -119,6 +119,15 @@ bool ConcavePolygonShape3D::is_backface_collision_enabled() const {
 	return backface_collision;
 }
 
+// TODO Not sure if I can bring this to the level of the ConcavePolygonShape3D resource.
+// As soon as `_update_shape` gets called, this optimization goes out the window.
+// Initially I've done it here to simplify testing with my existing project, which uses the resource.
+// But if that's what it takes, I would have to move to server-level, or make my own resource.
+Ref<ConcavePolygonShape3D> ConcavePolygonShape3D::create_immediate_from_indexed_mesh(
+		const PackedVector3Array &vertices, const PackedInt32Array &indices, const Vector2i vertex_range, const Vector2i index_range, const bool backface_enabled) {
+	return memnew(ConcavePolygonShape3D(vertices, indices, vertex_range, index_range, backface_enabled));
+}
+
 void ConcavePolygonShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_faces", "faces"), &ConcavePolygonShape3D::set_faces);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ConcavePolygonShape3D::get_faces);
@@ -133,4 +142,14 @@ void ConcavePolygonShape3D::_bind_methods() {
 ConcavePolygonShape3D::ConcavePolygonShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON)) {
 	//set_planes(Vector3(1,1,1));
+}
+
+ConcavePolygonShape3D::ConcavePolygonShape3D(const PackedVector3Array &vertices, const PackedInt32Array &indices, const Vector2i vertex_range, const Vector2i index_range, const bool backface_enabled) :
+		Shape3D(PhysicsServer3D::get_singleton()->concave_polygon_shape_create_immediate(varray(vertices, indices, vertex_range, index_range, backface_enabled))) {
+	backface_collision = backface_enabled;
+	// TODO Not populating `faces`...
+	// because it requires deindexing the mesh, which I also had to do inside the server.
+	// These things add up, and are not even necessary unless the shape is modified afterwards, which pretty much never happens in the use case I build this optimization for.
+	// `faces` is an old Godot thing, so maybe the shape should primarily use an indexed mesh instead, taking a non-indexed one only for compat.
+	// Because at least it is less expensive to deindex a mesh (or make its indices optional), than it is to index it.
 }

@@ -73,7 +73,12 @@ void Shape3D::set_debug_color(const Color &p_color) {
 	}
 
 	debug_color = p_color;
-	_update_shape();
+
+	// Don't update the physics shape, this is for debugging only and should not affect physics.
+	// Only invalidate the debug mesh cache, and emit a changed signal afterwards
+	// (since listeners may want to call get_debug_mesh())
+	debug_mesh_cache.unref();
+	emit_changed();
 }
 
 Color Shape3D::get_debug_color() const {
@@ -86,7 +91,9 @@ void Shape3D::set_debug_fill(bool p_fill) {
 	}
 
 	debug_fill = p_fill;
-	_update_shape();
+
+	debug_mesh_cache.unref();
+	emit_changed();
 }
 
 bool Shape3D::get_debug_fill() const {
@@ -159,7 +166,10 @@ Ref<Material> Shape3D::get_debug_collision_material() {
 }
 
 void Shape3D::_update_shape() {
+	// Does nothing special by default, actual update is implemented in derived classes
 	emit_changed();
+	// TODO Why are we invalidating the mesh afterwards? Listeners may want to call get_debug_mesh,
+	// which will either pick the old version of this mesh, or will cause it to be recreated twice.
 	debug_mesh_cache.unref();
 }
 

@@ -86,6 +86,10 @@ public:
 	FUNCRID(heightmap_shape)
 	FUNCRID(custom_shape)
 
+	virtual RID concave_polygon_shape_create_immediate(Variant params) override {
+		return physics_server_3d->concave_polygon_shape_create_immediate(params);
+	}
+
 	FUNC2(shape_set_data, RID, const Variant &);
 	FUNC2(shape_set_custom_solver_bias, RID, real_t);
 

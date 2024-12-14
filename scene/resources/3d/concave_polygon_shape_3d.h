@@ -61,6 +61,8 @@ class ConcavePolygonShape3D : public Shape3D {
 		}
 	};
 
+	ConcavePolygonShape3D(const PackedVector3Array &vertices, const PackedInt32Array &indices, const Vector2i vertex_range, const Vector2i index_range, const bool backface_enabled);
+
 protected:
 	static void _bind_methods();
 
@@ -76,6 +78,9 @@ public:
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
+
+	static Ref<ConcavePolygonShape3D> create_immediate_from_indexed_mesh(
+			const PackedVector3Array &vertices, const PackedInt32Array &indices, const Vector2i vertex_range, const Vector2i index_range, const bool backface_enabled);
 
 	ConcavePolygonShape3D();
 };
