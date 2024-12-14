@@ -116,7 +116,7 @@ public:
 	static void clip_path(NavMeshPathQueryTask3D &p_query_task, const LocalVector<gd::NavigationPoly> &p_navigation_polys, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, const Vector3 &p_map_up);
 	static void _query_task_simplified_path_points(NavMeshPathQueryTask3D &p_query_task);
 
-	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<bool> &r_valid_points);
+	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);
 };
 
