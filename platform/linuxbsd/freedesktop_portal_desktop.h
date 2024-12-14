@@ -62,6 +62,17 @@ private:
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, const HashMap<String, String> &p_ids, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
 	static bool color_picker_parse_response(DBusMessageIter *p_iter, bool &r_cancel, Color &r_color);
 
+	struct AccessCameraData {
+		List<Callable> pending_cbs;
+		String filter;
+		String path;
+	};
+
+	List<Callable> pending_camera_cbs;
+
+	Mutex access_camera_mutex;
+	AccessCameraData access_camera_data;
+
 	struct ColorPickerData {
 		Callable callback;
 		String filter;
@@ -116,9 +127,15 @@ public:
 	~FreeDesktopPortalDesktop();
 
 	bool is_supported() { return !unsupported; }
+	bool is_camera_supported();
 	bool is_file_chooser_supported();
 	bool is_settings_supported();
 	bool is_screenshot_supported();
+
+	// org.freedesktop.portal.Camera methods.
+	bool access_camera(Callable &p_callback);
+	bool is_camera_present();
+	int open_pipewire_remote();
 
 	// org.freedesktop.portal.FileChooser methods.
 	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
