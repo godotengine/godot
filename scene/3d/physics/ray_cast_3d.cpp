@@ -85,7 +85,9 @@ Object *RayCast3D::get_collider() const {
 		return nullptr;
 	}
 
-	return ObjectDB::get_instance(against);
+	Object *object = ObjectDB::get_instance(against);
+
+	return Object::cast_to<CollisionObject3D>(object);
 }
 
 RID RayCast3D::get_collider_rid() const {
