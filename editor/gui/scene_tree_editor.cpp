@@ -231,6 +231,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()))) {
 			part_of_subscene = true;
 			//allow
+		} else if ((bool)p_node->get_meta("is_inherited", false)) {
+			part_of_subscene = true;
 		} else {
 			return;
 		}
