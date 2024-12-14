@@ -844,6 +844,7 @@
 			</description>
 		</method>
 		<method name="print" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				[codeblocks]
@@ -860,6 +861,7 @@
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
@@ -879,11 +881,13 @@
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				If verbose mode is enabled ([method OS.is_stdout_verbose] returning [code]true[/code]), converts one or more arguments of any type to string in the best way possible and prints them to the console.
 			</description>
 		</method>
 		<method name="printerr" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.
 				[codeblocks]
@@ -897,6 +901,7 @@
 			</description>
 		</method>
 		<method name="printraw" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
 				[b]Note:[/b] The OS terminal is [i]not[/i] the same as the editor's Output dock. The output sent to the OS terminal can be seen when running Godot from a terminal. On Windows, this requires using the [code]console.exe[/code] executable.
@@ -917,6 +922,7 @@
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
 				[codeblocks]
@@ -930,6 +936,7 @@
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
 				[codeblocks]
@@ -943,6 +950,7 @@
 			</description>
 		</method>
 		<method name="push_error" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
 				[codeblocks]
@@ -957,6 +965,7 @@
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
+			<return type="void" />
 			<description>
 				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
 				[codeblocks]
@@ -1075,6 +1084,7 @@
 			</description>
 		</method>
 		<method name="randomize">
+			<return type="void" />
 			<description>
 				Randomizes the seed (or the internal state) of the random number generator. The current implementation uses a number based on the device's time.
 				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
@@ -1151,6 +1161,7 @@
 			</description>
 		</method>
 		<method name="seed">
+			<return type="void" />
 			<param index="0" name="base" type="int" />
 			<description>
 				Sets the seed for the random number generator to [param base]. Setting the seed manually can ensure consistent, repeatable results for most random functions.

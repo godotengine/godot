@@ -157,10 +157,11 @@ private:
 	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
+	StringName doc_class_name;
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
+	void _add_doc(const DocData::ClassDoc &p_doc);
 	void _clear_doc();
-	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
 	GDScriptFunction *implicit_initializer = nullptr;
@@ -292,9 +293,8 @@ public:
 	virtual void update_exports() override;
 
 #ifdef TOOLS_ENABLED
-	virtual Vector<DocData::ClassDoc> get_documentation() const override {
-		return docs;
-	}
+	virtual StringName get_doc_class_name() const override { return doc_class_name; }
+	virtual Vector<DocData::ClassDoc> get_documentation() const override { return docs; }
 	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 

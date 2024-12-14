@@ -479,23 +479,25 @@ void GDScript::_update_exports_values(HashMap<StringName, Variant> &values, List
 	}
 }
 
-void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
-	if (_owner) { // Only the top-level class stores doc info
-		_owner->_add_doc(p_inner_class);
-	} else { // Remove old docs, add new
+void GDScript::_add_doc(const DocData::ClassDoc &p_doc) {
+	doc_class_name = p_doc.name;
+	if (_owner) { // Only the top-level class stores doc info.
+		_owner->_add_doc(p_doc);
+	} else { // Remove old docs, add new.
 		for (int i = 0; i < docs.size(); i++) {
-			if (docs[i].name == p_inner_class.name) {
+			if (docs[i].name == p_doc.name) {
 				docs.remove_at(i);
 				break;
 			}
 		}
-		docs.append(p_inner_class);
+		docs.append(p_doc);
 	}
 }
 
 void GDScript::_clear_doc() {
-	docs.clear();
+	doc_class_name = StringName();
 	doc = DocData::ClassDoc();
+	docs.clear();
 }
 
 String GDScript::get_class_icon_path() const {

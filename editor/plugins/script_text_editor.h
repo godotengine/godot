@@ -200,6 +200,8 @@ protected:
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
+	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
