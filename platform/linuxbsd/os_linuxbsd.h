@@ -125,6 +125,10 @@ public:
 
 	virtual bool is_sandboxed() const override;
 
+#ifdef DBUS_ENABLED
+	virtual bool request_permission(const String &p_name) override;
+#endif
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
