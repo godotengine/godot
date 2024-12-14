@@ -52,6 +52,15 @@
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 
+FreeDesktopPortalDesktop *FreeDesktopPortalDesktop::singleton = nullptr;
+
+FreeDesktopPortalDesktop *FreeDesktopPortalDesktop::get_singleton() {
+	if (singleton == nullptr) {
+		singleton = memnew(FreeDesktopPortalDesktop);
+	}
+	return singleton;
+}
+
 bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value) {
 	DBusMessageIter iter[3];
 

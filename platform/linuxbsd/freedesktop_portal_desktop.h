@@ -43,6 +43,11 @@ struct DBusMessageIter;
 
 class FreeDesktopPortalDesktop : public Object {
 private:
+	FreeDesktopPortalDesktop();
+	~FreeDesktopPortalDesktop();
+
+	static FreeDesktopPortalDesktop *singleton;
+
 	bool unsupported = false;
 
 	static bool try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value);
@@ -89,8 +94,7 @@ private:
 	static void _thread_monitor(void *p_ud);
 
 public:
-	FreeDesktopPortalDesktop();
-	~FreeDesktopPortalDesktop();
+	static FreeDesktopPortalDesktop *get_singleton();
 
 	bool is_supported() { return !unsupported; }
 

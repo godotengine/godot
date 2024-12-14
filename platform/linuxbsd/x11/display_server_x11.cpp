@@ -6864,7 +6864,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	screensaver = memnew(FreeDesktopScreenSaver);
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	portal_desktop = FreeDesktopPortalDesktop::get_singleton();
 #endif // DBUS_ENABLED
 
 	XSetErrorHandler(&default_window_error_handler);
@@ -6989,7 +6989,6 @@ DisplayServerX11::~DisplayServerX11() {
 
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
-	memdelete(portal_desktop);
 #endif
 }
 
