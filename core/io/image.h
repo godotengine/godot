@@ -70,7 +70,7 @@ public:
 		MAX_PIXELS = 268435456 // 16384 ^ 2
 	};
 
-	enum Format {
+	enum Format : int32_t {
 		FORMAT_L8, // Luminance
 		FORMAT_LA8, // Luminance-Alpha
 		FORMAT_R8,

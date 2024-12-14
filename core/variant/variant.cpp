@@ -1494,11 +1494,11 @@ Variant::operator int64_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return int64_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return int64_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return int64_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1512,11 +1512,11 @@ Variant::operator int32_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return int32_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return int32_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return int32_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1530,11 +1530,11 @@ Variant::operator int16_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return int16_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return int16_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return int16_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1548,11 +1548,11 @@ Variant::operator int8_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return int8_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return int8_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return int8_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1566,11 +1566,11 @@ Variant::operator uint64_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return uint64_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return uint64_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return uint64_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1584,11 +1584,11 @@ Variant::operator uint32_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return uint32_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return uint32_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return uint32_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1602,11 +1602,11 @@ Variant::operator uint16_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return uint16_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return uint16_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return uint16_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -1620,11 +1620,11 @@ Variant::operator uint8_t() const {
 		case BOOL:
 			return _data._bool ? 1 : 0;
 		case INT:
-			return _data._int;
+			return uint8_t(_data._int);
 		case FLOAT:
-			return _data._float;
+			return uint8_t(_data._float);
 		case STRING:
-			return operator String().to_int();
+			return uint8_t(operator String().to_int());
 		default: {
 			return 0;
 		}
@@ -2484,22 +2484,22 @@ Variant::Variant(int8_t p_int8) :
 
 Variant::Variant(uint64_t p_uint64) :
 		type(INT) {
-	_data._int = p_uint64;
+	_data._int = int64_t(p_uint64);
 }
 
 Variant::Variant(uint32_t p_uint32) :
 		type(INT) {
-	_data._int = p_uint32;
+	_data._int = int64_t(p_uint32);
 }
 
 Variant::Variant(uint16_t p_uint16) :
 		type(INT) {
-	_data._int = p_uint16;
+	_data._int = int64_t(p_uint16);
 }
 
 Variant::Variant(uint8_t p_uint8) :
 		type(INT) {
-	_data._int = p_uint8;
+	_data._int = int64_t(p_uint8);
 }
 
 Variant::Variant(float p_float) :
@@ -2514,7 +2514,7 @@ Variant::Variant(double p_double) :
 
 Variant::Variant(const ObjectID &p_id) :
 		type(INT) {
-	_data._int = p_id;
+	_data._int = int64_t(p_id);
 }
 
 Variant::Variant(const StringName &p_string) :

@@ -454,7 +454,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : snames) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(t->constant_map[F], hash);
+				hash = hash_murmur3_one_64(uint64_t(t->constant_map[F]), hash);
 			}
 		}
 

@@ -147,7 +147,7 @@ struct [[nodiscard]] Color {
 		// of the mantissa, rounding the truncated bits.
 		union {
 			float f;
-			int32_t i;
+			uint32_t i;
 		} R, G, B, E;
 
 		E.f = MaxChannel;
@@ -168,7 +168,7 @@ struct [[nodiscard]] Color {
 		// Combine the fields. RGB floats have unwanted data in the upper 9
 		// bits. Only red needs to mask them off because green and blue shift
 		// it out to the left.
-		return E.i | (B.i << 18) | (G.i << 9) | (R.i & 511);
+		return E.i | (B.i << 18U) | (G.i << 9U) | (R.i & 511U);
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {

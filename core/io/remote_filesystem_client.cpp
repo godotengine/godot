@@ -237,7 +237,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	tcp_client->poll();
 	ERR_FAIL_COND_V_MSG(tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED, ERR_CONNECTION_ERROR, "Remote filesystem server disconnected after sending header.");
 
-	uint32_t file_count = tcp_client->get_32();
+	uint32_t file_count = tcp_client->get_u32();
 
 	ERR_FAIL_COND_V_MSG(tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED, ERR_CONNECTION_ERROR, "Remote filesystem server disconnected while waiting for file list");
 

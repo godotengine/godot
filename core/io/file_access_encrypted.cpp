@@ -210,10 +210,16 @@ bool FileAccessEncrypted::eof_reached() const {
 }
 
 uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
+	if (!p_length) {
+		return 0;
+	}
+
+	ERR_FAIL_NULL_V(p_dst, -1);
+
 	uint64_t to_copy = MIN(p_length, get_length() - pos);
+
 	memcpy(p_dst, data.ptr() + pos, to_copy);
 	pos += to_copy;
 
@@ -230,7 +236,12 @@ Error FileAccessEncrypted::get_error() const {
 
 bool FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_V_MSG(!writing, false, "File has not been opened in write mode.");
-	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+
+	if (!p_length) {
+		return true;
+	}
+
+	ERR_FAIL_NULL_V(p_src, false);
 
 	if (pos + p_length >= get_length()) {
 		ERR_FAIL_COND_V(data.resize(pos + p_length) != OK, false);
@@ -238,6 +249,7 @@ bool FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) 
 
 	memcpy(data.ptrw() + pos, p_src, p_length);
 	pos += p_length;
+
 	return true;
 }
 

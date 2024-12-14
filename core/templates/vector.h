@@ -156,8 +156,11 @@ public:
 		if (is_empty()) {
 			return ret;
 		}
-		ret.resize(size() * sizeof(T));
-		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
+		size_t alloc_size = size() * sizeof(T);
+		ret.resize(alloc_size);
+		if (alloc_size) {
+			memcpy(ret.ptrw(), ptr(), alloc_size);
+		}
 		return ret;
 	}
 

@@ -297,7 +297,9 @@ public:
 		Vector<T> ret;
 		ret.resize(size());
 		T *w = ret.ptrw();
-		memcpy(w, data, sizeof(T) * count);
+		if (w) {
+			memcpy(w, data, sizeof(T) * count);
+		}
 		return ret;
 	}
 
@@ -305,7 +307,9 @@ public:
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
 		uint8_t *w = ret.ptrw();
-		memcpy(w, data, sizeof(T) * count);
+		if (w) {
+			memcpy(w, data, sizeof(T) * count);
+		}
 		return ret;
 	}
 
