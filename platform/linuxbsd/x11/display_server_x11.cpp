@@ -4857,14 +4857,7 @@ void DisplayServerX11::process_events() {
 
 					WindowID window_id_other = INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
-					if (wd.focused) {
-						// Handle cases where an unfocused popup is open that needs to receive button-up events.
-						WindowID popup_id = _get_focused_window_or_popup();
-						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
-							window_id_other = popup_id;
-							wd_other_x11_window = windows[popup_id].x11_window;
-						}
-					} else {
+					if (!wd.focused) {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
