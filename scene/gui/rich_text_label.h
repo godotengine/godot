@@ -772,6 +772,7 @@ public:
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
+	Vector2i get_line_range(int p_line);
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
