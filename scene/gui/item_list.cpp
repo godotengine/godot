@@ -1087,12 +1087,6 @@ void ItemList::_notification(int p_what) {
 			}
 			bool rtl = is_layout_rtl();
 
-			if (has_focus()) {
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
-			}
-
 			// Ensure_selected_visible needs to be checked before we draw the list.
 			if (ensure_selected_visible && current >= 0 && current < items.size()) {
 				Rect2 r = items[current].rect_cache;
@@ -1381,6 +1375,7 @@ void ItemList::_notification(int p_what) {
 					cursor_rcache = rcache;
 				}
 			}
+
 			if (cursor_rcache.size != Size2()) { // Draw cursor last, so border isn't cut off.
 				cursor_rcache.position += base_ofs;
 
@@ -1389,6 +1384,12 @@ void ItemList::_notification(int p_what) {
 				}
 
 				draw_style_box(cursor, cursor_rcache);
+			}
+
+			if (has_focus()) {
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 		} break;
 	}
