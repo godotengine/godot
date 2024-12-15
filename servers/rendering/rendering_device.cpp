@@ -1350,7 +1350,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			"Required size for texture update (" + itos(required_size) + ") does not match data supplied size (" + itos(p_data.size()) + ").");
 
 	uint32_t block_w, block_h;
-	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
+	std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(texture->format);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
 	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
@@ -1500,7 +1500,7 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 	_check_transfer_worker_texture(texture);
 
 	uint32_t block_w, block_h;
-	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
+	std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(texture->format);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
 	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
@@ -1800,7 +1800,7 @@ Vector<uint8_t> RenderingDevice::_texture_get_data(Texture *tex, uint32_t p_laye
 	image_data.resize(tight_mip_size);
 
 	uint32_t blockw, blockh;
-	get_compressed_image_format_block_dimensions(tex->format, blockw, blockh);
+	std::tie(blockw, blockh) = get_compressed_image_format_block_dimensions(tex->format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(tex->format);
 	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 
@@ -1934,7 +1934,7 @@ Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_laye
 
 		uint32_t block_w = 0;
 		uint32_t block_h = 0;
-		get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
+		std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(tex->format);
 
 		Vector<uint8_t> buffer_data;
 		uint32_t tight_buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps);
@@ -2015,7 +2015,7 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	get_data_request.mipmaps = tex->mipmaps;
 
 	uint32_t block_w, block_h;
-	get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
+	std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(tex->format);
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex->format);
@@ -6460,7 +6460,7 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 				// Find the block size of the texture's format.
 				uint32_t block_w = 0;
 				uint32_t block_h = 0;
-				get_compressed_image_format_block_dimensions(request.format, block_w, block_h);
+				std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(request.format);
 
 				uint32_t block_size = get_compressed_image_format_block_byte_size(request.format);
 				uint32_t pixel_size = get_image_format_pixel_size(request.format);

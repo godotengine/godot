@@ -4757,7 +4757,7 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_info->format);
 	uint32_t block_w = 0, block_h = 0;
-	get_compressed_image_format_block_dimensions(tex_info->format, block_w, block_h);
+	std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(tex_info->format);
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		uint32_t region_pitch = (p_regions[i].texture_region_size.x * pixel_size * block_w) >> get_compressed_image_format_pixel_rshift(tex_info->format);
@@ -4825,7 +4825,7 @@ void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID 
 	}
 
 	uint32_t block_w = 0, block_h = 0;
-	get_compressed_image_format_block_dimensions(tex_info->format, block_w, block_h);
+	std::tie(block_w, block_h) = get_compressed_image_format_block_dimensions(tex_info->format);
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		if (!barrier_capabilities.enhanced_barriers_supported) {

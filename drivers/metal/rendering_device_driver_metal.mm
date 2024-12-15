@@ -546,7 +546,7 @@ void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture
 		sz = mipmapLevelSizeFromSize(sz, p_subresource.mipmap);
 
 		uint32_t bw = 0, bh = 0;
-		get_compressed_image_format_block_dimensions(format, bw, bh);
+		std::tie(bw, bh) = get_compressed_image_format_block_dimensions(format);
 		uint32_t sbw = 0, sbh = 0;
 		r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
 		r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);

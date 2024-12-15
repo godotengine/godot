@@ -525,7 +525,7 @@ uint32_t RenderingDeviceCommons::get_image_format_pixel_size(DataFormat p_format
 }
 
 // https://www.khronos.org/registry/DataFormat/specs/1.1/dataformat.1.1.pdf
-void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h) {
+std::tuple<uint32_t, uint32_t> RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFormat p_format) {
 	switch (p_format) {
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
@@ -554,10 +554,8 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK: // Again, not sure about astc.
-		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK: {
-			r_w = 4;
-			r_h = 4;
-		} break;
+		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
+			return { 4, 4 };
 		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
@@ -569,15 +567,11 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK: {
-			r_w = 4;
-			r_h = 4;
-		} break;
+		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+			return { 4, 4 };
 		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK: {
-			r_w = 8;
-			r_h = 8;
-		} break;
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+			return { 8, 8 };
 		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
@@ -590,13 +584,9 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
-			r_w = 4;
-			r_h = 4;
-			return;
-		default: {
-			r_w = 1;
-			r_h = 1;
-		}
+			return { 4, 4 };
+		default:
+			return { 1, 1 };
 	}
 }
 
@@ -713,7 +703,7 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(p_format);
 	uint32_t blockw = 0;
 	uint32_t blockh = 0;
-	get_compressed_image_format_block_dimensions(p_format, blockw, blockh);
+	std::tie(blockw, blockh) = get_compressed_image_format_block_dimensions(p_format);
 
 	for (uint32_t i = 0; i < p_mipmaps; i++) {
 		uint32_t bw = STEPIFY(w, blockw);

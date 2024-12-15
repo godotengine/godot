@@ -915,7 +915,7 @@ protected:
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
 
 	static uint32_t get_image_format_pixel_size(DataFormat p_format);
-	static void get_compressed_image_format_block_dimensions(DataFormat p_format, uint32_t &r_w, uint32_t &r_h);
+	static std::tuple<uint32_t, uint32_t> get_compressed_image_format_block_dimensions(DataFormat p_format);
 	uint32_t get_compressed_image_format_block_byte_size(DataFormat p_format) const;
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = nullptr, uint32_t *r_blockh = nullptr, uint32_t *r_depth = nullptr);
