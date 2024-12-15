@@ -1712,16 +1712,44 @@ void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 }
 
 void Input::remove_joy_mapping(const String &p_guid) {
+	int fallback_mapping_offset = 0; // Fix the fallback, if we invalidate its index.
+
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
+
+			if (i == fallback_mapping) {
+				fallback_mapping = -1;
+				WARN_PRINT_ONCE(vformat("Removed fallback joypad input mapping \"%s\". This could lead to joypads not working as intended.", p_guid));
+			} else if (i < fallback_mapping) {
+				fallback_mapping_offset--;
+			}
 		}
 	}
+
+	if (fallback_mapping_offset < 0) {
+		fallback_mapping += fallback_mapping_offset;
+	}
+
 	for (KeyValue<int, Joypad> &E : joy_names) {
 		Joypad &joy = E.value;
+		int mapping;
+
 		if (joy.uid == p_guid) {
-			_set_joypad_mapping(joy, -1);
+			mapping = -1;
+		} else if (joy.mapping == (fallback_mapping - fallback_mapping_offset)) {
+			// Fix the mapping for the joypad that uses an outdated fallback index.
+			mapping = fallback_mapping;
+		} else {
+			// Re-validate the joypad's correct mapping. Fix it if necessary.
+			mapping = fallback_mapping;
+			for (int i = 0; i < map_db.size(); i++) {
+				if (joy.uid == map_db[i].uid) {
+					mapping = i;
+				}
+			}
 		}
+		_set_joypad_mapping(joy, mapping);
 	}
 }
 
