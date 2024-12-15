@@ -8,7 +8,10 @@ class BeehaveListener : public RefCounted
 
     static void _bind_methods()
     {
-	    GDVIRTUAL_BIND(_process, "owenr_node", "blackboard");
+	    GDVIRTUAL_BIND(_start, "run_context");
+        GDVIRTUAL_BIND(_process, "run_context");
+        GDVIRTUAL_BIND(_stop, "run_context");
+
     }
 
 public:

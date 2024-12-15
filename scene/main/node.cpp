@@ -4229,7 +4229,7 @@ void Node::node_unhandled_key_input(const Ref<InputEvent> &p_key_event)const
 
 void NodeComponent::_bind_methods()
 {
-	GDVIRTUAL_BIND(_is_supper_class,"node","com_member");
+	GDVIRTUAL_BIND(_is_supper_class,"node");
 	GDVIRTUAL_BIND(_add_to_node,"node","com_member");
 	GDVIRTUAL_BIND(_remove_to_node,"node","com_member");
 	GDVIRTUAL_BIND(_node_process,"node","delta","com_member");

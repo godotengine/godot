@@ -563,14 +563,15 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         }
 
     }
-    if(post_rotation.is_null()) {
-        post_rotation->retarget();
-        Skeleton3D* t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id)); 
-        if(t_skeleton) {
-            post_rotation->apply(t_skeleton,bone_blend_weight,blend * blend_weight);
-            human_skeleton.apply_root_motion(root_motion.root_motion_position, root_motion.root_motion_rotation,root_motion.root_motion_position_add,root_motion.root_motion_rotation_add,blend * blend_weight);
-        }
-    }
+	if (post_rotation.is_valid()) {
+		post_rotation->retarget();
+		Skeleton3D* t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+		if (t_skeleton) {
+			post_rotation->apply(t_skeleton, bone_blend_weight, blend * blend_weight);
+			human_skeleton.apply_root_motion(root_motion.root_motion_position, root_motion.root_motion_rotation, root_motion.root_motion_position_add, root_motion.root_motion_rotation_add, blend * blend_weight);
+		}
+	}
+    
     if(is_human && human_config.ptr()) {
 		HumanAnim::HumanAnimmation::retarget(*human_config.ptr(), temp_anim_skeleton);
         human_skeleton.blend(temp_anim_skeleton, blend);

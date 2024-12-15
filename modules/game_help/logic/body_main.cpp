@@ -487,14 +487,6 @@ void CharacterBodyMain::_bind_methods()
 
 
 
-
-    ADD_SUBGROUP("animation_test", "animation_test");
-    
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_test_play_animation", PROPERTY_HINT_RESOURCE_TYPE, "Animation"), "set_play_animation", "get_play_animation");
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_test_play_animation_speed", PROPERTY_HINT_RANGE, "0,2,0.01", PROPERTY_USAGE_EDITOR), "set_play_animayion_speed", "get_play_animayion_speed");
-    ADD_MEMBER_BUTTON(animation_test_play_select_animation,L"播放动画",CharacterBodyMain);
-
-
     ADD_SUBGROUP("humanizer", "humanizer");
 
     ADD_MEMBER_BUTTON(humanizer_install_mkhm,L"安装mkhm包",CharacterBodyMain);

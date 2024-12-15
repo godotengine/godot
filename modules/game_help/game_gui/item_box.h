@@ -61,13 +61,24 @@ public:
 			h_count = 1;
 		}
         int v_move = get_v_scroll() * get_vertical_custom_step();
+        int max_show_v_count = rect.size.y / item_size.y + 1;
+
+        int start_x = abs(v_move) / item_size.y;
+        int end_x = start_x + max_show_v_count * h_count  * 2;
+
+        start_x -= max_show_v_count * h_count;
+        if(start_x < 0) {
+            start_x = 0;
+        }
+        if(end_x > items.size()) {
+            end_x = items.size();
+        }
         int i = 0;
-        for(auto it : items) {
+        for(i = start_x; i < end_x; i++) {
             // 一行第一個能顯示，剩餘的都能顯示
             child_rect.position.y = i / h_count * item_size.y + v_move;
             bool _visible = rect.intersects(child_rect);
-            item_visible_change_cb.call(it,_visible);
-            ++i;
+            item_visible_change_cb.call(items[i],_visible);
         }
         is_dirty = false;
     }
@@ -113,7 +124,7 @@ public:
     }
 protected:
     HFlowContainer *view_root = nullptr;
-    List<ItemBoxItem *> items;
+    LocalVector<ItemBoxItem *> items;
     Vector2 item_size = Vector2(400, 400);
     Callable item_visible_change_cb;
     bool is_dirty = false;

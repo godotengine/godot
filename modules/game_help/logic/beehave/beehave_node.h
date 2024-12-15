@@ -44,6 +44,16 @@ public:
 class BeehaveRuncontext : public RefCounted
 {
     GDCLASS(BeehaveRuncontext, RefCounted);
+    static void _bind_methods() {
+        ClassDB::bind_method(D_METHOD("get_property", "curr_this_node"), &BeehaveRuncontext::get_property);
+        ClassDB::bind_method(D_METHOD("set_run_state", "curr_this_node","state"), &BeehaveRuncontext::set_run_state);
+        ClassDB::bind_method(D_METHOD("get_run_state", "curr_this_node"), &BeehaveRuncontext::get_run_state);
+        ClassDB::bind_method(D_METHOD("set_init_status", "curr_this_node","state"), &BeehaveRuncontext::set_init_status);
+        ClassDB::bind_method(D_METHOD("get_init_status", "curr_this_node"), &BeehaveRuncontext::get_init_status);
+        ClassDB::bind_method(D_METHOD("init_child_state", "curr_this_node","child_count"), &BeehaveRuncontext::init_child_state);
+        ClassDB::bind_method(D_METHOD("get_blackboard"), &BeehaveRuncontext::get_blackboard);
+
+    }
 public:
 
 
@@ -79,6 +89,7 @@ public:
 		touch(curr_this_node);
 		currRunState->reset(child_count);
     }
+    Blackboard* get_blackboard() { return blackboard.ptr(); }
 	void reset()
 	{
 		properties.clear();
