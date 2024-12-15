@@ -31,8 +31,16 @@
 #ifndef NAV_LINK_H
 #define NAV_LINK_H
 
+#include "3d/nav_base_iteration_3d.h"
 #include "nav_base.h"
 #include "nav_utils.h"
+
+struct NavLinkIteration : NavBaseIteration {
+	bool bidirectional = true;
+	Vector3 start_position;
+	Vector3 end_position;
+	LocalVector<gd::Polygon> navmesh_polygons;
+};
 
 #include "core/templates/self_list.h"
 
@@ -78,6 +86,8 @@ public:
 	void sync();
 	void request_sync();
 	void cancel_sync_request();
+
+	void get_iteration_update(NavLinkIteration &r_iteration);
 };
 
 #endif // NAV_LINK_H

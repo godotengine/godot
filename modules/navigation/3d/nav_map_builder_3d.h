@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_region.h                                                          */
+/*  nav_map_builder_3d.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,86 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAV_MAP_BUILDER_3D_H
+#define NAV_MAP_BUILDER_3D_H
 
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "../nav_utils.h"
 
-#include "core/os/rw_lock.h"
-#include "scene/resources/navigation_mesh.h"
+struct NavMapIterationBuild;
 
-struct NavRegionIteration;
-
-class NavRegion : public NavBase {
-	RWLock region_rwlock;
-
-	NavMap *map = nullptr;
-	Transform3D transform;
-	bool enabled = true;
-
-	bool use_edge_connections = true;
-
-	bool polygons_dirty = true;
-
-	LocalVector<gd::Polygon> navmesh_polygons;
-
-	real_t surface_area = 0.0;
-	AABB bounds;
-
-	RWLock navmesh_rwlock;
-	Vector<Vector3> pending_navmesh_vertices;
-	Vector<Vector<int>> pending_navmesh_polygons;
-
-	SelfList<NavRegion> sync_dirty_request_list_element;
+class NavMapBuilder3D {
+	static void _build_step_gather_region_polygons(NavMapIterationBuild &r_build);
+	static void _build_step_find_edge_connection_pairs(NavMapIterationBuild &r_build);
+	static void _build_step_merge_edge_connection_pairs(NavMapIterationBuild &r_build);
+	static void _build_step_edge_connection_margin_connections(NavMapIterationBuild &r_build);
+	static void _build_step_navlink_connections(NavMapIterationBuild &r_build);
+	static void _build_update_map_iteration(NavMapIterationBuild &r_build);
 
 public:
-	NavRegion();
-	~NavRegion();
+	static gd::PointKey get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size);
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
-
-	void set_enabled(bool p_enabled);
-	bool get_enabled() const { return enabled; }
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_use_edge_connections(bool p_enabled);
-	bool get_use_edge_connections() const {
-		return use_edge_connections;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return navmesh_polygons;
-	}
-
-	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
-	gd::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
-	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
-
-	real_t get_surface_area() const { return surface_area; }
-	AABB get_bounds() const { return bounds; }
-
-	bool sync();
-	void request_sync();
-	void cancel_sync_request();
-
-	void get_iteration_update(NavRegionIteration &r_iteration);
-
-private:
-	void update_polygons();
+	static void build_navmap_iteration(NavMapIterationBuild &r_build);
 };
 
-#endif // NAV_REGION_H
+#endif // NAV_MAP_BUILDER_3D_H
