@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_interface.compat.inc                                           */
+/*  animation_node_extension.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,26 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_interface.h"
+#ifndef ANIMATION_NODE_EXTENSION_H
+#define ANIMATION_NODE_EXTENSION_H
 
-#ifndef DISABLE_DEPRECATED
+#include "scene/animation/animation_tree.h"
 
-void EditorInterface::_popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
-	popup_node_selector(p_callback, p_valid_types, nullptr);
-}
+class AnimationNodeExtension : public AnimationRootNode {
+	GDCLASS(AnimationNodeExtension, AnimationRootNode);
 
-void EditorInterface::_popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter) {
-	popup_property_selector(p_object, p_callback, p_type_filter, String());
-}
+public:
+	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
-void EditorInterface::_open_scene_from_path_bind_compat_90057(const String &scene_path) {
-	return open_scene_from_path(scene_path, false);
-}
+	static bool is_looping(const PackedFloat32Array &p_node_info);
+	static double get_remaining_time(const PackedFloat32Array &p_node_info, bool p_break_loop = false);
 
-void EditorInterface::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::_popup_node_selector_bind_compat_94323, DEFVAL(TypedArray<StringName>()));
-	ClassDB::bind_compatibility_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::_popup_property_selector_bind_compat_94323, DEFVAL(PackedInt32Array()));
-	ClassDB::bind_compatibility_method(D_METHOD("open_scene_from_path", "scene_path"), &EditorInterface::_open_scene_from_path_bind_compat_90057);
-}
+protected:
+	static void _bind_methods();
 
-#endif
+	GDVIRTUAL2R_REQUIRED(PackedFloat32Array, _process, PackedFloat64Array, bool);
+
+private:
+	static AnimationNode::NodeTimeInfo _array_to_node_time_info(const PackedFloat32Array &p_array);
+	static PackedFloat64Array _playback_info_to_array(const AnimationMixer::PlaybackInfo &p_playback_info);
+};
+
+#endif // ANIMATION_NODE_EXTENSION_H

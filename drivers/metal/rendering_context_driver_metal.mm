@@ -52,7 +52,7 @@ Error RenderingContextDriverMetal::initialize() {
 	}
 #endif
 	device.type = DEVICE_TYPE_INTEGRATED_GPU;
-	device.vendor = VENDOR_APPLE;
+	device.vendor = Vendor::VENDOR_APPLE;
 	device.workarounds = Workarounds();
 
 	MetalDeviceProperties props(metal_device);

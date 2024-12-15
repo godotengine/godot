@@ -138,7 +138,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t hash() const {
 			uint32_t h = hash_murmur3_one_32(variant);
 			h = hash_murmur3_one_32(framebuffer_format_id, h);
-			h = hash_murmur3_one_32(vertex_format_id, h);
+			h = hash_murmur3_one_64((uint64_t)vertex_format_id, h);
 			h = hash_murmur3_one_32(render_primitive, h);
 			h = hash_murmur3_one_32(shader_specialization.packed_0, h);
 			h = hash_murmur3_one_32(lcd_blend, h);

@@ -247,8 +247,9 @@
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
+			<param index="1" name="set_inherited" type="bool" default="false" />
 			<description>
-				Opens the scene at the given path.
+				Opens the scene at the given path. If [param set_inherited] is [code]true[/code], creates a new inherited scene.
 			</description>
 		</method>
 		<method name="play_current_scene">
