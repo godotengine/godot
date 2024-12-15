@@ -615,6 +615,7 @@ void TileAtlasView::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->set_viewport(get_viewport());
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

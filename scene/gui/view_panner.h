@@ -35,6 +35,7 @@
 
 class InputEvent;
 class Shortcut;
+class Viewport;
 
 class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
@@ -63,6 +64,8 @@ private:
 	bool enable_rmb = false;
 	bool simple_panning_enabled = false;
 
+	Viewport *viewport = nullptr;
+
 	Ref<Shortcut> pan_view_shortcut;
 
 	Callable pan_callback;
@@ -81,6 +84,7 @@ public:
 	void set_pan_axis(PanAxis p_pan_axis);
 
 	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
+	void set_viewport(Viewport *p_viewport);
 
 	bool is_panning() const;
 	void set_force_drag(bool p_force);

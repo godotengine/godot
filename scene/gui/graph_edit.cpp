@@ -791,6 +791,10 @@ void GraphEdit::_notification(int p_what) {
 			minimap->queue_redraw();
 			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			panner->set_viewport(get_viewport());
+		} break;
 	}
 }
 

@@ -942,6 +942,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_editor_settings();
+			graph->get_panner()->set_viewport(get_viewport());
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
