@@ -57,7 +57,7 @@ void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
-	config->save(file);
+	config->save(file, FileAccess::SAVE_INTEGRITY_NONE);
 }
 
 void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfolds) {
@@ -151,7 +151,7 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
-	config->save(file);
+	config->save(file, FileAccess::SAVE_INTEGRITY_NONE);
 }
 
 void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {

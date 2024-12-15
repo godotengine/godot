@@ -46,7 +46,7 @@ String FileAccessAndroid::get_path_absolute() const {
 	return absolute_path;
 }
 
-Error FileAccessAndroid::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessAndroid::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	_close();
 
 	path_src = p_path;

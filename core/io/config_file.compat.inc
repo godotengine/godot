@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_saver_tinyexr.h                                                 */
+/*  config_file.compat.inc                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_SAVER_TINYEXR_H
-#define IMAGE_SAVER_TINYEXR_H
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
+Error ConfigFile::_save_compat_100447(const String &p_path) {
+	return save(p_path);
+}
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level);
-Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale);
+void ConfigFile::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("save", "path"), &ConfigFile::_save_compat_100447);
+}
 
-#endif // IMAGE_SAVER_TINYEXR_H
+#endif

@@ -3084,7 +3084,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 }
 
-Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Ref<GDScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 
@@ -3092,7 +3092,7 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 
 	{
 		Error err;
-		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 

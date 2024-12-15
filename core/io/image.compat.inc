@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_saver_tinyexr.h                                                 */
+/*  image.compat.inc                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_SAVER_TINYEXR_H
-#define IMAGE_SAVER_TINYEXR_H
+#ifndef DISABLE_DEPRECATED
 
-#include "core/io/image.h"
+Error Image::_save_png_compat_100447(const String &p_path) const {
+	return save_png(p_path);
+}
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, FileAccess::SaveIntegrityLevel p_integrity_level);
-Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale);
+Error Image::_save_jpg_compat_100447(const String &p_path, float p_quality) const {
+	return save_jpg(p_path, p_quality);
+}
 
-#endif // IMAGE_SAVER_TINYEXR_H
+Error Image::_save_exr_compat_100447(const String &p_path, bool p_grayscale) const {
+	return save_exr(p_path, p_grayscale);
+}
+
+Error Image::_save_webp_compat_100447(const String &p_path, const bool p_lossy, const float p_quality) const {
+	return save_webp(p_path, p_lossy, p_quality);
+}
+
+void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("save_png", "path"), &Image::_save_png_compat_100447);
+	ClassDB::bind_compatibility_method(D_METHOD("save_jpg", "path", "quality"), &Image::_save_jpg_compat_100447, DEFVAL(0.75));
+	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_compat_100447, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("save_webp", "path", "lossy", "quality"), &Image::_save_webp_compat_100447, DEFVAL(false), DEFVAL(0.75f));
+}
+
+#endif

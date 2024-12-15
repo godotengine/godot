@@ -51,6 +51,12 @@ class ConfigFile : public RefCounted {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _save_compat_100447(const String &p_path);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
 	Variant get_value(const String &p_section, const String &p_key, const Variant &p_default = Variant()) const;
@@ -64,7 +70,7 @@ public:
 	void erase_section(const String &p_section);
 	void erase_section_key(const String &p_section, const String &p_key);
 
-	Error save(const String &p_path);
+	Error save(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level = FileAccess::SAVE_INTEGRITY_DEFAULT);
 	Error load(const String &p_path);
 	Error parse(const String &p_data);
 

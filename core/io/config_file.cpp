@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "config_file.h"
+#include "config_file.compat.inc"
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
@@ -153,9 +154,9 @@ String ConfigFile::encode_to_text() const {
 	return sb.as_string();
 }
 
-Error ConfigFile::save(const String &p_path) {
+Error ConfigFile::save(const String &p_path, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err, p_integrity_level);
 
 	if (err) {
 		return err;
@@ -334,7 +335,7 @@ void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
-	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+	ClassDB::bind_method(D_METHOD("save", "path", "integrity_level"), &ConfigFile::save, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 
 	ClassDB::bind_method(D_METHOD("encode_to_text"), &ConfigFile::encode_to_text);
 

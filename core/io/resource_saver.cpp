@@ -41,8 +41,10 @@ bool ResourceSaver::timestamp_on_save = false;
 ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
-Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	Error err = ERR_METHOD_NOT_FOUND;
+	// TODO: once there is a system to deal with backwards compatibility, we will finally be able to pass p_integrity_level (added in PR #100447).
+	// For now, it's not the end of the world if we just drop p_integrity_level when passing to GDScript.
 	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, err);
 	return err;
 }
@@ -97,7 +99,7 @@ void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
 }
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags, FileAccess::SaveIntegrityLevel p_integrity_level) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, vformat("Can't save empty resource to path '%s'.", p_path));
 	String path = p_path;
 	if (path.is_empty()) {
@@ -125,7 +127,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 			p_resource->set_path(local_path);
 		}
 
-		err = saver[i]->save(p_resource, path, p_flags);
+		err = saver[i]->save(p_resource, path, p_flags, p_integrity_level);
 
 		if (err == OK) {
 #ifdef TOOLS_ENABLED

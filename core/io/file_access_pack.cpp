@@ -333,7 +333,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 
 //////////////////////////////////////////////////////////////////
 
-Error FileAccessPack::open_internal(const String &p_path, int p_mode_flags) {
+Error FileAccessPack::open_internal(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	ERR_PRINT("Can't open pack-referenced file.");
 	return ERR_UNAVAILABLE;
 }

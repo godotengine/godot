@@ -44,7 +44,7 @@ FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
 
-bool FileAccess::backup_save = false;
+FileAccess::SaveIntegrityLevel FileAccess::default_save_integrity_level = FileAccess::SAVE_INTEGRITY_NONE;
 thread_local Error FileAccess::last_file_open_error = OK;
 
 Ref<FileAccess> FileAccess::create(AccessType p_access) {
@@ -118,7 +118,7 @@ Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix
 	{
 		// Create file first with WRITE mode.
 		// Otherwise, it would fail to open with a READ mode.
-		Ref<FileAccess> ret = FileAccess::open(path, FileAccess::ModeFlags::WRITE, &err);
+		Ref<FileAccess> ret = FileAccess::open(path, FileAccess::ModeFlags::WRITE, &err, SAVE_INTEGRITY_NONE);
 		if (err != OK) {
 			*r_error = err;
 			ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: could not create "%s".)", ERROR_COMMON_PREFIX, path));
@@ -158,11 +158,14 @@ void FileAccess::_delete_temp() {
 	DirAccess::remove_absolute(_temp_path);
 }
 
-Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
-	return open_internal(p_path, p_mode_flags);
+Error FileAccess::reopen(const String &p_path, int p_mode_flags, SaveIntegrityLevel p_integrity_level) {
+	if (p_integrity_level == SAVE_INTEGRITY_DEFAULT) {
+		p_integrity_level = default_save_integrity_level;
+	}
+	return open_internal(p_path, p_mode_flags, p_integrity_level);
 }
 
-Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
+Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error, SaveIntegrityLevel p_integrity_level) {
 	//try packed data first
 
 	Ref<FileAccess> ret;
@@ -176,8 +179,12 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 		}
 	}
 
+	if (p_integrity_level == SAVE_INTEGRITY_DEFAULT) {
+		p_integrity_level = default_save_integrity_level;
+	}
+
 	ret = create_for_path(p_path);
-	Error err = ret->open_internal(p_path, p_mode_flags);
+	Error err = ret->open_internal(p_path, p_mode_flags, p_integrity_level);
 
 	if (r_error) {
 		*r_error = err;
@@ -189,9 +196,9 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	return ret;
 }
 
-Ref<FileAccess> FileAccess::_open(const String &p_path, ModeFlags p_mode_flags) {
+Ref<FileAccess> FileAccess::_open(const String &p_path, ModeFlags p_mode_flags, SaveIntegrityLevel p_integrity_level) {
 	Error err = OK;
-	Ref<FileAccess> fa = open(p_path, p_mode_flags, &err);
+	Ref<FileAccess> fa = open(p_path, p_mode_flags, &err, p_integrity_level);
 	last_file_open_error = err;
 	if (err) {
 		return Ref<FileAccess>();
@@ -235,7 +242,7 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	Ref<FileAccessCompressed> fac;
 	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
-	Error err = fac->open_internal(p_path, p_mode_flags);
+	Error err = fac->open_internal(p_path, p_mode_flags, SAVE_INTEGRITY_NONE);
 	last_file_open_error = err;
 	if (err) {
 		return Ref<FileAccess>();
@@ -821,6 +828,12 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	return ret;
 }
 
+void FileAccess::set_default_save_integrity_level(SaveIntegrityLevel p_integrity_level) {
+	ERR_FAIL_COND_MSG(p_integrity_level == SAVE_INTEGRITY_DEFAULT, "SAVE_INTEGRITY_DEFAULT is not a valid input setting.");
+	ERR_FAIL_INDEX(p_integrity_level, SAVE_INTEGRITY_MAX);
+	default_save_integrity_level = p_integrity_level;
+}
+
 String FileAccess::get_md5(const String &p_file) {
 	Ref<FileAccess> f = FileAccess::open(p_file, READ);
 	if (f.is_null()) {
@@ -903,7 +916,7 @@ String FileAccess::get_sha256(const String &p_file) {
 }
 
 void FileAccess::_bind_methods() {
-	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags", "integrity_level"), &FileAccess::_open, DEFVAL(FileAccess::SAVE_INTEGRITY_DEFAULT));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key", "iv"), &FileAccess::open_encrypted, DEFVAL(Vector<uint8_t>()));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
@@ -984,6 +997,12 @@ void FileAccess::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_ZSTD);
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
 	BIND_ENUM_CONSTANT(COMPRESSION_BROTLI);
+
+	BIND_ENUM_CONSTANT(SAVE_INTEGRITY_DEFAULT);
+	BIND_ENUM_CONSTANT(SAVE_INTEGRITY_NONE);
+	BIND_ENUM_CONSTANT(SAVE_INTEGRITY_SAVE_SWAP);
+	BIND_ENUM_CONSTANT(SAVE_INTEGRITY_SAVE_SWAP_PLUS_SYNC);
+	BIND_ENUM_CONSTANT(SAVE_INTEGRITY_MAX);
 
 	BIND_BITFIELD_FLAG(UNIX_READ_OWNER);
 	BIND_BITFIELD_FLAG(UNIX_WRITE_OWNER);

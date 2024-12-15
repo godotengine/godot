@@ -261,3 +261,15 @@ Validate extension JSON: Error: Field 'classes/PointLight2D/properties/texture':
 
 Property hints modified to disallow resource types that don't work. The types allowed are now more restricted, but this change only impacts the editor and not the actual exposed API. No adjustments should be necessary.
 Decal properties were previously changed from Texture to Texture2D in 4.2, so we need to silence those warnings too.
+
+
+GH-100447
+--------
+Validate extension JSON: Error: Field 'classes/ConfigFile/methods/save/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_exr/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_jpg/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_png/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_webp/arguments': size changed value in new API, from 3 to 4.
+
+These methods now added a new argument integrity_level. Compatibility method registered.

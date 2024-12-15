@@ -354,7 +354,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 		cache_base = temp_path.path_join("resthumb-" + cache_base);
 
 		post_process_preview(img);
-		img->save_png(cache_base + ".png");
+		img->save_png(cache_base + ".png", FileAccess::SAVE_INTEGRITY_NONE);
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
