@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+using ZiggyCreatures.Caching.Fusion;
 
 #nullable enable
 
@@ -18,6 +19,8 @@ namespace Godot
         internal godot_string_name.movable NativeValue;
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
+
+        private static readonly FusionCache _stringNameCache = new(new FusionCacheOptions());
 
         ~StringName()
         {
@@ -75,16 +78,17 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string to a <see cref="StringName"/>.
+        /// Converts a <see cref="string"/> to a <see cref="StringName"/>.<br/>
+        /// The resulting <see cref="StringName"/> is temporarily cached for future casts.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator StringName(string from) => new StringName(from);
+        public static implicit operator StringName(string from) => _stringNameCache.GetOrSet(from, _ => new StringName(from));
 
         /// <summary>
-        /// Converts a <see cref="StringName"/> to a string.
+        /// Converts a <see cref="StringName"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="from">The <see cref="StringName"/> to convert.</param>
-        [return: NotNullIfNotNull("from")]
+        [return: NotNullIfNotNull(nameof(from))]
         public static implicit operator string?(StringName? from) => from?.ToString();
 
         /// <summary>
