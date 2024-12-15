@@ -537,6 +537,12 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="get_temp_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] temporary data directory according to the operating system's standards.
+			</description>
+		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -623,10 +629,10 @@
 				print(OS.is_keycode_unicode(KEY_ESCAPE)) # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints false
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints false
+				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints False
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints False
 				[/csharp]
 				[/codeblocks]
 			</description>

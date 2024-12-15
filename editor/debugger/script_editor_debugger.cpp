@@ -1853,7 +1853,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		skip_breakpoints = memnew(Button);
-		skip_breakpoints->set_theme_type_variation("FlatButton");
+		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
@@ -1861,7 +1861,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		copy = memnew(Button);
-		copy->set_theme_type_variation("FlatButton");
+		copy->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
@@ -1869,14 +1869,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
-		step->set_theme_type_variation("FlatButton");
+		step->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
-		next->set_theme_type_variation("FlatButton");
+		next->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
@@ -1885,14 +1885,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
-		dobreak->set_theme_type_variation("FlatButton");
+		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
-		docontinue->set_theme_type_variation("FlatButton");
+		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
@@ -2079,10 +2079,10 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(Button);
-		vmem_refresh->set_theme_type_variation("FlatButton");
+		vmem_refresh->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_hb->add_child(vmem_refresh);
 		vmem_export = memnew(Button);
-		vmem_export->set_theme_type_variation("FlatButton");
+		vmem_export->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);

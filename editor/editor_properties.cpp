@@ -91,6 +91,10 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 		return;
 	}
 
+	// Set tooltip so that the full text is displayed in a tooltip if hovered.
+	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
+	text->set_tooltip_text(get_tooltip_string(text->get_text()));
+
 	if (string_name) {
 		emit_changed(get_edited_property(), StringName(p_string));
 	} else {
@@ -104,6 +108,7 @@ void EditorPropertyText::update_property() {
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
 		text->set_text(s);
+		text->set_tooltip_text(get_tooltip_string(s));
 		text->set_caret_column(caret);
 	}
 	text->set_editable(!is_read_only());
@@ -150,10 +155,14 @@ void EditorPropertyMultilineText::_set_read_only(bool p_read_only) {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
+	// Set tooltip so that the full text is displayed in a tooltip if hovered.
+	// This is useful when using a narrow inspector, as the text can be trimmed otherwise.
+	text->set_tooltip_text(get_tooltip_string(big_text->get_text()));
 	emit_changed(get_edited_property(), big_text->get_text(), "", true);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
+	text->set_tooltip_text(get_tooltip_string(text->get_text()));
 	emit_changed(get_edited_property(), text->get_text(), "", true);
 }
 
@@ -182,6 +191,7 @@ void EditorPropertyMultilineText::update_property() {
 	String t = get_edited_property_value();
 	if (text->get_text() != t) {
 		text->set_text(t);
+		text->set_tooltip_text(get_tooltip_string(t));
 		if (big_text && big_text->is_visible_in_tree()) {
 			big_text->set_text(t);
 		}
@@ -827,7 +837,7 @@ void EditorPropertyLayersGrid::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
-	} else if (new_name.contains("/") || new_name.contains("\\") || new_name.contains(":")) {
+	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		return;
 	}
@@ -2863,7 +2873,7 @@ void EditorPropertyNodePath::update_property() {
 	const Node *target_node = base_node->get_node(p);
 	ERR_FAIL_NULL(target_node);
 
-	if (String(target_node->get_name()).contains("@")) {
+	if (String(target_node->get_name()).contains_char('@')) {
 		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(p);
 		return;

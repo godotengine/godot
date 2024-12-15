@@ -1455,7 +1455,14 @@ void Viewport::_gui_show_tooltip() {
 
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
-	Control *base_tooltip = tooltip_owner ? tooltip_owner->make_custom_tooltip(gui.tooltip_text) : nullptr;
+	Control *base_tooltip = tooltip_owner->make_custom_tooltip(gui.tooltip_text);
+
+	// When the custom control is not visible, don't show any tooltip.
+	// This way, the custom tooltip from `ConnectionsDockTree` can create
+	// its own tooltip without conflicting with the default one, even an empty tooltip.
+	if (base_tooltip && !base_tooltip->is_visible()) {
+		return;
+	}
 
 	if (gui.tooltip_text.is_empty() && !base_tooltip) {
 		return; // Nothing to show.
@@ -1742,6 +1749,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::RIGHT) {
+				_perform_drop();
+				set_input_as_handled();
+				return;
+			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
@@ -1990,7 +2002,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
+				drag_preview->set_position(pos);
 			}
 
 			gui.drag_mouse_over = section_root->gui.target_control;
@@ -3893,6 +3906,16 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	return (canvas_cull_mask & (1 << p_layer));
 }
 
+#ifdef TOOLS_ENABLED
+bool Viewport::is_visible_subviewport() const {
+	if (!is_sub_viewport()) {
+		return true;
+	}
+	SubViewportContainer *container = Object::cast_to<SubViewportContainer>(get_parent());
+	return container && container->is_visible_in_tree();
+}
+#endif // TOOLS_ENABLED
+
 void Viewport::_update_audio_listener_2d() {
 	if (AudioServer::get_singleton()) {
 		AudioServer::get_singleton()->notify_listener_changed();
@@ -4526,7 +4549,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 	}
 }

@@ -145,6 +145,11 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 				return true; // Parent type is blacklisted.
 			}
 		}
+		for (const StringName &F : custom_type_blocklist) {
+			if (ClassDB::is_parent_class(p_type, F)) {
+				return true; // Parent type is excluded in custom type blocklist.
+			}
+		}
 	} else {
 		if (!ScriptServer::is_global_class(p_type)) {
 			return true;
@@ -154,8 +159,12 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		}
 
 		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
-		if (ClassDB::class_exists(native_type) && !ClassDB::can_instantiate(native_type)) {
-			return true;
+		if (ClassDB::class_exists(native_type)) {
+			if (!ClassDB::can_instantiate(native_type)) {
+				return true;
+			} else if (custom_type_blocklist.has(p_type) || custom_type_blocklist.has(native_type)) {
+				return true;
+			}
 		}
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
@@ -283,15 +292,27 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	bool is_abstract = false;
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
+		if (custom_type_suffixes.has(p_type)) {
+			String suffix = custom_type_suffixes.get(p_type);
+			if (!suffix.is_empty()) {
+				r_item->set_suffix(0, "(" + suffix + ")");
+			}
+		}
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
 		r_item->set_text(0, "\"" + p_type + "\"");
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
 		String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
-
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
+		String suffix = script_path.get_file();
+		if (scr.is_valid() && custom_type_suffixes.has(p_type)) {
+			suffix = custom_type_suffixes.get(p_type);
+		}
+		if (!suffix.is_empty()) {
+			r_item->set_suffix(0, "(" + suffix + ")");
+		}
+
 		ERR_FAIL_COND(!scr.is_valid());
 		is_abstract = scr->is_abstract();
 	} else {

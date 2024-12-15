@@ -325,7 +325,7 @@ bool AnimationNode::add_input(const String &p_name) {
 	// Root nodes can't add inputs.
 	ERR_FAIL_COND_V(Object::cast_to<AnimationRootNode>(this) != nullptr, false);
 	Input input;
-	ERR_FAIL_COND_V(p_name.contains(".") || p_name.contains("/"), false);
+	ERR_FAIL_COND_V(p_name.contains_char('.') || p_name.contains_char('/'), false);
 	input.name = p_name;
 	inputs.push_back(input);
 	emit_changed();
@@ -340,7 +340,7 @@ void AnimationNode::remove_input(int p_index) {
 
 bool AnimationNode::set_input_name(int p_input, const String &p_name) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), false);
-	ERR_FAIL_COND_V(p_name.contains(".") || p_name.contains("/"), false);
+	ERR_FAIL_COND_V(p_name.contains_char('.') || p_name.contains_char('/'), false);
 	inputs.write[p_input].name = p_name;
 	emit_changed();
 	return true;
@@ -417,6 +417,16 @@ void AnimationNode::set_deletable(bool p_closable) {
 
 bool AnimationNode::is_deletable() const {
 	return closable;
+}
+
+ObjectID AnimationNode::get_processing_animation_tree_instance_id() const {
+	ERR_FAIL_NULL_V(process_state, ObjectID());
+	return process_state->tree->get_instance_id();
+}
+
+bool AnimationNode::is_process_testing() const {
+	ERR_FAIL_NULL_V(process_state, false);
+	return process_state->is_testing;
 }
 
 bool AnimationNode::is_path_filtered(const NodePath &p_path) const {
@@ -543,6 +553,10 @@ void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_filter_enabled", "enable"), &AnimationNode::set_filter_enabled);
 	ClassDB::bind_method(D_METHOD("is_filter_enabled"), &AnimationNode::is_filter_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_processing_animation_tree_instance_id"), &AnimationNode::get_processing_animation_tree_instance_id);
+
+	ClassDB::bind_method(D_METHOD("is_process_testing"), &AnimationNode::is_process_testing);
 
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);

@@ -58,6 +58,27 @@
 			<param index="2" name="size_bytes" type="int" default="0" />
 			<description>
 				Returns a copy of the data of the specified [param buffer], optionally [param offset_bytes] and [param size_bytes] can be set to copy only a portion of the buffer.
+				[b]Note:[/b] This method will block the GPU from working until the data is retrieved. Refer to [method buffer_get_data_async] for an alternative that returns the data in more performant way.
+			</description>
+		</method>
+		<method name="buffer_get_data_async">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="offset_bytes" type="int" default="0" />
+			<param index="3" name="size_bytes" type="int" default="0" />
+			<description>
+				Asynchronous version of [method buffer_get_data]. RenderingDevice will call [param callback] in a certain amount of frames with the data the buffer had at the time of the request.
+				[b]Note:[/b] At the moment, the delay corresponds to the amount of frames specified by [member ProjectSettings.rendering/rendering_device/vsync/frame_queue_size].
+				[b]Note:[/b] Downloading large buffers can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
+				[codeblock]
+				func _buffer_get_data_callback(array):
+				    value = array.decode_u32(0)
+
+				...
+
+				rd.buffer_get_data_async(buffer, _buffer_get_data_callback)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="buffer_update">
@@ -928,6 +949,26 @@
 				Returns the [param texture] data for the specified [param layer] as raw binary data. For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
 				[b]Note:[/b] [param texture] can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to retrieve this texture. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
+				[b]Note:[/b] This method will block the GPU from working until the data is retrieved. Refer to [method texture_get_data_async] for an alternative that returns the data in more performant way.
+			</description>
+		</method>
+		<method name="texture_get_data_async">
+			<return type="int" enum="Error" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Asynchronous version of [method texture_get_data]. RenderingDevice will call [param callback] in a certain amount of frames with the data the texture had at the time of the request.
+				[b]Note:[/b] At the moment, the delay corresponds to the amount of frames specified by [member ProjectSettings.rendering/rendering_device/vsync/frame_queue_size].
+				[b]Note:[/b] Downloading large textures can have a prohibitive cost for real-time even when using the asynchronous method due to hardware bandwidth limitations. When dealing with large resources, you can adjust settings such as [member ProjectSettings.rendering/rendering_device/staging_buffer/texture_download_region_size_px] and [member ProjectSettings.rendering/rendering_device/staging_buffer/block_size_kb] to improve the transfer speed at the cost of extra memory.
+				[codeblock]
+				func _texture_get_data_callback(array):
+				    value = array.decode_u32(0)
+
+				...
+
+				rd.texture_get_data_async(texture, 0, _texture_get_data_callback)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="texture_get_format">

@@ -504,7 +504,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	String selected_name = animation->get_item_text(selected);
 
 	// Remove library prefix if present.
-	if (selected_name.contains("/")) {
+	if (selected_name.contains_char('/')) {
 		selected_name = selected_name.get_slice("/", 1);
 	}
 
@@ -537,7 +537,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	ERR_FAIL_COND(al.is_null());
 
 	// For names of form lib_name/anim_name, remove library name prefix.
-	if (current.contains("/")) {
+	if (current.contains_char('/')) {
 		current = current.get_slice("/", 1);
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -626,7 +626,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 			// Extract library prefix if present.
 			String new_library_prefix = "";
-			if (current.contains("/")) {
+			if (current.contains_char('/')) {
 				new_library_prefix = current.get_slice("/", 0) + "/";
 				current = current.get_slice("/", 1);
 			}
@@ -1340,7 +1340,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		break;
 	}
 
-	if (new_name.contains("/")) {
+	if (new_name.contains_char('/')) {
 		// Discard library prefix.
 		new_name = new_name.get_slice("/", 1);
 	}
@@ -2013,27 +2013,27 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(playback_container);
 
 	play_bw_from = memnew(Button);
-	play_bw_from->set_theme_type_variation("FlatButton");
+	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
 	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
-	play_bw->set_theme_type_variation("FlatButton");
+	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
 	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
 	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
-	stop->set_theme_type_variation("FlatButton");
+	stop->set_theme_type_variation(SceneStringName(FlatButton));
 	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
 	playback_container->add_child(stop);
 
 	play = memnew(Button);
-	play->set_theme_type_variation("FlatButton");
+	play->set_theme_type_variation(SceneStringName(FlatButton));
 	play->set_tooltip_text(TTR("Play Animation from Start"));
 	playback_container->add_child(play);
 
 	play_from = memnew(Button);
-	play_from->set_theme_type_variation("FlatButton");
+	play_from->set_theme_type_variation(SceneStringName(FlatButton));
 	play_from->set_tooltip_text(TTR("Play Animation"));
 	playback_container->add_child(play_from);
 
@@ -2084,7 +2084,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
-	autoplay->set_theme_type_variation("FlatButton");
+	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	hb->add_child(autoplay);
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
 
@@ -2096,7 +2096,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(memnew(VSeparator));
 
 	onion_toggle = memnew(Button);
-	onion_toggle->set_theme_type_variation("FlatButton");
+	onion_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
 	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
@@ -2126,7 +2126,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(memnew(VSeparator));
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);

@@ -560,7 +560,11 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--path <directory>", "Path to a project (<directory> must contain a \"project.godot\" file).\n");
 	print_help_option("-u, --upwards", "Scan folders upwards for project.godot file.\n");
 	print_help_option("--main-pack <file>", "Path to a pack (.pck) file to load.\n");
-	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\", \"safe\", \"separate\").\n");
+#ifdef DISABLE_DEPRECATED
+	print_help_option("--render-thread <mode>", "Render thread mode (\"safe\", \"separate\").\n");
+#else
+	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
+#endif
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n");
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n");
 
@@ -1003,7 +1007,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool skip_breakpoints = false;
 	String main_pack;
 	bool quiet_stdout = false;
-	int rtm = -1;
+	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
 
 	String remotefs;
 	String remotefs_pass;
@@ -1286,7 +1290,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String vm = N->get();
 
-				if (!vm.contains("x")) { // invalid parameter format
+				if (!vm.contains_char('x')) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
 							vm.utf8().get_data());
@@ -1329,7 +1333,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String vm = N->get();
 
-				if (!vm.contains(",")) { // invalid parameter format
+				if (!vm.contains_char(',')) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
 							vm.utf8().get_data());
@@ -1398,13 +1402,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (N) {
 				if (N->get() == "safe") {
-					rtm = OS::RENDER_THREAD_SAFE;
+					separate_thread_render = 0;
+#ifndef DISABLE_DEPRECATED
 				} else if (N->get() == "unsafe") {
-					rtm = OS::RENDER_THREAD_UNSAFE;
+					OS::get_singleton()->print("The --render-thread unsafe option is unsupported in Godot 4 and will be removed.\n");
+					separate_thread_render = 0;
+#endif
 				} else if (N->get() == "separate") {
-					rtm = OS::RENDER_SEPARATE_THREAD;
+					separate_thread_render = 1;
 				} else {
-					OS::get_singleton()->print("Unknown render thread mode, aborting.\nValid options are 'unsafe', 'safe' and 'separate'.\n");
+					OS::get_singleton()->print("Unknown render thread mode, aborting.\n");
+#ifdef DISABLE_DEPRECATED
+					OS::get_singleton()->print("Valid options are 'safe' and 'separate'.\n");
+#else
+					OS::get_singleton()->print("Valid options are 'unsafe', 'safe' and 'separate'.\n");
+#endif
 					goto error;
 				}
 
@@ -1820,7 +1832,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
 		int port;
-		if (remotefs.contains(":")) {
+		if (remotefs.contains_char(':')) {
 			port = remotefs.get_slicec(':', 1).to_int();
 			remotefs = remotefs.get_slicec(':', 0);
 		} else {
@@ -2502,20 +2514,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-	if (rtm == -1) {
-		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
+	if (separate_thread_render == -1) {
+		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
 	}
 
-	if (rtm >= 0 && rtm < 3) {
-		if (editor || project_manager) {
-			// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
-			rtm = OS::RENDER_THREAD_SAFE;
-		}
-#if !defined(THREADS_ENABLED)
-		rtm = OS::RENDER_THREAD_SAFE;
-#endif
-		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
+	if (editor || project_manager) {
+		// Editor and project manager cannot run with rendering in a separate thread (they will crash on startup).
+		separate_thread_render = 0;
 	}
+#if !defined(THREADS_ENABLED)
+	separate_thread_render = 0;
+#endif
+	OS::get_singleton()->_separate_thread_render = separate_thread_render;
 
 	/* Determine audio and video drivers */
 
@@ -2620,7 +2630,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
+	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
+
+	// OpenXR Binding modifier settings
+	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
+	GLOBAL_DEF_RST_BASIC("xr/openxr/binding_modifiers/dpad_binding", false);
 
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
@@ -3067,10 +3081,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 	}
 
-	if (OS::get_singleton()->_render_thread_mode == OS::RENDER_SEPARATE_THREAD) {
-		WARN_PRINT("The Multi-Threaded rendering thread model is experimental. Feel free to try it since it will eventually become a stable feature.\n"
+	if (OS::get_singleton()->_separate_thread_render) {
+		WARN_PRINT("The separate rendering thread feature is experimental. Feel free to try it since it will eventually become a stable feature.\n"
 				   "However, bear in mind that at the moment it can lead to project crashes or instability.\n"
-				   "So, unless you want to test the engine, use the Single-Safe option in the project settings instead.");
+				   "So, unless you want to test the engine, set the \"rendering/driver/threads/thread_model\" project setting to 'Safe'.");
 	}
 
 	/* Initialize Pen Tablet Driver */
@@ -3109,7 +3123,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Rendering");
 
-		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
+		rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->is_separate_thread_rendering_enabled()));
 
 		rendering_server->init();
 		//rendering_server->call_set_use_vsync(OS::get_singleton()->_use_vsync);
@@ -3265,7 +3279,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				// Dummy text driver cannot draw any text, making the editor unusable if selected.
 				continue;
 			}
-			if (!text_driver_options.is_empty() && !text_driver_options.contains(",")) {
+			if (!text_driver_options.is_empty() && !text_driver_options.contains_char(',')) {
 				// Not the first option; add a comma before it as a separator for the property hint.
 				text_driver_options += ",";
 			}
@@ -4431,15 +4445,20 @@ bool Main::iteration() {
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
-	if ((DisplayServer::get_singleton()->can_any_window_draw() || DisplayServer::get_singleton()->has_additional_outputs()) &&
-			RenderingServer::get_singleton()->is_render_loop_enabled()) {
+	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
+	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
+								 DisplayServer::get_singleton()->has_additional_outputs()) &&
+			RenderingServer::get_singleton()->is_render_loop_enabled();
+
+	if (wants_present || has_pending_resources_for_processing) {
+		wants_present |= force_redraw_requested;
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (RenderingServer::get_singleton()->has_changed()) {
-				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+				RenderingServer::get_singleton()->draw(wants_present, scaled_step); // flush visual commands
 				Engine::get_singleton()->increment_frames_drawn();
 			}
 		} else {
-			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+			RenderingServer::get_singleton()->draw(wants_present, scaled_step); // flush visual commands
 			Engine::get_singleton()->increment_frames_drawn();
 			force_redraw_requested = false;
 		}

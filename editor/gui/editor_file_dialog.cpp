@@ -42,9 +42,9 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
@@ -127,21 +127,27 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 		emit_signal(SNAME("files_selected"), files);
 	} else {
 		if (mode == FILE_MODE_SAVE_FILE) {
-			if (p_filter >= 0 && p_filter < filters.size()) {
+			if (p_filter != 0 && p_filter != filter->get_item_count() - 1) {
 				bool valid = false;
-				String flt = filters[p_filter].get_slice(";", 0);
-				int filter_slice_count = flt.get_slice_count(",");
-				for (int j = 0; j < filter_slice_count; j++) {
-					String str = (flt.get_slice(",", j).strip_edges());
-					if (f.matchn(str)) {
-						valid = true;
-						break;
-					}
+				int idx = p_filter;
+				if (filters.size() > 1) {
+					idx--;
 				}
+				if (idx >= 0 && idx < filters.size()) {
+					String flt = filters[idx].get_slice(";", 0);
+					int filter_slice_count = flt.get_slice_count(",");
+					for (int j = 0; j < filter_slice_count; j++) {
+						String str = (flt.get_slice(",", j).strip_edges());
+						if (f.match(str)) {
+							valid = true;
+							break;
+						}
+					}
 
-				if (!valid && filter_slice_count > 0) {
-					String str = (flt.get_slice(",", 0).strip_edges());
-					f += str.substr(1, str.length() - 1);
+					if (!valid && filter_slice_count > 0) {
+						String str = (flt.get_slice(",", 0).strip_edges());
+						f += str.substr(1, str.length() - 1);
+					}
 				}
 			}
 			emit_signal(SNAME("file_selected"), f);
@@ -185,6 +191,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.favorites_up = get_editor_theme_icon(SNAME("MoveUp"));
 	theme_cache.favorites_down = get_editor_theme_icon(SNAME("MoveDown"));
 	theme_cache.create_folder = get_editor_theme_icon(SNAME("FolderCreate"));
+	theme_cache.open_folder = get_editor_theme_icon(SNAME("FolderBrowse"));
 
 	theme_cache.filter_box = get_editor_theme_icon(SNAME("Search"));
 	theme_cache.file_sort_button = get_editor_theme_icon(SNAME("Sort"));
@@ -535,7 +542,7 @@ void EditorFileDialog::_action_pressed() {
 	String file_text = file->get_text();
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
-	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
+	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
 		_save_to_recent();
 		hide();
 		emit_signal(SNAME("file_selected"), f);
@@ -587,8 +594,8 @@ void EditorFileDialog::_action_pressed() {
 			}
 			if (idx >= 0 && idx < filters.size()) {
 				String flt = filters[idx].get_slice(";", 0);
-				int filterSliceCount = flt.get_slice_count(",");
-				for (int j = 0; j < filterSliceCount; j++) {
+				int filter_slice_count = flt.get_slice_count(",");
+				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slice(",", j).strip_edges());
 					if (f.matchn(str)) {
 						valid = true;
@@ -596,7 +603,7 @@ void EditorFileDialog::_action_pressed() {
 					}
 				}
 
-				if (!valid && filterSliceCount > 0) {
+				if (!valid && filter_slice_count > 0) {
 					String str = (flt.get_slice(",", 0).strip_edges());
 					f += str.substr(1, str.length() - 1);
 					_request_single_thumbnail(get_current_dir().path_join(f.get_file()));
@@ -787,6 +794,12 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 		item_menu->add_icon_item(theme_cache.filesystem, item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 #endif
+	if (single_item_selected) {
+		Dictionary item_meta = item_list->get_item_metadata(p_item);
+		if (item_meta["bundle"]) {
+			item_menu->add_icon_item(theme_cache.open_folder, TTR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
+		}
+	}
 
 	if (item_menu->get_item_count() > 0) {
 		item_menu->set_position(item_list->get_screen_position() + p_pos);
@@ -849,7 +862,7 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 		case ITEM_MENU_SHOW_IN_EXPLORER: {
 			String path;
 			int idx = item_list->get_current();
-			if (idx == -1 || item_list->get_selected_items().size() == 0) {
+			if (idx == -1 || !item_list->is_anything_selected()) {
 				// Folder background was clicked. Open this folder.
 				path = ProjectSettings::get_singleton()->globalize_path(dir_access->get_current_dir());
 			} else {
@@ -858,6 +871,20 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 				path = ProjectSettings::get_singleton()->globalize_path(item_meta["path"]);
 			}
 			OS::get_singleton()->shell_show_in_file_manager(path, true);
+		} break;
+
+		case ITEM_MENU_SHOW_BUNDLE_CONTENT: {
+			String path;
+			int idx = item_list->get_current();
+			if (idx == -1 || !item_list->is_anything_selected()) {
+				return;
+			}
+			Dictionary item_meta = item_list->get_item_metadata(idx);
+			dir_access->change_dir(item_meta["path"]);
+			callable_mp(this, &EditorFileDialog::update_file_list).call_deferred();
+			callable_mp(this, &EditorFileDialog::update_dir).call_deferred();
+
+			_push_history();
 		} break;
 	}
 }
@@ -1026,28 +1053,6 @@ void EditorFileDialog::update_file_list() {
 	}
 	sort_file_info_list(file_infos, file_sort);
 
-	while (!dirs.is_empty()) {
-		const String &dir_name = dirs.front()->get();
-
-		item_list->add_item(dir_name);
-
-		if (display_mode == DISPLAY_THUMBNAILS) {
-			item_list->set_item_icon(-1, folder_thumbnail);
-		} else {
-			item_list->set_item_icon(-1, theme_cache.folder);
-		}
-
-		Dictionary d;
-		d["name"] = dir_name;
-		d["path"] = cdir.path_join(dir_name);
-		d["dir"] = true;
-
-		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
-
-		dirs.pop_front();
-	}
-
 	List<String> patterns;
 	// build filter
 	if (filter->get_selected() == filter->get_item_count() - 1) {
@@ -1072,6 +1077,44 @@ void EditorFileDialog::update_file_list() {
 				patterns.push_back(f.get_slice(",", j).strip_edges());
 			}
 		}
+	}
+
+	while (!dirs.is_empty()) {
+		const String &dir_name = dirs.front()->get();
+
+		bool bundle = dir_access->is_bundle(dir_name);
+		bool found = true;
+		if (bundle) {
+			bool match = patterns.is_empty();
+			for (const String &E : patterns) {
+				if (dir_name.matchn(E)) {
+					match = true;
+					break;
+				}
+			}
+			found = match;
+		}
+
+		if (found) {
+			item_list->add_item(dir_name);
+
+			if (display_mode == DISPLAY_THUMBNAILS) {
+				item_list->set_item_icon(-1, folder_thumbnail);
+			} else {
+				item_list->set_item_icon(-1, theme_cache.folder);
+			}
+
+			Dictionary d;
+			d["name"] = dir_name;
+			d["path"] = cdir.path_join(dir_name);
+			d["dir"] = !bundle;
+			d["bundle"] = bundle;
+
+			item_list->set_item_metadata(-1, d);
+			item_list->set_item_icon_modulate(-1, get_dir_icon_color(String(d["path"])));
+		}
+
+		dirs.pop_front();
 	}
 
 	while (!file_infos.is_empty()) {
@@ -1109,6 +1152,7 @@ void EditorFileDialog::update_file_list() {
 			Dictionary d;
 			d["name"] = file_info.name;
 			d["dir"] = false;
+			d["bundle"] = false;
 			d["path"] = file_info.path;
 			item_list->set_item_metadata(-1, d);
 
@@ -1356,11 +1400,8 @@ void EditorFileDialog::set_file_mode(FileMode p_mode) {
 		item_list->set_select_mode(ItemList::SELECT_SINGLE);
 	}
 
-	if (can_create_dir) {
-		makedir->show();
-	} else {
-		makedir->hide();
-	}
+	makedir_sep->set_visible(can_create_dir);
+	makedir->set_visible(can_create_dir);
 }
 
 EditorFileDialog::FileMode EditorFileDialog::get_file_mode() const {
@@ -1527,6 +1568,8 @@ void EditorFileDialog::_select_drive(int p_idx) {
 void EditorFileDialog::_update_drives(bool p_select) {
 	int dc = dir_access->get_drive_count();
 	if (dc == 0 || access != ACCESS_FILESYSTEM) {
+		shortcuts_container->hide();
+		drives_container->hide();
 		drives->hide();
 	} else {
 		drives->clear();
@@ -1535,6 +1578,8 @@ void EditorFileDialog::_update_drives(bool p_select) {
 			dp->remove_child(drives);
 		}
 		dp = dir_access->drives_are_shortcuts() ? shortcuts_container : drives_container;
+		shortcuts_container->set_visible(dir_access->drives_are_shortcuts());
+		drives_container->set_visible(!dir_access->drives_are_shortcuts());
 		dp->add_child(drives);
 		drives->show();
 
@@ -1724,6 +1769,9 @@ void EditorFileDialog::_update_favorites() {
 			recent->deselect_all();
 		}
 	}
+
+	fav_up->set_disabled(current_favorite < 1);
+	fav_down->set_disabled(current_favorite == -1 || favorited_paths.size() - 1 <= current_favorite);
 }
 
 void EditorFileDialog::_favorite_pressed() {
@@ -1904,30 +1952,38 @@ void EditorFileDialog::_update_option_controls() {
 	}
 	options_dirty = false;
 
-	while (grid_options->get_child_count() > 0) {
-		Node *child = grid_options->get_child(0);
-		grid_options->remove_child(child);
+	while (flow_checkbox_options->get_child_count() > 0) {
+		Node *child = flow_checkbox_options->get_child(0);
+		flow_checkbox_options->remove_child(child);
 		child->queue_free();
 	}
+	while (grid_select_options->get_child_count() > 0) {
+		Node *child = grid_select_options->get_child(0);
+		grid_select_options->remove_child(child);
+		child->queue_free();
+	}
+
 	selected_options.clear();
 
 	for (const EditorFileDialog::Option &opt : options) {
-		Label *lbl = memnew(Label);
-		lbl->set_text(opt.name);
-		grid_options->add_child(lbl);
 		if (opt.values.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_pressed(opt.default_idx);
-			grid_options->add_child(cb);
+			cb->set_text(opt.name);
+			flow_checkbox_options->add_child(cb);
 			cb->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_option_changed_checkbox_toggled).bind(opt.name));
 			selected_options[opt.name] = (bool)opt.default_idx;
 		} else {
+			Label *lbl = memnew(Label);
+			lbl->set_text(opt.name);
+			grid_select_options->add_child(lbl);
+
 			OptionButton *ob = memnew(OptionButton);
 			for (const String &val : opt.values) {
 				ob->add_item(val);
 			}
 			ob->select(opt.default_idx);
-			grid_options->add_child(ob);
+			grid_select_options->add_child(ob);
 			ob->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_option_changed_item_selected).bind(opt.name));
 			selected_options[opt.name] = opt.default_idx;
 		}
@@ -2219,11 +2275,13 @@ void EditorFileDialog::add_side_menu(Control *p_menu, const String &p_title) {
 void EditorFileDialog::_update_side_menu_visibility(bool p_native_dlg) {
 	if (p_native_dlg) {
 		pathhb->set_visible(false);
-		grid_options->set_visible(false);
+		flow_checkbox_options->set_visible(false);
+		grid_select_options->set_visible(false);
 		list_hb->set_visible(false);
 	} else {
 		pathhb->set_visible(true);
-		grid_options->set_visible(true);
+		flow_checkbox_options->set_visible(true);
+		grid_select_options->set_visible(true);
 		list_hb->set_visible(true);
 	}
 }
@@ -2262,13 +2320,13 @@ EditorFileDialog::EditorFileDialog() {
 	vbc->add_child(pathhb);
 
 	dir_prev = memnew(Button);
-	dir_prev->set_theme_type_variation("FlatButton");
+	dir_prev->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_prev->set_tooltip_text(TTR("Go to previous folder."));
 	dir_next = memnew(Button);
-	dir_next->set_theme_type_variation("FlatButton");
+	dir_next->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_next->set_tooltip_text(TTR("Go to next folder."));
 	dir_up = memnew(Button);
-	dir_up->set_theme_type_variation("FlatButton");
+	dir_up->set_theme_type_variation(SceneStringName(FlatButton));
 	dir_up->set_tooltip_text(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
@@ -2291,13 +2349,13 @@ EditorFileDialog::EditorFileDialog() {
 	pathhb->add_child(dir);
 
 	refresh = memnew(Button);
-	refresh->set_theme_type_variation("FlatButton");
+	refresh->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh->set_tooltip_text(TTR("Refresh files."));
 	refresh->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::update_file_list));
 	pathhb->add_child(refresh);
 
 	favorite = memnew(Button);
-	favorite->set_theme_type_variation("FlatButton");
+	favorite->set_theme_type_variation(SceneStringName(FlatButton));
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip_text(TTR("(Un)favorite current folder."));
 	favorite->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_pressed));
@@ -2310,10 +2368,11 @@ EditorFileDialog::EditorFileDialog() {
 	drives->connect(SceneStringName(item_selected), callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
 
-	pathhb->add_child(memnew(VSeparator));
+	makedir_sep = memnew(VSeparator);
+	pathhb->add_child(makedir_sep);
 
 	makedir = memnew(Button);
-	makedir->set_theme_type_variation("FlatButton");
+	makedir->set_theme_type_variation(SceneStringName(FlatButton));
 	makedir->set_tooltip_text(TTR("Create a new folder."));
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_make_dir));
 	pathhb->add_child(makedir);
@@ -2324,10 +2383,15 @@ EditorFileDialog::EditorFileDialog() {
 	body_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(body_hsplit);
 
-	grid_options = memnew(GridContainer);
-	grid_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	grid_options->set_columns(2);
-	vbc->add_child(grid_options);
+	flow_checkbox_options = memnew(HFlowContainer);
+	flow_checkbox_options->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	flow_checkbox_options->set_alignment(FlowContainer::ALIGNMENT_CENTER);
+	vbc->add_child(flow_checkbox_options);
+
+	grid_select_options = memnew(GridContainer);
+	grid_select_options->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	grid_select_options->set_columns(2);
+	vbc->add_child(grid_select_options);
 
 	list_hb = memnew(HSplitContainer);
 	list_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -2349,11 +2413,11 @@ EditorFileDialog::EditorFileDialog() {
 
 	fav_hb->add_spacer();
 	fav_up = memnew(Button);
-	fav_up->set_theme_type_variation("FlatButton");
+	fav_up->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_up);
 	fav_up->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_up));
 	fav_down = memnew(Button);
-	fav_down->set_theme_type_variation("FlatButton");
+	fav_down->set_theme_type_variation(SceneStringName(FlatButton));
 	fav_hb->add_child(fav_down);
 	fav_down->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::_favorite_move_down));
 
@@ -2396,7 +2460,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(l);
 
 	show_hidden = memnew(Button);
-	show_hidden->set_theme_type_variation("FlatButton");
+	show_hidden->set_theme_type_variation(SceneStringName(FlatButton));
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
 	show_hidden->set_tooltip_text(TTR("Toggle the visibility of hidden files."));
@@ -2409,7 +2473,7 @@ EditorFileDialog::EditorFileDialog() {
 	view_mode_group.instantiate();
 
 	mode_thumbnails = memnew(Button);
-	mode_thumbnails->set_theme_type_variation("FlatButton");
+	mode_thumbnails->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_thumbnails->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
@@ -2418,7 +2482,7 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(mode_thumbnails);
 
 	mode_list = memnew(Button);
-	mode_list->set_theme_type_variation("FlatButton");
+	mode_list->set_theme_type_variation(SceneStringName(FlatButton));
 	mode_list->connect(SceneStringName(pressed), callable_mp(this, &EditorFileDialog::set_display_mode).bind(DISPLAY_LIST));
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
@@ -2429,11 +2493,12 @@ EditorFileDialog::EditorFileDialog() {
 	lower_hb->add_child(memnew(VSeparator));
 
 	file_sort_button = memnew(MenuButton);
-	file_sort_button->set_flat(true);
+	file_sort_button->set_flat(false);
+	file_sort_button->set_theme_type_variation("FlatMenuButton");
 	file_sort_button->set_tooltip_text(TTR("Sort files"));
 
 	show_search_filter_button = memnew(Button);
-	show_search_filter_button->set_theme_type_variation("FlatButton");
+	show_search_filter_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_search_filter_button->set_toggle_mode(true);
 	show_search_filter_button->set_pressed(false);
 	show_search_filter_button->set_tooltip_text(TTR("Toggle the visibility of the filter for file names."));

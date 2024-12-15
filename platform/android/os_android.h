@@ -58,6 +58,7 @@ private:
 
 	mutable String data_dir_cache;
 	mutable String cache_dir_cache;
+	mutable String temp_dir_cache;
 	mutable String remote_fs_dir;
 
 	AudioDriverOpenSL audio_driver_android;
@@ -148,6 +149,7 @@ public:
 	virtual String get_user_data_dir() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
+	virtual String get_temp_path() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;

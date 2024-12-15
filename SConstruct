@@ -501,14 +501,19 @@ else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
 
+# This is not part of fast_unsafe because the only downside it has compared to
+# the default is that SCons won't mark files that were changed in the last second
+# as different. This is unlikely to be a problem in any real situation as just booting
+# up scons takes more than that time.
+# Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
+env.Decider("MD5-timestamp")
+
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
 if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
-    # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
-    env.Decider("MD5-timestamp")
     env.SetOption("implicit_cache", 1)
     env.SetOption("max_drift", 60)
 
@@ -708,6 +713,12 @@ elif env.msvc:
         )
         Exit(255)
 
+# Default architecture flags.
+if env["arch"] == "x86_32":
+    if env.msvc:
+        env.Append(CCFLAGS=["/arch:SSE2"])
+    else:
+        env.Append(CCFLAGS=["-msse2"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
@@ -731,9 +742,15 @@ if env.msvc:
         env.Append(CCFLAGS=["/Od"])
 else:
     if env["debug_symbols"]:
-        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-        # otherwise addr2line doesn't understand them
-        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env["platform"] == "windows":
+            if methods.using_clang(env):
+                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+            else:
+                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
+        else:
+            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+            # otherwise addr2line doesn't understand them
+            env.Append(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
             env.Append(CCFLAGS=["-g3"])
@@ -815,37 +832,36 @@ elif env.msvc:
 
 # Configure compiler warnings
 if env.msvc and not methods.using_clang(env):  # MSVC
-    if env["warnings"] == "no":
-        env.Append(CCFLAGS=["/w"])
-    else:
-        if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["/W4"])
-        elif env["warnings"] == "all":
-            # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-            env.Append(CCFLAGS=["/W3", "/w34458"])
-        elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["/W2"])
-        # Disable warnings which we don't plan to fix.
+    # Disable warnings which we don't plan to fix.
+    disabled_warnings = [
+        "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
+        "/wd4127",  # C4127 (conditional expression is constant)
+        "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
+        "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
+        "/wd4245",
+        "/wd4267",
+        "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+        "/wd4324",  # C4820 (structure was padded due to alignment specifier)
+        "/wd4514",  # C4514 (unreferenced inline function has been removed)
+        "/wd4714",  # C4714 (function marked as __forceinline not inlined)
+        "/wd4820",  # C4820 (padding added after construct)
+    ]
 
-        env.Append(
-            CCFLAGS=[
-                "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
-                "/wd4127",  # C4127 (conditional expression is constant)
-                "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
-                "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
-                "/wd4245",
-                "/wd4267",
-                "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
-                "/wd4324",  # C4820 (structure was padded due to alignment specifier)
-                "/wd4514",  # C4514 (unreferenced inline function has been removed)
-                "/wd4714",  # C4714 (function marked as __forceinline not inlined)
-                "/wd4820",  # C4820 (padding added after construct)
-            ]
-        )
+    if env["warnings"] == "extra":
+        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+    elif env["warnings"] == "all":
+        # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+    elif env["warnings"] == "moderate":
+        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+    else:  # 'no'
+        # C4267 is particularly finicky & needs to be explicitly disabled.
+        env.Append(CCFLAGS=["/w", "/wd4267"])
 
     if env["werror"]:
         env.Append(CCFLAGS=["/WX"])
         env.Append(LINKFLAGS=["/WX"])
+
 else:  # GCC, Clang
     common_warnings = []
 

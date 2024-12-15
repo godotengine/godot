@@ -156,27 +156,33 @@ private:
 	//
 	// See the comments in the code to understand better how it works.
 
+	enum StagingRequiredAction {
+		STAGING_REQUIRED_ACTION_NONE,
+		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
+		STAGING_REQUIRED_ACTION_STALL_PREVIOUS,
+	};
+
 	struct StagingBufferBlock {
 		RDD::BufferID driver_id;
 		uint64_t frame_used = 0;
 		uint32_t fill_amount = 0;
 	};
 
-	Vector<StagingBufferBlock> staging_buffer_blocks;
-	int staging_buffer_current = 0;
-	uint32_t staging_buffer_block_size = 0;
-	uint64_t staging_buffer_max_size = 0;
-	bool staging_buffer_used = false;
-
-	enum StagingRequiredAction {
-		STAGING_REQUIRED_ACTION_NONE,
-		STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL,
-		STAGING_REQUIRED_ACTION_STALL_PREVIOUS
+	struct StagingBuffers {
+		Vector<StagingBufferBlock> blocks;
+		int current = 0;
+		uint32_t block_size = 0;
+		uint64_t max_size = 0;
+		BitField<RDD::BufferUsageBits> usage_bits;
+		bool used = false;
 	};
 
-	Error _staging_buffer_allocate(uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
-	void _staging_buffer_execute_required_action(StagingRequiredAction p_required_action);
-	Error _insert_staging_block();
+	Error _staging_buffer_allocate(StagingBuffers &p_staging_buffers, uint32_t p_amount, uint32_t p_required_align, uint32_t &r_alloc_offset, uint32_t &r_alloc_size, StagingRequiredAction &r_required_action, bool p_can_segment = true);
+	void _staging_buffer_execute_required_action(StagingBuffers &p_staging_buffers, StagingRequiredAction p_required_action);
+	Error _insert_staging_block(StagingBuffers &p_staging_buffers);
+
+	StagingBuffers upload_staging_buffers;
+	StagingBuffers download_staging_buffers;
 
 	struct Buffer {
 		RDD::BufferID driver_id;
@@ -191,7 +197,12 @@ private:
 	Error _buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align = 32);
 
 	void update_perf_report();
-
+	// Flag for batching descriptor sets.
+	bool descriptor_set_batching = true;
+	// When true, the final draw call that copies our offscreen result into the Swapchain is put into its
+	// own cmd buffer, so that the whole rendering can start early instead of having to wait for the
+	// swapchain semaphore to be signaled (which causes bubbles).
+	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
 	String perf_report_text;
@@ -200,11 +211,19 @@ private:
 	RID_Owner<Buffer, true> storage_buffer_owner;
 	RID_Owner<Buffer, true> texture_buffer_owner;
 
+	struct BufferGetDataRequest {
+		uint32_t frame_local_index = 0;
+		uint32_t frame_local_count = 0;
+		Callable callback;
+		uint32_t size = 0;
+	};
+
 public:
 	Error buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size);
 	Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data);
 	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
+	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -295,6 +314,7 @@ public:
 
 	RID_Owner<Texture, true> texture_owner;
 	uint32_t texture_upload_region_size_px = 0;
+	uint32_t texture_download_region_size_px = 0;
 
 	Vector<uint8_t> _texture_get_data(Texture *tex, uint32_t p_layer, bool p_2d = false);
 	uint32_t _texture_layer_count(Texture *p_texture) const;
@@ -305,6 +325,17 @@ public:
 	void _texture_free_shared_fallback(Texture *p_texture);
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
+
+	struct TextureGetDataRequest {
+		uint32_t frame_local_index = 0;
+		uint32_t frame_local_count = 0;
+		Callable callback;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		uint32_t depth = 0;
+		uint32_t mipmaps = 0;
+		RDD::DataFormat format = RDD::DATA_FORMAT_MAX;
+	};
 
 public:
 	struct TextureView {
@@ -337,6 +368,7 @@ public:
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer); // CPU textures will return immediately, while GPU textures will most likely force a flush
+	Error texture_get_data_async(RID p_texture, uint32_t p_layer, const Callable &p_callback);
 
 	bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<TextureUsageBits> p_usage) const;
 	bool texture_is_shared(RID p_texture);
@@ -543,6 +575,7 @@ public:
 	void framebuffer_set_invalidation_callback(RID p_framebuffer, InvalidationCallback p_callback, void *p_userdata);
 
 	FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
+	Size2 framebuffer_get_size(RID p_framebuffer);
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -843,6 +876,7 @@ public:
 	RID shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 	RID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID());
 	RID shader_create_placeholder();
+	void shader_destroy_modules(RID p_shader);
 
 	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
@@ -855,13 +889,20 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
 	};
 
+	/*****************/
+	/**** BUFFERS ****/
+	/*****************/
+
 	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	struct Uniform {
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
 		uint32_t binding = 0; // Binding index as specified in shader.
+		// This flag specifies that this is an immutable sampler to be set when creating pipeline layout.
+		bool immutable_sampler = false;
 
 	private:
 		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
@@ -922,6 +963,9 @@ public:
 		_FORCE_INLINE_ Uniform() = default;
 	};
 
+	typedef Uniform PipelineImmutableSampler;
+	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler> &p_immutable_samplers = Vector<PipelineImmutableSampler>());
+
 private:
 	static const uint32_t MAX_UNIFORM_SETS = 16;
 	static const uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
@@ -963,10 +1007,22 @@ private:
 	void _uniform_set_update_shared(UniformSet *p_uniform_set);
 
 public:
+	/** Bake a set of uniforms that can be bound at runtime with the given shader.
+	 * @remark				Setting p_linear_pool = true while keeping the RID around for longer than the current frame will result in undefined behavior.
+	 * @param p_uniforms	The uniforms to bake into a set.
+	 * @param p_shader		The shader you intend to bind these uniforms with.
+	 * @param p_set_index	The set. Should be in range [0; 4)
+	 *						The value 4 comes from physical_device_properties.limits.maxBoundDescriptorSets. Vulkan only guarantees maxBoundDescriptorSets >= 4 (== 4 is very common on Mobile).
+	 * @param p_linear_pool	If you call this function every frame (and free the returned RID within the same frame!), set it to true for better performance.
+	 *						If you plan on keeping the return value around for more than one frame (e.g. Sets that are created once and reused forever) you MUST set it to false.
+	 * @return				Baked descriptor set.
+	 */
 	template <typename Collection>
-	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
+
+	bool uniform_sets_have_linear_pools() const;
 
 	/*******************/
 	/**** PIPELINES ****/
@@ -1181,6 +1237,7 @@ public:
 	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 	void draw_list_draw_indirect(DrawListID p_list, bool p_use_indices, RID p_buffer, uint32_t p_offset = 0, uint32_t p_draw_count = 1, uint32_t p_stride = 0);
 
+	void draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
 
@@ -1351,6 +1408,17 @@ private:
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
+		// Pending asynchronous data transfer for buffers.
+		LocalVector<RDD::BufferID> download_buffer_staging_buffers;
+		LocalVector<RDD::BufferCopyRegion> download_buffer_copy_regions;
+		LocalVector<BufferGetDataRequest> download_buffer_get_data_requests;
+
+		// Pending asynchronous data transfer for textures.
+		LocalVector<RDD::BufferID> download_texture_staging_buffers;
+		LocalVector<RDD::BufferTextureCopyRegion> download_buffer_texture_copy_regions;
+		LocalVector<uint32_t> download_texture_mipmap_offsets;
+		LocalVector<TextureGetDataRequest> download_texture_get_data_requests;
+
 		// The command pool used by the command buffer.
 		RDD::CommandPoolID command_pool;
 
@@ -1374,7 +1442,8 @@ private:
 		// This must have the same size of the transfer worker pool.
 		TightLocalVector<RDD::SemaphoreID> transfer_worker_semaphores;
 
-		// Extra command buffer pool used for driver workarounds.
+		// Extra command buffer pool used for driver workarounds or to reduce GPU bubbles by
+		// splitting the final render pass to the swapchain into its own cmd buffer.
 		RDG::CommandBufferPool command_buffer_pool;
 
 		struct Timestamp {
@@ -1400,15 +1469,33 @@ private:
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
 
+	// Whenever logic/physics request a graphics operation (not just deleting a resource) that requires
+	// us to flush all graphics commands, we must set frames_pending_resources_for_processing = frames.size().
+	// This is important for when the user requested for the logic loop to still be updated while
+	// graphics should not (e.g. headless Multiplayer servers, minimized windows that need to still
+	// process something on the background).
+	uint32_t frames_pending_resources_for_processing = 0u;
+
+public:
+	bool has_pending_resources_for_processing() const { return frames_pending_resources_for_processing != 0u; }
+
+private:
 	void _free_pending_resources(int p_frame);
 
 	uint64_t texture_memory = 0;
 	uint64_t buffer_memory = 0;
 
+protected:
+	void execute_chained_cmds(bool p_present_swap_chain,
+			RenderingDeviceDriver::FenceID p_draw_fence,
+			RenderingDeviceDriver::SemaphoreID p_dst_draw_semaphore_to_signal);
+
+public:
 	void _free_internal(RID p_id);
-	void _begin_frame();
+	void _begin_frame(bool p_presented = false);
 	void _end_frame();
 	void _execute_frame(bool p_present);
+	void _stall_for_frame(uint32_t p_frame);
 	void _stall_for_previous_frames();
 	void _flush_and_stall_for_all_frames();
 
@@ -1444,7 +1531,7 @@ public:
 
 	uint64_t limit_get(Limit p_limit) const;
 
-	void swap_buffers();
+	void swap_buffers(bool p_present);
 
 	uint32_t get_frame_delay() const;
 

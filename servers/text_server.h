@@ -244,6 +244,7 @@ public:
 	virtual String get_support_data_filename() const = 0;
 	virtual String get_support_data_info() const = 0;
 	virtual bool save_support_data(const String &p_filename) const = 0;
+	virtual PackedByteArray get_support_data() const = 0;
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 

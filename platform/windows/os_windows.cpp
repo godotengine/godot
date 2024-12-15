@@ -1727,7 +1727,7 @@ String OS_Windows::get_environment(const String &p_var) const {
 }
 
 void OS_Windows::set_environment(const String &p_var, const String &p_value) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	Char16String var = p_var.utf16();
 	Char16String value = p_value.utf16();
 	ERR_FAIL_COND_MSG(var.length() + value.length() + 2 > 32767, vformat("Invalid definition for environment variable '%s', cannot exceed 32767 characters.", p_var));
@@ -1735,7 +1735,7 @@ void OS_Windows::set_environment(const String &p_var, const String &p_value) con
 }
 
 void OS_Windows::unset_environment(const String &p_var) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
 }
 
@@ -2077,14 +2077,35 @@ String OS_Windows::get_cache_path() const {
 		if (has_environment("LOCALAPPDATA")) {
 			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
 		}
-		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
-			cache_path_cache = get_environment("TEMP").replace("\\", "/");
-		}
 		if (cache_path_cache.is_empty()) {
-			cache_path_cache = get_config_path();
+			cache_path_cache = get_temp_path();
 		}
 	}
 	return cache_path_cache;
+}
+
+String OS_Windows::get_temp_path() const {
+	static String temp_path_cache;
+	if (temp_path_cache.is_empty()) {
+		{
+			Vector<WCHAR> temp_path;
+			// The maximum possible size is MAX_PATH+1 (261) + terminating null character.
+			temp_path.resize(MAX_PATH + 2);
+			DWORD temp_path_length = GetTempPathW(temp_path.size(), temp_path.ptrw());
+			if (temp_path_length > 0 && temp_path_length < temp_path.size()) {
+				temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				// Let's try to get the long path instead of the short path (with tildes ~).
+				DWORD temp_path_long_length = GetLongPathNameW(temp_path.ptr(), temp_path.ptrw(), temp_path.size());
+				if (temp_path_long_length > 0 && temp_path_long_length < temp_path.size()) {
+					temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				}
+			}
+		}
+		if (temp_path_cache.is_empty()) {
+			temp_path_cache = get_config_path();
+		}
+	}
+	return temp_path_cache;
 }
 
 // Get properly capitalized engine name for system paths
@@ -2257,9 +2278,14 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 		target_ticks += dynamic_delay;
 		uint64_t current_ticks = get_ticks_usec();
 
-		// The minimum sleep resolution on windows is 1 ms on most systems.
-		if (current_ticks < (target_ticks - delay_resolution)) {
-			delay_usec((target_ticks - delay_resolution) - current_ticks);
+		if (target_ticks > current_ticks + delay_resolution) {
+			uint64_t delay_time = target_ticks - current_ticks - delay_resolution;
+			// Make sure we always sleep for a multiple of delay_resolution to avoid overshooting.
+			// Refer to: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep#remarks
+			delay_time = (delay_time / delay_resolution) * delay_resolution;
+			if (delay_time > 0) {
+				delay_usec(delay_time);
+			}
 		}
 		// Busy wait for the remainder of time.
 		while (get_ticks_usec() < target_ticks) {
