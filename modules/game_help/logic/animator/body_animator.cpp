@@ -172,7 +172,7 @@ void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playbac
 	if (skeleton == nullptr) {
 		return;
 	}
-	update_tool->process_animations();
+	update_tool->process_animations(root_motion, bone_blend_weight, blend_weight);
     update_tool->layer_blend_apply(config, root_motion, bone_blend_weight,blend_weight,is_using_root_motion);
 
 

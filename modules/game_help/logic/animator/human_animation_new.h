@@ -88,6 +88,34 @@ public:
         }
         
     }
+    void apply(Skeleton3D *p_skeleton,const HashMap<String, float>& bone_blend_weight,float p_weight) {
+        for(auto& it : post) {
+            int bone_index = p_skeleton->find_bone(it.key);
+            if(!it.value.is_set_animation_rotation) {
+                continue;
+            }
+            if (bone_index >= 0) {
+                float weight = 1.0f;
+                if(bone_blend_weight.has(it.key)) {
+                    weight = bone_blend_weight[it.key];
+                }
+                p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value.local_post_rotation,p_weight * weight));
+            }
+        }
+    }
+        void apply_root_motion(Vector3& p_position,Quaternion& p_rotation,Vector3& p_position_add,Quaternion & p_rotation_add,float p_weight) {
+
+            
+			if (root_global_rotation_add.size() > 0) {
+				p_rotation_add = p_rotation.slerp(root_global_rotation_add.begin()->value,p_weight);
+			}
+
+
+            if(root_global_move_add.size() > 0) {
+                p_position_add = p_position_add.lerp(root_global_move_add.begin()->value,p_weight);
+            }
+        }
+
 
     
     static Ref<Animation> build_human_animation(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map);
@@ -132,21 +160,6 @@ private:
             retarget(child_output,output,bone_name);
         }
         
-    }
-    void apply(Skeleton3D *p_skeleton,const HashMap<String, float>& bone_blend_weight,float p_weight) {
-        for(auto& it : post) {
-            int bone_index = p_skeleton->find_bone(it.key);
-            if(!it.value.is_set_animation_rotation) {
-                continue;
-            }
-            if (bone_index >= 0) {
-                float weight = 1.0f;
-                if(bone_blend_weight.has(it.key)) {
-                    weight = bone_blend_weight[it.key];
-                }
-                p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value.local_post_rotation,p_weight * weight));
-            }
-        }
     }
 
     HashMap<StringName, HumanBonePoseOutput> post;

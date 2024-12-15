@@ -152,7 +152,7 @@ class CharacterAnimationUpdateTool : public RefCounted
 public:
     void clear_cache(Skeleton3D* t_skeleton,Node* p_parent) ;
     void add_animation_instance(AnimationMixer::AnimationInstance& ai);
-    void process_animations() ;
+    void process_animations(CharacterRootMotion& root_motion,HashMap<String, float>& bone_blend_weight, float blend_weight) ;
 
     void layer_blend_apply(Ref<CharacterAnimatorLayerConfig> config, CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight,float blend_weight,bool is_using_root_motion);
 protected:
@@ -160,12 +160,13 @@ protected:
     int get_bone_index(const Dictionary& p_bone_map, const NodePath& path) ;
     void add_animation_cache(const Dictionary& bone_map,const Ref<Animation>& p_anim) ;
 
-    void process_anim(const AnimationMixer::AnimationInstance& ai);
+    void process_anim(const AnimationMixer::AnimationInstance& ai, CharacterRootMotion& root_motion,HashMap<String, float>& bone_blend_weight, float blend_weight);
     void process_human_anim() ;
 protected:
     Ref<HumanBoneConfig> human_config;
     HumanAnim::HumanSkeleton temp_anim_skeleton;
     HumanAnim::HumanSkeleton human_skeleton;
+	bool is_new_anim = false;
 
 
     HashMap<ObjectID,Ref<HumanBonePostRotation>> animation_cache;
