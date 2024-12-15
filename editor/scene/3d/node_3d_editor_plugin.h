@@ -130,6 +130,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
 		VIEW_TRANSFORM_GIZMO,
+		VIEW_ORIGIN,
 		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
@@ -187,7 +188,8 @@ public:
 	static constexpr int32_t GIZMO_BASE_LAYER = 27;
 	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
 	static constexpr int32_t GIZMO_GRID_LAYER = 25;
-	static constexpr int32_t MISC_TOOL_LAYER = 24;
+	static constexpr int32_t GIZMO_ORIGIN_LAYER = 24;
+	static constexpr int32_t MISC_TOOL_LAYER = 23;
 
 	static constexpr int32_t FRAME_TIME_HISTORY = 20;
 
@@ -716,7 +718,6 @@ private:
 	RID origin_mesh;
 	RID origin_multimesh;
 	RID origin_instance;
-	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
 	bool grid_visible[3] = { false, false, false }; //currently visible
