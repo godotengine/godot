@@ -90,6 +90,8 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
+	bool is_base_noise_class() const override { return false; }
+
 private:
 	_FastNoiseLite _noise;
 	_FastNoiseLite _domain_warp_noise;
