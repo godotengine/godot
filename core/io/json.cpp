@@ -337,14 +337,32 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 				}
 
 				if (p_str[index] == '-' || is_digit(p_str[index])) {
-					//a number
+					// A number
 					const char32_t *rptr;
+					bool is_integer = true;
 					double number = String::to_float(&p_str[index], &rptr);
-					index += (rptr - &p_str[index]);
-					r_token.type = TK_NUMBER;
-					r_token.value = number;
-					return OK;
 
+					// Check if the number contains a decimal point
+					for (const char32_t *c = &p_str[index]; c < rptr; c++) {
+						if (*c == '.' || *c == 'e' || *c == 'E') {
+							is_integer = false;
+							break;
+						}
+					}
+
+					index += (rptr - &p_str[index]);
+
+					if (is_integer) {
+						// Store as integer
+						r_token.type = TK_NUMBER;
+						r_token.value = static_cast<int64_t>(number);
+					} else {
+						// Store as float
+						r_token.type = TK_NUMBER;
+						r_token.value = number;
+					}
+
+					return OK;
 				} else if (is_ascii_alphabet_char(p_str[index])) {
 					String id;
 
