@@ -102,6 +102,10 @@ def configure(env: "SConsEnvironment"):
     if env.dev_build:
         env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
+    ccache_path = os.environ.get("CCACHE", "")
+    if ccache_path != "":
+        ccache_path = ccache_path + " "
+
     if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
@@ -112,8 +116,8 @@ def configure(env: "SConsEnvironment"):
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
         else:
-            env["CC"] = "clang"
-            env["CXX"] = "clang++"
+            env["CC"] = ccache_path + "clang"
+            env["CXX"] = ccache_path + "clang++"
 
         detect_darwin_sdk_path("macos", env)
         env.Append(CCFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
@@ -126,15 +130,8 @@ def configure(env: "SConsEnvironment"):
         else:
             basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
-        ccache_path = os.environ.get("CCACHE")
-        if ccache_path is None:
-            env["CC"] = basecmd + "cc"
-            env["CXX"] = basecmd + "c++"
-        else:
-            # there aren't any ccache wrappers available for macOS cross-compile,
-            # to enable caching we need to prepend the path to the ccache binary
-            env["CC"] = ccache_path + " " + basecmd + "cc"
-            env["CXX"] = ccache_path + " " + basecmd + "c++"
+        env["CC"] = ccache_path + basecmd + "cc"
+        env["CXX"] = ccache_path + basecmd + "c++"
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"

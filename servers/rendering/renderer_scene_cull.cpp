@@ -359,7 +359,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 
 			if (geom->lightmap_captures.is_empty() && A->scenario && A->array_index >= 0) {
 				InstanceData &idata = A->scenario->instance_data[A->array_index];
-				idata.flags &= ~uint32_t(InstanceData::FLAG_LIGHTMAP_CAPTURE);
+				idata.flags &= ~InstanceData::FLAG_LIGHTMAP_CAPTURE;
 			}
 
 			lightmap_data->geometries.erase(A);
@@ -532,7 +532,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) con
 			if (p_instance->mesh_instance.is_valid()) {
 				idata.flags |= InstanceData::FLAG_USES_MESH_INSTANCE;
 			} else {
-				idata.flags &= ~uint32_t(InstanceData::FLAG_USES_MESH_INSTANCE);
+				idata.flags &= ~InstanceData::FLAG_USES_MESH_INSTANCE;
 			}
 		}
 	}
@@ -1234,7 +1234,7 @@ void RendererSceneCull::instance_set_ignore_culling(RID p_instance, bool p_enabl
 		if (instance->ignore_all_culling) {
 			idata.flags |= InstanceData::FLAG_IGNORE_ALL_CULLING;
 		} else {
-			idata.flags &= ~uint32_t(InstanceData::FLAG_IGNORE_ALL_CULLING);
+			idata.flags &= ~InstanceData::FLAG_IGNORE_ALL_CULLING;
 		}
 	}
 }
@@ -1326,7 +1326,7 @@ void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RS::InstanceF
 				if (instance->baked_light) {
 					idata.flags |= InstanceData::FLAG_USES_BAKED_LIGHT;
 				} else {
-					idata.flags &= ~uint32_t(InstanceData::FLAG_USES_BAKED_LIGHT);
+					idata.flags &= ~InstanceData::FLAG_USES_BAKED_LIGHT;
 				}
 			}
 
@@ -1366,7 +1366,7 @@ void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RS::InstanceF
 				if (instance->redraw_if_visible) {
 					idata.flags |= InstanceData::FLAG_REDRAW_IF_VISIBLE;
 				} else {
-					idata.flags &= ~uint32_t(InstanceData::FLAG_REDRAW_IF_VISIBLE);
+					idata.flags &= ~InstanceData::FLAG_REDRAW_IF_VISIBLE;
 				}
 			}
 
@@ -1379,7 +1379,7 @@ void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RS::InstanceF
 				if (instance->ignore_occlusion_culling) {
 					idata.flags |= InstanceData::FLAG_IGNORE_OCCLUSION_CULLING;
 				} else {
-					idata.flags &= ~uint32_t(InstanceData::FLAG_IGNORE_OCCLUSION_CULLING);
+					idata.flags &= ~InstanceData::FLAG_IGNORE_OCCLUSION_CULLING;
 				}
 			}
 		} break;
@@ -1400,13 +1400,13 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 		if (instance->cast_shadows != RS::SHADOW_CASTING_SETTING_OFF) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS;
 		} else {
-			idata.flags &= ~uint32_t(InstanceData::FLAG_CAST_SHADOWS);
+			idata.flags &= ~InstanceData::FLAG_CAST_SHADOWS;
 		}
 
 		if (instance->cast_shadows == RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS_ONLY;
 		} else {
-			idata.flags &= ~uint32_t(InstanceData::FLAG_CAST_SHADOWS_ONLY);
+			idata.flags &= ~InstanceData::FLAG_CAST_SHADOWS_ONLY;
 		}
 	}
 
@@ -2560,8 +2560,9 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+				real_t z_near = 0.005f;
 				Projection cm;
-				cm.set_perspective(90, 1, radius * 0.005f, radius);
+				cm.set_perspective(90, 1, z_near, radius);
 
 				for (int i = 0; i < 6; i++) {
 					RENDER_TIMESTAMP("Cull OmniLight3D Shadow Cube, Side " + itos(i));
@@ -2649,9 +2650,10 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 			real_t angle = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
+			real_t z_near = 0.005f;
 
 			Projection cm;
-			cm.set_perspective(angle * 2.0, 1.0, 0.005f * radius, radius);
+			cm.set_perspective(angle * 2.0, 1.0, z_near, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 
@@ -2775,6 +2777,8 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
 	} else {
+		XRServer *xr_server = XRServer::get_singleton();
+
 		// Setup our camera for our XR interface.
 		// We can support multiple views here each with their own camera
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -2785,13 +2789,21 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
-		Transform3D world_origin = XRServer::get_singleton()->get_world_origin();
+		Transform3D world_origin = xr_server->get_world_origin();
 
 		// We ignore our camera position, it will have been positioned with a slightly old tracking position.
 		// Instead we take our origin point and have our XR interface add fresh tracking data! Whoohoo!
 		for (uint32_t v = 0; v < view_count; v++) {
 			transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
 			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
+		}
+
+		// If requested, we move the views to be rendered as if the HMD is at the XROrigin.
+		if (unlikely(xr_server->is_camera_locked_to_origin())) {
+			Transform3D camera_reset = p_xr_interface->get_camera_transform().affine_inverse() * xr_server->get_reference_frame().affine_inverse();
+			for (uint32_t v = 0; v < view_count; v++) {
+				transforms[v] *= camera_reset;
+			}
 		}
 
 		if (view_count == 1) {
@@ -2969,7 +2981,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							}
 							cull_data.cull->lock.unlock();
 
-							idata.flags &= ~uint32_t(InstanceData::FLAG_REFLECTION_PROBE_DIRTY);
+							idata.flags &= ~InstanceData::FLAG_REFLECTION_PROBE_DIRTY;
 						}
 
 						if (RSG::light_storage->reflection_probe_instance_has_reflection(RID::from_uint64(idata.instance_data_rid))) {
@@ -3058,7 +3070,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 						ERR_FAIL_NULL(geom->geometry_instance);
 						geom->geometry_instance->pair_light_instances(instance_pair_buffer, idx);
-						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_LIGHTING_DIRTY);
+						idata.flags &= ~InstanceData::FLAG_GEOM_LIGHTING_DIRTY;
 					}
 
 					if (idata.flags & InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY) {
@@ -3068,7 +3080,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						cull_data.cull->lock.lock();
 						geom->geometry_instance->set_softshadow_projector_pairing(geom->softshadow_count > 0, geom->projector_count > 0);
 						cull_data.cull->lock.unlock();
-						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY);
+						idata.flags &= ~InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY;
 					}
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_REFLECTION_PROBE) && (idata.flags & InstanceData::FLAG_GEOM_REFLECTION_DIRTY)) {
@@ -3086,7 +3098,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 						ERR_FAIL_NULL(geom->geometry_instance);
 						geom->geometry_instance->pair_reflection_probe_instances(instance_pair_buffer, idx);
-						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_REFLECTION_DIRTY);
+						idata.flags &= ~InstanceData::FLAG_GEOM_REFLECTION_DIRTY;
 					}
 
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_DECAL) && (idata.flags & InstanceData::FLAG_GEOM_DECAL_DIRTY)) {
@@ -3105,7 +3117,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						ERR_FAIL_NULL(geom->geometry_instance);
 						geom->geometry_instance->pair_decal_instances(instance_pair_buffer, idx);
 
-						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_DECAL_DIRTY);
+						idata.flags &= ~InstanceData::FLAG_GEOM_DECAL_DIRTY;
 					}
 
 					if (idata.flags & InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY) {
@@ -3123,7 +3135,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						ERR_FAIL_NULL(geom->geometry_instance);
 						geom->geometry_instance->pair_voxel_gi_instances(instance_pair_buffer, idx);
 
-						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY);
+						idata.flags &= ~InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY;
 					}
 
 					if ((idata.flags & InstanceData::FLAG_LIGHTMAP_CAPTURE) && idata.instance->last_frame_pass != frame_number && !idata.instance->lightmap_target_sh.is_empty() && !idata.instance->lightmap_sh.is_empty()) {
@@ -3982,7 +3994,7 @@ void RendererSceneCull::render_probes() {
 				ERR_FAIL_NULL(geom->geometry_instance);
 				geom->geometry_instance->pair_voxel_gi_instances(instance_pair_buffer, idx);
 
-				ins->scenario->instance_data[ins->array_index].flags &= ~uint32_t(InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY);
+				ins->scenario->instance_data[ins->array_index].flags &= ~InstanceData::FLAG_GEOM_VOXEL_GI_DIRTY;
 			}
 
 			ERR_FAIL_NULL(geom->geometry_instance);

@@ -228,3 +228,11 @@ Validate extension JSON: Error: Field 'classes/NavigationServer3D/methods/map_ge
 
 `query_path` and `map_get_path` methods changed to be non const due to internal compatibility and server changes.
 Added optional callback parameters to `query_path` functions. Compatibility methods registered.
+
+
+GH-90057
+--------
+Validate extension JSON: Error: Field 'classes/EditorInterface/methods/open_scene_from_path/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument to open_scene_from_path to create a new inherited scene.
+Compatibility method registered.
