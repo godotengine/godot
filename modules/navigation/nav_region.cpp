@@ -32,7 +32,9 @@
 
 #include "nav_map.h"
 
+#include "3d/nav_map_builder_3d.h"
 #include "3d/nav_mesh_queries_3d.h"
+#include "3d/nav_region_iteration_3d.h"
 
 void NavRegion::set_map(NavMap *p_map) {
 	if (map == p_map) {
@@ -153,8 +155,9 @@ void NavRegion::update_polygons() {
 	if (!polygons_dirty) {
 		return;
 	}
-	polygons.clear();
+	navmesh_polygons.clear();
 	surface_area = 0.0;
+	bounds = AABB();
 	polygons_dirty = false;
 
 	if (map == nullptr) {
@@ -174,14 +177,15 @@ void NavRegion::update_polygons() {
 
 	const Vector3 *vertices_r = pending_navmesh_vertices.ptr();
 
-	polygons.resize(pending_navmesh_polygons.size());
+	navmesh_polygons.resize(pending_navmesh_polygons.size());
 
 	real_t _new_region_surface_area = 0.0;
+	AABB _new_bounds;
 
-	// Build
+	bool first_vertex = true;
 	int navigation_mesh_polygon_index = 0;
-	for (gd::Polygon &polygon : polygons) {
-		polygon.owner = this;
+
+	for (gd::Polygon &polygon : navmesh_polygons) {
 		polygon.surface_area = 0.0;
 
 		Vector<int> navigation_mesh_polygon = pending_navmesh_polygons[navigation_mesh_polygon_index];
@@ -221,7 +225,14 @@ void NavRegion::update_polygons() {
 
 			Vector3 point_position = transform.xform(vertices_r[idx]);
 			polygon.points[j].pos = point_position;
-			polygon.points[j].key = map->get_point_key(point_position);
+			polygon.points[j].key = NavMapBuilder3D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
+
+			if (first_vertex) {
+				first_vertex = false;
+				_new_bounds.position = point_position;
+			} else {
+				_new_bounds.expand_to(point_position);
+			}
 		}
 
 		if (!valid) {
@@ -230,6 +241,60 @@ void NavRegion::update_polygons() {
 	}
 
 	surface_area = _new_region_surface_area;
+	bounds = _new_bounds;
+}
+
+void NavRegion::get_iteration_update(NavRegionIteration &r_iteration) {
+	r_iteration.navigation_layers = get_navigation_layers();
+	r_iteration.enter_cost = get_enter_cost();
+	r_iteration.travel_cost = get_travel_cost();
+	r_iteration.owner_object_id = get_owner_id();
+	r_iteration.owner_type = get_type();
+
+	r_iteration.enabled = enabled;
+	r_iteration.transform = transform;
+	r_iteration.owner_use_edge_connections = use_edge_connections;
+	r_iteration.bounds = get_bounds();
+
+	r_iteration.navmesh_polygons.resize(navmesh_polygons.size());
+
+	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
+		const gd::Polygon &from_polygon = navmesh_polygons[i];
+		gd::Polygon &to_polygon = r_iteration.navmesh_polygons[i];
+
+		to_polygon.surface_area = from_polygon.surface_area;
+		to_polygon.owner = &r_iteration;
+		to_polygon.points.resize(from_polygon.points.size());
+
+		const LocalVector<gd::Point> &from_points = from_polygon.points;
+		LocalVector<gd::Point> &to_points = to_polygon.points;
+
+		to_points.resize(from_points.size());
+
+		for (uint32_t j = 0; j < from_points.size(); j++) {
+			to_points[j].pos = from_points[j].pos;
+			to_points[j].key = from_points[j].key;
+		}
+
+		const LocalVector<gd::Edge> &from_edges = from_polygon.edges;
+		LocalVector<gd::Edge> &to_edges = to_polygon.edges;
+
+		to_edges.resize(from_edges.size());
+
+		for (uint32_t j = 0; j < from_edges.size(); j++) {
+			const LocalVector<gd::Edge::Connection> &from_connections = from_edges[j].connections;
+			LocalVector<gd::Edge::Connection> &to_connections = to_edges[j].connections;
+
+			to_connections.resize(from_connections.size());
+
+			for (uint32_t k = 0; k < from_connections.size(); k++) {
+				to_connections[k] = from_connections[k];
+			}
+		}
+	}
+
+	r_iteration.surface_area = surface_area;
+	r_iteration.owner_rid = get_self();
 }
 
 void NavRegion::request_sync() {
