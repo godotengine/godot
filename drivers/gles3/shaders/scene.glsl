@@ -650,13 +650,16 @@ void main() {
 #endif
 
 	vertex_interp = vertex;
+
+	// Normalize TBN vectors before interpolation, per MikkTSpace.
+	// See: http://www.mikktspace.com/
 #ifdef NORMAL_USED
-	normal_interp = normal;
+	normal_interp = normalize(normal);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	tangent_interp = tangent;
-	binormal_interp = binormal;
+	tangent_interp = normalize(tangent);
+	binormal_interp = normalize(binormal);
 #endif
 
 	// Calculate shadows.
@@ -1799,23 +1802,22 @@ void main() {
 	float alpha = 1.0;
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 binormal = normalize(binormal_interp);
-	vec3 tangent = normalize(tangent_interp);
+	vec3 binormal = binormal_interp;
+	vec3 tangent = tangent_interp;
 #else
 	vec3 binormal = vec3(0.0);
 	vec3 tangent = vec3(0.0);
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normalize(normal_interp);
-
+	vec3 normal = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
 		normal = -normal;
 	}
-#endif
-
-#endif //NORMAL_USED
+#endif // DO_SIDE_CHECK
+	vec3 geo_normal = normalize(normal);
+#endif // NORMAL_USED
 
 #ifdef UV_USED
 	vec2 uv = uv_interp;
@@ -1908,21 +1910,22 @@ void main() {
 
 #endif // !USE_SHADOW_TO_OPACITY
 
-#ifdef NORMAL_MAP_USED
-
+#if defined(NORMAL_MAP_USED)
 	normal_map.xy = normal_map.xy * 2.0 - 1.0;
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
+	// Tangent-space transformation is performed using unnormalized TBN vectors, per MikkTSpace.
+	// See: http://www.mikktspace.com/
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
-
-#endif
+#elif defined(NORMAL_USED)
+	normal = geo_normal;
+#endif // NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
 
 	if (anisotropy > 0.01) {
-		//rotation matrix
-		mat3 rot = mat3(tangent, binormal, normal);
-		//make local to space
+		mat3 rot = mat3(normalize(tangent), normalize(binormal), normal);
+		// Make local to space.
 		tangent = normalize(rot * vec3(anisotropy_flow.x, anisotropy_flow.y, 0.0));
 		binormal = normalize(rot * vec3(-anisotropy_flow.y, anisotropy_flow.x, 0.0));
 	}
@@ -2154,8 +2157,8 @@ void main() {
 				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal,
 				tangent, anisotropy,
@@ -2180,8 +2183,8 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
 #endif
@@ -2204,8 +2207,8 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 				tangent,
 				binormal, anisotropy,
@@ -2464,8 +2467,8 @@ void main() {
 			rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+			clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal,
 			tangent, anisotropy,
@@ -2497,8 +2500,8 @@ void main() {
 			rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+			clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
@@ -2527,8 +2530,8 @@ void main() {
 			rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-			clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+			clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_RIM_USED
 #ifdef LIGHT_ANISOTROPY_USED
 			tangent,
 			binormal, anisotropy,

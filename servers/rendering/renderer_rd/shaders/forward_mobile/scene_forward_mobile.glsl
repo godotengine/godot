@@ -433,6 +433,9 @@ void main() {
 #endif
 
 	vertex_interp = vertex;
+
+	// Normalize TBN vectors before interpolation, per MikkTSpace.
+	// See: http://www.mikktspace.com/
 #ifdef NORMAL_USED
 	normal_interp = normalize(normal);
 #endif
@@ -881,23 +884,22 @@ void main() {
 	float alpha = 1.0;
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 binormal = normalize(binormal_interp);
-	vec3 tangent = normalize(tangent_interp);
-#else
+	vec3 binormal = binormal_interp;
+	vec3 tangent = tangent_interp;
+#else // TANGENT_USED || NORMAL_MAP_USED || LIGHT_ANISOTROPY_USED
 	vec3 binormal = vec3(0.0);
 	vec3 tangent = vec3(0.0);
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normalize(normal_interp);
-
+	vec3 normal = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
 		normal = -normal;
 	}
-#endif
-
-#endif //NORMAL_USED
+#endif // DO_SIDE_CHECK
+	vec3 geo_normal = normalize(normal);
+#endif // NORMAL_USED
 
 #ifdef UV_USED
 	vec2 uv = uv_interp;
@@ -1036,21 +1038,22 @@ void main() {
 
 #endif // !USE_SHADOW_TO_OPACITY
 
-#ifdef NORMAL_MAP_USED
-
+#if defined(NORMAL_MAP_USED)
 	normal_map.xy = normal_map.xy * 2.0 - 1.0;
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
+	// Tangent-space transformation is performed using unnormalized TBN vectors, per MikkTSpace.
+	// See: http://www.mikktspace.com/
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
-
-#endif
+#elif defined(NORMAL_USED)
+	normal = geo_normal;
+#endif // NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
 
 	if (anisotropy > 0.01) {
-		//rotation matrix
-		mat3 rot = mat3(tangent, binormal, normal);
-		//make local to space
+		mat3 rot = mat3(normalize(tangent), normalize(binormal), normal);
+		// Make local to space.
 		tangent = normalize(rot * vec3(anisotropy_flow.x, anisotropy_flow.y, 0.0));
 		binormal = normalize(rot * vec3(-anisotropy_flow.y, anisotropy_flow.x, 0.0));
 	}
@@ -1118,7 +1121,7 @@ void main() {
 		float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
 
 		if (decals.data[decal_index].normal_fade > 0.0) {
-			fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
+			fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(geo_normal, decals.data[decal_index].normal) * 0.5 + 0.5);
 		}
 
 		//we need ddx/ddy for mipmaps, so simulate them
@@ -1265,10 +1268,9 @@ void main() {
 #ifdef LIGHT_CLEARCOAT_USED
 
 	if (sc_scene_use_reflection_cubemap()) {
-		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
-		float NoV = max(dot(n, view), 0.0001);
-		vec3 ref_vec = reflect(-view, n);
-		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
+		float NoV = max(dot(geo_normal, view), 0.0001); // We want to use geometric normal, not normal_map
+		vec3 ref_vec = reflect(-view, geo_normal);
+		ref_vec = mix(ref_vec, geo_normal, clearcoat_roughness * clearcoat_roughness);
 		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
 		float Fc = clearcoat * (0.04 + 0.96 * SchlickFresnel(NoV));
 		float attenuation = 1.0 - Fc;
@@ -1508,7 +1510,7 @@ void main() {
 					vec4 pssm_coord;
 					float blur_factor;
 					vec3 light_dir = directional_lights.data[i].direction;
-					vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
+					vec3 base_normal_bias = geo_normal * (1.0 - max(0.0, dot(light_dir, -geo_normal)));
 
 #define BIAS_FUNC(m_var, m_idx)                                                                 \
 	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                     \
@@ -1690,8 +1692,8 @@ void main() {
 					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+					clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
 #endif
@@ -1721,8 +1723,8 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 				tangent,
 				binormal, anisotropy,
@@ -1749,8 +1751,8 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
-#endif
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
 				tangent,
 				binormal, anisotropy,
