@@ -51,7 +51,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 	frame_metrics.write[last_metric] = p_metric;
 
-	List<String> stack;
+	LocalVector<String> stack;
 	for (int i = 0; i < frame_metrics[last_metric].areas.size(); i++) {
 		String name = frame_metrics[last_metric].areas[i].name;
 		frame_metrics.write[last_metric].areas.write[i].color_cache = _get_color_from_signature(name);
@@ -62,7 +62,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 		}
 
 		if (stack.size()) {
-			full_name = stack.back()->get() + name;
+			full_name = stack.back() + name;
 		} else {
 			full_name = name;
 		}

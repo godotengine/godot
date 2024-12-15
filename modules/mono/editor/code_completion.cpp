@@ -147,11 +147,11 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		} break;
 		case CompletionKind::SCENE_PATHS: {
 			Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			List<String> directories;
+			LocalVector<String> directories;
 			directories.push_back(dir_access->get_current_dir());
 
 			while (!directories.is_empty()) {
-				dir_access->change_dir(directories.back()->get());
+				dir_access->change_dir(directories.back());
 				directories.pop_back();
 
 				dir_access->list_dir_begin();

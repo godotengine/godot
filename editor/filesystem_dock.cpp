@@ -346,11 +346,11 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 		// BFS to find all uncollapsed paths of the resource directory.
 		TreeItem *res_subtree = root->get_first_child()->get_next();
 		if (res_subtree) {
-			List<TreeItem *> queue;
+			LocalVector<TreeItem *> queue;
 			queue.push_back(res_subtree);
 
 			while (!queue.is_empty()) {
-				TreeItem *ti = queue.back()->get();
+				TreeItem *ti = queue.back();
 				queue.pop_back();
 				if (!ti->is_collapsed() && ti->get_child_count() > 0) {
 					Variant path = ti->get_metadata(0);

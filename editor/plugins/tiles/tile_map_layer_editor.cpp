@@ -1203,10 +1203,10 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_bucket_fill(
 		if (p_contiguous) {
 			// Replace continuous tiles like the source.
 			RBSet<Vector2i> already_checked;
-			List<Vector2i> to_check;
+			LocalVector<Vector2i> to_check;
 			to_check.push_back(p_coords);
 			while (!to_check.is_empty()) {
-				Vector2i coords = to_check.back()->get();
+				Vector2i coords = to_check.back();
 				to_check.pop_back();
 				if (!already_checked.has(coords)) {
 					if (source_cell.source_id == edited_layer->get_cell_source_id(coords) &&
@@ -2726,10 +2726,10 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 	if (p_contiguous) {
 		// Replace continuous tiles like the source.
 		RBSet<Vector2i> already_checked;
-		List<Vector2i> to_check;
+		LocalVector<Vector2i> to_check;
 		to_check.push_back(p_coords);
 		while (!to_check.is_empty()) {
-			Vector2i coords = to_check.back()->get();
+			Vector2i coords = to_check.back();
 			to_check.pop_back();
 			if (!already_checked.has(coords)) {
 				// Get the candidate cell pattern.
