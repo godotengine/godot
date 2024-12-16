@@ -652,6 +652,99 @@ TEST_CASE("[Array] Test rfind_custom") {
 	CHECK_EQ(index, 4);
 }
 
+TEST_CASE("[Array] Typed construction from other types") {
+	Object *obj1 = memnew(Object);
+	Object *obj2 = memnew(Object);
+	Object *obj3 = memnew(Object);
+
+	SUBCASE("To Vector") {
+		TypedArray<int> array_int;
+		array_int.append(1);
+		array_int.append(10);
+		array_int.append(100);
+		Vector<int> vector_int = Vector<int>(array_int);
+		CHECK_EQ(vector_int.size(), array_int.size());
+		// FIXME: Needs explicit casts to workaround error C2593: 'operator ==' is ambiguous
+		CHECK_EQ((int)vector_int[0], (int)array_int[0]);
+		CHECK_EQ((int)vector_int[1], (int)array_int[1]);
+		CHECK_EQ((int)vector_int[2], (int)array_int[2]);
+
+		TypedArray<Object> array_obj;
+		array_obj.append(obj1);
+		array_obj.append(obj2);
+		array_obj.append(obj3);
+		Vector<Object *> vector_obj = Vector<Object *>(array_obj);
+		CHECK_EQ(vector_obj.size(), array_obj.size());
+		CHECK_EQ(vector_obj[0], array_obj[0]);
+		CHECK_EQ(vector_obj[1], array_obj[1]);
+		CHECK_EQ(vector_obj[2], array_obj[2]);
+	}
+
+	SUBCASE("From Vector") {
+		Vector<int> vector_int = { 1, 10, 100 };
+		TypedArray<int> array_int = TypedArray<int>(vector_int);
+		CHECK_EQ(vector_int.size(), array_int.size());
+		CHECK_EQ((int)vector_int[0], (int)array_int[0]);
+		CHECK_EQ((int)vector_int[1], (int)array_int[1]);
+		CHECK_EQ((int)vector_int[2], (int)array_int[2]);
+
+		Vector<Object *> vector_obj = { obj1, obj2, obj3 };
+		TypedArray<Object> array_obj = TypedArray<Object>(vector_obj);
+		CHECK_EQ(vector_obj.size(), array_obj.size());
+		CHECK_EQ(vector_obj[0], array_obj[0]);
+		CHECK_EQ(vector_obj[1], array_obj[1]);
+		CHECK_EQ(vector_obj[2], array_obj[2]);
+	}
+
+	SUBCASE("To List") {
+		TypedArray<int> array_int;
+		array_int.append(1);
+		array_int.append(10);
+		array_int.append(100);
+		Vector<int> list_int = Vector<int>(array_int);
+		CHECK_EQ(list_int.size(), array_int.size());
+		CHECK_EQ((int)list_int.get(0), (int)array_int[0]);
+		CHECK_EQ((int)list_int.get(1), (int)array_int[1]);
+		CHECK_EQ((int)list_int.get(2), (int)array_int[2]);
+
+		TypedArray<Object> array_obj;
+		array_obj.append(obj1);
+		array_obj.append(obj2);
+		array_obj.append(obj3);
+		Vector<Object *> list_obj = Vector<Object *>(array_obj);
+		CHECK_EQ(list_obj.size(), array_obj.size());
+		CHECK_EQ(list_obj.get(0), array_obj[0]);
+		CHECK_EQ(list_obj.get(1), array_obj[1]);
+		CHECK_EQ(list_obj.get(2), array_obj[2]);
+	}
+
+	SUBCASE("From List") {
+		List<int> list_int;
+		list_int.push_back(1);
+		list_int.push_back(10);
+		list_int.push_back(100);
+		TypedArray<int> array_int = TypedArray<int>(list_int);
+		CHECK_EQ(list_int.size(), array_int.size());
+		CHECK_EQ((int)list_int.get(0), (int)array_int[0]);
+		CHECK_EQ((int)list_int.get(1), (int)array_int[1]);
+		CHECK_EQ((int)list_int.get(2), (int)array_int[2]);
+
+		List<Object *> list_obj;
+		list_obj.push_back(obj1);
+		list_obj.push_back(obj2);
+		list_obj.push_back(obj3);
+		TypedArray<Object> array_obj = TypedArray<Object>(list_obj);
+		CHECK_EQ(list_obj.size(), array_obj.size());
+		CHECK_EQ(list_obj.get(0), array_obj[0]);
+		CHECK_EQ(list_obj.get(1), array_obj[1]);
+		CHECK_EQ(list_obj.get(2), array_obj[2]);
+	}
+
+	memfree(obj1);
+	memfree(obj2);
+	memfree(obj3);
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H
