@@ -236,3 +236,10 @@ Validate extension JSON: Error: Field 'classes/EditorInterface/methods/open_scen
 
 Added optional argument to open_scene_from_path to create a new inherited scene.
 Compatibility method registered.
+
+
+GH-97449
+--------
+Validate extension JSON: Error: Field 'classes/GraphEdit/methods/connect_node/arguments': size changed value in new API, from 4 to 5.
+
+Added optional argument to connect_node to specify whether the connection should be automatically deleted if invalid. Compatibility method registered.
