@@ -6679,7 +6679,7 @@ void HumanAnimationBoneNameMapping::MapAnimationBoneName(const Ref<Animation> &p
 	for(int i = 0; i < p_animation->get_track_count(); i++) {
 		NodePath path = p_animation->track_get_path(i);
 		Animation::TrackType track_src_type = p_animation->track_get_type(i);
-		if(track_src_type == Animation::TYPE_POSITION_3D) {
+		if(track_src_type == Animation::TYPE_POSITION_3D || track_src_type == Animation::TYPE_ROTATION_3D) {
 			
 			StringName bone_name = path.get_name(0);
 			if(mapping.has(bone_name)) {

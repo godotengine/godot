@@ -207,6 +207,7 @@ bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,const Ani
         HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
         Quaternion rot;
         Error err = p_animation->try_rotation_track_interpolate(track_index, time, &rot);
+
         set_animation_rotation(rot,mapping->get_bone_name(path_name));
         
         return true;

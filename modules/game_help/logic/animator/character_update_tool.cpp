@@ -378,6 +378,11 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             }
         } break;
         case Animation::TYPE_ROTATION_3D: {
+			if (post_rotation.is_valid()) {
+				if (post_rotation->apply_animation(a, animation_track, i, time, delta)) {
+					continue;
+				}
+			}
             int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
             if (bone_idx == -1) {
                 continue;
@@ -570,9 +575,8 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
 			post_rotation->apply(t_skeleton, bone_blend_weight, blend * blend_weight);
 			human_skeleton.apply_root_motion(root_motion.root_motion_position, root_motion.root_motion_rotation, root_motion.root_motion_position_add, root_motion.root_motion_rotation_add, blend * blend_weight);
 		}
-	}
-    
-    if(is_human && human_config.ptr()) {
+	}    
+    else if( is_human && human_config.ptr()) {
 		HumanAnim::HumanAnimmation::retarget(*human_config.ptr(), temp_anim_skeleton);
         human_skeleton.blend(temp_anim_skeleton, blend);
     }

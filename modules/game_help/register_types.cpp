@@ -193,6 +193,7 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 
 		ClassDB::register_abstract_class<CharacterMovement>();
+		ClassDB::register_abstract_class<HumanBonePostRotation>();
 
 		
 		ClassDB::register_abstract_class<AnimatorAIStateConditionBase>();
