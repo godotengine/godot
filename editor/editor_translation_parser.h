@@ -49,7 +49,7 @@ protected:
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);
 	virtual void get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment);
-	virtual void get_recognized_extensions(List<String> *r_extensions) const;
+	virtual void get_recognized_extensions(LocalVector<String> &r_extensions) const;
 };
 
 class EditorTranslationParser {
@@ -66,7 +66,7 @@ public:
 	Vector<Ref<EditorTranslationParserPlugin>> standard_parsers;
 	Vector<Ref<EditorTranslationParserPlugin>> custom_parsers;
 
-	void get_recognized_extensions(List<String> *r_extensions) const;
+	void get_recognized_extensions(LocalVector<String> &r_extensions) const;
 	bool can_parse(const String &p_extension) const;
 	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension) const;
 	void add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);

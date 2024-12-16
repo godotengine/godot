@@ -152,8 +152,8 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	return OK;
 }
 
-void ImageLoaderHDR::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("hdr");
+void ImageLoaderHDR::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("hdr");
 }
 
 ImageLoaderHDR::ImageLoaderHDR() {

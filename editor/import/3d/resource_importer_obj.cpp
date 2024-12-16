@@ -584,8 +584,8 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 	return scene;
 }
 
-void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("obj");
+void EditorOBJImporter::get_extensions(LocalVector<String> &r_extensions) const {
+	r_extensions.push_back("obj");
 }
 
 EditorOBJImporter::EditorOBJImporter() {
@@ -601,8 +601,8 @@ String ResourceImporterOBJ::get_visible_name() const {
 	return "OBJ as Mesh";
 }
 
-void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("obj");
+void ResourceImporterOBJ::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("obj");
 }
 
 String ResourceImporterOBJ::get_save_extension() const {

@@ -35,7 +35,7 @@
 
 #include "core/io/resource_loader.h"
 
-void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
+void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(LocalVector<String> &r_extensions) const {
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 

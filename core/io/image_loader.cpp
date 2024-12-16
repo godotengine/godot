@@ -37,8 +37,8 @@ void ImageFormatLoader::_bind_methods() {
 }
 
 bool ImageFormatLoader::recognize(const String &p_extension) const {
-	List<String> extensions;
-	get_recognized_extensions(&extensions);
+	LocalVector<String> extensions;
+	get_recognized_extensions(extensions);
 	for (const String &E : extensions) {
 		if (E.nocasecmp_to(p_extension) == 0) {
 			return true;
@@ -54,11 +54,11 @@ Error ImageFormatLoaderExtension::load_image(Ref<Image> p_image, Ref<FileAccess>
 	return err;
 }
 
-void ImageFormatLoaderExtension::get_recognized_extensions(List<String> *p_extension) const {
+void ImageFormatLoaderExtension::get_recognized_extensions(LocalVector<String> &p_extension) const {
 	PackedStringArray ext;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, ext)) {
 		for (int i = 0; i < ext.size(); i++) {
-			p_extension->push_back(ext[i]);
+			p_extension.push_back(ext[i]);
 		}
 	}
 }
@@ -108,7 +108,7 @@ Error ImageLoader::load_image(const String &p_file, Ref<Image> p_image, Ref<File
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
+void ImageLoader::get_recognized_extensions(LocalVector<String> &p_extensions) {
 	for (int i = 0; i < loader.size(); i++) {
 		loader[i]->get_recognized_extensions(p_extensions);
 	}
@@ -199,8 +199,8 @@ Ref<Resource> ResourceFormatLoaderImage::load(const String &p_path, const String
 	return image;
 }
 
-void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("image");
+void ResourceFormatLoaderImage::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("image");
 }
 
 bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {

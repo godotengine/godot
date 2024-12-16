@@ -3043,9 +3043,9 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	return scr;
 }
 
-void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gd");
-	p_extensions->push_back("gdc");
+void ResourceFormatLoaderGDScript::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("gd");
+	p_extensions.push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {

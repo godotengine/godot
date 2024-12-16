@@ -541,9 +541,9 @@ static Ref<Image> _ktx_mem_loader_func(const uint8_t *p_ktx, int p_size) {
 	return img;
 }
 
-void ResourceFormatKTX::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ktx");
-	p_extensions->push_back("ktx2");
+void ResourceFormatKTX::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ktx");
+	p_extensions.push_back("ktx2");
 }
 
 bool ResourceFormatKTX::handles_type(const String &p_type) const {

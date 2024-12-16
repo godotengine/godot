@@ -256,8 +256,8 @@ void Particles2DEditorPlugin::_get_base_emission_mask(PackedVector2Array &r_vali
 Particles2DEditorPlugin::Particles2DEditorPlugin() {
 	file = memnew(EditorFileDialog);
 
-	List<String> ext;
-	ImageLoader::get_recognized_extensions(&ext);
+	LocalVector<String> ext;
+	ImageLoader::get_recognized_extensions(ext);
 	for (const String &E : ext) {
 		file->add_filter("*." + E, E.to_upper());
 	}

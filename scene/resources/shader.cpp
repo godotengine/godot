@@ -329,8 +329,8 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 	return shader;
 }
 
-void ResourceFormatLoaderShader::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gdshader");
+void ResourceFormatLoaderShader::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("gdshader");
 }
 
 bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {

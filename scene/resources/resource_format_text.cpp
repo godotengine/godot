@@ -1422,25 +1422,25 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 	}
 }
 
-void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) const {
 	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
 
 	if (ClassDB::is_parent_class("PackedScene", p_type)) {
-		p_extensions->push_back("tscn");
+		p_extensions.push_back("tscn");
 	}
 
 	// Don't allow .tres for PackedScenes or GDExtension.
 	if (p_type != "PackedScene" && p_type != "GDExtension") {
-		p_extensions->push_back("tres");
+		p_extensions.push_back("tres");
 	}
 }
 
-void ResourceFormatLoaderText::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("tscn");
-	p_extensions->push_back("tres");
+void ResourceFormatLoaderText::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("tscn");
+	p_extensions.push_back("tres");
 }
 
 bool ResourceFormatLoaderText::handles_type(const String &p_type) const {

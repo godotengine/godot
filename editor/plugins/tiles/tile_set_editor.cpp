@@ -300,8 +300,8 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 				texture_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 				texture_file_dialog->connect("files_selected", callable_mp(this, &TileSetEditor::_load_texture_files));
 
-				List<String> extensions;
-				ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
+				LocalVector<String> extensions;
+				ResourceLoader::get_recognized_extensions_for_type("Texture2D", extensions);
 				for (const String &E : extensions) {
 					texture_file_dialog->add_filter("*." + E, E.to_upper());
 				}

@@ -250,8 +250,8 @@ void EditorFileSystem::_first_scan_filesystem() {
 
 	// Preloading GDExtensions file extensions to prevent looping on all the resource loaders
 	// for each files in _first_scan_process_scripts.
-	List<String> gdextension_extensions;
-	ResourceLoader::get_recognized_extensions_for_type("GDExtension", &gdextension_extensions);
+	LocalVector<String> gdextension_extensions;
+	ResourceLoader::get_recognized_extensions_for_type("GDExtension", gdextension_extensions);
 
 	// This loads the global class names from the scripts and ensures that even if the
 	// global_script_class_cache.cfg was missing or invalid, the global class names are valid in ScriptServer.
@@ -281,7 +281,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	ep.step(TTR("Starting file scan..."), 5, true);
 }
 
-void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
+void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_scan_dir, LocalVector<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions) {
 	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
 		_first_scan_process_scripts(scan_sub_dir, p_gdextension_extensions, p_existing_class_names, p_extensions);
 	}
@@ -315,7 +315,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 		}
 
 		// Check for GDExtensions.
-		if (p_gdextension_extensions.find(ext)) {
+		if (p_gdextension_extensions.has(ext)) {
 			const String path = p_scan_dir->full_path.path_join(scan_file);
 			const String type = ResourceLoader::get_resource_type(path);
 			if (type == SNAME("GDExtension")) {
@@ -3503,8 +3503,8 @@ void EditorFileSystem::_update_extensions() {
 	textfile_extensions.clear();
 	other_file_extensions.clear();
 
-	List<String> extensionsl;
-	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
+	LocalVector<String> extensionsl;
+	ResourceLoader::get_recognized_extensions_for_type("", extensionsl);
 	for (const String &E : extensionsl) {
 		valid_extensions.insert(E);
 	}
@@ -3527,7 +3527,7 @@ void EditorFileSystem::_update_extensions() {
 	}
 
 	extensionsl.clear();
-	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
+	ResourceFormatImporter::get_singleton()->get_recognized_extensions(extensionsl);
 	for (const String &E : extensionsl) {
 		import_extensions.insert(E);
 	}

@@ -53,7 +53,7 @@ public:
 
 	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
 	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 	virtual String get_importer_name() const override;

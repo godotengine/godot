@@ -83,7 +83,7 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 public:
 	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
 	virtual void get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) override;
-	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
+	virtual void get_recognized_extensions(LocalVector<String> &r_extensions) const override;
 
 	GDScriptEditorTranslationParserPlugin();
 };

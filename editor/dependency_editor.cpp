@@ -63,8 +63,8 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 	search->set_current_dir(replacing.get_base_dir());
 
 	search->clear_filters();
-	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
+	LocalVector<String> ext;
+	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), ext);
 	for (const String &E : ext) {
 		search->add_filter("*." + E);
 	}

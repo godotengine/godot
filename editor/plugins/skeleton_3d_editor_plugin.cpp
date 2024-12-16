@@ -610,8 +610,8 @@ void Skeleton3DEditor::export_skeleton_profile() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Export Skeleton Profile As..."));
 
-	List<String> exts;
-	ResourceLoader::get_recognized_extensions_for_type("SkeletonProfile", &exts);
+	LocalVector<String> exts;
+	ResourceLoader::get_recognized_extensions_for_type("SkeletonProfile", exts);
 	file_dialog->clear_filters();
 	for (const String &K : exts) {
 		file_dialog->add_filter("*." + K);

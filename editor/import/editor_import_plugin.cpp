@@ -52,12 +52,12 @@ String EditorImportPlugin::get_visible_name() const {
 	ERR_FAIL_V_MSG(String(), "Unimplemented _get_visible_name in add-on.");
 }
 
-void EditorImportPlugin::get_recognized_extensions(List<String> *p_extensions) const {
+void EditorImportPlugin::get_recognized_extensions(LocalVector<String> &p_extensions) const {
 	Vector<String> extensions;
 
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
 		for (int i = 0; i < extensions.size(); i++) {
-			p_extensions->push_back(extensions[i]);
+			p_extensions.push_back(extensions[i]);
 		}
 		return;
 	}

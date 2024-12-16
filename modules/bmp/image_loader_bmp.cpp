@@ -311,8 +311,8 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	return err;
 }
 
-void ImageLoaderBMP::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("bmp");
+void ImageLoaderBMP::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("bmp");
 }
 
 static Ref<Image> _bmp_mem_loader_func(const uint8_t *p_bmp, int p_size) {

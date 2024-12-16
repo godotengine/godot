@@ -233,8 +233,8 @@ void InspectorDock::_new_resource() {
 void InspectorDock::_load_resource(const String &p_type) {
 	load_resource_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type(p_type, &extensions);
+	LocalVector<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type(p_type, extensions);
 
 	load_resource_dialog->clear_filters();
 	for (const String &extension : extensions) {

@@ -45,7 +45,7 @@ class ResourceImporterDynamicFont : public ResourceImporter {
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 

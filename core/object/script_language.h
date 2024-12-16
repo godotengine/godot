@@ -420,7 +420,7 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;

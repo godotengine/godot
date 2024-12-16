@@ -48,8 +48,8 @@ String ResourceImporterOggVorbis::get_visible_name() const {
 	return "oggvorbisstr";
 }
 
-void ResourceImporterOggVorbis::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ogg");
+void ResourceImporterOggVorbis::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ogg");
 }
 
 String ResourceImporterOggVorbis::get_save_extension() const {

@@ -204,10 +204,10 @@ Ref<Resource> ResourceFormatLoaderCrypto::load(const String &p_path, const Strin
 	return nullptr;
 }
 
-void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("crt");
-	p_extensions->push_back("key");
-	p_extensions->push_back("pub");
+void ResourceFormatLoaderCrypto::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("crt");
+	p_extensions.push_back("key");
+	p_extensions.push_back("pub");
 }
 
 bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {

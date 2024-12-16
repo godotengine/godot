@@ -354,9 +354,9 @@ Ref<Resource> TranslationLoaderPO::load(const String &p_path, const String &p_or
 	return load_translation(f, r_error);
 }
 
-void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("po");
-	p_extensions->push_back("mo");
+void TranslationLoaderPO::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("po");
+	p_extensions.push_back("mo");
 }
 
 bool TranslationLoaderPO::handles_type(const String &p_type) const {

@@ -1012,8 +1012,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 }
 #endif
 
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
+void CSharpLanguage::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("cs");
 }
 
 #ifdef TOOLS_ENABLED
@@ -2863,8 +2863,8 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	return scr;
 }
 
-void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
+void ResourceFormatLoaderCSharpScript::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("cs");
 }
 
 bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const {

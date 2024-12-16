@@ -66,11 +66,11 @@ uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	ERR_FAIL_V(0);
 }
 
-void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
+void EditorSceneFormatImporter::get_extensions(LocalVector<String> &r_extensions) const {
 	Vector<String> arr;
 	if (GDVIRTUAL_CALL(_get_extensions, arr)) {
 		for (int i = 0; i < arr.size(); i++) {
-			r_extensions->push_back(arr[i]);
+			r_extensions.push_back(arr[i]);
 		}
 		return;
 	}
@@ -266,7 +266,7 @@ String ResourceImporterScene::get_visible_name() const {
 	return _scene_import_type.capitalize();
 }
 
-void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterScene::get_recognized_extensions(LocalVector<String> &p_extensions) const {
 	get_scene_importer_extensions(p_extensions);
 }
 
@@ -2363,8 +2363,8 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 
-	List<String> script_extentions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extentions);
+	LocalVector<String> script_extentions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", script_extentions);
 
 	String script_ext_hint;
 
@@ -2832,8 +2832,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
-		List<String> extensions;
-		importer_elem->get_extensions(&extensions);
+		LocalVector<String> extensions;
+		importer_elem->get_extensions(extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
@@ -2891,8 +2891,8 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
-		List<String> extensions;
-		importer_elem->get_extensions(&extensions);
+		LocalVector<String> extensions;
+		importer_elem->get_extensions(extensions);
 
 		for (const String &F : extensions) {
 			if (F.to_lower() == ext) {
@@ -3253,7 +3253,7 @@ void ResourceImporterScene::clean_up_importer_plugins() {
 	post_importer_plugins.clear();
 }
 
-void ResourceImporterScene::get_scene_importer_extensions(List<String> *p_extensions) {
+void ResourceImporterScene::get_scene_importer_extensions(LocalVector<String> &p_extensions) {
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		importer_elem->get_extensions(p_extensions);
 	}
@@ -3265,8 +3265,8 @@ uint32_t EditorSceneFormatImporterESCN::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-void EditorSceneFormatImporterESCN::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("escn");
+void EditorSceneFormatImporterESCN::get_extensions(LocalVector<String> &r_extensions) const {
+	r_extensions.push_back("escn");
 }
 
 Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {

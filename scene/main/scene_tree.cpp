@@ -1945,8 +1945,8 @@ SceneTree::SceneTree() {
 #ifndef _3D_DISABLED
 	{ // Load default fallback environment.
 		// Get possible extensions.
-		List<String> exts;
-		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
+		LocalVector<String> exts;
+		ResourceLoader::get_recognized_extensions_for_type("Environment", exts);
 		String ext_hint;
 		for (const String &E : exts) {
 			if (!ext_hint.is_empty()) {

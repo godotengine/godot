@@ -63,11 +63,11 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 
 	String extension = p_path.get_extension();
 
-	List<String> extensions;
+	LocalVector<String> extensions;
 	if (p_for_type.is_empty()) {
-		get_recognized_extensions(&extensions);
+		get_recognized_extensions(extensions);
 	} else {
-		get_recognized_extensions_for_type(p_for_type, &extensions);
+		get_recognized_extensions_for_type(p_for_type, extensions);
 	}
 
 	for (const String &E : extensions) {
@@ -129,13 +129,13 @@ bool ResourceFormatLoader::has_custom_uid_support() const {
 	return GDVIRTUAL_IS_OVERRIDDEN(_get_resource_uid);
 }
 
-void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) const {
 	if (p_type.is_empty() || handles_type(p_type)) {
 		get_recognized_extensions(p_extensions);
 	}
 }
 
-void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) {
+void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) {
 	for (int i = 0; i < loader_count; i++) {
 		loader[i]->get_recognized_extensions_for_type(p_type, p_extensions);
 	}
@@ -149,12 +149,12 @@ bool ResourceFormatLoader::exists(const String &p_path) const {
 	return FileAccess::exists(p_path); // By default just check file.
 }
 
-void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceFormatLoader::get_recognized_extensions(LocalVector<String> &p_extensions) const {
 	PackedStringArray exts;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, exts)) {
 		const String *r = exts.ptr();
 		for (int i = 0; i < exts.size(); ++i) {
-			p_extensions->push_back(r[i]);
+			p_extensions.push_back(r[i]);
 		}
 	}
 }

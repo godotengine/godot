@@ -64,8 +64,8 @@ public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	Ref<Resource> load_internal(const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode, bool p_silence_errors);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const override;
+	virtual void get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) const override;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
@@ -114,7 +114,7 @@ public:
 
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const = 0;
 	virtual String get_save_extension() const = 0;
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }

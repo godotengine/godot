@@ -150,8 +150,8 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_stri
 	return create_image_from_utf8_buffer(p_image, bytes, p_scale, p_upsample);
 }
 
-void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("svg");
+void ImageLoaderSVG::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("svg");
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {

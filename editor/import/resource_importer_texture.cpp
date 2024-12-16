@@ -175,7 +175,7 @@ String ResourceImporterTexture::get_visible_name() const {
 	return "Texture2D";
 }
 
-void ResourceImporterTexture::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterTexture::get_recognized_extensions(LocalVector<String> &p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
 

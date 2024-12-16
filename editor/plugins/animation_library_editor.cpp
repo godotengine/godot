@@ -134,8 +134,8 @@ void AnimationLibraryEditor::_add_library_confirm() {
 }
 
 void AnimationLibraryEditor::_load_library() {
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", &extensions);
+	LocalVector<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", extensions);
 
 	file_dialog->set_title(TTR("Load Animation"));
 	file_dialog->clear_filters();
@@ -196,8 +196,8 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 				file_dialog->set_current_file(String(file_dialog_library) + ".res");
 			}
 			file_dialog->clear_filters();
-			List<String> exts;
-			ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", &exts);
+			LocalVector<String> exts;
+			ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", exts);
 			for (const String &K : exts) {
 				file_dialog->add_filter("*." + K);
 			}
@@ -274,8 +274,8 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 				file_dialog->set_current_file(String(file_dialog_animation) + ".res");
 			}
 			file_dialog->clear_filters();
-			List<String> exts;
-			ResourceLoader::get_recognized_extensions_for_type("Animation", &exts);
+			LocalVector<String> exts;
+			ResourceLoader::get_recognized_extensions_for_type("Animation", exts);
 			for (const String &K : exts) {
 				file_dialog->add_filter("*." + K);
 			}
@@ -544,8 +544,8 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 			} break;
 			case LIB_BUTTON_LOAD: {
 				adding_animation_to_library = p_item->get_metadata(0);
-				List<String> extensions;
-				ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
+				LocalVector<String> extensions;
+				ResourceLoader::get_recognized_extensions_for_type("Animation", extensions);
 
 				file_dialog->clear_filters();
 				for (const String &K : extensions) {

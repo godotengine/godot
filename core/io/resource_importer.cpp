@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/os/os.h"
+#include "core/templates/local_vector.h"
 #include "core/variant/variant_parser.h"
 
 ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
@@ -183,22 +184,22 @@ Ref<Resource> ResourceFormatImporter::load_internal(const String &p_path, Error 
 	return res;
 }
 
-void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceFormatImporter::get_recognized_extensions(LocalVector<String> &p_extensions) const {
 	HashSet<String> found;
 
 	for (int i = 0; i < importers.size(); i++) {
-		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
+		LocalVector<String> local_exts;
+		importers[i]->get_recognized_extensions(local_exts);
 		for (const String &F : local_exts) {
 			if (!found.has(F)) {
-				p_extensions->push_back(F);
+				p_extensions.push_back(F);
 				found.insert(F);
 			}
 		}
 	}
 }
 
-void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) const {
 	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
@@ -216,11 +217,11 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 			continue;
 		}
 
-		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
+		LocalVector<String> local_exts;
+		importers[i]->get_recognized_extensions(local_exts);
 		for (const String &F : local_exts) {
 			if (!found.has(F)) {
-				p_extensions->push_back(F);
+				p_extensions.push_back(F);
 				found.insert(F);
 			}
 		}
@@ -461,8 +462,8 @@ void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importe
 
 void ResourceFormatImporter::get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers) {
 	for (int i = 0; i < importers.size(); i++) {
-		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
+		LocalVector<String> local_exts;
+		importers[i]->get_recognized_extensions(local_exts);
 		for (const String &F : local_exts) {
 			if (p_extension.to_lower() == F) {
 				r_importers->push_back(importers[i]);
@@ -483,8 +484,8 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 	float priority = 0;
 
 	for (int i = 0; i < importers.size(); i++) {
-		List<String> local_exts;
-		importers[i]->get_recognized_extensions(&local_exts);
+		LocalVector<String> local_exts;
+		importers[i]->get_recognized_extensions(local_exts);
 		for (const String &F : local_exts) {
 			if (p_extension.to_lower() == F && importers[i]->get_priority() > priority) {
 				importer = importers[i];

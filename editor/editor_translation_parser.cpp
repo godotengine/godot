@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
@@ -79,11 +80,11 @@ void EditorTranslationParserPlugin::get_comments(Vector<String> *r_ids_comment, 
 	}
 }
 
-void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
+void EditorTranslationParserPlugin::get_recognized_extensions(LocalVector<String> &r_extensions) const {
 	Vector<String> extensions;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
 		for (int i = 0; i < extensions.size(); i++) {
-			r_extensions->push_back(extensions[i]);
+			r_extensions.push_back(extensions[i]);
 		}
 	} else {
 		ERR_PRINT("Custom translation parser plugin's \"func get_recognized_extensions()\" is undefined.");
@@ -98,27 +99,27 @@ void EditorTranslationParserPlugin::_bind_methods() {
 
 /////////////////////////
 
-void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensions) const {
+void EditorTranslationParser::get_recognized_extensions(LocalVector<String> &r_extensions) const {
 	HashSet<String> extensions;
-	List<String> temp;
+	LocalVector<String> temp;
 	for (int i = 0; i < standard_parsers.size(); i++) {
-		standard_parsers[i]->get_recognized_extensions(&temp);
+		standard_parsers[i]->get_recognized_extensions(temp);
 	}
 	for (int i = 0; i < custom_parsers.size(); i++) {
-		custom_parsers[i]->get_recognized_extensions(&temp);
+		custom_parsers[i]->get_recognized_extensions(temp);
 	}
 	// Remove duplicates.
 	for (const String &E : temp) {
 		extensions.insert(E);
 	}
 	for (const String &E : extensions) {
-		r_extensions->push_back(E);
+		r_extensions.push_back(E);
 	}
 }
 
 bool EditorTranslationParser::can_parse(const String &p_extension) const {
-	List<String> extensions;
-	get_recognized_extensions(&extensions);
+	LocalVector<String> extensions;
+	get_recognized_extensions(extensions);
 	for (const String &extension : extensions) {
 		if (p_extension == extension) {
 			return true;
@@ -130,8 +131,8 @@ bool EditorTranslationParser::can_parse(const String &p_extension) const {
 Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const String &p_extension) const {
 	// Consider user-defined parsers first.
 	for (int i = 0; i < custom_parsers.size(); i++) {
-		List<String> temp;
-		custom_parsers[i]->get_recognized_extensions(&temp);
+		LocalVector<String> temp;
+		custom_parsers[i]->get_recognized_extensions(temp);
 		for (const String &E : temp) {
 			if (E == p_extension) {
 				return custom_parsers[i];
@@ -140,8 +141,8 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	}
 
 	for (int i = 0; i < standard_parsers.size(); i++) {
-		List<String> temp;
-		standard_parsers[i]->get_recognized_extensions(&temp);
+		LocalVector<String> temp;
+		standard_parsers[i]->get_recognized_extensions(temp);
 		for (const String &E : temp) {
 			if (E == p_extension) {
 				return standard_parsers[i];

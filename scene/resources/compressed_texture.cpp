@@ -480,8 +480,8 @@ Ref<Resource> ResourceFormatLoaderCompressedTexture2D::load(const String &p_path
 	return st;
 }
 
-void ResourceFormatLoaderCompressedTexture2D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctex");
+void ResourceFormatLoaderCompressedTexture2D::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ctex");
 }
 
 bool ResourceFormatLoaderCompressedTexture2D::handles_type(const String &p_type) const {
@@ -669,8 +669,8 @@ Ref<Resource> ResourceFormatLoaderCompressedTexture3D::load(const String &p_path
 	return st;
 }
 
-void ResourceFormatLoaderCompressedTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctex3d");
+void ResourceFormatLoaderCompressedTexture3D::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ctex3d");
 }
 
 bool ResourceFormatLoaderCompressedTexture3D::handles_type(const String &p_type) const {
@@ -884,10 +884,10 @@ Ref<Resource> ResourceFormatLoaderCompressedTextureLayered::load(const String &p
 	return ct;
 }
 
-void ResourceFormatLoaderCompressedTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctexarray");
-	p_extensions->push_back("ccube");
-	p_extensions->push_back("ccubearray");
+void ResourceFormatLoaderCompressedTextureLayered::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ctexarray");
+	p_extensions.push_back("ccube");
+	p_extensions.push_back("ccubearray");
 }
 
 bool ResourceFormatLoaderCompressedTextureLayered::handles_type(const String &p_type) const {

@@ -78,8 +78,8 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 }
 
 Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
-	List<String> exts;
-	::ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
+	LocalVector<String> exts;
+	::ResourceLoader::get_recognized_extensions_for_type(p_type, exts);
 	Vector<String> ret;
 	for (const String &E : exts) {
 		ret.push_back(E);

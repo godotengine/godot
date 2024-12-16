@@ -838,9 +838,9 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	String path = rc[p_idx];
 	// if its not on disk its a help file or deleted
 	if (FileAccess::exists(path)) {
-		List<String> extensions;
-		ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-		ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+		LocalVector<String> extensions;
+		ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+		ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 
 		if (extensions.find(path.get_extension())) {
 			Ref<Resource> scr = ResourceLoader::load(path);
@@ -1332,8 +1332,8 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			file_dialog_option = FILE_OPEN;
 
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+			LocalVector<String> extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
 			file_dialog->clear_filters();
 			for (const String &extension : extensions) {
 				file_dialog->add_filter("*." + extension, extension.to_upper());
@@ -1355,9 +1355,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			String path = previous_scripts.back()->get();
 			previous_scripts.pop_back();
 
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+			LocalVector<String> extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+			ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 			bool built_in = !path.is_resource_file();
 
 			if (extensions.find(path.get_extension()) || built_in) {
@@ -1487,8 +1487,8 @@ void ScriptEditor::_menu_option(int p_option) {
 					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 					file_dialog_option = FILE_SAVE_AS;
 
-					List<String> extensions;
-					ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+					LocalVector<String> extensions;
+					ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
 					file_dialog->clear_filters();
 					file_dialog->set_current_dir(text_file->get_path().get_base_dir());
 					file_dialog->set_current_file(text_file->get_path().get_file());
@@ -2883,9 +2883,9 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 }
 
 Ref<Resource> ScriptEditor::open_file(const String &p_file) {
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+	LocalVector<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 	if (extensions.find(p_file.get_extension())) {
 		Ref<Resource> scr = ResourceLoader::load(p_file);
 		if (scr.is_null()) {
@@ -3468,9 +3468,9 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	restoring_layout = true;
 
 	HashSet<String> loaded_scripts;
-	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+	LocalVector<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 
 	for (int i = 0; i < scripts.size(); i++) {
 		String path = scripts[i];

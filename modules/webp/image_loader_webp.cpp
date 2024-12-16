@@ -58,8 +58,8 @@ Error ImageLoaderWebP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitFiel
 	return err;
 }
 
-void ImageLoaderWebP::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("webp");
+void ImageLoaderWebP::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("webp");
 }
 
 ImageLoaderWebP::ImageLoaderWebP() {

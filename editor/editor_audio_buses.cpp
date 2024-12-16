@@ -1389,8 +1389,8 @@ EditorAudioBuses::EditorAudioBuses() {
 	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
 
 	file_dialog = memnew(EditorFileDialog);
-	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
+	LocalVector<String> ext;
+	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", ext);
 	for (const String &E : ext) {
 		file_dialog->add_filter("*." + E, TTR("Audio Bus Layout"));
 	}

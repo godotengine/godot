@@ -72,8 +72,8 @@ protected:
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const;
+	virtual void get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
@@ -231,7 +231,7 @@ public:
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
-	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
+	static void get_recognized_extensions_for_type(const String &p_type, LocalVector<String> &p_extensions);
 	static void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front = false);
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);

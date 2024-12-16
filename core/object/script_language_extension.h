@@ -608,11 +608,11 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(PackedStringArray, _get_recognized_extensions)
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
+	virtual void get_recognized_extensions(LocalVector<String> &p_extensions) const override {
 		PackedStringArray ret;
 		GDVIRTUAL_CALL(_get_recognized_extensions, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_extensions->push_back(ret[i]);
+			p_extensions.push_back(ret[i]);
 		}
 	}
 

@@ -106,8 +106,8 @@ uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
 	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
 
-void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("blend");
+void EditorSceneFormatImporterBlend::get_extensions(LocalVector<String> &r_extensions) const {
+	r_extensions.push_back("blend");
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,

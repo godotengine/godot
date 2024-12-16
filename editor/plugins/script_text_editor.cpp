@@ -960,8 +960,8 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			symbol = ResourceUID::uid_to_path(symbol);
 		}
 
-		List<String> scene_extensions;
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+		LocalVector<String> scene_extensions;
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", scene_extensions);
 
 		if (scene_extensions.find(symbol.get_extension())) {
 			EditorNode::get_singleton()->load_scene(symbol);
@@ -1062,8 +1062,8 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		// Every symbol other than absolute path is relative path so keep this condition at last.
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
-			List<String> scene_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+			LocalVector<String> scene_extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", scene_extensions);
 
 			if (scene_extensions.find(path.get_extension())) {
 				EditorNode::get_singleton()->load_scene(path);

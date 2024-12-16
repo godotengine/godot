@@ -2681,8 +2681,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_NEW_INHERITED_SCENE:
 		case FILE_OPEN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+			LocalVector<String> extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -3134,8 +3134,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+			LocalVector<String> extensions;
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -7704,8 +7704,8 @@ EditorNode::EditorNode() {
 	file_script->set_title(TTR("Open & Run a Script"));
 	file_script->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	List<String> sexts;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
+	LocalVector<String> sexts;
+	ResourceLoader::get_recognized_extensions_for_type("Script", sexts);
 	for (const String &E : sexts) {
 		file_script->add_filter("*." + E);
 	}

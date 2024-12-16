@@ -193,7 +193,7 @@ class EditorFileSystem : public Node {
 	void _notify_filesystem_changed();
 	void _scan_filesystem();
 	void _first_scan_filesystem();
-	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions);
+	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, LocalVector<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions);
 
 	HashSet<String> late_update_files;
 

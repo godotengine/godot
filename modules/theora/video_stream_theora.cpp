@@ -660,8 +660,8 @@ Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const Strin
 	return ogv_stream;
 }
 
-void ResourceFormatLoaderTheora::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ogv");
+void ResourceFormatLoaderTheora::get_recognized_extensions(LocalVector<String> &p_extensions) const {
+	p_extensions.push_back("ogv");
 }
 
 bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
