@@ -1752,10 +1752,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null()) {
-			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
 			Ref<Script> script = p_resource->get_script();
-			if (script.is_valid() && script->get_global_name()) {
-				title += "script_class=\"" + String(script->get_global_name()) + "\" ";
+			if (script.is_valid()) {
+				title += "type=\"" + String(script->get_instance_base_type()) + "\" ";
+				if (script->get_global_name()) {
+					title += "script_class=\"" + String(script->get_global_name()) + "\" ";
+				}
+			} else {
+				title += "type=\"" + _resource_get_class(p_resource) + "\" ";
 			}
 		}
 
@@ -1893,7 +1897,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 
 			String id = res->get_scene_unique_id();
-			line += "type=\"" + _resource_get_class(res) + "\" id=\"" + id;
+			Ref<Script> script = res->get_script();
+			if (script.is_valid()) {
+				line += "type=\"" + String(script->get_instance_base_type()) + "\" id=\"" + id;
+			} else {
+				line += "type=\"" + _resource_get_class(res) + "\" id=\"" + id;
+			}
 			f->store_line(line + "\"]");
 			if (takeover_paths) {
 				res->set_path(p_path + "::" + id, true);

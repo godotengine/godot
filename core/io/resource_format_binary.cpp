@@ -2196,7 +2196,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		return ERR_CANT_CREATE;
 	}
 
-	save_unicode_string(f, _resource_get_class(p_resource));
+	Ref<Script> script = p_resource->get_script();
+	if (script.is_valid()) {
+		save_unicode_string(f, String(script->get_instance_base_type()));
+	} else {
+		save_unicode_string(f, _resource_get_class(p_resource));
+	}
 	f->store_64(0); //offset to import metadata
 
 	String script_class;
@@ -2206,9 +2211,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		format_flags |= FORMAT_FLAG_REAL_T_IS_DOUBLE;
 #endif
 		if (!p_resource->is_class("PackedScene")) {
-			Ref<Script> s = p_resource->get_script();
-			if (s.is_valid()) {
-				script_class = s->get_global_name();
+			if (script.is_valid()) {
+				script_class = script->get_global_name();
 				if (!script_class.is_empty()) {
 					format_flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS;
 				}
@@ -2234,7 +2238,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 			Dictionary missing_resource_properties = E->get_meta(META_MISSING_RESOURCES, Dictionary());
 
 			ResourceData &rd = resources.push_back(ResourceData())->get();
-			rd.type = _resource_get_class(E);
+			Ref<Script> s = E->get_script();
+			if (s.is_valid()) {
+				rd.type = String(s->get_instance_base_type());
+			} else {
+				rd.type = _resource_get_class(E);
+			}
 
 			List<PropertyInfo> property_list;
 			E->get_property_list(&property_list);
