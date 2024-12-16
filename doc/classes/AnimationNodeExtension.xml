@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_process" qualifiers="virtual">
+		<method name="_process_animation_node" qualifiers="virtual">
 			<return type="PackedFloat32Array" />
 			<param index="0" name="playback_info" type="PackedFloat64Array" />
 			<param index="1" name="test_only" type="bool" />
