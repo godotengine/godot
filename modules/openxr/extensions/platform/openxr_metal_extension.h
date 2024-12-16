@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_platform_inc.h                                                 */
+/*  openxr_metal_extension.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_PLATFORM_INC_H
-#define OPENXR_PLATFORM_INC_H
+#ifndef OPENXR_METAL_EXTENSION_H
+#define OPENXR_METAL_EXTENSION_H
 
-// In various places we need to include platform definitions but we can't
-// include these in our normal header files as we'll end up with issues.
+#include "../../openxr_api.h"
+#include "../../util.h"
+#include "../openxr_extension_wrapper.h"
 
-#ifdef VULKAN_ENABLED
-#define XR_USE_GRAPHICS_API_VULKAN
-#include "drivers/vulkan/rendering_context_driver_vulkan.h"
-#endif // VULKAN_ENABLED
+#include "core/templates/vector.h"
 
-#ifdef METAL_ENABLED
-#define XR_USE_GRAPHICS_API_METAL
-#include "drivers/metal/rendering_context_driver_metal.h"
-#endif // METAL_ENABLED
+// Always include this as late as possible.
+#include "../../openxr_platform_inc.h"
 
-#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
-#ifdef ANDROID_ENABLED
-#define XR_USE_GRAPHICS_API_OPENGL_ES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
-#else
-#define XR_USE_GRAPHICS_API_OPENGL
-#endif // ANDROID_ENABLED
-#if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
-#ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#else
-#include <EGL/egl.h>
-#endif // GLAD_ENABLED
-#endif // defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
-#ifdef X11_ENABLED
-#define GL_GLEXT_PROTOTYPES 1
-#define GL3_PROTOTYPES 1
-#include "thirdparty/glad/glad/gl.h"
-#include "thirdparty/glad/glad/glx.h"
-#endif // X11_ENABLED
-#endif // defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
+class OpenXRMetalExtension : public OpenXRGraphicsExtensionWrapper {
+public:
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
-#ifdef X11_ENABLED
-#include <X11/Xlib.h>
-#endif // X11_ENABLED
+	virtual void on_instance_created(const XrInstance p_instance) override;
+	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
 
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif // WINDOWS_ENABLED
+	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) override;
+	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) override;
+	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const override;
+	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) override;
+	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
+	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
+	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
 
-#ifdef ANDROID_ENABLED
-// The jobject type from jni.h is used by openxr_platform.h on Android.
-#include <jni.h>
-#endif // ANDROID_ENABLED
+private:
+	static XrGraphicsBindingMetalKHR graphics_binding_metal;
 
-// Include platform dependent structs.
-#include <openxr/openxr_platform.h>
+	struct SwapchainGraphicsData {
+		bool is_multiview;
+		Vector<RID> texture_rids;
+	};
 
-#endif // OPENXR_PLATFORM_INC_H
+	bool check_graphics_api_support();
+
+	EXT_PROTO_XRRESULT_FUNC3(xrGetMetalGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsMetalKHR *), p_graphics_requirements)
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainImages, (XrSwapchain), p_swapchain, (uint32_t), p_image_capacity_input, (uint32_t *), p_image_count_output, (XrSwapchainImageBaseHeader *), p_images)
+};
+
+#endif // OPENXR_METAL_EXTENSION_H
