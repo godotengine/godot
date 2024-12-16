@@ -950,6 +950,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// platforms, it's used to set up the time utilities.
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Setup");
 
+	OS::get_singleton()->initialize_launchpath();
+
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
@@ -4605,6 +4607,7 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->_cmdline.clear();
 	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
+	OS::get_singleton()->_launchpath = "";
 	OS::get_singleton()->_local_clipboard = "";
 
 	ResourceLoader::clear_translation_remaps();
