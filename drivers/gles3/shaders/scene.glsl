@@ -1882,10 +1882,18 @@ void main() {
 #ifndef USE_SHADOW_TO_OPACITY
 
 #if defined(ALPHA_SCISSOR_USED)
+#ifdef RENDER_MATERIAL
+	if (alpha < alpha_scissor_threshold) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 	alpha = 1.0;
+#endif // RENDER_MATERIAL
 #else
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
@@ -2215,9 +2223,17 @@ void main() {
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
+#ifdef RENDER_MATERIAL
+	if (alpha < alpha_scissor_threshold) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+#endif // RENDER_MATERIAL
 #endif // !ALPHA_SCISSOR_USED
 
 #endif // !MODE_RENDER_DEPTH
