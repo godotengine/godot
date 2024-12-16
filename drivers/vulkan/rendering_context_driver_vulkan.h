@@ -35,9 +35,12 @@
 
 #include "servers/rendering/rendering_context_driver.h"
 
+
 #ifdef USE_VOLK
 #include <volk.h>
 #else
+#include <stdint.h>
+#define VK_NO_STDINT_H
 #include <vulkan/vulkan.h>
 #endif
 
