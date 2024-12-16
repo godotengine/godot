@@ -1747,7 +1747,7 @@ void Curve3D::_bake() const {
 	}
 
 	if (!up_vector_enabled) {
-		baked_up_vector_cache.resize(0);
+		baked_up_vector_cache.clear();
 		return;
 	}
 

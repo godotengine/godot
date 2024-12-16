@@ -39,7 +39,7 @@ Error AESContext::start(Mode p_mode, const PackedByteArray &p_key, const PackedB
 	// Initialization vector.
 	if (p_mode == MODE_CBC_ENCRYPT || p_mode == MODE_CBC_DECRYPT) {
 		ERR_FAIL_COND_V_MSG(p_iv.size() != 16, ERR_INVALID_PARAMETER, "The initialization vector (IV) must be exactly 16 bytes.");
-		iv.resize(0);
+		iv.clear();
 		iv.append_array(p_iv);
 	}
 	// Encryption/decryption key.
@@ -96,7 +96,7 @@ PackedByteArray AESContext::get_iv_state() {
 
 void AESContext::finish() {
 	mode = MODE_MAX;
-	iv.resize(0);
+	iv.clear();
 }
 
 void AESContext::_bind_methods() {
