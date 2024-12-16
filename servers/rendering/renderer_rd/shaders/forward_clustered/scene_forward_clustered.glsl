@@ -1256,21 +1256,37 @@ void fragment_shader(in SceneData scene_data) {
 #ifndef USE_SHADOW_TO_OPACITY
 
 #ifdef ALPHA_SCISSOR_USED
+#ifdef MODE_RENDER_MATERIAL
+	if (alpha < alpha_scissor_threshold) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+#endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
 	vec3 object_pos = (inverse(read_model_matrix) * inv_view_matrix * vec4(vertex, 1.0)).xyz;
+#ifdef MODE_RENDER_MATERIAL
+	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
 	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
 		discard;
 	}
+#endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_HASH_USED
 
 // If we are not edge antialiasing, we need to remove the output alpha channel from scissor and hash
-#if (defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED)) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+#if (defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED)) && !defined(ALPHA_ANTIALIASING_EDGE_USED) && !defined(MODE_RENDER_MATERIAL)
 	alpha = 1.0;
 #endif
 
@@ -1314,10 +1330,21 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef ENABLE_CLIP_ALPHA
+#ifdef MODE_RENDER_MATERIAL
+	if (albedo.a < 0.99) {
+		// Used for doublepass and shadowmapping.
+		albedo.a = 0.0;
+		alpha = 0.0;
+	} else {
+		albedo.a = 1.0;
+		alpha = 1.0;
+	}
+#else
 	if (albedo.a < 0.99) {
 		//used for doublepass and shadowmapping
 		discard;
 	}
+#endif // MODE_RENDER_MATERIAL
 #endif
 
 	/////////////////////// FOG //////////////////////
@@ -2521,9 +2548,17 @@ void fragment_shader(in SceneData scene_data) {
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
 
 #if defined(ALPHA_SCISSOR_USED)
+#ifdef MODE_RENDER_MATERIAL
+	if (alpha < alpha_scissor_threshold) {
+		alpha = 0.0;
+	} else {
+		alpha = 1.0;
+	}
+#else
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
+#endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
 #endif // !MODE_RENDER_DEPTH
