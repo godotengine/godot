@@ -520,6 +520,24 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 	return true;
 }
 
+bool ResourceFormatImporter::is_import_read_only(const String &p_path) const {
+	bool valid = true;
+	PathAndType pat;
+	_get_path_and_type(p_path, pat, &valid);
+
+	if (!valid) {
+		return false;
+	}
+
+	for (int i = 0; i < importers.size(); i++) {
+		if (importers[i]->get_importer_name() == pat.importer) {
+			return importers[i]->is_read_only();
+		}
+	}
+
+	return false;
+}
+
 String ResourceFormatImporter::get_import_settings_hash() const {
 	Vector<Ref<ResourceImporter>> sorted_importers = importers;
 
@@ -541,8 +559,6 @@ ResourceFormatImporter::ResourceFormatImporter() {
 //////////////
 
 void ResourceImporter::_bind_methods() {
-	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
-	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
 }
 
 /////

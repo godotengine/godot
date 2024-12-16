@@ -54,6 +54,18 @@ public:
 		CACHE_MODE_REPLACE_DEEP,
 	};
 
+	/**
+	 * Implement get_import_order() in your import class
+	 * and return a value greater than 1 to override Godot's default importers and/or loaders.
+	 * Use IMPORT_ORDER_LOW_PRIORITY to have Godot default importers and/or loaders override yours
+	 * (e.g. generating import files for native types but still use their ResourceFormatLoaders)
+	 */
+	enum ImportOrder {
+		IMPORT_ORDER_LOW_PRIORITY = 0,
+		IMPORT_ORDER_DEFAULT = 1,
+		IMPORT_ORDER_SCENE = 100,
+	};
+
 protected:
 	static void _bind_methods();
 
@@ -86,13 +98,14 @@ public:
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
 	virtual bool is_imported(const String &p_path) const { return false; }
-	virtual int get_import_order(const String &p_path) const { return 0; }
+	virtual int get_import_order(const String &p_path) const { return IMPORT_ORDER_DEFAULT; }
 	virtual String get_import_group_file(const String &p_path) const { return ""; } //no group
 
 	virtual ~ResourceFormatLoader() {}
 };
 
 VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
+VARIANT_ENUM_CAST(ResourceFormatLoader::ImportOrder)
 
 typedef void (*ResourceLoadErrorNotify)(const String &p_text);
 typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);

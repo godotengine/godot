@@ -205,6 +205,9 @@ void ResourceFormatLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 	BIND_ENUM_CONSTANT(CACHE_MODE_IGNORE_DEEP);
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE_DEEP);
+	BIND_ENUM_CONSTANT(IMPORT_ORDER_LOW_PRIORITY);
+	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
+	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_recognize_path, "path", "type");
@@ -297,15 +300,24 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
 	Ref<Resource> res;
+	int foundIndex = -1;
+	int importOrder = -1;
 	for (int i = 0; i < loader_count; i++) {
 		if (!loader[i]->recognize_path(p_path, p_type_hint)) {
 			continue;
 		}
-		found = true;
-		res = loader[i]->load(p_path, original_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
-		if (!res.is_null()) {
-			break;
+
+		int newImportOrder = loader[i]->get_import_order(p_path);
+
+		if (newImportOrder > importOrder) {
+			foundIndex = i;
+			importOrder = newImportOrder;
+			found = true;
 		}
+	}
+
+	if (found) {
+		res = loader[foundIndex]->load(p_path, original_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 	}
 
 	load_paths_stack.resize(load_paths_stack.size() - 1);

@@ -95,6 +95,7 @@ public:
 	void get_importers(List<Ref<ResourceImporter>> *r_importers);
 
 	bool are_import_settings_valid(const String &p_path) const;
+	bool is_import_read_only(const String &p_path) const;
 	String get_import_settings_hash() const;
 
 	String get_import_base_path(const String &p_for_file) const;
@@ -118,7 +119,7 @@ public:
 	virtual String get_save_extension() const = 0;
 	virtual String get_resource_type() const = 0;
 	virtual float get_priority() const { return 1.0; }
-	virtual int get_import_order() const { return IMPORT_ORDER_DEFAULT; }
+	virtual int get_import_order() const { return ResourceFormatLoader::IMPORT_ORDER_DEFAULT; }
 	virtual int get_format_version() const { return 0; }
 
 	struct ImportOption {
@@ -130,11 +131,6 @@ public:
 				default_value(p_default) {
 		}
 		ImportOption() {}
-	};
-
-	enum ImportOrder {
-		IMPORT_ORDER_DEFAULT = 0,
-		IMPORT_ORDER_SCENE = 100,
 	};
 
 	virtual bool has_advanced_options() const { return false; }
@@ -156,9 +152,9 @@ public:
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
-};
 
-VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);
+	virtual bool is_read_only() const { return true; }
+};
 
 class ResourceFormatImporterSaver : public ResourceFormatSaver {
 	GDCLASS(ResourceFormatImporterSaver, ResourceFormatSaver)
