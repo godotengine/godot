@@ -203,6 +203,14 @@
 				Returns an [Array] containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from_node: "GraphNode name 0", to_port: 1, to_node: "GraphNode name 1" }[/code].
 			</description>
 		</method>
+		<method name="get_connection_list_from_port">
+			<return type="Dictionary[]" />
+			<param index="0" name="node" type="StringName" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Returns an [Array] containing a list of all connections for [param port]. A connection consists in a structure of the form [code]{ node: "GraphNode name 0", port: 0, type: "left" }[/code].
+			</description>
+		</method>
 		<method name="get_connections_intersecting_with_rect" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="rect" type="Rect2" />
