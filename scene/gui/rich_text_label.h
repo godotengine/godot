@@ -413,6 +413,7 @@ private:
 		float saturation = 0.8f;
 		float value = 0.8f;
 		float frequency = 1.0f;
+		float speed = 1.0f;
 
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
@@ -716,7 +717,7 @@ public:
 	void push_shake(int p_strength, float p_rate, bool p_connected);
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
 	void push_tornado(float p_frequency, float p_radius, bool p_connected);
-	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_rainbow(float p_saturation, float p_value, float p_frequency, float p_speed);
 	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
