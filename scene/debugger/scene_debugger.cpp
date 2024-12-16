@@ -1872,15 +1872,18 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	}
 
 	Vector3 ray, pos, to;
+	real_t dist;
 	if (root->get_viewport()->is_camera_3d_override_enabled()) {
 		Viewport *vp = root->get_viewport();
 		ray = vp->camera_3d_override_project_ray_normal(p_pos);
 		pos = vp->camera_3d_override_project_ray_origin(p_pos);
-		to = pos + ray * vp->get_camera_3d_override_properties()["z_far"];
+		dist = vp->get_camera_3d_override_properties()["z_far"];
+		to = pos + ray * dist;
 	} else {
 		ray = camera->project_ray_normal(p_pos);
 		pos = camera->project_ray_origin(p_pos);
-		to = pos + ray * camera->get_far();
+		dist = camera->get_far();
+		to = pos + ray * dist;
 	}
 
 	// Start with physical objects.
@@ -1920,7 +1923,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	}
 
 	// Then go for the meshes.
-	Vector<ObjectID> items = RS::get_singleton()->instances_cull_ray(pos, to, root->get_world_3d()->get_scenario());
+	Vector<ObjectID> items = RS::get_singleton()->instances_cull_ray(pos, ray, dist, root->get_world_3d()->get_scenario());
 	for (int i = 0; i < items.size(); i++) {
 		Object *obj = ObjectDB::get_instance(items[i]);
 		GeometryInstance3D *geo_instance = nullptr;
