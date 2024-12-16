@@ -221,6 +221,12 @@ public:
 		SHADER_MAX
 	};
 
+	enum CullMode {
+		CULL_MODE_DISABLED,
+		CULL_MODE_FRONT,
+		CULL_MODE_BACK,
+	};
+
 	virtual RID shader_create() = 0;
 	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) = 0;
 
