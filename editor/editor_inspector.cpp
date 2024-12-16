@@ -286,6 +286,9 @@ void EditorProperty::_notification(int p_what) {
 				if (no_children) {
 					text_size = size.width;
 					rect = Rect2(size.width - 1, 0, 1, height);
+				} else if (!draw_label) {
+					text_size = 0;
+					rect = Rect2(1, 0, size.width - 1, height);
 				} else {
 					text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
 					if (is_layout_rtl()) {
@@ -390,10 +393,10 @@ void EditorProperty::_notification(int p_what) {
 			}
 
 			Ref<StyleBox> bg_stylebox = get_theme_stylebox(SNAME("child_bg"));
-			if (draw_top_bg && right_child_rect != Rect2()) {
+			if (draw_top_bg && right_child_rect != Rect2() && draw_background) {
 				draw_style_box(bg_stylebox, right_child_rect);
 			}
-			if (bottom_child_rect != Rect2()) {
+			if (bottom_child_rect != Rect2() && draw_background) {
 				draw_style_box(bg_stylebox, bottom_child_rect);
 			}
 
@@ -725,6 +728,25 @@ bool EditorProperty::use_keying_next() const {
 	}
 
 	return false;
+}
+
+void EditorProperty::set_draw_label(bool p_draw_label) {
+	draw_label = p_draw_label;
+	queue_redraw();
+	queue_sort();
+}
+
+bool EditorProperty::is_draw_label() const {
+	return draw_label;
+}
+
+void EditorProperty::set_draw_background(bool p_draw_background) {
+	draw_background = p_draw_background;
+	queue_redraw();
+}
+
+bool EditorProperty::is_draw_background() const {
+	return draw_background;
 }
 
 void EditorProperty::set_checkable(bool p_checkable) {
@@ -1192,6 +1214,12 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorProperty::set_read_only);
 	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorProperty::is_read_only);
 
+	ClassDB::bind_method(D_METHOD("set_draw_label", "draw_label"), &EditorProperty::set_draw_label);
+	ClassDB::bind_method(D_METHOD("is_draw_label"), &EditorProperty::is_draw_label);
+
+	ClassDB::bind_method(D_METHOD("set_draw_background", "draw_background"), &EditorProperty::set_draw_background);
+	ClassDB::bind_method(D_METHOD("is_draw_background"), &EditorProperty::is_draw_background);
+
 	ClassDB::bind_method(D_METHOD("set_checkable", "checkable"), &EditorProperty::set_checkable);
 	ClassDB::bind_method(D_METHOD("is_checkable"), &EditorProperty::is_checkable);
 
@@ -1234,6 +1262,8 @@ void EditorProperty::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_label"), "set_draw_label", "is_draw_label");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_background"), "set_draw_background", "is_draw_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checkable"), "set_checkable", "is_checkable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checked"), "set_checked", "is_checked");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_warning"), "set_draw_warning", "is_draw_warning");

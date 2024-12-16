@@ -88,6 +88,7 @@ public:
 
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
+	String get_key_name_for_index(int p_index);
 
 	EditorPropertyDictionaryObject();
 };
@@ -183,11 +184,14 @@ class EditorPropertyDictionary : public EditorProperty {
 		Variant::Type type = Variant::VARIANT_MAX;
 		bool as_id = false;
 		EditorProperty *prop = nullptr;
+		EditorProperty *prop_key = nullptr;
 		String prop_name;
+		String key_name;
 
 		void set_index(int p_idx) {
 			index = p_idx;
 			prop_name = object->get_property_name_for_index(p_idx);
+			key_name = object->get_key_name_for_index(p_idx);
 			update_prop_or_index();
 		}
 
@@ -200,7 +204,11 @@ class EditorPropertyDictionary : public EditorProperty {
 
 		void update_prop_or_index() {
 			prop->set_object_and_property(object.ptr(), prop_name);
-			prop->set_label(object->get_label_for_index(index));
+			if (prop_key) {
+				prop_key->set_object_and_property(object.ptr(), key_name);
+			} else {
+				prop->set_label(object->get_label_for_index(index));
+			}
 		}
 	};
 

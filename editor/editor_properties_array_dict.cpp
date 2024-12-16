@@ -145,10 +145,27 @@ bool EditorPropertyDictionaryObject::get_by_property_name(const String &p_name, 
 		return true;
 	}
 
+	if (name == "new_item_key_name") {
+		r_ret = TTR("New Key:");
+		return true;
+	}
+
+	if (name == "new_item_value_name") {
+		r_ret = TTR("New Value:");
+		return true;
+	}
+
 	if (name.begins_with("indices")) {
 		int index = name.get_slicec('/', 1).to_int();
 		Variant key = dict.get_key_at_index(index);
 		r_ret = dict[key];
+		return true;
+	}
+
+	if (name.begins_with("keys")) {
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
+		r_ret = key;
 		return true;
 	}
 
@@ -187,6 +204,17 @@ String EditorPropertyDictionaryObject::get_property_name_for_index(int p_index) 
 			return "new_item_value";
 		default:
 			return "indices/" + itos(p_index);
+	}
+}
+
+String EditorPropertyDictionaryObject::get_key_name_for_index(int p_index) {
+	switch (p_index) {
+		case NEW_KEY_INDEX:
+			return "new_item_key_name";
+		case NEW_VALUE_INDEX:
+			return "new_item_value_name";
+		default:
+			return "keys/" + itos(p_index);
 	}
 }
 
@@ -930,7 +958,31 @@ void EditorPropertyDictionary::_add_key_value() {
 
 void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	HBoxContainer *hbox = memnew(HBoxContainer);
+
+	EditorProperty *prop_key = nullptr;
+	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+		if (key_subtype == Variant::OBJECT) {
+			EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+			editor->setup("Object");
+			prop_key = editor;
+		} else {
+			prop_key = EditorInspector::instantiate_property_editor(this, key_subtype, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+		}
+		prop_key->set_read_only(true);
+		prop_key->set_selectable(false);
+		prop_key->set_focus_mode(Control::FOCUS_NONE);
+		prop_key->set_draw_background(false);
+		prop_key->set_use_folding(is_using_folding());
+		prop_key->set_h_size_flags(SIZE_EXPAND_FILL);
+		prop_key->set_draw_label(false);
+		hbox->add_child(prop_key);
+	}
+
 	EditorProperty *prop = memnew(EditorPropertyNil);
+	prop->set_h_size_flags(SIZE_EXPAND_FILL);
+	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+		prop->set_draw_label(false);
+	}
 	hbox->add_child(prop);
 
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
@@ -958,6 +1010,7 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 
 	Slot slot;
 	slot.prop = prop;
+	slot.prop_key = prop_key;
 	slot.object = object;
 	slot.container = hbox;
 	int index = p_idx + (p_idx >= 0 ? page_index * page_length : 0);
@@ -1170,6 +1223,9 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+					new_prop->set_draw_label(false);
+				}
 				new_prop->set_read_only(is_read_only());
 				slot.set_prop(new_prop);
 			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
@@ -1187,6 +1243,9 @@ void EditorPropertyDictionary::update_property() {
 			}
 
 			slot.prop->update_property();
+			if (slot.prop_key) {
+				slot.prop_key->update_property();
+			}
 		}
 		updating = false;
 

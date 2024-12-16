@@ -89,6 +89,8 @@ private:
 
 	int property_usage;
 
+	bool draw_label = true;
+	bool draw_background = true;
 	bool read_only = false;
 	bool checkable = false;
 	bool checked = false;
@@ -169,6 +171,12 @@ public:
 
 	void set_read_only(bool p_read_only);
 	bool is_read_only() const;
+
+	void set_draw_label(bool p_draw_label);
+	bool is_draw_label() const;
+
+	void set_draw_background(bool p_draw_background);
+	bool is_draw_background() const;
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
