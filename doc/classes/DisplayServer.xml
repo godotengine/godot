@@ -1836,7 +1836,7 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Starts a drag operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented on Linux(X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 	</methods>
