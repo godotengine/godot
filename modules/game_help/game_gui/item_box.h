@@ -63,7 +63,7 @@ public:
         int v_move = get_v_scroll() * get_vertical_custom_step();
         int max_show_v_count = rect.size.y / item_size.y + 1;
 
-        int start_x = abs(v_move) / item_size.y;
+        int start_x = abs(v_move) / item_size.y * h_count;
         int end_x = start_x + max_show_v_count * h_count  * 2;
 
         start_x -= max_show_v_count * h_count;

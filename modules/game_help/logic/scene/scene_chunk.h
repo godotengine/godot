@@ -46,6 +46,8 @@ public:
     struct MeshInstance : public RefCounted{
         ObjectID mult_mesh_instances_id;
         HashMap<int32_t,Transform3D> mesh_transforms;
+        ObjectID node_id;
+        
     };
     HashMap<String,Ref<MeshInstance>> mult_mesh_instances;  
     int curr_id = 0;
