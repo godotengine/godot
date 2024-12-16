@@ -2252,20 +2252,15 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready, bool p_for_lambda) {
 	r_error = OK;
-	CodeGen codegen;
-	codegen.generator = memnew(GDScriptByteCodeGenerator);
-
-	codegen.class_node = p_class;
-	codegen.script = p_script;
-	codegen.function_node = p_func;
 
 	StringName func_name;
 	bool is_static = false;
 	Variant rpc_config;
-	GDScriptDataType return_type;
-	return_type.has_type = true;
-	return_type.kind = GDScriptDataType::BUILTIN;
-	return_type.builtin_type = Variant::NIL;
+
+	GDScriptParser::DataType parser_return_type;
+	parser_return_type.kind = GDScriptParser::DataType::BUILTIN;
+	parser_return_type.builtin_type = Variant::NIL;
+	parser_return_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 
 	if (p_func) {
 		if (p_func->identifier) {
@@ -2275,23 +2270,35 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 		is_static = p_func->is_static;
 		rpc_config = p_func->rpc_config;
-		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
+		// If no `return` statement, then return type is `void`, not `Variant`.
+		if (p_func->body->has_return) {
+			parser_return_type = p_func->get_datatype();
+		}
 	} else {
 		if (p_for_ready) {
-			func_name = SceneStringName(_ready);
+			func_name = "@implicit_ready";
 		} else {
 			func_name = "@implicit_new";
 		}
 	}
 
-	MethodInfo method_info;
+	const GDScriptDataType return_type = _gdtype_from_datatype(parser_return_type, p_script);
 
+	CodeGen codegen;
+	codegen.generator = memnew(GDScriptByteCodeGenerator);
+	codegen.script = p_script;
+	codegen.class_node = p_class;
+	codegen.function_node = p_func;
 	codegen.function_name = func_name;
-	method_info.name = func_name;
 	codegen.is_static = is_static;
+
+	MethodInfo method_info;
+	method_info.name = func_name;
+	method_info.return_val = parser_return_type.to_property_info(String());
 	if (is_static) {
 		method_info.flags |= METHOD_FLAG_STATIC;
 	}
+
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	int optional_parameters = 0;
@@ -2332,6 +2339,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				continue;
 			}
 
+			if (field->property == GDScriptParser::VariableNode::PROP_SHORT) {
+				continue; // The field is effectively inaccessible.
+			}
+
 			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
 			if (field_type.has_type) {
 				codegen.generator->write_newline(field->start_line);
@@ -2357,9 +2368,14 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			if (p_class->members[i].type != GDScriptParser::ClassNode::Member::VARIABLE) {
 				continue;
 			}
+
 			const GDScriptParser::VariableNode *field = p_class->members[i].variable;
 			if (field->is_static) {
 				continue;
+			}
+
+			if (field->property == GDScriptParser::VariableNode::PROP_SHORT) {
+				continue; // The field is effectively inaccessible.
 			}
 
 			if (field->onready != is_implicit_ready) {
@@ -2457,6 +2473,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 
 	GDScriptFunction *gd_function = codegen.generator->write_end();
+	gd_function->return_type = return_type;
+	gd_function->method_info = method_info;
 
 	if (is_initializer) {
 		p_script->initializer = gd_function;
@@ -2465,21 +2483,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	} else if (is_implicit_ready) {
 		p_script->implicit_ready = gd_function;
 	}
-
-	if (p_func) {
-		// If no `return` statement, then return type is `void`, not `Variant`.
-		if (p_func->body->has_return) {
-			gd_function->return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
-			method_info.return_val = p_func->get_datatype().to_property_info(String());
-		} else {
-			gd_function->return_type = GDScriptDataType();
-			gd_function->return_type.has_type = true;
-			gd_function->return_type.kind = GDScriptDataType::BUILTIN;
-			gd_function->return_type.builtin_type = Variant::NIL;
-		}
-	}
-
-	gd_function->method_info = method_info;
 
 	if (!is_implicit_initializer && !is_implicit_ready && !p_for_lambda) {
 		p_script->member_functions[func_name] = gd_function;
@@ -2490,24 +2493,25 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	return gd_function;
 }
 
-GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class) {
+void GDScriptCompiler::_make_static_initializer(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class) {
 	r_error = OK;
-	CodeGen codegen;
-	codegen.generator = memnew(GDScriptByteCodeGenerator);
-
-	codegen.class_node = p_class;
-	codegen.script = p_script;
 
 	StringName func_name = SNAME("@static_initializer");
 	bool is_static = true;
 	Variant rpc_config;
+
 	GDScriptDataType return_type;
 	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
 
+	CodeGen codegen;
+	codegen.generator = memnew(GDScriptByteCodeGenerator);
+	codegen.script = p_script;
+	codegen.class_node = p_class;
 	codegen.function_name = func_name;
 	codegen.is_static = is_static;
+
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	// The static initializer is always called on the same class where the static variables are defined,
@@ -2525,6 +2529,10 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		const GDScriptParser::VariableNode *field = member.variable;
 		if (!field->is_static) {
 			continue;
+		}
+
+		if (field->property == GDScriptParser::VariableNode::PROP_SHORT) {
+			continue; // The field is effectively inaccessible.
 		}
 
 		GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
@@ -2557,9 +2565,14 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		if (p_class->members[i].type != GDScriptParser::ClassNode::Member::VARIABLE) {
 			continue;
 		}
+
 		const GDScriptParser::VariableNode *field = p_class->members[i].variable;
 		if (!field->is_static) {
 			continue;
+		}
+
+		if (field->property == GDScriptParser::VariableNode::PROP_SHORT) {
+			continue; // The field is effectively inaccessible.
 		}
 
 		if (field->initializer) {
@@ -2569,7 +2582,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 			GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);
 			if (r_error) {
 				memdelete(codegen.generator);
-				return nullptr;
+				return;
 			}
 
 			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
@@ -2619,26 +2632,137 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 	codegen.generator->set_initial_line(p_class->start_line);
 
 	GDScriptFunction *gd_function = codegen.generator->write_end();
+	gd_function->return_type = return_type;
+
+	p_script->static_initializer = gd_function;
 
 	memdelete(codegen.generator);
+}
 
-	return gd_function;
+void GDScriptCompiler::_make_property_short_setter_getter(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter) {
+	r_error = OK;
+
+	StringName func_name = "@" + p_variable->identifier->name + (p_is_setter ? "_setter" : "_getter");
+	bool is_static = p_variable->is_static;
+	Variant rpc_config;
+
+	GDScriptParser::DataType parser_return_type;
+	if (p_is_setter) {
+		parser_return_type.kind = GDScriptParser::DataType::BUILTIN;
+		parser_return_type.builtin_type = Variant::NIL;
+		parser_return_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+	} else {
+		parser_return_type = p_variable->get_datatype();
+	}
+
+	const GDScriptDataType return_type = _gdtype_from_datatype(parser_return_type, p_script);
+
+	CodeGen codegen;
+	codegen.generator = memnew(GDScriptByteCodeGenerator);
+	codegen.script = p_script;
+	codegen.class_node = p_class;
+	codegen.function_name = func_name;
+	codegen.is_static = is_static;
+
+	MethodInfo method_info;
+	method_info.name = func_name;
+	method_info.return_val = parser_return_type.to_property_info(String());
+	if (is_static) {
+		method_info.flags |= METHOD_FLAG_STATIC;
+	}
+
+	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
+
+	if (p_is_setter) {
+		const GDScriptParser::DataType parser_param_type = p_variable->get_datatype();
+		const GDScriptDataType param_type = _gdtype_from_datatype(parser_param_type, p_script);
+		const uint32_t param_addr = codegen.generator->add_parameter("@value", false, param_type);
+
+		codegen.parameters["@value"] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, param_addr, param_type);
+		method_info.arguments.push_back(parser_param_type.to_property_info("@value"));
+
+		if (p_variable->initializer->type == GDScriptParser::Node::IDENTIFIER || p_variable->initializer->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::IdentifierNode param_identifier;
+			param_identifier.name = "@value";
+			param_identifier.source = GDScriptParser::IdentifierNode::FUNCTION_PARAMETER;
+
+			GDScriptParser::AssignmentNode assignment;
+			assignment.assignee = p_variable->initializer;
+			assignment.assigned_value = &param_identifier;
+			assignment.use_conversion_assign = true; // TODO: Optimize when possible.
+
+			_parse_expression(codegen, r_error, &assignment); // NOTE: Assignment does not return a value.
+			if (r_error) {
+				memdelete(codegen.generator);
+				return;
+			}
+		} else {
+			const String error_message = vformat(R"(Cannot assign a value to property "%s".)", p_variable->identifier->name);
+			codegen.generator->write_assert(codegen.add_constant(false), codegen.add_constant(error_message));
+		}
+	} else {
+		GDScriptCodeGenerator::Address result = _parse_expression(codegen, r_error, p_variable->initializer);
+		if (r_error) {
+			memdelete(codegen.generator);
+			return;
+		}
+		codegen.generator->write_return(result);
+		if (result.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+			codegen.generator->pop_temporary();
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (EngineDebugger::is_active()) {
+		String signature;
+		// Path.
+		if (!p_script->get_script_path().is_empty()) {
+			signature += p_script->get_script_path();
+		}
+		// Location.
+		signature += "::" + itos(p_variable->initializer->start_line);
+
+		// Function and class.
+
+		if (p_class->identifier) {
+			signature += "::" + String(p_class->identifier->name) + "." + String(func_name);
+		} else {
+			signature += "::" + String(func_name);
+		}
+
+		codegen.generator->set_signature(signature);
+	}
+#endif
+
+	codegen.generator->set_initial_line(p_variable->initializer->start_line);
+
+	GDScriptFunction *gd_function = codegen.generator->write_end();
+	gd_function->return_type = return_type;
+	gd_function->method_info = method_info;
+
+	p_script->member_functions[func_name] = gd_function;
+
+	memdelete(codegen.generator);
 }
 
 Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter) {
-	Error err = OK;
-
-	GDScriptParser::FunctionNode *function;
-
-	if (p_is_setter) {
-		function = p_variable->setter;
-	} else {
-		function = p_variable->getter;
+	switch (p_variable->property) {
+		case GDScriptParser::VariableNode::PROP_INLINE: {
+			Error err = OK;
+			_parse_function(err, p_script, p_class, p_is_setter ? p_variable->setter : p_variable->getter);
+			return err;
+		} break;
+		case GDScriptParser::VariableNode::PROP_SHORT: {
+			Error err = OK;
+			_make_property_short_setter_getter(err, p_script, p_class, p_variable, p_is_setter);
+			return err;
+		} break;
+		case GDScriptParser::VariableNode::PROP_NONE:
+		case GDScriptParser::VariableNode::PROP_SETGET: {
+			return ERR_BUG;
+		} break;
 	}
-
-	_parse_function(err, p_script, p_class, function);
-
-	return err;
+	return ERR_BUG;
 }
 
 // Prepares given script, and inner class scripts, for compilation. It populates class members and
@@ -2814,6 +2938,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 							minfo.getter = "@" + variable->identifier->name + "_getter";
 						}
 						break;
+					case GDScriptParser::VariableNode::PROP_SHORT:
+						minfo.setter = "@" + variable->identifier->name + "_setter";
+						minfo.getter = "@" + variable->identifier->name + "_getter";
+						break;
 				}
 				minfo.data_type = _gdtype_from_datatype(variable->get_datatype(), p_script);
 
@@ -2954,19 +3082,39 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 			}
 		} else if (member.type == member.VARIABLE) {
 			const GDScriptParser::VariableNode *variable = member.variable;
-			if (variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
-				if (variable->setter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, true);
-					if (err) {
-						return err;
+			switch (variable->property) {
+				case GDScriptParser::VariableNode::PROP_INLINE: {
+					if (variable->setter != nullptr) {
+						Error err = _parse_setter_getter(p_script, p_class, variable, true);
+						if (err) {
+							return err;
+						}
 					}
-				}
-				if (variable->getter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, false);
-					if (err) {
-						return err;
+					if (variable->getter != nullptr) {
+						Error err = _parse_setter_getter(p_script, p_class, variable, false);
+						if (err) {
+							return err;
+						}
 					}
-				}
+				} break;
+				case GDScriptParser::VariableNode::PROP_SHORT: {
+					{
+						Error err = _parse_setter_getter(p_script, p_class, variable, true);
+						if (err) {
+							return err;
+						}
+					}
+					{
+						Error err = _parse_setter_getter(p_script, p_class, variable, false);
+						if (err) {
+							return err;
+						}
+					}
+				} break;
+				case GDScriptParser::VariableNode::PROP_NONE:
+				case GDScriptParser::VariableNode::PROP_SETGET: {
+					// Nothing to do.
+				} break;
 			}
 		}
 	}
@@ -2991,8 +3139,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 
 	if (p_class->has_static_data) {
 		Error err = OK;
-		GDScriptFunction *func = _make_static_initializer(err, p_script, p_class);
-		p_script->static_initializer = func;
+		_make_static_initializer(err, p_script, p_class);
 		if (err) {
 			return err;
 		}

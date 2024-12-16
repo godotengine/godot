@@ -1115,14 +1115,14 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 				complete_extents(variable);
 				return nullptr;
 			}
-		} else if (check((GDScriptTokenizer::Token::EQUAL))) {
+		} else if (check(GDScriptTokenizer::Token::EQUAL) || check(GDScriptTokenizer::Token::EQUAL_GREATER)) {
 			// Infer type.
 			variable->infer_datatype = true;
 		} else {
 			if (p_allow_property) {
 				make_completion_context(COMPLETION_PROPERTY_DECLARATION_OR_TYPE, variable);
 				if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
-					// Check if get or set.
+					// Check if `get` or `set`.
 					if (current.get_identifier() == "get" || current.get_identifier() == "set") {
 						return parse_property(variable, false);
 					}
@@ -1134,16 +1134,39 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_is_static, b
 		}
 	}
 
+	enum InitType {
+		INIT_TYPE_NONE,
+		INIT_TYPE_NORMAL,
+		INIT_TYPE_SHORT,
+	};
+
+	InitType init_type = INIT_TYPE_NONE;
+
 	if (match(GDScriptTokenizer::Token::EQUAL)) {
+		init_type = INIT_TYPE_NORMAL;
+		variable->assignments++;
+	} else if (match(GDScriptTokenizer::Token::EQUAL_GREATER)) {
+		init_type = INIT_TYPE_SHORT;
+		if (p_allow_property) {
+			variable->property = VariableNode::PROP_SHORT;
+		} else {
+			push_error(R"(Setters/getters are not allowed for local variables.)");
+		}
+	}
+
+	if (init_type != INIT_TYPE_NONE) {
 		// Initializer.
 		variable->initializer = parse_expression(false);
 		if (variable->initializer == nullptr) {
-			push_error(R"(Expected expression for variable initial value after "=".)");
+			if (init_type == INIT_TYPE_NORMAL) {
+				push_error(R"(Expected expression for variable initial value after "=".)");
+			} else { // init_type == INIT_TYPE_SHORT
+				push_error(R"(Expected expression for variable setter/getter shorthand after "=>".)");
+			}
 		}
-		variable->assignments++;
 	}
 
-	if (p_allow_property && match(GDScriptTokenizer::Token::COLON)) {
+	if (p_allow_property && variable->property == VariableNode::PROP_NONE && match(GDScriptTokenizer::Token::COLON)) {
 		if (match(GDScriptTokenizer::Token::NEWLINE)) {
 			return parse_property(variable, true);
 		} else {
@@ -1284,6 +1307,7 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			}
 			break;
 		case VariableNode::PROP_NONE:
+		case VariableNode::PROP_SHORT:
 			break; // Unreachable.
 	}
 }
@@ -1325,6 +1349,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			}
 			break;
 		case VariableNode::PROP_NONE:
+		case VariableNode::PROP_SHORT:
 			break; // Unreachable.
 	}
 }
@@ -1573,7 +1598,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, vformat(R"*(Expected closing ")" after %s parameters.)*", p_type));
 
-	if (match(GDScriptTokenizer::Token::FORWARD_ARROW)) {
+	if (match(GDScriptTokenizer::Token::MINUS_GREATER)) {
 		make_completion_context(COMPLETION_TYPE_NAME_OR_VOID, p_function);
 		p_function->return_type = parse_type(true);
 		if (p_function->return_type == nullptr) {
@@ -4055,7 +4080,8 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // PERIOD_PERIOD,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // COLON,
 		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
-		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // MINUS_GREATER,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EQUAL_GREATER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,
 		// Whitespace
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NEWLINE,
@@ -6149,15 +6175,15 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 	increase_indent();
 
 	push_line();
-	push_text("= ");
+	push_text(p_variable->property == VariableNode::PROP_SHORT ? "=> " : "= ");
 	if (p_variable->initializer == nullptr) {
-		push_text("<default value>");
+		push_text("<empty expression>");
 	} else {
 		print_expression(p_variable->initializer);
 	}
 	push_line();
 
-	if (p_variable->property != VariableNode::PROP_NONE) {
+	if (p_variable->property != VariableNode::PROP_NONE && p_variable->property != VariableNode::PROP_SHORT) {
 		if (p_variable->getter != nullptr) {
 			push_text("Get");
 			if (p_variable->property == VariableNode::PROP_INLINE) {
@@ -6165,7 +6191,7 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 				increase_indent();
 				print_suite(p_variable->getter->body);
 				decrease_indent();
-			} else {
+			} else { // VariableNode::PROP_SETGET
 				push_line(" =");
 				increase_indent();
 				print_identifier(p_variable->getter_pointer);
@@ -6185,7 +6211,7 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 				increase_indent();
 				print_suite(p_variable->setter->body);
 				decrease_indent();
-			} else {
+			} else { // VariableNode::PROP_SETGET
 				push_line(" =");
 				increase_indent();
 				print_identifier(p_variable->setter_pointer);

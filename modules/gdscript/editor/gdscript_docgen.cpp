@@ -491,9 +491,13 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 							prop_doc.getter = m_var->getter_pointer->name;
 						}
 						break;
+					case GDP::VariableNode::PROP_SHORT:
+						prop_doc.setter = "@" + m_var->identifier->name + "_setter";
+						prop_doc.getter = "@" + m_var->identifier->name + "_getter";
+						break;
 				}
 
-				if (m_var->initializer != nullptr) {
+				if (m_var->initializer != nullptr && m_var->property != GDP::VariableNode::PROP_SHORT) {
 					prop_doc.default_value = _docvalue_from_expression(m_var->initializer);
 				}
 

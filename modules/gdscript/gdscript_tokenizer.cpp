@@ -136,7 +136,8 @@ static const char *token_names[] = {
 	"..", // PERIOD_PERIOD,
 	":", // COLON,
 	"$", // DOLLAR,
-	"->", // FORWARD_ARROW,
+	"->", // MINUS_GREATER,
+	"=>", // EQUAL_GREATER,
 	"_", // UNDERSCORE,
 	// Whitespace
 	"Newline", // NEWLINE,
@@ -1574,7 +1575,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 				return number();
 			} else if (_peek() == '>') {
 				_advance();
-				return make_token(Token::FORWARD_ARROW);
+				return make_token(Token::MINUS_GREATER);
 			} else {
 				return make_token(Token::MINUS);
 			}
@@ -1645,6 +1646,9 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		case '=':
 			if (_peek() == '=') {
 				return check_vcs_marker('=', Token::EQUAL_EQUAL);
+			} else if (_peek() == '>') {
+				_advance();
+				return make_token(Token::EQUAL_GREATER);
 			} else {
 				return make_token(Token::EQUAL);
 			}
