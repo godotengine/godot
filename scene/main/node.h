@@ -367,6 +367,13 @@ public:
 	void set_components(const TypedArray<NodeComponent>& p_compoent);
 	TypedArray<NodeComponent> get_components();
 
+	// Editor only signal to keep the SceneTreeEditor in sync.
+#ifdef TOOLS_ENABLED
+	void _emit_editor_state_changed();
+#else
+	void _emit_editor_state_changed() {}
+#endif
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
