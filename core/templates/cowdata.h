@@ -220,26 +220,63 @@ public:
 	Error resize(Size p_size);
 
 	_FORCE_INLINE_ void remove_at(Size p_index) {
-		ERR_FAIL_INDEX(p_index, size());
-		T *p = ptrw();
 		Size len = size();
-		for (Size i = p_index; i < len - 1; i++) {
-			p[i] = p[i + 1];
+		ERR_FAIL_INDEX(p_index, len);
+
+		if (len == 1) {
+			// Removing the only element.
+			clear();
+			return;
 		}
 
-		resize(len - 1);
+		T *ptr = ptrw();
+		T *ptr_idx = ptr + p_index;
+		if constexpr (std::is_trivially_destructible_v<T>) {
+			// Move every element one index down.
+			memmove(reinterpret_cast<uint8_t *>(ptr_idx), reinterpret_cast<uint8_t *>(ptr_idx + 1), (len - p_index - 1) * sizeof(T));
+			resize(len - 1);
+		} else {
+			// TODO This could be more efficient with an explicit destructor and unchecked shrink, but they don't exist yet.
+
+			// Cache the memory of the object to remove.
+			uint8_t mem_cache[sizeof(T)];
+			memcpy(mem_cache, reinterpret_cast<uint8_t *>(ptr_idx), sizeof(T));
+
+			// Move every element in the tail one index down.
+			memmove(reinterpret_cast<uint8_t *>(ptr_idx), reinterpret_cast<uint8_t *>(ptr_idx + 1), (len - p_index - 1) * sizeof(T));
+
+			// Restore the element in the last position.
+			memcpy(reinterpret_cast<uint8_t *>(ptr + (len - 1)), mem_cache, sizeof(T));
+
+			// Resize to remove the element (destructing it).
+			resize(len - 1);
+		}
 	}
 
-	Error insert(Size p_pos, const T &p_val) {
+	Error insert(Size p_index, const T &p_val) {
 		Size new_size = size() + 1;
-		ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
+		ERR_FAIL_INDEX_V(p_index, new_size, ERR_INVALID_PARAMETER);
 		Error err = resize(new_size);
 		ERR_FAIL_COND_V(err, err);
-		T *p = ptrw();
-		for (Size i = new_size - 1; i > p_pos; i--) {
-			p[i] = p[i - 1];
+
+		T *ptr = ptrw();
+		T *ptr_idx = ptr + p_index;
+		if constexpr (std::is_trivially_constructible_v<T> && std::is_trivially_destructible_v<T>) {
+			memmove(reinterpret_cast<uint8_t *>(ptr_idx + 1), reinterpret_cast<uint8_t *>(ptr_idx), (new_size - p_index - 1) * sizeof(T));
+		} else {
+			// Cache the memory of the object we just made by resizing.
+			uint8_t mem_cache[sizeof(T)];
+			memcpy(mem_cache, reinterpret_cast<uint8_t *>(ptr + (new_size - 1)), sizeof(T));
+
+			// Move every element in the tail one index up.
+			memmove(reinterpret_cast<uint8_t *>(ptr_idx + 1), reinterpret_cast<uint8_t *>(ptr_idx), (new_size - p_index - 1) * sizeof(T));
+
+			// Restore the element in the newly free position.
+			memcpy(reinterpret_cast<uint8_t *>(ptr_idx), mem_cache, sizeof(T));
 		}
-		p[p_pos] = p_val;
+
+		// Set the element at the given position.
+		*ptr_idx = p_val;
 
 		return OK;
 	}
