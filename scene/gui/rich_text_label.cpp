@@ -5562,6 +5562,26 @@ int RichTextLabel::get_line_count() const {
 	return line_count;
 }
 
+Vector2i RichTextLabel::get_line_range(int p_line) {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
+	int line_count = 0;
+	int to_line = main->first_invalid_line.load();
+	for (int i = 0; i < to_line; i++) {
+		MutexLock lock(main->lines[i].text_buf->get_mutex());
+		int lc = main->lines[i].text_buf->get_line_count();
+
+		if (p_line < line_count + lc) {
+			Vector2i char_offset = Vector2i(main->lines[i].char_offset, main->lines[i].char_offset);
+			Vector2i line_range = main->lines[i].text_buf->get_line_range(p_line - line_count);
+			return char_offset + line_range;
+		}
+
+		line_count += lc;
+	}
+	return Vector2i();
+}
+
 int RichTextLabel::get_visible_line_count() const {
 	if (!is_visible()) {
 		return 0;
@@ -6455,6 +6475,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_bbcode"), &RichTextLabel::is_using_bbcode);
 
 	ClassDB::bind_method(D_METHOD("get_line_count"), &RichTextLabel::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_line_range", "line"), &RichTextLabel::get_line_range);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &RichTextLabel::get_visible_line_count);
 
 	ClassDB::bind_method(D_METHOD("get_paragraph_count"), &RichTextLabel::get_paragraph_count);
