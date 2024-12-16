@@ -63,22 +63,14 @@ JoypadWindows::JoypadWindows(HWND *hwnd) {
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 		attached_joypads[i] = false;
 	}
-
-	HRESULT result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, nullptr);
-	if (result == DI_OK) {
-		probe_joypads();
-	} else {
-		ERR_PRINT("Couldn't initialize DirectInput. Error: " + itos(result));
-		if (result == DIERR_OUTOFMEMORY) {
-			ERR_PRINT("The Windows DirectInput subsystem could not allocate sufficient memory.");
-			ERR_PRINT("Rebooting your PC may solve this issue.");
-		}
-		// Ensure dinput is still a nullptr.
-		dinput = nullptr;
-	}
+	probe_joypads();
 }
 
 JoypadWindows::~JoypadWindows() {
+	if (dinput_probe_task != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(dinput_probe_task);
+	}
+
 	close_joypad();
 	if (dinput) {
 		dinput->Release();
@@ -97,7 +89,7 @@ bool JoypadWindows::have_device(const GUID &p_guid) {
 }
 
 // adapted from SDL2, works a lot better than the MSDN version
-bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
+static bool is_xinput_device(const GUID *p_guid) {
 	static GUID IID_ValveStreamingGamepad = { MAKELONG(0x28DE, 0x11FF), 0x28DE, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WiredGamepad = { MAKELONG(0x045E, 0x02A1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WirelessGamepad = { MAKELONG(0x045E, 0x028E), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
@@ -269,11 +261,16 @@ void JoypadWindows::setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_
 }
 
 BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context) {
-	JoypadWindows *self = static_cast<JoypadWindows *>(p_context);
-	if (self->is_xinput_device(&p_instance->guidProduct)) {
+	JoypadWindows::dinput_init_task_context *self = static_cast<JoypadWindows::dinput_init_task_context *>(p_context);
+	if (self->xinput_enabled && is_xinput_device(&p_instance->guidProduct)) {
 		return DIENUM_CONTINUE;
 	}
-	self->setup_dinput_joypad(p_instance);
+
+	if (self->instances_count < JOYPADS_MAX) {
+		// Copy is needed because DIDEVICEINSTANCE* is invalidated after enumCallback is completed.
+		memcpy(&self->instances[self->instances_count], p_instance, sizeof(DIDEVICEINSTANCE));
+		self->instances_count += 1;
+	}
 	return DIENUM_CONTINUE;
 }
 
@@ -282,6 +279,28 @@ BOOL CALLBACK JoypadWindows::objectsCallback(const DIDEVICEOBJECTINSTANCE *p_ins
 	self->setup_joypad_object(p_instance, self->id_to_change);
 
 	return DIENUM_CONTINUE;
+}
+
+void JoypadWindows::dinput_probe_joypads_task(void *p_context) {
+	JoypadWindows::dinput_init_task_context *self = static_cast<JoypadWindows::dinput_init_task_context *>(p_context);
+
+	if (!self->dinput) {
+		HRESULT result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&self->dinput, nullptr);
+		if (result != DI_OK) {
+			ERR_PRINT("Couldn't initialize DirectInput. Error: " + itos(result));
+			if (result == DIERR_OUTOFMEMORY) {
+				ERR_PRINT("The Windows DirectInput subsystem could not allocate sufficient memory.");
+				ERR_PRINT("Rebooting your PC may solve this issue.");
+			}
+			// Ensure dinput is still a nullptr.
+			self->dinput = nullptr;
+		}
+	}
+
+	if (self->dinput) {
+		self->dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumCallback, self, DIEDFL_ATTACHEDONLY);
+	}
+	self->ready = true;
 }
 
 void JoypadWindows::close_joypad(int id) {
@@ -306,7 +325,6 @@ void JoypadWindows::close_joypad(int id) {
 }
 
 void JoypadWindows::probe_joypads() {
-	ERR_FAIL_NULL_MSG(dinput, "DirectInput not initialized. Rebooting your PC may solve this issue.");
 	DWORD dwResult;
 	for (DWORD i = 0; i < XUSER_MAX_COUNT; i++) {
 		ZeroMemory(&x_joypads[i].state, sizeof(XINPUT_STATE));
@@ -332,21 +350,23 @@ void JoypadWindows::probe_joypads() {
 		}
 	}
 
-	for (int i = 0; i < joypad_count; i++) {
-		d_joypads[i].confirmed = false;
+	if (dinput_probe_task != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(dinput_probe_task);
+		dinput_probe_task = WorkerThreadPool::INVALID_TASK_ID;
 	}
 
-	dinput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumCallback, this, DIEDFL_ATTACHEDONLY);
-
-	for (int i = 0; i < joypad_count; i++) {
-		if (!d_joypads[i].confirmed) {
-			close_joypad(i);
-		}
-	}
+	dinput_init_task_ctx.dinput = dinput;
+	dinput_init_task_ctx.xinput_enabled = xinput_dll != nullptr;
+	dinput_init_task_ctx.ready = false;
+	dinput_init_task_ctx.instances_count = 0;
+	dinput_probe_task = WorkerThreadPool::get_singleton()->add_native_task(&JoypadWindows::dinput_probe_joypads_task, &dinput_init_task_ctx);
 }
 
 void JoypadWindows::process_joypads() {
 	HRESULT hr;
+	if (dinput_init_task_ctx.ready) {
+		process_dinput_init_task_result(dinput_init_task_ctx);
+	}
 
 	for (int i = 0; i < XUSER_MAX_COUNT; i++) {
 		xinput_gamepad &joy = x_joypads[i];
@@ -505,6 +525,26 @@ float JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool
 	return value;
 }
 
+void JoypadWindows::process_dinput_init_task_result(dinput_init_task_context &context) {
+	dinput_probe_task = WorkerThreadPool::INVALID_TASK_ID;
+	dinput_init_task_ctx.ready = false;
+
+	for (int i = 0; i < joypad_count; i++) {
+		d_joypads[i].confirmed = false;
+	}
+
+	for (int i = 0; i < dinput_init_task_ctx.instances_count; ++i) {
+		setup_dinput_joypad(&dinput_init_task_ctx.instances[i]);
+	}
+	dinput_init_task_ctx.instances_count = 0;
+
+	for (int i = 0; i < joypad_count; i++) {
+		if (!d_joypads[i].confirmed) {
+			close_joypad(i);
+		}
+	}
+}
+
 void JoypadWindows::joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) {
 	xinput_gamepad &joy = x_joypads[p_device];
 	if (joy.attached) {
@@ -565,5 +605,6 @@ void JoypadWindows::load_xinput() {
 void JoypadWindows::unload_xinput() {
 	if (xinput_dll) {
 		FreeLibrary((HMODULE)xinput_dll);
+		xinput_dll = nullptr;
 	}
 }
