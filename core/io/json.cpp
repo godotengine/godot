@@ -1672,10 +1672,10 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	return OK;
 }
 
-void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	Ref<JSON> json = p_resource;
 	if (json.is_valid()) {
-		p_extensions->push_back("json");
+		p_extensions.push_back("json");
 	}
 }
 

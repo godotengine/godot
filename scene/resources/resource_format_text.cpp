@@ -2162,11 +2162,11 @@ bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
 	return true; // All resources recognized!
 }
 
-void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	if (Ref<PackedScene>(p_resource).is_valid()) {
-		p_extensions->push_back("tscn"); // Text scene.
+		p_extensions.push_back("tscn"); // Text scene.
 	} else {
-		p_extensions->push_back("tres"); // Text resource.
+		p_extensions.push_back("tres"); // Text resource.
 	}
 }
 

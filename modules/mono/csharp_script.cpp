@@ -2912,9 +2912,9 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 	return OK;
 }
 
-void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
-		p_extensions->push_back("cs");
+		p_extensions.push_back("cs");
 	}
 }
 

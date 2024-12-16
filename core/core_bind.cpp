@@ -172,8 +172,8 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 }
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
-	List<String> exts;
-	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
+	LocalVector<String> exts;
+	::ResourceSaver::get_recognized_extensions(p_resource, exts);
 	Vector<String> ret;
 	for (const String &E : exts) {
 		ret.push_back(E);

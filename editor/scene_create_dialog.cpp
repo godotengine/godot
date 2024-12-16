@@ -256,9 +256,9 @@ SceneCreateDialog::SceneCreateDialog() {
 		scene_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		scene_name_edit->connect(SceneStringName(text_submitted), callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));
 
-		List<String> extensions;
+		LocalVector<String> extensions;
 		Ref<PackedScene> sd = memnew(PackedScene);
-		ResourceSaver::get_recognized_extensions(sd, &extensions);
+		ResourceSaver::get_recognized_extensions(sd, extensions);
 
 		scene_extension_picker = memnew(OptionButton);
 		hb->add_child(scene_extension_picker);

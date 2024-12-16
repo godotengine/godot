@@ -1397,9 +1397,9 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	saving_resource = p_resource;
 
 	current_menu_option = RESOURCE_SAVE_AS;
-	List<String> extensions;
+	LocalVector<String> extensions;
 	Ref<PackedScene> sd = memnew(PackedScene);
-	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
+	ResourceSaver::get_recognized_extensions(p_resource, extensions);
 	file->clear_filters();
 
 	List<String> preferred;
@@ -1438,8 +1438,8 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		file->set_current_path(p_resource->get_path());
 		if (!extensions.is_empty()) {
 			const String ext = p_resource->get_path().get_extension().to_lower();
-			if (extensions.find(ext) == nullptr) {
-				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
+			if (!extensions.has(ext)) {
+				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions[0]));
 			}
 		}
 	} else if (!preferred.is_empty()) {
@@ -2803,9 +2803,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
-			List<String> extensions;
+			LocalVector<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			ResourceSaver::get_recognized_extensions(sd, extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -2816,14 +2816,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				file->set_current_path(path);
 				if (extensions.size()) {
 					String ext = path.get_extension().to_lower();
-					if (extensions.find(ext) == nullptr) {
-						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
+					if (!extensions.has(ext)) {
+						file->set_current_path(path.replacen("." + ext, "." + extensions[0]));
 					}
 				}
 			} else if (extensions.size()) {
 				String root_name = scene->get_name();
 				root_name = EditorNode::adjust_scene_name_casing(root_name);
-				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
+				file->set_current_path(root_name + "." + extensions[0].to_lower());
 			}
 			file->set_title(TTR("Save Scene As..."));
 			file->popup_file_dialog();
@@ -3332,9 +3332,9 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 			return;
 		}
 
-		List<String> extensions;
+		LocalVector<String> extensions;
 		Ref<MeshLibrary> ml(memnew(MeshLibrary));
-		ResourceSaver::get_recognized_extensions(ml, &extensions);
+		ResourceSaver::get_recognized_extensions(ml, extensions);
 		file_export_lib->clear_filters();
 		for (const String &E : extensions) {
 			file_export_lib->add_filter("*." + E);

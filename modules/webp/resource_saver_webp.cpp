@@ -79,9 +79,9 @@ bool ResourceSaverWebP::recognize(const Ref<Resource> &p_resource) const {
 	return (p_resource.is_valid() && p_resource->is_class("ImageTexture"));
 }
 
-void ResourceSaverWebP::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceSaverWebP::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	if (Object::cast_to<ImageTexture>(*p_resource)) {
-		p_extensions->push_back("webp");
+		p_extensions.push_back("webp");
 	}
 }
 

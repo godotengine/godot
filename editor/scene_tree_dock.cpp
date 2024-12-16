@@ -1164,9 +1164,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
-			List<String> extensions;
+			LocalVector<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			ResourceSaver::get_recognized_extensions(sd, extensions);
 			new_scene_from_dialog->clear_filters();
 			for (const String &extension : extensions) {
 				new_scene_from_dialog->add_filter("*." + extension, extension.to_upper());
@@ -1176,7 +1176,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (extensions.size()) {
 				String root_name(tocopy->get_name());
 				root_name = EditorNode::adjust_scene_name_casing(root_name);
-				existing = root_name + "." + extensions.front()->get().to_lower();
+				existing = root_name + "." + extensions[0].to_lower();
 			}
 			new_scene_from_dialog->set_current_path(existing);
 

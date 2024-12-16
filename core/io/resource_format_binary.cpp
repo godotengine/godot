@@ -2518,11 +2518,11 @@ bool ResourceFormatSaverBinary::recognize(const Ref<Resource> &p_resource) const
 	return true; //all recognized
 }
 
-void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	String base = p_resource->get_base_extension().to_lower();
-	p_extensions->push_back(base);
+	p_extensions.push_back(base);
 	if (base != "res") {
-		p_extensions->push_back("res");
+		p_extensions.push_back("res");
 	}
 }
 

@@ -50,7 +50,7 @@ public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const;
 	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const;
 
 	virtual ~ResourceFormatSaver() {}
@@ -85,7 +85,7 @@ public:
 	};
 
 	static Error save(const Ref<Resource> &p_resource, const String &p_path = "", uint32_t p_flags = (uint32_t)FLAG_NONE);
-	static void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions);
+	static void get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions);
 	static void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front = false);
 	static void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 

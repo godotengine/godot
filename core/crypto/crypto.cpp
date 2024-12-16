@@ -244,17 +244,17 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	return OK;
 }
 
-void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	const X509Certificate *cert = Object::cast_to<X509Certificate>(*p_resource);
 	const CryptoKey *key = Object::cast_to<CryptoKey>(*p_resource);
 	if (cert) {
-		p_extensions->push_back("crt");
+		p_extensions.push_back("crt");
 	}
 	if (key) {
 		if (!key->is_public_only()) {
-			p_extensions->push_back("key");
+			p_extensions.push_back("key");
 		}
-		p_extensions->push_back("pub");
+		p_extensions.push_back("pub");
 	}
 }
 

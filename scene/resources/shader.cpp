@@ -364,10 +364,10 @@ Error ResourceFormatSaverShader::save(const Ref<Resource> &p_resource, const Str
 	return OK;
 }
 
-void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverShader::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
 		if (shader->is_text_shader()) {
-			p_extensions->push_back("gdshader");
+			p_extensions.push_back("gdshader");
 		}
 	}
 }

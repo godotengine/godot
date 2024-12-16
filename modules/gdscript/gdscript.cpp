@@ -3107,9 +3107,9 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	return OK;
 }
 
-void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, LocalVector<String> &p_extensions) const {
 	if (Object::cast_to<GDScript>(*p_resource)) {
-		p_extensions->push_back("gd");
+		p_extensions.push_back("gd");
 	}
 }
 
