@@ -2235,6 +2235,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
+	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -2524,6 +2525,9 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KeyModifierMask::ALT | Key::F1);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/contextual_help", "macos", KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::SPACE);
+
+	ED_SHORTCUT("script_text_editor/lookup_symbol", TTR("Lookup Symbol"), Key::F12);
+	ED_SHORTCUT_OVERRIDE("script_text_editor/lookup_symbol", "macos", KeyModifierMask::CMD_OR_CTRL | Key::M);
 
 	ED_SHORTCUT("script_text_editor/toggle_bookmark", TTR("Toggle Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::B);
 
