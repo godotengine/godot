@@ -183,34 +183,49 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		onProgress: null,
 		/**
-		 * A callback function for handling the standard output stream. This method should usually only be used in debug pages.
+		 * A callback function for handling prints. This method should usually only be used in debug pages.
 		 *
 		 * By default, ``console.log()`` is used.
 		 *
 		 * @callback EngineConfig.onPrint
-		 * @param {...*} [var_args] A variadic number of arguments to be printed.
+		 * @param {string} text The text to be printed.
 		 */
 		/**
 		 * @ignore
-		 * @type {?function(...*)}
+		 * @type {?function(string)}
 		 */
-		onPrint: function () {
-			console.log.apply(console, Array.from(arguments)); // eslint-disable-line no-console
+		onPrint: function (text) {
+			console.log(text); // eslint-disable-line no-console
 		},
 		/**
-		 * A callback function for handling the standard error stream. This method should usually only be used in debug pages.
+		 * A callback function for handling pushed errors. This method should usually only be used in debug pages.
 		 *
 		 * By default, ``console.error()`` is used.
 		 *
 		 * @callback EngineConfig.onPrintError
-		 * @param {...*} [var_args] A variadic number of arguments to be printed as errors.
+		 * @param {string} text The text to be printed as an error.
 		*/
 		/**
 		 * @ignore
-		 * @type {?function(...*)}
+		 * @type {?function(string)}
 		 */
-		onPrintError: function (var_args) {
-			console.error.apply(console, Array.from(arguments)); // eslint-disable-line no-console
+		onPrintError: function (text) {
+			console.error(text); // eslint-disable-line no-console
+		},
+		/**
+		 * A callback function for handling pushed warnings. This method should usually only be used in debug pages.
+		 *
+		 * By default, ``console.warn()`` is used.
+		 *
+		 * @callback EngineConfig.onPrintWarn
+		 * @param {string} text The text to be printed as a warning.
+		 */
+		/**
+		 * @ignore
+		 * @type {?function(string)}
+		 */
+		onPrintWarn: function (text) {
+			console.warn(text); // eslint-disable-line no-console
 		},
 	};
 
@@ -242,8 +257,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		}
 		// Module config
 		this.unloadAfterInit = parse('unloadAfterInit', this.unloadAfterInit);
-		this.onPrintError = parse('onPrintError', this.onPrintError);
-		this.onPrint = parse('onPrint', this.onPrint);
 		this.onProgress = parse('onProgress', this.onProgress);
 
 		// Godot config
@@ -262,6 +275,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
+		this.onPrintError = parse('onPrintError', this.onPrintError);
+		this.onPrintWarn = parse('onPrintWarn', this.onPrintWarn);
+		this.onPrint = parse('onPrint', this.onPrint);
 	};
 
 	/**
@@ -273,8 +289,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		let r = response;
 		const gdext = this.gdextensionLibs;
 		return {
-			'print': this.onPrint,
-			'printErr': this.onPrintError,
 			'thisProgram': this.executable,
 			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
@@ -358,6 +372,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 					onExit(p_code);
 				}
 			},
+			'onPrint': this.onPrint,
+			'onPrintError': this.onPrintError,
+			'onPrintWarn': this.onPrintWarn,
 		};
 	};
 	return new Config(initConfig);
