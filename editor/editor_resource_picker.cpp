@@ -61,11 +61,11 @@ void EditorResourcePicker::_update_resource() {
 		assign_button->set_custom_minimum_size(assign_button_min_size);
 
 		if (edited_resource == Ref<Resource>()) {
-			assign_button->set_icon(Ref<Texture2D>());
+			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
-			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
 				assign_button->set_text(edited_resource->get_name());
@@ -103,7 +103,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_button_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -224,7 +224,9 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 
 		if (is_editable()) {
-			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+			if (!_is_custom_type_script()) {
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
 			// Check whether the resource has subresources.
@@ -694,6 +696,16 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 	return false;
 }
 
+bool EditorResourcePicker::_is_custom_type_script() const {
+	Ref<Script> resource_as_script = edited_resource;
+
+	if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
+		return true;
+	}
+
+	return false;
+}
+
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
 		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
@@ -819,7 +831,7 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
+			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -951,6 +963,10 @@ void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
 
 bool EditorResourcePicker::is_toggle_pressed() const {
 	return assign_button->is_pressed();
+}
+
+void EditorResourcePicker::set_resource_owner(Object *p_object) {
+	resource_owner = p_object;
 }
 
 void EditorResourcePicker::set_editable(bool p_editable) {
@@ -1098,7 +1114,10 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
+	if (!(script_owner && script_owner->has_meta(SceneStringName(_custom_type_script)))) {
+		menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
+	}
+
 	if (script_owner) {
 		Ref<Script> scr = script_owner->get_script();
 		if (scr.is_valid()) {
@@ -1340,7 +1359,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 	}
 
 	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
-	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SNAME("font_color"), EditorStringName(Editor)));
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 }
 
 EditorAudioStreamPicker::EditorAudioStreamPicker() :

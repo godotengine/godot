@@ -276,6 +276,10 @@ String OS::get_cache_path() const {
 	return ".";
 }
 
+String OS::get_temp_path() const {
+	return ".";
+}
+
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
@@ -352,7 +356,7 @@ void OS::ensure_user_data_dir() {
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
+	ERR_FAIL_COND_MSG(err != OK, vformat("Error attempting to create data dir: %s.", dd));
 }
 
 String OS::get_model_name() const {
@@ -439,6 +443,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "x86_64") {
 		return true;
 	}
@@ -452,6 +461,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "arm64") {
 		return true;
 	}
@@ -502,6 +516,10 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "wasm") {
+		return true;
+	}
+#elif defined(__loongarch64)
+	if (p_feature == "loongarch64") {
 		return true;
 	}
 #endif

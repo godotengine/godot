@@ -76,7 +76,7 @@ struct _AtlasWorkRect {
 	Size2i s;
 	Point2i p;
 	int idx = 0;
-	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; };
+	_FORCE_INLINE_ bool operator<(const _AtlasWorkRect &p_r) const { return s.width > p_r.s.width; }
 };
 
 struct _AtlasWorkRectResult {

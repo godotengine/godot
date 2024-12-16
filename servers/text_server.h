@@ -31,6 +31,7 @@
 #ifndef TEXT_SERVER_H
 #define TEXT_SERVER_H
 
+#include "core/io/image.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
 #include "core/templates/rid.h"
@@ -243,6 +244,7 @@ public:
 	virtual String get_support_data_filename() const = 0;
 	virtual String get_support_data_info() const = 0;
 	virtual bool save_support_data(const String &p_filename) const = 0;
+	virtual PackedByteArray get_support_data() const = 0;
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
@@ -313,6 +315,9 @@ public:
 
 	virtual void font_set_subpixel_positioning(const RID &p_font_rid, SubpixelPositioning p_subpixel) = 0;
 	virtual SubpixelPositioning font_get_subpixel_positioning(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) = 0;
+	virtual bool font_get_keep_rounding_remainders(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_embolden(const RID &p_font_rid, double p_strength) = 0;
 	virtual double font_get_embolden(const RID &p_font_rid) const = 0;
@@ -534,6 +539,11 @@ public:
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
+#ifdef DEBUG_ENABLED
+	void debug_print_glyph(int p_idx, const Glyph &p_glyph) const;
+	void shaped_text_debug_print(const RID &p_shaped) const;
+#endif
+
 	// Number conversion.
 	virtual String format_number(const String &p_string, const String &p_language = "") const = 0;
 	virtual String parse_number(const String &p_string, const String &p_language = "") const = 0;
@@ -543,8 +553,8 @@ public:
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int64_t p_chars_per_line = 0) const = 0;
 	virtual PackedInt32Array string_get_character_breaks(const String &p_string, const String &p_language = "") const;
 
-	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
-	virtual bool spoof_check(const String &p_string) const { return false; };
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; }
+	virtual bool spoof_check(const String &p_string) const { return false; }
 
 	virtual String strip_diacritics(const String &p_string) const;
 	virtual bool is_valid_identifier(const String &p_string) const;

@@ -160,11 +160,11 @@ void OpenXRInterface::_bind_methods() {
 
 StringName OpenXRInterface::get_name() const {
 	return StringName("OpenXR");
-};
+}
 
 uint32_t OpenXRInterface::get_capabilities() const {
 	return XRInterface::XR_VR + XRInterface::XR_STEREO;
-};
+}
 
 PackedStringArray OpenXRInterface::get_suggested_tracker_names() const {
 	// These are hardcoded in OpenXR, note that they will only be available if added to our action map
@@ -287,6 +287,13 @@ void OpenXRInterface::_load_action_map() {
 			if (ip.is_valid()) {
 				openxr_api->interaction_profile_clear_bindings(ip);
 
+				for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_interaction_profile->get_binding_modifiers()) {
+					PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+					if (!bm.is_empty()) {
+						openxr_api->interaction_profile_add_modifier(ip, bm);
+					}
+				}
+
 				Array xr_bindings = xr_interaction_profile->get_bindings();
 				for (int j = 0; j < xr_bindings.size(); j++) {
 					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
@@ -300,9 +307,17 @@ void OpenXRInterface::_load_action_map() {
 						continue;
 					}
 
-					PackedStringArray paths = xr_binding->get_paths();
-					for (int k = 0; k < paths.size(); k++) {
-						openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+					int binding_no = openxr_api->interaction_profile_add_binding(ip, action->action_rid, xr_binding->get_binding_path());
+					if (binding_no >= 0) {
+						for (Ref<OpenXRBindingModifier> xr_binding_modifier : xr_binding->get_binding_modifiers()) {
+							// Binding modifiers on bindings can be added to the interaction profile.
+							PackedByteArray bm = xr_binding_modifier->get_ip_modification();
+							if (!bm.is_empty()) {
+								openxr_api->interaction_profile_add_modifier(ip, bm);
+							}
+
+							// And possibly in the future on the binding itself, we're just preparing for that eventuality.
+						}
 					}
 				}
 
@@ -596,8 +611,8 @@ void OpenXRInterface::free_trackers() {
 void OpenXRInterface::free_interaction_profiles() {
 	ERR_FAIL_NULL(openxr_api);
 
-	for (int i = 0; i < interaction_profiles.size(); i++) {
-		openxr_api->interaction_profile_free(interaction_profiles[i]);
+	for (const RID &interaction_profile : interaction_profiles) {
+		openxr_api->interaction_profile_free(interaction_profile);
 	}
 	interaction_profiles.clear();
 }
@@ -614,7 +629,7 @@ bool OpenXRInterface::initialize_on_startup() const {
 
 bool OpenXRInterface::is_initialized() const {
 	return initialized;
-};
+}
 
 bool OpenXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -1056,6 +1071,30 @@ RID OpenXRInterface::get_depth_texture() {
 	}
 }
 
+RID OpenXRInterface::get_velocity_texture() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_texture();
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRInterface::get_velocity_depth_texture() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_depth_texture();
+	} else {
+		return RID();
+	}
+}
+
+Size2i OpenXRInterface::get_velocity_target_size() {
+	if (openxr_api) {
+		return openxr_api->get_velocity_target_size();
+	} else {
+		return Size2i();
+	}
+}
+
 void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrackingExtension::HandTrackedHands p_hand) {
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
@@ -1136,6 +1175,12 @@ void OpenXRInterface::process() {
 
 	if (head.is_valid()) {
 		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
+	}
+
+	if (reference_stage_changing) {
+		// Now that we have updated tracking information in our updated reference space, trigger our pose recentered signal.
+		emit_signal(SNAME("pose_recentered"));
+		reference_stage_changing = false;
 	}
 }
 
@@ -1318,8 +1363,8 @@ void OpenXRInterface::on_state_exiting() {
 	emit_signal(SNAME("instance_exiting"));
 }
 
-void OpenXRInterface::on_pose_recentered() {
-	emit_signal(SNAME("pose_recentered"));
+void OpenXRInterface::on_reference_space_change_pending() {
+	reference_stage_changing = true;
 }
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {

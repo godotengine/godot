@@ -389,6 +389,19 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
 }
 
+TEST_CASE("[String] Find character") {
+	String s = "racecar";
+	CHECK_EQ(s.find_char('r'), 0);
+	CHECK_EQ(s.find_char('r', 1), 6);
+	CHECK_EQ(s.find_char('e'), 3);
+	CHECK_EQ(s.find_char('e', 4), -1);
+
+	CHECK_EQ(s.rfind_char('r'), 6);
+	CHECK_EQ(s.rfind_char('r', 5), 0);
+	CHECK_EQ(s.rfind_char('e'), 3);
+	CHECK_EQ(s.rfind_char('e', 2), -1);
+}
+
 TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
@@ -455,16 +468,32 @@ TEST_CASE("[String] Erasing") {
 }
 
 TEST_CASE("[String] Number to string") {
-	CHECK(String::num(0) == "0");
-	CHECK(String::num(0.0) == "0"); // No trailing zeros.
-	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
+	CHECK(String::num(0) == "0.0"); // The method takes double, so always add zeros.
+	CHECK(String::num(0.0) == "0.0");
+	CHECK(String::num(-0.0) == "-0.0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
+	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
 	CHECK(String::num_scientific(30000000) == "3e+07");
+
+	// String::num_int64 tests.
 	CHECK(String::num_int64(3141593) == "3141593");
+	CHECK(String::num_int64(-3141593) == "-3141593");
 	CHECK(String::num_int64(0xA141593, 16) == "a141593");
 	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
-	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
+	ERR_PRINT_OFF;
+	CHECK(String::num_int64(3141593, 1) == ""); // Invalid base < 2.
+	CHECK(String::num_int64(3141593, 37) == ""); // Invalid base > 36.
+	ERR_PRINT_ON;
+
+	// String::num_uint64 tests.
+	CHECK(String::num_uint64(4294967295) == "4294967295");
+	CHECK(String::num_uint64(0xF141593, 16) == "f141593");
+	CHECK(String::num_uint64(0xF141593, 16, true) == "F141593");
+	ERR_PRINT_OFF;
+	CHECK(String::num_uint64(4294967295, 1) == ""); // Invalid base < 2.
+	CHECK(String::num_uint64(4294967295, 37) == ""); // Invalid base > 36.
+	ERR_PRINT_ON;
 
 	// String::num_real tests.
 	CHECK(String::num_real(1.0) == "1.0");
@@ -476,15 +505,15 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_real(3.141593) == "3.141593");
 	CHECK(String::num_real(3.141) == "3.141"); // No trailing zeros.
 #ifdef REAL_T_IS_DOUBLE
-	CHECK_MESSAGE(String::num_real(123.456789) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(-123.456789) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(Math_PI) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
+	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
-	CHECK_MESSAGE(String::num_real(123.456789) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(-123.456789) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(Math_PI) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 
 	// Checks doubles with many decimal places.
@@ -493,7 +522,7 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(-0.0000012345432123454321) == "-0.00000123454321");
 	CHECK(String::num(-10000.0000012345432123454321) == "-10000.0000012345");
 	CHECK(String::num(0.0000000000012345432123454321) == "0.00000000000123");
-	CHECK(String::num(0.0000000000012345432123454321, 3) == "0");
+	CHECK(String::num(0.0000000000012345432123454321, 3) == "0.0");
 
 	// Note: When relevant (remainder > 0.5), the last digit gets rounded up,
 	// which can also lead to not include a trailing zero, e.g. "...89" -> "...9".
@@ -1238,6 +1267,12 @@ TEST_CASE("[String] is_subsequence_of") {
 	CHECK(String("Sub").is_subsequence_ofn(a));
 }
 
+TEST_CASE("[String] is_lowercase") {
+	CHECK(String("abcd1234 !@#$%^&*()_-=+,.<>/\\|[]{};':\"`~").is_lowercase());
+	CHECK(String("").is_lowercase());
+	CHECK(!String("abc_ABC").is_lowercase());
+}
+
 TEST_CASE("[String] match") {
 	CHECK(String("img1.png").match("*.png"));
 	CHECK(!String("img1.jpeg").match("*.png"));
@@ -1652,6 +1687,10 @@ TEST_CASE("[String] Path functions") {
 	for (int i = 0; i < 3; i++) {
 		CHECK(String(file_name[i]).is_valid_filename() == valid[i]);
 	}
+
+	CHECK(String("res://texture.png") == String("res://folder/../folder/../texture.png").simplify_path());
+	CHECK(String("res://texture.png") == String("res://folder/sub/../../texture.png").simplify_path());
+	CHECK(String("res://../../texture.png") == String("res://../../texture.png").simplify_path());
 }
 
 TEST_CASE("[String] hash") {

@@ -259,10 +259,6 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
 
 def generate_scu_files(max_includes_per_scu):
-    print("=============================")
-    print("Single Compilation Unit Build")
-    print("=============================")
-
     global _max_includes_per_scu
     _max_includes_per_scu = max_includes_per_scu
 
@@ -290,11 +286,16 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["drivers/unix"])
     process_folder(["drivers/png"])
 
+    process_folder(["drivers/gles3/effects"])
+    process_folder(["drivers/gles3/storage"])
+
     process_folder(["editor"], ["file_system_dock", "editor_resource_preview"], 32)
     process_folder(["editor/debugger"])
     process_folder(["editor/debugger/debug_adapter"])
     process_folder(["editor/export"])
     process_folder(["editor/gui"])
+    process_folder(["editor/themes"])
+    process_folder(["editor/project_manager"])
     process_folder(["editor/import"])
     process_folder(["editor/import/3d"])
     process_folder(["editor/plugins"])
@@ -308,12 +309,15 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["platform/web/export"])
     process_folder(["platform/windows/export"])
 
+    process_folder(["modules/lightmapper_rd"])
     process_folder(["modules/gltf"])
     process_folder(["modules/gltf/structures"])
     process_folder(["modules/gltf/editor"])
     process_folder(["modules/gltf/extensions"])
     process_folder(["modules/gltf/extensions/physics"])
     process_folder(["modules/navigation"])
+    process_folder(["modules/navigation/2d"])
+    process_folder(["modules/navigation/3d"])
     process_folder(["modules/webrtc"])
     process_folder(["modules/websocket"])
     process_folder(["modules/gridmap"])
@@ -322,6 +326,8 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/openxr"], ["register_types"])
     process_folder(["modules/openxr/action_map"])
     process_folder(["modules/openxr/editor"])
+    process_folder(["modules/openxr/extensions"])
+    process_folder(["modules/openxr/scene"])
     process_folder(["modules/godot_physics_2d"])
     process_folder(["modules/godot_physics_3d"])
     process_folder(["modules/godot_physics_3d/joints"])
@@ -340,19 +346,26 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
     process_folder(["scene/main"])
+    process_folder(["scene/theme"])
     process_folder(["scene/resources"])
     process_folder(["scene/resources/2d"])
+    process_folder(["scene/resources/2d/skeleton"])
     process_folder(["scene/resources/3d"])
 
     process_folder(["servers"])
     process_folder(["servers/rendering"])
+    process_folder(["servers/rendering/dummy/storage"])
     process_folder(["servers/rendering/storage"])
     process_folder(["servers/rendering/renderer_rd"])
     process_folder(["servers/rendering/renderer_rd/effects"])
     process_folder(["servers/rendering/renderer_rd/environment"])
     process_folder(["servers/rendering/renderer_rd/storage_rd"])
+    process_folder(["servers/rendering/renderer_rd/forward_clustered"])
+    process_folder(["servers/rendering/renderer_rd/forward_mobile"])
     process_folder(["servers/audio"])
     process_folder(["servers/audio/effects"])
+    process_folder(["servers/navigation"])
+    process_folder(["servers/xr"])
 
     # Finally change back the path to the calling folder
     os.chdir(curr_folder)

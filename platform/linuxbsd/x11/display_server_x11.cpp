@@ -129,6 +129,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_ICON:
 #ifdef DBUS_ENABLED
 		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 #endif
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:
@@ -398,6 +399,10 @@ Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, con
 }
 
 #endif
+
+void DisplayServerX11::beep() const {
+	XBell(x11_display, 0);
+}
 
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
@@ -1858,6 +1863,18 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 			}
 			if (gl_manager_egl) {
 				return (int64_t)gl_manager_egl->get_context(p_window);
+			}
+			return 0;
+		}
+		case EGL_DISPLAY: {
+			if (gl_manager_egl) {
+				return (int64_t)gl_manager_egl->get_display(p_window);
+			}
+			return 0;
+		}
+		case EGL_CONFIG: {
+			if (gl_manager_egl) {
+				return (int64_t)gl_manager_egl->get_config(p_window);
 			}
 			return 0;
 		}
@@ -4840,14 +4857,7 @@ void DisplayServerX11::process_events() {
 
 					WindowID window_id_other = INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
-					if (wd.focused) {
-						// Handle cases where an unfocused popup is open that needs to receive button-up events.
-						WindowID popup_id = _get_focused_window_or_popup();
-						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
-							window_id_other = popup_id;
-							wd_other_x11_window = windows[popup_id].x11_window;
-						}
-					} else {
+					if (!wd.focused) {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
@@ -6156,13 +6166,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+#if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
 				WARN_PRINT("Your video card drivers seem not to support the required Vulkan version, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else {
+			} else
+#endif // GLES3_ENABLED
+			{
 				r_error = ERR_CANT_CREATE;
 
 				if (p_rendering_driver == "vulkan") {

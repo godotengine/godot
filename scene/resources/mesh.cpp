@@ -45,23 +45,23 @@ void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) 
 
 real_t MeshConvexDecompositionSettings::get_max_concavity() const {
 	return max_concavity;
-};
+}
 
 void MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias) {
 	symmetry_planes_clipping_bias = CLAMP(p_symmetry_planes_clipping_bias, 0.0, 1.0);
-};
+}
 
 real_t MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias() const {
 	return symmetry_planes_clipping_bias;
-};
+}
 
 void MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias) {
 	revolution_axes_clipping_bias = CLAMP(p_revolution_axes_clipping_bias, 0.0, 1.0);
-};
+}
 
 real_t MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias() const {
 	return revolution_axes_clipping_bias;
-};
+}
 
 void MeshConvexDecompositionSettings::set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull) {
 	min_volume_per_convex_hull = CLAMP(p_min_volume_per_convex_hull, 0.0001, 0.01);
@@ -385,7 +385,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		}
 	}
 
-	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh.instantiate();
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
@@ -1315,7 +1315,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
 	if (sname.begins_with("surface_")) {
-		int sl = sname.find("/");
+		int sl = sname.find_char('/');
 		if (sl == -1) {
 			return false;
 		}
@@ -1708,7 +1708,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	String sname = p_name;
 	if (sname.begins_with("surface_")) {
-		int sl = sname.find("/");
+		int sl = sname.find_char('/');
 		if (sl == -1) {
 			return false;
 		}

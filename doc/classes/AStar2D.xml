@@ -278,7 +278,7 @@
 			<return type="void" />
 			<param index="0" name="num_nodes" type="int" />
 			<description>
-				Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, such as points on a grid. New capacity must be greater or equals to old capacity.
+				Reserves space internally for [param num_nodes] points. Useful if you're adding a known large number of points at once, such as points on a grid. The new capacity must be greater or equal to the old capacity.
 			</description>
 		</method>
 		<method name="set_point_disabled">

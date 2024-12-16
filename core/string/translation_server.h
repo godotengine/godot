@@ -46,13 +46,19 @@ class TranslationServer : public Object {
 	Ref<TranslationDomain> doc_domain;
 	HashMap<StringName, Ref<TranslationDomain>> custom_domains;
 
+	mutable HashMap<String, int> locale_compare_cache;
+
 	bool enabled = true;
 
-	static TranslationServer *singleton;
+	static inline TranslationServer *singleton = nullptr;
 	bool _load_translations(const String &p_from);
-	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	String _standardize_locale_bind_compat_98972(const String &p_locale) const;
+	static void _bind_compatibility_methods();
+#endif
 
 	struct LocaleScriptInfo {
 		String name;
@@ -61,6 +67,24 @@ class TranslationServer : public Object {
 		HashSet<String> supported_countries;
 	};
 	static Vector<LocaleScriptInfo> locale_script_info;
+
+	struct Locale {
+		String language;
+		String script;
+		String country;
+		String variant;
+
+		bool operator==(const Locale &p_locale) const {
+			return (p_locale.language == language) &&
+					(p_locale.script == script) &&
+					(p_locale.country == country) &&
+					(p_locale.variant == variant);
+		}
+
+		operator String() const;
+
+		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
+	};
 
 	static HashMap<String, String> language_map;
 	static HashMap<String, String> script_map;
@@ -109,7 +133,7 @@ public:
 	void set_pseudolocalization_enabled(bool p_enabled);
 	void reload_pseudolocalization();
 
-	String standardize_locale(const String &p_locale) const;
+	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 

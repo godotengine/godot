@@ -15,13 +15,15 @@ concurrency:
 
 jobs:
   godot-cpp-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Build and test Godot CPP
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          sparse-checkout: .github
+          sparse-checkout: |
+            .github
+            misc/utility/problem-matchers.json
 
       - name: Checkout godot-cpp
         uses: actions/checkout@v4
@@ -33,9 +35,6 @@ jobs:
 
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
-
-      - name: Setup GCC problem matcher
-        uses: ammaraskar/gcc-problem-matcher@master
 
       - name: Download GDExtension interface and API dump
         uses: ./.github/actions/download-artifact
@@ -52,9 +51,6 @@ jobs:
       #   continue-on-error: true
 
       - name: Build godot-cpp test extension
-        env: # Keep synced with godot-build.
-          SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
-          SCONS_CACHE_LIMIT: 7168
         run: scons --directory=./godot-cpp/test target=template_debug dev_build=yes verbose=yes
 
       # - name: Save Godot build cache

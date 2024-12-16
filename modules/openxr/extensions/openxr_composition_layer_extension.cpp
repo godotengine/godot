@@ -210,7 +210,7 @@ void OpenXRViewportCompositionLayerProvider::set_viewport(RID p_viewport, Size2i
 	if (subviewport.viewport != p_viewport) {
 		if (subviewport.viewport.is_valid()) {
 			RID rt = rs->viewport_get_render_target(subviewport.viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 
 		subviewport.viewport = p_viewport;
@@ -281,7 +281,7 @@ void OpenXRViewportCompositionLayerProvider::create_android_surface() {
 	composition_layer_extension->create_android_surface_swapchain(&info, &android_surface.swapchain, &surface);
 
 	if (surface) {
-		android_surface.surface = Ref<JavaObject>(memnew(JavaObject(JavaClassWrapper::get_singleton()->wrap("android.view.Surface"), surface)));
+		android_surface.surface.instantiate(JavaClassWrapper::get_singleton()->wrap("android.view.Surface"), surface);
 	}
 }
 #endif
@@ -323,7 +323,7 @@ void OpenXRViewportCompositionLayerProvider::on_pre_render() {
 			if (update_and_acquire_swapchain(update_mode == RS::VIEWPORT_UPDATE_ONCE)) {
 				// Render to our XR swapchain image.
 				RID rt = rs->viewport_get_render_target(subviewport.viewport);
-				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID());
+				RSG::texture_storage->render_target_set_override(rt, get_current_swapchain_texture(), RID(), RID(), RID());
 			}
 		}
 	}
@@ -341,7 +341,7 @@ XrCompositionLayerBaseHeader *OpenXRViewportCompositionLayerProvider::get_compos
 	}
 
 	XrSwapchainSubImage subimage = {
-		0, // swapchain
+		0, // swapchain // NOLINT(modernize-use-nullptr) - 32-bit uses non-pointer uint64
 		{ { 0, 0 }, { 0, 0 } }, // imageRect
 		0, // imageArrayIndex
 	};

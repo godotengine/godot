@@ -39,6 +39,7 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_session_create_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_swapchain_create_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_hand_joint_locations_and_get_next_pointer, "hand_index", "next_pointer");
+	GDVIRTUAL_BIND(_set_projection_views_and_get_next_pointer, "view_index", "next_pointer");
 	GDVIRTUAL_BIND(_get_composition_layer_count);
 	GDVIRTUAL_BIND(_get_composition_layer, "index");
 	GDVIRTUAL_BIND(_get_composition_layer_order, "index");
@@ -51,6 +52,8 @@ void OpenXRExtensionWrapperExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_on_process);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
+	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
+	GDVIRTUAL_BIND(_on_post_draw_viewport, "viewport");
 	GDVIRTUAL_BIND(_on_session_destroyed);
 	GDVIRTUAL_BIND(_on_state_idle);
 	GDVIRTUAL_BIND(_on_state_ready);
@@ -138,6 +141,16 @@ void *OpenXRExtensionWrapperExtension::set_hand_joint_locations_and_get_next_poi
 	return nullptr;
 }
 
+void *OpenXRExtensionWrapperExtension::set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_projection_views_and_get_next_pointer, p_view_index, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
 PackedStringArray OpenXRExtensionWrapperExtension::get_suggested_tracker_names() {
 	PackedStringArray ret;
 
@@ -206,6 +219,14 @@ void OpenXRExtensionWrapperExtension::on_main_swapchains_created() {
 
 void OpenXRExtensionWrapperExtension::on_session_destroyed() {
 	GDVIRTUAL_CALL(_on_session_destroyed);
+}
+
+void OpenXRExtensionWrapperExtension::on_pre_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_pre_draw_viewport, p_render_target);
+}
+
+void OpenXRExtensionWrapperExtension::on_post_draw_viewport(RID p_render_target) {
+	GDVIRTUAL_CALL(_on_post_draw_viewport, p_render_target);
 }
 
 void OpenXRExtensionWrapperExtension::on_state_idle() {
@@ -298,8 +319,7 @@ void OpenXRExtensionWrapperExtension::register_extension_wrapper() {
 	OpenXRAPI::register_extension_wrapper(this);
 }
 
-OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() :
-		Object(), OpenXRExtensionWrapper() {
+OpenXRExtensionWrapperExtension::OpenXRExtensionWrapperExtension() {
 	openxr_api.instantiate();
 }
 

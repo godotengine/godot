@@ -100,20 +100,20 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("mono_font_size", font_size);
 	log->end_bulk_theme_override();
 
-	type_filter_map[MSG_TYPE_STD]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Popup")));
-	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
-	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+	type_filter_map[MSG_TYPE_STD]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
+	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
+	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
+	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 
 	type_filter_map[MSG_TYPE_STD]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_ERROR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_WARNING]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 	type_filter_map[MSG_TYPE_EDITOR]->toggle_button->set_theme_type_variation("EditorLogFilterButton");
 
-	clear_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
-	copy_button->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
-	collapse_button->set_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_search_button->set_icon(get_editor_theme_icon(SNAME("Search")));
+	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+	copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	show_search_button->set_button_icon(get_editor_theme_icon(SNAME("Search")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -204,7 +204,7 @@ void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_icon(Ref<Texture2D>());
+	tool_button->set_button_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -358,15 +358,19 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_color(theme_cache.error_color);
 			Ref<Texture2D> icon = theme_cache.error_icon;
 			log->add_image(icon);
-			log->add_text(" ");
-			tool_button->set_icon(icon);
+			log->push_bold();
+			log->add_text(" ERROR: ");
+			log->pop(); // bold
+			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
 			Ref<Texture2D> icon = theme_cache.warning_icon;
 			log->add_image(icon);
-			log->add_text(" ");
-			tool_button->set_icon(icon);
+			log->push_bold();
+			log->add_text(" WARNING: ");
+			log->pop(); // bold
+			tool_button->set_button_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project
@@ -480,7 +484,7 @@ EditorLog::EditorLog() {
 
 	// Clear.
 	clear_button = memnew(Button);
-	clear_button->set_theme_type_variation("FlatButton");
+	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
 	clear_button->set_focus_mode(FOCUS_NONE);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
@@ -488,7 +492,7 @@ EditorLog::EditorLog() {
 
 	// Copy.
 	copy_button = memnew(Button);
-	copy_button->set_theme_type_variation("FlatButton");
+	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	copy_button->set_focus_mode(FOCUS_NONE);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
@@ -505,7 +509,7 @@ EditorLog::EditorLog() {
 
 	// Collapse.
 	collapse_button = memnew(Button);
-	collapse_button->set_theme_type_variation("FlatButton");
+	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
 	collapse_button->set_focus_mode(FOCUS_NONE);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
 	collapse_button->set_toggle_mode(true);
@@ -515,7 +519,7 @@ EditorLog::EditorLog() {
 
 	// Show Search.
 	show_search_button = memnew(Button);
-	show_search_button->set_theme_type_variation("FlatButton");
+	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);

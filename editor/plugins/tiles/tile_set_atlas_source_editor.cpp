@@ -996,9 +996,9 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			// Create and position the button.
 			Button *button = memnew(Button);
 			button->set_flat(true);
-			button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
-			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
+			button->add_theme_style_override(SceneStringName(hover), memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
 			button->connect(SceneStringName(pressed), callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile).bind(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
@@ -1699,7 +1699,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 
 void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	// Check for shortcuts.
-	if (ED_IS_SHORTCUT("tiles_editor/delete_tile", p_event)) {
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
 			_menu_option(TILE_DELETE);
 			accept_event();
@@ -2441,12 +2441,12 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
-			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
+			tool_setup_atlas_source_button->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
+			tool_select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_paint_button->set_button_icon(get_editor_theme_icon(SNAME("Paint")));
 
-			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
-			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			tools_settings_erase_button->set_button_icon(get_editor_theme_icon(SNAME("Eraser")));
+			tool_advanced_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			outside_tiles_warning->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 
 			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
@@ -2527,7 +2527,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
+	tool_setup_atlas_source_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2536,7 +2536,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_theme_type_variation("FlatButton");
+	tool_select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2545,7 +2545,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_theme_type_variation("FlatButton");
+	tool_paint_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	toolbox->add_child(tool_paint_button);
@@ -2626,7 +2626,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_theme_type_variation("FlatButton");
+	tools_settings_erase_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/eraser"));
 	tools_settings_erase_button->set_shortcut_context(this);
@@ -2711,7 +2711,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
-	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
+	alternative_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	alternative_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 

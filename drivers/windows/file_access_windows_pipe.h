@@ -39,7 +39,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 class FileAccessWindowsPipe : public FileAccess {
-	HANDLE fd[2] = { 0, 0 };
+	HANDLE fd[2] = { nullptr, nullptr };
 
 	mutable Error last_error = OK;
 
@@ -70,7 +70,7 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override {}
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override { return false; }
 

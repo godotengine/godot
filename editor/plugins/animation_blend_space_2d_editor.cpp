@@ -798,14 +798,14 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			tool_blend->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
-			tool_select->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_create->set_icon(get_editor_theme_icon(SNAME("EditKey")));
-			tool_triangle->set_icon(get_editor_theme_icon(SNAME("ToolTriangle")));
-			tool_erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
-			snap->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			auto_triangles->set_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
+			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
+			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_create->set_button_icon(get_editor_theme_icon(SNAME("EditKey")));
+			tool_triangle->set_button_icon(get_editor_theme_icon(SNAME("ToolTriangle")));
+			tool_erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			snap->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			open_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+			auto_triangles->set_button_icon(get_editor_theme_icon(SNAME("AutoTriangle")));
 			interpolation->clear();
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
@@ -882,7 +882,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	bg.instantiate();
 
 	tool_blend = memnew(Button);
-	tool_blend->set_theme_type_variation("FlatButton");
+	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
@@ -891,7 +891,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
-	tool_select->set_theme_type_variation("FlatButton");
+	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
@@ -899,7 +899,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
-	tool_create->set_theme_type_variation("FlatButton");
+	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
@@ -907,7 +907,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
 	tool_triangle = memnew(Button);
-	tool_triangle->set_theme_type_variation("FlatButton");
+	tool_triangle->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
@@ -917,7 +917,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation("FlatButton");
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
@@ -926,7 +926,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	auto_triangles = memnew(Button);
-	auto_triangles->set_theme_type_variation("FlatButton");
+	auto_triangles->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(auto_triangles);
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
@@ -935,7 +935,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
-	snap->set_theme_type_variation("FlatButton");
+	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);

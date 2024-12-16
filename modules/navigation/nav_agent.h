@@ -35,6 +35,7 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/self_list.h"
 
 #include <Agent2d.h>
 #include <Agent3d.h>
@@ -67,15 +68,18 @@ class NavAgent : public NavRid {
 	uint32_t avoidance_mask = 1;
 	real_t avoidance_priority = 1.0;
 
-	Callable avoidance_callback = Callable();
+	Callable avoidance_callback;
 
 	bool agent_dirty = true;
 
 	uint32_t last_map_iteration_id = 0;
 	bool paused = false;
 
+	SelfList<NavAgent> sync_dirty_request_list_element;
+
 public:
 	NavAgent();
+	~NavAgent();
 
 	void set_avoidance_enabled(bool p_enabled);
 	bool is_avoidance_enabled() { return avoidance_enabled; }
@@ -130,18 +134,21 @@ public:
 	const Vector3 &get_velocity_forced() const { return velocity_forced; }
 
 	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const { return avoidance_layers; };
+	uint32_t get_avoidance_layers() const { return avoidance_layers; }
 
 	void set_avoidance_mask(uint32_t p_mask);
-	uint32_t get_avoidance_mask() const { return avoidance_mask; };
+	uint32_t get_avoidance_mask() const { return avoidance_mask; }
 
 	void set_avoidance_priority(real_t p_priority);
-	real_t get_avoidance_priority() const { return avoidance_priority; };
+	real_t get_avoidance_priority() const { return avoidance_priority; }
 
 	void set_paused(bool p_paused);
 	bool get_paused() const;
 
-	bool check_dirty();
+	bool is_dirty() const;
+	void sync();
+	void request_sync();
+	void cancel_sync_request();
 
 	// Updates this agent with rvo data after the rvo simulation avoidance step.
 	void update();

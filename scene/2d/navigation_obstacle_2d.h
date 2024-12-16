@@ -84,7 +84,7 @@ public:
 	real_t get_radius() const { return radius; }
 
 	void set_vertices(const Vector<Vector2> &p_vertices);
-	const Vector<Vector2> &get_vertices() const { return vertices; };
+	const Vector<Vector2> &get_vertices() const { return vertices; }
 
 	void set_avoidance_layers(uint32_t p_layers);
 	uint32_t get_avoidance_layers() const;
@@ -96,7 +96,7 @@ public:
 	bool get_avoidance_layer_value(int p_layer_number) const;
 
 	void set_velocity(const Vector2 p_velocity);
-	Vector2 get_velocity() const { return velocity; };
+	Vector2 get_velocity() const { return velocity; }
 
 	void _avoidance_done(Vector3 p_new_velocity); // Dummy
 
@@ -106,9 +106,12 @@ public:
 	void set_carve_navigation_mesh(bool p_enabled);
 	bool get_carve_navigation_mesh() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 private:
 	void _update_map(RID p_map);
 	void _update_position(const Vector2 p_position);
+	void _update_transform();
 };
 
 #endif // NAVIGATION_OBSTACLE_2D_H

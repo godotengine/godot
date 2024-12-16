@@ -717,7 +717,7 @@ thirdparty_icu_sources = [
 ]
 thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
 
-icu_data_name = "icudt75l.dat"
+icu_data_name = "icudt76l.dat"
 
 if env["static_icu_data"]:
     env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name)

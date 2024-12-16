@@ -38,6 +38,8 @@ class AnimationNodeAnimation : public AnimationRootNode {
 
 	StringName animation;
 
+	bool advance_on_start = false;
+
 	bool use_custom_timeline = false;
 	double timeline_length = 1.0;
 	Animation::LoopMode loop_mode = Animation::LOOP_NONE;
@@ -71,6 +73,9 @@ public:
 
 	void set_backward(bool p_backward);
 	bool is_backward() const;
+
+	void set_advance_on_start(bool p_advance_on_start);
+	bool is_advance_on_start() const;
 
 	void set_use_custom_timeline(bool p_use_custom_timeline);
 	bool is_using_custom_timeline() const;
@@ -297,6 +302,10 @@ class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
 	StringName seek_pos_request = PNAME("seek_request");
+	bool explicit_elapse = true;
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -305,6 +314,9 @@ public:
 	virtual String get_caption() const override;
 
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+
+	void set_explicit_elapse(bool p_enable);
+	bool is_explicit_elapse() const;
 
 	AnimationNodeTimeSeek();
 };

@@ -1,14 +1,12 @@
----
-Checks: >-
-  -*,
-  cppcoreguidelines-pro-type-member-init,
-  modernize-redundant-void-arg,
-  modernize-use-bool-literals,
-  modernize-use-default-member-init,
-  modernize-use-nullptr,
-  readability-braces-around-statements,
-  readability-redundant-member-init
-WarningsAsErrors: ''
+Checks:
+  - -*
+  - cppcoreguidelines-pro-type-member-init
+  - modernize-redundant-void-arg
+  - modernize-use-bool-literals
+  - modernize-use-default-member-init
+  - modernize-use-nullptr
+  - readability-braces-around-statements
+  - readability-redundant-member-init
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (core|doc|drivers|editor|main|modules|platform|scene|servers|tests)/
@@ -19,4 +17,3 @@ CheckOptions:
   modernize-use-bool-literals.IgnoreMacros: false
   modernize-use-default-member-init.IgnoreMacros: false
   modernize-use-default-member-init.UseAssignment: true
-...

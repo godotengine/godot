@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-EnsureSConsVersion(3, 1, 2)
-EnsurePythonVersion(3, 6)
+EnsureSConsVersion(4, 0)
+EnsurePythonVersion(3, 8)
 
 # System
 import atexit
@@ -59,7 +59,7 @@ import glsl_builders
 import methods
 import scu_builders
 from methods import print_error, print_warning
-from platform_methods import architecture_aliases, architectures
+from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -149,12 +149,10 @@ env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]
 
-env.disabled_modules = []
+env.disabled_modules = set()
 env.module_version_string = ""
 env.msvc = False
 env.scons_version = env._get_major_minor_revision(scons_raw_version)
-
-env.__class__.disable_module = methods.disable_module
 
 env.__class__.add_module_version_string = methods.add_module_version_string
 
@@ -272,6 +270,8 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
+opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
+opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -322,6 +322,9 @@ opts.Add("rcflags", "Custom flags for Windows resource compiler")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+# Setup caching logic early to catch everything.
+methods.prepare_cache(env)
+
 # Copy custom environment variables if set.
 if env["import_env_vars"]:
     for env_var in str(env["import_env_vars"]).split(","):
@@ -351,27 +354,18 @@ if env["platform"] == "":
     if env["platform"] != "":
         print(f'Automatically detected platform: {env["platform"]}')
 
-if env["platform"] == "osx":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
-    env["platform"] = "macos"
+# Deprecated aliases kept for compatibility.
+if env["platform"] in compatibility_platform_aliases:
+    alias = env["platform"]
+    platform = compatibility_platform_aliases[alias]
+    print_warning(
+        f'Platform "{alias}" has been renamed to "{platform}" in Godot 4. Building for platform "{platform}".'
+    )
+    env["platform"] = platform
 
-if env["platform"] == "iphone":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
-    env["platform"] = "ios"
-
-if env["platform"] in ["linux", "bsd", "x11"]:
-    if env["platform"] == "x11":
-        # Deprecated alias kept for compatibility.
-        print_warning('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
-    # Alias for convenience.
+# Alias for convenience.
+if env["platform"] in ["linux", "bsd"]:
     env["platform"] = "linuxbsd"
-
-if env["platform"] == "javascript":
-    # Deprecated alias kept for compatibility.
-    print_warning('Platform "javascript" has been renamed to "web" in Godot 4. Building for platform "web".')
-    env["platform"] = "web"
 
 if env["platform"] not in platform_list:
     text = "The following platforms are available:\n\t{}\n".format("\n\t".join(platform_list))
@@ -388,8 +382,7 @@ if env["platform"] not in platform_list:
 
 # Add platform-specific options.
 if env["platform"] in platform_opts:
-    for opt in platform_opts[env["platform"]]:
-        opts.Add(opt)
+    opts.AddVariables(*platform_opts[env["platform"]])
 
 # Platform-specific flags.
 # These can sometimes override default options, so they need to be processed
@@ -445,12 +438,11 @@ for name, path in modules_detected.items():
     else:
         enabled = False
 
-    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
+    opts.Add(BoolVariable(f"module_{name}_enabled", f"Enable module '{name}'", enabled))
 
     # Add module-specific options.
     try:
-        for opt in config.get_opts(env["platform"]):
-            opts.Add(opt)
+        opts.AddVariables(*config.get_opts(env["platform"]))
     except AttributeError:
         pass
 
@@ -509,14 +501,19 @@ else:
     # Disable assert() for production targets (only used in thirdparty code).
     env.Append(CPPDEFINES=["NDEBUG"])
 
+# This is not part of fast_unsafe because the only downside it has compared to
+# the default is that SCons won't mark files that were changed in the last second
+# as different. This is unlikely to be a problem in any real situation as just booting
+# up scons takes more than that time.
+# Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
+env.Decider("MD5-timestamp")
+
 # SCons speed optimization controlled by the `fast_unsafe` option, which provide
 # more than 10 s speed up for incremental rebuilds.
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
 if methods.get_cmdline_bool("fast_unsafe", env.dev_build):
-    # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
-    env.Decider("MD5-timestamp")
     env.SetOption("implicit_cache", 1)
     env.SetOption("max_drift", 60)
 
@@ -585,7 +582,7 @@ env.Append(RCFLAGS=env.get("rcflags", "").split())
 # Feature build profile
 env.disabled_classes = []
 if env["build_profile"] != "":
-    print('Using feature build profile: "{}"'.format(env["build_profile"]))
+    print(f'Using feature build profile: "{env["build_profile"]}"')
     import json
 
     try:
@@ -597,7 +594,7 @@ if env["build_profile"] != "":
             for c in dbo:
                 env[c] = dbo[c]
     except json.JSONDecodeError:
-        print_error('Failed to open feature build profile: "{}"'.format(env["build_profile"]))
+        print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
         Exit(255)
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
@@ -611,6 +608,8 @@ if env["dev_mode"]:
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+    if platform_arg == "android":
+        env["swappy"] = methods.get_cmdline_bool("swappy", True)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
     env["lto"] = ARGUMENTS.get("lto", "auto")
 
@@ -666,40 +665,32 @@ elif methods.using_gcc(env):
             "to switch to posix threads."
         )
         Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 8:
-        print_warning("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     # Apple LLVM versions differ from upstream LLVM version \o/, compare
     # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-    if env["platform"] == "macos" or env["platform"] == "ios":
-        vanilla = methods.is_vanilla_clang(env)
-        if vanilla and cc_version_major < 6:
-            print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
-            )
-            Exit(255)
-        elif not vanilla and cc_version_major < 10:
+    if methods.is_apple_clang(env):
+        if cc_version_major < 10:
             print_error(
                 "Detected Apple Clang version older than 10, which does not fully "
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
-        if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
+        elif env["debug_paths_relative"] and cc_version_major < 12:
             print_warning(
                 "Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option."
             )
             env["debug_paths_relative"] = False
-    elif cc_version_major < 6:
-        print_error(
-            "Detected Clang version older than 6, which does not fully support "
-            "C++17. Supported versions are Clang 6 and later."
-        )
-        Exit(255)
-    if env["debug_paths_relative"] and cc_version_major < 10:
-        print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-        env["debug_paths_relative"] = False
+    else:
+        if cc_version_major < 6:
+            print_error(
+                "Detected Clang version older than 6, which does not fully support "
+                "C++17. Supported versions are Clang 6 and later."
+            )
+            Exit(255)
+        elif env["debug_paths_relative"] and cc_version_major < 10:
+            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
+
 elif env.msvc:
     # Ensure latest minor builds of Visual Studio 2017/2019.
     # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
@@ -722,6 +713,12 @@ elif env.msvc:
         )
         Exit(255)
 
+# Default architecture flags.
+if env["arch"] == "x86_32":
+    if env.msvc:
+        env.Append(CCFLAGS=["/arch:SSE2"])
+    else:
+        env.Append(CCFLAGS=["-msse2"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
@@ -745,9 +742,15 @@ if env.msvc:
         env.Append(CCFLAGS=["/Od"])
 else:
     if env["debug_symbols"]:
-        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-        # otherwise addr2line doesn't understand them
-        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env["platform"] == "windows":
+            if methods.using_clang(env):
+                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+            else:
+                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
+        else:
+            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+            # otherwise addr2line doesn't understand them
+            env.Append(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
             env.Append(CCFLAGS=["-g3"])
@@ -763,7 +766,7 @@ else:
             project_path = Dir("#").abspath
             env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
-        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+        if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
@@ -799,8 +802,8 @@ if env["lto"] != "none":
 # This needs to come after `configure`, otherwise we don't have env.msvc.
 if not env.msvc:
     # Specifying GNU extensions support explicitly, which are supported by
-    # both GCC and Clang. Both currently default to gnu11 and gnu++17.
-    env.Prepend(CFLAGS=["-std=gnu11"])
+    # both GCC and Clang. Both currently default to gnu17 and gnu++17.
+    env.Prepend(CFLAGS=["-std=gnu17"])
     env.Prepend(CXXFLAGS=["-std=gnu++17"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
@@ -809,7 +812,7 @@ else:
     if cc_version_major < 16:
         print_warning("Visual Studio 2017 cannot specify a C-Standard.")
     else:
-        env.Prepend(CFLAGS=["/std:c11"])
+        env.Prepend(CFLAGS=["/std:c17"])
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.
@@ -829,43 +832,41 @@ elif env.msvc:
 
 # Configure compiler warnings
 if env.msvc and not methods.using_clang(env):  # MSVC
-    if env["warnings"] == "no":
-        env.Append(CCFLAGS=["/w"])
-    else:
-        if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["/W4"])
-        elif env["warnings"] == "all":
-            # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-            env.Append(CCFLAGS=["/W3", "/w34458"])
-        elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["/W2"])
-        # Disable warnings which we don't plan to fix.
+    # Disable warnings which we don't plan to fix.
+    disabled_warnings = [
+        "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
+        "/wd4127",  # C4127 (conditional expression is constant)
+        "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
+        "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
+        "/wd4245",
+        "/wd4267",
+        "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+        "/wd4324",  # C4820 (structure was padded due to alignment specifier)
+        "/wd4514",  # C4514 (unreferenced inline function has been removed)
+        "/wd4714",  # C4714 (function marked as __forceinline not inlined)
+        "/wd4820",  # C4820 (padding added after construct)
+    ]
 
-        env.Append(
-            CCFLAGS=[
-                "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
-                "/wd4127",  # C4127 (conditional expression is constant)
-                "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
-                "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
-                "/wd4245",
-                "/wd4267",
-                "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
-                "/wd4514",  # C4514 (unreferenced inline function has been removed)
-                "/wd4714",  # C4714 (function marked as __forceinline not inlined)
-                "/wd4820",  # C4820 (padding added after construct)
-            ]
-        )
+    if env["warnings"] == "extra":
+        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+    elif env["warnings"] == "all":
+        # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+    elif env["warnings"] == "moderate":
+        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+    else:  # 'no'
+        # C4267 is particularly finicky & needs to be explicitly disabled.
+        env.Append(CCFLAGS=["/w", "/wd4267"])
 
     if env["werror"]:
         env.Append(CCFLAGS=["/WX"])
         env.Append(LINKFLAGS=["/WX"])
+
 else:  # GCC, Clang
     common_warnings = []
 
     if methods.using_gcc(env):
         common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
-        if cc_version_major == 7:  # Bogus warning fixed in 8+.
-            common_warnings += ["-Wno-strict-overflow"]
         if cc_version_major < 11:
             # Regression in GCC 9/10, spams so much in our variadic templates
             # that we need to outright disable it.
@@ -941,7 +942,7 @@ env.module_icons_paths = []
 env.doc_class_path = platform_doc_class_path
 
 for name, path in modules_detected.items():
-    if not env["module_" + name + "_enabled"]:
+    if not env[f"module_{name}_enabled"]:
         continue
     sys.path.insert(0, path)
     env.current_module = name
@@ -1048,35 +1049,19 @@ GLSL_BUILDERS = {
 }
 env.Append(BUILDERS=GLSL_BUILDERS)
 
-scons_cache_path = os.environ.get("SCONS_CACHE")
-if scons_cache_path is not None:
-    CacheDir(scons_cache_path)
-    print("Scons cache enabled... (path: '" + scons_cache_path + "')")
-
-if env["vsproj"]:
-    env.vs_incs = []
-    env.vs_srcs = []
-
 if env["compiledb"]:
-    if env.scons_version < (4, 0, 0):
-        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        print_error(
-            "The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version
-        )
-        Exit(255)
-
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
-        print_error("The `ninja=yes` option requires SCons 4.2 or later, but your version is %s." % scons_raw_version)
+        print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
         Exit(255)
 
     SetOption("experimental", "ninja")
     env["NINJA_FILE_NAME"] = env["ninja_file"]
     env["NINJA_DISABLE_AUTO_RUN"] = not env["ninja_auto_run"]
-    env.Tool("ninja", "build.ninja")
+    env.Tool("ninja", env["ninja_file"])
 
 # Threads
 if env["threads"]:
@@ -1138,7 +1123,7 @@ atexit.register(print_elapsed_time)
 
 
 def purge_flaky_files():
-    paths_to_keep = ["build.ninja"]
+    paths_to_keep = [env["ninja_file"]]
     for build_failure in GetBuildFailures():
         path = build_failure.node.path
         if os.path.isfile(path) and path not in paths_to_keep:
@@ -1146,5 +1131,3 @@ def purge_flaky_files():
 
 
 atexit.register(purge_flaky_files)
-
-methods.clean_cache(env)

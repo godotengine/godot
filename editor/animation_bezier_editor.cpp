@@ -275,7 +275,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				}
 
 				String base_path = animation->track_get_path(i);
-				int end = base_path.find(":");
+				int end = base_path.find_char(':');
 				if (end != -1) {
 					base_path = base_path.substr(0, end + 1);
 				}
@@ -1501,11 +1501,6 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		box_selection_to = mm->get_position();
-
-		if (get_local_mouse_position().y < 0) {
-			// Avoid cursor from going too above, so it does not lose focus with viewport.
-			warp_mouse(Vector2(get_local_mouse_position().x, 0));
-		}
 		queue_redraw();
 	}
 
@@ -1655,7 +1650,7 @@ void AnimationBezierTrackEdit::_zoom_callback(float p_zoom_factor, Vector2 p_ori
 	Ref<InputEventWithModifiers> iewm = p_event;
 	if (iewm.is_valid() && iewm->is_alt_pressed()) {
 		// Alternate zoom (doesn't affect timeline).
-		timeline_v_zoom = CLAMP(timeline_v_zoom * p_zoom_factor, 0.000001, 100000);
+		timeline_v_zoom = CLAMP(timeline_v_zoom / p_zoom_factor, 0.000001, 100000);
 	} else {
 		float zoom_factor = p_zoom_factor > 1.0 ? AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN : AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_OUT;
 		timeline->_zoom_callback(zoom_factor, p_origin, p_event);

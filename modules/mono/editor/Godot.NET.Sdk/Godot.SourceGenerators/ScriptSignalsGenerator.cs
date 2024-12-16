@@ -282,7 +282,7 @@ namespace Godot.SourceGenerators
                     .Append(" -= value;\n")
                     .Append("}\n");
 
-                // Generate On{EventName} method to raise the event
+                // Generate EmitSignal{EventName} method to raise the event
 
                 var invokeMethodSymbol = signalDelegate.InvokeMethodData.Method;
                 int paramCount = invokeMethodSymbol.Parameters.Length;
@@ -291,11 +291,11 @@ namespace Godot.SourceGenerators
                     "private" :
                     "protected";
 
-                source.Append($"    {raiseMethodModifiers} void On{signalName}(");
+                source.Append($"    {raiseMethodModifiers} void EmitSignal{signalName}(");
                 for (int i = 0; i < paramCount; i++)
                 {
                     var paramSymbol = invokeMethodSymbol.Parameters[i];
-                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} {paramSymbol.Name}");
+                    source.Append($"{paramSymbol.Type.FullQualifiedNameIncludeGlobal()} @{paramSymbol.Name}");
                     if (i < paramCount - 1)
                     {
                         source.Append(", ");
@@ -309,12 +309,12 @@ namespace Godot.SourceGenerators
                     // Enums must be converted to the underlying type before they can be implicitly converted to Variant
                     if (paramSymbol.Type.TypeKind == TypeKind.Enum)
                     {
-                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType;
-                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()}){paramSymbol.Name}");
+                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType!;
+                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
                         continue;
                     }
 
-                    source.Append($", {paramSymbol.Name}");
+                    source.Append($", @{paramSymbol.Name}");
                 }
                 source.Append(");\n");
                 source.Append("    }\n");

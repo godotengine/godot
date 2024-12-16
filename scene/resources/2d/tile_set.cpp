@@ -174,13 +174,13 @@ void TileMapPattern::set_size(const Size2i &p_size) {
 
 bool TileMapPattern::is_empty() const {
 	return pattern.is_empty();
-};
+}
 
 void TileMapPattern::clear() {
 	size = Size2i();
 	pattern.clear();
 	emit_changed();
-};
+}
 
 bool TileMapPattern::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "tile_data") {
@@ -571,11 +571,11 @@ void TileSet::set_uv_clipping(bool p_uv_clipping) {
 
 bool TileSet::is_uv_clipping() const {
 	return uv_clipping;
-};
+}
 
 int TileSet::get_occlusion_layers_count() const {
 	return occlusion_layers.size();
-};
+}
 
 void TileSet::add_occlusion_layer(int p_index) {
 	if (p_index < 0) {
@@ -697,6 +697,17 @@ void TileSet::set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mas
 uint32_t TileSet::get_physics_layer_collision_mask(int p_layer_index) const {
 	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), 0);
 	return physics_layers[p_layer_index].collision_mask;
+}
+
+void TileSet::set_physics_layer_collision_priority(int p_layer_index, real_t p_priority) {
+	ERR_FAIL_INDEX(p_layer_index, physics_layers.size());
+	physics_layers.write[p_layer_index].collision_priority = p_priority;
+	emit_changed();
+}
+
+real_t TileSet::get_physics_layer_collision_priority(int p_layer_index) const {
+	ERR_FAIL_INDEX_V(p_layer_index, physics_layers.size(), 0);
+	return physics_layers[p_layer_index].collision_priority;
 }
 
 void TileSet::set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material) {
@@ -3691,7 +3702,7 @@ Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool 
 			return cannot_convert_array;
 			break;
 	}
-};
+}
 
 #endif // DISABLE_DEPRECATED
 
@@ -3900,6 +3911,13 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				set_physics_layer_collision_mask(index, p_value);
 				return true;
+			} else if (components[1] == "collision_priority") {
+				ERR_FAIL_COND_V(p_value.get_type() != Variant::FLOAT, false);
+				while (index >= physics_layers.size()) {
+					add_physics_layer();
+				}
+				set_physics_layer_collision_priority(index, p_value);
+				return true;
 			} else if (components[1] == "physics_material") {
 				Ref<PhysicsMaterial> physics_material = p_value;
 				while (index >= physics_layers.size()) {
@@ -4051,6 +4069,9 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "collision_mask") {
 			r_ret = get_physics_layer_collision_mask(index);
 			return true;
+		} else if (components[1] == "collision_priority") {
+			r_ret = get_physics_layer_collision_priority(index);
+			return true;
 		} else if (components[1] == "physics_material") {
 			r_ret = get_physics_layer_physics_material(index);
 			return true;
@@ -4176,6 +4197,13 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 		p_list->push_back(property_info);
 
+		// physics_layer_%d/collision_priority
+		property_info = PropertyInfo(Variant::FLOAT, vformat("physics_layer_%d/collision_priority", i));
+		if (physics_layers[i].collision_priority == 1.0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		p_list->push_back(property_info);
+
 		// physics_layer_%d/physics_material
 		property_info = PropertyInfo(Variant::OBJECT, vformat("physics_layer_%d/physics_material", i), PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial");
 		if (!physics_layers[i].physics_material.is_valid()) {
@@ -4220,10 +4248,10 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	// Tile Proxies.
 	// Note: proxies need to be set after sources are set.
-	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Tile Proxies", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/source_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/coords_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, PNAME("tile_proxies/alternative_level"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::NIL, "Tile Proxies", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/source_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/coords_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "tile_proxies/alternative_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 	// Patterns.
 	for (unsigned int pattern_index = 0; pattern_index < patterns.size(); pattern_index++) {
@@ -4287,6 +4315,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_layer", "layer_index"), &TileSet::get_physics_layer_collision_layer);
 	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_mask", "layer_index", "mask"), &TileSet::set_physics_layer_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_mask", "layer_index"), &TileSet::get_physics_layer_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_physics_layer_collision_priority", "layer_index", "priority"), &TileSet::set_physics_layer_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_physics_layer_collision_priority", "layer_index"), &TileSet::get_physics_layer_collision_priority);
 	ClassDB::bind_method(D_METHOD("set_physics_layer_physics_material", "layer_index", "physics_material"), &TileSet::set_physics_layer_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_layer_physics_material", "layer_index"), &TileSet::get_physics_layer_physics_material);
 
@@ -4432,7 +4462,7 @@ TileSet *TileSetSource::get_tile_set() const {
 
 void TileSetSource::reset_state() {
 	tile_set = nullptr;
-};
+}
 
 void TileSetSource::_bind_methods() {
 	// Base tiles
@@ -4931,10 +4961,13 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		for (const KeyValue<int, TileData *> &E_alternative : E_tile.value.alternatives) {
+			const String formatted_key = itos(E_alternative.key);
+
 			// Add a dummy property to show the alternative exists.
-			tile_property_list.push_back(PropertyInfo(Variant::INT, vformat("%d", E_alternative.key), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+			tile_property_list.push_back(PropertyInfo(Variant::INT, formatted_key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 
 			// Get the alternative tile's properties and append them to the list of properties.
+			const String alternative_property_info_prefix = formatted_key + '/';
 			List<PropertyInfo> alternative_property_list;
 			E_alternative.value->get_property_list(&alternative_property_list);
 			for (PropertyInfo &alternative_property_info : alternative_property_list) {
@@ -4943,14 +4976,15 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					alternative_property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
-				alternative_property_info.name = vformat("%s/%s", vformat("%d", E_alternative.key), alternative_property_info.name);
+				alternative_property_info.name = alternative_property_info_prefix + alternative_property_info.name;
 				tile_property_list.push_back(alternative_property_info);
 			}
 		}
 
 		// Add all alternative.
+		const String property_info_prefix = vformat("%d:%d/", E_tile.key.x, E_tile.key.y);
 		for (PropertyInfo &tile_property_info : tile_property_list) {
-			tile_property_info.name = vformat("%s/%s", vformat("%d:%d", E_tile.key.x, E_tile.key.y), tile_property_info.name);
+			tile_property_info.name = property_info_prefix + tile_property_info.name;
 			p_list->push_back(tile_property_info);
 		}
 	}
@@ -6480,9 +6514,9 @@ int TileData::get_terrain_set() const {
 }
 
 void TileData::set_terrain(int p_terrain) {
-	ERR_FAIL_COND(terrain_set < 0);
 	ERR_FAIL_COND(p_terrain < -1);
-	if (tile_set) {
+	ERR_FAIL_COND(terrain_set < 0 && p_terrain != -1);
+	if (tile_set && terrain_set >= 0) {
 		ERR_FAIL_COND(p_terrain >= tile_set->get_terrains_count(terrain_set));
 	}
 	terrain = p_terrain;
@@ -6495,9 +6529,9 @@ int TileData::get_terrain() const {
 
 void TileData::set_terrain_peering_bit(TileSet::CellNeighbor p_peering_bit, int p_terrain_index) {
 	ERR_FAIL_INDEX(p_peering_bit, TileSet::CellNeighbor::CELL_NEIGHBOR_MAX);
-	ERR_FAIL_COND(terrain_set < 0);
 	ERR_FAIL_COND(p_terrain_index < -1);
-	if (tile_set) {
+	ERR_FAIL_COND(terrain_set < 0 && p_terrain_index != -1);
+	if (tile_set && terrain_set >= 0) {
 		ERR_FAIL_COND(p_terrain_index >= tile_set->get_terrains_count(terrain_set));
 		ERR_FAIL_COND(!is_valid_terrain_peering_bit(p_peering_bit));
 	}

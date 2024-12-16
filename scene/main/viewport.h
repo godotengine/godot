@@ -401,6 +401,7 @@ private:
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 	bool disable_input = false;
+	bool disable_input_override = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -514,6 +515,7 @@ public:
 	void set_global_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_global_canvas_transform() const;
 
+	Transform2D get_stretch_transform() const;
 	virtual Transform2D get_final_transform() const;
 
 	void gui_set_root_order_dirty();
@@ -579,6 +581,8 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
+
+	void set_disable_input_override(bool p_disable);
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
@@ -660,13 +664,17 @@ public:
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
-	Window *get_base_window() const;
+	Window *get_base_window();
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;
 
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
+
+#ifdef TOOLS_ENABLED
+	bool is_visible_subviewport() const;
+#endif // TOOLS_ENABLED
 
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
@@ -770,6 +778,11 @@ public:
 
 	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
+	HashMap<StringName, real_t> get_camera_3d_override_properties() const;
+
+	Vector3 camera_3d_override_project_ray_normal(const Point2 &p_pos) const;
+	Vector3 camera_3d_override_project_ray_origin(const Point2 &p_pos) const;
+	Vector3 camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const;
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;

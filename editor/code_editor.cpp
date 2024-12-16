@@ -104,8 +104,8 @@ void FindReplaceBar::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_READY: {
-			find_prev->set_icon(get_editor_theme_icon(SNAME("MoveUp")));
-			find_next->set_icon(get_editor_theme_icon(SNAME("MoveDown")));
+			find_prev->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
+			find_next->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
 			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
@@ -549,7 +549,7 @@ void FindReplaceBar::_update_toggle_replace_button(bool p_replace_visible) {
 	String shortcut = ED_GET_SHORTCUT(p_replace_visible ? "script_text_editor/find" : "script_text_editor/replace")->get_as_text();
 	toggle_replace_button->set_tooltip_text(vformat("%s (%s)", tooltip, shortcut));
 	StringName rtl_compliant_arrow = is_layout_rtl() ? SNAME("GuiTreeArrowLeft") : SNAME("GuiTreeArrowRight");
-	toggle_replace_button->set_icon(get_editor_theme_icon(p_replace_visible ? SNAME("GuiTreeArrowDown") : rtl_compliant_arrow));
+	toggle_replace_button->set_button_icon(get_editor_theme_icon(p_replace_visible ? SNAME("GuiTreeArrowDown") : rtl_compliant_arrow));
 }
 
 void FindReplaceBar::_show_search(bool p_with_replace, bool p_show_only) {
@@ -758,7 +758,7 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_tooltip_text(TTR("Find"));
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect(SceneStringName(text_changed), callable_mp(this, &FindReplaceBar::_search_text_changed));
-	search_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_search_text_submitted));
+	search_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindReplaceBar::_search_text_submitted));
 	search_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	matches_label = memnew(Label);
@@ -797,7 +797,7 @@ FindReplaceBar::FindReplaceBar() {
 	replace_text->set_placeholder(TTR("Replace"));
 	replace_text->set_tooltip_text(TTR("Replace"));
 	replace_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
-	replace_text->connect("text_submitted", callable_mp(this, &FindReplaceBar::_replace_text_submitted));
+	replace_text->connect(SceneStringName(text_submitted), callable_mp(this, &FindReplaceBar::_replace_text_submitted));
 	replace_text->connect(SceneStringName(focus_exited), callable_mp(this, &FindReplaceBar::_focus_lost));
 
 	replace = memnew(Button);
@@ -1493,8 +1493,8 @@ void CodeTextEditor::goto_error() {
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
-	error_button->set_icon(get_editor_theme_icon(SNAME("StatusError")));
-	warning_button->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+	error_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
+	warning_button->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 
 	Ref<Font> status_bar_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 	int status_bar_font_size = get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts));
@@ -1771,7 +1771,7 @@ void CodeTextEditor::show_toggle_scripts_button() {
 void CodeTextEditor::update_toggle_scripts_button() {
 	ERR_FAIL_NULL(toggle_scripts_list);
 	bool forward = toggle_scripts_list->is_visible() == is_layout_rtl();
-	toggle_scripts_button->set_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
+	toggle_scripts_button->set_button_icon(get_editor_theme_icon(forward ? SNAME("Forward") : SNAME("Back")));
 	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 

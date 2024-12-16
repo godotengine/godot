@@ -50,6 +50,7 @@ protected:
 
 	void _update_skeleton();
 	void _update_skeleton_path();
+	void _force_update_skeleton_skin();
 
 	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new);
 

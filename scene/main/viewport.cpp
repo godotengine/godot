@@ -330,7 +330,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->theme_cache.close_h_offset;
 		int close_v_ofs = p_window->theme_cache.close_v_offset;
 
-		TextLine title_text = TextLine(p_window->atr(p_window->get_title()), title_font, font_size);
+		TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
 		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
 		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 		int x = (r.size.width - title_text.get_size().x) / 2;
@@ -682,8 +682,9 @@ void Viewport::_process_picking() {
 	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
-	if (!gui.mouse_in_viewport) {
-		// Clear picking events if mouse has left viewport.
+	if (!gui.mouse_in_viewport || gui.subwindow_over) {
+		// Clear picking events if the mouse has left the viewport or is over an embedded window.
+		// These are locations, that are expected to not trigger physics picking.
 		physics_picking_events.clear();
 		return;
 	}
@@ -1213,7 +1214,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		}
 	} else {
 		WARN_PRINT("Invalid world_2d");
-		world_2d = Ref<World2D>(memnew(World2D));
+		world_2d.instantiate();
 	}
 
 	world_2d->register_viewport(this);
@@ -1252,6 +1253,10 @@ void Viewport::_propagate_drag_notification(Node *p_node, int p_what) {
 Ref<World2D> Viewport::get_world_2d() const {
 	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
 	return world_2d;
+}
+
+Transform2D Viewport::get_stretch_transform() const {
+	return stretch_transform;
 }
 
 Transform2D Viewport::get_final_transform() const {
@@ -1448,7 +1453,18 @@ void Viewport::_gui_show_tooltip() {
 			&tooltip_owner);
 	gui.tooltip_text = gui.tooltip_text.strip_edges();
 
-	if (gui.tooltip_text.is_empty()) {
+	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
+	// This should be a Control node which will be added as child to a TooltipPanel.
+	Control *base_tooltip = tooltip_owner->make_custom_tooltip(gui.tooltip_text);
+
+	// When the custom control is not visible, don't show any tooltip.
+	// This way, the custom tooltip from `ConnectionsDockTree` can create
+	// its own tooltip without conflicting with the default one, even an empty tooltip.
+	if (base_tooltip && !base_tooltip->is_visible()) {
+		return;
+	}
+
+	if (gui.tooltip_text.is_empty() && !base_tooltip) {
 		return; // Nothing to show.
 	}
 
@@ -1469,21 +1485,17 @@ void Viewport::_gui_show_tooltip() {
 	// Ensure no opaque background behind the panel as its StyleBox can be partially transparent (e.g. corners).
 	panel->set_transparent_background(true);
 
-	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
-	// This should be a Control node which will be added as child to a TooltipPanel.
-	Control *base_tooltip = tooltip_owner->make_custom_tooltip(gui.tooltip_text);
-
 	// If no custom tooltip is given, use a default implementation.
 	if (!base_tooltip) {
 		gui.tooltip_label = memnew(Label);
 		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
 		gui.tooltip_label->set_text(gui.tooltip_text);
+		gui.tooltip_label->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode());
 		base_tooltip = gui.tooltip_label;
 		panel->connect(SceneStringName(mouse_entered), callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
 
 	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	base_tooltip->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode());
 
 	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
@@ -1737,6 +1749,11 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
+			if (gui.dragging && mb->get_button_index() == MouseButton::RIGHT) {
+				_perform_drop();
+				set_input_as_handled();
+				return;
+			}
 			MouseButtonMask button_mask = mouse_button_to_mask(mb->get_button_index());
 			if (!gui.mouse_focus_mask.is_empty() && !gui.mouse_focus_mask.has_flag(button_mask)) {
 				// Do not steal mouse focus and stuff while a focus mask without the current mouse button exists.
@@ -1921,7 +1938,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform_with_canvas().affine_inverse().xform(mpos));
 						tooltip = tooltip.strip_edges();
 
-						if (tooltip.is_empty() || tooltip != gui.tooltip_text) {
+						if (tooltip != gui.tooltip_text) {
 							_gui_cancel_tooltip();
 						} else {
 							is_tooltip_shown = true;
@@ -1931,21 +1948,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				// If the tooltip timer isn't running, start it.
-				// Otherwise, only reset the timer if the mouse has moved more than 5 pixels.
-				if (!is_tooltip_shown && over->can_process() &&
-						(gui.tooltip_timer.is_null() ||
-								Math::is_zero_approx(gui.tooltip_timer->get_time_left()) ||
-								mm->get_relative().length() > 5.0)) {
-					if (gui.tooltip_timer.is_valid()) {
-						gui.tooltip_timer->release_connections();
-						gui.tooltip_timer = Ref<SceneTreeTimer>();
+				// Reset the timer if the mouse has moved more than 5 pixels or has entered a new control.
+				if (!is_tooltip_shown && over->can_process()) {
+					Vector2 new_tooltip_pos = over->get_screen_transform().xform(pos);
+					if (over != gui.tooltip_control || gui.tooltip_pos.distance_squared_to(new_tooltip_pos) > 25) {
+						if (gui.tooltip_timer.is_valid()) {
+							gui.tooltip_timer->release_connections();
+						}
+						gui.tooltip_control = over;
+						gui.tooltip_pos = new_tooltip_pos;
+						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+						gui.tooltip_timer->set_ignore_time_scale(true);
+						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 					}
-					gui.tooltip_control = over;
-					gui.tooltip_pos = over->get_screen_transform().xform(pos);
-					gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
-					gui.tooltip_timer->set_ignore_time_scale(true);
-					gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
 				}
 			}
 
@@ -1987,7 +2002,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
+				drag_preview->set_position(pos);
 			}
 
 			gui.drag_mouse_over = section_root->gui.target_control;
@@ -2424,11 +2440,11 @@ void Viewport::_gui_update_mouse_over() {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-Window *Viewport::get_base_window() const {
+Window *Viewport::get_base_window() {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
-	Viewport *v = const_cast<Viewport *>(this);
+	Viewport *v = this;
 	Window *w = Object::cast_to<Window>(v);
 	while (!w) {
 		v = v->get_parent_viewport();
@@ -2453,7 +2469,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
+	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		emit_signal(SNAME("gui_focus_changed"), p_control);
@@ -3062,6 +3078,14 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			}
 			v->_update_mouse_over(v->get_final_transform().affine_inverse().xform(pos));
 		}
+
+		Viewport *section_root = get_section_root_viewport();
+		if (section_root && c->is_mouse_target_enabled()) {
+			// Evaluating `mouse_target` and adjusting target_control needs to happen
+			// after `_update_mouse_over` in the SubViewports, because otherwise physics picking
+			// would not work inside SubViewports.
+			section_root->gui.target_control = over;
+		}
 	}
 }
 
@@ -3123,7 +3147,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_input) {
+	if (disable_input || disable_input_override) {
 		return;
 	}
 
@@ -3195,7 +3219,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 	local_input_handled = false;
 
-	if (disable_input || !_can_consume_input_events()) {
+	if (disable_input || disable_input_override || !_can_consume_input_events()) {
 		return;
 	}
 
@@ -3298,7 +3322,7 @@ void Viewport::set_disable_input(bool p_disable) {
 	if (p_disable == disable_input) {
 		return;
 	}
-	if (p_disable) {
+	if (p_disable && !disable_input_override) {
 		_drop_mouse_focus();
 		_mouse_leave_viewport();
 		_gui_cancel_tooltip();
@@ -3309,6 +3333,19 @@ void Viewport::set_disable_input(bool p_disable) {
 bool Viewport::is_input_disabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return disable_input;
+}
+
+void Viewport::set_disable_input_override(bool p_disable) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_disable == disable_input_override) {
+		return;
+	}
+	if (p_disable && !disable_input) {
+		_drop_mouse_focus();
+		_mouse_leave_viewport();
+		_gui_cancel_tooltip();
+	}
+	disable_input_override = p_disable;
 }
 
 Variant Viewport::gui_get_drag_data() const {
@@ -3748,19 +3785,9 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 		}
 
 		if (allow_change) {
-			Vector<int> wl = DisplayServer::get_singleton()->get_window_list();
-			for (int index = 0; index < wl.size(); index++) {
-				DisplayServer::WindowID wid = wl[index];
-				if (wid == DisplayServer::INVALID_WINDOW_ID) {
-					continue;
-				}
-
-				ObjectID woid = DisplayServer::get_singleton()->window_get_attached_instance_id(wid);
-				if (woid.is_null()) {
-					continue;
-				}
-
-				Window *w = Object::cast_to<Window>(ObjectDB::get_instance(woid));
+			Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+			for (const DisplayServer::WindowID &window_id : wl) {
+				const Window *w = Window::get_from_id(window_id);
 				if (w && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
 					allow_change = false;
@@ -3878,6 +3905,16 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
 	return (canvas_cull_mask & (1 << p_layer));
 }
+
+#ifdef TOOLS_ENABLED
+bool Viewport::is_visible_subviewport() const {
+	if (!is_sub_viewport()) {
+		return true;
+	}
+	SubViewportContainer *container = Object::cast_to<SubViewportContainer>(get_parent());
+	return container && container->is_visible_in_tree();
+}
+#endif // TOOLS_ENABLED
 
 void Viewport::_update_audio_listener_2d() {
 	if (AudioServer::get_singleton()) {
@@ -4237,6 +4274,22 @@ void Viewport::set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near,
 	}
 }
 
+HashMap<StringName, real_t> Viewport::get_camera_3d_override_properties() const {
+	HashMap<StringName, real_t> props;
+
+	props["size"] = 0;
+	props["fov"] = 0;
+	props["z_near"] = 0;
+	props["z_far"] = 0;
+	ERR_READ_THREAD_GUARD_V(props);
+
+	props["size"] = camera_3d_override.size;
+	props["fov"] = camera_3d_override.fov;
+	props["z_near"] = camera_3d_override.z_near;
+	props["z_far"] = camera_3d_override.z_far;
+	return props;
+}
+
 void Viewport::set_disable_3d(bool p_disable) {
 	ERR_MAIN_THREAD_GUARD;
 	disable_3d = p_disable;
@@ -4268,6 +4321,54 @@ Transform3D Viewport::get_camera_3d_override_transform() const {
 	}
 
 	return Transform3D();
+}
+
+Vector3 Viewport::camera_3d_override_project_ray_normal(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Vector3 ray = camera_3d_override_project_local_ray_normal(p_pos);
+	return camera_3d_override.transform.basis.xform(ray).normalized();
+}
+
+Vector3 Viewport::camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Size2 viewport_size = get_camera_rect_size();
+	Vector2 cpos = get_camera_coords(p_pos);
+	Vector3 ray;
+
+	if (camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
+		ray = Vector3(0, 0, -1);
+	} else {
+		Projection cm;
+		cm.set_perspective(camera_3d_override.fov, get_visible_rect().size.aspect(), camera_3d_override.z_near, camera_3d_override.z_far, false);
+
+		Vector2 screen_he = cm.get_viewport_half_extents();
+		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -camera_3d_override.z_near).normalized();
+	}
+
+	return ray;
+}
+
+Vector3 Viewport::camera_3d_override_project_ray_origin(const Point2 &p_pos) const {
+	ERR_READ_THREAD_GUARD_V(Vector3());
+	Size2 viewport_size = get_camera_rect_size();
+	Vector2 cpos = get_camera_coords(p_pos);
+	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
+
+	if (camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
+		Vector2 pos = cpos / viewport_size;
+		real_t vsize, hsize;
+		hsize = camera_3d_override.size * viewport_size.aspect();
+		vsize = camera_3d_override.size;
+
+		Vector3 ray;
+		ray.x = pos.x * (hsize)-hsize / 2;
+		ray.y = (1.0 - pos.y) * (vsize)-vsize / 2;
+		ray.z = -camera_3d_override.z_near;
+		ray = camera_3d_override.transform.xform(ray);
+		return ray;
+	} else {
+		return camera_3d_override.transform.origin;
+	};
 }
 
 Ref<World3D> Viewport::get_world_3d() const {
@@ -4309,7 +4410,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	}
 
@@ -4360,7 +4461,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 			own_world_3d = world_3d->duplicate();
 			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
-			own_world_3d = Ref<World3D>(memnew(World3D));
+			own_world_3d.instantiate();
 		}
 	} else {
 		own_world_3d = Ref<World3D>();
@@ -4448,7 +4549,7 @@ void Viewport::set_use_xr(bool p_use_xr) {
 
 			// Reset render target override textures.
 			RID rt = RS::get_singleton()->viewport_get_render_target(viewport);
-			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID());
+			RSG::texture_storage->render_target_set_override(rt, RID(), RID(), RID(), RID());
 		}
 	}
 }
@@ -4553,6 +4654,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_global_canvas_transform", "xform"), &Viewport::set_global_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_global_canvas_transform"), &Viewport::get_global_canvas_transform);
+	ClassDB::bind_method(D_METHOD("get_stretch_transform"), &Viewport::get_stretch_transform);
 	ClassDB::bind_method(D_METHOD("get_final_transform"), &Viewport::get_final_transform);
 	ClassDB::bind_method(D_METHOD("get_screen_transform"), &Viewport::get_screen_transform);
 
@@ -4886,14 +4988,14 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 }
 
 Viewport::Viewport() {
-	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d.instantiate();
 	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
 
 	default_texture.instantiate();
-	default_texture->vp = const_cast<Viewport *>(this);
+	default_texture->vp = this;
 	viewport_textures.insert(default_texture.ptr());
 	default_texture->proxy = RS::get_singleton()->texture_proxy_create(texture_rid);
 

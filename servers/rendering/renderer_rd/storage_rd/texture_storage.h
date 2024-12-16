@@ -102,9 +102,9 @@ private:
 	/* Canvas Texture API */
 
 	struct CanvasTextureCache {
-		RID diffuse = RID();
-		RID normal = RID();
-		RID specular = RID();
+		RID diffuse;
+		RID normal;
+		RID specular;
 	};
 
 	class CanvasTexture {
@@ -122,7 +122,6 @@ private:
 		Size2i size_cache = Size2i(1, 1);
 		bool use_normal_cache = false;
 		bool use_specular_cache = false;
-		bool cleared_cache = true;
 
 		void clear_cache();
 		~CanvasTexture();
@@ -195,7 +194,7 @@ private:
 
 	// Textures can be created from threads, so this RID_Owner is thread safe.
 	mutable RID_Owner<Texture, true> texture_owner;
-	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
+	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); }
 
 	struct TextureToRDFormat {
 		RD::DataFormat format;
@@ -439,7 +438,7 @@ private:
 	};
 
 	mutable RID_Owner<RenderTarget> render_target_owner;
-	RenderTarget *get_render_target(RID p_rid) const { return render_target_owner.get_or_null(p_rid); };
+	RenderTarget *get_render_target(RID p_rid) const { return render_target_owner.get_or_null(p_rid); }
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
@@ -486,7 +485,7 @@ public:
 
 	/* Canvas Texture API */
 
-	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
+	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); }
 
 	virtual RID canvas_texture_allocate() override;
 	virtual void canvas_texture_initialize(RID p_rid) override;
@@ -502,7 +501,7 @@ public:
 
 	/* Texture API */
 
-	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
+	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); }
 
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
@@ -519,6 +518,11 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+
+	Ref<Image> texture_2d_placeholder;
+	Vector<Ref<Image>> texture_2d_array_placeholder;
+	Vector<Ref<Image>> cubemap_placeholder;
+	Vector<Ref<Image>> texture_3d_placeholder;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual void texture_2d_placeholder_initialize(RID p_texture) override;
@@ -586,7 +590,7 @@ public:
 
 	void update_decal_atlas();
 
-	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); };
+	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); }
 
 	RID decal_atlas_get_texture() const;
 	RID decal_atlas_get_texture_srgb() const;
@@ -726,7 +730,7 @@ public:
 
 	/* RENDER TARGET API */
 
-	bool owns_render_target(RID p_rid) const { return render_target_owner.owns(p_rid); };
+	bool owns_render_target(RID p_rid) const { return render_target_owner.owns(p_rid); }
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
@@ -775,14 +779,18 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override;
 
-	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override;
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) override;
 	virtual RID render_target_get_override_color(RID p_render_target) const override;
 	virtual RID render_target_get_override_depth(RID p_render_target) const override;
 	RID render_target_get_override_depth_slice(RID p_render_target, const uint32_t p_layer) const;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 	RID render_target_get_override_velocity_slice(RID p_render_target, const uint32_t p_layer) const;
+	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override { return RID(); }
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
+
+	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
+	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const override { return Size2i(0, 0); }
 
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);

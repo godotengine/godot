@@ -89,6 +89,16 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		*r_is_valid = false;
 	}
 
+	// Handle special case "script" property, where the default value is either null or the custom type script.
+	// Do this only if there's no states stack cache to trace for default values.
+	if (!p_states_stack_cache && p_property == CoreStringName(script) && p_object->has_meta(SceneStringName(_custom_type_script))) {
+		Ref<Script> ct_scr = p_object->get_meta(SceneStringName(_custom_type_script));
+		if (r_is_valid) {
+			*r_is_valid = true;
+		}
+		return ct_scr;
+	}
+
 	Ref<Script> topmost_script;
 
 	if (const Node *node = Object::cast_to<Node>(p_object)) {
@@ -172,7 +182,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			// Heuristically check if this is a synthetic property (whatever/0, whatever/1, etc.)
 			// because they are not in the class DB yet must have a default (null).
 			String prop_str = String(p_property);
-			int p = prop_str.rfind("/");
+			int p = prop_str.rfind_char('/');
 			if (p != -1 && p < prop_str.length() - 1) {
 				bool all_digits = true;
 				for (int i = p + 1; i < prop_str.length(); i++) {

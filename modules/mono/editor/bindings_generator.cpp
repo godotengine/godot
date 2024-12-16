@@ -141,6 +141,11 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"MenuBar.TextDirection",
 	"RichTextLabel.TextDirection",
 	"TextEdit.TextDirection",
+	"VisualShaderNodeReroute.PortType",
+	// The following instances are uniquely egregious violations, hiding `GetType()` from `object`.
+	// Included for the sake of CI, with the understanding that they *deserve* warnings.
+	"GltfAccessor.GetType",
+	"GltfAccessor.MethodName.GetType",
 };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
@@ -190,7 +195,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find("[", pos);
+		int brk_pos = bbcode.find_char('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -210,7 +215,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			break;
 		}
 
-		int brk_end = bbcode.find("]", brk_pos + 1);
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
@@ -239,7 +244,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
-			const int tag_end = tag.find(" ");
+			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
@@ -385,7 +390,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -403,7 +408,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -455,7 +460,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find("[", pos);
+		int brk_pos = bbcode.find_char('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -488,7 +493,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			break;
 		}
 
-		int brk_end = bbcode.find("]", brk_pos + 1);
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			if (!line_del) {
@@ -551,7 +556,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			xml_output.append("[");
 			pos = brk_pos + 1;
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
-			const int tag_end = tag.find(" ");
+			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
 
@@ -583,7 +588,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			}
 
 			if (link_tag == "method") {
-				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_method(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constructor") {
 				// TODO: Support constructors?
 				_append_xml_undeclared(xml_output, link_target);
@@ -591,11 +596,11 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				// TODO: Support operators?
 				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "member") {
-				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_member(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "signal") {
-				_append_xml_signal(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_signal(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "enum") {
-				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts);
+				_append_xml_enum(xml_output, target_itype, target_cname, link_target, link_target_parts, p_itype);
 			} else if (link_tag == "constant") {
 				_append_xml_constant(xml_output, target_itype, target_cname, link_target, link_target_parts);
 			} else if (link_tag == "param") {
@@ -662,14 +667,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
-						// Editor references in core documentation cannot be resolved,
-						// handle as standard codeblock.
-						_log("Cannot reference editor type '%s' in documentation for core type '%s'\n",
-								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
-						xml_output.append("<c>");
-						xml_output.append(target_itype->proxy_name);
-						xml_output.append("</c>");
+					if (!_validate_api_type(target_itype, p_itype)) {
+						_append_xml_undeclared(xml_output, target_itype->proxy_name);
 					} else {
 						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 						xml_output.append(target_itype->proxy_name);
@@ -696,7 +695,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag.begins_with("code ")) {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -751,7 +750,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "url") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -772,7 +771,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
-			int end = bbcode.find("[", brk_end);
+			int end = bbcode.find_char('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -877,7 +876,7 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 }
 
 void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.contains("/")) {
+	if (p_link_target.contains_char('/')) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_text_undeclared(p_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -1086,7 +1085,7 @@ void BindingsGenerator::_append_text_undeclared(StringBuilder &p_output, const S
 	p_output.append("'" + p_link_target + "'");
 }
 
-void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	if (p_link_target_parts[0] == name_cache.type_at_GlobalScope) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			OS::get_singleton()->print("Cannot resolve @GlobalScope method reference in documentation: %s\n", p_link_target.utf8().get_data());
@@ -1117,35 +1116,38 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
 			if (target_imethod) {
-				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-				p_xml_output.append(p_target_itype->proxy_name);
-				p_xml_output.append(".");
-				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("(");
-				bool first_key = true;
-				for (const ArgumentInterface &iarg : target_imethod->arguments) {
-					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+				const String method_name = p_target_itype->proxy_name + "." + target_imethod->proxy_name;
+				if (!_validate_api_type(p_target_itype, p_source_itype)) {
+					_append_xml_undeclared(p_xml_output, method_name);
+				} else {
+					p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+					p_xml_output.append(method_name);
+					p_xml_output.append("(");
+					bool first_key = true;
+					for (const ArgumentInterface &iarg : target_imethod->arguments) {
+						const TypeInterface *arg_type = _get_type_or_null(iarg.type);
 
-					if (first_key) {
-						first_key = false;
-					} else {
-						p_xml_output.append(", ");
+						if (first_key) {
+							first_key = false;
+						} else {
+							p_xml_output.append(", ");
+						}
+						if (!arg_type) {
+							ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
+							p_xml_output.append(iarg.type.cname);
+							continue;
+						}
+						if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+							p_xml_output.append("Nullable{");
+						}
+						String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+						p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+						if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+							p_xml_output.append("}");
+						}
 					}
-					if (!arg_type) {
-						ERR_PRINT("Cannot resolve argument type in documentation: '" + p_link_target + "'.");
-						p_xml_output.append(iarg.type.cname);
-						continue;
-					}
-					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-						p_xml_output.append("Nullable{");
-					}
-					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
-					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
-					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
-						p_xml_output.append("}");
-					}
+					p_xml_output.append(")\"/>");
 				}
-				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -1157,8 +1159,8 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
-	if (p_link_target.contains("/")) {
+void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
+	if (p_link_target.contains_char('/')) {
 		// Properties with '/' (slash) in the name are not declared in C#, so there is nothing to reference.
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
@@ -1184,11 +1186,14 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 		}
 
 		if (target_iprop) {
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(current_itype->proxy_name);
-			p_xml_output.append(".");
-			p_xml_output.append(target_iprop->proxy_name);
-			p_xml_output.append("\"/>");
+			const String member_name = current_itype->proxy_name + "." + target_iprop->proxy_name;
+			if (!_validate_api_type(p_target_itype, p_source_itype)) {
+				_append_xml_undeclared(p_xml_output, member_name);
+			} else {
+				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append(member_name);
+				p_xml_output.append("\"/>");
+			}
 		} else {
 			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
@@ -1199,7 +1204,7 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	if (!p_target_itype || !p_target_itype->is_object_type) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
@@ -1215,11 +1220,14 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 		const SignalInterface *target_isignal = p_target_itype->find_signal_by_name(p_target_cname);
 
 		if (target_isignal) {
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(p_target_itype->proxy_name);
-			p_xml_output.append(".");
-			p_xml_output.append(target_isignal->proxy_name);
-			p_xml_output.append("\"/>");
+			const String signal_name = p_target_itype->proxy_name + "." + target_isignal->proxy_name;
+			if (!_validate_api_type(p_target_itype, p_source_itype)) {
+				_append_xml_undeclared(p_xml_output, signal_name);
+			} else {
+				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append(signal_name);
+				p_xml_output.append("\"/>");
+			}
 		} else {
 			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
@@ -1230,7 +1238,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 	}
 }
 
-void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts) {
+void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype) {
 	const StringName search_cname = !p_target_itype ? p_target_cname : StringName(p_target_itype->name + "." + (String)p_target_cname);
 
 	HashMap<StringName, TypeInterface>::ConstIterator enum_match = enum_types.find(search_cname);
@@ -1242,9 +1250,13 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 	if (enum_match) {
 		const TypeInterface &target_enum_itype = enum_match->value;
 
-		p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-		p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
-		p_xml_output.append("\"/>");
+		if (!_validate_api_type(p_target_itype, p_source_itype)) {
+			_append_xml_undeclared(p_xml_output, target_enum_itype.proxy_name);
+		} else {
+			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+			p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
+			p_xml_output.append("\"/>");
+		}
 	} else {
 		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
@@ -1377,6 +1389,46 @@ void BindingsGenerator::_append_xml_undeclared(StringBuilder &p_xml_output, cons
 	p_xml_output.append("<c>");
 	p_xml_output.append(p_link_target);
 	p_xml_output.append("</c>");
+}
+
+bool BindingsGenerator::_validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype) {
+	static constexpr const char *api_types[5] = {
+		"Core",
+		"Editor",
+		"Extension",
+		"Editor Extension",
+		"None",
+	};
+
+	const ClassDB::APIType target_api = p_target_itype ? p_target_itype->api_type : ClassDB::API_NONE;
+	ERR_FAIL_INDEX_V((int)target_api, 5, false);
+	const ClassDB::APIType source_api = p_source_itype ? p_source_itype->api_type : ClassDB::API_NONE;
+	ERR_FAIL_INDEX_V((int)source_api, 5, false);
+	bool validate = false;
+
+	switch (target_api) {
+		case ClassDB::API_NONE:
+		case ClassDB::API_CORE:
+		default:
+			validate = true;
+			break;
+		case ClassDB::API_EDITOR:
+			validate = source_api == ClassDB::API_EDITOR || source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+		case ClassDB::API_EXTENSION:
+			validate = source_api == ClassDB::API_EXTENSION || source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+		case ClassDB::API_EDITOR_EXTENSION:
+			validate = source_api == ClassDB::API_EDITOR_EXTENSION;
+			break;
+	}
+	if (!validate) {
+		const String target_name = p_target_itype ? p_target_itype->proxy_name : "@GlobalScope";
+		const String source_name = p_source_itype ? p_source_itype->proxy_name : "@GlobalScope";
+		WARN_PRINT(vformat("Type '%s' has API level '%s'; it cannot be referenced by type '%s' with API level '%s'.",
+				target_name, api_types[target_api], source_name, api_types[source_api]));
+	}
+	return validate;
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
@@ -1619,7 +1671,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 		bool enum_in_static_class = false;
 
-		if (enum_proxy_name.find(".") > 0) {
+		if (enum_proxy_name.find_char('.') > 0) {
 			enum_in_static_class = true;
 			String enum_class_name = enum_proxy_name.get_slicec('.', 0);
 			enum_proxy_name = enum_proxy_name.get_slicec('.', 1);
@@ -2585,7 +2637,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << iprop.cname << "' property.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".PropertyName." + iprop.proxy_name) ? "new " : "")
+			   << "readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//MethodName
@@ -2609,7 +2663,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".MethodName." + imethod.proxy_name) ? "new " : "")
+			   << "readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//SignalName
@@ -2627,7 +2683,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output << INDENT2 "/// <summary>\n"
 			   << INDENT2 "/// Cached name for the '" << isignal.cname << "' signal.\n"
 			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
+			   << INDENT2 "public static "
+			   << (prop_allowed_inherited_member_hiding.has(itype.proxy_name + ".SignalName." + isignal.proxy_name) ? "new " : "")
+			   << "readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 
@@ -3030,6 +3088,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
 
+		if (prop_allowed_inherited_member_hiding.has(p_itype.proxy_name + "." + p_imethod.proxy_name)) {
+			p_output.append("new ");
+		}
+
 		if (p_itype.is_singleton || p_imethod.is_static) {
 			p_output.append("static ");
 		} else if (p_imethod.is_virtual) {
@@ -3275,10 +3337,10 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		p_output.append(CLOSE_BLOCK_L1);
 
-		// Generate On{EventName} method to raise the event.
+		// Generate EmitSignal{EventName} method to raise the event.
 		if (!p_itype.is_singleton) {
 			p_output.append(MEMBER_BEGIN "protected void ");
-			p_output << "On" << p_isignal.proxy_name;
+			p_output << "EmitSignal" << p_isignal.proxy_name;
 			if (is_parameterless) {
 				p_output.append("()\n" OPEN_BLOCK_L1 INDENT2);
 				p_output << "EmitSignal(SignalName." << p_isignal.proxy_name << ");\n";
@@ -3870,7 +3932,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				continue;
 			}
 
-			if (property.name.contains("/")) {
+			if (property.name.contains_char('/')) {
 				// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 				continue;
 			}
@@ -4372,9 +4434,45 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 	return true;
 }
 
+static String _get_vector2_cs_ctor_args(const Vector2 &p_vec2) {
+	return String::num_real(p_vec2.x, true) + "f, " +
+			String::num_real(p_vec2.y, true) + "f";
+}
+
+static String _get_vector3_cs_ctor_args(const Vector3 &p_vec3) {
+	return String::num_real(p_vec3.x, true) + "f, " +
+			String::num_real(p_vec3.y, true) + "f, " +
+			String::num_real(p_vec3.z, true) + "f";
+}
+
+static String _get_vector4_cs_ctor_args(const Vector4 &p_vec4) {
+	return String::num_real(p_vec4.x, true) + "f, " +
+			String::num_real(p_vec4.y, true) + "f, " +
+			String::num_real(p_vec4.z, true) + "f, " +
+			String::num_real(p_vec4.w, true) + "f";
+}
+
+static String _get_vector2i_cs_ctor_args(const Vector2i &p_vec2i) {
+	return itos(p_vec2i.x) + ", " + itos(p_vec2i.y);
+}
+
+static String _get_vector3i_cs_ctor_args(const Vector3i &p_vec3i) {
+	return itos(p_vec3i.x) + ", " + itos(p_vec3i.y) + ", " + itos(p_vec3i.z);
+}
+
+static String _get_vector4i_cs_ctor_args(const Vector4i &p_vec4i) {
+	return itos(p_vec4i.x) + ", " + itos(p_vec4i.y) + ", " + itos(p_vec4i.z) + ", " + itos(p_vec4i.w);
+}
+
+static String _get_color_cs_ctor_args(const Color &p_color) {
+	return String::num(p_color.r, 4) + "f, " +
+			String::num(p_color.g, 4) + "f, " +
+			String::num(p_color.b, 4) + "f, " +
+			String::num(p_color.a, 4) + "f";
+}
+
 bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg) {
 	r_iarg.def_param_value = p_val;
-	r_iarg.default_argument = p_val.operator String();
 
 	switch (p_val.get_type()) {
 		case Variant::NIL:
@@ -4387,10 +4485,14 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::INT:
 			if (r_iarg.type.cname != name_cache.type_int) {
-				r_iarg.default_argument = "(%s)(" + r_iarg.default_argument + ")";
+				r_iarg.default_argument = "(%s)(" + p_val.operator String() + ")";
+			} else {
+				r_iarg.default_argument = p_val.operator String();
 			}
 			break;
 		case Variant::FLOAT:
+			r_iarg.default_argument = p_val.operator String();
+
 			if (r_iarg.type.cname == name_cache.type_float) {
 				r_iarg.default_argument += "f";
 			}
@@ -4400,7 +4502,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		case Variant::NODE_PATH:
 			if (r_iarg.type.cname == name_cache.type_StringName || r_iarg.type.cname == name_cache.type_NodePath) {
 				if (r_iarg.default_argument.length() > 0) {
-					r_iarg.default_argument = "(%s)\"" + r_iarg.default_argument + "\"";
+					r_iarg.default_argument = "(%s)\"" + p_val.operator String() + "\"";
 					r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 				} else {
 					// No need for a special `in` statement to change `null` to `""`. Marshaling takes care of this already.
@@ -4408,40 +4510,62 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				}
 			} else {
 				CRASH_COND(r_iarg.type.cname != name_cache.type_String);
-				r_iarg.default_argument = "\"" + r_iarg.default_argument + "\"";
+				r_iarg.default_argument = "\"" + p_val.operator String() + "\"";
 			}
 			break;
 		case Variant::PLANE: {
 			Plane plane = p_val.operator Plane();
-			r_iarg.default_argument = "new Plane(new Vector3" + plane.normal.operator String() + ", " + rtos(plane.d) + ")";
+			r_iarg.default_argument = "new Plane(new Vector3(" +
+					_get_vector3_cs_ctor_args(plane.normal) + "), " + rtos(plane.d) + "f)";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new Aabb(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
+			r_iarg.default_argument = "new Aabb(new Vector3(" +
+					_get_vector3_cs_ctor_args(aabb.position) + "), new Vector3(" +
+					_get_vector3_cs_ctor_args(aabb.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
 			Rect2 rect = p_val.operator Rect2();
-			r_iarg.default_argument = "new Rect2(new Vector2" + rect.position.operator String() + ", new Vector2" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2(new Vector2(" +
+					_get_vector2_cs_ctor_args(rect.position) + "), new Vector2(" +
+					_get_vector2_cs_ctor_args(rect.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2I(new Vector2I" + rect.position.operator String() + ", new Vector2I" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2I(new Vector2I(" +
+					_get_vector2i_cs_ctor_args(rect.position) + "), new Vector2I(" +
+					_get_vector2i_cs_ctor_args(rect.size) + "))";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
+			r_iarg.default_argument = "new Color(" + _get_color_cs_ctor_args(p_val.operator Color()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR2:
+			r_iarg.default_argument = "new Vector2(" + _get_vector2_cs_ctor_args(p_val.operator Vector2()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR2I:
+			r_iarg.default_argument = "new Vector2I(" + _get_vector2i_cs_ctor_args(p_val.operator Vector2i()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR3:
+			r_iarg.default_argument = "new Vector3(" + _get_vector3_cs_ctor_args(p_val.operator Vector3()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR3I:
-			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
+			r_iarg.default_argument = "new Vector3I(" + _get_vector3i_cs_ctor_args(p_val.operator Vector3i()) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::VECTOR4:
+			r_iarg.default_argument = "new Vector4(" + _get_vector4_cs_ctor_args(p_val.operator Vector4()) + ")";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::VECTOR4I:
-			r_iarg.default_argument = "new %s" + r_iarg.default_argument;
+			r_iarg.default_argument = "new Vector4I(" + _get_vector4i_cs_ctor_args(p_val.operator Vector4i()) + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::OBJECT:
@@ -4491,7 +4615,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (transform == Transform2D()) {
 				r_iarg.default_argument = "Transform2D.Identity";
 			} else {
-				r_iarg.default_argument = "new Transform2D(new Vector2" + transform.columns[0].operator String() + ", new Vector2" + transform.columns[1].operator String() + ", new Vector2" + transform.columns[2].operator String() + ")";
+				r_iarg.default_argument = "new Transform2D(new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[0]) + "), new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[1]) + "), new Vector2(" +
+						_get_vector2_cs_ctor_args(transform.columns[2]) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4501,7 +4628,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 				r_iarg.default_argument = "Transform3D.Identity";
 			} else {
 				Basis basis = transform.basis;
-				r_iarg.default_argument = "new Transform3D(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ", new Vector3" + transform.origin.operator String() + ")";
+				r_iarg.default_argument = "new Transform3D(new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(0)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(1)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(2)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(transform.origin) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4510,7 +4641,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (projection == Projection()) {
 				r_iarg.default_argument = "Projection.Identity";
 			} else {
-				r_iarg.default_argument = "new Projection(new Vector4" + projection.columns[0].operator String() + ", new Vector4" + projection.columns[1].operator String() + ", new Vector4" + projection.columns[2].operator String() + ", new Vector4" + projection.columns[3].operator String() + ")";
+				r_iarg.default_argument = "new Projection(new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[0]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[1]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[2]) + "), new Vector4(" +
+						_get_vector4_cs_ctor_args(projection.columns[3]) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4519,7 +4654,10 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (basis == Basis()) {
 				r_iarg.default_argument = "Basis.Identity";
 			} else {
-				r_iarg.default_argument = "new Basis(new Vector3" + basis.get_column(0).operator String() + ", new Vector3" + basis.get_column(1).operator String() + ", new Vector3" + basis.get_column(2).operator String() + ")";
+				r_iarg.default_argument = "new Basis(new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(0)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(1)) + "), new Vector3(" +
+						_get_vector3_cs_ctor_args(basis.get_column(2)) + "))";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4528,7 +4666,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			if (quaternion == Quaternion()) {
 				r_iarg.default_argument = "Quaternion.Identity";
 			} else {
-				r_iarg.default_argument = "new Quaternion" + quaternion.operator String();
+				r_iarg.default_argument = "new Quaternion(" +
+						String::num_real(quaternion.x, false) + "f, " +
+						String::num_real(quaternion.y, false) + "f, " +
+						String::num_real(quaternion.z, false) + "f, " +
+						String::num_real(quaternion.w, false) + "f)";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
@@ -4960,22 +5102,25 @@ void BindingsGenerator::_populate_global_constants() {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2I.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3I.Axis");
-	for (const StringName &enum_cname : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		TypeInterface enum_itype;
-		enum_itype.is_enum = true;
-		enum_itype.name = enum_cname.operator String();
-		enum_itype.cname = enum_cname;
-		enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
-		TypeInterface::postsetup_enum_type(enum_itype);
-		enum_types.insert(enum_itype.cname, enum_itype);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			TypeInterface enum_itype;
+			enum_itype.is_enum = true;
+			enum_itype.name = Variant::get_type_name(type) + "." + enum_name;
+			enum_itype.cname = enum_itype.name;
+			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
+			TypeInterface::postsetup_enum_type(enum_itype);
+			enum_types.insert(enum_itype.cname, enum_itype);
+		}
 	}
 }
 

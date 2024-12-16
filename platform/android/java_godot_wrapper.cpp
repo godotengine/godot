@@ -64,9 +64,12 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_is_dark_mode_supported = p_env->GetMethodID(godot_class, "isDarkModeSupported", "()Z");
 	_is_dark_mode = p_env->GetMethodID(godot_class, "isDarkMode", "()Z");
+	_get_accent_color = p_env->GetMethodID(godot_class, "getAccentColor", "()I");
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
+	_show_input_dialog = p_env->GetMethodID(godot_class, "showInputDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+	_show_file_picker = p_env->GetMethodID(godot_class, "showFilePicker", "(Ljava/lang/String;Ljava/lang/String;I[Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
@@ -212,6 +215,23 @@ bool GodotJavaWrapper::is_dark_mode() {
 	}
 }
 
+Color GodotJavaWrapper::get_accent_color() {
+	if (_get_accent_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, Color(0, 0, 0, 0));
+		int accent_color = env->CallIntMethod(godot_instance, _get_accent_color);
+
+		// Convert ARGB to RGBA.
+		int alpha = (accent_color >> 24) & 0xFF;
+		int red = (accent_color >> 16) & 0xFF;
+		int green = (accent_color >> 8) & 0xFF;
+		int blue = accent_color & 0xFF;
+		return Color(red / 255.0f, green / 255.0f, blue / 255.0f, alpha / 255.0f);
+	} else {
+		return Color(0, 0, 0, 0);
+	}
+}
+
 bool GodotJavaWrapper::has_get_clipboard() {
 	return _get_clipboard != nullptr;
 }
@@ -265,6 +285,46 @@ bool GodotJavaWrapper::has_clipboard() {
 		return env->CallBooleanMethod(godot_instance, _has_clipboard);
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::show_input_dialog(const String &p_title, const String &p_message, const String &p_existing_text) {
+	if (_show_input_dialog) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring jStrTitle = env->NewStringUTF(p_title.utf8().get_data());
+		jstring jStrMessage = env->NewStringUTF(p_message.utf8().get_data());
+		jstring jStrExistingText = env->NewStringUTF(p_existing_text.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _show_input_dialog, jStrTitle, jStrMessage, jStrExistingText);
+		env->DeleteLocalRef(jStrTitle);
+		env->DeleteLocalRef(jStrMessage);
+		env->DeleteLocalRef(jStrExistingText);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
+	}
+}
+
+Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, const String &p_filename, int p_mode, const Vector<String> &p_filters) {
+	if (_show_file_picker) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring j_current_directory = env->NewStringUTF(p_current_directory.utf8().get_data());
+		jstring j_filename = env->NewStringUTF(p_filename.utf8().get_data());
+		jint j_mode = p_mode;
+		jobjectArray j_filters = env->NewObjectArray(p_filters.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < p_filters.size(); ++i) {
+			jstring j_filter = env->NewStringUTF(p_filters[i].utf8().get_data());
+			env->SetObjectArrayElement(j_filters, i, j_filter);
+			env->DeleteLocalRef(j_filter);
+		}
+		env->CallVoidMethod(godot_instance, _show_file_picker, j_current_directory, j_filename, j_mode, j_filters);
+		env->DeleteLocalRef(j_current_directory);
+		env->DeleteLocalRef(j_filename);
+		env->DeleteLocalRef(j_filters);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
 

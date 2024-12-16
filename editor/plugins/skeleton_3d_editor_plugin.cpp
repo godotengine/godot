@@ -123,7 +123,7 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
-			add_metadata_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_metadata_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
@@ -351,12 +351,12 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 	} else {
 		animation_hb->hide();
 	}
-};
+}
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
-};
+}
 
 void Skeleton3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_all"), &Skeleton3DEditor::update_all);
@@ -1024,7 +1024,7 @@ void Skeleton3DEditor::create_editors() {
 
 	edit_mode_button = memnew(Button);
 	topmenu_bar->add_child(edit_mode_button);
-	edit_mode_button->set_theme_type_variation("FlatButton");
+	edit_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
 	edit_mode_button->set_tooltip_text(TTR("Edit Mode\nShow buttons on joints."));
@@ -1044,7 +1044,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->hide();
 
 	key_loc_button = memnew(Button);
-	key_loc_button->set_theme_type_variation("FlatButton");
+	key_loc_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
@@ -1052,7 +1052,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
-	key_rot_button->set_theme_type_variation("FlatButton");
+	key_rot_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
@@ -1060,7 +1060,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
-	key_scale_button->set_theme_type_variation("FlatButton");
+	key_scale_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
@@ -1068,7 +1068,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
-	key_insert_button->set_theme_type_variation("FlatButton");
+	key_insert_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
 	key_insert_button->set_tooltip_text(TTR("Insert key (based on mask) for bones with an existing track."));
@@ -1076,7 +1076,7 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_insert_button);
 
 	key_insert_all_button = memnew(Button);
-	key_insert_all_button->set_theme_type_variation("FlatButton");
+	key_insert_all_button->set_theme_type_variation(SceneStringName(FlatButton));
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect(SceneStringName(pressed), callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip_text(TTR("Insert key (based on mask) for all bones."));
@@ -1103,6 +1103,7 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_allow_rmb_select(true);
+	joint_tree->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(joint_tree, Skeleton3DEditor);
 	s_con->add_child(joint_tree);
 
@@ -1136,13 +1137,13 @@ void Skeleton3DEditor::_notification(int p_what) {
 			add_theme_constant_override("separation", 0);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			skeleton_options->set_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
-			edit_mode_button->set_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
-			key_loc_button->set_icon(get_editor_theme_icon(SNAME("KeyPosition")));
-			key_rot_button->set_icon(get_editor_theme_icon(SNAME("KeyRotation")));
-			key_scale_button->set_icon(get_editor_theme_icon(SNAME("KeyScale")));
-			key_insert_button->set_icon(get_editor_theme_icon(SNAME("Key")));
-			key_insert_all_button->set_icon(get_editor_theme_icon(SNAME("NewKey")));
+			skeleton_options->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
+			edit_mode_button->set_button_icon(get_editor_theme_icon(SNAME("ToolBoneSelect")));
+			key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
+			key_rot_button->set_button_icon(get_editor_theme_icon(SNAME("KeyRotation")));
+			key_scale_button->set_button_icon(get_editor_theme_icon(SNAME("KeyScale")));
+			key_insert_button->set_button_icon(get_editor_theme_icon(SNAME("Key")));
+			key_insert_all_button->set_button_icon(get_editor_theme_icon(SNAME("NewKey")));
 			bones_section->set_bg_color(get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
 
 			update_joint_tree();
@@ -1186,8 +1187,8 @@ Skeleton3DEditor::Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skel
 	singleton = this;
 
 	// Handle.
-	handle_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
-	handle_shader = Ref<Shader>(memnew(Shader));
+	handle_material.instantiate();
+	handle_shader.instantiate();
 	handle_shader->set_code(R"(
 // Skeleton 3D gizmo handle shader.
 

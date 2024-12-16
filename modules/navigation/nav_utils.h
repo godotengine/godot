@@ -94,7 +94,7 @@ struct Edge {
 	};
 
 	/// Connections from this edge to other polygons.
-	Vector<Connection> connections;
+	LocalVector<Connection> connections;
 };
 
 struct Polygon {
@@ -144,6 +144,15 @@ struct NavigationPoly {
 
 	bool operator!=(const NavigationPoly &p_other) const {
 		return !(*this == p_other);
+	}
+
+	void reset() {
+		poly = nullptr;
+		traversable_poly_index = UINT32_MAX;
+		back_navigation_poly_id = -1;
+		back_navigation_edge = -1;
+		traveled_distance = 0.0;
+		distance_to_destination = 0.0;
 	}
 };
 
@@ -298,6 +307,19 @@ private:
 		}
 	}
 };
+
+struct PerformanceData {
+	int pm_region_count = 0;
+	int pm_agent_count = 0;
+	int pm_link_count = 0;
+	int pm_polygon_count = 0;
+	int pm_edge_count = 0;
+	int pm_edge_merge_count = 0;
+	int pm_edge_connection_count = 0;
+	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H

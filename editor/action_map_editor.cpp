@@ -358,7 +358,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -571,7 +571,7 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
 	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
-	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
+	add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
 	add_button = memnew(Button);

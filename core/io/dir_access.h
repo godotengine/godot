@@ -61,6 +61,13 @@ private:
 	bool include_navigational = false;
 	bool include_hidden = false;
 
+	bool _is_temp = false;
+	bool _temp_keep_after_free = false;
+	String _temp_path;
+	void _delete_temp();
+
+	static Ref<DirAccess> _create_temp(const String &p_prefix = "", bool p_keep = false);
+
 protected:
 	static void _bind_methods();
 
@@ -96,8 +103,8 @@ public:
 
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
-	virtual bool is_readable(String p_dir) { return true; };
-	virtual bool is_writable(String p_dir) { return true; };
+	virtual bool is_readable(String p_dir) { return true; }
+	virtual bool is_writable(String p_dir) { return true; }
 	static bool exists(const String &p_dir);
 	virtual uint64_t get_space_left() = 0;
 
@@ -116,10 +123,10 @@ public:
 		Ref<DirAccess> da = create(ACCESS_FILESYSTEM);
 		if (da->file_exists(p_path)) {
 			if (da->remove(p_path) != OK) {
-				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+				ERR_FAIL_MSG(vformat("Cannot remove file or directory: '%s'.", p_path));
 			}
 		} else {
-			ERR_FAIL_MSG("Cannot remove non-existent file or directory: " + p_path);
+			ERR_FAIL_MSG(vformat("Cannot remove non-existent file or directory: '%s'.", p_path));
 		}
 	}
 
@@ -136,6 +143,7 @@ public:
 	}
 
 	static Ref<DirAccess> open(const String &p_path, Error *r_error = nullptr);
+	static Ref<DirAccess> create_temp(const String &p_prefix = "", bool p_keep = false, Error *r_error = nullptr);
 
 	static int _get_drive_count();
 	static String get_drive_name(int p_idx);
@@ -160,9 +168,11 @@ public:
 	bool get_include_hidden() const;
 
 	virtual bool is_case_sensitive(const String &p_path) const;
+	virtual bool is_bundle(const String &p_file) const { return false; }
 
+public:
 	DirAccess() {}
-	virtual ~DirAccess() {}
+	virtual ~DirAccess();
 };
 
 #endif // DIR_ACCESS_H

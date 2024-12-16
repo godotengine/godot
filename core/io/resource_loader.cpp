@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
@@ -40,6 +41,7 @@
 #include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
 #include "servers/rendering_server.h"
 
@@ -112,8 +114,19 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
 	int64_t uid = ResourceUID::INVALID_ID;
-	GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	if (has_custom_uid_support()) {
+		GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	} else {
+		Ref<FileAccess> file = FileAccess::open(p_path + ".uid", FileAccess::READ);
+		if (file.is_valid()) {
+			uid = ResourceUID::get_singleton()->text_to_id(file->get_line());
+		}
+	}
 	return uid;
+}
+
+bool ResourceFormatLoader::has_custom_uid_support() const {
+	return GDVIRTUAL_IS_OVERRIDDEN(_get_resource_uid);
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -162,7 +175,7 @@ Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_o
 		}
 	}
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), "Failed to load resource '" + p_path + "'. ResourceFormatLoader::load was not implemented for this resource type.");
+	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -872,7 +885,7 @@ bool ResourceLoader::_ensure_load_progress() {
 	// Some servers may need a new engine iteration to allow the load to progress.
 	// Since the only known one is the rendering server (in single thread mode), let's keep it simple and just sync it.
 	// This may be refactored in the future to support other servers and have less coupling.
-	if (OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD) {
+	if (OS::get_singleton()->is_separate_thread_rendering_enabled()) {
 		return false; // Not needed.
 	}
 	RenderingServer::get_singleton()->sync();
@@ -1150,6 +1163,21 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ResourceUID::INVALID_ID;
 }
 
+bool ResourceLoader::has_custom_uid_support(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_custom_uid_support()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {
 	String new_path = p_path;
 
@@ -1163,13 +1191,13 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		// An extra remap may still be necessary afterwards due to the text -> binary converter on export.
 
 		String locale = TranslationServer::get_singleton()->get_locale();
-		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, "Could not remap path '" + p_path + "' for translation as configured locale '" + locale + "' is invalid.");
+		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, vformat("Could not remap path '%s' for translation as configured locale '%s' is invalid.", p_path, locale));
 
 		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
 
 		int best_score = 0;
 		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind(":");
+			int split = res_remaps[i].rfind_char(':');
 			if (split == -1) {
 				continue;
 			}
@@ -1222,7 +1250,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 					if (err == ERR_FILE_EOF) {
 						break;
 					} else if (err != OK) {
-						ERR_PRINT("Parse error: " + p_path + ".remap:" + itos(lines) + " error: " + error_text + ".");
+						ERR_PRINT(vformat("Parse error: %s.remap:%d error: %s.", p_path, lines, error_text));
 						break;
 					}
 
@@ -1437,6 +1465,60 @@ void ResourceLoader::remove_custom_loaders() {
 bool ResourceLoader::is_cleaning_tasks() {
 	MutexLock lock(thread_load_mutex);
 	return cleaning_tasks;
+}
+
+Vector<String> ResourceLoader::list_directory(const String &p_directory) {
+	RBSet<String> files_found;
+	Ref<DirAccess> dir = DirAccess::open(p_directory);
+	if (dir.is_null()) {
+		return Vector<String>();
+	}
+
+	Error err = dir->list_dir_begin();
+	if (err != OK) {
+		return Vector<String>();
+	}
+
+	String d = dir->get_next();
+	while (!d.is_empty()) {
+		bool recognized = false;
+		if (dir->current_is_dir()) {
+			if (d != "." && d != "..") {
+				d += "/";
+				recognized = true;
+			}
+		} else {
+			if (d.ends_with(".import") || d.ends_with(".remap") || d.ends_with(".uid")) {
+				d = d.substr(0, d.rfind_char('.'));
+			}
+
+			if (d.ends_with(".gdc")) {
+				d = d.substr(0, d.rfind_char('.'));
+				d += ".gd";
+			}
+
+			const String full_path = p_directory.path_join(d);
+			// Try all loaders and pick the first match for the type hint.
+			for (int i = 0; i < loader_count; i++) {
+				if (loader[i]->recognize_path(full_path)) {
+					recognized = true;
+					break;
+				}
+			}
+		}
+
+		if (recognized) {
+			files_found.insert(d);
+		}
+		d = dir->get_next();
+	}
+
+	Vector<String> ret;
+	for (const String &f : files_found) {
+		ret.push_back(f);
+	}
+
+	return ret;
 }
 
 void ResourceLoader::initialize() {}

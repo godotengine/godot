@@ -143,7 +143,14 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 	Error err = SceneShaderForwardClustered::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (err != OK) {
+		if (version.is_valid()) {
+			SceneShaderForwardClustered::singleton->shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = SceneShaderForwardClustered::singleton->shader.version_create();
@@ -215,27 +222,27 @@ RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_s
 	}
 }
 
-SceneShaderForwardClustered::ShaderVersion SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const {
-	uint32_t ubershader_base = p_ubershader ? SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL : 0;
+uint16_t SceneShaderForwardClustered::ShaderData::_get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const {
+	uint32_t ubershader_base = p_ubershader ? ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL : 0;
 	switch (p_pipeline_version) {
 		case PIPELINE_VERSION_DEPTH_PASS:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_DP:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_DP + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_DP + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_MULTIVIEW + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_MULTIVIEW + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW + ubershader_base);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW + ubershader_base;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_MATERIAL:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL;
 		case PIPELINE_VERSION_DEPTH_PASS_WITH_SDF:
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + SHADER_VERSION_DEPTH_PASS_WITH_SDF);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_SDF;
 		case PIPELINE_VERSION_COLOR_PASS: {
 			int shader_flags = 0;
 
@@ -259,11 +266,11 @@ SceneShaderForwardClustered::ShaderVersion SceneShaderForwardClustered::ShaderDa
 				shader_flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
 			}
 
-			return ShaderVersion(SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + SHADER_VERSION_COLOR_PASS + shader_flags);
+			return ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + shader_flags;
 		} break;
 		default: {
 			DEV_ASSERT(false && "Unknown pipeline version.");
-			return ShaderVersion(0);
+			return 0;
 		} break;
 	}
 }
@@ -374,6 +381,10 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
 	specialization_constants.push_back(sc);
 
+	sc.constant_id = 1;
+	sc.int_value = p_pipeline_key.shader_specialization.packed_1;
+	specialization_constants.push_back(sc);
+
 	RID shader_rid = get_shader_variant(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader);
 	ERR_FAIL_COND(shader_rid.is_null());
 
@@ -393,7 +404,7 @@ RD::PolygonCullMode SceneShaderForwardClustered::ShaderData::get_cull_mode_from_
 	return cull_mode_rd_table[p_cull_variant][cull_mode];
 }
 
-RID SceneShaderForwardClustered::ShaderData::_get_shader_variant(ShaderVersion p_shader_version) const {
+RID SceneShaderForwardClustered::ShaderData::_get_shader_variant(uint16_t p_shader_version) const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 		ERR_FAIL_NULL_V(SceneShaderForwardClustered::singleton, RID());
@@ -415,7 +426,7 @@ RID SceneShaderForwardClustered::ShaderData::get_shader_variant(PipelineVersion 
 
 uint64_t SceneShaderForwardClustered::ShaderData::get_vertex_input_mask(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) {
 	// Vertex input masks require knowledge of the shader. Since querying the shader can be expensive due to high contention and the necessary mutex, we cache the result instead.
-	ShaderVersion shader_version = _get_shader_version(p_pipeline_version, p_color_pass_flags, p_ubershader);
+	uint16_t shader_version = _get_shader_version(p_pipeline_version, p_color_pass_flags, p_ubershader);
 	uint64_t input_mask = vertex_input_masks[shader_version].load(std::memory_order_relaxed);
 	if (input_mask == 0) {
 		RID shader_rid = _get_shader_variant(shader_version);
@@ -610,6 +621,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -649,8 +662,6 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
-		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
-		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";

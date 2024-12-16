@@ -36,6 +36,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 #include "scene/resources/shader_include.h"
@@ -427,6 +428,7 @@ public:
 	struct VariableNode : public Node {
 		DataType datatype_cache = TYPE_VOID;
 		StringName name;
+		StringName rname;
 		StringName struct_name;
 		bool is_const = false;
 		bool is_local = false;
@@ -604,6 +606,7 @@ public:
 
 		struct Function {
 			StringName name;
+			StringName rname;
 			FunctionNode *function = nullptr;
 			HashSet<StringName> uses_function;
 			bool callable;
@@ -617,10 +620,8 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
-				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
-				STAGE_FRAGMENT_TO_LIGHT,
+				STAGE_VERTEX,
+				STAGE_FRAGMENT,
 			};
 
 			Stage stage = STAGE_UNKNOWN;
@@ -729,6 +730,7 @@ public:
 		};
 
 		StringName name;
+		StringName rname;
 		DataType return_type = TYPE_VOID;
 		StringName return_struct_name;
 		DataPrecision return_precision = PRECISION_DEFAULT;
@@ -830,7 +832,7 @@ public:
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
-	static int instance_counter;
+	static SafeNumeric<int> instance_counter;
 
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
@@ -856,6 +858,7 @@ public:
 
 		Vector<Argument> arguments;
 		DataType return_type = TYPE_VOID;
+		String skip_function;
 	};
 
 	struct ModeInfo {
@@ -931,7 +934,7 @@ private:
 		const char *text;
 		uint32_t flags;
 		const Vector<String> excluded_shader_types;
-		const Vector<String> functions;
+		const Vector<String> excluded_functions;
 	};
 
 	static const KeyWord keyword_list[];
@@ -944,6 +947,7 @@ private:
 
 	Vector<FilePosition> include_positions;
 	HashSet<String> include_markers_handled;
+	HashMap<StringName, int> function_overload_count;
 
 	// Additional function information (eg. call hierarchy). No need to expose it to compiler.
 	struct CallInfo {
@@ -1146,6 +1150,7 @@ private:
 
 	const HashMap<StringName, FunctionInfo> *stages = nullptr;
 	bool is_supported_frag_only_funcs = false;
+	bool is_discard_supported = false;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
@@ -1207,7 +1212,7 @@ public:
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
-		VaryingFunctionNames varying_function_names = VaryingFunctionNames();
+		VaryingFunctionNames varying_function_names;
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
 		bool is_include = false;

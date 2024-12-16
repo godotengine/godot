@@ -165,6 +165,10 @@ public:
 			container_element_types.write[p_index] = DataType(p_type);
 		}
 
+		_FORCE_INLINE_ int get_container_element_type_count() const {
+			return container_element_types.size();
+		}
+
 		_FORCE_INLINE_ DataType get_container_element_type(int p_index) const {
 			ERR_FAIL_INDEX_V(p_index, container_element_types.size(), get_variant_type());
 			return container_element_types[p_index];
@@ -1354,6 +1358,7 @@ private:
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
+	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
@@ -1502,6 +1507,7 @@ private:
 	void clear_unused_annotations();
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1510,9 +1516,9 @@ private:
 	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool warning_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
@@ -1597,6 +1603,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
+
+	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
 #endif // TOOLS_ENABLED
 
 	GDScriptParser();

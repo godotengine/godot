@@ -120,10 +120,6 @@ void Node::_notification(int p_notification) {
 			}
 #endif
 
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
-
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
 			}
@@ -144,6 +140,12 @@ void Node::_notification(int p_notification) {
 			// (this is to save the user from doing this manually each time).
 			if (get_tree()->is_physics_interpolation_enabled()) {
 				_set_physics_interpolation_reset_requested(true);
+			}
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 		} break;
 
@@ -184,6 +186,7 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
 				reset_physics_interpolation();
@@ -695,6 +698,16 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	data.blocked--;
 }
 
+void Node::_propagate_suspend_notification(bool p_enable) {
+	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &KV : data.children) {
+		KV.value->_propagate_suspend_notification(p_enable);
+	}
+	data.blocked--;
+}
+
 Node::ProcessMode Node::get_process_mode() const {
 	return data.process_mode;
 }
@@ -850,7 +863,7 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return _can_process(get_tree()->is_paused());
+	return !get_tree()->is_suspended() && _can_process(get_tree()->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -3044,11 +3057,12 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (copy && copytarget && E.callable.get_method() != StringName()) {
 					Callable copy_callable = Callable(copytarget, E.callable.get_method());
 					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
-						int arg_count = E.callable.get_bound_arguments_count();
-						if (arg_count > 0) {
+						int unbound_arg_count = E.callable.get_unbound_arguments_count();
+						if (unbound_arg_count > 0) {
+							copy_callable = copy_callable.unbind(unbound_arg_count);
+						}
+						if (E.callable.get_bound_arguments_count() > 0) {
 							copy_callable = copy_callable.bindv(E.callable.get_bound_arguments());
-						} else if (arg_count < 0) {
-							copy_callable = copy_callable.unbind(-arg_count);
 						}
 						copy->connect(E.signal.get_name(), copy_callable, E.flags);
 					}

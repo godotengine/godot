@@ -115,11 +115,11 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
-};
+}
 
 Vector2 Camera2D::get_zoom() const {
 	return zoom;
-};
+}
 
 Transform2D Camera2D::get_camera_transform() {
 	if (!get_tree()) {
@@ -277,7 +277,7 @@ void Camera2D::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_READY: {
-			if (Engine::get_singleton()->is_editor_hint() && is_part_of_edited_scene()) {
+			if (is_part_of_edited_scene()) {
 				ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &Camera2D::_project_settings_changed));
 			}
 		} break;
@@ -302,6 +302,7 @@ void Camera2D::_notification(int p_what) {
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled()) {
 				_update_scroll();

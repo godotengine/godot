@@ -143,7 +143,14 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
-	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	if (err != OK) {
+		if (version.is_valid()) {
+			SceneShaderForwardMobile::singleton->shader.version_free(version);
+			version = RID();
+		}
+		ERR_FAIL_MSG("Shader compilation failed.");
+	}
 
 	if (version.is_null()) {
 		version = SceneShaderForwardMobile::singleton->shader.version_create();
@@ -162,11 +169,11 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 	if (uses_sss) {
-		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Subsurface scattering is only available when using the Forward+ renderer.");
 	}
 
 	if (uses_transmittance) {
-		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
 	}
 #endif
 
@@ -237,6 +244,8 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"VERSION:", p_pipeline_key.version,
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"SPEC PACKED #1:", p_pipeline_key.shader_specialization.packed_1,
+			"SPEC PACKED #2:", p_pipeline_key.shader_specialization.packed_2,
+			"SPEC PACKED #3:", p_pipeline_key.shader_specialization.packed_3,
 			"RENDER PASS:", p_pipeline_key.render_pass,
 			"WIREFRAME:", p_pipeline_key.wireframe);
 #endif
@@ -322,7 +331,17 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	specialization_constants.push_back(sc);
 
 	sc.constant_id = 1;
-	sc.float_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.int_value = p_pipeline_key.shader_specialization.packed_1;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+	specialization_constants.push_back(sc);
+
+	sc.constant_id = 2;
+	sc.int_value = p_pipeline_key.shader_specialization.packed_2;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+	specialization_constants.push_back(sc);
+
+	sc.constant_id = 3;
+	sc.float_value = p_pipeline_key.shader_specialization.packed_3;
 	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
 	specialization_constants.push_back(sc);
 
@@ -450,6 +469,16 @@ SceneShaderForwardMobile::SceneShaderForwardMobile() {
 void SceneShaderForwardMobile::init(const String p_defines) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
+	// Immutable samplers : create the shadow sampler to be passed when creating the pipeline.
+	{
+		RD::SamplerState sampler;
+		sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+		sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		sampler.enable_compare = true;
+		sampler.compare_op = RD::COMPARE_OP_GREATER;
+		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
+	}
+
 	/* SCENE SHADER */
 
 	{
@@ -468,8 +497,13 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
 		}
 
-		shader.initialize(shader_versions, p_defines);
-
+		Vector<RD::PipelineImmutableSampler> immutable_samplers;
+		RD::PipelineImmutableSampler immutable_shadow_sampler;
+		immutable_shadow_sampler.binding = 2;
+		immutable_shadow_sampler.append_id(shadow_sampler);
+		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
+		immutable_samplers.push_back(immutable_shadow_sampler);
+		shader.initialize(shader_versions, p_defines, immutable_samplers);
 		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
 				uint32_t base_variant = ubershader ? SHADER_VERSION_MAX : 0;
@@ -521,6 +555,8 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -560,8 +596,6 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
-		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
-		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "read_model_matrix[3].xyz";
@@ -769,14 +803,6 @@ void fragment() {
 		uniforms.push_back(u);
 
 		default_vec4_xform_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RenderForwardMobile::TRANSFORMS_UNIFORM_SET);
-	}
-	{
-		RD::SamplerState sampler;
-		sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-		sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
-		sampler.enable_compare = true;
-		sampler.compare_op = RD::COMPARE_OP_GREATER;
-		shadow_sampler = RD::get_singleton()->sampler_create(sampler);
 	}
 }
 

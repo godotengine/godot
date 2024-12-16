@@ -110,6 +110,16 @@ static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	return uint32_t(v);
 }
 
+static _FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
+	key ^= seed;
+	key ^= key >> 33;
+	key *= 0xff51afd7ed558ccd;
+	key ^= key >> 33;
+	key *= 0xc4ceb9fe1a85ec53;
+	key ^= key >> 33;
+	return key;
+}
+
 #define HASH_MURMUR3_SEED 0x7F07C65
 // Murmurhash3 32-bit version.
 // All MurmurHash versions are public domain software, and the author disclaims all copyright to their code.
@@ -391,6 +401,13 @@ struct HashMapHasherDefault {
 		h = hash_murmur3_one_real(p_aabb.size.z, h);
 		return hash_fmix32(h);
 	}
+};
+
+struct HashHasher {
+	static _FORCE_INLINE_ uint32_t hash(const int32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const int64_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const uint64_t hash) { return hash; }
 };
 
 // TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed

@@ -79,7 +79,7 @@ public:
 		for (int i = 0; i < custom_monitor_names.size(); i++) {
 			Variant monitor_value = performance->call("get_custom_monitor", custom_monitor_names[i]);
 			if (!monitor_value.is_num()) {
-				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
+				ERR_PRINT(vformat("Value of custom monitor '%s' is not a number.", String(custom_monitor_names[i])));
 				arr[i + max] = Variant();
 			} else {
 				arr[i + max] = monitor_value;
@@ -338,7 +338,7 @@ void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_va
 }
 
 Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, bool &r_captured) {
-	const int idx = p_msg.find(":");
+	const int idx = p_msg.find_char(':');
 	r_captured = false;
 	if (idx < 0) { // No prefix, unknown message.
 		return OK;
@@ -569,7 +569,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
 				if (!captured) {
-					WARN_PRINT("Unknown message received from debugger: " + command);
+					WARN_PRINT(vformat("Unknown message received from debugger: %s.", command));
 				}
 			}
 		} else {
@@ -610,7 +610,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		ERR_CONTINUE(arr[1].get_type() != Variant::ARRAY);
 
 		const String cmd = arr[0];
-		const int idx = cmd.find(":");
+		const int idx = cmd.find_char(':');
 		bool parsed = false;
 		if (idx < 0) { // Not prefix, use scripts capture.
 			capture_parse("core", cmd, arr[1], parsed);

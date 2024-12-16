@@ -51,7 +51,7 @@ void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopAc
 	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
 
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !ds->get_is_resizing()) {
+	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -65,6 +65,15 @@ void OS_MacOS::initialize() {
 	crash_handler.initialize();
 
 	initialize_core();
+}
+
+String OS_MacOS::get_model_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("hw.model", &buffer, &buffer_len, nullptr, 0) == 0 && buffer_len != 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	return OS_Unix::get_model_name();
 }
 
 String OS_MacOS::get_processor_name() const {
@@ -265,6 +274,19 @@ String OS_MacOS::get_cache_path() const {
 		return get_environment("HOME").path_join("Library/Caches");
 	}
 	return get_config_path();
+}
+
+String OS_MacOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
+		}
+	}
+	return ret;
 }
 
 String OS_MacOS::get_bundle_resource_dir() const {

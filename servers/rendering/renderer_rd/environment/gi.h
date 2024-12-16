@@ -467,7 +467,7 @@ public:
 
 	/* VOXEL GI API */
 
-	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); };
+	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); }
 
 	virtual RID voxel_gi_allocate() override;
 	virtual void voxel_gi_free(RID p_voxel_gi) override;
@@ -524,14 +524,14 @@ public:
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 		ERR_FAIL_NULL_V(voxel_gi, RID());
 		return voxel_gi->texture;
-	};
+	}
 
 	_FORCE_INLINE_ void voxel_gi_instance_set_render_index(RID p_probe, uint32_t p_index) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 		ERR_FAIL_NULL(voxel_gi);
 
 		voxel_gi->render_index = p_index;
-	};
+	}
 
 	bool voxel_gi_instance_owns(RID p_rid) const {
 		return voxel_gi_instance_owner.owns(p_rid);

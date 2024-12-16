@@ -37,10 +37,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
-bool EditorSpinSlider::is_text_field() const {
-	return true;
-}
-
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	if (!read_only && grabber->is_visible()) {
 		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -71,6 +67,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					} else {
 						set_value(get_value() - get_step());
 					}
+					emit_signal("updown_pressed");
 					return;
 				}
 				_grab_start();
@@ -441,7 +438,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 				Vector2 scale = get_global_transform_with_canvas().get_scale();
 				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
@@ -700,6 +697,7 @@ void EditorSpinSlider::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
+	ADD_SIGNAL(MethodInfo("updown_pressed"));
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 
@@ -721,7 +719,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input_popup->add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	value_input_popup->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_closed));
-	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
+	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 
@@ -735,7 +733,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
-	grabber->set_as_top_level(true);
+	grabber->set_z_index(1);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
 	grabber->connect(SceneStringName(mouse_entered), callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));

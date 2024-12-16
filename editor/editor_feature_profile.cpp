@@ -49,6 +49,7 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("FileSystem Dock"),
 	TTRC("Import Dock"),
 	TTRC("History Dock"),
+	TTRC("Game View"),
 };
 
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
@@ -60,6 +61,7 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 	TTRC("Allows to browse the local file system via a dedicated dock."),
 	TTRC("Allows to configure import settings for individual assets. Requires the FileSystem dock to function."),
 	TTRC("Provides an overview of the editor's and each scene's undo history."),
+	TTRC("Provides tools for selecting and debugging nodes at runtime."),
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -71,6 +73,7 @@ const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"filesystem_dock",
 	"import_dock",
 	"history_dock",
+	"game",
 };
 
 void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -307,6 +310,7 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_FILESYSTEM_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_IMPORT_DOCK);
 	BIND_ENUM_CONSTANT(FEATURE_HISTORY_DOCK);
+	BIND_ENUM_CONSTANT(FEATURE_GAME);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
@@ -468,7 +472,7 @@ void EditorFeatureProfileManager::_erase_selected_profile() {
 
 void EditorFeatureProfileManager::_create_new_profile() {
 	String name = new_profile_name->get_text().strip_edges();
-	if (!name.is_valid_filename() || name.contains(".")) {
+	if (!name.is_valid_filename() || name.contains_char('.')) {
 		EditorNode::get_singleton()->show_warning(TTR("Profile must be a valid filename and must not contain '.'"));
 		return;
 	}
@@ -985,6 +989,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list->connect("cell_selected", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_selected));
 	class_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_collapsed));
+	class_list->set_theme_type_variation("TreeSecondary");
 	// It will be displayed once the user creates or chooses a profile.
 	class_list_vbc->hide();
 

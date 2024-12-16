@@ -64,7 +64,7 @@ public:
 		execution_mode_physics_process
 	};
 
-	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
+	Vector<Ref<SkeletonModification2D>> modifications;
 
 	void setup();
 	void execute(float p_delta, int p_execution_mode);

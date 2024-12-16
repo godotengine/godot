@@ -473,10 +473,11 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
-						for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-							if (id == Variant::get_type_name(Variant::Type(i))) {
+						{
+							const Variant::Type type = Variant::get_type_by_name(id);
+							if (type < Variant::VARIANT_MAX) {
 								r_token.type = TK_BASIC_TYPE;
-								r_token.value = i;
+								r_token.value = type;
 								return OK;
 							}
 						}
@@ -1491,7 +1492,7 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 }
 
 Variant Expression::execute(const Array &p_inputs, Object *p_base, bool p_show_error, bool p_const_calls_only) {
-	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), vformat("There was previously a parse error: %s.", error_str));
 
 	execution_error = false;
 	Variant output;

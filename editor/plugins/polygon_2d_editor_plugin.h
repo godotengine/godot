@@ -142,6 +142,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	void _cancel_editing();
 	void _update_polygon_editing_state();
+	void _update_available_modes();
 
 	void _center_view();
 	void _update_zoom_and_pan(bool p_zoom_at_center);
@@ -157,6 +158,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(real_t p_val);
 
 	void _uv_edit_mode_select(int p_mode);
+	void _uv_edit_popup_show();
 	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
 
@@ -168,7 +170,7 @@ protected:
 
 	virtual Vector2 _get_offset(int p_idx) const override;
 
-	virtual bool _has_uv() const override { return true; };
+	virtual bool _has_uv() const override { return true; }
 	virtual void _commit_action() override;
 
 	void _notification(int p_what);

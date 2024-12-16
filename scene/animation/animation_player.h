@@ -52,7 +52,7 @@ public:
 #endif // DISABLE_DEPRECATED
 
 private:
-	HashMap<StringName, StringName> animation_next_set; // For auto advance.
+	AHashMap<StringName, StringName> animation_next_set; // For auto advance.
 
 	float speed_scale = 1.0;
 	double default_blend_time = 0.0;
@@ -70,6 +70,18 @@ private:
 		float speed_scale = 1.0;
 		double start_time = 0.0;
 		double end_time = 0.0;
+		double get_start_time() const {
+			if (from && (Animation::is_less_approx(start_time, 0) || Animation::is_greater_approx(start_time, from->animation->get_length()))) {
+				return 0;
+			}
+			return start_time;
+		}
+		double get_end_time() const {
+			if (from && (Animation::is_less_approx(end_time, 0) || Animation::is_greater_approx(end_time, from->animation->get_length()))) {
+				return from->animation->get_length();
+			}
+			return end_time;
+		}
 	};
 
 	struct Blend {
@@ -138,7 +150,7 @@ protected:
 	static void _bind_methods();
 
 	// Make animation instances.
-	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map) override;
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) override;
 	virtual void _blend_capture(double p_delta) override;
 	virtual void _blend_post_process() override;
 
@@ -177,6 +189,10 @@ public:
 	Tween::TransitionType get_auto_capture_transition_type() const;
 	void set_auto_capture_ease_type(Tween::EaseType p_auto_capture_ease_type);
 	Tween::EaseType get_auto_capture_ease_type() const;
+
+#ifdef TOOLS_ENABLED
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
 	void play_section_with_markers(const StringName &p_name = StringName(), const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);

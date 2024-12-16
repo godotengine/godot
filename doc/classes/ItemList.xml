@@ -29,7 +29,7 @@
 			<description>
 				Adds an item to the item list with specified text. Returns the index of an added item.
 				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
-				If selectable is [code]true[/code], the list item will be selectable.
+				If [param selectable] is [code]true[/code], the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">
@@ -472,6 +472,9 @@
 		</constant>
 		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
 			Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
+		</constant>
+		<constant name="SELECT_TOGGLE" value="2" enum="SelectMode">
+			Allows selecting multiple items by toggling them on and off.
 		</constant>
 	</constants>
 	<theme_items>

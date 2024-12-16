@@ -232,7 +232,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Size2 item_size;
-		const_cast<PopupMenu *>(this)->_shape_item(i);
+		_shape_item(i);
 
 		Size2 icon_size = _get_item_icon_size(i);
 		item_size.height = _get_item_height(i);
@@ -474,7 +474,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			for (int i = search_from; i < items.size(); i++) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
-					emit_signal(SNAME("id_focused"), i);
+					emit_signal(SNAME("id_focused"), items[i].id);
 					scroll_to_item(i);
 					control->queue_redraw();
 					set_input_as_handled();
@@ -488,7 +488,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				for (int i = 0; i < search_from; i++) {
 					if (!items[i].separator && !items[i].disabled) {
 						mouse_over = i;
-						emit_signal(SNAME("id_focused"), i);
+						emit_signal(SNAME("id_focused"), items[i].id);
 						scroll_to_item(i);
 						control->queue_redraw();
 						set_input_as_handled();
@@ -512,7 +512,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			for (int i = search_from; i >= 0; i--) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
-					emit_signal(SNAME("id_focused"), i);
+					emit_signal(SNAME("id_focused"), items[i].id);
 					scroll_to_item(i);
 					control->queue_redraw();
 					set_input_as_handled();
@@ -526,7 +526,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				for (int i = items.size() - 1; i >= search_from; i--) {
 					if (!items[i].separator && !items[i].disabled) {
 						mouse_over = i;
-						emit_signal(SNAME("id_focused"), i);
+						emit_signal(SNAME("id_focused"), items[i].id);
 						scroll_to_item(i);
 						control->queue_redraw();
 						set_input_as_handled();
@@ -692,7 +692,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 			if (items[i].text.findn(search_string) == 0) {
 				mouse_over = i;
-				emit_signal(SNAME("id_focused"), i);
+				emit_signal(SNAME("id_focused"), items[i].id);
 				scroll_to_item(i);
 				control->queue_redraw();
 				set_input_as_handled();
@@ -946,7 +946,7 @@ void PopupMenu::_close_pressed() {
 	}
 }
 
-void PopupMenu::_shape_item(int p_idx) {
+void PopupMenu::_shape_item(int p_idx) const {
 	if (items.write[p_idx].dirty) {
 		items.write[p_idx].text_buf->clear();
 
@@ -1091,7 +1091,7 @@ void PopupMenu::_notification(int p_what) {
 					for (int i = search_from; i < items.size(); i++) {
 						if (!items[i].separator && !items[i].disabled) {
 							mouse_over = i;
-							emit_signal(SNAME("id_focused"), i);
+							emit_signal(SNAME("id_focused"), items[i].id);
 							scroll_to_item(i);
 							control->queue_redraw();
 							match_found = true;
@@ -1104,7 +1104,7 @@ void PopupMenu::_notification(int p_what) {
 						for (int i = 0; i < search_from; i++) {
 							if (!items[i].separator && !items[i].disabled) {
 								mouse_over = i;
-								emit_signal(SNAME("id_focused"), i);
+								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
 								break;
@@ -1124,7 +1124,7 @@ void PopupMenu::_notification(int p_what) {
 					for (int i = search_from; i >= 0; i--) {
 						if (!items[i].separator && !items[i].disabled) {
 							mouse_over = i;
-							emit_signal(SNAME("id_focused"), i);
+							emit_signal(SNAME("id_focused"), items[i].id);
 							scroll_to_item(i);
 							control->queue_redraw();
 							match_found = true;
@@ -1137,7 +1137,7 @@ void PopupMenu::_notification(int p_what) {
 						for (int i = items.size() - 1; i >= search_from; i--) {
 							if (!items[i].separator && !items[i].disabled) {
 								mouse_over = i;
-								emit_signal(SNAME("id_focused"), i);
+								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
 								break;

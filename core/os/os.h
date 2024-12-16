@@ -32,7 +32,6 @@
 #define OS_H
 
 #include "core/config/engine.h"
-#include "core/io/image.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
@@ -95,7 +94,15 @@ public:
 	enum RenderThreadMode {
 		RENDER_THREAD_UNSAFE,
 		RENDER_THREAD_SAFE,
-		RENDER_SEPARATE_THREAD
+		RENDER_SEPARATE_THREAD,
+	};
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
 	};
 
 protected:
@@ -104,7 +111,7 @@ protected:
 	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
-	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	bool _separate_thread_render = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -147,7 +154,12 @@ public:
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual String get_stdin_string() = 0;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) = 0;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) = 0;
+
+	virtual StdHandleType get_stdin_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stdout_type() const { return STD_HANDLE_UNKNOWN; }
+	virtual StdHandleType get_stderr_type() const { return STD_HANDLE_UNKNOWN; }
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
@@ -177,14 +189,14 @@ public:
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
 
-	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
-	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); };
-	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); };
+	virtual Vector<String> get_system_fonts() const { return Vector<String>(); }
+	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }
+	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); }
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
-	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); };
+	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -262,7 +274,7 @@ public:
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual Dictionary get_memory_info() const;
 
-	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
@@ -275,6 +287,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
 

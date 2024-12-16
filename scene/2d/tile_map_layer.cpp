@@ -823,6 +823,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 					Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
 					uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
 					uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
+					real_t physics_priority = tile_set->get_physics_layer_collision_priority(tile_set_physics_layer);
 
 					RID body = r_cell_data.bodies[tile_set_physics_layer];
 					if (tile_data->get_collision_polygons_count(tile_set_physics_layer) == 0) {
@@ -849,6 +850,7 @@ void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
 						ps->body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id());
 						ps->body_set_collision_layer(body, physics_layer);
 						ps->body_set_collision_mask(body, physics_mask);
+						ps->body_set_collision_priority(body, physics_priority);
 						ps->body_set_pickable(body, false);
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, tile_data->get_constant_linear_velocity(tile_set_physics_layer));
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, tile_data->get_constant_angular_velocity(tile_set_physics_layer));
@@ -946,7 +948,7 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 			rs->canvas_item_add_set_transform(p_canvas_item, Transform2D());
 		}
 	}
-};
+}
 #endif // DEBUG_ENABLED
 
 /////////////////////////////// Navigation //////////////////////////////////////
@@ -1458,6 +1460,24 @@ void TileMapLayer::_clear_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 	}
 }
 
+void TileMapLayer::_update_cells_callback(bool p_force_cleanup) {
+	if (!GDVIRTUAL_IS_OVERRIDDEN(_update_cells)) {
+		return;
+	}
+
+	// Check if we should cleanup everything.
+	bool forced_cleanup = p_force_cleanup || !enabled || tile_set.is_null() || !is_visible_in_tree();
+
+	// List all the dirty cell's positions to notify script of cell updates.
+	TypedArray<Vector2i> dirty_cell_positions;
+	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+		CellData &cell_data = *cell_data_list_element->self();
+		dirty_cell_positions.push_back(cell_data.coords);
+	}
+
+	GDVIRTUAL_CALL(_update_cells, dirty_cell_positions, forced_cleanup);
+}
+
 TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) const {
 	if (tile_set.is_null()) {
 		return TileSet::TerrainsPattern();
@@ -1671,6 +1691,10 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	// This may add cells to the dirty list if a runtime modification has been notified.
 	_build_runtime_update_tile_data(p_force_cleanup);
 
+	// Callback for implementing custom subsystems.
+	// This may add to the dirty list if some cells are changed inside _update_cells.
+	_update_cells_callback(p_force_cleanup);
+
 	// Update all subsystems.
 	_rendering_update(p_force_cleanup);
 	_physics_update(p_force_cleanup);
@@ -1859,6 +1883,7 @@ void TileMapLayer::_bind_methods() {
 
 	GDVIRTUAL_BIND(_use_tile_data_runtime_update, "coords");
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "coords", "tile_data");
+	GDVIRTUAL_BIND(_update_cells, "coords", "forced_cleanup");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "tile_map_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tile_map_data_from_array", "get_tile_map_data_as_array");
 

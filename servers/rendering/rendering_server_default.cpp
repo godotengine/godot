@@ -370,6 +370,8 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;
+	// This is needed because the main RD is created on the main thread.
+	RenderingDevice::get_singleton()->make_current();
 }
 
 void RenderingServerDefault::_thread_exit() {
@@ -404,15 +406,15 @@ void RenderingServerDefault::sync() {
 	}
 }
 
-void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::draw(bool p_present, double frame_step) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 	changes = 0;
 	if (create_thread) {
-		command_queue.push(this, &RenderingServerDefault::_draw, p_swap_buffers, frame_step);
+		command_queue.push(this, &RenderingServerDefault::_draw, p_present, frame_step);
 	} else {
-		_draw(p_swap_buffers, frame_step);
+		_draw(p_present, frame_step);
 	}
 }
 

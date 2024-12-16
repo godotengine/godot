@@ -85,7 +85,7 @@ Error FileAccessMemory::open_internal(const String &p_path, int p_mode_flags) {
 	//name = DirAccess::normalize_path(name);
 
 	HashMap<String, Vector<uint8_t>>::Iterator E = files->find(name);
-	ERR_FAIL_COND_V_MSG(!E, ERR_FILE_NOT_FOUND, "Can't find file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!E, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s'.", p_path));
 
 	data = E->value.ptrw();
 	length = E->value.size();
@@ -147,16 +147,16 @@ void FileAccessMemory::flush() {
 	ERR_FAIL_NULL(data);
 }
 
-void FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND(!p_src && p_length > 0);
+bool FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
 
 	uint64_t left = length - pos;
 	uint64_t write = MIN(p_length, left);
 
-	if (write < p_length) {
-		WARN_PRINT("Writing less data than requested");
-	}
-
 	memcpy(&data[pos], p_src, write);
 	pos += write;
+
+	ERR_FAIL_COND_V_MSG(write < p_length, false, "Writing less data than requested.");
+
+	return true;
 }

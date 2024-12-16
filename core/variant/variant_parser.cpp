@@ -1961,7 +1961,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::FLOAT: {
 			String s = rtos_fix(p_variant.operator double());
 			if (s != "inf" && s != "inf_neg" && s != "nan") {
-				if (!s.contains(".") && !s.contains("e")) {
+				if (!s.contains_char('.') && !s.contains_char('e')) {
 					s += ".0";
 				}
 			}
@@ -2245,7 +2245,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			} else {
 				List<Variant> keys;
 				dict.get_key_list(&keys);
-				keys.sort();
+				keys.sort_custom<StringLikeVariantOrder>();
 
 				if (keys.is_empty()) {
 					// Avoid unnecessary line break.

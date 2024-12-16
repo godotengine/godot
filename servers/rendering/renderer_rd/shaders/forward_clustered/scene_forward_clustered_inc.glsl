@@ -59,6 +59,10 @@ uint sc_packed_0() {
 	return draw_call.sc_packed_0;
 }
 
+uint sc_packed_1() {
+	return draw_call.sc_packed_1;
+}
+
 uint uc_cull_mode() {
 	return (draw_call.uc_packed_0 >> 0) & 3U;
 }
@@ -67,9 +71,14 @@ uint uc_cull_mode() {
 
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
+layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
+}
+
+uint sc_packed_1() {
+	return pso_sc_packed_1;
 }
 
 #endif
@@ -107,19 +116,35 @@ bool sc_use_lightmap_bicubic_filter() {
 }
 
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 8) & 15U;
+	return (sc_packed_0() >> 8) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 12) & 15U;
+	return (sc_packed_0() >> 14) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
-	return (sc_packed_0() >> 16) & 15U;
+	return (sc_packed_0() >> 20) & 63U;
 }
 
 uint sc_directional_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 20) & 15U;
+	return (sc_packed_0() >> 26) & 63U;
+}
+
+bool sc_multimesh() {
+	return ((sc_packed_1() >> 0) & 1U) != 0;
+}
+
+bool sc_multimesh_format_2d() {
+	return ((sc_packed_1() >> 1) & 1U) != 0;
+}
+
+bool sc_multimesh_has_color() {
+	return ((sc_packed_1() >> 2) & 1U) != 0;
+}
+
+bool sc_multimesh_has_custom_data() {
+	return ((sc_packed_1() >> 3) & 1U) != 0;
 }
 
 float sc_luminance_multiplier() {
@@ -144,10 +169,6 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
 #define INSTANCE_FLAGS_PARTICLES (1 << 11)
-#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 #define INSTANCE_FLAGS_FADE_SHIFT 24
 //3 bits of stride
@@ -179,11 +200,16 @@ directional_lights;
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
+#define LIGHTMAP_SHADOWMASK_MODE_NONE 0
+#define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1
+#define LIGHTMAP_SHADOWMASK_MODE_OVERLAY 2
+#define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
+
 struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
-	float pad;
+	uint flags;
 };
 
 layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
@@ -328,7 +354,7 @@ layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 

@@ -82,6 +82,9 @@ MTL_CLASS(Texture)
 
 } //namespace MTL
 
+/// Metal buffer index for the view mask when rendering multi-view.
+const uint32_t VIEW_MASK_BUFFER_INDEX = 24;
+
 enum ShaderStageUsage : uint32_t {
 	None = 0,
 	Vertex = RDD::SHADER_STAGE_VERTEX_BIT,
@@ -95,6 +98,22 @@ _FORCE_INLINE_ ShaderStageUsage &operator|=(ShaderStageUsage &p_a, int p_b) {
 	p_a = ShaderStageUsage(uint32_t(p_a) | uint32_t(p_b));
 	return p_a;
 }
+
+enum StageResourceUsage : uint32_t {
+	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
+	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
+	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
+	FragmentWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_FRAGMENT * 2),
+	TesselationControlRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
+	TesselationControlWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
+	TesselationEvaluationRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
+	TesselationEvaluationWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
+	ComputeRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_COMPUTE * 2),
+	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
+};
+
+typedef LocalVector<__unsafe_unretained id<MTLResource>> ResourceVector;
+typedef HashMap<StageResourceUsage, ResourceVector> ResourceUsageMap;
 
 enum class MDCommandBufferStateType {
 	None,
@@ -126,6 +145,12 @@ struct ClearAttKey {
 	const static uint32_t STENCIL_INDEX = DEPTH_INDEX + 1;
 	const static uint32_t ATTACHMENT_COUNT = STENCIL_INDEX + 1;
 
+	enum Flags : uint16_t {
+		CLEAR_FLAGS_NONE = 0,
+		CLEAR_FLAGS_LAYERED = 1 << 0,
+	};
+
+	Flags flags = CLEAR_FLAGS_NONE;
 	uint16_t sample_count = 0;
 	uint16_t pixel_formats[ATTACHMENT_COUNT] = { 0 };
 
@@ -134,19 +159,22 @@ struct ClearAttKey {
 	_FORCE_INLINE_ void set_stencil_format(MTLPixelFormat p_fmt) { pixel_formats[STENCIL_INDEX] = p_fmt; }
 	_FORCE_INLINE_ MTLPixelFormat depth_format() const { return (MTLPixelFormat)pixel_formats[DEPTH_INDEX]; }
 	_FORCE_INLINE_ MTLPixelFormat stencil_format() const { return (MTLPixelFormat)pixel_formats[STENCIL_INDEX]; }
+	_FORCE_INLINE_ void enable_layered_rendering() { flags::set(flags, CLEAR_FLAGS_LAYERED); }
 
 	_FORCE_INLINE_ bool is_enabled(uint32_t p_idx) const { return pixel_formats[p_idx] != 0; }
 	_FORCE_INLINE_ bool is_depth_enabled() const { return pixel_formats[DEPTH_INDEX] != 0; }
 	_FORCE_INLINE_ bool is_stencil_enabled() const { return pixel_formats[STENCIL_INDEX] != 0; }
+	_FORCE_INLINE_ bool is_layered_rendering_enabled() const { return flags::any(flags, CLEAR_FLAGS_LAYERED); }
 
 	_FORCE_INLINE_ bool operator==(const ClearAttKey &p_rhs) const {
 		return memcmp(this, &p_rhs, sizeof(ClearAttKey)) == 0;
 	}
 
 	uint32_t hash() const {
-		uint32_t h = hash_murmur3_one_32(sample_count);
+		uint32_t h = hash_murmur3_one_32(flags);
+		h = hash_murmur3_one_32(sample_count, h);
 		h = hash_murmur3_buffer(pixel_formats, ATTACHMENT_COUNT * sizeof(pixel_formats[0]), h);
-		return h;
+		return hash_fmix32(h);
 	}
 };
 
@@ -190,6 +218,97 @@ public:
 	~MDResourceCache() = default;
 };
 
+enum class MDAttachmentType : uint8_t {
+	None = 0,
+	Color = 1 << 0,
+	Depth = 1 << 1,
+	Stencil = 1 << 2,
+};
+
+_FORCE_INLINE_ MDAttachmentType &operator|=(MDAttachmentType &p_a, MDAttachmentType p_b) {
+	flags::set(p_a, p_b);
+	return p_a;
+}
+
+_FORCE_INLINE_ bool operator&(MDAttachmentType p_a, MDAttachmentType p_b) {
+	return uint8_t(p_a) & uint8_t(p_b);
+}
+
+struct MDSubpass {
+	uint32_t subpass_index = 0;
+	uint32_t view_count = 0;
+	LocalVector<RDD::AttachmentReference> input_references;
+	LocalVector<RDD::AttachmentReference> color_references;
+	RDD::AttachmentReference depth_stencil_reference;
+	LocalVector<RDD::AttachmentReference> resolve_references;
+
+	MTLFmtCaps getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const;
+};
+
+struct API_AVAILABLE(macos(11.0), ios(14.0)) MDAttachment {
+private:
+	uint32_t index = 0;
+	uint32_t firstUseSubpassIndex = 0;
+	uint32_t lastUseSubpassIndex = 0;
+
+public:
+	MTLPixelFormat format = MTLPixelFormatInvalid;
+	MDAttachmentType type = MDAttachmentType::None;
+	MTLLoadAction loadAction = MTLLoadActionDontCare;
+	MTLStoreAction storeAction = MTLStoreActionDontCare;
+	MTLLoadAction stencilLoadAction = MTLLoadActionDontCare;
+	MTLStoreAction stencilStoreAction = MTLStoreActionDontCare;
+	uint32_t samples = 1;
+
+	/*!
+	 * @brief Returns true if this attachment is first used in the given subpass.
+	 * @param p_subpass
+	 * @return
+	 */
+	_FORCE_INLINE_ bool isFirstUseOf(MDSubpass const &p_subpass) const {
+		return p_subpass.subpass_index == firstUseSubpassIndex;
+	}
+
+	/*!
+	 * @brief Returns true if this attachment is last used in the given subpass.
+	 * @param p_subpass
+	 * @return
+	 */
+	_FORCE_INLINE_ bool isLastUseOf(MDSubpass const &p_subpass) const {
+		return p_subpass.subpass_index == lastUseSubpassIndex;
+	}
+
+	void linkToSubpass(MDRenderPass const &p_pass);
+
+	MTLStoreAction getMTLStoreAction(MDSubpass const &p_subpass,
+			bool p_is_rendering_entire_area,
+			bool p_has_resolve,
+			bool p_can_resolve,
+			bool p_is_stencil) const;
+	bool configureDescriptor(MTLRenderPassAttachmentDescriptor *p_desc,
+			PixelFormats &p_pf,
+			MDSubpass const &p_subpass,
+			id<MTLTexture> p_attachment,
+			bool p_is_rendering_entire_area,
+			bool p_has_resolve,
+			bool p_can_resolve,
+			bool p_is_stencil) const;
+	/** Returns whether this attachment should be cleared in the subpass. */
+	bool shouldClear(MDSubpass const &p_subpass, bool p_is_stencil) const;
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderPass {
+public:
+	Vector<MDAttachment> attachments;
+	Vector<MDSubpass> subpasses;
+
+	uint32_t get_sample_count() const {
+		return attachments.is_empty() ? 1 : attachments[0].samples;
+	}
+
+	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDCommandBuffer {
 private:
 	RenderingDeviceDriverMetal *device_driver = nullptr;
@@ -204,8 +323,8 @@ private:
 	void _render_set_dirty_state();
 	void _render_bind_uniform_sets();
 
-	static void _populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects);
-	static uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size);
+	void _populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects);
+	uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size);
 	void _end_render_pass();
 	void _render_clear_render_area();
 
@@ -230,6 +349,7 @@ public:
 		uint32_t index_offset = 0;
 		LocalVector<id<MTLBuffer> __unsafe_unretained> vertex_buffers;
 		LocalVector<NSUInteger> vertex_offsets;
+		ResourceUsageMap resource_usage;
 		// clang-format off
 		enum DirtyFlag: uint8_t {
 			DIRTY_NONE     = 0b0000'0000,
@@ -251,26 +371,12 @@ public:
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
 
-		_FORCE_INLINE_ void reset() {
-			pass = nil;
-			frameBuffer = nil;
-			pipeline = nil;
-			current_subpass = UINT32_MAX;
-			render_area = {};
-			is_rendering_entire_area = false;
-			desc = nil;
-			encoder = nil;
-			index_buffer = nil;
-			index_type = MTLIndexTypeUInt16;
-			dirty = DIRTY_NONE;
-			uniform_sets.clear();
-			uniform_set_mask = 0;
-			clear_values.clear();
-			viewports.clear();
-			scissors.clear();
-			blend_constants.reset();
-			vertex_buffers.clear();
-			vertex_offsets.clear();
+		_FORCE_INLINE_ void reset();
+		void end_encoding();
+
+		_ALWAYS_INLINE_ const MDSubpass &get_subpass() const {
+			DEV_ASSERT(pass != nullptr);
+			return pass->subpasses[current_subpass];
 		}
 
 		_FORCE_INLINE_ void mark_viewport_dirty() {
@@ -356,13 +462,20 @@ public:
 	} render;
 
 	// State specific for a compute pass.
-	struct {
+	struct ComputeState {
 		MDComputePipeline *pipeline = nullptr;
 		id<MTLComputeCommandEncoder> encoder = nil;
+		ResourceUsageMap resource_usage;
 		_FORCE_INLINE_ void reset() {
 			pipeline = nil;
 			encoder = nil;
+			// Keep the keys, as they are likely to be used again.
+			for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
+				kv.value.clear();
+			}
 		}
+
+		void end_encoding();
 	} compute;
 
 	// State specific to a blit pass.
@@ -389,6 +502,7 @@ public:
 #pragma mark - Render Commands
 
 	void render_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
+	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
 	void render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects);
 	void render_set_viewport(VectorView<Rect2i> p_viewports);
 	void render_set_scissor(VectorView<Rect2i> p_scissors);
@@ -422,6 +536,7 @@ public:
 #pragma mark - Compute Commands
 
 	void compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
+	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset);
 
@@ -619,6 +734,7 @@ public:
 			uint32_t size = 0;
 		} frag;
 	} push_constants;
+	bool needs_view_mask_buffer = false;
 
 	MDLibrary *vert;
 	MDLibrary *frag;
@@ -629,20 +745,10 @@ public:
 
 	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
-	MDRenderShader(CharString p_name, Vector<UniformSet> p_sets, MDLibrary *p_vert, MDLibrary *p_frag);
-};
-
-enum StageResourceUsage : uint32_t {
-	VertexRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_VERTEX * 2),
-	VertexWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_VERTEX * 2),
-	FragmentRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_FRAGMENT * 2),
-	FragmentWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_FRAGMENT * 2),
-	TesselationControlRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
-	TesselationControlWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_CONTROL * 2),
-	TesselationEvaluationRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
-	TesselationEvaluationWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_TESSELATION_EVALUATION * 2),
-	ComputeRead = (MTLResourceUsageRead << RDD::SHADER_STAGE_COMPUTE * 2),
-	ComputeWrite = (MTLResourceUsageWrite << RDD::SHADER_STAGE_COMPUTE * 2),
+	MDRenderShader(CharString p_name,
+			bool p_needs_view_mask_buffer,
+			Vector<UniformSet> p_sets,
+			MDLibrary *p_vert, MDLibrary *p_frag);
 };
 
 _FORCE_INLINE_ StageResourceUsage &operator|=(StageResourceUsage &p_a, uint32_t p_b) {
@@ -667,7 +773,13 @@ struct HashMapComparatorDefault<RDD::ShaderID> {
 
 struct BoundUniformSet {
 	id<MTLBuffer> buffer;
-	HashMap<id<MTLResource>, StageResourceUsage> bound_resources;
+	ResourceUsageMap usage_to_resources;
+
+	/// Perform a 2-way merge each key of `ResourceVector` resources from this set into the
+	/// destination set.
+	///
+	/// Assumes the vectors of resources are sorted.
+	void merge_into(ResourceUsageMap &p_dst) const;
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDUniformSet {
@@ -677,96 +789,6 @@ public:
 	HashMap<MDShader *, BoundUniformSet> bound_uniforms;
 
 	BoundUniformSet &boundUniformSetForShader(MDShader *p_shader, id<MTLDevice> p_device);
-};
-
-enum class MDAttachmentType : uint8_t {
-	None = 0,
-	Color = 1 << 0,
-	Depth = 1 << 1,
-	Stencil = 1 << 2,
-};
-
-_FORCE_INLINE_ MDAttachmentType &operator|=(MDAttachmentType &p_a, MDAttachmentType p_b) {
-	flags::set(p_a, p_b);
-	return p_a;
-}
-
-_FORCE_INLINE_ bool operator&(MDAttachmentType p_a, MDAttachmentType p_b) {
-	return uint8_t(p_a) & uint8_t(p_b);
-}
-
-struct MDSubpass {
-	uint32_t subpass_index = 0;
-	LocalVector<RDD::AttachmentReference> input_references;
-	LocalVector<RDD::AttachmentReference> color_references;
-	RDD::AttachmentReference depth_stencil_reference;
-	LocalVector<RDD::AttachmentReference> resolve_references;
-
-	MTLFmtCaps getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const;
-};
-
-struct API_AVAILABLE(macos(11.0), ios(14.0)) MDAttachment {
-private:
-	uint32_t index = 0;
-	uint32_t firstUseSubpassIndex = 0;
-	uint32_t lastUseSubpassIndex = 0;
-
-public:
-	MTLPixelFormat format = MTLPixelFormatInvalid;
-	MDAttachmentType type = MDAttachmentType::None;
-	MTLLoadAction loadAction = MTLLoadActionDontCare;
-	MTLStoreAction storeAction = MTLStoreActionDontCare;
-	MTLLoadAction stencilLoadAction = MTLLoadActionDontCare;
-	MTLStoreAction stencilStoreAction = MTLStoreActionDontCare;
-	uint32_t samples = 1;
-
-	/*!
-	 * @brief Returns true if this attachment is first used in the given subpass.
-	 * @param p_subpass
-	 * @return
-	 */
-	_FORCE_INLINE_ bool isFirstUseOf(MDSubpass const &p_subpass) const {
-		return p_subpass.subpass_index == firstUseSubpassIndex;
-	}
-
-	/*!
-	 * @brief Returns true if this attachment is last used in the given subpass.
-	 * @param p_subpass
-	 * @return
-	 */
-	_FORCE_INLINE_ bool isLastUseOf(MDSubpass const &p_subpass) const {
-		return p_subpass.subpass_index == lastUseSubpassIndex;
-	}
-
-	void linkToSubpass(MDRenderPass const &p_pass);
-
-	MTLStoreAction getMTLStoreAction(MDSubpass const &p_subpass,
-			bool p_is_rendering_entire_area,
-			bool p_has_resolve,
-			bool p_can_resolve,
-			bool p_is_stencil) const;
-	bool configureDescriptor(MTLRenderPassAttachmentDescriptor *p_desc,
-			PixelFormats &p_pf,
-			MDSubpass const &p_subpass,
-			id<MTLTexture> p_attachment,
-			bool p_is_rendering_entire_area,
-			bool p_has_resolve,
-			bool p_can_resolve,
-			bool p_is_stencil) const;
-	/** Returns whether this attachment should be cleared in the subpass. */
-	bool shouldClear(MDSubpass const &p_subpass, bool p_is_stencil) const;
-};
-
-class API_AVAILABLE(macos(11.0), ios(14.0)) MDRenderPass {
-public:
-	Vector<MDAttachment> attachments;
-	Vector<MDSubpass> subpasses;
-
-	uint32_t get_sample_count() const {
-		return attachments.is_empty() ? 1 : attachments[0].samples;
-	}
-
-	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDPipeline {
@@ -818,7 +840,7 @@ public:
 				if (!enabled)
 					return;
 				[p_enc setStencilFrontReferenceValue:front_reference backReferenceValue:back_reference];
-			};
+			}
 		} stencil;
 
 		struct {
@@ -832,7 +854,7 @@ public:
 				//if (!enabled)
 				//	return;
 				[p_enc setBlendColorRed:r green:g blue:b alpha:a];
-			};
+			}
 		} blend;
 
 		_FORCE_INLINE_ void apply(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc) const {
@@ -869,12 +891,38 @@ public:
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0)) MDFrameBuffer {
-public:
 	Vector<MTL::Texture> textures;
+
+public:
 	Size2i size;
 	MDFrameBuffer(Vector<MTL::Texture> p_textures, Size2i p_size) :
 			textures(p_textures), size(p_size) {}
 	MDFrameBuffer() {}
+
+	/// Returns the texture at the given index.
+	_ALWAYS_INLINE_ MTL::Texture get_texture(uint32_t p_idx) const {
+		return textures[p_idx];
+	}
+
+	/// Returns true if the texture at the given index is not nil.
+	_ALWAYS_INLINE_ bool has_texture(uint32_t p_idx) const {
+		return textures[p_idx] != nil;
+	}
+
+	/// Set the texture at the given index.
+	_ALWAYS_INLINE_ void set_texture(uint32_t p_idx, MTL::Texture p_texture) {
+		textures.write[p_idx] = p_texture;
+	}
+
+	/// Unset or nil the texture at the given index.
+	_ALWAYS_INLINE_ void unset_texture(uint32_t p_idx) {
+		textures.write[p_idx] = nil;
+	}
+
+	/// Resizes buffers to the specified size.
+	_ALWAYS_INLINE_ void set_texture_count(uint32_t p_size) {
+		textures.resize(p_size);
+	}
 
 	virtual ~MDFrameBuffer() = default;
 };

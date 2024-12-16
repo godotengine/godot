@@ -31,6 +31,7 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
@@ -74,7 +75,7 @@ void ShaderCreateDialog::_notification(int p_what) {
 				}
 			}
 
-			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
 }
@@ -102,7 +103,7 @@ void ShaderCreateDialog::_update_language_info() {
 
 void ShaderCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = initial_base_path.rfind("/") + 1;
+		int filename_start_pos = initial_base_path.rfind_char('/') + 1;
 		int filename_end_pos = initial_base_path.length();
 
 		if (!is_built_in) {
@@ -163,8 +164,8 @@ void fragment() {
 }
 
 //void light() {
-	// Called for every pixel for every light affecting the material.
-	// Uncomment to replace the default light processing function with this one.
+//	// Called for every pixel for every light affecting the material.
+//	// Uncomment to replace the default light processing function with this one.
 //}
 )";
 						break;
@@ -179,8 +180,8 @@ void fragment() {
 }
 
 //void light() {
-	// Called for every pixel for every light affecting the CanvasItem.
-	// Uncomment to replace the default light processing function with this one.
+//	// Called for every pixel for every light affecting the CanvasItem.
+//	// Uncomment to replace the default light processing function with this one.
 //}
 )";
 						break;
@@ -240,6 +241,7 @@ void fog() {
 			alert->popup_centered();
 			return;
 		}
+		EditorNode::get_singleton()->ensure_uid_file(lpath);
 
 		emit_signal(SNAME("shader_include_created"), shader_inc);
 	} else {
@@ -258,6 +260,7 @@ void fog() {
 				alert->popup_centered();
 				return;
 			}
+			EditorNode::get_singleton()->ensure_uid_file(lpath);
 		}
 
 		emit_signal(SNAME("shader_created"), shader);
@@ -289,7 +292,7 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	String extension = "";
 
 	if (!path.is_empty()) {
-		if (path.contains(".")) {
+		if (path.contains_char('.')) {
 			extension = path.get_extension();
 		}
 		if (extension.length() == 0) {

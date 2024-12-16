@@ -49,7 +49,7 @@ public:
 	}
 
 	unsigned function1_calls{ 0 };
-	Variant function1_latest_arg0{};
+	Variant function1_latest_arg0;
 };
 
 static inline Array build_array() {
@@ -815,6 +815,21 @@ TEST_SUITE("[Navigation]") {
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
 	}
 	*/
+
+	TEST_CASE("[NavigationServer3D] Server should simplify path properly") {
+		real_t simplify_epsilon = 0.2;
+		Vector<Vector3> source_path;
+		source_path.resize(7);
+		source_path.write[0] = Vector3(0.0, 0.0, 0.0);
+		source_path.write[1] = Vector3(0.0, 0.0, 1.0); // This point needs to go.
+		source_path.write[2] = Vector3(0.0, 0.0, 2.0); // This point needs to go.
+		source_path.write[3] = Vector3(0.0, 0.0, 2.0);
+		source_path.write[4] = Vector3(2.0, 1.0, 3.0);
+		source_path.write[5] = Vector3(2.0, 1.5, 4.0); // This point needs to go.
+		source_path.write[6] = Vector3(2.0, 2.0, 5.0);
+		Vector<Vector3> simplified_path = NavigationServer3D::get_singleton()->simplify_path(source_path, simplify_epsilon);
+		CHECK_EQ(simplified_path.size(), 4);
+	}
 
 	TEST_CASE("[Heap] size") {
 		gd::Heap<int> heap;

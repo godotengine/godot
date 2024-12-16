@@ -151,7 +151,7 @@ void EditorHelpSearch::_update_results() {
 			search_flags |= SEARCH_SHOW_HIERARCHY;
 		}
 
-		search = Ref<Runner>(memnew(Runner(results_tree, results_tree, &tree_cache, term, search_flags)));
+		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags);
 
 		// Clear old search flags to force rebuild on short term.
 		old_search_flags = 0;
@@ -162,7 +162,7 @@ void EditorHelpSearch::_update_results() {
 		hierarchy_button->set_disabled(true);
 
 		// Always show hierarchy for short searches.
-		search = Ref<Runner>(memnew(Runner(results_tree, results_tree, &tree_cache, term, search_flags | SEARCH_SHOW_HIERARCHY)));
+		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags | SEARCH_SHOW_HIERARCHY);
 
 		old_search_flags = search_flags;
 		set_process(true);
@@ -244,8 +244,8 @@ void EditorHelpSearch::_notification(int p_what) {
 			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			search_box->add_theme_icon_override("right_icon", get_editor_theme_icon(SNAME("Search")));
 
-			case_sensitive_button->set_icon(get_editor_theme_icon(SNAME("MatchCase")));
-			hierarchy_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
+			case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+			hierarchy_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
 
 			if (is_visible()) {
 				_update_results();
@@ -338,7 +338,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
-	case_sensitive_button->set_theme_type_variation("FlatButton");
+	case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	case_sensitive_button->set_tooltip_text(TTR("Case Sensitive"));
 	case_sensitive_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
@@ -346,7 +346,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
-	hierarchy_button->set_theme_type_variation("FlatButton");
+	hierarchy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	hierarchy_button->set_tooltip_text(TTR("Show Hierarchy"));
 	hierarchy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelpSearch::_update_results));
 	hierarchy_button->set_toggle_mode(true);
@@ -957,7 +957,7 @@ void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::
 				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-			method.doc = const_cast<DocData::MethodDoc *>(&p_methods[i]);
+			method.doc = &p_methods[i];
 			r_match_methods->push_back(method);
 		}
 	}
@@ -1166,7 +1166,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	if (p_matching_keyword.is_empty()) {
 		item->set_text(0, p_doc->name);
 	} else {
-		item->set_text(0, p_doc->name + "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword)));
+		item->set_text(0, p_doc->name + "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword));
 	}
 
 	if (!term.is_empty()) {
@@ -1272,7 +1272,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 		text = p_class_name + "." + p_text;
 	}
 	if (!p_matching_keyword.is_empty()) {
-		text += "      - " + TTR(vformat("Matches the \"%s\" keyword.", p_matching_keyword));
+		text += "      - " + vformat(TTR("Matches the \"%s\" keyword."), p_matching_keyword);
 	}
 	item->set_text(0, text);
 

@@ -374,6 +374,10 @@ uint64_t RenderingDeviceDriver::api_trait_get(ApiTrait p_trait) {
 			return 1;
 		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
 			return true;
+		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
+			return false;
+		case API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS:
+			return false;
 		default:
 			ERR_FAIL_V(0);
 	}

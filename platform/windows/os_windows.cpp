@@ -40,10 +40,11 @@
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/version_generated.gen.h"
-#include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/file_access_windows_pipe.h"
+#include "drivers/windows/ip_windows.h"
+#include "drivers/windows/net_socket_winsock.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
@@ -69,6 +70,7 @@
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+__declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 }
 
 // Workaround mingw-w64 < 4.0 bug
@@ -139,13 +141,13 @@ void RedirectIOToConsole() {
 
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
 		// Restore redirection (Note: if not redirected it's NULL handles not INVALID_HANDLE_VALUE).
-		if (h_stdin != 0) {
+		if (h_stdin != nullptr) {
 			SetStdHandle(STD_INPUT_HANDLE, h_stdin);
 		}
-		if (h_stdout != 0) {
+		if (h_stdout != nullptr) {
 			SetStdHandle(STD_OUTPUT_HANDLE, h_stdout);
 		}
-		if (h_stderr != 0) {
+		if (h_stderr != nullptr) {
 			SetStdHandle(STD_ERROR_HANDLE, h_stderr);
 		}
 
@@ -154,6 +156,52 @@ void RedirectIOToConsole() {
 		RedirectStream("CONOUT$", "w", stdout, STD_OUTPUT_HANDLE);
 		RedirectStream("CONOUT$", "w", stderr, STD_ERROR_HANDLE);
 	}
+}
+
+bool OS_Windows::is_using_con_wrapper() const {
+	static String exe_renames[] = {
+		".console.exe",
+		"_console.exe",
+		" console.exe",
+		"console.exe",
+		String(),
+	};
+
+	bool found_exe = false;
+	bool found_conwrap_exe = false;
+	String exe_name = get_executable_path().to_lower();
+	String exe_dir = exe_name.get_base_dir();
+	String exe_fname = exe_name.get_file().get_basename();
+
+	DWORD pids[256];
+	DWORD count = GetConsoleProcessList(&pids[0], 256);
+	for (DWORD i = 0; i < count; i++) {
+		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
+		if (process != NULL) {
+			WCHAR proc_name[MAX_PATH];
+			DWORD len = MAX_PATH;
+			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				if (name == exe_name) {
+					found_exe = true;
+				}
+				for (int j = 0; !exe_renames[j].is_empty(); j++) {
+					if (name == exe_dir.path_join(exe_fname + exe_renames[j])) {
+						found_conwrap_exe = true;
+					}
+				}
+			}
+			CloseHandle(process);
+			if (found_conwrap_exe && found_exe) {
+				break;
+			}
+		}
+	}
+	if (!found_exe) {
+		return true; // Unable to read console info, assume true.
+	}
+
+	return found_conwrap_exe;
 }
 
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
@@ -209,7 +257,7 @@ void OS_Windows::initialize() {
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	NetSocketPosix::make_default();
+	NetSocketWinSock::make_default();
 
 	// We need to know how often the clock is updated
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
@@ -217,7 +265,15 @@ void OS_Windows::initialize() {
 
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
-	timeBeginPeriod(1);
+	TIMECAPS time_caps;
+	if (timeGetDevCaps(&time_caps, sizeof(time_caps)) == MMSYSERR_NOERROR) {
+		delay_resolution = time_caps.wPeriodMin * 1000;
+		timeBeginPeriod(time_caps.wPeriodMin);
+	} else {
+		ERR_PRINT("Unable to detect sleep timer resolution.");
+		delay_resolution = 1000;
+		timeBeginPeriod(1);
+	}
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -228,7 +284,7 @@ void OS_Windows::initialize() {
 	current_pi.pi.hProcess = GetCurrentProcess();
 	process_map->insert(GetCurrentProcessId(), current_pi);
 
-	IPUnix::make_default();
+	IPWindows::make_default();
 	main_loop = nullptr;
 
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
@@ -303,7 +359,7 @@ void OS_Windows::finalize_core() {
 	timeEndPeriod(1);
 
 	memdelete(process_map);
-	NetSocketPosix::cleanup();
+	NetSocketWinSock::cleanup();
 
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 	remove_error_handler(&error_handlers);
@@ -908,9 +964,9 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	}
 
 	// Create pipes.
-	HANDLE pipe_in[2] = { 0, 0 };
-	HANDLE pipe_out[2] = { 0, 0 };
-	HANDLE pipe_err[2] = { 0, 0 };
+	HANDLE pipe_in[2] = { nullptr, nullptr };
+	HANDLE pipe_out[2] = { nullptr, nullptr };
+	HANDLE pipe_err[2] = { nullptr, nullptr };
 
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -918,15 +974,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	sa.lpSecurityDescriptor = nullptr;
 
 	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, 0), ret);
-	if (!SetHandleInformation(pipe_in[1], HANDLE_FLAG_INHERIT, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
 	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, 0)) {
-		CLEAN_PIPES
-		ERR_FAIL_V(ret);
-	}
-	if (!SetHandleInformation(pipe_out[0], HANDLE_FLAG_INHERIT, 0)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
 	}
@@ -939,16 +987,37 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	// Create process.
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
-	pi.si.dwFlags |= STARTF_USESTDHANDLES;
-	pi.si.hStdInput = pipe_in[0];
-	pi.si.hStdOutput = pipe_out[1];
-	pi.si.hStdError = pipe_err[1];
+	pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+	pi.si.StartupInfo.hStdInput = pipe_in[0];
+	pi.si.StartupInfo.hStdOutput = pipe_out[1];
+	pi.si.StartupInfo.hStdError = pipe_err[1];
 
-	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW;
+	SIZE_T attr_list_size = 0;
+	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ret);
+	}
+	HANDLE handles_to_inherit[] = { pipe_in[0], pipe_out[1], pipe_err[1] };
+	if (!UpdateProcThreadAttribute(
+				pi.si.lpAttributeList,
+				0,
+				PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+				handles_to_inherit,
+				sizeof(handles_to_inherit),
+				nullptr,
+				nullptr)) {
+		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+		ERR_FAIL_V(ret);
+	}
+
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT;
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
@@ -964,11 +1033,13 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
 		CLEAN_PIPES
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
 	}
 	CloseHandle(pipe_in[0]);
 	CloseHandle(pipe_out[1]);
 	CloseHandle(pipe_err[1]);
+	DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 
 	ProcessID pid = pi.pi.dwProcessId;
 	process_map_mutex.lock();
@@ -981,7 +1052,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Ref<FileAccessWindowsPipe> err_pipe;
 	err_pipe.instantiate();
-	err_pipe->open_existing(pipe_err[0], 0, p_blocking);
+	err_pipe->open_existing(pipe_err[0], nullptr, p_blocking);
 
 	ret["stdio"] = main_pipe;
 	ret["stderr"] = err_pipe;
@@ -1000,9 +1071,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	bool inherit_handles = false;
 	HANDLE pipe[2] = { nullptr, nullptr };
@@ -1014,16 +1085,40 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		sa.lpSecurityDescriptor = nullptr;
 
 		ERR_FAIL_COND_V(!CreatePipe(&pipe[0], &pipe[1], &sa, 0), ERR_CANT_FORK);
-		ERR_FAIL_COND_V(!SetHandleInformation(pipe[0], HANDLE_FLAG_INHERIT, 0), ERR_CANT_FORK); // Read handle is for host process only and should not be inherited.
 
-		pi.si.dwFlags |= STARTF_USESTDHANDLES;
-		pi.si.hStdOutput = pipe[1];
+		pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+		pi.si.StartupInfo.hStdOutput = pipe[1];
 		if (read_stderr) {
-			pi.si.hStdError = pipe[1];
+			pi.si.StartupInfo.hStdError = pipe[1];
+		}
+
+		SIZE_T attr_list_size = 0;
+		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
+		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			ERR_FAIL_V(ERR_CANT_FORK);
+		}
+		if (!UpdateProcThreadAttribute(
+					pi.si.lpAttributeList,
+					0,
+					PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+					&pipe[1],
+					sizeof(HANDLE),
+					nullptr,
+					nullptr)) {
+			CloseHandle(pipe[0]); // Cleanup pipe handles.
+			CloseHandle(pipe[1]);
+			DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+			ERR_FAIL_V(ERR_CANT_FORK);
 		}
 		inherit_handles = true;
 	}
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+	if (inherit_handles) {
+		creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
+	}
 	if (p_open_console) {
 		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
@@ -1046,6 +1141,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 	}
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
@@ -1101,6 +1197,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	CloseHandle(pi.pi.hProcess);
 	CloseHandle(pi.pi.hThread);
+	if (r_pipe) {
+		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
+	}
 
 	return OK;
 }
@@ -1114,9 +1213,9 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
-	pi.si.cb = sizeof(pi.si);
+	pi.si.StartupInfo.cb = sizeof(pi.si.StartupInfo);
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
-	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
+	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
 	if (p_open_console) {
@@ -1363,7 +1462,7 @@ public:
 		locale = p_locale;
 		n_sub = p_nsub;
 		rtl = p_rtl;
-	};
+	}
 
 	virtual ~FallbackTextAnalysisSource() {}
 };
@@ -1437,7 +1536,8 @@ DWRITE_FONT_STRETCH OS_Windows::_stretch_to_dw(int p_stretch) const {
 }
 
 Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
-	if (!dwrite2_init) {
+	// This may be called before TextServerManager has been created, which would cause a crash downstream if we do not check here
+	if (!dwrite2_init || !TextServerManager::get_singleton()) {
 		return Vector<String>();
 	}
 
@@ -1627,7 +1727,7 @@ String OS_Windows::get_environment(const String &p_var) const {
 }
 
 void OS_Windows::set_environment(const String &p_var, const String &p_value) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	Char16String var = p_var.utf16();
 	Char16String value = p_value.utf16();
 	ERR_FAIL_COND_MSG(var.length() + value.length() + 2 > 32767, vformat("Invalid definition for environment variable '%s', cannot exceed 32767 characters.", p_var));
@@ -1635,18 +1735,117 @@ void OS_Windows::set_environment(const String &p_var, const String &p_value) con
 }
 
 void OS_Windows::unset_environment(const String &p_var) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
 }
 
-String OS_Windows::get_stdin_string() {
-	char buff[1024];
+String OS_Windows::get_stdin_string(int64_t p_buffer_size) {
+	if (get_stdin_type() == STD_HANDLE_INVALID) {
+		return String();
+	}
+
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
 	DWORD count = 0;
-	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
-		return String::utf8((const char *)buff, count);
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return String::utf8((const char *)data.ptr(), count).replace("\r\n", "\n").rstrip("\n");
 	}
 
 	return String();
+}
+
+PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	DWORD count = 0;
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), data.ptrw(), data.size(), &count, nullptr)) {
+		return data;
+	}
+
+	return PackedByteArray();
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
+	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+			if (!is_using_con_wrapper()) {
+				return STD_HANDLE_INVALID; // Window app can't read stdin input without werapper.
+			}
+#endif
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
+}
+
+OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
+	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
+	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+		return STD_HANDLE_INVALID;
+	}
+	DWORD ftype = GetFileType(h);
+	if (ftype == FILE_TYPE_UNKNOWN && GetLastError() != ERROR_SUCCESS) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	ftype &= ~(FILE_TYPE_REMOTE);
+
+	if (ftype == FILE_TYPE_DISK) {
+		return STD_HANDLE_FILE;
+	} else if (ftype == FILE_TYPE_PIPE) {
+		return STD_HANDLE_PIPE;
+	} else {
+		DWORD conmode = 0;
+		BOOL res = GetConsoleMode(h, &conmode);
+		if (!res && (GetLastError() == ERROR_INVALID_HANDLE)) {
+			return STD_HANDLE_UNKNOWN; // Unknown character device.
+		} else {
+			return STD_HANDLE_CONSOLE;
+		}
+	}
 }
 
 Error OS_Windows::shell_open(const String &p_uri) {
@@ -1738,6 +1937,34 @@ String OS_Windows::get_locale() const {
 	}
 
 	return "en";
+}
+
+String OS_Windows::get_model_name() const {
+	HKEY hkey;
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Hardware\\Description\\System\\BIOS", 0, KEY_QUERY_VALUE, &hkey) != ERROR_SUCCESS) {
+		return OS::get_model_name();
+	}
+
+	String sys_name;
+	String board_name;
+	WCHAR buffer[256];
+	DWORD buffer_len = 256;
+	DWORD vtype = REG_SZ;
+	if (RegQueryValueExW(hkey, L"SystemProductName", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		sys_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	buffer_len = 256;
+	if (RegQueryValueExW(hkey, L"BaseBoardProduct", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+		board_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+	}
+	RegCloseKey(hkey);
+	if (!sys_name.is_empty() && sys_name.to_lower() != "system product name") {
+		return sys_name;
+	}
+	if (!board_name.is_empty() && board_name.to_lower() != "base board product") {
+		return board_name;
+	}
+	return OS::get_model_name();
 }
 
 String OS_Windows::get_processor_name() const {
@@ -1850,14 +2077,35 @@ String OS_Windows::get_cache_path() const {
 		if (has_environment("LOCALAPPDATA")) {
 			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
 		}
-		if (cache_path_cache.is_empty() && has_environment("TEMP")) {
-			cache_path_cache = get_environment("TEMP").replace("\\", "/");
-		}
 		if (cache_path_cache.is_empty()) {
-			cache_path_cache = get_config_path();
+			cache_path_cache = get_temp_path();
 		}
 	}
 	return cache_path_cache;
+}
+
+String OS_Windows::get_temp_path() const {
+	static String temp_path_cache;
+	if (temp_path_cache.is_empty()) {
+		{
+			Vector<WCHAR> temp_path;
+			// The maximum possible size is MAX_PATH+1 (261) + terminating null character.
+			temp_path.resize(MAX_PATH + 2);
+			DWORD temp_path_length = GetTempPathW(temp_path.size(), temp_path.ptrw());
+			if (temp_path_length > 0 && temp_path_length < temp_path.size()) {
+				temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				// Let's try to get the long path instead of the short path (with tildes ~).
+				DWORD temp_path_long_length = GetLongPathNameW(temp_path.ptr(), temp_path.ptrw(), temp_path.size());
+				if (temp_path_long_length > 0 && temp_path_long_length < temp_path.size()) {
+					temp_path_cache = String::utf16((const char16_t *)temp_path.ptr());
+				}
+			}
+		}
+		if (temp_path_cache.is_empty()) {
+			temp_path_cache = get_config_path();
+		}
+	}
+	return temp_path_cache;
 }
 
 // Get properly capitalized engine name for system paths
@@ -2002,6 +2250,51 @@ String OS_Windows::get_system_ca_certificates() {
 	}
 	CertCloseStore(cert_store, 0);
 	return certs;
+}
+
+void OS_Windows::add_frame_delay(bool p_can_draw) {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay * 1000);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		if (target_ticks > current_ticks + delay_resolution) {
+			uint64_t delay_time = target_ticks - current_ticks - delay_resolution;
+			// Make sure we always sleep for a multiple of delay_resolution to avoid overshooting.
+			// Refer to: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep#remarks
+			delay_time = (delay_time / delay_resolution) * delay_resolution;
+			if (delay_time > 0) {
+				delay_usec(delay_time);
+			}
+		}
+		// Busy wait for the remainder of time.
+		while (get_ticks_usec() < target_ticks) {
+			YieldProcessor();
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

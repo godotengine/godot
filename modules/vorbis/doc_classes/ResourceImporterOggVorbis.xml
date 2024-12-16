@@ -29,15 +29,15 @@
 	</methods>
 	<members>
 		<member name="bar_beats" type="int" setter="" getter="" default="4">
-			The number of bars within a single beat in the audio track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			The number of bars within a single beat in the audio track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
 			A more convenient editor for [member bar_beats] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
 		<member name="beat_count" type="int" setter="" getter="" default="0">
-			The beat count of the audio track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			The beat count of the audio track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
 			A more convenient editor for [member beat_count] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
 		<member name="bpm" type="float" setter="" getter="" default="0">
-			The Beats Per Minute of the audio track. This should match the BPM measure that was used to compose the track. This is only relevant for music that wishes to make use of interactive music functionality (not implemented yet), not sound effects.
+			The beats per minute of the audio track. This should match the BPM measure that was used to compose the track. This is only relevant for music that wishes to make use of interactive music functionality, not sound effects.
 			A more convenient editor for [member bpm] is provided in the [b]Advanced Import Settings[/b] dialog, as it lets you preview your changes without having to reimport the audio.
 		</member>
 		<member name="loop" type="bool" setter="" getter="" default="false">

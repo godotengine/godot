@@ -73,6 +73,9 @@ private:
 	bool use_validation_layers = false;
 	bool generate_spirv_debug_info = false;
 	bool extra_gpu_memory_tracking = false;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	bool accurate_breadcrumbs = false;
+#endif
 	int32_t gpu_idx = -1;
 
 	uint64_t _process_frames = 0;
@@ -95,6 +98,8 @@ private:
 	static constexpr int SERVER_SYNC_FRAME_COUNT_WARNING = 5;
 	int server_syncs = 0;
 	bool frame_server_synced = false;
+
+	bool freeze_time_scale = false;
 
 public:
 	static Engine *get_singleton();
@@ -127,6 +132,7 @@ public:
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;
+	double get_unfrozen_time_scale() const;
 
 	void set_print_to_stdout(bool p_enabled);
 	bool is_printing_to_stdout() const;
@@ -186,10 +192,15 @@ public:
 	bool is_validation_layers_enabled() const;
 	bool is_generate_spirv_debug_info_enabled() const;
 	bool is_extra_gpu_memory_tracking_enabled() const;
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	bool is_accurate_breadcrumbs_enabled() const;
+#endif
 	int32_t get_gpu_index() const;
 
 	void increment_frames_drawn();
 	bool notify_frame_server_synced();
+
+	void set_freeze_time_scale(bool p_frozen);
 
 	Engine();
 	virtual ~Engine();

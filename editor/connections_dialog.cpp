@@ -488,7 +488,7 @@ void ConnectDialog::_notification(int p_what) {
 			}
 
 			method_search->set_right_icon(get_editor_theme_icon("Search"));
-			open_method_tree->set_icon(get_editor_theme_icon("Edit"));
+			open_method_tree->set_button_icon(get_editor_theme_icon("Edit"));
 		} break;
 	}
 }
@@ -523,8 +523,8 @@ void ConnectDialog::set_dst_node(Node *p_node) {
 
 StringName ConnectDialog::get_dst_method_name() const {
 	String txt = dst_method->get_text();
-	if (txt.contains("(")) {
-		txt = txt.left(txt.find("(")).strip_edges();
+	if (txt.contains_char('(')) {
+		txt = txt.left(txt.find_char('(')).strip_edges();
 	}
 	return txt;
 }
@@ -907,13 +907,11 @@ ConnectDialog::~ConnectDialog() {
 
 Control *ConnectionsDockTree::make_custom_tooltip(const String &p_text) const {
 	// If it's not a doc tooltip, fallback to the default one.
-	if (p_text.contains("::")) {
+	if (p_text.is_empty() || p_text.contains("::")) {
 		return nullptr;
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_text));
-	EditorHelpBitTooltip::show_tooltip(help_bit, const_cast<ConnectionsDockTree *>(this));
-	return memnew(Control); // Make the standard tooltip invisible.
+	return EditorHelpBitTooltip::show_tooltip(const_cast<ConnectionsDockTree *>(this), p_text);
 }
 
 struct _ConnectionsDockMethodInfoSort {
@@ -1079,17 +1077,17 @@ void ConnectionsDock::_tree_item_selected() {
 	TreeItem *item = tree->get_selected();
 	if (item && _get_item_type(*item) == TREE_ITEM_TYPE_SIGNAL) {
 		connect_button->set_text(TTR("Connect..."));
-		connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
+		connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
 		connect_button->set_disabled(false);
 	} else if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
 		connect_button->set_text(TTR("Disconnect"));
-		connect_button->set_icon(get_editor_theme_icon(SNAME("Unlinked")));
+		connect_button->set_button_icon(get_editor_theme_icon(SNAME("Unlinked")));
 
 		Object::Connection connection = item->get_metadata(0);
 		connect_button->set_disabled(_is_connection_inherited(connection));
 	} else {
 		connect_button->set_text(TTR("Connect..."));
-		connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
+		connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
 		connect_button->set_disabled(true);
 	}
 }
@@ -1586,7 +1584,7 @@ void ConnectionsDock::update_tree() {
 	}
 
 	connect_button->set_text(TTR("Connect..."));
-	connect_button->set_icon(get_editor_theme_icon(SNAME("Instance")));
+	connect_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
 	connect_button->set_disabled(true);
 }
 

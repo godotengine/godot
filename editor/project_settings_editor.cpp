@@ -31,6 +31,7 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input_map.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -267,7 +268,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (!name.begins_with("_") && !name.contains("/")) {
+	if (!name.begins_with("_") && !name.contains_char('/')) {
 		name = "global/" + name;
 	}
 	return name;
@@ -390,7 +391,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 
 	Dictionary action;
 	action["events"] = Array();
-	action["deadzone"] = 0.2f;
+	action["deadzone"] = InputMap::DEFAULT_DEADZONE;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Input Action"));
@@ -576,10 +577,10 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 }
 
 void ProjectSettingsEditor::_update_theme() {
-	add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
-	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+	add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+	del_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+	restart_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));

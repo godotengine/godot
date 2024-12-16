@@ -277,15 +277,17 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				code_completion_force_item_center = -1;
 				queue_redraw();
 			}
-			code_completion_pan_offset += 1.0f;
+			code_completion_pan_offset = 0;
 		} else if (code_completion_pan_offset >= +1.0) {
 			if (code_completion_current_selected < code_completion_options.size() - 1) {
 				code_completion_current_selected++;
 				code_completion_force_item_center = -1;
 				queue_redraw();
 			}
-			code_completion_pan_offset -= 1.0f;
+			code_completion_pan_offset = 0;
 		}
+		accept_event();
+		return;
 	}
 
 	Ref<InputEventMouseButton> mb = p_gui_input;
@@ -569,10 +571,6 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			update_code_completion = true;
 		} else {
 			update_code_completion = (allow_unicode_handling && k->get_unicode() >= 32);
-		}
-
-		if (!update_code_completion) {
-			cancel_code_completion();
 		}
 	}
 
@@ -1479,7 +1477,7 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	if (E) {
 		text_rid = E->value;
 	} else {
-		String fc = String::num(p_line + 1).lpad(line_number_digits, line_number_padding);
+		String fc = String::num_int64(p_line + 1).lpad(line_number_digits, line_number_padding);
 		if (is_localizing_numeral_system()) {
 			fc = TS->format_number(fc);
 		}
@@ -1496,9 +1494,9 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	ofs.y += TS->shaped_text_get_ascent(text_rid);
 
 	if (rtl) {
-		ofs.x = p_region.position.x;
-	} else {
 		ofs.x = p_region.get_end().x - text_size.width;
+	} else {
+		ofs.x = p_region.position.x;
 	}
 
 	Color number_color = get_line_gutter_item_color(p_line, line_number_gutter);
@@ -3543,13 +3541,13 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		for (int i = 1; *string_to_complete_char_lower && (all_possible_subsequence_matches.size() > 0); i++, string_to_complete_char_lower++) {
 			// find all occurrences of ssq_lower to avoid looking everywhere each time
-			Vector<int> all_ocurence;
+			Vector<int> all_occurrences;
 			if (long_option) {
-				all_ocurence.push_back(target_lower.find_char(*string_to_complete_char_lower));
+				all_occurrences.push_back(target_lower.find_char(*string_to_complete_char_lower));
 			} else {
 				for (int j = i; j < target_lower.length(); j++) {
 					if (target_lower[j] == *string_to_complete_char_lower) {
-						all_ocurence.push_back(j);
+						all_occurrences.push_back(j);
 					}
 				}
 			}
@@ -3567,7 +3565,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 						continue;
 					}
 				}
-				for (int index : all_ocurence) {
+				for (int index : all_occurrences) {
 					if (index > next_index) {
 						Vector<Pair<int, int>> new_match = subsequence_match;
 						new_match.push_back({ index, 1 });

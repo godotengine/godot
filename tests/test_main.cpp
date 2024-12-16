@@ -55,6 +55,8 @@
 #include "tests/core/io/test_resource.h"
 #include "tests/core/io/test_stream_peer.h"
 #include "tests/core/io/test_stream_peer_buffer.h"
+#include "tests/core/io/test_tcp_server.h"
+#include "tests/core/io/test_udp_server.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -65,6 +67,7 @@
 #include "tests/core/math/test_geometry_3d.h"
 #include "tests/core/math/test_math_funcs.h"
 #include "tests/core/math/test_plane.h"
+#include "tests/core/math/test_projection.h"
 #include "tests/core/math/test_quaternion.h"
 #include "tests/core/math/test_random_number_generator.h"
 #include "tests/core/math/test_rect2.h"
@@ -82,10 +85,12 @@
 #include "tests/core/object/test_object.h"
 #include "tests/core/object/test_undo_redo.h"
 #include "tests/core/os/test_os.h"
+#include "tests/core/string/test_fuzzy_search.h"
 #include "tests/core/string/test_node_path.h"
 #include "tests/core/string/test_string.h"
 #include "tests/core/string/test_translation.h"
 #include "tests/core/string/test_translation_server.h"
+#include "tests/core/templates/test_a_hash_map.h"
 #include "tests/core/templates/test_command_queue.h"
 #include "tests/core/templates/test_hash_map.h"
 #include "tests/core/templates/test_hash_set.h"
@@ -114,6 +119,7 @@
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
+#include "tests/scene/test_fontfile.h"
 #include "tests/scene/test_gradient.h"
 #include "tests/scene/test_gradient_texture.h"
 #include "tests/scene/test_image_texture.h"
@@ -128,6 +134,7 @@
 #include "tests/scene/test_physics_material.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
+#include "tests/scene/test_texture_progress_bar.h"
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_timer.h"
 #include "tests/scene/test_viewport.h"
@@ -362,6 +369,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifdef TOOLS_ENABLED
 		if (EditorSettings::get_singleton()) {
 			EditorSettings::destroy();
+		}
+		if (EditorPaths::get_singleton()) {
+			EditorPaths::free();
 		}
 #endif // TOOLS_ENABLED
 
