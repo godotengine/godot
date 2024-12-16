@@ -145,8 +145,9 @@ void NavMap::query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task) 
 	}
 
 	p_query_task.map_up = get_up();
+	p_query_task.link_polygons_size = link_polygons.size();
 
-	NavMeshQueries3D::query_task_polygons_get_path(p_query_task, polygons, up, link_polygons.size());
+	NavMeshQueries3D::query_task_polygons_get_path(p_query_task, polygons);
 
 	path_query_slots_mutex.lock();
 	uint32_t used_slot_index = p_query_task.path_query_slot->slot_index;
