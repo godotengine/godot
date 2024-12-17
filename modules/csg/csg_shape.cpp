@@ -446,6 +446,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	node_aabb = aabb;
 	brush = n;
 	dirty = false;
+	update_configuration_warnings();
 	return brush;
 }
 
