@@ -299,14 +299,16 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category) {
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
-	Dictionary gts = GLOBAL_GET("editor/create_dialog/global_type_suffixes");
 	if (p_type_category == TypeCategory::CPP_TYPE) {
 		r_item->set_text(0, p_type);
 		String suffix;
 		if (custom_type_suffixes.has(p_type)) {
 			suffix = custom_type_suffixes.get(p_type);
-		} else if (gts.has(p_type)) {
-			suffix = gts[p_type];
+		} else {
+			Dictionary gts = GLOBAL_GET("editor/create_dialog/global_type_suffixes");
+			if (gts.has(p_type)) {
+				suffix = gts[p_type];
+			}
 		}
 		if (!suffix.is_empty()) {
 			r_item->set_suffix(0, "(" + suffix + ")");
@@ -322,8 +324,11 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		if (scr.is_valid()) {
 			if (custom_type_suffixes.has(p_type)) {
 				suffix = custom_type_suffixes.get(p_type);
-			} else if (gts.has(p_type)) {
-				suffix = gts[p_type];
+			} else {
+				Dictionary gts = GLOBAL_GET("editor/create_dialog/global_type_suffixes");
+				if (gts.has(p_type)) {
+					suffix = gts[p_type];
+				}
 			}
 		}
 		if (!suffix.is_empty()) {

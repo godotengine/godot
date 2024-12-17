@@ -952,14 +952,16 @@
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
 		</member>
 		<member name="editor/create_dialog/global_type_blocklist" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
-			A create dialog will hide all types in the blocklist.
+			Types in the global type blocklist will be hidden from all create dialogs, no matter if the dialogs are native or popped up by calling [method EditorInterface.popup_create_dialog].
 			[b]Note:[/b] Trying to list the base type (the root item in the dialog tree item component) will hide all types derived from the base type from the create dialog.
+			[b]Note:[/b] If you have used [method EditorInterface.popup_create_dialog], and its parameter [code]type_blocklist[/code] has the same element as one in the global type blocklist, the parameter [code]type_blocklist[/code] will be preferred over the global type blocklist.
 		</member>
 		<member name="editor/create_dialog/global_type_suffixes" type="Dictionary" setter="" getter="" default="{}">
-			A create dialog will set a custom suffix to a specific type name. The suffix will follow the name of the type item with braces.
+			Types in the global type suffixes map list will contain a custom suffix following the type name in all create dialogs, no matter if the dialogs are native or popped up by calling [method EditorInterface.popup_create_dialog].
 			If a type is global and comes from a script, whose suffix should have been its file name, the suffix will be set to the mapped one.
 			[b]Note:[/b] As built-in types and GDExtension types does not have a suffix, the custom suffix will be removed if the type is not in the map list.
 			[b]Note:[/b] The keys of the dictionary should be [StringName]s and the values should be [String]s, otherwise it would lead to unexpected behaviors.
+			[b]Note:[/b] If you have used [method EditorInterface.popup_create_dialog], and its parameter [code]type_suffixes[/code] has the same key as one in the global type suffixes list, the value in the parameter [code]type_suffixes[/code] will be preferred over the value in the global type blocklist.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
