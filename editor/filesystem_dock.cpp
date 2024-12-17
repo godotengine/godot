@@ -270,7 +270,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create all items for the files in the subdirectory.
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		String main_scene = GLOBAL_GET("application/run/main_scene");
+		const String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
 		// Build the list of the files to display.
 		List<FileInfo> file_list;
@@ -1099,7 +1099,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	sort_file_info_list(file_list, file_sort);
 
 	// Fills the ItemList control node from the FileInfos.
-	String main_scene = GLOBAL_GET("application/run/main_scene");
+	const String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 	for (FileInfo &E : file_list) {
 		FileInfo *finfo = &(E);
 		String fname = finfo->name;
@@ -2353,7 +2353,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MAIN_SCENE: {
 			// Set as main scene with selected scene file.
 			if (p_selected.size() == 1) {
-				ProjectSettings::get_singleton()->set("application/run/main_scene", p_selected[0]);
+				ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_selected[0]));
 				ProjectSettings::get_singleton()->save();
 				_update_tree(get_uncollapsed_paths());
 				_update_file_list(true);

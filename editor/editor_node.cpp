@@ -2085,7 +2085,7 @@ void EditorNode::_dialog_action(String p_file) {
 			load_scene(p_file);
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
-			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
+			ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_file));
 			ProjectSettings::get_singleton()->save();
 			// TODO: Would be nice to show the project manager opened with the highlighted field.
 
@@ -2134,7 +2134,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		case FILE_SAVE_AND_RUN_MAIN_SCENE: {
-			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
+			ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_file));
 			ProjectSettings::get_singleton()->save();
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
@@ -3962,25 +3962,25 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return OK;
 	}
 
+	String lpath = ResourceUID::ensure_path(p_scene);
 	if (!p_set_inherited) {
 		for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-			if (editor_data.get_scene_path(i) == p_scene) {
+			if (editor_data.get_scene_path(i) == lpath) {
 				_set_current_scene(i);
 				return OK;
 			}
 		}
 
-		if (!p_force_open_imported && FileAccess::exists(p_scene + ".import")) {
-			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), p_scene.get_file()));
+		if (!p_force_open_imported && FileAccess::exists(lpath + ".import")) {
+			open_imported->set_text(vformat(TTR("Scene '%s' was automatically imported, so it can't be modified.\nTo make changes to it, a new inherited scene can be created."), lpath.get_file()));
 			open_imported->popup_centered();
 			new_inherited_button->grab_focus();
-			open_import_request = p_scene;
+			open_import_request = lpath;
 			return OK;
 		}
 	}
 
-	String lpath = ProjectSettings::get_singleton()->localize_path(p_scene);
-
+	lpath = ProjectSettings::get_singleton()->localize_path(lpath);
 	if (!lpath.begins_with("res://")) {
 		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
 		opening_prev = false;
@@ -4081,7 +4081,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	set_edited_scene(new_scene);
 
-	String config_file_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(p_scene.get_file() + "-editstate-" + p_scene.md5_text() + ".cfg");
+	String config_file_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(lpath.get_file() + "-editstate-" + lpath.md5_text() + ".cfg");
 	Ref<ConfigFile> editor_state_cf;
 	editor_state_cf.instantiate();
 	Error editor_state_cf_err = editor_state_cf->load(config_file_path);
