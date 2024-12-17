@@ -1119,12 +1119,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
-	bool first_time = idle_time == 0.0;
 	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
 	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
-	if (first_time) {
-		idle->set_wait_time(idle_time);
-	}
 
 	// Appearance: Guidelines
 	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
@@ -1604,6 +1600,11 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_error_count(0);
+			set_warning_count(0);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
@@ -1845,7 +1846,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip_text(TTR("Errors"));
-	set_error_count(0);
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1855,7 +1855,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTR("Warnings"));
-	set_warning_count(0);
 
 	status_bar->add_child(memnew(VSeparator));
 
