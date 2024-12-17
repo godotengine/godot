@@ -209,6 +209,12 @@ Color DisplayServerAndroid::get_accent_color() const {
 	return godot_java->get_accent_color();
 }
 
+Color DisplayServerAndroid::get_base_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_base_color();
+}
+
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
