@@ -1,6 +1,50 @@
 #include "human_animation_new.h"
 
 
+void HumanBonePostRotation::init(Ref<HumanBoneConfig> p_source_human,Ref<HumanBoneConfig> p_target_human) {
+    Basis post_basis;
+    root_bone = p_target_human->root_bone;
+    for(auto& it : p_target_human->root_bone) {
+        
+        if(!p_source_human->virtual_pose.has(it)) {
+            continue;
+        }
+        HumanBonePoseOutput& bone_post = post[it];
+        BonePose& source_pose = p_source_human->virtual_pose[it];
+        BonePose& target_pose = p_target_human->virtual_pose[it]; 
+        bone_post.rest_rotation = target_pose.rotation;
+        post_basis.set_inverse(bone_post.rest_rotation );
+
+        post_basis.xform(Basis(target_pose.rotation),post_basis);
+        bone_post.post_rotation = post_basis;
+        bone_post.child_bones = target_pose.child_bones;
+        bone_post.global_post_rotation = bone_post.rest_rotation;
+        bone_post.global_post_rotation.set_inverse(bone_post.global_post_rotation);
+        bone_post.local_post_rotation = bone_post.rest_rotation;
+        
+        for(auto& cit : target_pose.child_bones) {
+            StringName bone_name = cit;
+            if(!p_source_human->virtual_pose.has(bone_name)) {
+                continue;
+            }
+            BonePose& child_pose = p_target_human->virtual_pose[bone_name];
+            compute_post_rotation(bone_name,p_source_human,p_target_human,source_pose,source_pose.global_pose.basis, child_pose,target_pose.global_pose.basis);
+        }
+    }
+    
+}
+
+void HumanBonePostRotation::set_animation_rotation(const Quaternion& p_rotation,StringName p_bone_name) {
+    auto it = post.find(p_bone_name);
+    if(it == post.end()) {
+        return;
+    }
+    HumanBonePoseOutput& output = it->value;
+    output.animation_rotation = p_rotation;
+    output.is_set_animation_rotation = true;
+}
+
+
 
 Ref<Animation> HumanBonePostRotation::build_human_animation(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,Ref<Animation> p_animation,Dictionary & p_bone_map) {
     int key_count = p_animation->get_length() * 100 + 1;
@@ -186,6 +230,54 @@ Ref<Animation> HumanBonePostRotation::build_human_animation(Skeleton3D* p_skelet
 
 
 }
+
+
+void HumanBonePostRotation::retarget() {
+    Basis global_basis;
+    for(auto& it : root_bone) {
+        HumanBonePoseOutput& output = post[it];
+        output.local_post_rotation = output.global_post_rotation;
+
+        for(auto& cit : output.child_bones) {
+            StringName& bone_name = cit;
+            HumanBonePoseOutput& child_output = post[bone_name];
+            if(!child_output.is_set_animation_rotation) {
+                continue;
+            }
+            retarget(child_output,output,bone_name);
+        }
+    }
+    
+}
+void HumanBonePostRotation::apply(Skeleton3D *p_skeleton,const HashMap<String, float>& bone_blend_weight,float p_weight) {
+    for(auto& it : post) {
+        int bone_index = p_skeleton->find_bone(it.key);
+        if(!it.value.is_set_animation_rotation) {
+            continue;
+        }
+        if (bone_index >= 0) {
+            float weight = 1.0f;
+            if(bone_blend_weight.has(it.key)) {
+                weight = bone_blend_weight[it.key];
+            }
+            p_skeleton->set_bone_pose_rotation(bone_index, p_skeleton->get_bone_pose_rotation(bone_index).slerp( it.value.local_post_rotation,p_weight * weight));
+        }
+    }
+}
+
+void HumanBonePostRotation::apply_root_motion(Vector3& p_position,Quaternion& p_rotation,Vector3& p_position_add,Quaternion & p_rotation_add,float p_weight) {
+
+    
+    if (root_global_rotation_add.size() > 0) {
+        p_rotation_add = p_rotation.slerp(root_global_rotation_add.begin()->value,p_weight);
+    }
+
+
+    if(root_global_move_add.size() > 0) {
+        p_position_add = p_position_add.lerp(root_global_move_add.begin()->value,p_weight);
+    }
+}
+
 static Vector3 compute_lookat_position_add(Ref<Animation> p_animation,int track_index , double time_start, double time_end) {
         Vector3 loc,loc2;
         Error err = p_animation->try_position_track_interpolate(track_index, time_start, &loc);
@@ -284,4 +376,45 @@ bool HumanBonePostRotation::apply_animation(Ref<Animation> p_animation,const Ani
     return false;
 }
 
+void HumanBonePostRotation::compute_post_rotation(StringName p_bone_name, Ref<HumanBoneConfig> p_source_human,Ref<HumanBoneConfig> p_target_human,
+    BonePose& source_pose,Basis& source_parent_rotation,BonePose& target_pose,Basis& target_parent_rotation) {
+    
+    HumanBonePoseOutput& bone_post = post[p_bone_name];
+	bone_post.rest_rotation = Basis(target_pose.rotation);
+    bone_post.post_rotation = Basis(source_pose.rotation).inverse() * source_parent_rotation.inverse();
+    bone_post.post_rotation = bone_post.post_rotation * target_parent_rotation * Basis(target_pose.rotation);
+
+    bone_post.child_bones = target_pose.child_bones;
+    bone_post.global_post_rotation = target_parent_rotation * bone_post.rest_rotation;
+    bone_post.global_post_rotation.set_inverse(bone_post.global_post_rotation);
+    bone_post.local_post_rotation = bone_post.rest_rotation;
+    for(auto& it : target_pose.child_bones) {
+        StringName& bone_name = it;
+        if(!p_source_human->virtual_pose.has(bone_name)) {
+            continue;
+        }
+        BonePose& child_pose = p_target_human->virtual_pose[bone_name];
+        compute_post_rotation(bone_name,p_source_human,p_target_human,source_pose,source_pose.global_pose.basis, child_pose,target_pose.global_pose.basis);
+    }
+}
+
+
+void HumanBonePostRotation::retarget(HumanBonePoseOutput& output,HumanBonePoseOutput& parent_output, StringName p_bone_name ) {
+    if(output.is_set_animation_rotation) {
+        output.global_post_rotation = output.animation_rotation * output.post_rotation;
+        output.local_post_rotation = parent_output.global_post_rotation_inverse * output.global_post_rotation;
+    }
+    else {
+        output.global_post_rotation = parent_output.global_post_rotation * output.rest_rotation;
+        output.local_post_rotation = output.rest_rotation;
+    }
+    output.global_post_rotation_inverse.set_inverse(output.global_post_rotation);
+    
+    for(auto& it : output.child_bones) {
+        StringName& bone_name = it;
+        HumanBonePoseOutput& child_output = post[p_bone_name];
+        retarget(child_output,output,bone_name);
+    }
+    
+}
 

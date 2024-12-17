@@ -34,6 +34,8 @@
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
 #include "core/typedefs.h"
+#include "core/math/vector2.h"
+#include "core/math/vector3.h"
 
 class String;
 struct Vector4i;
@@ -150,6 +152,11 @@ struct [[nodiscard]] Vector4 {
 		y = p_y;
 		z = p_z;
 		w = p_w;
+	}
+	_FORCE_INLINE_ Vector4(const Vector3& p_vec3, real_t p_w = 0) : Vector4(p_vec3.x, p_vec3.y, p_vec3.z, p_w) {
+	}
+	_FORCE_INLINE_ Vector4(const Vector2& p_vec2_xy,const Vector2& p_vec2_zw) : Vector4(p_vec2_xy.x, p_vec2_xy.y, p_vec2_zw.x, p_vec2_zw.y) {
+		
 	}
 };
 

@@ -50,20 +50,45 @@ struct BonePose {
 	Vector3 position;
 	Quaternion rotation;
 	Vector3 scale;
+	Vector3 forward;
+	Vector3 right;
 	float length;
 	Transform3D global_pose;
+	Transform3D local_pose;
 	Vector<StringName> child_bones;
+
+	void set_bone_forward(const Vector3& p_forward) {
+		forward = p_forward;
+		right = p_forward;
+		local_pose = Transform3D(Basis(rotation),position);
+		Vector3::Axis min_axis = p_forward.min_axis_index();
+		switch (min_axis)
+		{
+		case Vector3::AXIS_X:
+			right = Vector3(1, 0, 0);
+			break;
+		case Vector3::AXIS_Y:
+			right = Vector3(0, 1, 0);
+			break;
+		case Vector3::AXIS_Z:
+			right = Vector3(0, 0, 1);
+			break;
+		}
+		right = right.cross(p_forward);
+		right.normalize();
+	}
 
 	void load(Dictionary& aDict) {
 		clear();
 		bone_index = aDict["bone_index"];
 		position = aDict["position"];
 		rotation = aDict["rotation"];
+		right = aDict["right"];
 		scale = aDict["scale"];
 		length = aDict["length"];
 		global_pose = aDict["global_pose"];
 		Vector<String> child = aDict["child_bones"];
-
+		local_pose = Transform3D(Basis(rotation),position);
 		for (int i = 0; i < child.size(); i++) {
 			child_bones.push_back(StringName(child[i]));
 		}
@@ -74,6 +99,7 @@ struct BonePose {
 		aDict["position"] = position;
 		aDict["rotation"] = rotation;
 		aDict["scale"] = scale;
+		aDict["right"] = right;
 		aDict["length"] = length;
 		aDict["global_pose"] = global_pose;
 		Vector<String> child;
@@ -88,7 +114,47 @@ struct BonePose {
 		position = Vector3();
 		rotation = Quaternion();
 		scale = Vector3();
+		right = Vector3();
 		length = 0.0f;
+	}
+public:
+	// xyz 是世界位置,,我是自身轴旋转角度
+	Vector4 get_look_at_and_roll(const Transform3D& p_parent_trans,Basis& p_curr_basis,Transform3D& p_curr_global_trans) {
+		Transform3D new_rest = p_parent_trans * Transform3D(Basis(rotation),position);
+		p_curr_global_trans = p_parent_trans * Transform3D(p_curr_basis,position);
+		// 计算出观察方向
+		Vector3 lookat = p_curr_global_trans.xform(forward);
+
+		Vector3 new_forward = lookat - p_curr_global_trans.origin;
+		new_rest.basis.rotate_to_align(forward,new_forward);
+		// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
+		Vector3 org_rest_right = new_rest.basis.xform(right);
+
+		// 计算原始动画姿势计算后的右方向朝向
+		Vector3 new_rest_right = p_curr_global_trans.basis.xform(right);
+		// 计算自身轴的旋转角度
+		float angle = org_rest_right.signed_angle_to(new_rest_right,new_forward);
+		Vector4 ret;
+		ret.x = lookat.x;
+		ret.y = lookat.y;
+		ret.z = lookat.z;
+		ret.w = angle;
+		return ret;
+	}
+	// 重定向骨骼
+	void retarget(const Transform3D& parent_trans,const Vector4& lookat, Transform3D& out_global_trans ,Basis& local_rotation) {
+
+		// 重定向骨骼的世界坐标
+		out_global_trans = parent_trans * local_pose;
+		Vector3 new_forward = out_global_trans.xform(forward);
+		// 朝向观察点
+		out_global_trans.basis.rotate_to_align(new_forward, Vector3(lookat.x, lookat.y, lookat.z) - out_global_trans.origin);
+		if(lookat.w != 0) {
+			// 计算自身轴旋转
+			out_global_trans.basis.rotate(new_forward, lookat.w);
+		}
+		// 计算出本地旋转
+		local_rotation = parent_trans.basis.inverse() * out_global_trans.basis;
 	}
 
 };

@@ -574,7 +574,7 @@ void AnimationProcessPanel::editor_build_animation_form_path(String p_file_path,
 
 			// 如果存在人形动作配置,转换动画为人形动画
 			if (animation_human_config.is_valid()) {
-				new_animation = HumanBonePostRotation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map);
+				new_animation = HumanAnim::HumanAnimmation::build_human_animation(bone_map_skeleton, *animation_human_config.ptr(), new_animation, bone_map);
 			}
             new_animation->set_animation_group(animation_group);
 			new_animation->set_animation_tag(animation_tag);

@@ -339,6 +339,8 @@ namespace HumanAnim
             for(int i=0;i<p_config.root_bone.size();i++) {
                 BonePose& pose = p_config.virtual_pose[p_config.root_bone[i]];
                 pose.global_pose = Transform3D(Basis(pose.rotation),Vector3(0,0,0));
+                // 设置骨骼朝向
+                pose.set_bone_forward(Vector3(0,0,1));
                 for(int j=0;j<pose.child_bones.size();j++) {
                     BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
                     build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
@@ -349,6 +351,8 @@ namespace HumanAnim
         }
         static void build_virtual_pose_global(HumanBoneConfig& p_config,Transform3D& parent_trans, BonePose& pose, HashMap<String, String>& p_human_bone_label) {
             pose.global_pose = parent_trans * Transform3D(Basis(pose.rotation),pose.position);
+            // 设置骨骼朝向
+            pose.set_bone_forward(pose.global_pose.origin - parent_trans.origin);
             for(int j=0;j<pose.child_bones.size();j++) {
                 BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
                 build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
