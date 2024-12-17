@@ -3285,7 +3285,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				continue;
 			}
 
-			if (directional_lights.size() > RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
+			if (directional_lights.size() >= RendererSceneRender::MAX_DIRECTIONAL_LIGHTS) {
 				break;
 			}
 
