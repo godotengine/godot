@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ip_unix.h                                                             */
+/*  ip_web.h                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IP_UNIX_H
-#define IP_UNIX_H
-
-#if defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)
+#ifndef IP_WEB_H
+#define IP_WEB_H
 
 #include "core/io/ip.h"
 
-class IPUnix : public IP {
-	GDCLASS(IPUnix, IP);
+class IPWeb : public IP {
+	GDCLASS(IPWeb, IP);
 
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 
-	static IP *_create_unix();
+private:
+	static IP *_create_web();
 
 public:
 	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override;
 
 	static void make_default();
-	IPUnix();
+	IPWeb();
 };
 
-#endif // UNIX_ENABLED
-
-#endif // IP_UNIX_H
+#endif // IP_WEB_H
