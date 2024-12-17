@@ -69,6 +69,14 @@
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
 
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT 0L
+#define _NET_WM_MOVERESIZE_SIZE_TOP 1L
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT 2L
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT 3L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT 4L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM 5L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT 6L
+#define _NET_WM_MOVERESIZE_SIZE_LEFT 7L
 #define _NET_WM_MOVERESIZE_MOVE 8L
 
 // 2.2 is the first release with multitouch
@@ -5509,6 +5517,70 @@ void DisplayServerX11::window_start_drag(WindowID p_window) {
 		m.data.l[3] = Button1;
 	}
 	m.data.l[2] = _NET_WM_MOVERESIZE_MOVE;
+	m.data.l[4] = 1; // Source - normal application.
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&m);
+
+	XSync(x11_display, 0);
+}
+
+void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	XClientMessageEvent m;
+	memset(&m, 0, sizeof(m));
+
+	XUngrabPointer(x11_display, CurrentTime);
+
+	Window root_return, child_return;
+	int root_x, root_y, win_x, win_y;
+	unsigned int mask_return;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, wd.x11_window, &root_return, &child_return, &root_x, &root_y, &win_x, &win_y, &mask_return);
+
+	m.type = ClientMessage;
+	m.window = wd.x11_window;
+	m.message_type = XInternAtom(x11_display, "_NET_WM_MOVERESIZE", True);
+	m.format = 32;
+	if (xquerypointer_result) {
+		m.data.l[0] = root_x;
+		m.data.l[1] = root_y;
+		m.data.l[3] = Button1;
+	}
+
+	switch (p_edge) {
+		case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOP;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_LEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_RIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOM;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
+		} break;
+		default:
+			break;
+	}
 	m.data.l[4] = 1; // Source - normal application.
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&m);

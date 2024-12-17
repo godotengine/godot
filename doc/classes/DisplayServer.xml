@@ -1836,8 +1836,17 @@
 			<return type="void" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Starts a drag operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
-				[b]Note:[/b] This method is implemented on Linux(X11/Wayland), macOS, and Windows.
+				Starts an interactive drag operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
+		<method name="window_start_resize">
+			<return type="void" />
+			<param index="0" name="edge" type="int" enum="DisplayServer.WindowResizeEdge" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Starts an interactive resize operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's edge.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 	</methods>
@@ -2182,6 +2191,33 @@
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
 			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
+		</constant>
+		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
+			Top-left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_TOP" value="1" enum="WindowResizeEdge">
+			Top edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_TOP_RIGHT" value="2" enum="WindowResizeEdge">
+			Top-right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_LEFT" value="3" enum="WindowResizeEdge">
+			Left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_RIGHT" value="4" enum="WindowResizeEdge">
+			Right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM_LEFT" value="5" enum="WindowResizeEdge">
+			Bottom-left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM" value="6" enum="WindowResizeEdge">
+			Bottom edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM_RIGHT" value="7" enum="WindowResizeEdge">
+			Bottom-right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
+			Represents the size of the [enum WindowResizeEdge] enum.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
