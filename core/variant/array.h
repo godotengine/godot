@@ -55,6 +55,9 @@ public:
 		_FORCE_INLINE_ ConstIterator &operator++();
 		_FORCE_INLINE_ ConstIterator &operator--();
 
+		[[nodiscard]] _FORCE_INLINE_ ConstIterator operator++(int);
+		[[nodiscard]] _FORCE_INLINE_ ConstIterator operator--(int);
+
 		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return element_ptr != p_other.element_ptr; }
 
@@ -81,6 +84,9 @@ public:
 
 		_FORCE_INLINE_ Iterator &operator++();
 		_FORCE_INLINE_ Iterator &operator--();
+
+		[[nodiscard]] _FORCE_INLINE_ Iterator operator++(int);
+		[[nodiscard]] _FORCE_INLINE_ Iterator operator--(int);
 
 		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return element_ptr == p_other.element_ptr; }
 		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return element_ptr != p_other.element_ptr; }
