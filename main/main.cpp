@@ -3817,8 +3817,8 @@ int Main::start() {
 
 #endif // TOOLS_ENABLED
 
-	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
-		game_path = GLOBAL_GET("application/run/main_scene");
+	if (script.is_empty() && game_path.is_empty()) {
+		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 	}
 
 #ifdef TOOLS_ENABLED

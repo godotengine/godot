@@ -119,7 +119,7 @@ void RenderSceneBuffersRD::update_samplers() {
 
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	material_storage->samplers_rd_free(samplers);
-	samplers = material_storage->samplers_rd_allocate(computed_mipmap_bias);
+	samplers = material_storage->samplers_rd_allocate(computed_mipmap_bias, anisotropic_filtering_level);
 }
 
 void RenderSceneBuffersRD::cleanup() {
@@ -157,6 +157,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	fsr_sharpness = p_config->get_fsr_sharpness();
 	texture_mipmap_bias = p_config->get_texture_mipmap_bias();
+	anisotropic_filtering_level = p_config->get_anisotropic_filtering_level();
 	use_taa = p_config->get_use_taa();
 	use_debanding = p_config->get_use_debanding();
 
@@ -229,6 +230,12 @@ void RenderSceneBuffersRD::set_fsr_sharpness(float p_fsr_sharpness) {
 
 void RenderSceneBuffersRD::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
 	texture_mipmap_bias = p_texture_mipmap_bias;
+
+	update_samplers();
+}
+
+void RenderSceneBuffersRD::set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
+	anisotropic_filtering_level = p_anisotropic_filtering_level;
 
 	update_samplers();
 }

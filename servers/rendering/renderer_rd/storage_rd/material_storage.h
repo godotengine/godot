@@ -364,7 +364,7 @@ public:
 
 	/* Samplers */
 
-	Samplers samplers_rd_allocate(float p_mipmap_bias = 0.0f) const;
+	Samplers samplers_rd_allocate(float p_mipmap_bias = 0.0f, RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::ViewportAnisotropicFiltering::VIEWPORT_ANISOTROPY_4X) const;
 	void samplers_rd_free(Samplers &p_samplers) const;
 
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {

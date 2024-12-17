@@ -539,6 +539,7 @@ private:
 	};
 
 	Selection selection;
+	Callable selection_modifier;
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
@@ -771,6 +772,7 @@ public:
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
+	Vector2i get_line_range(int p_line);
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
@@ -790,6 +792,10 @@ public:
 	String get_selected_text() const;
 	void select_all();
 	void selection_copy();
+
+	_FORCE_INLINE_ void set_selection_modifier(const Callable &p_modifier) {
+		selection_modifier = p_modifier;
+	}
 
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;

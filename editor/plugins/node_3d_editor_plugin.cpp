@@ -2880,6 +2880,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
 	viewport->set_texture_mipmap_bias(texture_mipmap_bias);
+
+	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
+	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
