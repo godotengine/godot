@@ -53,10 +53,31 @@ void AudioStreamSynchronized::set_sync_stream(int p_stream_index, Ref<AudioStrea
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
 
 	AudioServer::get_singleton()->lock();
-	audio_streams[p_stream_index] = p_stream;
-	for (AudioStreamPlaybackSynchronized *E : playbacks) {
-		E->_update_playback_instances();
+	double playing_pos = -1;
+
+	if (audio_streams[p_stream_index].is_valid()) {
+		for (AudioStreamPlaybackSynchronized* playback_sync : playbacks) {
+			if (playback_sync->is_playing()) {
+				playing_pos = playback_sync->get_playback_position();
+				break;
+			}
+		}
 	}
+	
+	audio_streams[p_stream_index] = p_stream;
+
+	for (AudioStreamPlaybackSynchronized* playback_sync : playbacks) {
+		if (audio_streams[p_stream_index].is_valid()) {
+			playback_sync->playback[p_stream_index] = audio_streams[p_stream_index]->instantiate_playback();
+
+			if (playing_pos >= 0) {
+				playback_sync->playback[p_stream_index]->start(playing_pos);
+			}
+		} else {
+			playback_sync->playback[p_stream_index].unref();
+		}
+	}
+	
 	AudioServer::get_singleton()->unlock();
 }
 
