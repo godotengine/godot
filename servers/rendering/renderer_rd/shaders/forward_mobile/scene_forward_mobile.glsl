@@ -1050,14 +1050,17 @@ void main() {
 #endif // NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
+	// Tangent basis must be reconstructed from per-pixel normal and normalized, otherwise specular highlights become warped.
+	// This has the added benefit of allowing normal maps to affect anisotropic specularity.
+	tangent = normalize(cross(binormal, normal));
+	binormal = cross(normal, tangent); // No need to normalize, as the cross product of two orthogonal normalized vectors is itself normalized.
 
-	if (anisotropy > 0.01) {
-		mat3 rot = mat3(normalize(tangent), normalize(binormal), normal);
-		// Make local to space.
-		tangent = normalize(rot * vec3(anisotropy_flow.x, anisotropy_flow.y, 0.0));
-		binormal = normalize(rot * vec3(-anisotropy_flow.y, anisotropy_flow.x, 0.0));
+	if (abs(anisotropy) > 0.01) { // Make anisotropic basis local to view space.
+		mat3 rot = mat3(tangent, binormal, normal);
+		anisotropy_flow = normalize(anisotropy_flow);
+		tangent = rot * vec3(anisotropy_flow.x, anisotropy_flow.y, 0.0);
+		binormal = rot * vec3(-anisotropy_flow.y, anisotropy_flow.x, 0.0);
 	}
-
 #endif
 
 #ifdef ENABLE_CLIP_ALPHA
@@ -1213,13 +1216,13 @@ void main() {
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * 0.75 * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+		vec3 bent_normal = normal;
+#endif
 		vec3 ref_vec = reflect(-view, bent_normal);
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
-#else
-		vec3 ref_vec = reflect(-view, normal);
-		ref_vec = mix(ref_vec, normal, roughness * roughness);
-#endif
+
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
@@ -1383,7 +1386,7 @@ void main() {
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * 0.75 * clamp(5.0 * roughness, 0.0, 1.0)));
 #else
 		vec3 bent_normal = normal;
 #endif
@@ -1393,7 +1396,7 @@ void main() {
 		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
 		for (uint i = 0; i < sc_reflection_probes(); i++) {
 			uint reflection_index = (i > 3) ? ((reflection_indices.y >> ((i - 4) * 8)) & 0xFF) : ((reflection_indices.x >> (i * 8)) & 0xFF);
-			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
 		if (reflection_accum.a > 0.0) {
@@ -1695,7 +1698,7 @@ void main() {
 					clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-					binormal, tangent, anisotropy,
+					tangent, binormal, anisotropy,
 #endif
 					diffuse_light,
 					specular_light);
@@ -1726,8 +1729,7 @@ void main() {
 				clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-				tangent,
-				binormal, anisotropy,
+				tangent, binormal, anisotropy,
 #endif
 				diffuse_light, specular_light);
 	}
@@ -1754,8 +1756,7 @@ void main() {
 				clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-				tangent,
-				binormal, anisotropy,
+				tangent, binormal, anisotropy,
 #endif
 				diffuse_light, specular_light);
 	}
