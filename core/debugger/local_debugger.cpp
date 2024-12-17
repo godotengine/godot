@@ -171,7 +171,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else {
 				String key_value = line.get_slicec(' ', 1);
-				int value_pos = key_value.find_char('=');
+				int value_pos = key_value.find('=');
 
 				if (value_pos < 0) {
 					print_line("Error: Invalid set format. Use: set key=value");
@@ -208,7 +208,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_variables(members, values, variable_prefix);
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
-			if (line.find_char(' ') < 0) {
+			if (line.find(' ') < 0) {
 				print_line("Usage: print <expression>");
 			} else {
 				String expr = line.split(" ", true, 1)[1];
@@ -344,7 +344,7 @@ Pair<String, int> LocalDebugger::to_breakpoint(const String &p_line) {
 	String breakpoint_part = p_line.get_slicec(' ', 1);
 	Pair<String, int> breakpoint;
 
-	int last_colon = breakpoint_part.rfind_char(':');
+	int last_colon = breakpoint_part.rfind(':');
 	if (last_colon < 0) {
 		print_line("Error: Invalid breakpoint format. Expected [source:line]");
 		return breakpoint;

@@ -1290,7 +1290,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String vm = N->get();
 
-				if (!vm.contains_char('x')) { // invalid parameter format
+				if (!vm.contains('x')) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid resolution '%s', it should be e.g. '1280x720'.\n",
 							vm.utf8().get_data());
@@ -1333,7 +1333,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			if (N) {
 				String vm = N->get();
 
-				if (!vm.contains_char(',')) { // invalid parameter format
+				if (!vm.contains(',')) { // invalid parameter format
 
 					OS::get_singleton()->print("Invalid position '%s', it should be e.g. '80,128'.\n",
 							vm.utf8().get_data());
@@ -1611,7 +1611,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg.ends_with("project.godot")) {
 			String path;
 			String file = arg;
-			int sep = MAX(file.rfind_char('/'), file.rfind_char('\\'));
+			int sep = MAX(file.rfind('/'), file.rfind('\\'));
 			if (sep == -1) {
 				path = ".";
 			} else {
@@ -1832,7 +1832,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
 		int port;
-		if (remotefs.contains_char(':')) {
+		if (remotefs.contains(':')) {
 			port = remotefs.get_slicec(':', 1).to_int();
 			remotefs = remotefs.get_slicec(':', 0);
 		} else {
@@ -3279,7 +3279,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				// Dummy text driver cannot draw any text, making the editor unusable if selected.
 				continue;
 			}
-			if (!text_driver_options.is_empty() && !text_driver_options.contains_char(',')) {
+			if (!text_driver_options.is_empty() && !text_driver_options.contains(',')) {
 				// Not the first option; add a comma before it as a separator for the property hint.
 				text_driver_options += ",";
 			}
@@ -4165,7 +4165,7 @@ int Main::start() {
 						local_game_path = "res://" + local_game_path;
 
 					} else {
-						int sep = local_game_path.rfind_char('/');
+						int sep = local_game_path.rfind('/');
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);

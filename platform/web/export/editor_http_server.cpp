@@ -81,7 +81,7 @@ void EditorHTTPServer::_send_response() {
 	// Wrong protocol
 	ERR_FAIL_COND_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", "Invalid method or HTTP version.");
 
-	const int query_index = req[1].find_char('?');
+	const int query_index = req[1].find('?');
 	const String path = (query_index == -1) ? req[1] : req[1].substr(0, query_index);
 
 	const String req_file = path.get_file();

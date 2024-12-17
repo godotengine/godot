@@ -269,7 +269,7 @@ void OpenXRInteractionProfile::set_bindings(const Array &p_bindings) {
 
 	for (Ref<OpenXRIPBinding> binding : p_bindings) {
 		String binding_path = binding->get_binding_path();
-		if (binding_path.find_char(',') >= 0) {
+		if (binding_path.find(',') >= 0) {
 			// Convert old binding approach to new...
 			add_new_binding(binding->get_action(), binding_path);
 		} else {

@@ -384,7 +384,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 					FileCache fc;
 					fc.type = split[1];
-					if (fc.type.contains_char('/')) {
+					if (fc.type.contains('/')) {
 						fc.type = split[1].get_slice("/", 0);
 						fc.resource_script_class = split[1].get_slice("/", 1);
 					}

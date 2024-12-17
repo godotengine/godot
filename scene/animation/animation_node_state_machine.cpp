@@ -51,7 +51,7 @@ AnimationNodeStateMachineTransition::AdvanceMode AnimationNodeStateMachineTransi
 
 void AnimationNodeStateMachineTransition::set_advance_condition(const StringName &p_condition) {
 	String cs = p_condition;
-	ERR_FAIL_COND(cs.contains_char('/') || cs.contains_char(':'));
+	ERR_FAIL_COND(cs.contains('/') || cs.contains(':'));
 	advance_condition = p_condition;
 	if (!cs.is_empty()) {
 		advance_condition_name = "conditions/" + cs;
@@ -1254,7 +1254,7 @@ bool AnimationNodeStateMachine::is_parameter_read_only(const StringName &p_param
 void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<AnimationNode> p_node, const Vector2 &p_position) {
 	ERR_FAIL_COND(states.has(p_name));
 	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(String(p_name).contains_char('/'));
+	ERR_FAIL_COND(String(p_name).contains('/'));
 
 	State state_new;
 	state_new.node = p_node;
@@ -1273,7 +1273,7 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 void AnimationNodeStateMachine::replace_node(const StringName &p_name, Ref<AnimationNode> p_node) {
 	ERR_FAIL_COND(states.has(p_name) == false);
 	ERR_FAIL_COND(p_node.is_null());
-	ERR_FAIL_COND(String(p_name).contains_char('/'));
+	ERR_FAIL_COND(String(p_name).contains('/'));
 
 	{
 		Ref<AnimationNode> node = states[p_name].node;

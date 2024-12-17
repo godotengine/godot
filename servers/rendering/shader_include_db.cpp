@@ -79,7 +79,7 @@ String ShaderIncludeDB::parse_include_files(const String &p_code) {
 		if (l.begins_with(include)) {
 			String include_file = l.replace(include, "").strip_edges();
 			if (include_file[0] == '"') {
-				int end_pos = include_file.find_char('"', 1);
+				int end_pos = include_file.find('"', 1);
 				if (end_pos >= 0) {
 					include_file = include_file.substr(1, end_pos - 1);
 

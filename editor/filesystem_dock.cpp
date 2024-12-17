@@ -137,7 +137,7 @@ bool FileSystemList::edit_selected() {
 
 	String name = get_item_text(s);
 	line_editor->set_text(name);
-	line_editor->select(0, name.rfind_char('.'));
+	line_editor->select(0, name.rfind('.'));
 
 	popup_edit_commited = false; // Start edit popup processing.
 	popup_editor->popup();
@@ -1777,7 +1777,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	if (new_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		rename_error = true;
-	} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
+	} else if (new_name.contains('/') || new_name.contains('\\') || new_name.contains(':')) {
 		EditorNode::get_singleton()->show_warning(TTR("Name contains invalid characters."));
 		rename_error = true;
 	} else if (new_name[0] == '.') {
@@ -2240,7 +2240,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				test_args.push_back("command -v " + terminal_emulator);
 				const Error err = OS::get_singleton()->execute("bash", test_args, &pipe);
 				// Check if a path to the terminal executable exists.
-				if (err == OK && pipe.contains_char('/')) {
+				if (err == OK && pipe.contains('/')) {
 					chosen_terminal_emulator = terminal_emulator;
 					break;
 				} else if (err == ERR_CANT_FORK) {
@@ -2456,7 +2456,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 					if (to_rename.is_file) {
 						String name = to_rename.path.get_file();
-						tree->set_editor_selection(0, name.rfind_char('.'));
+						tree->set_editor_selection(0, name.rfind('.'));
 					} else {
 						String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
 						tree->set_editor_selection(0, name.length());
@@ -3688,10 +3688,10 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			tree_item->select(0);
 		} else {
 			// Find parent folder.
-			fpath = fpath.substr(0, fpath.rfind_char('/') + 1);
+			fpath = fpath.substr(0, fpath.rfind('/') + 1);
 			if (fpath.size() > String("res://").size()) {
 				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
-				const int slash_idx = fpath.rfind_char('/');
+				const int slash_idx = fpath.rfind('/');
 				fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
 			}
 

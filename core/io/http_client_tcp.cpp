@@ -132,7 +132,7 @@ static bool _check_request_url(HTTPClientTCP::Method p_method, const String &p_u
 	switch (p_method) {
 		case HTTPClientTCP::METHOD_CONNECT: {
 			// Authority in host:port format, as in RFC7231.
-			int pos = p_url.find_char(':');
+			int pos = p_url.find(':');
 			return 0 < pos && pos < p_url.length() - 1;
 		}
 		case HTTPClientTCP::METHOD_OPTIONS: {
@@ -508,11 +508,11 @@ Error HTTPClientTCP::poll() {
 							continue;
 						}
 						if (s.begins_with("content-length:")) {
-							body_size = s.substr(s.find_char(':') + 1, s.length()).strip_edges().to_int();
+							body_size = s.substr(s.find(':') + 1, s.length()).strip_edges().to_int();
 							body_left = body_size;
 
 						} else if (s.begins_with("transfer-encoding:")) {
-							String encoding = header.substr(header.find_char(':') + 1, header.length()).strip_edges();
+							String encoding = header.substr(header.find(':') + 1, header.length()).strip_edges();
 							if (encoding == "chunked") {
 								chunked = true;
 							}

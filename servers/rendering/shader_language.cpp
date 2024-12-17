@@ -11498,7 +11498,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 
 					for (const String &option_text : options) {
-						String hint_name = option_text.substr(0, option_text.find_char(char32_t('(')));
+						String hint_name = option_text.substr(0, option_text.find(char32_t('(')));
 						ScriptLanguage::CodeCompletionOption option(hint_name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 						option.insert_text = option_text;
 						r_options->push_back(option);

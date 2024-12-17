@@ -3742,12 +3742,12 @@ static String _process_doc_line(const String &p_line, const String &p_text, cons
 	while (process) {
 		switch (r_state) {
 			case DOC_LINE_NORMAL: {
-				int lb_pos = line.find_char('[', from);
+				int lb_pos = line.find('[', from);
 				if (lb_pos < 0) {
 					process = false;
 					break;
 				}
-				int rb_pos = line.find_char(']', lb_pos + 1);
+				int rb_pos = line.find(']', lb_pos + 1);
 				if (rb_pos < 0) {
 					process = false;
 					break;
@@ -4424,7 +4424,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				push_error(vformat(R"(Argument %d of annotation "%s" is empty.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
 				return false;
 			}
-			if (arg_string.contains_char(',')) {
+			if (arg_string.contains(',')) {
 				push_error(vformat(R"(Argument %d of annotation "%s" contains a comma. Use separate arguments instead.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
 				return false;
 			}

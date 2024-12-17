@@ -112,7 +112,7 @@ static void test_directory(const String &p_dir) {
 			// For ease of reading ➡ (0x27A1) acts as sentinel char instead of 0xFFFF in the files.
 			code = code.replace_first(String::chr(0x27A1), String::chr(0xFFFF));
 			// Require pointer sentinel char in scripts.
-			int location = code.find_char(0xFFFF);
+			int location = code.find(0xFFFF);
 			CHECK(location != -1);
 
 			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));

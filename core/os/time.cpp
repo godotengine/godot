@@ -136,22 +136,22 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{                                                                                         \
 		bool has_date = false, has_time = false;                                              \
 		String date, time;                                                                    \
-		if (p_datetime.find_char('T') > 0) {                                                  \
+		if (p_datetime.find('T') > 0) {                                                       \
 			has_date = has_time = true;                                                       \
 			PackedStringArray array = p_datetime.split("T");                                  \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
 			date = array[0];                                                                  \
 			time = array[1];                                                                  \
-		} else if (p_datetime.find_char(' ') > 0) {                                           \
+		} else if (p_datetime.find(' ') > 0) {                                                \
 			has_date = has_time = true;                                                       \
 			PackedStringArray array = p_datetime.split(" ");                                  \
 			ERR_FAIL_COND_V_MSG(array.size() < 2, ret, "Invalid ISO 8601 date/time string."); \
 			date = array[0];                                                                  \
 			time = array[1];                                                                  \
-		} else if (p_datetime.find_char('-', 1) > 0) {                                        \
+		} else if (p_datetime.find('-', 1) > 0) {                                             \
 			has_date = true;                                                                  \
 			date = p_datetime;                                                                \
-		} else if (p_datetime.find_char(':') > 0) {                                           \
+		} else if (p_datetime.find(':') > 0) {                                                \
 			has_time = true;                                                                  \
 			time = p_datetime;                                                                \
 		}                                                                                     \
@@ -163,7 +163,7 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 			month = (Month)array[1];                                                          \
 			day = array[2];                                                                   \
 			/* Handle negative years. */                                                      \
-			if (p_datetime.find_char('-') == 0) {                                             \
+			if (p_datetime.find('-') == 0) {                                                  \
 				year *= -1;                                                                   \
 			}                                                                                 \
 		}                                                                                     \

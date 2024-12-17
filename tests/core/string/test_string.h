@@ -391,15 +391,15 @@ TEST_CASE("[String] Find") {
 
 TEST_CASE("[String] Find character") {
 	String s = "racecar";
-	CHECK_EQ(s.find_char('r'), 0);
-	CHECK_EQ(s.find_char('r', 1), 6);
-	CHECK_EQ(s.find_char('e'), 3);
-	CHECK_EQ(s.find_char('e', 4), -1);
+	CHECK_EQ(s.find('r'), 0);
+	CHECK_EQ(s.find('r', 1), 6);
+	CHECK_EQ(s.find('e'), 3);
+	CHECK_EQ(s.find('e', 4), -1);
 
-	CHECK_EQ(s.rfind_char('r'), 6);
-	CHECK_EQ(s.rfind_char('r', 5), 0);
-	CHECK_EQ(s.rfind_char('e'), 3);
-	CHECK_EQ(s.rfind_char('e', 2), -1);
+	CHECK_EQ(s.rfind('r'), 6);
+	CHECK_EQ(s.rfind('r', 5), 0);
+	CHECK_EQ(s.rfind('e'), 3);
+	CHECK_EQ(s.rfind('e', 2), -1);
 }
 
 TEST_CASE("[String] Find case insensitive") {

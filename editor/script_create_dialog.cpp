@@ -160,7 +160,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 
 void ScriptCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = file_path->get_text().rfind_char('/') + 1;
+		int filename_start_pos = file_path->get_text().rfind('/') + 1;
 		int filename_end_pos = file_path->get_text().get_basename().length();
 
 		if (!is_built_in) {
@@ -744,7 +744,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	List<String> comment_delimiters;
 	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
-		if (!script_delimiter.contains_char(' ')) {
+		if (!script_delimiter.contains(' ')) {
 			meta_delimiter = script_delimiter;
 			break;
 		}

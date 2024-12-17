@@ -830,7 +830,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "evaluation_return") {
 		expression_evaluator->add_value(p_data);
 	} else {
-		int colon_index = p_msg.find_char(':');
+		int colon_index = p_msg.find(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
 		bool parsed = EditorDebuggerNode::get_singleton()->plugins_capture(this, p_msg, p_data);

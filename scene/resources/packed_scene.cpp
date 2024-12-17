@@ -822,10 +822,10 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				value = missing_resource_properties[E.name];
 			}
 		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int hint_subtype_separator = E.hint_string.find_char(':');
+			int hint_subtype_separator = E.hint_string.find(':');
 			if (hint_subtype_separator >= 0) {
 				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
-				int slash_pos = subtype_string.find_char('/');
+				int slash_pos = subtype_string.find('/');
 				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (slash_pos >= 0) {
 					subtype_hint = PropertyHint(subtype_string.get_slice("/", 1).to_int());
@@ -851,11 +851,11 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				}
 			}
 		} else if (E.type == Variant::DICTIONARY && E.hint == PROPERTY_HINT_TYPE_STRING) {
-			int key_value_separator = E.hint_string.find_char(';');
+			int key_value_separator = E.hint_string.find(';');
 			if (key_value_separator >= 0) {
-				int key_subtype_separator = E.hint_string.find_char(':');
+				int key_subtype_separator = E.hint_string.find(':');
 				String key_subtype_string = E.hint_string.substr(0, key_subtype_separator);
-				int key_slash_pos = key_subtype_string.find_char('/');
+				int key_slash_pos = key_subtype_string.find('/');
 				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (key_slash_pos >= 0) {
 					key_subtype_hint = PropertyHint(key_subtype_string.get_slice("/", 1).to_int());
@@ -864,9 +864,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
 				bool convert_key = key_subtype == Variant::OBJECT && key_subtype_hint == PROPERTY_HINT_NODE_TYPE;
 
-				int value_subtype_separator = E.hint_string.find_char(':', key_value_separator) - (key_value_separator + 1);
+				int value_subtype_separator = E.hint_string.find(':', key_value_separator) - (key_value_separator + 1);
 				String value_subtype_string = E.hint_string.substr(key_value_separator + 1, value_subtype_separator);
-				int value_slash_pos = value_subtype_string.find_char('/');
+				int value_slash_pos = value_subtype_string.find('/');
 				PropertyHint value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (value_slash_pos >= 0) {
 					value_subtype_hint = PropertyHint(value_subtype_string.get_slice("/", 1).to_int());
@@ -2230,14 +2230,14 @@ HashSet<StringName> PackedScene::get_scene_groups(const String &p_path) {
 				continue;
 			}
 
-			int j = line.find_char(']', i);
+			int j = line.find(']', i);
 			while (i < j) {
-				i = line.find_char('"', i);
+				i = line.find('"', i);
 				if (i == -1) {
 					break;
 				}
 
-				int k = line.find_char('"', i + 1);
+				int k = line.find('"', i + 1);
 				if (k == -1) {
 					break;
 				}

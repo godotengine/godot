@@ -183,7 +183,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
 				}
-				if (prop_name.contains_char('/')) {
+				if (prop_name.contains('/')) {
 					continue;
 				}
 				highlighter->add_member_keyword_color(prop_name, member_variable_color);

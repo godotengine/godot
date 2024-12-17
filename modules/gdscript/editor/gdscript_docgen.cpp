@@ -139,7 +139,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			r_type = "int";
 			r_enum = String(p_gdtype.native_type).replace("::", ".");
 			if (r_enum.begins_with("res://")) {
-				int dot_pos = r_enum.rfind_char('.');
+				int dot_pos = r_enum.rfind('.');
 				if (dot_pos >= 0) {
 					r_enum = _get_script_name(r_enum.left(dot_pos)) + r_enum.substr(dot_pos);
 				} else {

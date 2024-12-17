@@ -53,7 +53,7 @@ static bool _is_word_boundary(const String &p_str, int p_index) {
 	if (p_index == -1 || p_index == p_str.size()) {
 		return true;
 	}
-	return boundary_chars.find_char(p_str[p_index]) != -1;
+	return boundary_chars.find(p_str[p_index]) != -1;
 }
 
 bool FuzzySearchToken::try_exact_match(FuzzyTokenMatch &p_match, const String &p_target, int p_offset) const {
@@ -76,7 +76,7 @@ bool FuzzySearchToken::try_fuzzy_match(FuzzyTokenMatch &p_match, const String &p
 	// Search for the subsequence p_token in p_target starting from p_offset, recording each substring for
 	// later scoring and display.
 	for (int i = 0; i < string.length(); i++) {
-		int new_offset = p_target.find_char(string[i], p_offset);
+		int new_offset = p_target.find(string[i], p_offset);
 		if (new_offset < 0) {
 			p_miss_budget--;
 			if (p_miss_budget < 0) {
@@ -287,7 +287,7 @@ void FuzzySearch::set_query(const String &p_query) {
 
 bool FuzzySearch::search(const String &p_target, FuzzySearchResult &p_result) const {
 	p_result.target = p_target;
-	p_result.dir_index = p_target.rfind_char('/');
+	p_result.dir_index = p_target.rfind('/');
 	p_result.miss_budget = max_misses;
 
 	String adjusted_target = case_sensitive ? p_target : p_target.to_lower();

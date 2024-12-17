@@ -97,7 +97,7 @@ void __print_line_rich(const String &p_string) {
 	String output;
 	int pos = 0;
 	while (pos <= p_string.length()) {
-		int brk_pos = p_string.find_char('[', pos);
+		int brk_pos = p_string.find('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = p_string.length();
@@ -109,7 +109,7 @@ void __print_line_rich(const String &p_string) {
 			break;
 		}
 
-		int brk_end = p_string.find_char(']', brk_pos + 1);
+		int brk_end = p_string.find(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			txt += p_string.substr(brk_pos, p_string.length() - brk_pos);

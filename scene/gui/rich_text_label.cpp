@@ -3139,7 +3139,7 @@ void RichTextLabel::add_text(const String &p_text) {
 	String t = p_text.replace("\r\n", "\n");
 
 	while (pos < t.length()) {
-		int end = t.find_char('\n', pos);
+		int end = t.find('\n', pos);
 		String line;
 		bool eol = false;
 		if (end == -1) {
@@ -4228,7 +4228,7 @@ void RichTextLabel::parse_bbcode(const String &p_bbcode) {
 }
 
 String RichTextLabel::_get_tag_value(const String &p_tag) {
-	return p_tag.substr(p_tag.find_char('=') + 1);
+	return p_tag.substr(p_tag.find('=') + 1);
 }
 
 int RichTextLabel::_find_unquoted(const String &p_src, char32_t p_chr, int p_from) {
@@ -4311,7 +4311,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 	String bbcode = p_bbcode.replace("\r\n", "\n");
 
 	while (pos <= bbcode.length()) {
-		int brk_pos = bbcode.find_char('[', pos);
+		int brk_pos = bbcode.find('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -4356,7 +4356,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			bbcode_name = split_tag_block[0];
 			for (int i = 1; i < split_tag_block.size(); i++) {
 				const String &expr = split_tag_block[i];
-				int value_pos = expr.find_char('=');
+				int value_pos = expr.find('=');
 				if (value_pos > -1) {
 					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
 				}
@@ -4367,7 +4367,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		// Find main parameter.
 		String bbcode_value;
-		int main_value_pos = bbcode_name.find_char('=');
+		int main_value_pos = bbcode_name.find('=');
 		if (main_value_pos > -1) {
 			bbcode_value = bbcode_name.substr(main_value_pos + 1);
 			bbcode_name = bbcode_name.substr(0, main_value_pos);
@@ -4803,7 +4803,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
-			int end = bbcode.find_char('[', brk_end);
+			int end = bbcode.find('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -4899,7 +4899,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				outline_color = Color::from_string(outline_color_option->value, outline_color);
 			}
 
-			int end = bbcode.find_char('[', brk_end);
+			int end = bbcode.find('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -4944,7 +4944,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				}
 			}
 
-			int end = bbcode.find_char('[', brk_end);
+			int end = bbcode.find('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -4977,7 +4977,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				String tooltip;
 				bool size_in_percent = false;
 				if (!bbcode_value.is_empty()) {
-					int sep = bbcode_value.find_char('x');
+					int sep = bbcode_value.find('x');
 					if (sep == -1) {
 						width = bbcode_value.to_int();
 					} else {
@@ -5070,7 +5070,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("font_size");
 
 		} else if (tag.begins_with("opentype_features=") || tag.begins_with("otf=")) {
-			int value_pos = tag.find_char('=');
+			int value_pos = tag.find('=');
 			String fnt_ftr = tag.substr(value_pos + 1);
 			Vector<String> subtag = fnt_ftr.split(",");
 			_normalize_subtags(subtag);

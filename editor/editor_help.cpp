@@ -170,7 +170,7 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 
 	// Here equal `length()` and `begins_with()` from above implies `p_class_specifier == p_edited_class`.
 	if (p_class_specifier.length() == p_edited_class.length()) {
-		int rfind = p_class_specifier.rfind_char('.');
+		int rfind = p_class_specifier.rfind('.');
 		if (rfind == -1) { // Single identifier.
 			return p_class_specifier;
 		}
@@ -289,7 +289,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind_char('.');
+			const int dot_pos = link.rfind('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -303,7 +303,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	} else if (p_select.begins_with("#")) { // Class.
 		emit_signal(SNAME("go_to_help"), "class_name:" + p_select.substr(1));
 	} else if (p_select.begins_with("@")) { // Member.
-		const int tag_end = p_select.find_char(' ');
+		const int tag_end = p_select.find(' ');
 		const String tag = p_select.substr(1, tag_end - 1);
 		const String link = p_select.substr(tag_end + 1).lstrip(" ");
 
@@ -375,8 +375,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				}
 			}
 
-			if (link.contains_char('.')) {
-				const int class_end = link.rfind_char('.');
+			if (link.contains('.')) {
+				const int class_end = link.rfind('.');
 				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
 			}
 		}
@@ -420,7 +420,7 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 
 	bool is_enum_type = !p_enum.is_empty();
 	bool is_bitfield = p_is_bitfield && is_enum_type;
-	bool can_ref = !p_type.contains_char('*') || is_enum_type;
+	bool can_ref = !p_type.contains('*') || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
 	String display_t; // For display purposes.
@@ -1607,7 +1607,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(theme_cache.comment_color);
 
 			const String descr = HANDLE_DOC(signal.description);
-			const bool is_multiline = descr.find_char('\n') > 0;
+			const bool is_multiline = descr.find('\n') > 0;
 			bool has_prev_text = false;
 
 			if (signal.is_deprecated) {
@@ -1738,7 +1738,7 @@ void EditorHelp::_update_doc() {
 				// Enum description.
 				if (key != "@unnamed_enums" && cd.enums.has(key)) {
 					const String descr = HANDLE_DOC(cd.enums[key].description);
-					const bool is_multiline = descr.find_char('\n') > 0;
+					const bool is_multiline = descr.find('\n') > 0;
 					if (cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !descr.is_empty()) {
 						class_desc->add_newline();
 
@@ -1787,7 +1787,7 @@ void EditorHelp::_update_doc() {
 				bool prev_is_multiline = true; // Use a large margin for the first item.
 				for (const DocData::ConstantDoc &enum_value : E.value) {
 					const String descr = HANDLE_DOC(enum_value.description);
-					const bool is_multiline = descr.find_char('\n') > 0;
+					const bool is_multiline = descr.find('\n') > 0;
 
 					class_desc->add_newline();
 					if (prev_is_multiline || is_multiline) {
@@ -1886,7 +1886,7 @@ void EditorHelp::_update_doc() {
 			bool prev_is_multiline = true; // Use a large margin for the first item.
 			for (const DocData::ConstantDoc &constant : constants) {
 				const String descr = HANDLE_DOC(constant.description);
-				const bool is_multiline = descr.find_char('\n') > 0;
+				const bool is_multiline = descr.find('\n') > 0;
 
 				class_desc->add_newline();
 				if (prev_is_multiline || is_multiline) {
@@ -2496,7 +2496,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
-		int brk_pos = bbcode.find_char('[', pos);
+		int brk_pos = bbcode.find('[', pos);
 
 		if (brk_pos < 0) {
 			brk_pos = bbcode.length();
@@ -2510,7 +2510,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			break; // Nothing else to add.
 		}
 
-		int brk_end = bbcode.find_char(']', brk_pos + 1);
+		int brk_end = bbcode.find(']', brk_pos + 1);
 
 		if (brk_end == -1) {
 			p_rt->add_text(bbcode.substr(brk_pos, bbcode.length() - brk_pos).replace("\n", "\n\n"));
@@ -2541,7 +2541,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 				p_rt->pop();
 			}
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("annotation ") || tag.begins_with("theme_item ")) {
-			const int tag_end = tag.find_char(' ');
+			const int tag_end = tag.find(' ');
 			const String link_tag = tag.left(tag_end);
 			const String link_target = tag.substr(tag_end + 1).lstrip(" ");
 
@@ -2566,7 +2566,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->push_meta("@" + link_tag + " " + link_target, underline_mode);
 
 			if (link_tag == "member" &&
-					((!link_target.contains_char('.') && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
+					((!link_target.contains('.') && (p_class == "ProjectSettings" || p_class == "EditorSettings")) ||
 							link_target.begins_with("ProjectSettings.") || link_target.begins_with("EditorSettings."))) {
 				// Special formatting for both ProjectSettings and EditorSettings.
 				String prefix;
@@ -2594,7 +2594,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = brk_end + 1;
 		} else if (tag.begins_with("param ")) {
-			const int tag_end = tag.find_char(' ');
+			const int tag_end = tag.find(' ');
 			const String param_name = tag.substr(tag_end + 1).lstrip(" ");
 
 			// Use monospace font with translucent background color to make code easier to distinguish from other text.
@@ -2810,7 +2810,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			if (tag.begins_with("url=")) {
 				url = tag.substr(4);
 			} else {
-				int end = bbcode.find_char('[', brk_end);
+				int end = bbcode.find('[', brk_end);
 				if (end == -1) {
 					end = bbcode.length();
 				}
@@ -2831,7 +2831,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 				HashMap<String, String> bbcode_options;
 				for (int i = 0; i < subtags.size(); i++) {
 					const String &expr = subtags[i];
-					int value_pos = expr.find_char('=');
+					int value_pos = expr.find('=');
 					if (value_pos > -1) {
 						bbcode_options[expr.left(value_pos)] = expr.substr(value_pos + 1).unquote();
 					}
@@ -2852,7 +2852,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 					}
 				}
 			}
-			int end = bbcode.find_char('[', brk_end);
+			int end = bbcode.find('[', brk_end);
 			if (end == -1) {
 				end = bbcode.length();
 			}
@@ -3384,7 +3384,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 				enum_class_name = "@GlobalScope";
 				enum_name = property.enumeration;
 			} else {
-				const int dot_pos = property.enumeration.rfind_char('.');
+				const int dot_pos = property.enumeration.rfind('.');
 				if (dot_pos >= 0) {
 					enum_class_name = property.enumeration.left(dot_pos);
 					enum_name = property.enumeration.substr(dot_pos + 1);
@@ -3889,7 +3889,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			enum_class_name = "@GlobalScope";
 			enum_name = link;
 		} else {
-			const int dot_pos = link.rfind_char('.');
+			const int dot_pos = link.rfind('.');
 			if (dot_pos >= 0) {
 				enum_class_name = link.left(dot_pos);
 				enum_name = link.substr(dot_pos + 1);
@@ -3903,7 +3903,7 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 	} else if (p_select.begins_with("#")) { // Class.
 		_go_to_help("class_name:" + p_select.substr(1));
 	} else if (p_select.begins_with("@")) { // Member.
-		const int tag_end = p_select.find_char(' ');
+		const int tag_end = p_select.find(' ');
 		const String tag = p_select.substr(1, tag_end - 1);
 		const String link = p_select.substr(tag_end + 1).lstrip(" ");
 
@@ -3943,8 +3943,8 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			}
 		}
 
-		if (link.contains_char('.')) {
-			const int class_end = link.rfind_char('.');
+		if (link.contains('.')) {
+			const int class_end = link.rfind('.');
 			_go_to_help(topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
 		} else {
 			_go_to_help(topic + ":" + symbol_class_name + ":" + link);

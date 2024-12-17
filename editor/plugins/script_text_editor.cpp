@@ -285,7 +285,7 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
 		if (prev_line.contains("@warning_ignore")) {
-			const int closing_bracket_idx = prev_line.find_char(')');
+			const int closing_bracket_idx = prev_line.find(')');
 			const String text_to_insert = ", " + code.quote(quote_style);
 			text_editor->insert_text(text_to_insert, line - 1, closing_bracket_idx);
 		} else {
@@ -1304,7 +1304,7 @@ void ScriptTextEditor::_update_connected_methods() {
 
 		// Account for inner classes by stripping the class names from the method,
 		// starting from the right since our inner class might be inside of another inner class.
-		int pos = raw_name.rfind_char('.');
+		int pos = raw_name.rfind('.');
 		if (pos != -1) {
 			name = raw_name.substr(pos + 1);
 		}
@@ -1734,7 +1734,7 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	script->get_language()->get_comment_delimiters(&comment_delimiters);
 
 	for (const String &script_delimiter : comment_delimiters) {
-		if (!script_delimiter.contains_char(' ')) {
+		if (!script_delimiter.contains(' ')) {
 			delimiter = script_delimiter;
 			break;
 		}

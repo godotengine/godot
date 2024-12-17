@@ -3592,7 +3592,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			// find all occurrences of ssq_lower to avoid looking everywhere each time
 			Vector<int> all_occurrences;
 			if (long_option) {
-				all_occurrences.push_back(target_lower.find_char(*string_to_complete_char_lower));
+				all_occurrences.push_back(target_lower.find(*string_to_complete_char_lower));
 			} else {
 				for (int j = i; j < target_lower.length(); j++) {
 					if (target_lower[j] == *string_to_complete_char_lower) {

@@ -226,7 +226,7 @@ void VersionControlEditorPlugin::_refresh_commit_list() {
 		TreeItem *item = commit_list->create_item();
 
 		// Only display the first line of a commit message
-		int line_ending = commit.msg.find_char('\n');
+		int line_ending = commit.msg.find('\n');
 		String commit_display_msg = commit.msg.substr(0, line_ending);
 		String commit_date_string = _get_date_string_from(commit.unix_timestamp, commit.offset_minutes);
 

@@ -160,9 +160,9 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind_char('(', i);
+		int j = file.rfind('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
+			file = file.substr(j + 1, file.find(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -183,9 +183,9 @@ void EditorDebuggerNode::_text_editor_stack_clear(const ScriptEditorDebugger *p_
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind_char('(', i);
+		int j = file.rfind('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
+			file = file.substr(j + 1, file.find(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -833,7 +833,7 @@ void EditorDebuggerNode::remove_debugger_plugin(const Ref<EditorDebuggerPlugin> 
 bool EditorDebuggerNode::plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data) {
 	int session_index = tabs->get_tab_idx_from_control(p_debugger);
 	ERR_FAIL_COND_V(session_index < 0, false);
-	int colon_index = p_message.find_char(':');
+	int colon_index = p_message.find(':');
 	ERR_FAIL_COND_V_MSG(colon_index < 1, false, "Invalid message received.");
 
 	const String cap = p_message.substr(0, colon_index);

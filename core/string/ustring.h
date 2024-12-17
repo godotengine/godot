@@ -404,12 +404,12 @@ public:
 	String substr(int p_from, int p_chars = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
-	int find_char(char32_t p_char, int p_from = 0) const; ///< return <0 if failed
+	int find(char32_t p_char, int p_from = 0) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int findn(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfind(const char *p_str, int p_from = -1) const; ///< return <0 if failed
-	int rfind_char(char32_t p_char, int p_from = -1) const; ///< return <0 if failed
+	int rfind(char32_t p_char, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
 	int rfindn(const char *p_str, int p_from = -1) const; ///< return <0 if failed
 	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
@@ -549,7 +549,7 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
-	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }
+	_FORCE_INLINE_ bool contains(char32_t p_chr) const { return find(p_chr) != -1; }
 	_FORCE_INLINE_ bool containsn(const char *p_str) const { return findn(p_str) != -1; }
 	_FORCE_INLINE_ bool containsn(const String &p_str) const { return findn(p_str) != -1; }
 
