@@ -77,7 +77,7 @@ public:
 	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
-	virtual String get_name() const override { return "RetargetAnimationPlayer"; }
+	//virtual String get_name() const override { return "RetargetAnimationPlayer"; }
 
 	RetargetAnimationPlayerEditorPlugin();
 };

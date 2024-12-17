@@ -34,7 +34,7 @@ void BeehaveGraphEditor::_draw()
     float circle_size = MAX(3,6 * get_zoom());
     float progress_shift = PROGRESS_SHIFT * get_zoom();
 
-    auto _connections = get_connection_list();
+    auto _connections = get_connections();
     for(auto& i : _connections)
     {
         StringName from = i->from_node;
