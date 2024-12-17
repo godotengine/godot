@@ -188,12 +188,12 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
 				cshape->set_name("CollisionShape3D");
-				cshape->set_transform(node->get_transform());
+				cshape->set_transform(instance->get_transform());
 				ur->add_do_method(E, "add_sibling", cshape, true);
 				ur->add_do_method(cshape, "set_owner", owner);
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
 				ur->add_do_reference(cshape);
-				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
+				ur->add_undo_method(instance->get_parent(), "remove_child", cshape);
 			}
 		}
 	}
