@@ -65,7 +65,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	};
 
 	enum {
-		INSTANCE_FLAGS_LIGHT_COUNT_SHIFT = 0, // 4 bits for light count.
+		// 4 bits free at the front.
 
 		INSTANCE_FLAGS_CLIP_RECT_UV = (1 << 4),
 		INSTANCE_FLAGS_TRANSPOSE_RECT = (1 << 5),
@@ -119,7 +119,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct ShaderSpecialization {
 		union {
 			struct {
-				uint32_t use_lighting : 1;
+				uint32_t use_directional_lighting : 1;
+				uint32_t positional_light_count : 4;
 			};
 
 			uint32_t packed_0;
@@ -498,7 +499,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
 		ShaderVariant shader_variant = SHADER_VARIANT_QUAD;
 		RD::RenderPrimitive render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
-		bool use_lighting = false;
+		bool use_directional_lighting = false;
+		uint32_t positional_light_count = 0;
 
 		// batch-specific data
 		union {
