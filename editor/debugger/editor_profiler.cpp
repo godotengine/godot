@@ -34,6 +34,7 @@
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/check_box.h"
@@ -430,6 +431,7 @@ void EditorProfiler::_internal_profiles_pressed() {
 
 void EditorProfiler::_autostart_toggled(bool p_toggled_on) {
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_profiler", p_toggled_on);
+	EditorRunBar::get_singleton()->update_profiler_autostart_indicator();
 }
 
 void EditorProfiler::_notification(int p_what) {

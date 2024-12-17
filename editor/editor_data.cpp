@@ -281,7 +281,7 @@ Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 
 EditorPlugin *EditorData::get_editor_by_name(const String &p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (editor_plugins[i]->get_name() == p_name) {
+		if (editor_plugins[i]->get_plugin_name() == p_name) {
 			return editor_plugins[i];
 		}
 	}
@@ -320,7 +320,7 @@ Dictionary EditorData::get_editor_plugin_states() const {
 		if (state.is_empty()) {
 			continue;
 		}
-		metadata[editor_plugins[i]->get_name()] = state;
+		metadata[editor_plugins[i]->get_plugin_name()] = state;
 	}
 
 	return metadata;
@@ -348,7 +348,7 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 		String name = E->get();
 		int idx = -1;
 		for (int i = 0; i < editor_plugins.size(); i++) {
-			if (editor_plugins[i]->get_name() == name) {
+			if (editor_plugins[i]->get_plugin_name() == name) {
 				idx = i;
 				break;
 			}
