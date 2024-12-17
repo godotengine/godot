@@ -3803,6 +3803,21 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+void DisplayServerWindows::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	ReleaseCapture();
+
+	POINT coords;
+	GetCursorPos(&coords);
+	ScreenToClient(wd.hWnd, &coords);
+
+	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+}
+
 void DisplayServerWindows::set_context(Context p_context) {
 }
 

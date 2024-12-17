@@ -986,6 +986,12 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 	return DisplayServer::VSYNC_ENABLED;
 }
 
+void DisplayServerWayland::window_start_drag(WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_start_drag(p_window);
+}
+
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
