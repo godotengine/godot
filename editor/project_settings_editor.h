@@ -43,6 +43,7 @@
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/tab_container.h"
 
+class DebouncedLineEdit;
 class FileSystemDock;
 
 class ProjectSettingsEditor : public AcceptDialog {
@@ -62,7 +63,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	GroupSettingsEditor *group_settings = nullptr;
 	EditorPluginSettings *plugin_settings = nullptr;
 
-	LineEdit *search_box = nullptr;
+	DebouncedLineEdit *search_box = nullptr;
 	CheckButton *advanced = nullptr;
 
 	HBoxContainer *custom_properties = nullptr;

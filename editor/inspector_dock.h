@@ -37,10 +37,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 
+class DebouncedLineEdit;
 class EditorFileDialog;
 class EditorObjectSelector;
 
@@ -88,7 +88,7 @@ class InspectorDock : public VBoxContainer {
 	MenuButton *resource_save_button = nullptr;
 	MenuButton *resource_extra_button = nullptr;
 	MenuButton *history_menu = nullptr;
-	LineEdit *search = nullptr;
+	DebouncedLineEdit *search = nullptr;
 
 	Button *open_docs_button = nullptr;
 	MenuButton *object_menu = nullptr;

@@ -3873,14 +3873,16 @@ void EditorInspector::set_use_filter(bool p_use) {
 }
 
 void EditorInspector::register_text_enter(Node *p_line_edit) {
+	search_box = Object::cast_to<DebouncedLineEdit>(p_line_edit);
+	if (search_box) {
+		search_box->connect("debounce_timeout", callable_mp(this, &EditorInspector::update_tree));
+		return;
+	}
+
 	search_box = Object::cast_to<LineEdit>(p_line_edit);
 	if (search_box) {
-		search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorInspector::_filter_changed));
+		search_box->connect("text_changed", callable_mp(this, &EditorInspector::update_tree).unbind(1));
 	}
-}
-
-void EditorInspector::_filter_changed(const String &p_text) {
-	update_tree();
 }
 
 void EditorInspector::set_use_folding(bool p_use_folding, bool p_update_tree) {
@@ -4716,4 +4718,26 @@ EditorInspector::EditorInspector() {
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 
 	set_draw_focus_border(true);
+}
+
+void DebouncedLineEdit::_start_timer() {
+	debounce_timer->start();
+}
+
+void DebouncedLineEdit::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("debounce_timeout"));
+}
+
+void DebouncedLineEdit::_notification(int p_what) {
+	if (p_what == NOTIFICATION_READY) {
+		connect(SceneStringName(text_changed), callable_mp(this, &DebouncedLineEdit::_start_timer).unbind(1));
+		debounce_timer->connect("timeout", Callable(this, "emit_signal").bind(SNAME("debounce_timeout")));
+	}
+}
+
+DebouncedLineEdit::DebouncedLineEdit() {
+	debounce_timer = memnew(Timer);
+	debounce_timer->set_one_shot(true);
+	debounce_timer->set_wait_time(0.25);
+	add_child(debounce_timer);
 }

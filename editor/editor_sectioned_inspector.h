@@ -35,7 +35,7 @@
 
 class CheckButton;
 class EditorInspector;
-class LineEdit;
+class DebouncedLineEdit;
 class SectionedInspectorFilter;
 class Tree;
 class TreeItem;
@@ -50,7 +50,7 @@ class SectionedInspector : public HSplitContainer {
 
 	HashMap<String, TreeItem *> section_map;
 	EditorInspector *inspector = nullptr;
-	LineEdit *search_box = nullptr;
+	DebouncedLineEdit *search_box = nullptr;
 	CheckButton *advanced_toggle = nullptr;
 
 	String selected_category;
@@ -60,11 +60,11 @@ class SectionedInspector : public HSplitContainer {
 	static void _bind_methods();
 	void _section_selected();
 
-	void _search_changed(const String &p_what);
+	void _search_changed();
 	void _advanced_toggled(bool p_toggled_on);
 
 public:
-	void register_search_box(LineEdit *p_box);
+	void register_search_box(DebouncedLineEdit *p_box);
 	void register_advanced_toggle(CheckButton *p_toggle);
 
 	EditorInspector *get_inspector();
