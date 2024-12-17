@@ -219,6 +219,7 @@ class ConnectionsDock : public VBoxContainer {
 	enum SlotMenuOption {
 		SLOT_MENU_EDIT,
 		SLOT_MENU_GO_TO_METHOD,
+		SLOT_MENU_GO_TO_NODE,
 		SLOT_MENU_DISCONNECT,
 	};
 
