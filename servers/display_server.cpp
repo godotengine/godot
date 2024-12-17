@@ -993,6 +993,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_minimize_on_title_dbl_click"), &DisplayServer::window_minimize_on_title_dbl_click);
 
 	ClassDB::bind_method(D_METHOD("window_start_drag", "window_id"), &DisplayServer::window_start_drag, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_start_resize", "edge", "window_id"), &DisplayServer::window_start_resize, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
@@ -1169,6 +1170,16 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_GO_BACK_REQUEST);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_TITLEBAR_CHANGE);
+
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_MAX);
 
 	BIND_ENUM_CONSTANT(VSYNC_DISABLED);
 	BIND_ENUM_CONSTANT(VSYNC_ENABLED);
