@@ -307,13 +307,13 @@ void EditorPlugin::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 	GDVIRTUAL_CALL(_forward_3d_force_draw_over_viewport, p_overlay);
 }
 
-String EditorPlugin::get_name() const {
+String EditorPlugin::get_plugin_name() const {
 	String name;
 	GDVIRTUAL_CALL(_get_plugin_name, name);
 	return name;
 }
 
-const Ref<Texture2D> EditorPlugin::get_icon() const {
+const Ref<Texture2D> EditorPlugin::get_plugin_icon() const {
 	Ref<Texture2D> icon;
 	GDVIRTUAL_CALL(_get_plugin_icon, icon);
 	return icon;

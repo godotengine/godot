@@ -286,7 +286,7 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "SpriteFrames"; }
+	virtual String get_plugin_name() const override { return "SpriteFrames"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

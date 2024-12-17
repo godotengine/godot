@@ -98,7 +98,7 @@ repos:
         name: doc-status
         language: python
         entry: python doc/tools/doc_status.py
-        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes, -c]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
