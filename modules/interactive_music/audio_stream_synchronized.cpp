@@ -66,7 +66,7 @@ void AudioStreamSynchronized::set_sync_stream(int p_stream_index, Ref<AudioStrea
 	}
 	
 	audio_streams[p_stream_index] = p_stream;
-
+	
 	for (AudioStreamPlaybackSynchronized* playback_sync : playbacks) {
 		if (audio_streams[p_stream_index].is_valid()) {
 			playback_sync->playback[p_stream_index] = audio_streams[p_stream_index]->instantiate_playback();
