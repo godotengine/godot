@@ -538,6 +538,8 @@ TEST_CASE("[String] Number to string") {
 }
 
 TEST_CASE("[String] String to integer") {
+	// This method removes any non-numeric characters and stops at the first occurrence of a decimal point.
+
 	static const char *nums[14] = { "1237461283", "- 22", "0", " - 1123412", "", "10_000_000", "-1_2_3_4", "10__000", "  1  2  34 ", "-0", "007", "--45", "---46", "-7-2" };
 	static const int num[14] = { 1237461283, -22, 0, -1123412, 0, 10000000, -1234, 10000, 1234, 0, 7, 45, -46, -72 };
 
@@ -550,6 +552,28 @@ TEST_CASE("[String] String to integer") {
 	ERR_PRINT_OFF
 	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
 	CHECK(String("-999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	ERR_PRINT_ON
+
+	// This method stops at the first non-digit character.
+
+	static const char *nums_char[14] = { "1237461283", "-22", "0", "-1123412", "", "10_000_000", "-1_2_3_4", "-9223372036854775808", "+12.34 ", "-0", "007", "-+45", "-46/46/46", "-7-2" };
+	static const wchar_t *nums_wchar[14] = { L"1237461283", L"-22", L"0", L"-1123412", L"", L"10_000_000", L"-1_2_3_4", L"-9223372036854775808", L"+12.34 ", L"-0", L"007", L"-+45", L"-46/46/46", L"-7-2" };
+	static const char32_t *nums_char32[14] = { U"1237461283", U"-22", U"0", U"-1123412", U"", U"10_000_000", U"-1_2_3_4", U"-9223372036854775808", U"+12.34 ", U"-0", U"007", U"-+45", U"-46/46/46", U"-7-2" };
+	static const int64_t integers[14] = { 1237461283, -22, 0, -1123412, 0, 10, -1, (-9223372036854775807LL - 1), 12, 0, 7, 0, -46, -7 };
+
+	for (int i = 0; i < 14; i++) {
+		int64_t current_integer = integers[i];
+		CHECK(String::to_int(nums_char[i], -1) == current_integer);
+		CHECK(String::to_int(nums_wchar[i], -1) == current_integer);
+		CHECK(String::to_int(nums_char32[i], -1) == current_integer);
+	}
+
+	static const char32_t *of_int = U"999999999999999999999999999999999999999999999999999999999";
+	static const char32_t *uf_int = U"-999999999999999999999999999999999999999999999999999999999";
+
+	ERR_PRINT_OFF
+	CHECK(String::to_int(of_int, -1, true) == INT64_MAX); // Too large, largest possible is returned.
+	CHECK(String::to_int(uf_int, -1, true) == INT64_MIN); // Too small, smallest possible is returned.
 	ERR_PRINT_ON
 }
 
