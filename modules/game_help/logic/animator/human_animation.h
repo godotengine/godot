@@ -55,8 +55,16 @@ namespace HumanAnim
 
         void set_human_lookat(StringName p_bone,const Vector3& p_lookat) {
             String name = p_bone.substr(3);
-            bone_lookat[name] = p_lookat;
+			Vector4& lookat = bone_lookat[name];
+			lookat.x = p_lookat.x;
+			lookat.y = p_lookat.y;
+			lookat.z = p_lookat.z;
         }
+		void set_human_roll(StringName p_bone, float p_roll) {
+			String name = p_bone.substr(3);
+			Vector4& lookat = bone_lookat[name];
+			lookat.w = p_roll;
+		}
         static Basis retarget_root_direction(const Vector3& p_start_direction,const Vector3& p_end_direction) {
             Basis basis;
             const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
@@ -500,7 +508,7 @@ namespace HumanAnim
 					int value_track_index = out_anim->add_track(Animation::TYPE_VALUE);
                     Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
 					Animation::ValueTrack* value_track = static_cast<Animation::ValueTrack*>(out_anim->get_track(value_track_index));
-                    track->path = String("hm.") + it.key;
+                    track->path = String("hm.a.") + it.key;
                     track->interpolation = Animation::INTERPOLATION_LINEAR;
                     track->positions.resize(animation_lookat.size());
 

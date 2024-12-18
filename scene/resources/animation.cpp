@@ -6705,8 +6705,8 @@ void HumanAnimationBoneNameMapping::MapAnimationBoneName(const Ref<Animation> &p
 				String name = bone_name.substr(5);
 				mapping[bone_name] = name;
 			}
-			else if (bone_name.begins_with("hm.")) {
-				String name = bone_name.substr(3);
+			else if (bone_name.begins_with("hm.a.")) {
+				String name = bone_name.substr(5);
 				mapping[bone_name] = name;
 			}
 		}

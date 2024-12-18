@@ -190,9 +190,6 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
             if (context.blend_shape_cache.has(path)) {
                 continue;
             }
-			if(path.get_name(0).begins_with("hm.")) {
-                continue;
-            }
             Ref<Resource> resource;
             Vector<StringName> leftover_path;
             Node* child = parent->get_node_and_resource(path, resource, leftover_path);
@@ -254,317 +251,303 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         if (!animation_track->enabled) {
             continue;
         }
+        
+        if (name.begins_with("hm."))
+        {
+
+            if (human_config.is_null()) {
+                continue;
+            }
+            if (name.begins_with("hm.v.") && animation_track->type == Animation::TYPE_POSITION_3D) {
+                temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
+            }
+            else if (name.begins_with("hm.p.") && animation_track->type == Animation::TYPE_POSITION_3D) {
+                temp_anim_skeleton.set_root_position_add(a, name, i, time, delta);
+            }
+            else if (name.begins_with("hm.a.") && animation_track->type == Animation::TYPE_POSITION_3D) {
+                Vector3 loc;
+                Error err = a->try_position_track_interpolate(i, time, &loc);
+                temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
+            }
+            else if (name.begins_with("hm.r.") && animation_track->type == Animation::TYPE_VALUE) {
+                float loc = a->value_track_interpolate(i, time);
+                temp_anim_skeleton.set_human_roll(animation_track->path.get_name(0), loc);
+
+            }
+            continue;
+        }
+
         switch (animation_track->type) {
-        case Animation::TYPE_POSITION_3D: {
-			if (name.begins_with("hm."))
-			{
-
-				if (human_config.is_null()) {
-					continue;
-				}
-                if(name.begins_with("hm.v.")) {
-                    temp_anim_skeleton.set_root_lookat(a,name, i, time, delta);
+            case Animation::TYPE_POSITION_3D: {
+                int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
+                if (bone_idx == -1) {
+                    continue;
                 }
-                else if(name.begins_with("hm.p.")) {
-                    temp_anim_skeleton.set_root_position_add(a,name, i, time, delta);
-                }
-                else {
-                    Vector3 loc;
-                    Error err = a->try_position_track_interpolate(i, time, &loc);
-                    temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
-
-                }
-                continue;
-			}
-            int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
-            if (bone_idx == -1) {
-                continue;
-            }
-            AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
-            
-            if (t->is_human_bone) {
-                continue;
-            }            
-            if (t->root_motion && calc_root) {
-                double prev_time = time - delta;
-                if (!backward) {
-                    if (Animation::is_less_approx(prev_time, 0)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+                AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
+                
+                if (t->is_human_bone) {
+                    continue;
+                }            
+                if (t->root_motion && calc_root) {
+                    double prev_time = time - delta;
+                    if (!backward) {
+                        if (Animation::is_less_approx(prev_time, 0)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = 0;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        if (Animation::is_greater_approx(prev_time, (double)a_length)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = (double)a_length;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    Vector3 loc[2];
+                    if (!backward) {
+                        if (Animation::is_greater_approx(prev_time, time)) {
+                            Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_position_track_interpolate(i, (double)a_length, &loc[1]);
+                            context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
                             prev_time = 0;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                else {
-                    if (Animation::is_greater_approx(prev_time, (double)a_length)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+                    else {
+                        if (Animation::is_less_approx(prev_time, time)) {
+                            Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_position_track_interpolate(i, 0, &loc[1]);
+                            context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
                             prev_time = (double)a_length;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                Vector3 loc[2];
-                if (!backward) {
-                    if (Animation::is_greater_approx(prev_time, time)) {
-                        Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_position_track_interpolate(i, (double)a_length, &loc[1]);
-                        context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
-                        prev_time = 0;
+                    Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+                    if (err != OK) {
+                        continue;
                     }
+                    a->try_position_track_interpolate(i, time, &loc[1]);
+                    context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
+                    prev_time = !backward ? 0 : (double)a_length;
                 }
-                else {
-                    if (Animation::is_less_approx(prev_time, time)) {
-                        Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_position_track_interpolate(i, 0, &loc[1]);
-                        context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
-                        prev_time = (double)a_length;
-                    }
-                }
-                Error err = a->try_position_track_interpolate(i, prev_time, &loc[0]);
+                Vector3 loc;
+                Error err = a->try_position_track_interpolate(i, time, &loc);
                 if (err != OK) {
                     continue;
                 }
-                a->try_position_track_interpolate(i, time, &loc[1]);
-                context.root_motion_cache.loc += (loc[1] - loc[0]) * blend;
-                prev_time = !backward ? 0 : (double)a_length;
-            }
-            Vector3 loc;
-            Error err = a->try_position_track_interpolate(i, time, &loc);
-            if (err != OK) {
-                continue;
-            }
-            {
-                t->loc = t->loc.lerp(loc, blend);
-                t->loc_used = true;
-            }
-        } break;
-        case Animation::TYPE_ROTATION_3D: {
-			if (name.begins_with("hm."))
-			{
-
-				if (human_config.is_null()) {
-					continue;
-				}
-				if (name.begins_with("hm.v.")) {
-					temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
-				}
-				else if (name.begins_with("hm.p.")) {
-					temp_anim_skeleton.set_root_position_add(a, name, i, time, delta);
-				}
-				else {
-					Vector3 loc;
-					Error err = a->try_position_track_interpolate(i, time, &loc);
-					temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
-
-				}
-				continue;
-			}
-            int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
-            if (bone_idx == -1) {
-                continue;
-            }
-            AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
-            if (t->root_motion && calc_root) {
-                double prev_time = time - delta;
-                if (!backward) {
-                    if (Animation::is_less_approx(prev_time, 0)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+                {
+                    t->loc = t->loc.lerp(loc, blend);
+                    t->loc_used = true;
+                }
+            } break;
+            case Animation::TYPE_ROTATION_3D: {
+                int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
+                if (bone_idx == -1) {
+                    continue;
+                }
+                AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
+                if (t->root_motion && calc_root) {
+                    double prev_time = time - delta;
+                    if (!backward) {
+                        if (Animation::is_less_approx(prev_time, 0)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = 0;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        if (Animation::is_greater_approx(prev_time, (double)a_length)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = (double)a_length;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    Quaternion rot[2];
+                    if (!backward) {
+                        if (Animation::is_greater_approx(prev_time, time)) {
+                            Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_rotation_track_interpolate(i, (double)a_length, &rot[1]);
+                            context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
                             prev_time = 0;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                else {
-                    if (Animation::is_greater_approx(prev_time, (double)a_length)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+                    else {
+                        if (Animation::is_less_approx(prev_time, time)) {
+                            Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_rotation_track_interpolate(i, 0, &rot[1]);
+                            context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
                             prev_time = (double)a_length;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                Quaternion rot[2];
-                if (!backward) {
-                    if (Animation::is_greater_approx(prev_time, time)) {
-                        Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_rotation_track_interpolate(i, (double)a_length, &rot[1]);
-                        context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
-                        prev_time = 0;
+                    Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
+                    if (err != OK) {
+                        continue;
                     }
+                    a->try_rotation_track_interpolate(i, time, &rot[1]);
+                    context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
+                    prev_time = !backward ? 0 : (double)a_length;
                 }
-                else {
-                    if (Animation::is_less_approx(prev_time, time)) {
-                        Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_rotation_track_interpolate(i, 0, &rot[1]);
-                        context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
-                        prev_time = (double)a_length;
+                {
+                    Quaternion rot;
+                    Error err = a->try_rotation_track_interpolate(i, time, &rot);
+                    if (err != OK) {
+                        continue;
                     }
+                    t->rot = t->rot.slerp(rot, blend).normalized();
+                    t->rot_used = true;
                 }
-                Error err = a->try_rotation_track_interpolate(i, prev_time, &rot[0]);
-                if (err != OK) {
-                    continue;
-                }
-                a->try_rotation_track_interpolate(i, time, &rot[1]);
-                context.root_motion_cache.rot = (context.root_motion_cache.rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
-                prev_time = !backward ? 0 : (double)a_length;
-            }
-            {
-                Quaternion rot;
-                Error err = a->try_rotation_track_interpolate(i, time, &rot);
-                if (err != OK) {
-                    continue;
-                }
-                t->rot = t->rot.slerp(rot, blend).normalized();
-                t->rot_used = true;
-            }
 
-        } break;
-        case Animation::TYPE_SCALE_3D: {
-            int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
-            if (bone_idx == -1) {
-                continue;
-            }
-            AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
-            if (t->is_human_bone) {
-                continue;
-            }
-            if (t->root_motion && calc_root) {
-                double prev_time = time - delta;
-                if (!backward) {
-                    if (Animation::is_less_approx(prev_time, 0)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+            } break;
+            case Animation::TYPE_SCALE_3D: {
+                int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
+                if (bone_idx == -1) {
+                    continue;
+                }
+                AnimationMixer::TrackCacheTransform* t = context.bone_cache[bone_idx];
+                if (t->is_human_bone) {
+                    continue;
+                }
+                if (t->root_motion && calc_root) {
+                    double prev_time = time - delta;
+                    if (!backward) {
+                        if (Animation::is_less_approx(prev_time, 0)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = 0;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        if (Animation::is_greater_approx(prev_time, (double)a_length)) {
+                            switch (a->get_loop_mode()) {
+                            case Animation::LOOP_NONE: {
+                                prev_time = (double)a_length;
+                            } break;
+                            case Animation::LOOP_LINEAR: {
+                                prev_time = Math::fposmod(prev_time, (double)a_length);
+                            } break;
+                            case Animation::LOOP_PINGPONG: {
+                                prev_time = Math::pingpong(prev_time, (double)a_length);
+                            } break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                    Vector3 scale[2];
+                    if (!backward) {
+                        if (Animation::is_greater_approx(prev_time, time)) {
+                            Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_scale_track_interpolate(i, (double)a_length, &scale[1]);
+                            context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
                             prev_time = 0;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                else {
-                    if (Animation::is_greater_approx(prev_time, (double)a_length)) {
-                        switch (a->get_loop_mode()) {
-                        case Animation::LOOP_NONE: {
+                    else {
+                        if (Animation::is_less_approx(prev_time, time)) {
+                            Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+                            if (err != OK) {
+                                continue;
+                            }
+                            a->try_scale_track_interpolate(i, 0, &scale[1]);
+                            context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
                             prev_time = (double)a_length;
-                        } break;
-                        case Animation::LOOP_LINEAR: {
-                            prev_time = Math::fposmod(prev_time, (double)a_length);
-                        } break;
-                        case Animation::LOOP_PINGPONG: {
-                            prev_time = Math::pingpong(prev_time, (double)a_length);
-                        } break;
-                        default:
-                            break;
                         }
                     }
-                }
-                Vector3 scale[2];
-                if (!backward) {
-                    if (Animation::is_greater_approx(prev_time, time)) {
-                        Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_scale_track_interpolate(i, (double)a_length, &scale[1]);
-                        context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
-                        prev_time = 0;
+                    Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+                    if (err != OK) {
+                        continue;
                     }
+                    a->try_scale_track_interpolate(i, time, &scale[1]);
+                    context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
+                    prev_time = !backward ? 0 : (double)a_length;
                 }
-                else {
-                    if (Animation::is_less_approx(prev_time, time)) {
-                        Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
-                        if (err != OK) {
-                            continue;
-                        }
-                        a->try_scale_track_interpolate(i, 0, &scale[1]);
-                        context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
-                        prev_time = (double)a_length;
+                {
+                    Vector3 scale;
+                    Error err = a->try_scale_track_interpolate(i, time, &scale);
+                    if (err != OK) {
+                        continue;
                     }
+                    t->scale = t->scale.lerp(scale, blend);
+                    t->scale_used = true;
                 }
-                Error err = a->try_scale_track_interpolate(i, prev_time, &scale[0]);
+            } break;
+            case Animation::TYPE_BLEND_SHAPE: {
+                float value;
+                Error err = a->try_blend_shape_track_interpolate(i, time, &value);
+                //ERR_CONTINUE(err!=OK); //used for testing, should be removed
                 if (err != OK) {
                     continue;
                 }
-                a->try_scale_track_interpolate(i, time, &scale[1]);
-                context.root_motion_cache.scale += (scale[1] - scale[0]) * blend;
-                prev_time = !backward ? 0 : (double)a_length;
-            }
-            {
-                Vector3 scale;
-                Error err = a->try_scale_track_interpolate(i, time, &scale);
-                if (err != OK) {
+                AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
+                if (!context.blend_shape_cache.has(animation_track->path)) {
                     continue;
                 }
-                t->scale = t->scale.lerp(scale, blend);
-                t->scale_used = true;
-            }
-        } break;
-        case Animation::TYPE_BLEND_SHAPE: {
-            float value;
-            Error err = a->try_blend_shape_track_interpolate(i, time, &value);
-            //ERR_CONTINUE(err!=OK); //used for testing, should be removed
-            if (err != OK) {
-                continue;
-            }
-            AnimationMixer::TrackCacheBlendShape* t = context.blend_shape_cache[animation_track->path];
-			if (!context.blend_shape_cache.has(animation_track->path)) {
-				continue;
-			}
-            t->value = Math::lerp( (double)t->value, (double)value, blend);
-        } break;
+                t->value = Math::lerp( (double)t->value, (double)value, blend);
+            } break;
         }
 
     }
