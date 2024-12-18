@@ -933,6 +933,13 @@ class Godot(private val context: Context) {
 		return value.data
 	}
 
+	@Keep
+	private fun getBaseColor(): Int {
+		val value = TypedValue()
+		context.theme.resolveAttribute(android.R.attr.colorBackground, value, true)
+		return value.data
+	}
+
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.
 	 */
@@ -970,15 +977,10 @@ class Godot(private val context: Context) {
 	}
 
 	fun onBackPressed() {
-		var shouldQuit = true
 		for (plugin in pluginRegistry.allPlugins) {
-			if (plugin.onMainBackPressed()) {
-				shouldQuit = false
-			}
+			plugin.onMainBackPressed()
 		}
-		if (shouldQuit) {
-			renderView?.queueOnRenderThread { GodotLib.back() }
-		}
+		renderView?.queueOnRenderThread { GodotLib.back() }
 	}
 
 	/**

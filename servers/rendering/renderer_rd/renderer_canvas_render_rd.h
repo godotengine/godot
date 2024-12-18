@@ -268,12 +268,23 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 	RID_Owner<CanvasLight> canvas_light_owner;
 
+	struct PositionalShadowRenderPushConstant {
+		float modelview[8];
+		float rotation[4];
+		float direction[2];
+		float z_far;
+		uint32_t pad;
+		float z_near;
+		uint32_t cull_mode;
+		float pad2[2];
+	};
+
 	struct ShadowRenderPushConstant {
 		float projection[16];
 		float modelview[8];
 		float direction[2];
 		float z_far;
-		float pad;
+		uint32_t cull_mode;
 	};
 
 	struct OccluderPolygon {
@@ -313,7 +324,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
 
 	enum ShadowRenderMode {
-		SHADOW_RENDER_MODE_SHADOW,
+		SHADOW_RENDER_MODE_DIRECTIONAL_SHADOW,
+		SHADOW_RENDER_MODE_POSITIONAL_SHADOW,
 		SHADOW_RENDER_MODE_SDF,
 	};
 
@@ -325,7 +337,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct {
 		CanvasOcclusionShaderRD shader;
 		RID shader_version;
-		RID render_pipelines[3];
+		RID render_pipelines[2];
 		RID sdf_render_pipelines[2];
 		RD::VertexFormatID vertex_format;
 		RD::VertexFormatID sdf_vertex_format;
@@ -564,6 +576,10 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID shadow_fb;
 		int shadow_texture_size = 2048;
 
+		RID shadow_occluder_buffer;
+		uint32_t shadow_occluder_buffer_size;
+		RID shadow_ocluder_uniform_set;
+
 		RID default_transforms_uniform_set;
 
 		uint32_t max_lights_per_render;
@@ -617,6 +633,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	void _update_shadow_atlas();
+	void _update_occluder_buffer(uint32_t p_size);
 
 public:
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
@@ -625,7 +642,7 @@ public:
 	RID light_create() override;
 	void light_set_texture(RID p_rid, RID p_texture) override;
 	void light_set_use_shadow(RID p_rid, bool p_enable) override;
-	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) override;
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, const Rect2 &p_light_rect) override;
 	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) override;
 
 	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) override;
