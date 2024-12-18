@@ -543,6 +543,37 @@ TEST_CASE("[Stress][List] Swap random 10 elements, 1000 iterations.") {
 	populate_integers(list, n, 10);
 	swap_random(list, n, 10, 1000);
 }
+
+TEST_CASE("[List] Construct from List of different type") {
+	List<int> list_int;
+	list_int.push_back(1);
+	list_int.push_back(10);
+	list_int.push_back(100);
+	List<float> list_float = List<float>(list_int);
+	CHECK_EQ(list_int.size(), list_float.size());
+	CHECK_EQ(list_int.get(0), list_float.get(0));
+	CHECK_EQ(list_int.get(1), list_float.get(1));
+	CHECK_EQ(list_int.get(2), list_float.get(2));
+}
+
+TEST_CASE("[Vector] Construct from Vector") {
+	Vector<int> vector = { 1, 10, 100 };
+	List<int> list = List<int>(vector);
+	CHECK_EQ(list.size(), vector.size());
+	CHECK_EQ(list.get(0), vector[0]);
+	CHECK_EQ(list.get(1), vector[1]);
+	CHECK_EQ(list.get(2), vector[2]);
+}
+
+TEST_CASE("[Vector] Construct from Vector of different type") {
+	Vector<int> vector_int = { 1, 10, 100 };
+	List<float> list_float = List<float>(vector_int);
+	CHECK_EQ(list_float.size(), vector_int.size());
+	CHECK_EQ(list_float.get(0), vector_int[0]);
+	CHECK_EQ(list_float.get(1), vector_int[1]);
+	CHECK_EQ(list_float.get(2), vector_int[2]);
+}
+
 } // namespace TestList
 
 #endif // TEST_LIST_H

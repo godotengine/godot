@@ -59,6 +59,23 @@ public:
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 	}
+
+	_FORCE_INLINE_ explicit TypedArray(const Vector<std::add_pointer_t<T>> &p_vector) {
+		resize(p_vector.size());
+		Array::Iterator itr = begin();
+		for (const std::add_pointer_t<T> &element : p_vector) {
+			*itr = element;
+			++itr;
+		}
+	}
+	_FORCE_INLINE_ explicit TypedArray(const List<std::add_pointer_t<T>> &p_list) {
+		resize(p_list.size());
+		Array::Iterator itr = begin();
+		for (const std::add_pointer_t<T> &element : p_list) {
+			*itr = element;
+			++itr;
+		}
+	}
 };
 
 template <typename T>
@@ -95,6 +112,23 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray() {                                                                            \
 			set_typed(m_variant_type, StringName(), Variant());                                                  \
+		}                                                                                                        \
+                                                                                                                 \
+		_FORCE_INLINE_ explicit TypedArray(const Vector<m_type> &p_vector) {                                     \
+			resize(p_vector.size());                                                                             \
+			Array::Iterator itr = begin();                                                                       \
+			for (const m_type &element : p_vector) {                                                             \
+				*itr = element;                                                                                  \
+				++itr;                                                                                           \
+			}                                                                                                    \
+		}                                                                                                        \
+		_FORCE_INLINE_ explicit TypedArray(const List<m_type> &p_list) {                                         \
+			resize(p_list.size());                                                                               \
+			Array::Iterator itr = begin();                                                                       \
+			for (const m_type &element : p_list) {                                                               \
+				*itr = element;                                                                                  \
+				++itr;                                                                                           \
+			}                                                                                                    \
 		}                                                                                                        \
 	};
 
@@ -251,5 +285,21 @@ MAKE_TYPED_ARRAY_INFO(IPAddress, Variant::STRING)
 
 #undef MAKE_TYPED_ARRAY
 #undef MAKE_TYPED_ARRAY_INFO
+
+template <typename T>
+Vector<T>::Vector(const TypedArray<std::remove_pointer_t<T>> &p_array) {
+	resize(p_array.size());
+	T *ptr = ptrw();
+	for (const Variant &element : p_array) {
+		*(ptr++) = element;
+	}
+}
+
+template <typename T, typename A>
+List<T, A>::List(const TypedArray<std::remove_pointer_t<T>> &p_array) {
+	for (const Variant &element : p_array) {
+		push_back((T)element);
+	}
+}
 
 #endif // TYPED_ARRAY_H

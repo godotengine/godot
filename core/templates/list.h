@@ -35,6 +35,11 @@
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 
+template <typename T>
+class Vector;
+template <typename T>
+class TypedArray;
+
 /**
  * Generic Templatized Linked List Implementation.
  * The implementation differs from the STL one because
@@ -763,6 +768,17 @@ public:
 
 	List() {}
 
+	template <typename T_Other>
+	_FORCE_INLINE_ explicit List(const List<T_Other> &p_other) {
+		for (const T_Other &element : p_other) {
+			push_back((T)element);
+		}
+	}
+	_FORCE_INLINE_ explicit List(const Vector<T> &p_vector);
+	template <typename T_Other>
+	_FORCE_INLINE_ explicit List(const Vector<T_Other> &p_vector);
+	_FORCE_INLINE_ explicit List(const TypedArray<std::remove_pointer_t<T>> &p_array);
+
 	~List() {
 		clear();
 		if (_data) {
@@ -807,6 +823,21 @@ void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 
 	data = p_dst_list->_data;
 	p_dst_list->_data->size_cache++;
+}
+
+template <typename T, typename A>
+List<T, A>::List(const Vector<T> &p_vector) {
+	for (const T &element : p_vector) {
+		push_back(element);
+	}
+}
+
+template <typename T, typename A>
+template <typename T_Other>
+List<T, A>::List(const Vector<T_Other> &p_vector) {
+	for (const T_Other &element : p_vector) {
+		push_back((T)element);
+	}
 }
 
 #endif // LIST_H

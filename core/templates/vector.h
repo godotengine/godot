@@ -49,6 +49,11 @@
 #include <initializer_list>
 #include <utility>
 
+template <typename T, typename A>
+class List;
+template <typename T>
+class TypedArray;
+
 template <typename T>
 class VectorWriteProxy {
 public:
@@ -296,6 +301,23 @@ public:
 	_FORCE_INLINE_ Vector(Vector &&p_from) :
 			_cowdata(std::move(p_from._cowdata)) {}
 
+	template <typename T_Other>
+	_FORCE_INLINE_ explicit Vector(const Vector<T_Other> &p_other) {
+		// FIXME: `resize()` can cause unnecessary initialization of elements if they are not
+		// trivially destructible. Something like LocalVector's `reserve()` would be better,
+		// but Vector does not support it yet.
+		resize(p_other.size());
+		T *ptr = ptrw();
+		for (const T_Other &element : p_other) {
+			*(ptr++) = (T)element;
+		}
+	}
+	template <typename A = DefaultAllocator>
+	_FORCE_INLINE_ explicit Vector(const List<T, A> &p_list);
+	template <typename T_Other, typename A = DefaultAllocator>
+	_FORCE_INLINE_ explicit Vector(const List<T_Other, A> &p_list);
+	_FORCE_INLINE_ explicit Vector(const TypedArray<std::remove_pointer_t<T>> &p_array);
+
 	_FORCE_INLINE_ ~Vector() {}
 };
 
@@ -334,6 +356,26 @@ void Vector<T>::fill(T p_elem) {
 	T *p = ptrw();
 	for (Size i = 0; i < size(); i++) {
 		p[i] = p_elem;
+	}
+}
+
+template <typename T>
+template <typename A>
+Vector<T>::Vector(const List<T, A> &p_list) {
+	resize(p_list.size());
+	T *ptr = ptrw();
+	for (const T &element : p_list) {
+		*(ptr++) = element;
+	}
+}
+
+template <typename T>
+template <typename T_Other, typename A>
+Vector<T>::Vector(const List<T_Other, A> &p_list) {
+	resize(p_list.size());
+	T *ptr = ptrw();
+	for (const T_Other &element : p_list) {
+		*(ptr++) = (T)element;
 	}
 }
 

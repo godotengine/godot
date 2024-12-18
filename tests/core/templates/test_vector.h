@@ -532,6 +532,39 @@ TEST_CASE("[Vector] Operators") {
 	CHECK(vector != vector_other);
 }
 
+TEST_CASE("[Vector] Construct from Vector of different type") {
+	Vector<int> vector_int = { 1, 10, 100 };
+	Vector<float> vector_float = Vector<float>(vector_int);
+	CHECK_EQ(vector_int.size(), vector_float.size());
+	CHECK_EQ(vector_int.get(0), vector_float[0]);
+	CHECK_EQ(vector_int.get(1), vector_float[1]);
+	CHECK_EQ(vector_int.get(2), vector_float[2]);
+}
+
+TEST_CASE("[Vector] Construct from List") {
+	List<int> list;
+	list.push_back(1);
+	list.push_back(10);
+	list.push_back(100);
+	Vector<int> vector = Vector<int>(list);
+	CHECK_EQ(list.size(), vector.size());
+	CHECK_EQ(list.get(0), vector[0]);
+	CHECK_EQ(list.get(1), vector[1]);
+	CHECK_EQ(list.get(2), vector[2]);
+}
+
+TEST_CASE("[Vector] Construct from List of different type") {
+	List<int> list_int;
+	list_int.push_back(1);
+	list_int.push_back(10);
+	list_int.push_back(100);
+	Vector<float> vector_float = Vector<float>(list_int);
+	CHECK_EQ(list_int.size(), vector_float.size());
+	CHECK_EQ(list_int.get(0), vector_float[0]);
+	CHECK_EQ(list_int.get(1), vector_float[1]);
+	CHECK_EQ(list_int.get(2), vector_float[2]);
+}
+
 } // namespace TestVector
 
 #endif // TEST_VECTOR_H

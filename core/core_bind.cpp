@@ -82,12 +82,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
 	List<String> exts;
 	::ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
-	Vector<String> ret;
-	for (const String &E : exts) {
-		ret.push_back(E);
-	}
-
-	return ret;
+	return Vector<String>(exts);
 }
 
 void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
@@ -105,13 +100,7 @@ void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 PackedStringArray ResourceLoader::get_dependencies(const String &p_path) {
 	List<String> deps;
 	::ResourceLoader::get_dependencies(p_path, &deps);
-
-	PackedStringArray ret;
-	for (const String &E : deps) {
-		ret.push_back(E);
-	}
-
-	return ret;
+	return PackedStringArray(deps);
 }
 
 bool ResourceLoader::has_cached(const String &p_path) {
@@ -174,11 +163,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
-	Vector<String> ret;
-	for (const String &E : exts) {
-		ret.push_back(E);
-	}
-	return ret;
+	return Vector<String>(exts);
 }
 
 void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
@@ -329,13 +314,9 @@ OS::StdHandleType OS::get_stderr_type() const {
 }
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
-	List<String> args;
-	for (const String &arg : p_arguments) {
-		args.push_back(arg);
-	}
 	String pipe;
 	int exitcode = 0;
-	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
+	Error err = ::OS::get_singleton()->execute(p_path, List<String>(p_arguments), &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
 	// Default array should never be modified, it causes the hash of the method to change.
 	if (!ClassDB::is_default_array_arg(r_output)) {
 		r_output.push_back(pipe);
@@ -347,20 +328,12 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 }
 
 Dictionary OS::execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking) {
-	List<String> args;
-	for (const String &arg : p_arguments) {
-		args.push_back(arg);
-	}
-	return ::OS::get_singleton()->execute_with_pipe(p_path, args, p_blocking);
+	return ::OS::get_singleton()->execute_with_pipe(p_path, List<String>(p_arguments), p_blocking);
 }
 
 int OS::create_instance(const Vector<String> &p_arguments) {
-	List<String> args;
-	for (const String &arg : p_arguments) {
-		args.push_back(arg);
-	}
 	::OS::ProcessID pid = 0;
-	Error err = ::OS::get_singleton()->create_instance(args, &pid);
+	Error err = ::OS::get_singleton()->create_instance(List<String>(p_arguments), &pid);
 	if (err != OK) {
 		return -1;
 	}
@@ -368,12 +341,8 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 }
 
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
-	List<String> args;
-	for (const String &arg : p_arguments) {
-		args.push_back(arg);
-	}
 	::OS::ProcessID pid = 0;
-	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
+	Error err = ::OS::get_singleton()->create_process(p_path, List<String>(p_arguments), &pid, p_open_console);
 	if (err != OK) {
 		return -1;
 	}
@@ -433,32 +402,15 @@ Vector<String> OS::get_video_adapter_driver_info() const {
 }
 
 Vector<String> OS::get_cmdline_args() {
-	List<String> cmdline = ::OS::get_singleton()->get_cmdline_args();
-	Vector<String> cmdlinev;
-	for (const String &E : cmdline) {
-		cmdlinev.push_back(E);
-	}
-
-	return cmdlinev;
+	return Vector<String>(::OS::get_singleton()->get_cmdline_args());
 }
 
 Vector<String> OS::get_cmdline_user_args() {
-	List<String> cmdline = ::OS::get_singleton()->get_cmdline_user_args();
-	Vector<String> cmdlinev;
-	for (const String &E : cmdline) {
-		cmdlinev.push_back(E);
-	}
-
-	return cmdlinev;
+	return Vector<String>(::OS::get_singleton()->get_cmdline_user_args());
 }
 
 void OS::set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments) {
-	List<String> args_list;
-	for (const String &restart_argument : p_restart_arguments) {
-		args_list.push_back(restart_argument);
-	}
-
-	::OS::get_singleton()->set_restart_on_exit(p_restart, args_list);
+	::OS::get_singleton()->set_restart_on_exit(p_restart, List<String>(p_restart_arguments));
 }
 
 bool OS::is_restart_on_exit_set() const {
@@ -466,13 +418,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 Vector<String> OS::get_restart_on_exit_arguments() const {
-	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
-	Vector<String> args_vector;
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		args_vector.push_back(E->get());
-	}
-
-	return args_vector;
+	return Vector<String>(::OS::get_singleton()->get_restart_on_exit_arguments());
 }
 
 String OS::get_locale() const {
@@ -842,139 +788,58 @@ Vector<Point2> Geometry2D::convex_hull(const Vector<Point2> &p_points) {
 }
 
 TypedArray<PackedVector2Array> Geometry2D::decompose_polygon_in_convex(const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> decomp = ::Geometry2D::decompose_polygon_in_convex(p_polygon);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < decomp.size(); ++i) {
-		ret.push_back(decomp[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::decompose_polygon_in_convex(p_polygon));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::merge_polygons(p_polygon_a, p_polygon_b));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::clip_polygons(p_polygon_a, p_polygon_b));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::intersect_polygons(p_polygon_a, p_polygon_b));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::exclude_polygons(p_polygon_a, p_polygon_b));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon);
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::intersect_polyline_with_polygon(p_polyline, p_polygon));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type));
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::offset_polygon(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type)));
 }
 
 TypedArray<PackedVector2Array> Geometry2D::offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-	Vector<Vector<Point2>> polys = ::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type));
-
-	TypedArray<PackedVector2Array> ret;
-
-	for (int i = 0; i < polys.size(); ++i) {
-		ret.push_back(polys[i]);
-	}
-	return ret;
+	return TypedArray<PackedVector2Array>(::Geometry2D::offset_polyline(p_polygon, p_delta, ::Geometry2D::PolyJoinType(p_join_type), ::Geometry2D::PolyEndType(p_end_type)));
 }
 
 Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 	Dictionary ret;
 
-	Vector<Size2i> rects;
-	for (int i = 0; i < p_rects.size(); i++) {
-		rects.push_back(p_rects[i]);
-	}
-
+	Vector<Size2i> rects = Vector<Size2i>(p_rects);
 	Vector<Point2i> result;
 	Size2i size;
 
 	::Geometry2D::make_atlas(rects, result, size);
 
-	Vector<Point2> r_result;
-	for (int i = 0; i < result.size(); i++) {
-		r_result.push_back(result[i]);
-	}
-
-	ret["points"] = r_result;
+	ret["points"] = Vector<Point2>(result);
 	ret["size"] = size;
 
 	return ret;
 }
 
 TypedArray<Point2i> Geometry2D::bresenham_line(const Point2i &p_from, const Point2i &p_to) {
-	Vector<Point2i> points = ::Geometry2D::bresenham_line(p_from, p_to);
-
-	TypedArray<Point2i> result;
-	result.resize(points.size());
-
-	for (int i = 0; i < points.size(); i++) {
-		result[i] = points[i];
-	}
-
-	return result;
+	return TypedArray<Point2i>(::Geometry2D::bresenham_line(p_from, p_to));
 }
 
 void Geometry2D::_bind_methods() {
@@ -1038,13 +903,8 @@ Geometry3D *Geometry3D::get_singleton() {
 }
 
 Vector<Vector3> Geometry3D::compute_convex_mesh_points(const TypedArray<Plane> &p_planes) {
-	Vector<Plane> planes_vec;
-	int size = p_planes.size();
-	planes_vec.resize(size);
-	for (int i = 0; i < size; ++i) {
-		planes_vec.set(i, p_planes[i]);
-	}
-	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), size);
+	Vector<Plane> planes_vec = Vector<Plane>(p_planes);
+	Variant ret = ::Geometry3D::compute_convex_mesh_points(planes_vec.ptr(), planes_vec.size());
 	return ret;
 }
 
@@ -1428,29 +1288,13 @@ namespace special {
 PackedStringArray ClassDB::get_class_list() const {
 	List<StringName> classes;
 	::ClassDB::get_class_list(&classes);
-
-	PackedStringArray ret;
-	ret.resize(classes.size());
-	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
+	return PackedStringArray(classes);
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
 	List<StringName> classes;
 	::ClassDB::get_inheriters_from_class(p_class, &classes);
-
-	PackedStringArray ret;
-	ret.resize(classes.size());
-	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
+	return PackedStringArray(classes);
 }
 
 StringName ClassDB::get_parent_class(const StringName &p_class) const {
@@ -1604,15 +1448,7 @@ Variant ClassDB::class_call_static(const Variant **p_arguments, int p_argcount, 
 PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<String> constants;
 	::ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
-
-	PackedStringArray ret;
-	ret.resize(constants.size());
-	int idx = 0;
-	for (const String &E : constants) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
+	return PackedStringArray(constants);
 }
 
 bool ClassDB::class_has_integer_constant(const StringName &p_class, const StringName &p_name) const {
@@ -1635,29 +1471,13 @@ bool ClassDB::class_has_enum(const StringName &p_class, const StringName &p_name
 PackedStringArray ClassDB::class_get_enum_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<StringName> enums;
 	::ClassDB::get_enum_list(p_class, &enums, p_no_inheritance);
-
-	PackedStringArray ret;
-	ret.resize(enums.size());
-	int idx = 0;
-	for (const StringName &E : enums) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
+	return PackedStringArray(enums);
 }
 
 PackedStringArray ClassDB::class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance) const {
 	List<StringName> constants;
 	::ClassDB::get_enum_constants(p_class, p_enum, &constants, p_no_inheritance);
-
-	PackedStringArray ret;
-	ret.resize(constants.size());
-	int idx = 0;
-	for (const StringName &E : constants) {
-		ret.set(idx++, E);
-	}
-
-	return ret;
+	return PackedStringArray(constants);
 }
 
 StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
