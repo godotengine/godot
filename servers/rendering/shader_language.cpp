@@ -31,7 +31,6 @@
 #include "shader_language.h"
 
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
