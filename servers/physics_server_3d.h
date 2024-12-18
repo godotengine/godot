@@ -270,6 +270,13 @@ public:
 	virtual RID heightmap_shape_create() = 0;
 	virtual RID custom_shape_create() = 0;
 
+	// This method is intented to be used in advanced cases where a lot of shapes are created procedurally at runtime.
+	// It can be called from a custom background thread to move the work away from the main thread or the physics thread.
+	// This is a specific "fast path" for GDExtensions and maybe scripts.
+	// Ideally, creating any shape should work in that way so that even loading a scene in a thread would benefit from this
+	// approach, but the current design of the physics API and properties being assignable anywhere anytime makes this difficult.
+	virtual RID concave_polygon_shape_create_immediate(Variant params);
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) = 0;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) = 0;
 

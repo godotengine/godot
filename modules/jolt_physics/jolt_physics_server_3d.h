@@ -134,6 +134,7 @@ public:
 	virtual RID cylinder_shape_create() override;
 	virtual RID convex_polygon_shape_create() override;
 	virtual RID concave_polygon_shape_create() override;
+	virtual RID concave_polygon_shape_create_immediate(Variant params) override;
 	virtual RID heightmap_shape_create() override;
 	virtual RID custom_shape_create() override;
 

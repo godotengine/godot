@@ -120,6 +120,14 @@ RID JoltPhysicsServer3D::concave_polygon_shape_create() {
 	return rid;
 }
 
+RID JoltPhysicsServer3D::concave_polygon_shape_create_immediate(Variant params) {
+	JoltConcavePolygonShape3D *shape = JoltConcavePolygonShape3D::create_with_data(params);
+	ERR_FAIL_COND_V(shape == nullptr, RID());
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_rid(rid);
+	return rid;
+}
+
 RID JoltPhysicsServer3D::heightmap_shape_create() {
 	JoltShape3D *shape = memnew(JoltHeightMapShape3D);
 	RID rid = shape_owner.make_rid(shape);

@@ -689,6 +689,11 @@ RID PhysicsServer3D::shape_create(ShapeType p_shape) {
 	}
 }
 
+RID PhysicsServer3D::concave_polygon_shape_create_immediate(Variant params) {
+	ERR_PRINT("Not implemented");
+	return RID();
+}
+
 void PhysicsServer3D::_bind_methods() {
 #ifndef _3D_DISABLED
 
@@ -700,6 +705,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cylinder_shape_create"), &PhysicsServer3D::cylinder_shape_create);
 	ClassDB::bind_method(D_METHOD("convex_polygon_shape_create"), &PhysicsServer3D::convex_polygon_shape_create);
 	ClassDB::bind_method(D_METHOD("concave_polygon_shape_create"), &PhysicsServer3D::concave_polygon_shape_create);
+	ClassDB::bind_method(D_METHOD("concave_polygon_shape_create_immediate", "params"), &PhysicsServer3D::concave_polygon_shape_create_immediate);
 	ClassDB::bind_method(D_METHOD("heightmap_shape_create"), &PhysicsServer3D::heightmap_shape_create);
 	ClassDB::bind_method(D_METHOD("custom_shape_create"), &PhysicsServer3D::custom_shape_create);
 
