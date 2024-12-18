@@ -33,8 +33,6 @@
 
 #include "core/templates/lru.h"
 #include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
 #include "servers/rendering/renderer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_occlusion.glsl.gen.h"

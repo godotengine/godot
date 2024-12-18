@@ -31,7 +31,6 @@
 #include "physics_server_2d.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/print_string.h"
 #include "core/variant/typed_array.h"
 
 PhysicsServer2D *PhysicsServer2D::singleton = nullptr;

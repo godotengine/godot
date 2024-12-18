@@ -36,7 +36,6 @@
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
 #include "renderer_canvas_cull.h"
-#include "renderer_scene_cull.h"
 #include "renderer_viewport.h"
 #include "rendering_server_globals.h"
 #include "servers/rendering/renderer_compositor.h"

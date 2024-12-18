@@ -30,10 +30,7 @@
 
 #include "rendering_server_default.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/templates/sort_array.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"

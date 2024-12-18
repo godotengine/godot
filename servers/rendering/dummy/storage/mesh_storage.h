@@ -31,7 +31,6 @@
 #ifndef MESH_STORAGE_DUMMY_H
 #define MESH_STORAGE_DUMMY_H
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/mesh_storage.h"
 

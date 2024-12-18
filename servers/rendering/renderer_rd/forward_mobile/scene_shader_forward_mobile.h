@@ -31,8 +31,8 @@
 #ifndef SCENE_SHADER_FORWARD_MOBILE_H
 #define SCENE_SHADER_FORWARD_MOBILE_H
 
+#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
