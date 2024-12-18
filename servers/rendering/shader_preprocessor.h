@@ -132,6 +132,7 @@ private:
 	struct Define {
 		Vector<String> arguments;
 		String body;
+		bool is_builtin = false;
 	};
 
 	struct Branch {
@@ -191,6 +192,7 @@ private:
 	void process_elif(Tokenizer *p_tokenizer);
 	void process_else(Tokenizer *p_tokenizer);
 	void process_endif(Tokenizer *p_tokenizer);
+	void process_error(Tokenizer *p_tokenizer);
 	void process_if(Tokenizer *p_tokenizer);
 	void process_ifdef(Tokenizer *p_tokenizer);
 	void process_ifndef(Tokenizer *p_tokenizer);
@@ -213,6 +215,7 @@ private:
 	void set_error(const String &p_error, int p_line);
 
 	static Define *create_define(const String &p_body);
+	void insert_builtin_define(String p_name, String p_value, State &p_state);
 
 	void clear_state();
 

@@ -102,6 +102,9 @@
 		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
 			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
 		</member>
+		<member name="launcher_icons/adaptive_monochrome_432x432" type="String" setter="" getter="">
+			Monochrome layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
 			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
@@ -147,6 +150,9 @@
 		</member>
 		<member name="permissions/access_location_extra_commands" type="bool" setter="" getter="">
 			Allows access to the extra location provider commands. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_LOCATION_EXTRA_COMMANDS]ACCESS_LOCATION_EXTRA_COMMANDS[/url].
+		</member>
+		<member name="permissions/access_media_location" type="bool" setter="" getter="">
+			Allows an application to access any geographic locations persisted in the user's shared collection. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_MEDIA_LOCATION]ACCESS_MEDIA_LOCATION[/url].
 		</member>
 		<member name="permissions/access_mock_location" type="bool" setter="" getter="">
 			Allows an application to create mock location providers for testing.
@@ -409,6 +415,18 @@
 		<member name="permissions/read_logs" type="bool" setter="" getter="">
 			Allows an application to read the low-level system log files. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_LOGS]READ_LOGS[/url].
 		</member>
+		<member name="permissions/read_media_audio" type="bool" setter="" getter="">
+			Allows an application to read audio files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_AUDIO]READ_MEDIA_AUDIO[/url].
+		</member>
+		<member name="permissions/read_media_images" type="bool" setter="" getter="">
+			Allows an application to read image files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_IMAGES]READ_MEDIA_IMAGES[/url].
+		</member>
+		<member name="permissions/read_media_video" type="bool" setter="" getter="">
+			Allows an application to read video files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VIDEO]READ_MEDIA_VIDEO[/url].
+		</member>
+		<member name="permissions/read_media_visual_user_selected" type="bool" setter="" getter="">
+			Allows an application to read image or video files from external storage that a user has selected via the permission prompt photo picker. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VISUAL_USER_SELECTED]READ_MEDIA_VISUAL_USER_SELECTED[/url].
+		</member>
 		<member name="permissions/read_phone_state" type="bool" setter="" getter="">
 			Allows read only access to phone state. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE]READ_PHONE_STATE[/url].
 		</member>
@@ -574,7 +592,7 @@
 			Allows an application to write to the user dictionary.
 		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
-			If [code]true[/code], hides navigation and status bar.
+			If [code]true[/code], hides navigation and status bar. See [method DisplayServer.window_set_mode] to toggle it at runtime.
 		</member>
 		<member name="screen/support_large" type="bool" setter="" getter="">
 			Indicates whether the application supports larger screen form-factors.

@@ -44,7 +44,7 @@
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
 #ifdef GLES3_ENABLED
-#include <wayland-egl.h>
+#include <wayland-egl-core.h>
 #endif
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
@@ -67,8 +67,12 @@
 #include "wayland/protocol/wayland.gen.h"
 #include "wayland/protocol/xdg_activation.gen.h"
 #include "wayland/protocol/xdg_decoration.gen.h"
-#include "wayland/protocol/xdg_foreign.gen.h"
+#include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
+#include "wayland/protocol/xdg_system_bell.gen.h"
+
+// NOTE: Deprecated.
+#include "wayland/protocol/xdg_foreign_v1.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -148,8 +152,12 @@ public:
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
-		struct zxdg_exporter_v1 *xdg_exporter = nullptr;
-		uint32_t xdg_exporter_name = 0;
+		// NOTE: Deprecated.
+		struct zxdg_exporter_v1 *xdg_exporter_v1 = nullptr;
+		uint32_t xdg_exporter_v1_name = 0;
+
+		uint32_t xdg_exporter_v2_name = 0;
+		struct zxdg_exporter_v2 *xdg_exporter_v2 = nullptr;
 
 		// wayland-protocols globals.
 
@@ -161,6 +169,9 @@ public:
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
+
+		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
+		uint32_t xdg_system_bell_name = 0;
 
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
@@ -220,7 +231,11 @@ public:
 
 		struct wp_viewport *wp_viewport = nullptr;
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
-		struct zxdg_exported_v1 *xdg_exported = nullptr;
+
+		// NOTE: Deprecated.
+		struct zxdg_exported_v1 *xdg_exported_v1 = nullptr;
+
+		struct zxdg_exported_v2 *xdg_exported_v2 = nullptr;
 
 		String exported_handle;
 
@@ -295,7 +310,7 @@ public:
 	};
 
 	struct PointerData {
-		Point2i position;
+		Point2 position;
 		uint32_t motion_time = 0;
 
 		// Relative motion has its own optional event and so needs its own time.
@@ -305,7 +320,7 @@ public:
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2i last_pressed_position;
+		Point2 last_pressed_position;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -325,14 +340,14 @@ public:
 	};
 
 	struct TabletToolData {
-		Point2i position;
+		Point2 position;
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2i last_pressed_position;
+		Point2 last_pressed_position;
 
 		bool double_click_begun = false;
 
@@ -469,7 +484,6 @@ public:
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
 
-		RID rid;
 		Point2i hotspot;
 	};
 
@@ -506,10 +520,8 @@ private:
 
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
-	struct wl_cursor *current_wl_cursor = nullptr;
-	struct CustomCursor *current_custom_cursor = nullptr;
-
-	DisplayServer::CursorShape last_cursor_shape = DisplayServer::CURSOR_ARROW;
+	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
+	bool cursor_visible = true;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -651,7 +663,10 @@ private:
 
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
-	static void _xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle);
+	// NOTE: Deprecated.
+	static void _xdg_exported_v1_on_handle(void *data, zxdg_exported_v1 *exported, const char *handle);
+
+	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
 
@@ -668,7 +683,7 @@ private:
 		.preferred_buffer_transform = _wl_surface_on_preferred_buffer_transform,
 	};
 
-	static constexpr struct wl_callback_listener frame_wl_callback_listener {
+	static constexpr struct wl_callback_listener frame_wl_callback_listener = {
 		.done = _frame_wl_callback_on_done,
 	};
 
@@ -686,7 +701,7 @@ private:
 		.name = _wl_seat_on_name,
 	};
 
-	static constexpr struct wl_callback_listener cursor_frame_callback_listener {
+	static constexpr struct wl_callback_listener cursor_frame_callback_listener = {
 		.done = _cursor_frame_callback_on_done,
 	};
 
@@ -819,8 +834,13 @@ private:
 		.done = _wp_text_input_on_done,
 	};
 
-	static constexpr struct zxdg_exported_v1_listener xdg_exported_listener = {
-		.handle = _xdg_exported_on_exported
+	// NOTE: Deprecated.
+	static constexpr struct zxdg_exported_v1_listener xdg_exported_v1_listener = {
+		.handle = _xdg_exported_v1_on_handle,
+	};
+
+	static constexpr struct zxdg_exported_v2_listener xdg_exported_v2_listener = {
+		.handle = _xdg_exported_v2_on_handle,
 	};
 
 	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
@@ -929,6 +949,8 @@ public:
 	bool has_message();
 	Ref<Message> pop_message();
 
+	void beep() const;
+
 	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
@@ -949,6 +971,8 @@ public:
 	// Optional - requires xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
 
+	void window_start_drag(DisplayServer::WindowID p_window_id);
+
 	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
 	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
@@ -962,7 +986,7 @@ public:
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
-	void cursor_hide();
+	void cursor_set_visible(bool p_visible);
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 
 	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);

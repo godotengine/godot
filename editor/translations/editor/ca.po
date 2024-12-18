@@ -23,13 +23,17 @@
 # Francesc Arpi Roca <francesc.arpi@gmail.com>, 2024.
 # bene toff <benetoffix@gmail.com>, 2024.
 # pc <polct50@users.noreply.hosted.weblate.org>, 2024.
+# sprin <graham32@tutamail.com>, 2024.
+# Azor Carreras Alcaraz <azorcarreras@gmail.com>, 2024.
+# Alberto Blanco Celdrán <flaberto.abc@gmail.com>, 2024.
+# Luna Moreno <akaluna99@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-16 19:57+0000\n"
-"Last-Translator: pc <polct50@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2024-09-03 22:09+0000\n"
+"Last-Translator: Luna Moreno <akaluna99@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -37,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -188,6 +192,9 @@ msgstr "Botó del Joypad %d"
 
 msgid "Pressure:"
 msgstr "Pressió:"
+
+msgid "canceled"
+msgstr "cancel·lat"
 
 msgid "touched"
 msgstr "Tocat"
@@ -363,6 +370,9 @@ msgstr "Selecciona la paraula sota el cursor"
 msgid "Add Selection for Next Occurrence"
 msgstr "Afegeix la selecció per la següent ocurrència"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Omet la selecció per la següent ocurrència"
+
 msgid "Clear Carets and Selection"
 msgstr "Esborra els cursors i la Selecció"
 
@@ -469,6 +479,9 @@ msgstr "Afegeix un Esdeveniment"
 msgid "Remove Event"
 msgstr "Elimina Esdeveniment"
 
+msgid "Filter by Name"
+msgstr "Filtra pel nom"
+
 msgid "Clear All"
 msgstr "Neteja-ho tot"
 
@@ -504,6 +517,12 @@ msgstr "Insereix una Clau aquí"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplica les Claus seleccionades"
+
+msgid "Cut Selected Key(s)"
+msgstr "Elimina les claus seleccionades"
+
+msgid "Copy Selected Key(s)"
+msgstr "Copia les Claus seleccionades"
 
 msgid "Paste Key(s)"
 msgstr "Enganxar les Claus"
@@ -565,6 +584,9 @@ msgstr "Animació canviar posició3D"
 msgid "Animation Change Rotation3D"
 msgstr "Canviar l'animació de Rotació3D"
 
+msgid "Animation Change Scale3D"
+msgstr "Canviar l'escala 3D a l'animació"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Modifica el valor del fotograma clau de l'animació"
 
@@ -573,6 +595,15 @@ msgstr "Canvia la crida de l'animació"
 
 msgid "Animation Multi Change Transition"
 msgstr "Modifica diverses transicions d'animació"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Canviar diverses posicions 3D a l'animació"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Canviar diverses rotacions 3D a l'animació"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Canviar diverses escales 3D a l'animació"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Modifica el valor de diversos fotogrames clau de l'animació"
@@ -613,6 +644,12 @@ msgstr "Pista de Crida de Mètodes..."
 
 msgid "Bezier Curve Track..."
 msgstr "Pista de Corbes de Bézier..."
+
+msgid "Audio Playback Track..."
+msgstr "Pista de reproducció d'àudio..."
+
+msgid "Animation Playback Track..."
+msgstr "Pista de reproducció d'animacions..."
 
 msgid "Animation length (frames)"
 msgstr "Longitud de l'animació (fotogrames)"
@@ -860,6 +897,9 @@ msgstr "El camí de la Pista no és vàlid i per tant no s'hi poden afegir claus
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "La pista no és de tipus Node3D, no s'hi pot inserir la clau"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "La pista no és de tipus MeshInstance3D, no s'hi pot inserir la clau"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "No s'hi pot afegit cap clau de mètode. El camí de la pista no és vàlid."
 
@@ -897,13 +937,16 @@ msgid "Clipboard is empty!"
 msgstr "El porta-retalls és buit!"
 
 msgid "Paste Tracks"
-msgstr "Enganxa les Pistes"
+msgstr "Enganxar pistes"
 
 msgid "Animation Scale Keys"
 msgstr "Claus d'Escala de l'Animació"
 
+msgid "Animation Set End Offset"
+msgstr "Establir Offset Final d'Animació"
+
 msgid "Make Easing Keys"
-msgstr "Crea Claus de Suavització"
+msgstr "Crea Claus de Suavitzat"
 
 msgid "Animation Add RESET Keys"
 msgstr "Afegeix Claus de RESET a l'animació"
@@ -929,6 +972,20 @@ msgstr ""
 "Algunes opcions, com la repetició, poden trobar-s'hi. Per afegir-hi pistes "
 "personalitzades, activeu \"Desa en un fitxer\" i\n"
 "\"Mantingues les pistes personalitzades\"."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Algunes opcions del AnimationPlayerEditor estan deshabilitades ja que aquesta "
+"és una previsualització del AnimationPlayer de prova.\n"
+"\n"
+"El reproductor de prova està actiu de manera forçada, no determinista i no té "
+"la pista de seguiment del moviment. A mes, el node original está inactiu de "
+"manera temporal."
 
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayer està inactiu. El playback no serà processat."
@@ -4623,14 +4680,14 @@ msgstr "Elimina Out-Control de la Corba"
 msgid "Remove In-Control from Curve"
 msgstr "Elimina In-Control de la Corba"
 
-msgid "Split Curve"
-msgstr "Partir Corba"
-
 msgid "Move Point in Curve"
 msgstr "Mou un Punt de la Corba"
 
 msgid "Add Point to Curve"
 msgstr "Afegeix un Punt a la Corba"
+
+msgid "Split Curve"
+msgstr "Partir Corba"
 
 msgid "Move In-Control in Curve"
 msgstr "Mou In-Control de la Corba"
@@ -5707,6 +5764,9 @@ msgstr "Treu-los tots"
 msgid "It would be a good idea to name your project."
 msgstr "Fóra bo anomenar el projecte."
 
+msgid "New Game Project"
+msgstr "Nou Projecte de Joc"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "No es pot crear el fitxer 'project.godot' en el camí del projecte."
 
@@ -5716,9 +5776,6 @@ msgstr ""
 
 msgid "The following files failed extraction from package:"
 msgstr "Ha fracassat l'extracció del paquet dels següents fitxers:"
-
-msgid "New Game Project"
-msgstr "Nou Projecte de Joc"
 
 msgid "Import & Edit"
 msgstr "Importa i Edita"

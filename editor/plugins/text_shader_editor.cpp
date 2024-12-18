@@ -779,7 +779,7 @@ void TextShaderEditor::_show_warnings_panel(bool p_show) {
 
 void TextShaderEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		code_editor->goto_line_centered(p_line.operator int64_t());
 	}
 }
 
@@ -895,7 +895,7 @@ void TextShaderEditor::_reload() {
 	}
 }
 
-void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
+void TextShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
 	}
@@ -910,7 +910,7 @@ void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
 	code_editor->set_edited_shader(shader);
 }
 
-void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
+void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {
 	if (p_shader_inc.is_null()) {
 		return;
 	}
@@ -1141,6 +1141,7 @@ TextShaderEditor::TextShaderEditor() {
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
+	main_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
@@ -1255,4 +1256,5 @@ TextShaderEditor::TextShaderEditor() {
 	add_child(disk_changed);
 
 	_editor_settings_changed();
+	code_editor->show_toggle_scripts_button(); // TODO: Disabled for now, because it doesn't work properly.
 }

@@ -116,12 +116,12 @@ AABB FogVolume::get_aabb() const {
 }
 
 PackedStringArray FogVolume::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
 	Ref<Environment> environment = get_viewport()->find_world_3d()->get_environment();
 
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("Fog Volumes are only visible when using the Forward+ backend."));
+		warnings.push_back(RTR("Fog Volumes are only visible when using the Forward+ renderer."));
 		return warnings;
 	}
 

@@ -58,6 +58,7 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Mode mode = MODE_EDIT;
+	HBoxContainer *toolbar = nullptr;
 	Button *curve_clear_points = nullptr;
 	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
@@ -66,6 +67,7 @@ class Path2DEditor : public HBoxContainer {
 	Button *curve_edit_curve = nullptr;
 	MenuButton *handle_menu = nullptr;
 
+	Button *create_curve_button = nullptr;
 	ConfirmationDialog *clear_points_dialog = nullptr;
 
 	bool mirror_handle_angle = true;
@@ -81,6 +83,7 @@ class Path2DEditor : public HBoxContainer {
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
 		ACTION_MOVING_NEW_POINT,
+		ACTION_MOVING_NEW_POINT_FROM_SPLIT,
 		ACTION_MOVING_IN,
 		ACTION_MOVING_OUT,
 	};
@@ -99,7 +102,9 @@ class Path2DEditor : public HBoxContainer {
 	void _cancel_current_action();
 
 	void _node_visibility_changed();
+	void _update_toolbar();
 
+	void _create_curve();
 	void _confirm_clear_points();
 	void _clear_curve_points(Path2D *p_path2d);
 	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);
@@ -125,7 +130,7 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const override { return "Path2D"; }
+	virtual String get_plugin_name() const override { return "Path2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

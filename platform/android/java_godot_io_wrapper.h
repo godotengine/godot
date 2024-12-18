@@ -48,6 +48,7 @@ private:
 	jmethodID _open_URI = 0;
 	jmethodID _get_cache_dir = 0;
 	jmethodID _get_data_dir = 0;
+	jmethodID _get_temp_dir = 0;
 	jmethodID _get_display_cutouts = 0;
 	jmethodID _get_display_safe_area = 0;
 	jmethodID _get_locale = 0;
@@ -58,6 +59,7 @@ private:
 	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
+	jmethodID _has_hardware_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;
 	jmethodID _get_screen_orientation = 0;
 	jmethodID _get_system_dir = 0;
@@ -70,6 +72,7 @@ public:
 
 	Error open_uri(const String &p_uri);
 	String get_cache_dir();
+	String get_temp_dir();
 	String get_user_data_dir();
 	String get_locale();
 	String get_model();
@@ -80,6 +83,7 @@ public:
 	Rect2i get_display_safe_area();
 	String get_unique_id();
 	bool has_vk();
+	bool has_hardware_keyboard();
 	void show_vk(const String &p_existing, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end);
 	void hide_vk();
 	int get_vk_height();

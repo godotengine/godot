@@ -160,13 +160,22 @@ private:
 		return *out;
 	}
 
-	void _unref(void *p_data);
+	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	USize _copy_on_write();
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
+	void operator=(CowData<T> &&p_from) {
+		if (_ptr == p_from._ptr) {
+			return;
+		}
+
+		_unref();
+		_ptr = p_from._ptr;
+		p_from._ptr = nullptr;
+	}
 
 	_FORCE_INLINE_ T *ptrw() {
 		_copy_on_write();
@@ -222,12 +231,15 @@ public:
 	}
 
 	Error insert(Size p_pos, const T &p_val) {
-		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
-		resize(size() + 1);
-		for (Size i = (size() - 1); i > p_pos; i--) {
-			set(i, get(i - 1));
+		Size new_size = size() + 1;
+		ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
+		Error err = resize(new_size);
+		ERR_FAIL_COND_V(err, err);
+		T *p = ptrw();
+		for (Size i = new_size - 1; i > p_pos; i--) {
+			p[i] = p[i - 1];
 		}
-		set(p_pos, p_val);
+		p[p_pos] = p_val;
 
 		return OK;
 	}
@@ -238,34 +250,37 @@ public:
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
-	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); };
+	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
+	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
+		_ptr = p_from._ptr;
+		p_from._ptr = nullptr;
+	}
 };
 
 template <typename T>
-void CowData<T>::_unref(void *p_data) {
-	if (!p_data) {
+void CowData<T>::_unref() {
+	if (!_ptr) {
 		return;
 	}
 
 	SafeNumeric<USize> *refc = _get_refcount();
-
 	if (refc->decrement() > 0) {
 		return; // still in use
 	}
 	// clean up
 
 	if constexpr (!std::is_trivially_destructible_v<T>) {
-		USize *count = _get_size();
-		T *data = (T *)(count + 1);
+		USize current_size = *_get_size();
 
-		for (USize i = 0; i < *count; ++i) {
+		for (USize i = 0; i < current_size; ++i) {
 			// call destructors
-			data[i].~T();
+			T *t = &_ptr[i];
+			t->~T();
 		}
 	}
 
 	// free mem
-	Memory::free_static(((uint8_t *)p_data) - DATA_OFFSET, false);
+	Memory::free_static(((uint8_t *)_ptr) - DATA_OFFSET, false);
 }
 
 template <typename T>
@@ -300,7 +315,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 			}
 		}
 
-		_unref(_ptr);
+		_unref();
 		_ptr = _data_ptr;
 
 		rc = 1;
@@ -321,7 +336,7 @@ Error CowData<T>::resize(Size p_size) {
 
 	if (p_size == 0) {
 		// wants to clean up
-		_unref(_ptr);
+		_unref();
 		_ptr = nullptr;
 		return OK;
 	}
@@ -460,7 +475,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(_ptr);
+	_unref();
 	_ptr = nullptr;
 
 	if (!p_from._ptr) {
@@ -474,7 +489,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <typename T>
 CowData<T>::~CowData() {
-	_unref(_ptr);
+	_unref();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)

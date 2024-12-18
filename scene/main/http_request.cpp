@@ -49,7 +49,8 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	redirections = 0;
 
 	String scheme;
-	Error err = p_url.parse_url(scheme, url, port, request_string);
+	String fragment;
+	Error err = p_url.parse_url(scheme, url, port, request_string, fragment);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
 
 	if (scheme == "https://") {
@@ -86,7 +87,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 
 	String lowwer_case_header_name = p_header_name.to_lower();
 	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find(":") > 0) {
+		if (p_headers[i].find_char(':') > 0) {
 			Vector<String> parts = p_headers[i].split(":", false, 1);
 			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
 				value = parts[1].strip_edges();

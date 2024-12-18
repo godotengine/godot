@@ -60,9 +60,11 @@ private:
 		TreeCellMode mode = TreeItem::CELL_MODE_STRING;
 
 		Ref<Texture2D> icon;
+		Ref<Texture2D> icon_overlay;
 		Rect2i icon_region;
 		String text;
 		String xl_text;
+		Node::AutoTranslateMode auto_translate_mode = Node::AUTO_TRANSLATE_MODE_INHERIT;
 		bool edit_multiline = false;
 		String suffix;
 		Ref<TextParagraph> text_buf;
@@ -136,6 +138,7 @@ private:
 	TreeItem *prev = nullptr; // previous in list
 	TreeItem *next = nullptr; // next in list
 	TreeItem *first_child = nullptr;
+	TreeItem *last_child = nullptr;
 
 	Vector<TreeItem *> children_cache;
 	bool is_root = false; // for tree root
@@ -177,6 +180,9 @@ private:
 			if (parent->first_child == this) {
 				parent->first_child = next;
 			}
+			if (parent->last_child == this) {
+				parent->last_child = prev;
+			}
 		}
 	}
 
@@ -205,6 +211,10 @@ public:
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
 	TreeCellMode get_cell_mode(int p_column) const;
 
+	/* auto translate mode */
+	void set_auto_translate_mode(int p_column, Node::AutoTranslateMode p_mode);
+	Node::AutoTranslateMode get_auto_translate_mode(int p_column) const;
+
 	/* multiline editable */
 	void set_edit_multiline(int p_column, bool p_multiline);
 	bool is_edit_multiline(int p_column) const;
@@ -216,6 +226,8 @@ public:
 	bool is_indeterminate(int p_column) const;
 
 	void propagate_check(int p_column, bool p_emit_signal = true);
+
+	String atr(int p_column, const String &p_text) const;
 
 private:
 	// Check helpers.
@@ -253,6 +265,9 @@ public:
 	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(int p_column) const;
 
+	void set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay);
+	Ref<Texture2D> get_icon_overlay(int p_column) const;
+
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
 
@@ -262,6 +277,7 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
+	void clear_buttons();
 	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip_text(int p_column, int p_index) const;
@@ -435,6 +451,9 @@ private:
 	Vector2 pressing_pos;
 	Rect2 pressing_item_rect;
 
+	Vector2 hovered_pos;
+	bool is_mouse_hovering = false;
+
 	float range_drag_base = 0.0;
 	bool range_drag_enabled = false;
 	Vector2 range_drag_capture_pos;
@@ -499,8 +518,8 @@ private:
 	int get_item_height(TreeItem *p_item) const;
 	void _update_all();
 	void update_column(int p_col);
-	void update_item_cell(TreeItem *p_item, int p_col);
-	void update_item_cache(TreeItem *p_item);
+	void update_item_cell(TreeItem *p_item, int p_col) const;
+	void update_item_cache(TreeItem *p_item) const;
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
@@ -530,10 +549,13 @@ private:
 		int font_size = 0;
 		int tb_font_size = 0;
 
+		Ref<StyleBox> hovered;
+		Ref<StyleBox> hovered_dimmed;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
 		Ref<StyleBox> cursor_unfocus;
+		Ref<StyleBox> button_hover;
 		Ref<StyleBox> button_pressed;
 		Ref<StyleBox> title_button;
 		Ref<StyleBox> title_button_hover;
@@ -557,6 +579,8 @@ private:
 		Ref<Texture2D> updown;
 
 		Color font_color;
+		Color font_hovered_color;
+		Color font_hovered_dimmed_color;
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
@@ -608,16 +632,17 @@ private:
 		};
 
 		ClickType click_type = Cache::CLICK_NONE;
-		ClickType hover_type = Cache::CLICK_NONE;
 		int click_index = -1;
 		int click_id = -1;
 		TreeItem *click_item = nullptr;
 		int click_column = 0;
-		int hover_index = -1;
+		int hover_header_column = -1;
+		bool hover_header_row = false;
 		Point2 click_pos;
 
 		TreeItem *hover_item = nullptr;
-		int hover_cell = -1;
+		int hover_column = -1;
+		int hover_button_index_in_column = -1;
 
 		bool rtl = false;
 	} cache;
@@ -645,6 +670,7 @@ private:
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
+	int _get_item_h_offset(TreeItem *p_item) const;
 
 	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
 
@@ -673,6 +699,10 @@ private:
 	bool hide_folding = false;
 
 	bool enable_recursive_folding = true;
+
+	bool enable_auto_tooltip = true;
+
+	void _determine_hovered_item();
 
 	int _count_selected_items(TreeItem *p_from) const;
 	bool _is_branch_selected(TreeItem *p_from) const;
@@ -802,6 +832,9 @@ public:
 
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
+
+	void set_auto_tooltip(bool p_enable);
+	bool is_auto_tooltip_enabled() const;
 
 	Size2 get_minimum_size() const override;
 

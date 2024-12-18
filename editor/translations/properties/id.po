@@ -212,15 +212,6 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Kategori Sesi"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Skrip"
-
-msgid "Search in File Extensions"
-msgstr "Cari dalam Ekstensi File"
-
 msgid "Subwindows"
 msgstr "Subjendela"
 
@@ -841,6 +832,9 @@ msgstr "Beralih Mode"
 
 msgid "Interface"
 msgstr "Antarmuka"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Bahasa Editor"
@@ -2462,6 +2456,9 @@ msgstr "Jalur Kunci Pribadi SSH"
 msgid "Main Run Args"
 msgstr "Jalan Utama Argumen"
 
+msgid "Script"
+msgstr "Skrip"
+
 msgid "Templates Search Path"
 msgstr "Path Pencarian Templat"
 
@@ -2665,6 +2662,9 @@ msgstr "Android"
 
 msgid "Text Driver"
 msgstr "Driver Teks"
+
+msgid "Search in File Extensions"
+msgstr "Cari dalam Ekstensi File"
 
 msgid "Mouse Cursor"
 msgstr "Kursor Mouse"

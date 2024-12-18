@@ -691,9 +691,14 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 				src_fade_wait = beat_sec - remainder;
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR: {
-				float bar_sec = beat_sec * from_state.stream->get_bar_beats();
-				float remainder = Math::fmod(current_pos, bar_sec);
-				src_fade_wait = bar_sec - remainder;
+				if (from_state.stream->get_bar_beats() > 0) {
+					float bar_sec = beat_sec * from_state.stream->get_bar_beats();
+					float remainder = Math::fmod(current_pos, bar_sec);
+					src_fade_wait = bar_sec - remainder;
+				} else {
+					// Stream does not have a number of beats per bar - avoid NaN, and play immediately.
+					src_fade_wait = 0;
+				}
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_END: {
 				float end = from_state.stream->get_beat_count() > 0 ? float(from_state.stream->get_beat_count() * beat_sec) : from_state.stream->get_length();
@@ -777,7 +782,7 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 
 	if (stream->clips[p_to_clip_index].auto_advance == AudioStreamInteractive::AUTO_ADVANCE_ENABLED) {
 		int next_clip = stream->clips[p_to_clip_index].auto_advance_next_clip;
-		if (next_clip >= 0 && next_clip < (int)stream->clip_count && states[next_clip].playback.is_valid() && next_clip != p_to_clip_index && next_clip != playback_current && (!transition.use_filler_clip || next_clip != transition.filler_clip)) {
+		if (next_clip >= 0 && next_clip < (int)stream->clip_count && states[next_clip].playback.is_valid() && next_clip != p_to_clip_index && (!transition.use_filler_clip || next_clip != transition.filler_clip)) {
 			auto_advance_to = next_clip;
 		}
 	}
@@ -905,7 +910,9 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 			// time to start!
 			from_frame = state.fade_wait * mix_rate;
 			state.fade_wait = 0;
-			queue_next = state.auto_advance;
+			if (state.fade_speed == 0.0) {
+				queue_next = state.auto_advance;
+			}
 			playback_current = p_state_idx;
 			state.first_mix = false;
 		} else {
@@ -919,7 +926,6 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 	state.playback->mix(temp_buffer + from_frame, 1.0, p_frames - from_frame);
 
 	double frame_fade_inc = state.fade_speed * frame_inc;
-
 	for (int i = from_frame; i < p_frames; i++) {
 		if (state.fade_wait) {
 			// This is for fade out of existing stream;
@@ -933,6 +939,7 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 				state.fade_speed = 0.0;
 				frame_fade_inc = 0.0;
 				state.fade_volume = 1.0;
+				queue_next = state.auto_advance;
 			}
 		} else if (frame_fade_inc < 0.0) {
 			state.fade_volume += frame_fade_inc;
@@ -1011,6 +1018,10 @@ void AudioStreamPlaybackInteractive::switch_to_clip(int p_index) {
 	switch_request = p_index;
 }
 
+int AudioStreamPlaybackInteractive::get_current_clip_index() const {
+	return playback_current;
+}
+
 int AudioStreamPlaybackInteractive::get_loop_count() const {
 	return 0; // Looping not supported
 }
@@ -1026,4 +1037,5 @@ bool AudioStreamPlaybackInteractive::is_playing() const {
 void AudioStreamPlaybackInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("switch_to_clip_by_name", "clip_name"), &AudioStreamPlaybackInteractive::switch_to_clip_by_name);
 	ClassDB::bind_method(D_METHOD("switch_to_clip", "clip_index"), &AudioStreamPlaybackInteractive::switch_to_clip);
+	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackInteractive::get_current_clip_index);
 }

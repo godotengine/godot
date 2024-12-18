@@ -353,9 +353,6 @@ void AnimationTrackEditAudio::set_node(Object *p_object) {
 	id = p_object->get_instance_id();
 }
 
-void AnimationTrackEditAudio::_bind_methods() {
-}
-
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
@@ -950,9 +947,6 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_rect(rect, accent, false);
 	}
-}
-
-void AnimationTrackEditTypeAudio::_bind_methods() {
 }
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {

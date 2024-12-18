@@ -37,11 +37,6 @@
 
 #include "tests/test_macros.h"
 
-#ifdef TOOLS_ENABLED
-#include "core/io/resource_loader.h"
-#include "editor/import/resource_importer_wav.h"
-#endif
-
 namespace TestAudioStreamWAV {
 
 // Default wav rate for test cases.
@@ -148,23 +143,8 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
 		REQUIRE(error == OK);
 
-#ifdef TOOLS_ENABLED
-		// The WAV importer can be used if enabled to check that the saved file is valid.
-		Ref<ResourceImporterWAV> wav_importer = memnew(ResourceImporterWAV);
-
-		List<ResourceImporter::ImportOption> options_list;
-		wav_importer->get_import_options("", &options_list);
-
-		HashMap<StringName, Variant> options_map;
-		for (const ResourceImporter::ImportOption &E : options_list) {
-			options_map[E.option.name] = E.default_value;
-		}
-
-		REQUIRE(wav_importer->import(save_path, save_path, options_map, nullptr) == OK);
-
-		String load_path = save_path + "." + wav_importer->get_save_extension();
-		Ref<AudioStreamWAV> loaded_stream = ResourceLoader::load(load_path, "AudioStreamWAV", ResourceFormatImporter::CACHE_MODE_IGNORE, &error);
-		REQUIRE(error == OK);
+		Dictionary options;
+		Ref<AudioStreamWAV> loaded_stream = AudioStreamWAV::load_from_file(save_path, options);
 
 		CHECK(loaded_stream->get_format() == stream->get_format());
 		CHECK(loaded_stream->get_loop_mode() == stream->get_loop_mode());
@@ -175,31 +155,30 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		CHECK(loaded_stream->get_length() == stream->get_length());
 		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
 		CHECK(loaded_stream->get_data() == stream->get_data());
-#endif
 	}
 }
 
-TEST_CASE("[AudioStreamWAV] Mono PCM8 format") {
+TEST_CASE("[Audio][AudioStreamWAV] Mono PCM8 format") {
 	run_test("test_pcm8_mono.wav", AudioStreamWAV::FORMAT_8_BITS, false, WAV_RATE, WAV_COUNT);
 }
 
-TEST_CASE("[AudioStreamWAV] Mono PCM16 format") {
+TEST_CASE("[Audio][AudioStreamWAV] Mono PCM16 format") {
 	run_test("test_pcm16_mono.wav", AudioStreamWAV::FORMAT_16_BITS, false, WAV_RATE, WAV_COUNT);
 }
 
-TEST_CASE("[AudioStreamWAV] Stereo PCM8 format") {
+TEST_CASE("[Audio][AudioStreamWAV] Stereo PCM8 format") {
 	run_test("test_pcm8_stereo.wav", AudioStreamWAV::FORMAT_8_BITS, true, WAV_RATE, WAV_COUNT);
 }
 
-TEST_CASE("[AudioStreamWAV] Stereo PCM16 format") {
+TEST_CASE("[Audio][AudioStreamWAV] Stereo PCM16 format") {
 	run_test("test_pcm16_stereo.wav", AudioStreamWAV::FORMAT_16_BITS, true, WAV_RATE, WAV_COUNT);
 }
 
-TEST_CASE("[AudioStreamWAV] Alternate mix rate") {
+TEST_CASE("[Audio][AudioStreamWAV] Alternate mix rate") {
 	run_test("test_pcm16_stereo_38000Hz.wav", AudioStreamWAV::FORMAT_16_BITS, true, 38000, 38000);
 }
 
-TEST_CASE("[AudioStreamWAV] save_to_wav() adds '.wav' file extension automatically") {
+TEST_CASE("[Audio][AudioStreamWAV] save_to_wav() adds '.wav' file extension automatically") {
 	String save_path = TestUtils::get_temp_path("test_wav_extension");
 	Vector<uint8_t> test_data = gen_pcm8_test(WAV_RATE, WAV_COUNT, false);
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
@@ -211,7 +190,7 @@ TEST_CASE("[AudioStreamWAV] save_to_wav() adds '.wav' file extension automatical
 	CHECK(error == OK);
 }
 
-TEST_CASE("[AudioStreamWAV] Default values") {
+TEST_CASE("[Audio][AudioStreamWAV] Default values") {
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
 	CHECK(stream->get_format() == AudioStreamWAV::FORMAT_8_BITS);
 	CHECK(stream->get_loop_mode() == AudioStreamWAV::LOOP_DISABLED);
@@ -225,11 +204,11 @@ TEST_CASE("[AudioStreamWAV] Default values") {
 	CHECK(stream->get_stream_name() == "");
 }
 
-TEST_CASE("[AudioStreamWAV] Save empty file") {
+TEST_CASE("[Audio][AudioStreamWAV] Save empty file") {
 	run_test("test_empty.wav", AudioStreamWAV::FORMAT_8_BITS, false, WAV_RATE, 0);
 }
 
-TEST_CASE("[AudioStreamWAV] Saving IMA ADPCM is not supported") {
+TEST_CASE("[Audio][AudioStreamWAV] Saving IMA ADPCM is not supported") {
 	String save_path = TestUtils::get_temp_path("test_adpcm.wav");
 	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
 	stream->set_format(AudioStreamWAV::FORMAT_IMA_ADPCM);

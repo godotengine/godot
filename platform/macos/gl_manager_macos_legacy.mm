@@ -32,6 +32,7 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -156,7 +157,7 @@ void GLManagerLegacy_MacOS::window_set_per_pixel_transparency_enabled(DisplaySer
 }
 
 Error GLManagerLegacy_MacOS::initialize() {
-	return OK;
+	return framework_loaded ? OK : ERR_CANT_CREATE;
 }
 
 void GLManagerLegacy_MacOS::set_use_vsync(bool p_use) {
@@ -186,12 +187,17 @@ NSOpenGLContext *GLManagerLegacy_MacOS::get_context(DisplayServer::WindowID p_wi
 }
 
 GLManagerLegacy_MacOS::GLManagerLegacy_MacOS() {
-	CFBundleRef framework = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.opengl"));
-	CFBundleLoadExecutable(framework);
+	NSBundle *framework = [NSBundle bundleWithPath:@"/System/Library/Frameworks/OpenGL.framework"];
+	if (framework) {
+		void *library_handle = dlopen([framework.executablePath UTF8String], RTLD_NOW);
+		if (library_handle) {
+			CGLEnable = (CGLEnablePtr)dlsym(library_handle, "CGLEnable");
+			CGLSetParameter = (CGLSetParameterPtr)dlsym(library_handle, "CGLSetParameter");
+			CGLGetCurrentContext = (CGLGetCurrentContextPtr)dlsym(library_handle, "CGLGetCurrentContext");
 
-	CGLEnable = (CGLEnablePtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLEnable"));
-	CGLSetParameter = (CGLSetParameterPtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLSetParameter"));
-	CGLGetCurrentContext = (CGLGetCurrentContextPtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLGetCurrentContext"));
+			framework_loaded = CGLEnable && CGLSetParameter && CGLGetCurrentContext;
+		}
+	}
 }
 
 GLManagerLegacy_MacOS::~GLManagerLegacy_MacOS() {

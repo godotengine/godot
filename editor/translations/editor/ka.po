@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-04 12:08+0000\n"
+"PO-Revision-Date: 2024-08-14 12:59+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -22,6 +22,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.7-dev\n"
+
+msgid "Main Thread"
+msgstr "მთავარი ნაკადი"
 
 msgid "Unset"
 msgstr "მოხსნა"
@@ -1282,6 +1285,9 @@ msgstr "ბრძანებების ფილტრი"
 msgid "[empty]"
 msgstr "[ცარიელი]"
 
+msgid "[unsaved]"
+msgstr "[შეუნახავი]"
+
 msgid "Make Floating"
 msgstr "მცურავად გადაკეთება"
 
@@ -1559,6 +1565,12 @@ msgstr "განლაგების შენახვა"
 msgid "Delete Layout"
 msgstr "განლაგების წაშლა"
 
+msgid "Preparation done."
+msgstr "მომზადება მზადაა."
+
+msgid "Reloading done."
+msgstr "თავიდან ჩატვირთვა მზადაა."
+
 msgid "Mobile"
 msgstr "მობაილი"
 
@@ -1768,6 +1780,9 @@ msgstr "შეცდომა."
 
 msgid "Storing File: %s"
 msgstr "ფაილის დამახსოვრება: %s"
+
+msgid "Packing"
+msgstr "შეფუთვა"
 
 msgid "Cannot create file \"%s\"."
 msgstr "ფაილის (\"%s\") შექმნის შეცდომა."
@@ -2047,7 +2062,7 @@ msgid "Reload the played scene."
 msgstr "დაკრული სცენის თავიდან ჩატვირთვა."
 
 msgid "Could not start subprocess(es)!"
-msgstr "ქვეპროცეს(ებ)-ის გაშვება შეუძლებელია"
+msgstr "ქვეპროცეს(ებ)-ის გაშვება შეუძლებელია!"
 
 msgid "Stop Running Project"
 msgstr "გაშვებული პროექტის შეჩერება"
@@ -2179,6 +2194,9 @@ msgstr "მოწყობილობა:"
 
 msgid "(Current)"
 msgstr "(მიმდინარე)"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "ზედა რეგისტრში (მაგ: \"%s\")"
 
 msgid "Copy Properties"
 msgstr "თვისებების კოპირება"
@@ -2664,6 +2682,9 @@ msgstr "შვილ"
 msgid "Creates collision shapes as Sibling."
 msgstr "შეჯახების ფორმის შექმნა შვილის სახით შეუძლებელია."
 
+msgid "Collision Shape Type"
+msgstr "შეჯახების ფორმის ტპი"
+
 msgid "Add Item"
 msgstr "ჩანაწერის დამატება"
 
@@ -2687,6 +2708,9 @@ msgstr "პერსპექტივა"
 
 msgid "Instantiating:"
 msgstr "წარმოდგენა:"
+
+msgid "Can't instantiate: %s."
+msgstr "ინსტანცირება შეუძლებელია: %s."
 
 msgid "Rotate"
 msgstr "შემობრუნება"
@@ -2820,17 +2844,35 @@ msgstr "რესურსის წაშლა"
 msgid "Path to AnimationMixer is invalid"
 msgstr "ბილიკი AnimationMixer-მდე არასწორია"
 
+msgid "Error writing TextFile:"
+msgstr "ტექსტური ფაილის შენახვის შეცდომა:"
+
+msgid "Error saving file!"
+msgstr "ფაილის შენახვის შეცდომა!"
+
+msgid "Error while saving theme."
+msgstr "შეცდომა თემის შენახვისას."
+
 msgid "Error Saving"
 msgstr "შენახვის შეცდომა"
 
+msgid "Error importing theme."
+msgstr "შეცდომა თემის შემოტანისას."
+
 msgid "Error Importing"
 msgstr "შემოტანის შეცდომა"
+
+msgid "Could not load file at:"
+msgstr "შეუძლებელია ფაილის ჩატვირთვა მისამართზე:"
 
 msgid "Save File As..."
 msgstr "ფაილის შენახვა როგორც..."
 
 msgid "Import Theme"
 msgstr "თემის შემოტანა"
+
+msgid "Error while saving theme"
+msgstr "შეცდომა თემის შენახვისას"
 
 msgid "Save Theme As..."
 msgstr "თემის შენახვა, როგორც..."
@@ -2871,6 +2913,12 @@ msgstr "სირბილი"
 msgid "Discard"
 msgstr "მოცილება"
 
+msgid "What action should be taken?:"
+msgstr "რა ქმედება უნდა შესრულდეს?:"
+
+msgid "Search Results"
+msgstr "ძებნის შედეგები"
+
 msgid "Uppercase"
 msgstr "მაღალირეგისტრი"
 
@@ -2896,6 +2944,12 @@ msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
 "აკლია მიერთების მეთოდი '%s' სიგნალისთვის '%s' კვანძიდან '%s' კვანძამდე '%s'."
+
+msgid "Line %d (%s):"
+msgstr "ხაზი %d (%s):"
+
+msgid "Line %d:"
+msgstr "ხაზი %d:"
 
 msgid "Pick Color"
 msgstr "აირჩიეთ ფერი"
@@ -3228,6 +3282,9 @@ msgstr "ნაწილები"
 msgid "Patterns"
 msgstr "შაბლონები"
 
+msgid "Select previous layer"
+msgstr "წინა ფენის მონიშვნა"
+
 msgid "Delete All Tile Proxies"
 msgstr "ყველა ფილის პროქსის წაშლა"
 
@@ -3336,6 +3393,9 @@ msgstr "კომიტი:"
 
 msgid "Subtitle:"
 msgstr "სუბტიტრები:"
+
+msgid "Toggle Version Control Bottom Panel"
+msgstr "ვერსიის კონტროლის ქვედა პანელის გადართვა"
 
 msgid "Apply"
 msgstr "გადატარება"
@@ -3447,6 +3507,9 @@ msgstr "გამოტანის პორტის შემცირებ�
 
 msgid "Resize VisualShader Node"
 msgstr "VisualShader-ის კვანძის ზომის შეცვლა"
+
+msgid "Set Frame Color"
+msgstr "კადრის ფერის დაყენება"
 
 msgid "Delete VisualShader Node"
 msgstr "VisualShader-ის კვანძის წაშლა"
@@ -3611,6 +3674,9 @@ msgstr "ყველა ჭდე"
 msgid "Create New Tag"
 msgstr "ახალი ჭდის შექმნა"
 
+msgid "Couldn't create project directory, check permissions."
+msgstr "პროექტის საქაღალდე ვერ შეიქმნა. შეამოწმეთ წვდომები."
+
 msgid "Project Name:"
 msgstr "პროექტის სახელი:"
 
@@ -3719,6 +3785,11 @@ msgstr "ძირითადი კვანძი სწორია."
 msgid "Error instantiating scene from %s"
 msgstr "%s-დან სცენის ინსტანცირების შეცდომა"
 
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "სცენის ინსტანცირება"
+msgstr[1] "სცენების ინსტანცირება"
+
 msgid "Delete %d nodes?"
 msgstr "წავშალო %d კვანძი?"
 
@@ -3815,6 +3886,9 @@ msgstr "შეიდერის შექმნა"
 msgid "Global shader parameter '%s' already exists."
 msgstr "გლობალური შეიდერის პარამეტრი '%s' უკვე არსებობს."
 
+msgid "Cannot instantiate GDScript class."
+msgstr "GDScript-ს კლასის ინსტანცირება შეუძლებელია."
+
 msgid "Export Settings:"
 msgstr "პარამეტრების გატანა:"
 
@@ -3829,6 +3903,16 @@ msgstr "მონიშნულის შევსება"
 
 msgid "Filter Meshes"
 msgstr "ბადეების ფილტრი"
+
+msgid "Edit Transitions"
+msgstr "გადასვლების ჩასწორება"
+
+msgctxt "Transition Time Position"
+msgid "Prev"
+msgstr "წინა"
+
+msgid "Hold Previous:"
+msgstr "წინას შენარჩუნება:"
 
 msgid "Class name must be a valid identifier"
 msgstr "კლასის სახელი სწორ იდენტიფიკატორს უნდა წარმოადგენდეს"
@@ -3887,6 +3971,18 @@ msgstr "პროფილის დამატება"
 msgid "Add action"
 msgstr "ქმედების დამატება"
 
+msgid "Add action."
+msgstr "ქმედების დამატება."
+
+msgid "Remove action set."
+msgstr "ქმედებების ნაკრების წაშლა."
+
+msgid "OpenXR Action Map"
+msgstr "OpenXR ქმედების რუკა"
+
+msgid "Select an interaction profile"
+msgstr "აირჩიეთ ინტერაქციის პროფილი"
+
 msgid "Invalid package name:"
 msgstr "არასწორი პაკეტის სახელი:"
 
@@ -3925,6 +4021,9 @@ msgstr "ფაილურ სისტემასთან წვდომა 
 
 msgid "Failed to create a file at path \"%s\" with code %d."
 msgstr "ჩავარდა შექმნა ფაილისთვის ბილიკზე \"%s\" კოდით %d."
+
+msgid "Debug Script Export"
+msgstr "გამართვის სკრიპტის გატანა"
 
 msgid "Could not open file \"%s\"."
 msgstr "ფაილის (\"%s\") გახსნა შეუძლებელია."
@@ -3968,8 +4067,20 @@ msgstr "საქაღალდის (\"%s\") შექმნა შეუძ�
 msgid "Could not created symlink \"%s\" -> \"%s\"."
 msgstr "შეცდომა სიმბმულის \"%s\" -> \"%s\" შექმნსას."
 
+msgid "Entitlements Modified"
+msgstr "გარემოები შეიცვალა"
+
 msgid "Invalid export template: \"%s\"."
 msgstr "არასწორი გატანის ნიმუში: \"%s\"."
+
+msgid "Start HTTP Server"
+msgstr "HTTP სერვერის გაშვება"
+
+msgid "Start the HTTP server."
+msgstr "HTTP სერვერის გაშვება."
+
+msgid "Stop the HTTP server."
+msgstr "HTTP სერვერის გაჩერება."
 
 msgid "Error starting HTTP server: %d."
 msgstr "HTTP სერვერის გაშვების შეცდომა: %d."

@@ -37,7 +37,7 @@ class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Timer *update_timer = nullptr;
-	uint64_t update_idx = 0;
+	EditorNode3DGizmo *last_drawn = nullptr;
 
 	void incremental_update_gizmos();
 

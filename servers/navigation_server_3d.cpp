@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "navigation_server_3d.h"
+#include "navigation_server_3d.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_globals.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
@@ -71,7 +73,7 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_get_random_point", "map", "navigation_layers", "uniformly"), &NavigationServer3D::map_get_random_point);
 
-	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer3D::query_path);
+	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result", "callback"), &NavigationServer3D::query_path, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enabled", "region", "enabled"), &NavigationServer3D::region_set_enabled);
@@ -98,6 +100,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer3D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_end);
+	ClassDB::bind_method(D_METHOD("region_get_closest_point_to_segment", "region", "start", "end", "use_collision"), &NavigationServer3D::region_get_closest_point_to_segment, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("region_get_closest_point", "region", "to_point"), &NavigationServer3D::region_get_closest_point);
+	ClassDB::bind_method(D_METHOD("region_get_closest_point_normal", "region", "to_point"), &NavigationServer3D::region_get_closest_point_normal);
 	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer3D::region_get_random_point);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
@@ -216,6 +221,7 @@ void NavigationServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(INFO_EDGE_MERGE_COUNT);
 	BIND_ENUM_CONSTANT(INFO_EDGE_CONNECTION_COUNT);
 	BIND_ENUM_CONSTANT(INFO_EDGE_FREE_COUNT);
+	BIND_ENUM_CONSTANT(INFO_OBSTACLE_COUNT);
 }
 
 NavigationServer3D *NavigationServer3D::get_singleton() {
@@ -226,21 +232,23 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), 1.0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::navmesh_cell_size_hint), NavigationDefaults2D::navmesh_cell_size);
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1.0);
-	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4.0);
+	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", NavigationDefaults2D::edge_connection_margin);
+	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", NavigationDefaults2D::link_connection_radius);
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), 0.25);
-	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", 0.25);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::navmesh_cell_size_hint), NavigationDefaults3D::navmesh_cell_size);
+	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", NavigationDefaults3D::navmesh_cell_height);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/3d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", 0.25);
-	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", 1.0);
+	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", NavigationDefaults3D::edge_connection_margin);
+	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", NavigationDefaults3D::link_connection_radius);
 
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
+
+	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
 
 	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
 	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
@@ -929,18 +937,6 @@ bool NavigationServer3D::get_debug_avoidance_enabled() const {
 }
 
 #endif // DEBUG_ENABLED
-
-void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const {
-	ERR_FAIL_COND(!p_query_parameters.is_valid());
-	ERR_FAIL_COND(!p_query_result.is_valid());
-
-	const NavigationUtilities::PathQueryResult _query_result = _query_path(p_query_parameters->get_parameters());
-
-	p_query_result->set_path(_query_result.path);
-	p_query_result->set_path_types(_query_result.path_types);
-	p_query_result->set_path_rids(_query_result.path_rids);
-	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
-}
 
 ///////////////////////////////////////////////////////
 

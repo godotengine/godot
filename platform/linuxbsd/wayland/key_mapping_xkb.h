@@ -51,7 +51,7 @@ class KeyMappingXKB {
 	static inline HashMap<Key, unsigned int, HashMapHasherKeys> scancode_map_inv;
 	static inline HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
-	KeyMappingXKB(){};
+	KeyMappingXKB() {}
 
 public:
 	static void initialize();

@@ -108,19 +108,19 @@ class AStar3D : public RefCounted {
 		}
 	};
 
-	int64_t last_free_id = 0;
+	mutable int64_t last_free_id = 0;
 	uint64_t pass = 1;
 
 	OAHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
 	Point *last_closest_point = nullptr;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
@@ -171,12 +171,12 @@ class AStar2D : public RefCounted {
 	GDCLASS(AStar2D, RefCounted);
 	AStar3D astar;
 
-	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point);
+	bool _solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_to_id);
+	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)

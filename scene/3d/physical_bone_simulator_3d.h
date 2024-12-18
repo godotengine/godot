@@ -41,7 +41,6 @@ class PhysicalBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(PhysicalBoneSimulator3D, SkeletonModifier3D);
 
 	bool simulating = false;
-	bool enabled = true;
 
 	struct SimulatedBone {
 		int parent;
@@ -74,6 +73,7 @@ protected:
 
 	void _bone_list_changed();
 	void _pose_updated();
+	void _bone_pose_updated(Skeleton3D *skeleton, int p_bone_id);
 
 	virtual void _process_modification() override;
 

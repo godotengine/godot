@@ -44,6 +44,9 @@
 			[b]Light:[/b] Sharp result by snapping glyph edges to pixels on the Y axis only.
 			[b]Full:[/b] Sharpest by snapping glyph edges to pixels on both X and Y axes.
 		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="" getter="" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+		</member>
 		<member name="language_support" type="Dictionary" setter="" getter="" default="{}">
 			Override the list of languages supported by this font. If left empty, this is supplied by the font metadata. There is usually no need to change this. See also [member script_support].
 		</member>
@@ -54,7 +57,7 @@
 			Source font size used to generate MSDF textures. Higher values allow for more precision, but are slower to render and require more memory. Only increase this value if you notice a visible lack of precision in glyph rendering. Only effective if [member multichannel_signed_distance_field] is [code]true[/code].
 		</member>
 		<member name="multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
-			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
+			If set to [code]true[/code], the font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
 			MSDF font rendering can be combined with [member generate_mipmaps] to further improve font rendering quality when scaled down.
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="" getter="" default="{}">
@@ -69,12 +72,13 @@
 		<member name="script_support" type="Dictionary" setter="" getter="" default="{}">
 			Override the list of language scripts supported by this font. If left empty, this is supplied by the font metadata. There is usually no need to change this. See also [member language_support].
 		</member>
-		<member name="subpixel_positioning" type="int" setter="" getter="" default="1">
+		<member name="subpixel_positioning" type="int" setter="" getter="" default="4">
 			Subpixel positioning improves font rendering appearance, especially at smaller font sizes. The downside is that it takes more time to initially render the font, which can cause stuttering during gameplay, especially if used with large font sizes. This should be set to [b]Disabled[/b] for fonts with a pixel art appearance.
 			[b]Disabled:[/b] No subpixel positioning. Lowest quality, fastest rendering.
 			[b]Auto:[/b] Use subpixel positioning at small font sizes (the chosen quality varies depending on font size). Large fonts will not use subpixel positioning. This is a good tradeoff between performance and quality.
 			[b]One Half of a Pixel:[/b] Always perform intermediate subpixel positioning regardless of font size. High quality, slow rendering.
 			[b]One Quarter of a Pixel:[/b] Always perform precise subpixel positioning regardless of font size. Highest quality, slowest rendering.
+			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for the pixel style fonts (each glyph contours contain only straight horizontal and vertical lines), [b]Auto[/b] for the other fonts.
 		</member>
 	</members>
 </class>

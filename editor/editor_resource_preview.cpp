@@ -96,12 +96,12 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
-void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) const {
+void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) {
 	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
 		RS::get_singleton()->connect(SNAME("frame_pre_draw"), request_vp_update_once, Object::CONNECT_ONE_SHOT);
-		RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorResourcePreviewGenerator::DrawRequester *>(this), &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
+		RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 
 		semaphore.wait();
 	} else {
@@ -119,19 +119,19 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 	}
 }
 
-void EditorResourcePreviewGenerator::DrawRequester::abort() const {
+void EditorResourcePreviewGenerator::DrawRequester::abort() {
 	if (EditorResourcePreview::get_singleton()->is_threaded()) {
 		semaphore.post();
 	}
 }
 
-Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() const {
+Variant EditorResourcePreviewGenerator::DrawRequester::_post_semaphore() {
 	semaphore.post();
 	return Variant(); // Needed because of how the callback is used.
 }
 
 bool EditorResourcePreview::is_threaded() const {
-	return RSG::texture_storage->can_create_resources_async();
+	return RSG::rasterizer->can_create_resources_async();
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {
@@ -147,6 +147,10 @@ void EditorResourcePreview::_preview_ready(const String &p_path, int p_hash, con
 
 		if (!p_path.begins_with("ID:")) {
 			modified_time = FileAccess::get_modified_time(p_path);
+			String import_path = p_path + ".import";
+			if (FileAccess::exists(import_path)) {
+				modified_time = MAX(modified_time, FileAccess::get_modified_time(import_path));
+			}
 		}
 
 		Item item;
@@ -221,7 +225,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			r_small_texture->set_image(small_image);
 		}
 
-		break;
+		if (generated.is_valid()) {
+			break;
+		}
 	}
 
 	if (!p_item.resource.is_valid()) {
@@ -235,7 +241,14 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			}
 			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
-			_write_preview_cache(f, thumbnail_size, has_small_texture, FileAccess::get_modified_time(p_item.path), FileAccess::get_md5(p_item.path), p_metadata);
+
+			uint64_t modtime = FileAccess::get_modified_time(p_item.path);
+			String import_path = p_item.path + ".import";
+			if (FileAccess::exists(import_path)) {
+				modtime = MAX(modtime, FileAccess::get_modified_time(import_path));
+			}
+
+			_write_preview_cache(f, thumbnail_size, has_small_texture, modtime, FileAccess::get_md5(p_item.path), p_metadata);
 		}
 	}
 
@@ -296,6 +309,11 @@ void EditorResourcePreview::_iterate() {
 		_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
 	} else {
 		uint64_t modtime = FileAccess::get_modified_time(item.path);
+		String import_path = item.path + ".import";
+		if (FileAccess::exists(import_path)) {
+			modtime = MAX(modtime, FileAccess::get_modified_time(import_path));
+		}
+
 		int tsize;
 		bool has_small_texture;
 		uint64_t last_modtime;
@@ -412,6 +430,24 @@ void EditorResourcePreview::_update_thumbnail_sizes() {
 	}
 }
 
+EditorResourcePreview::PreviewItem EditorResourcePreview::get_resource_preview_if_available(const String &p_path) {
+	PreviewItem item;
+	{
+		MutexLock lock(preview_mutex);
+
+		HashMap<String, EditorResourcePreview::Item>::Iterator I = cache.find(p_path);
+		if (!I) {
+			return item;
+		}
+
+		EditorResourcePreview::Item &cached_item = I->value;
+		item.preview = cached_item.preview;
+		item.small_preview = cached_item.small_preview;
+	}
+	preview_sem.post();
+	return item;
+}
+
 void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
 	ERR_FAIL_NULL(p_receiver);
 	ERR_FAIL_COND(!p_res.is_valid());
@@ -493,6 +529,11 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 
 		if (cache.has(p_path)) {
 			uint64_t modified_time = FileAccess::get_modified_time(p_path);
+			String import_path = p_path + ".import";
+			if (FileAccess::exists(import_path)) {
+				modified_time = MAX(modified_time, FileAccess::get_modified_time(import_path));
+			}
+
 			if (modified_time != cache[p_path].modified_time) {
 				cache.erase(p_path);
 				call_invalidated = true;
@@ -531,8 +572,10 @@ void EditorResourcePreview::stop() {
 			}
 
 			while (!exited.is_set()) {
+				// Sync pending work.
 				OS::get_singleton()->delay_usec(10000);
-				RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
+				RenderingServer::get_singleton()->sync();
+				MessageQueue::get_singleton()->flush();
 			}
 
 			thread.wait_to_finish();

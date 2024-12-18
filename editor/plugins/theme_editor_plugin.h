@@ -303,6 +303,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _update_add_type_options(const String &p_filter = "");
 
 	void _add_type_filter_cbk(const String &p_value);
+	void _type_filter_input(const Ref<InputEvent> &p_event);
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
@@ -444,6 +445,7 @@ class ThemeEditor : public VBoxContainer {
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
 	void _theme_close_button_cbk();
+	void _scene_closed(const String &p_path);
 
 	void _add_preview_button_cbk();
 	void _preview_scene_dialog_cbk(const String &p_path);
@@ -471,7 +473,7 @@ class ThemeEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "Theme"; }
+	virtual String get_plugin_name() const override { return "Theme"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

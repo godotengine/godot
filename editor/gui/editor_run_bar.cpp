@@ -32,12 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_quick_open.h"
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
@@ -52,8 +54,9 @@ void EditorRunBar::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_play_buttons();
-			pause_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
-			stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			profiler_autostart_indicator->set_button_icon(get_editor_theme_icon(SNAME("ProfilerAutostartWarning")));
+			pause_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			if (is_movie_maker_enabled()) {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
@@ -63,7 +66,7 @@ void EditorRunBar::_notification(int p_what) {
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
-			write_movie_button->set_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
+			write_movie_button->set_button_icon(get_editor_theme_icon(SNAME("MainMovieWrite")));
 			// This button behaves differently, so color it as such.
 			write_movie_button->begin_bulk_theme_override();
 			write_movie_button->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("movie_writer_icon_normal"), EditorStringName(EditorStyles)));
@@ -77,15 +80,15 @@ void EditorRunBar::_notification(int p_what) {
 
 void EditorRunBar::_reset_play_buttons() {
 	play_button->set_pressed(false);
-	play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	play_button->set_tooltip_text(TTR("Play the project."));
 
 	play_scene_button->set_pressed(false);
-	play_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayScene")));
+	play_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayScene")));
 	play_scene_button->set_tooltip_text(TTR("Play the edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
-	play_custom_scene_button->set_icon(get_editor_theme_icon(SNAME("PlayCustom")));
+	play_custom_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayCustom")));
 	play_custom_scene_button->set_tooltip_text(TTR("Play a custom scene."));
 }
 
@@ -106,7 +109,7 @@ void EditorRunBar::_update_play_buttons() {
 
 	if (active_button) {
 		active_button->set_pressed(true);
-		active_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
+		active_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 		active_button->set_tooltip_text(TTR("Reload the played scene."));
 	}
 }
@@ -121,16 +124,15 @@ void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	}
 }
 
-void EditorRunBar::_quick_run_selected() {
-	play_custom_scene(quick_run->get_selected());
+void EditorRunBar::_quick_run_selected(const String &p_file_path) {
+	play_custom_scene(p_file_path);
 }
 
 void EditorRunBar::_play_custom_pressed() {
 	if (editor_run.get_status() == EditorRun::STATUS_STOP || current_mode != RunMode::RUN_CUSTOM) {
 		stop_playing();
 
-		quick_run->popup_dialog("PackedScene", true);
-		quick_run->set_title(TTR("Quick Run Scene..."));
+		EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &EditorRunBar::_quick_run_selected));
 		play_custom_scene_button->set_pressed(false);
 	} else {
 		// Reload if already running a custom scene.
@@ -262,6 +264,20 @@ void EditorRunBar::_run_native(const Ref<EditorExportPreset> &p_preset) {
 	}
 }
 
+void EditorRunBar::_profiler_autostart_indicator_pressed() {
+	// Switch to the first profiler tab in the bottom panel.
+	EditorNode::get_singleton()->get_bottom_panel()->make_item_visible(EditorDebuggerNode::get_singleton(), true);
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(2);
+	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(3);
+	} else {
+		// Switch to the network profiler tab.
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(7);
+	}
+}
+
 void EditorRunBar::play_main_scene(bool p_from_native) {
 	if (p_from_native) {
 		run_native->resume_run_native();
@@ -353,6 +369,28 @@ bool EditorRunBar::is_movie_maker_enabled() const {
 	return write_movie_button->is_pressed();
 }
 
+void EditorRunBar::update_profiler_autostart_indicator() {
+	bool profiler_active = EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false);
+	bool visual_profiler_active = EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false);
+	bool network_profiler_active = EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false);
+	bool any_profiler_active = profiler_active | visual_profiler_active | network_profiler_active;
+	profiler_autostart_indicator->set_visible(any_profiler_active);
+	if (any_profiler_active) {
+		String tooltip = TTR("Autostart is enabled for the following profilers, which can have a performance impact:");
+		if (profiler_active) {
+			tooltip += "\n- " + TTR("Profiler");
+		}
+		if (visual_profiler_active) {
+			tooltip += "\n- " + TTR("Visual Profiler");
+		}
+		if (network_profiler_active) {
+			tooltip += "\n- " + TTR("Network Profiler");
+		}
+		tooltip += "\n\n" + TTR("Click to open the first profiler for which autostart is enabled.");
+		profiler_autostart_indicator->set_tooltip_text(tooltip);
+	}
+}
+
 HBoxContainer *EditorRunBar::get_buttons_container() {
 	return main_hbox;
 }
@@ -365,8 +403,20 @@ void EditorRunBar::_bind_methods() {
 EditorRunBar::EditorRunBar() {
 	singleton = this;
 
+	outer_hbox = memnew(HBoxContainer);
+	add_child(outer_hbox);
+
+	// Use a button for the indicator since it comes with a background panel and pixel perfect centering of an icon.
+	profiler_autostart_indicator = memnew(Button);
+	profiler_autostart_indicator->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	profiler_autostart_indicator->set_focus_mode(FOCUS_NONE);
+	profiler_autostart_indicator->set_theme_type_variation("ProfilerAutostartIndicator");
+	profiler_autostart_indicator->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_profiler_autostart_indicator_pressed));
+	outer_hbox->add_child(profiler_autostart_indicator);
+	update_profiler_autostart_indicator();
+
 	main_panel = memnew(PanelContainer);
-	add_child(main_panel);
+	outer_hbox->add_child(main_panel);
 
 	main_hbox = memnew(HBoxContainer);
 	main_panel->add_child(main_hbox);
@@ -445,9 +495,5 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
-	write_movie_button->connect("toggled", callable_mp(this, &EditorRunBar::_write_movie_toggled));
-
-	quick_run = memnew(EditorQuickOpen);
-	add_child(quick_run);
-	quick_run->connect("quick_open", callable_mp(this, &EditorRunBar::_quick_run_selected));
+	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
 }

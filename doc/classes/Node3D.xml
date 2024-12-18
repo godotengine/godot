@@ -46,6 +46,14 @@
 				Returns all the gizmos attached to this [Node3D].
 			</description>
 		</method>
+		<method name="get_global_transform_interpolated">
+			<return type="Transform3D" />
+			<description>
+				When using physics interpolation, there will be circumstances in which you want to know the interpolated (displayed) transform of a node rather than the standard transform (which may only be accurate to the most recent physics tick).
+				This is particularly important for frame-based operations that take place in [method Node._process], rather than [method Node._physics_process]. Examples include [Camera3D]s focusing on a node, or finding where to fire lasers from on a frame rather than physics tick.
+				[b]Note:[/b] This function creates an interpolation pump on the [Node3D] the first time it is called, which can respond to physics interpolation resets. If you get problems with "streaking" when initially following a [Node3D], be sure to call [method get_global_transform_interpolated] at least once [i]before[/i] resetting the [Node3D] physics interpolation.
+			</description>
+		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
 			<return type="Node3D" />
 			<description>

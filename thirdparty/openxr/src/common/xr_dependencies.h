@@ -65,7 +65,11 @@
 #endif  // XR_USE_GRAPHICS_API_OPENGL
 
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
 #include <EGL/egl.h>
+#endif
 #endif  // XR_USE_GRAPHICS_API_OPENGL_ES
 
 #ifdef XR_USE_GRAPHICS_API_VULKAN
@@ -77,7 +81,11 @@
 #endif  // XR_USE_PLATFORM_WAYLAND
 
 #ifdef XR_USE_PLATFORM_EGL
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
 #include <EGL/egl.h>
+#endif
 #endif  // XR_USE_PLATFORM_EGL
 
 #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)

@@ -29,6 +29,7 @@
 
 #include "mbedtls/rsa.h"
 #include "bignum_core.h"
+#include "bignum_internal.h"
 #include "rsa_alt_helpers.h"
 #include "rsa_internal.h"
 #include "mbedtls/oid.h"
@@ -1259,7 +1260,7 @@ int mbedtls_rsa_public(mbedtls_rsa_context *ctx,
     }
 
     olen = ctx->len;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&T, &T, &ctx->E, &ctx->N, &ctx->RN));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod_unsafe(&T, &T, &ctx->E, &ctx->N, &ctx->RN));
     MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&T, output, olen));
 
 cleanup:

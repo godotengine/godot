@@ -111,13 +111,14 @@
 # Krzysztof Rams <krzysztofeczek@gmail.com>, 2024.
 # TrueJole <jole.koop@gmail.com>, 2024.
 # Dirk Graf <bb3234@web.de>, 2024.
+# tct123 <tct1234@protonmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-25 23:49+0000\n"
-"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
+"PO-Revision-Date: 2024-08-16 17:39+0000\n"
+"Last-Translator: tct123 <tct1234@protonmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -125,7 +126,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7\n"
 
 msgid "Main Thread"
 msgstr "Hauptthread"
@@ -984,6 +985,10 @@ msgstr "Track-Pfad ist ungültig, Key kann nicht hinzugefügt werden."
 
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Track ist nicht vom Typ Node3D, Key kann nicht hinzugefügt werden"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr ""
+"Track ist nicht vom Typ MeshInstance3D, Key kann nicht hinzugefügt werden"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Track-Pfad ist ungültig, Methoden-Key kann nicht hinzugefügt werden."
@@ -3905,6 +3910,24 @@ msgid ""
 msgstr ""
 "In Datei ‚%s‘ kann nicht geschrieben werden. Die Datei wird bereits "
 "verwendet, sie ist gesperrt, oder es ist keine Schreibberechtigung vorhanden."
+
+msgid "Preparing scenes for reload"
+msgstr "Szenen zum Neuladen vorbereiten"
+
+msgid "Analyzing scene %s"
+msgstr "Szene %s wird analysiert"
+
+msgid "Preparation done."
+msgstr "Vorbereitung abgeschlossen."
+
+msgid "Scenes reloading"
+msgstr "Szenen neu laden"
+
+msgid "Reloading..."
+msgstr "Neuladen..."
+
+msgid "Reloading done."
+msgstr "Neuladen abgeschlossen."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -9883,14 +9906,14 @@ msgstr "Ausgangsgriff von Kurve löschen"
 msgid "Remove In-Control from Curve"
 msgstr "Eingangsgriff von Kurve entfernen"
 
-msgid "Split Curve"
-msgstr "Kurve Teilen"
-
 msgid "Move Point in Curve"
 msgstr "Punkt auf Kurve verschieben"
 
 msgid "Add Point to Curve"
 msgstr "Punkt zu Kurve hinzufügen"
+
+msgid "Split Curve"
+msgstr "Kurve Teilen"
 
 msgid "Move In-Control in Curve"
 msgstr "Eingangsgriff auf Kurve verschieben"
@@ -10795,6 +10818,13 @@ msgid ""
 msgstr ""
 "Bearbeitungsmodus\n"
 "Buttons an Gelenken anzeigen."
+
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr ""
+"Key einfügen (basierend auf Maske) für Knochen mit einem existierenden Track."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Key für alle Knochen einfügen (basierend auf Maske)."
 
 msgid "Insert Key (All Bones)"
 msgstr "Key einfügen (alle Knochen)"
@@ -14429,6 +14459,9 @@ msgstr ""
 "Der ausgewählte Pfad ist nicht leer. Ein leeres Verzeichnis wird dringend "
 "empfohlen."
 
+msgid "New Game Project"
+msgstr "Neues Spiel"
+
 msgid "Supports desktop platforms only."
 msgstr "Nur auf Desktop-Plattformen lauffähig."
 
@@ -14508,9 +14541,6 @@ msgid ""
 msgstr ""
 "Projekt in ‚%s‘ konnte nicht geladen werden (Fehler %d). Es ist "
 "möglicherweise nicht vorhanden oder beschädigt."
-
-msgid "New Game Project"
-msgstr "Neues Spiel"
 
 msgid "Import & Edit"
 msgstr "Importieren & Bearbeiten"
@@ -15592,8 +15622,49 @@ msgstr "Export-Einstellungen:"
 msgid "glTF 2.0 Scene..."
 msgstr "glTF-2.0-Szene …"
 
+msgid "Path does not point to a valid executable."
+msgstr "Der Pfad zeigt nicht auf eine gültige ausführbare Datei."
+
+msgid "Couldn't run Blender executable."
+msgstr "Blender konnte nicht ausgeführt werden."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Unerwartete Ausgabe von --version von der Blender-Binärdatei bei: %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr ""
+"Versionsinformationen konnten aus der Blender-Binärdatei nicht extrahiert "
+"werden, bei: %s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"Blender-Version %d.x gefunden. Dies ist zu alt für diesen Importer (3.0+ wird "
+"benötigt)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Pfad zur Blender-Binärdatei ist gültig (automatisch ermittelt)."
+
+msgid "Path to Blender executable is valid."
+msgstr "Pfad zur Blender-Binärdatei ist gültig."
+
 msgid "Configure Blender Importer"
 msgstr "Blender-Importer konfigurieren"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"Blender 3.0 oder neuer wird benötigt, um ‚.blend‘-Dateien zu importieren.\n"
+"Bitte gültigen Pfad zu einer Blender-Binärdatei angeben."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"Auf macOS sollte dies die Datei `Contents/MacOS/blender` innerhalb des "
+"Blender-Ordners `.app`sein."
 
 msgid "Disable '.blend' Import"
 msgstr "‚.blend‘-Importe deaktivieren"
@@ -16941,6 +17012,9 @@ msgstr ""
 "Codesign-Anwendung konnte nicht gestartet werden, bitte sicher stellen dass "
 "die Xcode-Kommandozeilen-Tools installiert sind."
 
+msgid "Cannot sign directory %s."
+msgstr "Verzeichnis %s konnte nicht signiert werden."
+
 msgid "Cannot sign file %s."
 msgstr "Datei %s konnte nicht signiert werden."
 
@@ -17526,6 +17600,20 @@ msgstr ""
 "festgelegt werden."
 
 msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Der TileMap-Knoten ist veraltet, da er durch die Verwendung mehrerer "
+"TileMapLayer-Knoten ersetzt wird.\n"
+"Um eine TileMap in einen Satz von TileMapLayer-Knoten umzuwandeln, öffnen Sie "
+"das untere TileMap-Bedienfeld mit diesem ausgewählten Knoten, klicken Sie auf "
+"das Toolbox-Symbol in der oberen rechten Ecke und wählen Sie „TileMap-Ebenen "
+"als einzelne TileMapLayer-Knoten extrahieren“."
+
+msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
 "This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
 "Y-sorted as a whole with tiles from Y-sorted layers."
@@ -17979,13 +18067,6 @@ msgid ""
 msgstr ""
 "Die „Remote-Pfad“-Eigenschaft muss auf ein gültiges Node3D oder einen von "
 "Node3D abgeleiteten Node verweisen."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Skeleton3D-Node nicht gesetzt! SkeletonModifier3D muss Child von Skeleton3D "
-"sein oder einen Pfad zu einem externen Skelett setzen."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Dieser Körper wird ignoriert bis Sie ein Mesh zuweisen."
@@ -18499,6 +18580,14 @@ msgstr ""
 "Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen von "
 "sowohl Built-ins als auch Uniform-Texturen. Dies wird nicht unterstützt, "
 "bitte nur eines von beiden verwenden."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"Sampler-Argument %d von Funktion ‚%s‘ wurde mehr als einmal aufgerufen mit "
+"Texturen, die sich entweder in Filter-, Wiederholungs- oder Texturen-Hint-"
+"Einstellungen unterscheiden."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

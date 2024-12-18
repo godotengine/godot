@@ -31,19 +31,11 @@
 #include "video_stream_theora.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "scene/resources/image_texture.h"
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4127)
-#endif
-
 #include "thirdparty/misc/yuv2rgb.h"
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -114,7 +106,7 @@ void VideoStreamPlaybackTheora::video_write() {
 		format = Image::FORMAT_RGBA8;
 	}
 
-	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
+	Ref<Image> img = memnew(Image(size.x, size.y, false, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
 	texture->update(img); //zero copy send to rendering server
 
@@ -628,7 +620,7 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 #endif
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
-	texture = Ref<ImageTexture>(memnew(ImageTexture));
+	texture.instantiate();
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	int rb_power = nearest_shift(RB_SIZE_KB * 1024);
@@ -644,7 +636,7 @@ VideoStreamPlaybackTheora::~VideoStreamPlaybackTheora() {
 	memdelete(thread_sem);
 #endif
 	clear();
-};
+}
 
 void VideoStreamTheora::_bind_methods() {}
 

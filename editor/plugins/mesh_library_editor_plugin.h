@@ -68,9 +68,6 @@ class MeshLibraryEditor : public Control {
 	static void _import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms);
 	static void _import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms);
 
-protected:
-	static void _bind_methods();
-
 public:
 	MenuButton *get_menu_button() const { return menu; }
 
@@ -86,7 +83,7 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshLibrary"; }
+	virtual String get_plugin_name() const override { return "MeshLibrary"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;

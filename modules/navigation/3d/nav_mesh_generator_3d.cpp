@@ -100,57 +100,55 @@ void NavMeshGenerator3D::sync() {
 		return;
 	}
 
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
+		LocalVector<WorkerThreadPool::TaskID> finished_task_ids;
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
-		if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-			finished_task_ids.push_back(E.key);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+			if (WorkerThreadPool::get_singleton()->is_task_completed(E.key)) {
+				WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+				finished_task_ids.push_back(E.key);
 
-			NavMeshGeneratorTask3D *generator_task = E.value;
-			DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
+				NavMeshGeneratorTask3D *generator_task = E.value;
+				DEV_ASSERT(generator_task->status == NavMeshGeneratorTask3D::TaskStatus::BAKING_FINISHED);
 
-			baking_navmeshes.erase(generator_task->navigation_mesh);
-			if (generator_task->callback.is_valid()) {
-				generator_emit_callback(generator_task->callback);
+				baking_navmeshes.erase(generator_task->navigation_mesh);
+				if (generator_task->callback.is_valid()) {
+					generator_emit_callback(generator_task->callback);
+				}
+				memdelete(generator_task);
 			}
-			memdelete(generator_task);
+		}
+
+		for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
+			generator_tasks.erase(finished_task_id);
 		}
 	}
-
-	for (WorkerThreadPool::TaskID finished_task_id : finished_task_ids) {
-		generator_tasks.erase(finished_task_id);
-	}
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator3D::cleanup() {
-	baking_navmesh_mutex.lock();
-	generator_task_mutex.lock();
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	{
+		MutexLock generator_task_lock(generator_task_mutex);
 
-	baking_navmeshes.clear();
+		baking_navmeshes.clear();
 
-	for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
-		NavMeshGeneratorTask3D *generator_task = E.value;
-		memdelete(generator_task);
+		for (KeyValue<WorkerThreadPool::TaskID, NavMeshGeneratorTask3D *> &E : generator_tasks) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.key);
+			NavMeshGeneratorTask3D *generator_task = E.value;
+			memdelete(generator_task);
+		}
+		generator_tasks.clear();
+
+		generator_rid_rwlock.write_lock();
+		for (NavMeshGeometryParser3D *parser : generator_parsers) {
+			generator_parser_owner.free(parser->self);
+		}
+		generator_parsers.clear();
+		generator_rid_rwlock.write_unlock();
 	}
-	generator_tasks.clear();
-
-	generator_rid_rwlock.write_lock();
-	for (NavMeshGeometryParser3D *parser : generator_parsers) {
-		generator_parser_owner.free(parser->self);
-	}
-	generator_parsers.clear();
-	generator_rid_rwlock.write_unlock();
-
-	generator_task_mutex.unlock();
-	baking_navmesh_mutex.unlock();
 }
 
 void NavMeshGenerator3D::finish() {
@@ -226,7 +224,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	baking_navmeshes.insert(p_navigation_mesh);
 	baking_navmesh_mutex.unlock();
 
-	generator_task_mutex.lock();
+	MutexLock generator_task_lock(generator_task_mutex);
 	NavMeshGeneratorTask3D *generator_task = memnew(NavMeshGeneratorTask3D);
 	generator_task->navigation_mesh = p_navigation_mesh;
 	generator_task->source_geometry_data = p_source_geometry_data;
@@ -234,14 +232,11 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 	generator_task->status = NavMeshGeneratorTask3D::TaskStatus::BAKING_STARTED;
 	generator_task->thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavMeshGenerator3D::generator_thread_bake, generator_task, NavMeshGenerator3D::baking_use_high_priority_threads, SNAME("NavMeshGeneratorBake3D"));
 	generator_tasks.insert(generator_task->thread_task_id, generator_task);
-	generator_task_mutex.unlock();
 }
 
 bool NavMeshGenerator3D::is_baking(Ref<NavigationMesh> p_navigation_mesh) {
-	baking_navmesh_mutex.lock();
-	bool baking = baking_navmeshes.has(p_navigation_mesh);
-	baking_navmesh_mutex.unlock();
-	return baking;
+	MutexLock baking_navmesh_lock(baking_navmesh_mutex);
+	return baking_navmeshes.has(p_navigation_mesh);
 }
 
 void NavMeshGenerator3D::generator_thread_bake(void *p_arg) {
@@ -600,11 +595,17 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		return;
 	}
 
-	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis(), obstacle->get_global_position());
-
+	const float elevation = obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y;
+	// Prevent non-positive scaling.
+	const Vector3 safe_scale = obstacle->get_global_basis().get_scale().abs().maxf(0.001);
 	const float obstacle_radius = obstacle->get_radius();
 
 	if (obstacle_radius > 0.0) {
+		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		const Vector3 uniform_max_scale = Vector3(scaling_max_value, scaling_max_value, scaling_max_value);
+		const Transform3D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform3D(Basis().scaled(uniform_max_scale), obstacle->get_global_position());
+
 		Vector<Vector3> obstruction_circle_vertices;
 
 		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
@@ -618,11 +619,14 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;
-			circle_vertices_ptrw[i] = node_xform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
+			circle_vertices_ptrw[i] = obstacle_circle_transform.xform(Vector3(Math::cos(angle) * obstacle_radius, 0.0, Math::sin(angle) * obstacle_radius));
 		}
 
-		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y - obstacle_radius, obstacle_radius, obstacle->get_carve_navigation_mesh());
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, elevation - obstacle_radius, scaling_max_value * obstacle_radius, obstacle->get_carve_navigation_mesh());
 	}
+
+	// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+	const Transform3D node_xform = p_source_geometry_data->root_node_transform * Transform3D(Basis().scaled(safe_scale).rotated(Vector3(0.0, 1.0, 0.0), obstacle->get_global_rotation().y), obstacle->get_global_position());
 
 	const Vector<Vector3> &obstacle_vertices = obstacle->get_vertices();
 
@@ -640,7 +644,7 @@ void NavMeshGenerator3D::generator_parse_navigationobstacle_node(const Ref<Navig
 		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
 		obstruction_shape_vertices_ptrw[i].y = 0.0;
 	}
-	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_global_position().y + p_source_geometry_data->root_node_transform.origin.y, obstacle->get_height(), obstacle->get_carve_navigation_mesh());
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, elevation, safe_scale.y * obstacle->get_height(), obstacle->get_carve_navigation_mesh());
 }
 
 void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node) {
@@ -665,7 +669,7 @@ void NavMeshGenerator3D::generator_parse_source_geometry_data(const Ref<Navigati
 	for (Node *parse_node : parse_nodes) {
 		generator_parse_geometry_node(p_navigation_mesh, p_source_geometry_data, parse_node, recurse_children);
 	}
-};
+}
 
 void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data) {
 	if (p_navigation_mesh.is_null() || p_source_geometry_data.is_null()) {

@@ -54,8 +54,8 @@ Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_
 	return out;
 }
 
-DTLSServer *DTLSServerMbedTLS::_create_func() {
-	return memnew(DTLSServerMbedTLS);
+DTLSServer *DTLSServerMbedTLS::_create_func(bool p_notify_postinitialize) {
+	return static_cast<DTLSServer *>(ClassDB::creator<DTLSServerMbedTLS>(p_notify_postinitialize));
 }
 
 void DTLSServerMbedTLS::initialize() {

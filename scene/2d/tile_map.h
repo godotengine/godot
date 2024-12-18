@@ -107,16 +107,16 @@ protected:
 	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	void force_update(int p_layer);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
@@ -166,6 +166,10 @@ public:
 	int get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	// Helper method to make accessing the data easier.
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+
+	bool is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);

@@ -279,15 +279,6 @@ msgstr "Session-Kategorie"
 msgid "Mix With Others"
 msgstr "Mit anderen mixen"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Skript"
-
-msgid "Search in File Extensions"
-msgstr "Dateierweiterungen für Dateisuche"
-
 msgid "Subwindows"
 msgstr "Unterfenster"
 
@@ -938,6 +929,9 @@ msgstr "Modus ein-/ausschalten"
 
 msgid "Interface"
 msgstr "Oberfläche"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Editorsprache"
@@ -2827,6 +2821,9 @@ msgstr "Pfad des privaten SSH-Schlüssels"
 msgid "Main Run Args"
 msgstr "Laufzeitargumente für Main"
 
+msgid "Script"
+msgstr "Skript"
+
 msgid "Templates Search Path"
 msgstr "Vorlagen-Suchpfad"
 
@@ -3075,6 +3072,9 @@ msgstr "Scrollachse der Dreheingabe"
 
 msgid "Text Driver"
 msgstr "Text-Treiber"
+
+msgid "Search in File Extensions"
+msgstr "Dateierweiterungen für Dateisuche"
 
 msgid "Mouse Cursor"
 msgstr "Mauszeiger"

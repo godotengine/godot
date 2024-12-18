@@ -60,6 +60,7 @@ protected:
 public:
 	void add_animation(const StringName &p_anim);
 	bool has_animation(const StringName &p_anim) const;
+	void duplicate_animation(const StringName &p_from, const StringName &p_to);
 	void remove_animation(const StringName &p_anim);
 	void rename_animation(const StringName &p_prev, const StringName &p_next);
 

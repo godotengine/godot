@@ -36,7 +36,7 @@
 #include "scene/3d/occluder_instance_3d.h"
 
 OccluderInstance3DGizmoPlugin::OccluderInstance3DGizmoPlugin() {
-	create_material("line_material", EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/occluder", Color(0.8, 0.5, 1)));
+	create_material("line_material", EDITOR_GET("editors/3d_gizmos/gizmo_colors/occluder"));
 	create_handle_material("handles");
 }
 

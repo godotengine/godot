@@ -31,6 +31,7 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
+#include "editor/add_metadata_dialog.h"
 #include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/editor_plugin.h"
@@ -50,8 +51,8 @@ class Tree;
 class TreeItem;
 class VSeparator;
 
-class BoneTransformEditor : public VBoxContainer {
-	GDCLASS(BoneTransformEditor, VBoxContainer);
+class BonePropertiesEditor : public VBoxContainer {
+	GDCLASS(BonePropertiesEditor, VBoxContainer);
 
 	EditorInspectorSection *section = nullptr;
 
@@ -62,6 +63,10 @@ class BoneTransformEditor : public VBoxContainer {
 
 	EditorInspectorSection *rest_section = nullptr;
 	EditorPropertyTransform3D *rest_matrix = nullptr;
+
+	EditorInspectorSection *meta_section = nullptr;
+	AddMetadataDialog *add_meta_dialog = nullptr;
+	Button *add_metadata_button = nullptr;
 
 	Rect2 background_rects[5];
 
@@ -79,11 +84,18 @@ class BoneTransformEditor : public VBoxContainer {
 
 	void _property_keyed(const String &p_path, bool p_advance);
 
+	void _meta_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing);
+	void _meta_deleted(const String &p_property);
+	void _show_add_meta_dialog();
+	void _add_meta_confirm();
+
+	HashMap<StringName, EditorProperty *> meta_editors;
+
 protected:
 	void _notification(int p_what);
 
 public:
-	BoneTransformEditor(Skeleton3D *p_skeleton);
+	BonePropertiesEditor(Skeleton3D *p_skeleton);
 
 	// Which transform target to modify.
 	void set_target(const String &p_prop);
@@ -95,6 +107,8 @@ public:
 
 class Skeleton3DEditor : public VBoxContainer {
 	GDCLASS(Skeleton3DEditor, VBoxContainer);
+
+	static void _bind_methods();
 
 	friend class Skeleton3DEditorPlugin;
 
@@ -116,9 +130,13 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	Skeleton3D *skeleton = nullptr;
 
+	enum {
+		JOINT_BUTTON_REVERT = 0,
+	};
+
 	Tree *joint_tree = nullptr;
-	BoneTransformEditor *rest_editor = nullptr;
-	BoneTransformEditor *pose_editor = nullptr;
+	BonePropertiesEditor *rest_editor = nullptr;
+	BonePropertiesEditor *pose_editor = nullptr;
 
 	HBoxContainer *topmenu_bar = nullptr;
 	MenuButton *skeleton_options = nullptr;
@@ -149,6 +167,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	EditorFileDialog *file_export_lib = nullptr;
 
 	void update_joint_tree();
+	void update_all();
 
 	void create_editors();
 
@@ -189,6 +208,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void _joint_tree_selection_changed();
 	void _joint_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
+	void _joint_tree_button_clicked(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _update_properties();
 
 	void _subgizmo_selection_change();
@@ -208,14 +228,14 @@ public:
 
 	void move_skeleton_bone(NodePath p_skeleton_path, int32_t p_selected_boneidx, int32_t p_target_boneidx);
 
-	Skeleton3D *get_skeleton() const { return skeleton; };
+	Skeleton3D *get_skeleton() const { return skeleton; }
 
 	bool is_edit_mode() const { return edit_mode; }
 
 	void update_bone_original();
-	Vector3 get_bone_original_position() const { return bone_original_position; };
-	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
-	Vector3 get_bone_original_scale() const { return bone_original_scale; };
+	Vector3 get_bone_original_position() const { return bone_original_position; }
+	Quaternion get_bone_original_rotation() const { return bone_original_rotation; }
+	Vector3 get_bone_original_scale() const { return bone_original_scale; }
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();
@@ -244,7 +264,7 @@ public:
 	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
-	virtual String get_name() const override { return "Skeleton3D"; }
+	virtual String get_plugin_name() const override { return "Skeleton3D"; }
 
 	Skeleton3DEditorPlugin();
 };
@@ -252,11 +272,15 @@ public:
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
-	Ref<StandardMaterial3D> unselected_mat;
-	Ref<ShaderMaterial> selected_mat;
-	Ref<Shader> selected_sh;
+	struct SelectionMaterials {
+		Ref<StandardMaterial3D> unselected_mat;
+		Ref<ShaderMaterial> selected_mat;
+	};
+	static SelectionMaterials selection_materials;
 
 public:
+	static Ref<ArrayMesh> get_bones_mesh(Skeleton3D *p_skeleton, int p_selected, bool p_is_selected);
+
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
 	int get_priority() const override;
@@ -269,6 +293,7 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	Skeleton3DGizmoPlugin();
+	~Skeleton3DGizmoPlugin();
 };
 
 #endif // SKELETON_3D_EDITOR_PLUGIN_H

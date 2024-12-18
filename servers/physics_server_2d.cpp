@@ -926,6 +926,7 @@ void PhysicsServer2DManager::on_servers_changed() {
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers));
 	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
+	ProjectSettings::get_singleton()->set_as_basic(setting_property_name, true);
 }
 
 void PhysicsServer2DManager::_bind_methods() {
@@ -972,7 +973,9 @@ String PhysicsServer2DManager::get_server_name(int p_id) {
 }
 
 PhysicsServer2D *PhysicsServer2DManager::new_default_server() {
-	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
+	if (default_server_id == -1) {
+		return nullptr;
+	}
 	Variant ret;
 	Callable::CallError ce;
 	physics_2d_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);

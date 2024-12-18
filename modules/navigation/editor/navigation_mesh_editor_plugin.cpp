@@ -54,8 +54,8 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 void NavigationMeshEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			button_bake->set_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
-			button_reset->set_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
+			button_bake->set_button_icon(get_theme_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
+			button_reset->set_button_icon(get_theme_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 		} break;
 	}
 }
@@ -126,14 +126,11 @@ void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
 	node = p_nav_region;
 }
 
-void NavigationMeshEditor::_bind_methods() {
-}
-
 NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox = memnew(HBoxContainer);
 
 	button_bake = memnew(Button);
-	button_bake->set_theme_type_variation("FlatButton");
+	button_bake->set_theme_type_variation(SceneStringName(FlatButton));
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavigationMesh"));
@@ -141,7 +138,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
-	button_reset->set_theme_type_variation("FlatButton");
+	button_reset->set_theme_type_variation(SceneStringName(FlatButton));
 	bake_hbox->add_child(button_reset);
 	button_reset->set_text(TTR("Clear NavigationMesh"));
 	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));
@@ -179,7 +176,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 
 NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 	navigation_mesh_editor = memnew(NavigationMeshEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(navigation_mesh_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(navigation_mesh_editor);
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, navigation_mesh_editor->bake_hbox);
 	navigation_mesh_editor->hide();
 	navigation_mesh_editor->bake_hbox->hide();

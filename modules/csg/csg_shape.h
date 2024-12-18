@@ -113,11 +113,13 @@ private:
 	void _update_debug_collision_shape();
 	void _clear_debug_collision_shape();
 	void _on_transform_changed();
+	Vector<Vector3> _get_brush_collision_faces();
 
 protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
 	void _make_dirty(bool p_parent_removing = false);
+	PackedStringArray get_configuration_warnings() const override;
 
 	static void _bind_methods();
 
@@ -154,13 +156,19 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);
 	float get_snap() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_calculate_tangents(bool p_calculate_tangents);
 	bool is_calculating_tangents() const;
 
 	bool is_root_shape() const;
+
+	Ref<ArrayMesh> bake_static_mesh();
+	Ref<ConcavePolygonShape3D> bake_collision_shape();
+
 	CSGShape3D();
 	~CSGShape3D();
 };

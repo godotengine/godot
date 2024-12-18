@@ -33,14 +33,11 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 
-void InputEventConfigContainer::_bind_methods() {
-}
-
 void InputEventConfigContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			open_config_button->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			open_config_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		} break;
 	}
 }

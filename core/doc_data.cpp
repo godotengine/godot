@@ -33,6 +33,8 @@
 String DocData::get_default_value_string(const Variant &p_value) {
 	if (p_value.get_type() == Variant::ARRAY) {
 		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+	} else if (p_value.get_type() == Variant::DICTIONARY) {
+		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
 	} else {
 		return p_value.get_construct_string().replace("\n", " ");
 	}
@@ -57,6 +59,8 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 		p_method.return_type = p_retinfo.class_name;
 	} else if (p_retinfo.type == Variant::ARRAY && p_retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_method.return_type = p_retinfo.hint_string + "[]";
+	} else if (p_retinfo.type == Variant::DICTIONARY && p_retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+		p_method.return_type = "Dictionary[" + p_retinfo.hint_string.replace(";", ", ") + "]";
 	} else if (p_retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_method.return_type = p_retinfo.hint_string;
 	} else if (p_retinfo.type == Variant::NIL && p_retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -89,6 +93,8 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 		p_argument.type = p_arginfo.class_name;
 	} else if (p_arginfo.type == Variant::ARRAY && p_arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 		p_argument.type = p_arginfo.hint_string + "[]";
+	} else if (p_arginfo.type == Variant::DICTIONARY && p_arginfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+		p_argument.type = "Dictionary[" + p_arginfo.hint_string.replace(";", ", ") + "]";
 	} else if (p_arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 		p_argument.type = p_arginfo.hint_string;
 	} else if (p_arginfo.type == Variant::NIL) {
@@ -97,28 +103,6 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 	} else {
 		p_argument.type = Variant::get_type_name(p_arginfo.type);
 	}
-}
-
-void DocData::property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo) {
-	p_property.name = p_memberinfo.propinfo.name;
-	p_property.description = p_memberinfo.doc_string;
-
-	if (p_memberinfo.propinfo.type == Variant::OBJECT) {
-		p_property.type = p_memberinfo.propinfo.class_name;
-	} else if (p_memberinfo.propinfo.type == Variant::NIL && p_memberinfo.propinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-		p_property.type = "Variant";
-	} else {
-		p_property.type = Variant::get_type_name(p_memberinfo.propinfo.type);
-	}
-
-	p_property.setter = p_memberinfo.setter;
-	p_property.getter = p_memberinfo.getter;
-
-	if (p_memberinfo.has_default_value && p_memberinfo.default_value.get_type() != Variant::OBJECT) {
-		p_property.default_value = get_default_value_string(p_memberinfo.default_value);
-	}
-
-	p_property.overridden = false;
 }
 
 void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
@@ -163,15 +147,4 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		}
 		p_method.arguments.push_back(argument);
 	}
-}
-
-void DocData::constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc) {
-	p_const.name = p_name;
-	p_const.value = p_value;
-	p_const.is_value_valid = (p_value.get_type() != Variant::OBJECT);
-	p_const.description = p_desc;
-}
-
-void DocData::signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc) {
-	return method_doc_from_methodinfo(p_signal, p_methodinfo, p_desc);
 }

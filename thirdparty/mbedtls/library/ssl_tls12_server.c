@@ -756,7 +756,9 @@ static int ssl_pick_cert(mbedtls_ssl_context *ssl,
          * and decrypting with the same RSA key.
          */
         if (mbedtls_ssl_check_cert_usage(cur->cert, ciphersuite_info,
-                                         MBEDTLS_SSL_IS_SERVER, &flags) != 0) {
+                                         MBEDTLS_SSL_IS_CLIENT,
+                                         MBEDTLS_SSL_VERSION_TLS1_2,
+                                         &flags) != 0) {
             MBEDTLS_SSL_DEBUG_MSG(3, ("certificate mismatch: "
                                       "(extended) key usage extension"));
             continue;
@@ -2631,13 +2633,8 @@ static int ssl_get_ecdh_params_from_cert(mbedtls_ssl_context *ssl)
             ssl->handshake->xxdh_psa_type = psa_get_key_type(&key_attributes);
             ssl->handshake->xxdh_psa_bits = psa_get_key_bits(&key_attributes);
 
-            if (pk_type == MBEDTLS_PK_OPAQUE) {
-                /* Opaque key is created by the user (externally from Mbed TLS)
-                 * so we assume it already has the right algorithm and flags
-                 * set. Just copy its ID as reference. */
-                ssl->handshake->xxdh_psa_privkey = pk->priv_id;
-                ssl->handshake->xxdh_psa_privkey_is_external = 1;
-            } else {
+#if defined(MBEDTLS_PK_USE_PSA_EC_DATA)
+            if (pk_type != MBEDTLS_PK_OPAQUE) {
                 /* PK_ECKEY[_DH] and PK_ECDSA instead as parsed from the PK
                  * module and only have ECDSA capabilities. Since we need
                  * them for ECDH later, we export and then re-import them with
@@ -2665,10 +2662,20 @@ static int ssl_get_ecdh_params_from_cert(mbedtls_ssl_context *ssl)
                 /* Set this key as owned by the TLS library: it will be its duty
                  * to clear it exit. */
                 ssl->handshake->xxdh_psa_privkey_is_external = 0;
-            }
 
+                ret = 0;
+                break;
+            }
+#endif /* MBEDTLS_PK_USE_PSA_EC_DATA */
+
+            /* Opaque key is created by the user (externally from Mbed TLS)
+             * so we assume it already has the right algorithm and flags
+             * set. Just copy its ID as reference. */
+            ssl->handshake->xxdh_psa_privkey = pk->priv_id;
+            ssl->handshake->xxdh_psa_privkey_is_external = 1;
             ret = 0;
             break;
+
 #if !defined(MBEDTLS_PK_USE_PSA_EC_DATA)
         case MBEDTLS_PK_ECKEY:
         case MBEDTLS_PK_ECKEY_DH:
@@ -3916,7 +3923,7 @@ static int ssl_parse_client_key_exchange(mbedtls_ssl_context *ssl)
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
         psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
         psa_status_t destruction_status = PSA_ERROR_CORRUPTION_DETECTED;
-        uint8_t ecpoint_len;
+        size_t ecpoint_len;
 
         mbedtls_ssl_handshake_params *handshake = ssl->handshake;
 

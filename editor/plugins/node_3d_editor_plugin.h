@@ -31,12 +31,14 @@
 #ifndef NODE_3D_EDITOR_PLUGIN_H
 #define NODE_3D_EDITOR_PLUGIN_H
 
+#include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;
 class CheckBox;
@@ -60,6 +62,7 @@ class VSeparator;
 class VSplitContainer;
 class ViewportNavigationControl;
 class WorldEnvironment;
+class MeshInstance3D;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -124,6 +127,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_LISTENER,
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
+		VIEW_TRANSFORM_GIZMO,
 		VIEW_GRID,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
@@ -188,9 +192,11 @@ public:
 	};
 
 	enum NavigationScheme {
-		NAVIGATION_GODOT,
-		NAVIGATION_MAYA,
-		NAVIGATION_MODO,
+		NAVIGATION_GODOT = 0,
+		NAVIGATION_MAYA = 1,
+		NAVIGATION_MODO = 2,
+		NAVIGATION_CUSTOM = 3,
+		NAVIGATION_TABLET = 4,
 	};
 
 	enum FreelookNavigationScheme {
@@ -199,11 +205,29 @@ public:
 		FREELOOK_FULLY_AXIS_LOCKED,
 	};
 
+	enum ViewportNavMouseButton {
+		NAVIGATION_LEFT_MOUSE,
+		NAVIGATION_MIDDLE_MOUSE,
+		NAVIGATION_RIGHT_MOUSE,
+		NAVIGATION_MOUSE_4,
+		NAVIGATION_MOUSE_5,
+	};
+
 private:
 	double cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
 	double gpu_time_history[FRAME_TIME_HISTORY];
 	int gpu_time_history_index;
+
+	Node *ruler = nullptr;
+	Node3D *ruler_start_point = nullptr;
+	Node3D *ruler_end_point = nullptr;
+	Ref<ImmediateMesh> geometry;
+	MeshInstance3D *ruler_line = nullptr;
+	MeshInstance3D *ruler_line_xray = nullptr;
+	Label *ruler_label = nullptr;
+	Ref<StandardMaterial3D> ruler_material;
+	Ref<StandardMaterial3D> ruler_material_xray;
 
 	int index;
 	ViewType view_type;
@@ -235,6 +259,8 @@ private:
 	bool orthogonal;
 	bool auto_orthogonal;
 	bool lock_rotation;
+	bool transform_gizmo_visible = true;
+	bool collision_reposition = false;
 	real_t gizmo_scale;
 
 	bool freelook_active;
@@ -293,6 +319,10 @@ private:
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 
+	bool _is_shortcut_empty(const String &p_name);
+	bool _is_nav_modifier_pressed(const String &p_name);
+	int _get_shortcut_input_count(const String &p_name);
+
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
@@ -324,7 +354,6 @@ private:
 		TRANSFORM_ROTATE,
 		TRANSFORM_TRANSLATE,
 		TRANSFORM_SCALE
-
 	};
 	enum TransformPlane {
 		TRANSFORM_VIEW,
@@ -389,6 +418,28 @@ private:
 	void reset_fov();
 	void scale_cursor_distance(real_t scale);
 
+	struct ShortcutCheckSet {
+		bool mod_pressed = false;
+		bool shortcut_not_empty = true;
+		int input_count = 0;
+		ViewportNavMouseButton mouse_preference = NAVIGATION_LEFT_MOUSE;
+		NavigationMode result_nav_mode = NAVIGATION_NONE;
+
+		ShortcutCheckSet() {}
+
+		ShortcutCheckSet(bool p_mod_pressed, bool p_shortcut_not_empty, int p_input_count, const ViewportNavMouseButton &p_mouse_preference, const NavigationMode &p_result_nav_mode) :
+				mod_pressed(p_mod_pressed), shortcut_not_empty(p_shortcut_not_empty), input_count(p_input_count), mouse_preference(p_mouse_preference), result_nav_mode(p_result_nav_mode) {
+		}
+	};
+
+	struct ShortcutCheckSetComparator {
+		_FORCE_INLINE_ bool operator()(const ShortcutCheckSet &A, const ShortcutCheckSet &B) const {
+			return A.input_count > B.input_count;
+		}
+	};
+
+	NavigationMode _get_nav_mode_from_shortcut_check(ViewportNavMouseButton p_mouse_button, Vector<ShortcutCheckSet> p_shortcut_check_sets, bool p_use_not_empty);
+
 	void set_freelook_active(bool active_now);
 	void scale_freelook_speed(real_t scale);
 
@@ -409,6 +460,11 @@ private:
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
+	// These allow tool scripts to set the 3D cursor location by updating the camera transform.
+	Transform3D last_camera_transform;
+	bool _camera_moved_externally();
+	void _apply_camera_transform_to_cursor();
+
 	void _surface_mouse_enter();
 	void _surface_mouse_exit();
 	void _surface_focus_enter();
@@ -424,7 +480,7 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
-	bool _is_node_locked(const Node *p_node);
+	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
@@ -435,8 +491,8 @@ private:
 	void _list_select(Ref<InputEventMouseButton> b);
 	Point2 _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
-	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Node3D *p_parent, const Node3D *p_top_level_parent = nullptr);
+	Vector3 _get_instance_position(const Point2 &p_pos, Node3D *p_node) const;
+	static AABB _calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level = false, const Transform3D *p_bounds_orientation = nullptr);
 
 	Node *_sanitize_preview_node(Node *p_node) const;
 
@@ -580,13 +636,13 @@ public:
 		TOOL_UNLOCK_SELECTED,
 		TOOL_GROUP_SELECTED,
 		TOOL_UNGROUP_SELECTED,
+		TOOL_RULER,
 		TOOL_MAX
 	};
 
 	enum ToolOptions {
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
-		TOOL_OPT_OVERRIDE_CAMERA,
 		TOOL_OPT_MAX
 
 	};
@@ -596,6 +652,8 @@ private:
 
 	Node3DEditorViewportContainer *viewport_base = nullptr;
 	Node3DEditorViewport *viewports[VIEWPORTS_COUNT];
+	int last_used_viewport = 0;
+
 	VSplitContainer *shader_split = nullptr;
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
@@ -628,6 +686,8 @@ private:
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
 	bool current_hover_gizmo_handle_secondary;
+
+	DynamicBVH gizmo_bvh;
 
 	real_t snap_translate_value;
 	real_t snap_rotate_value;
@@ -666,7 +726,6 @@ private:
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
-		MENU_TOOL_OVERRIDE_CAMERA,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -683,7 +742,8 @@ private:
 		MENU_UNLOCK_SELECTED,
 		MENU_GROUP_SELECTED,
 		MENU_UNGROUP_SELECTED,
-		MENU_SNAP_TO_FLOOR
+		MENU_SNAP_TO_FLOOR,
+		MENU_RULER,
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -721,8 +781,6 @@ private:
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
 	void _menu_gizmo_toggled(int p_option);
-	void _update_camera_override_button(bool p_game_running);
-	void _update_camera_override_viewport(Object *p_viewport);
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_toolbar_panel = nullptr;
@@ -733,8 +791,6 @@ private:
 
 	void _generate_selection_boxes();
 
-	int camera_override_viewport_id;
-
 	void _init_indicators();
 	void _update_gizmos_menu();
 	void _update_gizmos_menu_theme();
@@ -743,6 +799,7 @@ private:
 	void _finish_grid();
 
 	void _toggle_maximize_view(Object *p_viewport);
+	void _viewport_clicked(int p_viewport_idx);
 
 	Node *custom_camera = nullptr;
 
@@ -845,6 +902,8 @@ protected:
 public:
 	static Node3DEditor *get_singleton() { return singleton; }
 
+	static Size2i get_camera_viewport_size(Camera3D *p_camera);
+
 	Vector3 snap_point(Vector3 p_target, Vector3 p_start = Vector3(0, 0, 0)) const;
 
 	float get_znear() const { return settings_znear->get_value(); }
@@ -929,9 +988,16 @@ public:
 		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
 	}
+	Node3DEditorViewport *get_last_used_viewport();
 
 	void add_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
 	void remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin);
+
+	DynamicBVH::ID insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb);
+	void update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb);
+	void remove_gizmo_bvh_node(DynamicBVH::ID p_id);
+	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end);
+	Vector<Node3D *> gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum);
 
 	void edit(Node3D *p_spatial);
 	void clear();
@@ -947,7 +1013,7 @@ class Node3DEditorPlugin : public EditorPlugin {
 
 public:
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_name() const override { return "3D"; }
+	virtual String get_plugin_name() const override { return "3D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_object) override;

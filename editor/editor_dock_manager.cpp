@@ -174,6 +174,9 @@ void EditorDockManager::_update_docks_menu() {
 	docks_menu_docks.clear();
 	int id = 0;
 	for (const KeyValue<Control *, DockInfo> &dock : all_docks) {
+		if (!dock.value.enabled) {
+			continue;
+		}
 		if (dock.value.shortcut.is_valid()) {
 			docks_menu->add_shortcut(dock.value.shortcut, id);
 			docks_menu->set_item_text(id, dock.value.title);
@@ -184,8 +187,10 @@ void EditorDockManager::_update_docks_menu() {
 		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock.value.open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
+			docks_menu->set_item_tooltip(id, vformat(TTR("Open the %s dock."), dock.value.title));
+		} else {
+			docks_menu->set_item_tooltip(id, vformat(TTR("Focus on the %s dock."), dock.value.title));
 		}
-		docks_menu->set_item_disabled(id, !dock.value.enabled);
 		docks_menu_docks.push_back(dock.key);
 		id++;
 	}
@@ -509,7 +514,7 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), hsplits[i]->get_split_offset());
+		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
 	}
 
 	FileSystemDock::get_singleton()->save_layout_to_config(p_layout, p_section);
@@ -605,7 +610,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			continue;
 		}
 		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-		hsplits[i]->set_split_offset(ofs);
+		hsplits[i]->set_split_offset(ofs * EDSCALE);
 	}
 
 	FileSystemDock::get_singleton()->load_layout_from_config(p_layout, p_section);
@@ -852,21 +857,21 @@ void DockContextPopup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (make_float_button) {
-				make_float_button->set_icon(get_editor_theme_icon(SNAME("MakeFloating")));
+				make_float_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
 			}
 			if (is_layout_rtl()) {
-				tab_move_left_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
-				tab_move_right_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				tab_move_left_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+				tab_move_right_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 				tab_move_left_button->set_tooltip_text(TTR("Move this dock right one tab."));
 				tab_move_right_button->set_tooltip_text(TTR("Move this dock left one tab."));
 			} else {
-				tab_move_left_button->set_icon(get_editor_theme_icon(SNAME("Back")));
-				tab_move_right_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				tab_move_left_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+				tab_move_right_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 				tab_move_left_button->set_tooltip_text(TTR("Move this dock left one tab."));
 				tab_move_right_button->set_tooltip_text(TTR("Move this dock right one tab."));
 			}
-			dock_to_bottom_button->set_icon(get_editor_theme_icon(SNAME("ControlAlignBottomWide")));
-			close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+			dock_to_bottom_button->set_button_icon(get_editor_theme_icon(SNAME("ControlAlignBottomWide")));
+			close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 		} break;
 	}
 }

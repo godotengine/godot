@@ -227,11 +227,11 @@ void TranslationPO::set_plural_rule(const String &p_plural_rule) {
 	// Set plural_forms and plural_rule.
 	// p_plural_rule passed in has the form "Plural-Forms: nplurals=2; plural=(n >= 2);".
 
-	int first_semi_col = p_plural_rule.find(";");
-	plural_forms = p_plural_rule.substr(p_plural_rule.find("=") + 1, first_semi_col - (p_plural_rule.find("=") + 1)).to_int();
+	int first_semi_col = p_plural_rule.find_char(';');
+	plural_forms = p_plural_rule.substr(p_plural_rule.find_char('=') + 1, first_semi_col - (p_plural_rule.find_char('=') + 1)).to_int();
 
-	int expression_start = p_plural_rule.find("=", first_semi_col) + 1;
-	int second_semi_col = p_plural_rule.rfind(";");
+	int expression_start = p_plural_rule.find_char('=', first_semi_col) + 1;
+	int second_semi_col = p_plural_rule.rfind_char(';');
 	plural_rule = p_plural_rule.substr(expression_start, second_semi_col - expression_start).strip_edges();
 
 	// Setup the cache to make evaluating plural rule faster later on.
@@ -246,7 +246,7 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + String(p_src_text) + "\" under the same context \"" + String(p_context) + "\" for locale \"" + get_locale() + "\".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale \"%s\".\nThere should only be one unique translation for a given string under the same context.", String(p_src_text), String(p_context), get_locale()));
 		map_id_str[p_src_text].set(0, p_xlated_text);
 	} else {
 		map_id_str[p_src_text].push_back(p_xlated_text);
@@ -254,12 +254,12 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 }
 
 void TranslationPO::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context) {
-	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != plural_forms, "Trying to add plural texts that don't match the required number of plural forms for locale \"" + get_locale() + "\"");
+	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != plural_forms, vformat("Trying to add plural texts that don't match the required number of plural forms for locale \"%s\".", get_locale()));
 
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
 	if (map_id_str.has(p_src_text)) {
-		WARN_PRINT("Double translations for \"" + p_src_text + "\" under the same context \"" + p_context + "\" for locale " + get_locale() + ".\nThere should only be one unique translation for a given string under the same context.");
+		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale %s.\nThere should only be one unique translation for a given string under the same context.", p_src_text, p_context, get_locale()));
 		map_id_str[p_src_text].clear();
 	}
 
@@ -280,7 +280,7 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), vformat("Source text \"%s\" is registered but doesn't have a translation. Please report this bug.", String(p_src_text)));
 
 	return translation_map[p_context][p_src_text][0];
 }
@@ -296,7 +296,7 @@ StringName TranslationPO::get_plural_message(const StringName &p_src_text, const
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
-	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), "Source text \"" + String(p_src_text) + "\" is registered but doesn't have a translation. Please report this bug.");
+	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), vformat("Source text \"%s\" is registered but doesn't have a translation. Please report this bug.", String(p_src_text)));
 
 	int plural_index = _get_plural_index(p_n);
 	ERR_FAIL_COND_V_MSG(plural_index < 0 || translation_map[p_context][p_src_text].size() < plural_index + 1, StringName(), "Plural index returned or number of plural translations is not valid. Please report this bug.");

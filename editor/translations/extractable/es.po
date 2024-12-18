@@ -21,6 +21,12 @@ msgstr ""
 msgid "New Code Region"
 msgstr "Nuevo Code Region"
 
+msgid "Pick a color from the screen."
+msgstr "Selecciona un color de la pantalla."
+
+msgid "Pick a color from the application window."
+msgstr "Elige un color en la ventana de la aplicación."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -40,12 +46,6 @@ msgstr ""
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Introduce un código hexadecimal (\"#ff0000\") o un color con nombre (\"red\")."
-
-msgid "Pick a color from the screen."
-msgstr "Selecciona un color de la pantalla."
-
-msgid "Pick a color from the application window."
-msgstr "Elige un color en la ventana de la aplicación."
 
 msgid "Select a picker shape."
 msgstr "Selecciona una forma de selección."

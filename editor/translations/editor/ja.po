@@ -70,13 +70,14 @@
 # neuve project <neuvecom@gmail.com>, 2024.
 # James Phillips <XFX@users.noreply.hosted.weblate.org>, 2024.
 # Shigefumi Sasaki <polycharacter@gmail.com>, 2024.
+# Tomoo Amano <sh.eer.cat@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-29 11:09+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2024-08-09 17:09+0000\n"
+"Last-Translator: Tomoo Amano <sh.eer.cat@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -1611,7 +1612,7 @@ msgid "Sending file:"
 msgstr "ファイルを送信中："
 
 msgid "ms"
-msgstr "ミリ秒"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "モニター"
@@ -9690,14 +9691,14 @@ msgstr "曲線からOut-Controlを削除"
 msgid "Remove In-Control from Curve"
 msgstr "曲線からIn-Controlを削除"
 
-msgid "Split Curve"
-msgstr "曲線を分割する"
-
 msgid "Move Point in Curve"
 msgstr "曲線内の点を移動"
 
 msgid "Add Point to Curve"
 msgstr "点を曲線に追加"
+
+msgid "Split Curve"
+msgstr "曲線を分割する"
 
 msgid "Move In-Control in Curve"
 msgstr "曲線内のIn-Controlを移動する"
@@ -11705,6 +11706,9 @@ msgstr "レイヤーなし"
 
 msgid "Replace Tiles with Proxies"
 msgstr "タイルをプロキシに置き換える"
+
+msgid "Can't edit multiple layers at once."
+msgstr "一度に複数のレイヤーの編集はできません。"
 
 msgid "The selected TileMap has no layer to edit."
 msgstr "選択されたTileMapには編集するレイヤーがありません。"
@@ -13937,6 +13941,9 @@ msgid ""
 msgstr ""
 "選択したパスは空ではありません。空のフォルダを選択することを強くお勧めします。"
 
+msgid "New Game Project"
+msgstr "新しいゲームプロジェクト"
+
 msgid "Supports desktop platforms only."
 msgstr "対応プラットフォームはデスクトップのみ。"
 
@@ -14016,9 +14023,6 @@ msgid ""
 msgstr ""
 "%s のプロジェクトを読み込めませんでした (エラー %d)。見つからないか破損してい"
 "る可能性があります。"
-
-msgid "New Game Project"
-msgstr "新しいゲームプロジェクト"
 
 msgid "Import & Edit"
 msgstr "インポートして編集"
@@ -17215,13 +17219,6 @@ msgid ""
 msgstr ""
 "「リモート パス」プロパティが機能するには、有効な Node3D または Node3D 派生"
 "ノードを指す必要があります。"
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Skeleton3Dノードが設定されていません！SkeletonModifier3D は Skeleton3D の子で"
-"あるか、外部スケルトンへのパスを設定する必要があります。"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "このボディは、メッシュを設定するまで無視されます。"

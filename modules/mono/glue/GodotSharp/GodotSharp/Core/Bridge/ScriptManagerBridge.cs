@@ -90,30 +90,17 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
-            IntPtr godotObject)
+        internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName, IntPtr godotObject)
         {
-            // TODO: Optimize with source generators and delegate pointers.
-
             try
             {
                 using var stringName = StringName.CreateTakingOwnershipOfDisposableValue(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(nativeTypeName)));
                 string nativeTypeNameStr = stringName.ToString();
 
-                Type nativeType = TypeGetProxyClass(nativeTypeNameStr) ?? throw new InvalidOperationException(
-                    "Wrapper class not found for type: " + nativeTypeNameStr);
-                var obj = (GodotObject)FormatterServices.GetUninitializedObject(nativeType);
+                var instance = Constructors.Invoke(nativeTypeNameStr, godotObject);
 
-                var ctor = nativeType.GetConstructor(
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
-                    null, Type.EmptyTypes, null);
-
-                obj.NativePtr = godotObject;
-
-                _ = ctor!.Invoke(obj, null);
-
-                return GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(obj));
+                return GCHandle.ToIntPtr(CustomGCHandle.AllocStrong(instance));
             }
             catch (Exception e)
             {
@@ -155,7 +142,7 @@ namespace Godot.Bridge
                     }
                 }
 
-                var obj = (GodotObject)FormatterServices.GetUninitializedObject(scriptType);
+                var obj = (GodotObject)RuntimeHelpers.GetUninitializedObject(scriptType);
 
                 var parameters = ctor.GetParameters();
                 int paramCount = parameters.Length;
@@ -194,18 +181,7 @@ namespace Godot.Bridge
                     return;
                 }
 
-                var native = GodotObject.InternalGetClassNativeBase(scriptType);
-
-                var field = native.GetField("NativeName", BindingFlags.DeclaredOnly | BindingFlags.Static |
-                                                           BindingFlags.Public | BindingFlags.NonPublic);
-
-                if (field == null)
-                {
-                    *outRes = default;
-                    return;
-                }
-
-                var nativeName = (StringName?)field.GetValue(null);
+                var nativeName = GodotObject.InternalGetClassNativeBaseName(scriptType);
 
                 if (nativeName == null)
                 {
@@ -241,11 +217,17 @@ namespace Godot.Bridge
 
             if (outIconPath != null)
             {
-                var iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                IconAttribute? iconAttr = scriptType.GetCustomAttributes(inherit: false)
                     .OfType<IconAttribute>()
                     .FirstOrDefault();
 
-                *outIconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
+                if (!string.IsNullOrEmpty(iconAttr?.Path))
+                {
+                    string iconPath = iconAttr.Path.IsAbsolutePath()
+                        ? iconAttr.Path.SimplifyPath()
+                        : scriptPathStr.GetBaseDir().PathJoin(iconAttr.Path).SimplifyPath();
+                    *outIconPath = Marshaling.ConvertStringToNative(iconPath);
+                }
             }
 
             if (outBaseType != null)
@@ -300,66 +282,6 @@ namespace Godot.Bridge
             {
                 ExceptionUtils.LogException(e);
             }
-        }
-
-        private static Type? TypeGetProxyClass(string nativeTypeNameStr)
-        {
-            // Performance is not critical here as this will be replaced with a generated dictionary.
-
-            if (nativeTypeNameStr[0] == '_')
-                nativeTypeNameStr = nativeTypeNameStr.Substring(1);
-
-            Type? wrapperType = typeof(GodotObject).Assembly.GetType("Godot." + nativeTypeNameStr);
-
-            if (wrapperType == null)
-            {
-                wrapperType = GetTypeByGodotClassAttr(typeof(GodotObject).Assembly, nativeTypeNameStr);
-            }
-
-            if (wrapperType == null)
-            {
-                var editorAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => a.GetName().Name == "GodotSharpEditor");
-
-                if (editorAssembly != null)
-                {
-                    wrapperType = editorAssembly.GetType("Godot." + nativeTypeNameStr);
-
-                    if (wrapperType == null)
-                    {
-                        wrapperType = GetTypeByGodotClassAttr(editorAssembly, nativeTypeNameStr);
-                    }
-                }
-            }
-
-            static Type? GetTypeByGodotClassAttr(Assembly assembly, string nativeTypeNameStr)
-            {
-                var types = assembly.GetTypes();
-                foreach (var type in types)
-                {
-                    var attr = type.GetCustomAttribute<GodotClassNameAttribute>();
-                    if (attr?.Name == nativeTypeNameStr)
-                    {
-                        return type;
-                    }
-                }
-                return null;
-            }
-
-            static bool IsStatic(Type type) => type.IsAbstract && type.IsSealed;
-
-            if (wrapperType != null && IsStatic(wrapperType))
-            {
-                // A static class means this is a Godot singleton class. Try to get the Instance proxy type.
-                wrapperType = TypeGetProxyClass($"{wrapperType.Name}Instance");
-                if (wrapperType == null)
-                {
-                    // Otherwise, fallback to GodotObject.
-                    return typeof(GodotObject);
-                }
-            }
-
-            return wrapperType;
         }
 
         // Called from GodotPlugins
@@ -724,17 +646,13 @@ namespace Godot.Bridge
 
         private static unsafe void GetScriptTypeInfo(Type scriptType, godot_csharp_type_info* outTypeInfo)
         {
-            Type native = GodotObject.InternalGetClassNativeBase(scriptType);
+            godot_string className = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(scriptType));
 
-            string typeName = scriptType.Name;
-            if (scriptType.IsGenericType)
-            {
-                var sb = new StringBuilder();
-                AppendTypeName(sb, scriptType);
-                typeName = sb.ToString();
-            }
+            StringName? nativeBase = GodotObject.InternalGetClassNativeBaseName(scriptType);
 
-            godot_string className = Marshaling.ConvertStringToNative(typeName);
+            godot_string_name nativeBaseName = nativeBase != null
+                ? NativeFuncs.godotsharp_string_name_new_copy((godot_string_name)nativeBase.NativeValue)
+                : default;
 
             bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
 
@@ -760,6 +678,7 @@ namespace Godot.Bridge
             godot_string iconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
 
             outTypeInfo->ClassName = className;
+            outTypeInfo->NativeBaseName = nativeBaseName;
             outTypeInfo->IconPath = iconPath;
             outTypeInfo->IsTool = isTool.ToGodotBool();
             outTypeInfo->IsGlobalClass = isGlobalClass.ToGodotBool();
@@ -767,24 +686,6 @@ namespace Godot.Bridge
             outTypeInfo->IsGenericTypeDefinition = scriptType.IsGenericTypeDefinition.ToGodotBool();
             outTypeInfo->IsConstructedGenericType = scriptType.IsConstructedGenericType.ToGodotBool();
 
-            static void AppendTypeName(StringBuilder sb, Type type)
-            {
-                sb.Append(type.Name);
-                if (type.IsGenericType)
-                {
-                    sb.Append('<');
-                    for (int i = 0; i < type.GenericTypeArguments.Length; i++)
-                    {
-                        Type typeArg = type.GenericTypeArguments[i];
-                        AppendTypeName(sb, typeArg);
-                        if (i != type.GenericTypeArguments.Length - 1)
-                        {
-                            sb.Append(", ");
-                        }
-                    }
-                    sb.Append('>');
-                }
-            }
         }
 
         [UnmanagedCallersOnly]
@@ -1098,7 +999,7 @@ namespace Godot.Bridge
                         interopProperties[i] = interopProperty;
                     }
 
-                    using godot_string currentClassName = Marshaling.ConvertStringToNative(type.Name);
+                    using godot_string currentClassName = Marshaling.ConvertStringToNative(ReflectionUtils.ConstructTypeName(type));
 
                     addPropInfoFunc(scriptPtr, &currentClassName, interopProperties, length);
 

@@ -37,6 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
@@ -117,7 +118,9 @@ class SceneImportSettingsData : public Object {
 		ERR_FAIL_NULL(settings);
 		if (r_option.name == "rest_pose/load_pose") {
 			if (!settings->has("rest_pose/load_pose") || int((*settings)["rest_pose/load_pose"]) != 2) {
-				(*settings)["rest_pose/external_animation_library"] = Variant();
+				if (settings->has("rest_pose/external_animation_library")) {
+					(*settings)["rest_pose/external_animation_library"] = Variant();
+				}
 			}
 		}
 		if (r_option.name == "rest_pose/selected_animation") {
@@ -134,7 +137,10 @@ class SceneImportSettingsData : public Object {
 					}
 				} break;
 				case 2: {
-					Object *res = (*settings)["rest_pose/external_animation_library"];
+					Object *res = nullptr;
+					if (settings->has("rest_pose/external_animation_library")) {
+						res = (*settings)["rest_pose/external_animation_library"];
+					}
 					Ref<Animation> anim(res);
 					Ref<AnimationLibrary> library(res);
 					if (anim.is_valid()) {
@@ -362,6 +368,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->set_transform(src_mesh_node->get_transform());
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		if (src_mesh_node->get_mesh().is_valid()) {
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
@@ -414,7 +421,9 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 				animation_player->connect(SceneStringName(animation_finished), callable_mp(this, &SceneImportSettingsDialog::_animation_finished));
 			} else if (Object::cast_to<Skeleton3D>(p_node)) {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
-				skeletons.push_back(Object::cast_to<Skeleton3D>(p_node));
+				Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+				skeleton->connect(SceneStringName(tree_entered), callable_mp(this, &SceneImportSettingsDialog::_skeleton_tree_entered).bind(skeleton));
+				skeletons.push_back(skeleton);
 			} else {
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
@@ -467,6 +476,32 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		}
 
 		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+
+		if (first_aabb) {
+			contents_aabb = aabb;
+			first_aabb = false;
+		} else {
+			contents_aabb.merge_with(aabb);
+		}
+	}
+
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+	if (skeleton) {
+		Ref<ArrayMesh> bones_mesh = Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true);
+
+		bones_mesh_preview->set_mesh(bones_mesh);
+
+		Transform3D accum_xform;
+		Node3D *base = skeleton;
+		while (base) {
+			accum_xform = base->get_transform() * accum_xform;
+			base = Object::cast_to<Node3D>(base->get_parent());
+		}
+
+		bones_mesh_preview->set_transform(accum_xform * skeleton->get_transform());
+
+		AABB aabb = accum_xform.xform(bones_mesh->get_aabb());
+
 		if (first_aabb) {
 			contents_aabb = aabb;
 			first_aabb = false;
@@ -672,26 +707,26 @@ void SceneImportSettingsDialog::update_view() {
 	update_view_timer->start();
 }
 
-void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_animation) {
+void SceneImportSettingsDialog::open_settings(const String &p_path, const String &p_scene_import_type) {
 	if (scene) {
 		_cleanup();
 		memdelete(scene);
 		scene = nullptr;
 	}
 
-	editing_animation = p_for_animation;
+	editing_animation = p_scene_import_type == "AnimationLibrary";
 	scene_import_settings_data->settings = nullptr;
 	scene_import_settings_data->path = p_path;
 
 	// Visibility.
-	data_mode->set_tab_hidden(1, p_for_animation);
-	data_mode->set_tab_hidden(2, p_for_animation);
-	if (p_for_animation) {
+	data_mode->set_tab_hidden(1, editing_animation);
+	data_mode->set_tab_hidden(2, editing_animation);
+	if (editing_animation) {
 		data_mode->set_current_tab(0);
 	}
 
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), p_for_animation);
-	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), p_for_animation);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), editing_animation);
+	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), editing_animation);
 
 	base_path = p_path;
 
@@ -765,7 +800,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, bool p_for_a
 	// Start with the root item (Scene) selected.
 	scene_tree->get_root()->select(0);
 
-	if (p_for_animation) {
+	if (editing_animation) {
 		set_title(vformat(TTR("Advanced Import Settings for AnimationLibrary '%s'"), base_path.get_file()));
 	} else {
 		set_title(vformat(TTR("Advanced Import Settings for Scene '%s'"), base_path.get_file()));
@@ -789,6 +824,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
 
+	bones_mesh_preview->hide();
 	if (p_type == "Node") {
 		node_selected->hide(); // Always hide just in case.
 		mesh_preview->hide();
@@ -828,6 +864,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
+				bones_mesh_preview->show();
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;
@@ -847,6 +884,8 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
+
+		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
 		node_selected->hide();
 		if (Object::cast_to<Node3D>(scene)) {
@@ -981,11 +1020,11 @@ void SceneImportSettingsDialog::_play_animation() {
 	if (animation_player->has_animation(id)) {
 		if (animation_player->is_playing()) {
 			animation_player->pause();
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			set_process(false);
 		} else {
 			animation_player->play(id);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			set_process(true);
 		}
 	}
@@ -994,7 +1033,7 @@ void SceneImportSettingsDialog::_play_animation() {
 void SceneImportSettingsDialog::_stop_current_animation() {
 	animation_pingpong = false;
 	animation_player->stop();
-	animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	animation_slider->set_value_no_signal(0.0);
 	set_process(false);
 }
@@ -1006,7 +1045,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		if (animation_player != nullptr && animation_player->is_playing()) {
 			animation_player->stop();
 		}
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 
 		_reset_bone_transforms();
 		set_process(false);
@@ -1028,7 +1067,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 			animation_player->play(p_animation_name);
 		} else {
 			animation_player->stop(true);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_player->set_assigned_animation(p_animation_name);
 			animation_player->seek(0.0, true);
 			animation_slider->set_value_no_signal(0.0);
@@ -1043,10 +1082,15 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	}
 	if (animation_player->is_playing()) {
 		animation_player->stop();
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	}
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
+}
+
+void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
+	bones_mesh_preview->set_skeleton_path(p_skeleton->get_path());
+	bones_mesh_preview->set_skin(p_skeleton->register_skin(p_skeleton->create_skin_from_rest_transforms()));
 }
 
 void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
@@ -1054,7 +1098,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 
 	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
 			set_process(false);
 		} break;
@@ -1071,6 +1115,14 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 		} break;
 		default: {
 		} break;
+	}
+}
+
+void SceneImportSettingsDialog::_animation_update_skeleton_visibility() {
+	if (animation_toggle_skeleton_visibility->is_pressed()) {
+		bones_mesh_preview->show();
+	} else {
+		bones_mesh_preview->hide();
 	}
 }
 
@@ -1262,20 +1314,22 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			action_menu->begin_bulk_theme_override();
 			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
+			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
 			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
 			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
-			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			animation_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
-			light_1_switch->set_icon(theme_cache.light_1_icon);
-			light_2_switch->set_icon(theme_cache.light_2_icon);
-			light_rotate_switch->set_icon(theme_cache.rotate_icon);
+			light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			light_2_switch->set_button_icon(theme_cache.light_2_icon);
+			light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
+
+			animation_toggle_skeleton_visibility->set_button_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1655,6 +1709,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
 	animation_slider = memnew(HSlider);
@@ -1666,6 +1721,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
 	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
+
+	animation_toggle_skeleton_visibility = memnew(Button);
+	animation_hbox->add_child(animation_toggle_skeleton_visibility);
+	animation_toggle_skeleton_visibility->set_toggle_mode(true);
+	animation_toggle_skeleton_visibility->set_flat(true);
+	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_NONE);
+	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
+
+	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
 
 	base_viewport->set_use_own_world_3d(true);
 
@@ -1792,6 +1856,13 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		collider_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		collider_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 		collider_mat->set_albedo(Color(0.5, 0.5, 1.0));
+	}
+
+	{
+		bones_mesh_preview = memnew(MeshInstance3D);
+		bones_mesh_preview->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+		bones_mesh_preview->set_skeleton_path(NodePath());
+		base_viewport->add_child(bones_mesh_preview);
 	}
 
 	inspector = memnew(EditorInspector);

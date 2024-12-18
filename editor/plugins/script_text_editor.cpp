@@ -31,15 +31,18 @@
 #include "script_text_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/json.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
@@ -282,7 +285,7 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
 		if (prev_line.contains("@warning_ignore")) {
-			const int closing_bracket_idx = prev_line.find(")");
+			const int closing_bracket_idx = prev_line.find_char(')');
 			const String text_to_insert = ", " + code.quote(quote_style);
 			text_editor->insert_text(text_to_insert, line - 1, closing_bracket_idx);
 		} else {
@@ -302,16 +305,14 @@ void ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 
 void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->remove_secondary_carets();
-		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		goto_line_centered(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const String path = meta["path"].operator String();
 		const int line = meta["line"].operator int64_t();
 		const int column = meta["column"].operator int64_t();
 		if (path.is_empty()) {
-			code_editor->get_text_editor()->remove_secondary_carets();
-			code_editor->get_text_editor()->set_caret_line(line);
+			goto_line_centered(line, column);
 		} else {
 			Ref<Resource> scr = ResourceLoader::load(path);
 			if (!scr.is_valid()) {
@@ -456,16 +457,16 @@ void ScriptTextEditor::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
 }
 
-void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->goto_line(p_line);
+void ScriptTextEditor::goto_line(int p_line, int p_column) {
+	code_editor->goto_line(p_line, p_column);
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
-void ScriptTextEditor::goto_line_centered(int p_line) {
-	code_editor->goto_line_centered(p_line);
+void ScriptTextEditor::goto_line_centered(int p_line, int p_column) {
+	code_editor->goto_line_centered(p_line, p_column);
 }
 
 void ScriptTextEditor::set_executing_line(int p_line) {
@@ -919,8 +920,7 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
-		code_editor->goto_line(breakpoints_menu->get_item_metadata(p_idx));
-		callable_mp((TextEdit *)code_editor->get_text_editor(), &TextEdit::center_viewport_to_caret).call_deferred(0); // Needs to be deferred, because goto uses call_deferred().
+		code_editor->goto_line_centered(breakpoints_menu->get_item_metadata(p_idx));
 	}
 }
 
@@ -954,7 +954,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
 		String symbol = p_symbol;
 		if (symbol.begins_with("uid://")) {
-			symbol = ResourceUID::get_singleton()->get_id_path(ResourceUID::get_singleton()->text_to_id(symbol));
+			symbol = ResourceUID::uid_to_path(symbol);
 		}
 
 		List<String> scene_extensions;
@@ -965,95 +965,88 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		} else {
 			EditorNode::get_singleton()->load_resource(symbol);
 		}
-
 	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
-		switch (result.type) {
-			case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION: {
-				if (result.script.is_valid()) {
-					emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
-				} else {
-					emit_signal(SNAME("request_save_history"));
-					goto_line_centered(result.location - 1);
-				}
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS: {
-				emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
-				StringName cname = result.class_name;
-				bool success;
-				while (true) {
-					ClassDB::get_integer_constant(cname, result.class_member, &success);
-					if (success) {
-						result.class_name = cname;
+		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name)) {
+			switch (result.type) {
+				case ScriptLanguage::LOOKUP_RESULT_CLASS: {
+					emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
+					StringName cname = result.class_name;
+					while (ClassDB::class_exists(cname)) {
+						if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
+							result.class_name = cname;
+							break;
+						}
 						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
 					}
-				}
-
-				emit_signal(SNAME("go_to_help"), "class_constant:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
-				emit_signal(SNAME("go_to_help"), "class_property:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
-				StringName cname = result.class_name;
-
-				while (true) {
-					if (ClassDB::has_method(cname, result.class_member)) {
-						result.class_name = cname;
+					emit_signal(SNAME("go_to_help"), "class_constant:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
+					StringName cname = result.class_name;
+					while (ClassDB::class_exists(cname)) {
+						if (ClassDB::has_property(cname, result.class_member, true)) {
+							result.class_name = cname;
+							break;
+						}
 						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
 					}
-				}
-
-				emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
-				StringName cname = result.class_name;
-
-				while (true) {
-					if (ClassDB::has_signal(cname, result.class_member)) {
-						result.class_name = cname;
+					emit_signal(SNAME("go_to_help"), "class_property:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
+					StringName cname = result.class_name;
+					while (ClassDB::class_exists(cname)) {
+						if (ClassDB::has_method(cname, result.class_member, true)) {
+							result.class_name = cname;
+							break;
+						}
 						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
 					}
-				}
-
-				emit_signal(SNAME("go_to_help"), "class_signal:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
-				StringName cname = result.class_name;
-				StringName success;
-				while (true) {
-					success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
-					if (success != StringName()) {
-						result.class_name = cname;
+					emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
+					StringName cname = result.class_name;
+					while (ClassDB::class_exists(cname)) {
+						if (ClassDB::has_signal(cname, result.class_member, true)) {
+							result.class_name = cname;
+							break;
+						}
 						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
 					}
-				}
-
-				emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
-				emit_signal(SNAME("go_to_help"), "class_annotation:" + result.class_name + ":" + result.class_member);
-			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: {
-				emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
-			} break;
-			default: {
+					emit_signal(SNAME("go_to_help"), "class_signal:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
+					StringName cname = result.class_name;
+					while (ClassDB::class_exists(cname)) {
+						if (ClassDB::has_enum(cname, result.class_member, true)) {
+							result.class_name = cname;
+							break;
+						}
+						cname = ClassDB::get_parent_class(cname);
+					}
+					emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+					emit_signal(SNAME("go_to_help"), "class_annotation:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: { // Deprecated.
+					emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
+				} break;
+				case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION:
+				case ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT:
+				case ScriptLanguage::LOOKUP_RESULT_LOCAL_VARIABLE:
+				case ScriptLanguage::LOOKUP_RESULT_MAX: {
+					// Nothing to do.
+				} break;
+			}
+		} else if (result.location >= 0) {
+			if (result.script.is_valid()) {
+				emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
+			} else {
+				emit_signal(SNAME("request_save_history"));
+				goto_line_centered(result.location - 1);
 			}
 		}
 	} else if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
@@ -1101,6 +1094,109 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 		}
 	} else {
 		text_edit->set_symbol_lookup_word_as_valid(false);
+	}
+}
+
+void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column) {
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base) {
+		base = _find_node_for_script(base, base, script);
+	}
+
+	ScriptLanguage::LookupResult result;
+	const String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(p_row, p_column);
+	const Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
+	if (lc_error != OK) {
+		return;
+	}
+
+	String doc_symbol;
+	switch (result.type) {
+		case ScriptLanguage::LOOKUP_RESULT_CLASS: {
+			doc_symbol = "class|" + result.class_name + "|";
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
+			StringName cname = result.class_name;
+			while (ClassDB::class_exists(cname)) {
+				if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
+					result.class_name = cname;
+					break;
+				}
+				cname = ClassDB::get_parent_class(cname);
+			}
+			doc_symbol = "constant|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
+			StringName cname = result.class_name;
+			while (ClassDB::class_exists(cname)) {
+				if (ClassDB::has_property(cname, result.class_member, true)) {
+					result.class_name = cname;
+					break;
+				}
+				cname = ClassDB::get_parent_class(cname);
+			}
+			doc_symbol = "property|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
+			StringName cname = result.class_name;
+			while (ClassDB::class_exists(cname)) {
+				if (ClassDB::has_method(cname, result.class_member, true)) {
+					result.class_name = cname;
+					break;
+				}
+				cname = ClassDB::get_parent_class(cname);
+			}
+			doc_symbol = "method|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
+			StringName cname = result.class_name;
+			while (ClassDB::class_exists(cname)) {
+				if (ClassDB::has_signal(cname, result.class_member, true)) {
+					result.class_name = cname;
+					break;
+				}
+				cname = ClassDB::get_parent_class(cname);
+			}
+			doc_symbol = "signal|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
+			StringName cname = result.class_name;
+			while (ClassDB::class_exists(cname)) {
+				if (ClassDB::has_enum(cname, result.class_member, true)) {
+					result.class_name = cname;
+					break;
+				}
+				cname = ClassDB::get_parent_class(cname);
+			}
+			doc_symbol = "enum|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+			doc_symbol = "annotation|" + result.class_name + "|" + result.class_member;
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT:
+		case ScriptLanguage::LOOKUP_RESULT_LOCAL_VARIABLE: {
+			const String item_type = (result.type == ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT) ? "local_constant" : "local_variable";
+			Dictionary item_data;
+			item_data["description"] = result.description;
+			item_data["is_deprecated"] = result.is_deprecated;
+			item_data["deprecated_message"] = result.deprecated_message;
+			item_data["is_experimental"] = result.is_experimental;
+			item_data["experimental_message"] = result.experimental_message;
+			item_data["doc_type"] = result.doc_type;
+			item_data["enumeration"] = result.enumeration;
+			item_data["is_bitfield"] = result.is_bitfield;
+			item_data["value"] = result.value;
+			doc_symbol = item_type + "||" + p_symbol + "|" + JSON::stringify(item_data);
+		} break;
+		case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION:
+		case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: // Deprecated.
+		case ScriptLanguage::LOOKUP_RESULT_MAX: {
+			// Nothing to do.
+		} break;
+	}
+
+	if (!doc_symbol.is_empty()) {
+		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), doc_symbol, String(), true);
 	}
 }
 
@@ -1208,7 +1304,7 @@ void ScriptTextEditor::_update_connected_methods() {
 
 		// Account for inner classes by stripping the class names from the method,
 		// starting from the right since our inner class might be inside of another inner class.
-		int pos = raw_name.rfind(".");
+		int pos = raw_name.rfind_char('.');
 		if (pos != -1) {
 			name = raw_name.substr(pos + 1);
 		}
@@ -1638,7 +1734,7 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	script->get_language()->get_comment_delimiters(&comment_delimiters);
 
 	for (const String &script_delimiter : comment_delimiters) {
-		if (!script_delimiter.contains(" ")) {
+		if (!script_delimiter.contains_char(' ')) {
 			delimiter = script_delimiter;
 			break;
 		}
@@ -1816,9 +1912,9 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 	}
 
 	if (is_script) {
-		variable_name = variable_name.to_pascal_case().validate_identifier();
+		variable_name = variable_name.to_pascal_case().validate_unicode_identifier();
 	} else {
-		variable_name = variable_name.to_snake_case().to_upper().validate_identifier();
+		variable_name = variable_name.to_snake_case().to_upper().validate_unicode_identifier();
 	}
 	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
 }
@@ -1846,7 +1942,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
-	if (d.has("type") && String(d["type"]) == "resource") {
+	const String type = d.get("type", "");
+	if (type == "resource") {
 		Ref<Resource> resource = d["resource"];
 		if (resource.is_null()) {
 			return;
@@ -1871,11 +1968,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 	}
 
-	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
-		Array files = d["files"];
-		for (int i = 0; i < files.size(); i++) {
-			const String &path = String(files[i]);
+	if (type == "files" || type == "files_and_dirs") {
+		const PackedStringArray files = d["files"];
+		PackedStringArray parts;
 
+		for (const String &path : files) {
 			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
@@ -1883,18 +1980,15 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				text_to_drop += _get_dropped_resource_line(resource, is_empty_line);
+				parts.append(_get_dropped_resource_line(resource, is_empty_line));
 			} else {
-				text_to_drop += _quote_drop_data(path);
-			}
-
-			if (i < files.size() - 1) {
-				text_to_drop += is_empty_line ? "\n" : ", ";
+				parts.append(_quote_drop_data(path));
 			}
 		}
+		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
 	}
 
-	if (d.has("type") && String(d["type"]) == "nodes") {
+	if (type == "nodes") {
 		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
@@ -1932,13 +2026,13 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					path = sn->get_path_to(node);
 				}
 				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_identifier()) {
+					if (!segment.is_valid_unicode_identifier()) {
 						path = _quote_drop_data(path);
 						break;
 					}
 				}
 
-				String variable_name = String(node->get_name()).to_snake_case().validate_identifier();
+				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				if (use_type) {
 					StringName class_name = node->get_class_name();
 					Ref<Script> node_script = node->get_script();
@@ -1975,7 +2069,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 
 				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_identifier()) {
+					if (!segment.is_valid_ascii_identifier()) {
 						path = _quote_drop_data(path);
 						break;
 					}
@@ -1985,7 +2079,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 	}
 
-	if (d.has("type") && String(d["type"]) == "obj_property") {
+	if (type == "obj_property") {
 		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
 		text_to_drop = add_literal ? "^" : "";
 		// It is unclear whether properties may contain single or double quotes.
@@ -2239,6 +2333,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("validate_script", callable_mp(this, &ScriptTextEditor::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &ScriptTextEditor::_load_theme_settings));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
+	code_editor->get_text_editor()->connect("symbol_hovered", callable_mp(this, &ScriptTextEditor::_show_symbol_tooltip));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -2376,6 +2471,7 @@ void ScriptTextEditor::_enable_code_editor() {
 
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
+	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
 	code_editor->add_theme_constant_override("separation", 2);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
@@ -2414,6 +2510,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	update_settings();
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
+	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 
 	context_menu = memnew(PopupMenu);
@@ -2545,8 +2642,9 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);
-	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KeyModifierMask::CMD_OR_CTRL | Key::PERIOD);
-	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KeyModifierMask::CMD_OR_CTRL | Key::COMMA);
+	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
+	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Go to Next Breakpoint"), KeyModifierMask::CTRL | Key::PERIOD);
+	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Go to Previous Breakpoint"), KeyModifierMask::CTRL | Key::COMMA);
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }

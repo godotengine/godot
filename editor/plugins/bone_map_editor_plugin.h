@@ -122,8 +122,6 @@ public:
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
-
 	void _confirm();
 
 private:
@@ -233,7 +231,7 @@ class BoneMapEditorPlugin : public EditorPlugin {
 	GDCLASS(BoneMapEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "BoneMap"; }
+	virtual String get_plugin_name() const override { return "BoneMap"; }
 	BoneMapEditorPlugin();
 };
 

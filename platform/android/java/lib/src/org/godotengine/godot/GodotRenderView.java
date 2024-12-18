@@ -31,13 +31,12 @@
 package org.godotengine.godot;
 
 import org.godotengine.godot.input.GodotInputHandler;
+import org.godotengine.godot.utils.DeviceUtils;
 
 import android.view.SurfaceView;
 
 public interface GodotRenderView {
 	SurfaceView getView();
-
-	void initInputDevices();
 
 	/**
 	 * Starts the thread that will drive Godot's rendering.
@@ -59,15 +58,17 @@ public interface GodotRenderView {
 
 	void onActivityDestroyed();
 
-	void onBackPressed();
-
 	GodotInputHandler getInputHandler();
 
 	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
 
 	void setPointerIcon(int pointerType);
 
+	/**
+	 * @return true if pointer capture is supported.
+	 */
 	default boolean canCapturePointer() {
-		return getInputHandler().canCapturePointer();
+		// Pointer capture is not supported on Horizon OS
+		return !DeviceUtils.isHorizonOSDevice() && getInputHandler().canCapturePointer();
 	}
 }

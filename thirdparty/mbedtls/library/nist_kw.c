@@ -102,6 +102,10 @@ int mbedtls_nist_kw_setkey(mbedtls_nist_kw_context *ctx,
  */
 void mbedtls_nist_kw_free(mbedtls_nist_kw_context *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
     mbedtls_cipher_free(&ctx->cipher_ctx);
     mbedtls_platform_zeroize(ctx, sizeof(mbedtls_nist_kw_context));
 }

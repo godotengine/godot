@@ -7239,14 +7239,14 @@ msgstr "Poista lähtöohjain käyrästä"
 msgid "Remove In-Control from Curve"
 msgstr "Poista tulo-ohjain käyrästä"
 
-msgid "Split Curve"
-msgstr "Puolita käyrä"
-
 msgid "Move Point in Curve"
 msgstr "Siirrä pistettä käyrällä"
 
 msgid "Add Point to Curve"
 msgstr "Lisää käyrään piste"
+
+msgid "Split Curve"
+msgstr "Puolita käyrä"
 
 msgid "Move In-Control in Curve"
 msgstr "Siirrä tulo-ohjainta käyrällä"
@@ -9453,6 +9453,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "Määritelty polku ei ole olemassa."
 
+msgid "New Game Project"
+msgstr "Uusi peliprojekti"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "Tiedoston project.godot luonti projektin polkuun epäonnistui."
 
@@ -9467,9 +9470,6 @@ msgid ""
 msgstr ""
 "Projektin polusta '%s' epäonnistui (virhe %d). Se saattaa puuttua tai olla "
 "vioittunut."
-
-msgid "New Game Project"
-msgstr "Uusi peliprojekti"
 
 msgid "Import & Edit"
 msgstr "Tuo ja muokkaa"

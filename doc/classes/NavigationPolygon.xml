@@ -193,6 +193,9 @@
 		<member name="parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationPolygon.ParsedGeometryType" default="2">
 			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
 		</member>
+		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationPolygon.SamplePartitionType" default="0">
+			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+		</member>
 		<member name="source_geometry_group_name" type="StringName" setter="set_source_geometry_group_name" getter="get_source_geometry_group_name" default="&amp;&quot;navigation_polygon_source_geometry_group&quot;">
 			The group name of nodes that should be parsed for baking source geometry.
 			Only used when [member source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
@@ -202,6 +205,15 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="SAMPLE_PARTITION_CONVEX_PARTITION" value="0" enum="SamplePartitionType">
+			Convex partitioning that yields navigation mesh with convex polygons.
+		</constant>
+		<constant name="SAMPLE_PARTITION_TRIANGULATE" value="1" enum="SamplePartitionType">
+			Triangulation partitioning that yields navigation mesh with triangle polygons.
+		</constant>
+		<constant name="SAMPLE_PARTITION_MAX" value="2" enum="SamplePartitionType">
+			Represents the size of the [enum SamplePartitionType] enum.
+		</constant>
 		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
 			Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMap] nodes.
 			Meshes are only parsed when they use a 2D vertices surface format.

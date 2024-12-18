@@ -418,7 +418,7 @@ const char *mbedtls_high_level_strerr(int error_code)
         case -(MBEDTLS_ERR_SSL_BAD_CERTIFICATE):
             return( "SSL - Processing of the Certificate handshake message failed" );
         case -(MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET):
-            return( "SSL - * Received NewSessionTicket Post Handshake Message. This error code is experimental and may be changed or removed without notice" );
+            return( "SSL - A TLS 1.3 NewSessionTicket message has been received" );
         case -(MBEDTLS_ERR_SSL_CANNOT_READ_EARLY_DATA):
             return( "SSL - Not possible to read early data" );
         case -(MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA):

@@ -97,10 +97,8 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids_fb(const Font *p_f, int p_depth) const;
 	virtual void _update_rids() const;
-	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
-
 	virtual void reset_state() override;
 
 #ifndef DISABLE_DEPRECATED
@@ -110,6 +108,8 @@ protected:
 #endif
 
 public:
+	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
+	virtual bool _is_base_cyclic(const Ref<Font> &p_f, int p_depth) const;
 	virtual void _invalidate_rids();
 
 	static constexpr int DEFAULT_FONT_SIZE = 16;
@@ -183,7 +183,7 @@ class FontFile : public Font {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
-	PackedByteArray data;
+	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
@@ -197,6 +197,7 @@ class FontFile : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 
 #ifndef DISABLE_DEPRECATED
@@ -279,6 +280,9 @@ public:
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
@@ -480,6 +484,7 @@ class SystemFont : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
@@ -494,6 +499,7 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	virtual Ref<Font> get_base_font() const { return base_font; }
 	virtual Ref<Font> _get_base_font_or_default() const;
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
@@ -516,6 +522,9 @@ public:
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;

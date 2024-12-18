@@ -66,14 +66,14 @@ protected:
 	RasterizerSceneDummy scene;
 
 public:
-	RendererUtilities *get_utilities() override { return &utilities; };
-	RendererLightStorage *get_light_storage() override { return &light_storage; };
-	RendererMaterialStorage *get_material_storage() override { return &material_storage; };
-	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; };
-	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; };
-	RendererTextureStorage *get_texture_storage() override { return &texture_storage; };
-	RendererGI *get_gi() override { return &gi; };
-	RendererFog *get_fog() override { return &fog; };
+	RendererUtilities *get_utilities() override { return &utilities; }
+	RendererLightStorage *get_light_storage() override { return &light_storage; }
+	RendererMaterialStorage *get_material_storage() override { return &material_storage; }
+	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; }
+	RendererParticlesStorage *get_particles_storage() override { return &particles_storage; }
+	RendererTextureStorage *get_texture_storage() override { return &texture_storage; }
+	RendererGI *get_gi() override { return &gi; }
+	RendererFog *get_fog() override { return &fog; }
 	RendererCanvasRender *get_canvas() override { return &canvas; }
 	RendererSceneRender *get_scene() override { return &scene; }
 
@@ -90,8 +90,8 @@ public:
 
 	void gl_end_frame(bool p_swap_buffers) override {}
 
-	void end_frame(bool p_swap_buffers) override {
-		if (p_swap_buffers) {
+	void end_frame(bool p_present) override {
+		if (p_present) {
 			DisplayServer::get_singleton()->swap_buffers();
 		}
 	}
@@ -110,6 +110,7 @@ public:
 	uint64_t get_frame_number() const override { return frame; }
 	double get_frame_delta_time() const override { return delta; }
 	double get_total_time() const override { return time; }
+	bool can_create_resources_async() const override { return false; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}

@@ -32,10 +32,17 @@
 #define HASHFUNCS_H
 
 #include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/math/plane.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
@@ -101,6 +108,16 @@ static _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	v = v + (v << 6);
 	v = v ^ (v >> 22);
 	return uint32_t(v);
+}
+
+static _FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
+	key ^= seed;
+	key ^= key >> 33;
+	key *= 0xff51afd7ed558ccd;
+	key ^= key >> 33;
+	key *= 0xc4ceb9fe1a85ec53;
+	key ^= key >> 33;
+	return key;
 }
 
 #define HASH_MURMUR3_SEED 0x7F07C65
@@ -386,6 +403,13 @@ struct HashMapHasherDefault {
 	}
 };
 
+struct HashHasher {
+	static _FORCE_INLINE_ uint32_t hash(const int32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const int64_t hash) { return hash; }
+	static _FORCE_INLINE_ uint64_t hash(const uint64_t hash) { return hash; }
+};
+
 // TODO: Fold this into HashMapHasherDefault once C++20 concepts are allowed
 template <typename T>
 struct HashableHasher {
@@ -414,6 +438,13 @@ struct HashMapComparatorDefault<double> {
 };
 
 template <>
+struct HashMapComparatorDefault<Color> {
+	static bool compare(const Color &p_lhs, const Color &p_rhs) {
+		return ((p_lhs.r == p_rhs.r) || (Math::is_nan(p_lhs.r) && Math::is_nan(p_rhs.r))) && ((p_lhs.g == p_rhs.g) || (Math::is_nan(p_lhs.g) && Math::is_nan(p_rhs.g))) && ((p_lhs.b == p_rhs.b) || (Math::is_nan(p_lhs.b) && Math::is_nan(p_rhs.b))) && ((p_lhs.a == p_rhs.a) || (Math::is_nan(p_lhs.a) && Math::is_nan(p_rhs.a)));
+	}
+};
+
+template <>
 struct HashMapComparatorDefault<Vector2> {
 	static bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
 		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y)));
@@ -424,6 +455,87 @@ template <>
 struct HashMapComparatorDefault<Vector3> {
 	static bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
 		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z)));
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Vector4> {
+	static bool compare(const Vector4 &p_lhs, const Vector4 &p_rhs) {
+		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z))) && ((p_lhs.w == p_rhs.w) || (Math::is_nan(p_lhs.w) && Math::is_nan(p_rhs.w)));
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Rect2> {
+	static bool compare(const Rect2 &p_lhs, const Rect2 &p_rhs) {
+		return HashMapComparatorDefault<Vector2>().compare(p_lhs.position, p_rhs.position) && HashMapComparatorDefault<Vector2>().compare(p_lhs.size, p_rhs.size);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<AABB> {
+	static bool compare(const AABB &p_lhs, const AABB &p_rhs) {
+		return HashMapComparatorDefault<Vector3>().compare(p_lhs.position, p_rhs.position) && HashMapComparatorDefault<Vector3>().compare(p_lhs.size, p_rhs.size);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Plane> {
+	static bool compare(const Plane &p_lhs, const Plane &p_rhs) {
+		return HashMapComparatorDefault<Vector3>().compare(p_lhs.normal, p_rhs.normal) && ((p_lhs.d == p_rhs.d) || (Math::is_nan(p_lhs.d) && Math::is_nan(p_rhs.d)));
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Transform2D> {
+	static bool compare(const Transform2D &p_lhs, const Transform2D &p_rhs) {
+		for (int i = 0; i < 3; ++i) {
+			if (!HashMapComparatorDefault<Vector2>().compare(p_lhs.columns[i], p_rhs.columns[i])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Basis> {
+	static bool compare(const Basis &p_lhs, const Basis &p_rhs) {
+		for (int i = 0; i < 3; ++i) {
+			if (!HashMapComparatorDefault<Vector3>().compare(p_lhs.rows[i], p_rhs.rows[i])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Transform3D> {
+	static bool compare(const Transform3D &p_lhs, const Transform3D &p_rhs) {
+		return HashMapComparatorDefault<Basis>().compare(p_lhs.basis, p_rhs.basis) && HashMapComparatorDefault<Vector3>().compare(p_lhs.origin, p_rhs.origin);
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Projection> {
+	static bool compare(const Projection &p_lhs, const Projection &p_rhs) {
+		for (int i = 0; i < 4; ++i) {
+			if (!HashMapComparatorDefault<Vector4>().compare(p_lhs.columns[i], p_rhs.columns[i])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+};
+
+template <>
+struct HashMapComparatorDefault<Quaternion> {
+	static bool compare(const Quaternion &p_lhs, const Quaternion &p_rhs) {
+		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z))) && ((p_lhs.w == p_rhs.w) || (Math::is_nan(p_lhs.w) && Math::is_nan(p_rhs.w)));
 	}
 };
 

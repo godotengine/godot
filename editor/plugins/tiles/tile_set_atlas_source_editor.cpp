@@ -996,9 +996,9 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 			// Create and position the button.
 			Button *button = memnew(Button);
 			button->set_flat(true);
-			button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
-			button->add_theme_style_override("hover", memnew(StyleBoxEmpty));
+			button->add_theme_style_override(SceneStringName(hover), memnew(StyleBoxEmpty));
 			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
 			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
 			button->connect(SceneStringName(pressed), callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile).bind(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
@@ -1699,7 +1699,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 
 void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	// Check for shortcuts.
-	if (ED_IS_SHORTCUT("tiles_editor/delete_tile", p_event)) {
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
 			_menu_option(TILE_DELETE);
 			accept_event();
@@ -2441,12 +2441,12 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			tool_setup_atlas_source_button->set_icon(get_editor_theme_icon(SNAME("Tools")));
-			tool_select_button->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_paint_button->set_icon(get_editor_theme_icon(SNAME("Paint")));
+			tool_setup_atlas_source_button->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
+			tool_select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_paint_button->set_button_icon(get_editor_theme_icon(SNAME("Paint")));
 
-			tools_settings_erase_button->set_icon(get_editor_theme_icon(SNAME("Eraser")));
-			tool_advanced_menu_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			tools_settings_erase_button->set_button_icon(get_editor_theme_icon(SNAME("Eraser")));
+			tool_advanced_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			outside_tiles_warning->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 
 			resize_handle = get_editor_theme_icon(SNAME("EditorHandle"));
@@ -2527,7 +2527,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_setup_atlas_source_button = memnew(Button);
 	tool_setup_atlas_source_button->set_text(TTR("Setup"));
-	tool_setup_atlas_source_button->set_theme_type_variation("FlatButton");
+	tool_setup_atlas_source_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
@@ -2536,7 +2536,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_select_button = memnew(Button);
 	tool_select_button->set_text(TTR("Select"));
-	tool_select_button->set_theme_type_variation("FlatButton");
+	tool_select_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
@@ -2545,7 +2545,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_text(TTR("Paint"));
-	tool_paint_button->set_theme_type_variation("FlatButton");
+	tool_paint_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
 	toolbox->add_child(tool_paint_button);
@@ -2612,7 +2612,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(false, true);
 	atlas_source_inspector->set_use_doc_hints(true);
-	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
@@ -2627,7 +2626,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_settings->add_child(tool_settings_tile_data_toolbar_container);
 
 	tools_settings_erase_button = memnew(Button);
-	tools_settings_erase_button->set_theme_type_variation("FlatButton");
+	tools_settings_erase_button->set_theme_type_variation(SceneStringName(FlatButton));
 	tools_settings_erase_button->set_toggle_mode(true);
 	tools_settings_erase_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/eraser"));
 	tools_settings_erase_button->set_shortcut_context(this);
@@ -2712,7 +2711,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
 	alternative_tile_popup_menu = memnew(PopupMenu);
-	alternative_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete_tile", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
+	alternative_tile_popup_menu->add_shortcut(ED_GET_SHORTCUT("tiles_editor/delete"), TILE_DELETE);
 	alternative_tile_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
 	tile_atlas_view->add_child(alternative_tile_popup_menu);
 
@@ -2740,9 +2739,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	add_child(confirm_auto_create_tiles);
 
 	// Inspector plugin.
-	Ref<EditorInspectorPluginTileData> tile_data_inspector_plugin;
-	tile_data_inspector_plugin.instantiate();
-	EditorInspector::add_inspector_plugin(tile_data_inspector_plugin);
+	EditorInspector::add_inspector_plugin(memnew(EditorInspectorPluginTileData));
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetAtlasSourceEditor::~TileSetAtlasSourceEditor() {
@@ -2770,15 +2768,7 @@ void EditorPropertyTilePolygon::_add_focusable_children(Node *p_node) {
 
 void EditorPropertyTilePolygon::_polygons_changed() {
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder;
-			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
-				occluder.instantiate();
-				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(0));
-			}
-			emit_changed(get_edited_property(), occluder);
-		} else if (base_type == "NavigationPolygon") {
+		if (base_type == "NavigationPolygon") {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
 				navigation_polygon.instantiate();
@@ -2800,19 +2790,24 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 			emit_changed(get_edited_property(), navigation_polygon);
 		}
 	} else {
-		if (base_type.is_empty()) {
-			// Multiple array of vertices.
-			Vector<String> changed_properties;
-			Array values;
-			int count = generic_tile_polygon_editor->get_polygon_count();
-			changed_properties.push_back(count_property);
-			values.push_back(count);
-			for (int i = 0; i < count; i++) {
-				changed_properties.push_back(vformat(element_pattern, i));
+		// Multiple array of vertices or OccluderPolygon2D.
+		Vector<String> changed_properties;
+		Array values;
+		int count = generic_tile_polygon_editor->get_polygon_count();
+		changed_properties.push_back(count_property);
+		values.push_back(count);
+		for (int i = 0; i < count; i++) {
+			changed_properties.push_back(vformat(element_pattern, i));
+			if (base_type.is_empty()) {
 				values.push_back(generic_tile_polygon_editor->get_polygon(i));
+			} else if (base_type == "OccluderPolygon2D") {
+				Ref<OccluderPolygon2D> occluder;
+				occluder.instantiate();
+				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(i));
+				values.push_back(occluder);
 			}
-			emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 		}
+		emit_signal(SNAME("multiple_properties_changed"), changed_properties, values, false);
 	}
 }
 
@@ -2836,15 +2831,8 @@ void EditorPropertyTilePolygon::update_property() {
 	generic_tile_polygon_editor->clear_polygons();
 
 	if (String(count_property).is_empty()) {
-		if (base_type == "OccluderPolygon2D") {
-			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder = get_edited_property_value();
-			generic_tile_polygon_editor->clear_polygons();
-			if (occluder.is_valid()) {
-				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
-			}
-		} else if (base_type == "NavigationPolygon") {
-			// Single OccluderPolygon2D.
+		if (base_type == "NavigationPolygon") {
+			// Single NavigationPolygon.
 			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (navigation_polygon.is_valid()) {
@@ -2860,6 +2848,15 @@ void EditorPropertyTilePolygon::update_property() {
 			generic_tile_polygon_editor->clear_polygons();
 			for (int i = 0; i < count; i++) {
 				generic_tile_polygon_editor->add_polygon(get_edited_object()->get(vformat(element_pattern, i)));
+			}
+		} else if (base_type == "OccluderPolygon2D") {
+			// Multiple OccluderPolygon2D.
+			generic_tile_polygon_editor->clear_polygons();
+			for (int i = 0; i < count; i++) {
+				Ref<OccluderPolygon2D> occluder = get_edited_object()->get(vformat(element_pattern, i));
+				if (occluder.is_valid()) {
+					generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
+				}
 			}
 		}
 	}
@@ -2901,16 +2898,30 @@ bool EditorInspectorPluginTileData::can_handle(Object *p_object) {
 
 bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Vector<String> components = String(p_path).split("/", true, 2);
-	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
+	if (components.size() >= 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
 		int layer_index = components[0].trim_prefix("occlusion_layer_").to_int();
 		ERR_FAIL_COND_V(layer_index < 0, false);
-		if (components[1] == "polygon") {
+		if (components[1] == "polygons_count") {
 			EditorPropertyTilePolygon *ep = memnew(EditorPropertyTilePolygon);
-			ep->setup_single_mode(p_path, "OccluderPolygon2D");
-			add_property_editor(p_path, ep);
+			ep->setup_multiple_mode(vformat("occlusion_layer_%d/polygons", layer_index), vformat("occlusion_layer_%d/polygons_count", layer_index), vformat("occlusion_layer_%d/polygon_%%d/polygon", layer_index), "OccluderPolygon2D");
+			Vector<String> properties;
+			properties.push_back(p_path);
+			int count = p_object->get(vformat("occlusion_layer_%d/polygons_count", layer_index));
+			for (int i = 0; i < count; i++) {
+				properties.push_back(vformat("occlusion_layer_%d/polygon_%d/polygon", layer_index, i));
+			}
+			add_property_editor_for_multiple_properties("Polygons", properties, ep);
 			return true;
 		}
+		// We keep the original editor for now, but here is the code that could be used if we need a custom editor for each polygon:
+		/*else if (components.size() == 3 && components[1].begins_with("polygon_") && components[1].trim_prefix("polygon_").is_valid_int()) {
+			int polygon_index = components[1].trim_prefix("polygon_").to_int();
+			ERR_FAIL_COND_V(polygon_index < 0, false);
+			if (components[2] == "polygon") {
+				return true;
+			}
+		}*/
 	} else if (components.size() >= 2 && components[0].begins_with("physics_layer_") && components[0].trim_prefix("physics_layer_").is_valid_int()) {
 		// Physics layers.
 		int layer_index = components[0].trim_prefix("physics_layer_").to_int();

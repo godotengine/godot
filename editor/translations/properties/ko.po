@@ -47,7 +47,7 @@
 # nulta <un5450@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
 # Zinccccc <velocity2772@gmail.com>, 2023.
-# rethinking21 <rethinking21@gmail.com>, 2023.
+# rethinking21 <rethinking21@gmail.com>, 2023, 2024.
 # TQQQBuffett <tqqqbuffett@gmail.com>, 2023.
 # Kyjel Blue <kyjelblue@daum.net>, 2023.
 # nulta <un5450@outlook.com>, 2024.
@@ -57,8 +57,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-22 23:01+0000\n"
-"Last-Translator: Sovlus Haesaun <josuke4832@gmail.com>\n"
+"PO-Revision-Date: 2024-09-16 08:50+0000\n"
+"Last-Translator: rethinking21 <rethinking21@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -66,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -97,6 +97,9 @@ msgstr "표준 출력 비활성화"
 
 msgid "Disable stderr"
 msgstr "표준 에러 비활성화"
+
+msgid "Enable Alt Space Menu"
+msgstr "Alt Space 메뉴 활성화"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "프로젝트의 숨겨진 데이터 디렉토리 사용"
@@ -182,6 +185,9 @@ msgstr "애니메이션"
 msgid "Warnings"
 msgstr "경고"
 
+msgid "Check Invalid Track Paths"
+msgstr "잘못된 추적 경로들 확인"
+
 msgid "Audio"
 msgstr "오디오"
 
@@ -193,6 +199,9 @@ msgstr "기본 버스 레이아웃"
 
 msgid "General"
 msgstr "일반"
+
+msgid "Default Playback Type"
+msgstr "기본 Playback 타입"
 
 msgid "Text to Speech"
 msgstr "텍스트 음성 변환"
@@ -208,15 +217,6 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "세션 카테고리"
-
-msgid "Editor"
-msgstr "에디터"
-
-msgid "Script"
-msgstr "스크립트"
-
-msgid "Search in File Extensions"
-msgstr "파일 확장자로 찾기"
 
 msgid "Subwindows"
 msgstr "보조 창"
@@ -365,6 +365,18 @@ msgstr "Vulkan"
 msgid "Max Descriptors per Pool"
 msgstr "풀 당 최대 디스크립터"
 
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "프레임 당 최대 리소스 디스크립터"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "프레임 당 최대 샘플러 디스크립터"
+
+msgid "Agility SDK Version"
+msgstr "Agility SDK 버전"
+
 msgid "Textures"
 msgstr "텍스처"
 
@@ -385,6 +397,9 @@ msgstr "주변광 사용"
 
 msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "저사양 모드 슬립 (마이크로초)"
 
 msgid "Delta Smoothing"
 msgstr "델타 스무딩"
@@ -524,6 +539,9 @@ msgstr "액션"
 msgid "Strength"
 msgstr "힘"
 
+msgid "Event Index"
+msgstr "이벤트 인덱스"
+
 msgid "Delta"
 msgstr "델타"
 
@@ -601,6 +619,9 @@ msgstr "오프셋"
 
 msgid "Cell Size"
 msgstr "셀 크기"
+
+msgid "Cell Shape"
+msgstr "셀 모양"
 
 msgid "Jumping Enabled"
 msgstr "점핑 활성화"
@@ -817,6 +838,9 @@ msgstr "모드 토글"
 
 msgid "Interface"
 msgstr "인터페이스"
+
+msgid "Editor"
+msgstr "에디터"
 
 msgid "Editor Language"
 msgstr "에디터 언어"
@@ -1079,6 +1103,9 @@ msgstr "가져오기"
 msgid "Blender"
 msgstr "Blender"
 
+msgid "Blender Path"
+msgstr "Blender 경로"
+
 msgid "RPC Port"
 msgstr "RPC 포트"
 
@@ -1090,6 +1117,9 @@ msgstr "FBX"
 
 msgid "FBX2glTF Path"
 msgstr "FBX2glTF 경로"
+
+msgid "Tools"
+msgstr "도구"
 
 msgid "Docks"
 msgstr "독"
@@ -1220,6 +1250,15 @@ msgstr "선택된 항목을 드래그 & 드롭"
 msgid "Stay in Script Editor on Node Selected"
 msgstr "선택한 노드에서 스크립트 에디터 유지"
 
+msgid "Use Default Word Separators"
+msgstr "기본 단어 구분 기호 사용"
+
+msgid "Use Custom Word Separators"
+msgstr "사용자 정의 단어 구분 기호 사용"
+
+msgid "Custom Word Separators"
+msgstr "사용자 정의 단어 구분 기호"
+
 msgid "Indent"
 msgstr "들여쓰기"
 
@@ -1276,6 +1315,9 @@ msgstr "타입 힌트 추가"
 
 msgid "Use Single Quotes"
 msgstr "홑따옴표 사용"
+
+msgid "Colorize Suggestions"
+msgstr "색상화 제안"
 
 msgid "Show Help Index"
 msgstr "도우미 인덱스 보이기"
@@ -1481,6 +1523,9 @@ msgstr "타일 에디터"
 msgid "Display Grid"
 msgstr "그리드 표시"
 
+msgid "Highlight Selected Layer"
+msgstr "선택된 줄 강조"
+
 msgid "Polygon Editor"
 msgstr "폴리곤 에디터"
 
@@ -1520,6 +1565,9 @@ msgstr "미니맵 불투명도"
 msgid "Lines Curvature"
 msgstr "선 곡률"
 
+msgid "Grid Pattern"
+msgstr "격자 패턴"
+
 msgid "Visual Shader"
 msgstr "비주얼 셰이더"
 
@@ -1555,6 +1603,12 @@ msgstr "폰트 크기"
 
 msgid "Always Clear Output on Play"
 msgstr "실행 시 항상 출력 지우기"
+
+msgid "Linuxbsd"
+msgstr "Linuxbsd"
+
+msgid "Network Mode"
+msgstr "네트워크 모드"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 프록시"
@@ -2420,6 +2474,9 @@ msgstr "SSH 개인 키 경로"
 msgid "Main Run Args"
 msgstr "메인 실행 인자"
 
+msgid "Script"
+msgstr "스크립트"
+
 msgid "Templates Search Path"
 msgstr "템플릿 탐색 경로"
 
@@ -2623,6 +2680,9 @@ msgstr "Android"
 
 msgid "Text Driver"
 msgstr "텍스트 드라이버"
+
+msgid "Search in File Extensions"
+msgstr "파일 확장자로 찾기"
 
 msgid "Mouse Cursor"
 msgstr "마우스 커서"

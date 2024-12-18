@@ -36,6 +36,7 @@
 #include "scene/gui/option_button.h"
 
 class AcceptDialog;
+class AspectRatioContainer;
 class ConfirmationDialog;
 class MenuButton;
 class SpinBox;
@@ -79,13 +80,17 @@ class MeshInstance3DEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 
 	AcceptDialog *debug_uv_dialog = nullptr;
+	AspectRatioContainer *debug_uv_arc = nullptr;
 	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
+
+	ConfirmationDialog *navigation_mesh_dialog = nullptr;
 
 	void _create_collision_shape();
 	Vector<Ref<Shape3D>> create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose);
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
+	void _create_navigation_mesh();
 
 	void _create_uv_lines(int p_layer);
 	friend class MeshInstance3DEditorPlugin;
@@ -108,7 +113,7 @@ class MeshInstance3DEditorPlugin : public EditorPlugin {
 	MeshInstance3DEditor *mesh_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshInstance3D"; }
+	virtual String get_plugin_name() const override { return "MeshInstance3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

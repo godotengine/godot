@@ -62,6 +62,7 @@ class GLManagerLegacy_MacOS {
 
 	Error create_context(GLWindow &win);
 
+	bool framework_loaded = false;
 	bool use_vsync = false;
 	CGLEnablePtr CGLEnable = nullptr;
 	CGLSetParameterPtr CGLSetParameter = nullptr;

@@ -31,6 +31,7 @@
 #ifndef RENDERER_COMPOSITOR_RD_H
 #define RENDERER_COMPOSITOR_RD_H
 
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
@@ -73,6 +74,10 @@ protected:
 		float src_rect[4];
 		float dst_rect[4];
 
+		float rotation_sin;
+		float rotation_cos;
+		float pad[2];
+
 		float eye_center[2];
 		float k1;
 		float k2;
@@ -102,7 +107,7 @@ protected:
 	static RendererCompositorRD *singleton;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; };
+	RendererUtilities *get_utilities() { return utilities; }
 	RendererLightStorage *get_light_storage() { return light_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; }
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
@@ -123,12 +128,13 @@ public:
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
 	void gl_end_frame(bool p_swap_buffers) {}
-	void end_frame(bool p_swap_buffers);
+	void end_frame(bool p_present);
 	void finalize();
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
 
 	static Error is_viable() {
 		return OK;

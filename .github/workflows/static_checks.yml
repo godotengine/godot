@@ -3,13 +3,13 @@ on:
   workflow_call:
 
 concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-static
   cancel-in-progress: true
 
 jobs:
   static-checks:
     name: Code style, file formatting, and docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
       - name: Style checks via pre-commit
         uses: pre-commit/action@v3.0.1
         with:
-          extra_args: --verbose --files ${{ env.CHANGED_FILES }}
+          extra_args: --files ${{ env.CHANGED_FILES }}
 
       - name: Python builders checks via pytest
         run: |
@@ -56,4 +56,8 @@ jobs:
 
       - name: Class reference schema checks
         run: |
-          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
+          xmllint --quiet --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
+
+      - name: Run C compiler on `gdextension_interface.h`
+        run: |
+          gcc -c core/extension/gdextension_interface.h

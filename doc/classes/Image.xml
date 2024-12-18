@@ -48,6 +48,7 @@
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
 				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+				[b]Note:[/b] The alpha channel data in [param src] will overwrite the corresponding data in this image at the target position. To blend alpha channels, use [method blend_rect] instead.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -321,6 +322,12 @@
 				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
 			</description>
 		</method>
+		<method name="linear_to_srgb">
+			<return type="void" />
+			<description>
+				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
 		<method name="load">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -504,7 +511,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -513,7 +520,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -535,7 +542,6 @@
 			<param index="2" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -561,7 +567,6 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [param point] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -590,7 +595,7 @@
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from the sRGB colorspace to a linear scale.
+				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
 			</description>
 		</method>
 	</methods>

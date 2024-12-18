@@ -89,13 +89,14 @@
 # Szymon Hałucha <99204426+SzymonHalucha@users.noreply.github.com>, 2024.
 # Krzysztof Rams <krzysztofeczek@gmail.com>, 2024.
 # gre-gorn <gre-gorn@users.noreply.hosted.weblate.org>, 2024.
+# Dawid Kobylewski <d.kobylewski@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-25 01:09+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2024-08-30 21:09+0000\n"
+"Last-Translator: Dawid Kobylewski <d.kobylewski@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -104,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny Wątek"
@@ -960,6 +961,10 @@ msgstr "Ścieżka jest nieprawidłowa, więc nie można wstawić klucza."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Ścieżka nie jest typu Node3D, nie można wstawić klatki kluczowej"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr ""
+"Ścieżka nie jest typu MeshInstance3D, nie można wstawić klatki kluczowej"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ścieżka jest nieprawidłowa, więc nie można wstawić klucza metody."
 
@@ -1107,7 +1112,7 @@ msgid "Copy Tracks..."
 msgstr "Kopiuj ścieżki..."
 
 msgid "Scale Selection..."
-msgstr "Wybór skali..."
+msgstr "Skaluj zaznaczone..."
 
 msgid "Scale From Cursor..."
 msgstr "Skaluj od kursora..."
@@ -3826,6 +3831,24 @@ msgid ""
 msgstr ""
 "Nie można zapisać do pliku '%s', plik jest w użyciu, zablokowany lub nie ma "
 "wystarczających uprawnień."
+
+msgid "Preparing scenes for reload"
+msgstr "Przygotowywanie scen do przeładowania"
+
+msgid "Analyzing scene %s"
+msgstr "Analizowanie sceny %s"
+
+msgid "Preparation done."
+msgstr "Przygotowanie ukończone."
+
+msgid "Scenes reloading"
+msgstr "Przeładowywanie scen"
+
+msgid "Reloading..."
+msgstr "Przeładowywanie..."
+
+msgid "Reloading done."
+msgstr "Przeładowywanie zakończone."
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -9753,14 +9776,14 @@ msgstr "Usuń punkt kontrolny wychodzący z krzywej"
 msgid "Remove In-Control from Curve"
 msgstr "Usuń punkt kontrolny wchodzący z krzywej"
 
-msgid "Split Curve"
-msgstr "Podziel krzywą"
-
 msgid "Move Point in Curve"
 msgstr "Przenieś punkt krzywej"
 
 msgid "Add Point to Curve"
 msgstr "Dodaj punkt do krzywej"
+
+msgid "Split Curve"
+msgstr "Podziel krzywą"
 
 msgid "Move In-Control in Curve"
 msgstr "Przesuń punkt kontrolny wchodzący z krzywej"
@@ -10646,6 +10669,12 @@ msgid ""
 msgstr ""
 "Tryb edycji\n"
 "Pokaż przyciski na złączeniach."
+
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "Wstaw klucze (w oparciu o maskę) dla kości z istniejącą ścieżką."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Wstaw klucze (w oparciu o maskę) dla wszystkich kości."
 
 msgid "Insert Key (All Bones)"
 msgstr "Wstaw klucz (wszystkie kości)"
@@ -14234,6 +14263,9 @@ msgid ""
 "recommended."
 msgstr "Wybrana ścieżka nie jest pusta. Zalecane jest wybranie pustego folderu."
 
+msgid "New Game Project"
+msgstr "Nowy projekt gry"
+
 msgid "Supports desktop platforms only."
 msgstr "Wspiera tylko platformy desktopowe."
 
@@ -14310,9 +14342,6 @@ msgid ""
 msgstr ""
 "Nie udało się wczytać projektu z '%s' (błąd %d). Może być brakujący lub "
 "uszkodzony."
-
-msgid "New Game Project"
-msgstr "Nowy projekt gry"
 
 msgid "Import & Edit"
 msgstr "Importuj i edytuj"
@@ -15378,8 +15407,51 @@ msgstr "Ustawienia eksportu:"
 msgid "glTF 2.0 Scene..."
 msgstr "Scena glTF 2.0..."
 
+msgid "Path does not point to a valid executable."
+msgstr "Ścieżka nie prowadzi do prawidłowego pliku wykonywalnego."
+
+msgid "Couldn't run Blender executable."
+msgstr "Nie udało się uruchomić pliku wykonywalnego Blendera."
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "Nieoczekiwany wynik --version z pliku wykonywalnego Blendera w: %s."
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr ""
+"Nie udało się uzyskać informacji o wersji z pliku wykonywalnego Blendera w: "
+"%s."
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr ""
+"Znaleziono wersję Blendera %d.x, która jest za stara dla tego importera "
+"(wymagane jest 3.0+)."
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr ""
+"Ścieżka do pliku wykonywalnego Blendera jest prawidłowa (wykryta "
+"automatycznie)."
+
+msgid "Path to Blender executable is valid."
+msgstr "Ścieżka do pliku wykonywalnego Blendera jest prawidłowa."
+
 msgid "Configure Blender Importer"
 msgstr "Skonfiguruj importer Blendera"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"Wymagany jest Blender 3.0+ do importowania plików \".blend\".\n"
+"Proszę podać prawidłową ścieżkę do pliku wykonywalnego Blendera."
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"Na macOS powinien to być plik \"Contents/MacOS/blender\" w folderze \".app\" "
+"Blendera."
 
 msgid "Disable '.blend' Import"
 msgstr "Wyłącz importowanie plików \".blend\""
@@ -16710,6 +16782,9 @@ msgstr ""
 "Nie można uruchomić pliku wykonywalnego codesign. Upewnij się, że narzędzia "
 "wiersza poleceń Xcode są zainstalowane."
 
+msgid "Cannot sign directory %s."
+msgstr "Nie można podpisać folderu %s."
+
 msgid "Cannot sign file %s."
 msgstr "Nie można podpisać pliku %s."
 
@@ -17291,6 +17366,19 @@ msgstr ""
 "ustaw ją."
 
 msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Węzeł TileMap jest przestarzały, zastąpiony przez użycie wielu węzłów "
+"TileMapLayer.\n"
+"By przekonwertować TileMap do kilku TileMapLayer, otwórz dolny panel TileMap "
+"wybierając ten węzeł, kliknij ikonkę narzędzi w prawym-górnym rogu i wybierz "
+"\"Wyodrębnij warstwy jako osobne węzły TileMapLayer\"."
+
+msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
 "This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
 "Y-sorted as a whole with tiles from Y-sorted layers."
@@ -17732,13 +17820,6 @@ msgid ""
 msgstr ""
 "Właściwość \"Remote Path\" musi wskazywać na poprawny węzeł Node3D lub "
 "pochodny Node3D, aby działał."
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"Węzeł Skeleton3D nie jest ustawiony! SkeletonModifier3D musi być węzłem "
-"potomnym Skeleton3D lub ustawić ścieżkę do zewnętrznego szkieletu."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "To ciało będzie ignorowane, dopóki nie ustawisz siatki."
@@ -18242,6 +18323,14 @@ msgstr ""
 "Argument samplera %d funkcji \"%s\" wywołany więcej niż raz przy użyciu "
 "zarówno wbudowanych, jak i uniformowych tekstur, nie jest obsługiwany (użyj "
 "jednego lub drugiego)."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"Argument samplera %d funkcji \"%s\" wywoływany więcej niż raz używając "
+"tekstur, które różnią się ustawieniem filtra, powtarzania lub wskazówki "
+"tekstury."
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "

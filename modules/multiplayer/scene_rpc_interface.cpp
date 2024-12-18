@@ -80,9 +80,9 @@ void SceneRPCInterface::_parse_rpc_config(const Variant &p_config, bool p_for_no
 	ERR_FAIL_COND(p_config.get_type() != Variant::DICTIONARY);
 	const Dictionary config = p_config;
 	Array names = config.keys();
-	names.sort(); // Ensure ID order
+	names.sort_custom(callable_mp_static(&StringLikeVariantOrder::compare)); // Ensure ID order
 	for (int i = 0; i < names.size(); i++) {
-		ERR_CONTINUE(names[i].get_type() != Variant::STRING && names[i].get_type() != Variant::STRING_NAME);
+		ERR_CONTINUE(!names[i].is_string());
 		String name = names[i].operator String();
 		ERR_CONTINUE(config[name].get_type() != Variant::DICTIONARY);
 		ERR_CONTINUE(!config[name].operator Dictionary().has("rpc_mode"));
@@ -108,7 +108,7 @@ const SceneRPCInterface::RPCConfigCache &SceneRPCInterface::_get_node_config(con
 		return rpc_cache[oid];
 	}
 	RPCConfigCache cache;
-	_parse_rpc_config(p_node->get_node_rpc_config(), true, cache);
+	_parse_rpc_config(p_node->get_rpc_config(), true, cache);
 	if (p_node->get_script_instance()) {
 		_parse_rpc_config(p_node->get_script_instance()->get_rpc_config(), false, cache);
 	}

@@ -31,6 +31,7 @@
 #ifndef UTILITIES_DUMMY_H
 #define UTILITIES_DUMMY_H
 
+#include "light_storage.h"
 #include "material_storage.h"
 #include "mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
@@ -55,12 +56,16 @@ public:
 			return RS::INSTANCE_MESH;
 		} else if (RendererDummy::MeshStorage::get_singleton()->owns_multimesh(p_rid)) {
 			return RS::INSTANCE_MULTIMESH;
+		} else if (RendererDummy::LightStorage::get_singleton()->owns_lightmap(p_rid)) {
+			return RS::INSTANCE_LIGHTMAP;
 		}
 		return RS::INSTANCE_NONE;
 	}
 
 	virtual bool free(RID p_rid) override {
-		if (RendererDummy::TextureStorage::get_singleton()->owns_texture(p_rid)) {
+		if (RendererDummy::LightStorage::get_singleton()->free(p_rid)) {
+			return true;
+		} else if (RendererDummy::TextureStorage::get_singleton()->owns_texture(p_rid)) {
 			RendererDummy::TextureStorage::get_singleton()->texture_free(p_rid);
 			return true;
 		} else if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
@@ -119,7 +124,7 @@ public:
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
 	virtual String get_video_adapter_api_version() const override { return String(); }
 
-	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); };
+	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); }
 };
 
 } // namespace RendererDummy

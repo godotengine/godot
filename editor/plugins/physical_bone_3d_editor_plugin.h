@@ -45,9 +45,6 @@ class PhysicalBone3DEditor : public Object {
 
 	PhysicalBone3D *selected = nullptr;
 
-protected:
-	static void _bind_methods();
-
 private:
 	void _on_toggle_button_transform_joint(bool p_is_pressed);
 	void _set_move_joint();
@@ -69,7 +66,7 @@ class PhysicalBone3DEditorPlugin : public EditorPlugin {
 	PhysicalBone3DEditor physical_bone_editor;
 
 public:
-	virtual String get_name() const override { return "PhysicalBone3D"; }
+	virtual String get_plugin_name() const override { return "PhysicalBone3D"; }
 	virtual bool handles(Object *p_object) const override { return p_object->is_class("PhysicalBone3D"); }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_node) override;

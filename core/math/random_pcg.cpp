@@ -60,6 +60,11 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 		}
 	}
 
+	for (int64_t i = weights_size - 1; i >= 0; --i) {
+		if (weights[i] > 0) {
+			return i;
+		}
+	}
 	return -1;
 }
 

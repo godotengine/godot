@@ -200,6 +200,8 @@ protected:
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
+	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -234,9 +236,9 @@ public:
 	virtual void convert_indent() override;
 	virtual void tag_saved_version() override;
 
-	virtual void goto_line(int p_line, bool p_with_error = false) override;
+	virtual void goto_line(int p_line, int p_column = 0) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
 

@@ -178,7 +178,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void OptionButton::_focused(int p_which) {
-	emit_signal(SNAME("item_focused"), p_which);
+	emit_signal(SNAME("item_focused"), popup->get_item_index(p_which));
 }
 
 void OptionButton::_selected(int p_which) {
@@ -225,7 +225,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
-		set_icon(p_icon);
+		set_button_icon(p_icon);
 	}
 	_queue_update_size_cache();
 }
@@ -381,7 +381,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_icon(nullptr);
+		set_button_icon(nullptr);
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -391,7 +391,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = p_which;
 		set_text(popup->get_item_text(current));
-		set_icon(popup->get_item_icon(current));
+		set_button_icon(popup->get_item_icon(current));
 	}
 
 	if (is_inside_tree() && p_emit) {
@@ -574,7 +574,7 @@ void OptionButton::_bind_methods() {
 	base_property_helper.set_array_length_getter(&OptionButton::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
-	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater"), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);

@@ -66,6 +66,16 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_target_descriptors[rd_texture], 0);
 
+		// We need to invert the phone rotation.
+		const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(p_screen);
+		float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
+
+		blit.push_constant.rotation_cos = Math::cos(screen_rotation);
+		blit.push_constant.rotation_sin = Math::sin(screen_rotation);
+		// Swap width and height when the orientation is not the native one.
+		if (screen_rotation_degrees % 180 != 0) {
+			SWAP(screen_size.width, screen_size.height);
+		}
 		blit.push_constant.src_rect[0] = p_render_targets[i].src_rect.position.x;
 		blit.push_constant.src_rect[1] = p_render_targets[i].src_rect.position.y;
 		blit.push_constant.src_rect[2] = p_render_targets[i].src_rect.size.width;
@@ -102,10 +112,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 	scene->set_time(time, frame_step);
 }
 
-void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-	if (p_swap_buffers) {
-		RD::get_singleton()->swap_buffers();
-	}
+void RendererCompositorRD::end_frame(bool p_present) {
+	RD::get_singleton()->swap_buffers(p_present);
 }
 
 void RendererCompositorRD::initialize() {
@@ -123,6 +131,9 @@ void RendererCompositorRD::initialize() {
 
 		for (int i = 0; i < BLIT_MODE_MAX; i++) {
 			blit.pipelines[i] = RD::get_singleton()->render_pipeline_create(blit.shader.version_get_shader(blit.shader_version, i), RD::get_singleton()->screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), i == BLIT_MODE_NORMAL_ALPHA ? RenderingDevice::PipelineColorBlendState::create_blend() : RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
+
+			// Unload shader modules to save memory.
+			RD::get_singleton()->shader_destroy_modules(blit.shader.version_get_shader(blit.shader_version, i));
 		}
 
 		//create index array for copy shader
@@ -228,6 +239,10 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uset, 0);
 
+	const int screen_rotation_degrees = -RD::get_singleton()->screen_get_pre_rotation_degrees(DisplayServer::MAIN_WINDOW_ID);
+	float screen_rotation = Math::deg_to_rad((float)screen_rotation_degrees);
+	blit.push_constant.rotation_cos = Math::cos(screen_rotation);
+	blit.push_constant.rotation_sin = Math::sin(screen_rotation);
 	blit.push_constant.src_rect[0] = 0.0;
 	blit.push_constant.src_rect[1] = 0.0;
 	blit.push_constant.src_rect[2] = 1.0;
@@ -250,7 +265,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	RD::get_singleton()->draw_list_end();
 
-	RD::get_singleton()->swap_buffers();
+	RD::get_singleton()->swap_buffers(true);
 
 	texture_storage->texture_free(texture);
 	RD::get_singleton()->free(sampler);

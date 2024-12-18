@@ -50,6 +50,8 @@
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
 
+#include <AppKit/AppKit.h>
+
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -139,10 +141,18 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #ifdef VULKAN_ENABLED
 				RenderingContextDriverVulkanMacOS::WindowPlatformData vulkan;
 #endif
+#ifdef METAL_ENABLED
+				RenderingContextDriverMetal::WindowPlatformData metal;
+#endif
 			} wpd;
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
+			}
+#endif
+#ifdef METAL_ENABLED
+			if (rendering_driver == "metal") {
+				wpd.metal.layer = (CAMetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);
@@ -203,7 +213,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 	return id;
 }
 
-void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
+void DisplayServerMacOS::_update_window_style(WindowData p_wd, WindowID p_window) {
 	bool borderless_full = false;
 
 	if (p_wd.borderless) {
@@ -223,13 +233,28 @@ void DisplayServerMacOS::_update_window_style(WindowData p_wd) {
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
-		if (p_wd.on_top && !p_wd.fullscreen) {
+		if (is_always_on_top_recursive(p_window) && !p_wd.fullscreen) {
 			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
 		} else {
 			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:NO];
 	}
+}
+
+bool DisplayServerMacOS::is_always_on_top_recursive(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.on_top) {
+		return true;
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		return is_always_on_top_recursive(wd.transient_parent);
+	}
+
+	return false;
 }
 
 void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enabled, WindowID p_window) {
@@ -275,7 +300,7 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 	}
 }
 
-void DisplayServerMacOS::_update_displays_arrangement() {
+void DisplayServerMacOS::_update_displays_arrangement() const {
 	origin = Point2i();
 
 	for (int i = 0; i < get_screen_count(); i++) {
@@ -301,7 +326,7 @@ Point2i DisplayServerMacOS::_get_screens_origin() const {
 	// to convert between macOS native screen coordinates and the ones expected by Godot.
 
 	if (displays_arrangement_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_displays_arrangement();
+		_update_displays_arrangement();
 	}
 
 	return origin;
@@ -462,7 +487,7 @@ void DisplayServerMacOS::_process_key_events() {
 	key_event_pos = 0;
 }
 
-void DisplayServerMacOS::_update_keyboard_layouts() {
+void DisplayServerMacOS::_update_keyboard_layouts() const {
 	kbd_layouts.clear();
 	current_layout = 0;
 
@@ -744,6 +769,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_NATIVE_DIALOG_INPUT:
 		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -756,6 +782,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
+		case FEATURE_WINDOW_DRAG:
 			return true;
 		default: {
 		}
@@ -1190,6 +1217,10 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 	return OK;
 }
 
+void DisplayServerMacOS::beep() const {
+	NSBeep();
+}
+
 Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
@@ -1595,35 +1626,41 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 }
 
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
-	Point2i position = p_position;
-	// macOS native y-coordinate relative to _get_screens_origin() is negative,
-	// Godot passes a positive value.
-	position.y *= -1;
-	position += _get_screens_origin();
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_position - Vector2i(1, 1);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
 	position /= screen_get_max_scale();
 
 	Color color;
-	for (NSScreen *screen in [NSScreen screens]) {
-		NSRect frame = [screen frame];
-		if (NSMouseInRect(NSMakePoint(position.x, position.y), frame, NO)) {
-			NSDictionary *screenDescription = [screen deviceDescription];
-			CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-			CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(position.x - frame.origin.x, frame.size.height - (position.y - frame.origin.y), 1, 1));
-			if (image) {
-				CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-				if (color_space) {
-					uint8_t img_data[4];
-					CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-					if (context) {
-						CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
-						color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
-						CGContextRelease(context);
-					}
-					CGColorSpaceRelease(color_space);
-				}
-				CGImageRelease(image);
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, 1, 1), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			uint8_t img_data[4];
+			CGContextRef context = CGBitmapContextCreate(img_data, 1, 1, 8, 4, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), image);
+				color = Color(img_data[0] / 255.0f, img_data[1] / 255.0f, img_data[2] / 255.0f, img_data[3] / 255.0f);
+				CGContextRelease(context);
 			}
+			CGColorSpaceRelease(color_space);
 		}
+		CGImageRelease(image);
 	}
 	return color;
 }
@@ -1631,42 +1668,97 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
 	}
 
-	Ref<Image> img;
-	NSArray *screenArray = [NSScreen screens];
-	if ((NSUInteger)p_screen < [screenArray count]) {
-		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
-		NSDictionary *screenDescription = [[screenArray objectAtIndex:p_screen] deviceDescription];
-		CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-		CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(0, 0, nsrect.size.width, nsrect.size.height));
-		if (image) {
-			CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-			if (color_space) {
-				NSUInteger width = CGImageGetWidth(image);
-				NSUInteger height = CGImageGetHeight(image);
-
-				Vector<uint8_t> img_data;
-				img_data.resize(height * width * 4);
-				CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-				if (context) {
-					CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
-					img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
-					CGContextRelease(context);
-				}
-				CGColorSpaceRelease(color_space);
-			}
-			CGImageRelease(image);
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
 		}
+	}
+
+	Point2i position = screen_get_position(p_screen);
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = screen_get_size(p_screen);
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(screen_get_size(p_screen).x, screen_get_size(p_screen).y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
+	}
+	return img;
+}
+
+Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const {
+	HashSet<CGWindowID> exclude_windows;
+	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
+		if (E->value.hide_from_capture) {
+			exclude_windows.insert([E->value.window_object windowNumber]);
+		}
+	}
+
+	CFArrayRef on_screen_windows = CGWindowListCreate(kCGWindowListOptionOnScreenOnly, kCGNullWindowID);
+	CFMutableArrayRef capture_windows = CFArrayCreateMutableCopy(nullptr, 0, on_screen_windows);
+	for (long i = CFArrayGetCount(on_screen_windows) - 1; i >= 0; i--) {
+		CGWindowID window = (CGWindowID)(uintptr_t)CFArrayGetValueAtIndex(capture_windows, i);
+		if (exclude_windows.has(window)) {
+			CFArrayRemoveValueAtIndex(capture_windows, i);
+		}
+	}
+
+	Point2i position = p_rect.position;
+	position -= screen_get_position(0); // Note: coordinates where the screen origin is in the upper-left corner of the main display and y-axis values increase downward.
+	position /= screen_get_max_scale();
+
+	Size2i size = p_rect.size;
+	size /= screen_get_max_scale();
+
+	Ref<Image> img;
+	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	if (image) {
+		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+		if (color_space) {
+			NSUInteger width = CGImageGetWidth(image);
+			NSUInteger height = CGImageGetHeight(image);
+
+			Vector<uint8_t> img_data;
+			img_data.resize_zeroed(height * width * 4);
+			CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+			if (context) {
+				CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+				CGContextRelease(context);
+				img->resize(p_rect.size.x, p_rect.size.y, Image::INTERPOLATE_NEAREST);
+			}
+			CGColorSpaceRelease(color_space);
+		}
+		CGImageRelease(image);
 	}
 	return img;
 }
@@ -1885,6 +1977,12 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		was_fullscreen = true;
 	}
 
+	bool was_maximized = false;
+	if (!was_fullscreen && NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
+		[wd.window_object zoom:nil];
+		was_maximized = true;
+	}
+
 	Rect2i srect = screen_get_usable_rect(p_screen);
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
 	Size2i wsize = window_get_size(p_window);
@@ -1892,6 +1990,10 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 
 	wpos = wpos.clamp(srect.position, srect.position + srect.size - wsize / 3);
 	window_set_position(wpos, p_window);
+
+	if (was_maximized) {
+		[wd.window_object zoom:nil];
+	}
 
 	if (was_fullscreen) {
 		// Re-enter fullscreen mode.
@@ -2025,7 +2127,7 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 
 	[wd.window_object setFrameTopLeftPoint:NSMakePoint(position.x - offset.x, position.y - offset.y)];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 	update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 }
 
@@ -2163,7 +2265,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 
 	[wd.window_object setFrame:new_frame display:YES];
 
-	_update_window_style(wd);
+	_update_window_style(wd, p_window);
 }
 
 Size2i DisplayServerMacOS::window_get_size(WindowID p_window) const {
@@ -2323,6 +2425,16 @@ bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
 	return false;
 }
 
+void DisplayServerMacOS::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:((NSWindow *)wd.window_object).mouseLocationOutsideOfEventStream modifierFlags:0 timestamp:[[NSProcessInfo processInfo] systemUptime] windowNumber:((NSWindow *)wd.window_object).windowNumber context:nil eventNumber:0 clickCount:1 pressure:1.0f];
+	[wd.window_object performWindowDragWithEvent:event];
+}
+
 void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -2332,7 +2444,7 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 	wd.wb_offset = p_offset / scale;
 	wd.wb_offset = wd.wb_offset.maxi(12);
 	if (wd.window_button_view) {
-		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+		[(GodotButtonView *)wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
 	}
 }
 
@@ -2450,7 +2562,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
 				[wd.window_object setFrame:frameRect display:NO];
 			}
-			_update_window_style(wd);
+			_update_window_style(wd, p_window);
 			if (was_visible || [wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
@@ -2494,6 +2606,14 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			NSWindow *w = wd.window_object;
 			w.excludedFromWindowsMenu = wd.is_popup || wd.no_focus;
 		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			if (p_enabled) {
+				[wd.window_object setSharingType:NSWindowSharingNone];
+			} else {
+				[wd.window_object setSharingType:NSWindowSharingReadWrite];
+			}
+			wd.hide_from_capture = p_enabled;
+		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			wd.mpass = p_enabled;
 		} break;
@@ -2527,17 +2647,16 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			if (wd.fullscreen) {
-				return wd.on_top;
-			} else {
-				return [(NSWindow *)wd.window_object level] == NSFloatingWindowLevel;
-			}
+			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			return wd.hide_from_capture;
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;
@@ -2658,6 +2777,18 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 			}
 			return 0;
 		}
+		case EGL_DISPLAY: {
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_display(p_window);
+			}
+			return 0;
+		}
+		case EGL_CONFIG: {
+			if (gl_manager_angle) {
+				return (int64_t)gl_manager_angle->get_config(p_window);
+			}
+			return 0;
+		}
 #endif
 		default: {
 			return 0;
@@ -2700,7 +2831,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window, p_vsync_mode);
 	}
@@ -2717,7 +2848,7 @@ DisplayServer::VSyncMode DisplayServerMacOS::window_get_vsync_mode(WindowID p_wi
 		return (gl_manager_legacy->is_using_vsync() ? DisplayServer::VSyncMode::VSYNC_ENABLED : DisplayServer::VSyncMode::VSYNC_DISABLED);
 	}
 #endif
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window);
 	}
@@ -2904,14 +3035,14 @@ bool DisplayServerMacOS::get_swap_cancel_ok() {
 
 int DisplayServerMacOS::keyboard_get_layout_count() const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 	return kbd_layouts.size();
 }
 
 void DisplayServerMacOS::keyboard_set_current_layout(int p_index) {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX(p_index, kbd_layouts.size());
@@ -2941,7 +3072,7 @@ void DisplayServerMacOS::keyboard_set_current_layout(int p_index) {
 
 int DisplayServerMacOS::keyboard_get_current_layout() const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	return current_layout;
@@ -2949,7 +3080,7 @@ int DisplayServerMacOS::keyboard_get_current_layout() const {
 
 String DisplayServerMacOS::keyboard_get_layout_language(int p_index) const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
@@ -2958,7 +3089,7 @@ String DisplayServerMacOS::keyboard_get_layout_language(int p_index) const {
 
 String DisplayServerMacOS::keyboard_get_layout_name(int p_index) const {
 	if (keyboard_layout_dirty) {
-		const_cast<DisplayServerMacOS *>(this)->_update_keyboard_layouts();
+		_update_keyboard_layouts();
 	}
 
 	ERR_FAIL_INDEX_V(p_index, kbd_layouts.size(), "");
@@ -3301,6 +3432,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
 #endif
+#if defined(METAL_ENABLED)
+	drivers.push_back("metal");
+#endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
@@ -3590,6 +3724,39 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
 
+#if defined(RD_ENABLED)
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
+	}
+#endif
+#if defined(METAL_ENABLED)
+	if (rendering_driver == "metal") {
+		rendering_context = memnew(RenderingContextDriverMetal);
+	}
+#endif
+
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+#if defined(GLES3_ENABLED)
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else
+#endif
+			{
+				r_error = ERR_CANT_CREATE;
+				ERR_FAIL_MSG("Could not initialize " + rendering_driver);
+			}
+		}
+	}
+#endif
+
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
 		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
@@ -3598,8 +3765,13 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager_angle = nullptr;
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-				WARN_PRINT("Your video card drivers seem not to support the required Metal version, switching to native OpenGL.");
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
+#endif
 				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 			} else {
 				r_error = ERR_UNAVAILABLE;
 				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
@@ -3614,22 +3786,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			gl_manager_legacy = nullptr;
 			r_error = ERR_UNAVAILABLE;
 			ERR_FAIL_MSG("Could not initialize native OpenGL.");
-		}
-	}
-#endif
-#if defined(RD_ENABLED)
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
-	}
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize " + rendering_driver);
 		}
 	}
 #endif

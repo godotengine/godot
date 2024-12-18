@@ -868,7 +868,6 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
     psa_status_t status;
     psa_key_attributes_t key_attr = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_type_t key_type;
-    psa_algorithm_t alg_type;
     size_t key_bits;
     /* Use a buffer size large enough to contain either a key pair or public key. */
     unsigned char exp_key[PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE];
@@ -899,7 +898,6 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
         key_type = PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(key_type);
     }
     key_bits = psa_get_key_bits(&key_attr);
-    alg_type = psa_get_key_algorithm(&key_attr);
 
 #if defined(MBEDTLS_RSA_C)
     if ((key_type == PSA_KEY_TYPE_RSA_KEY_PAIR) ||
@@ -919,6 +917,7 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
             goto exit;
         }
 
+        psa_algorithm_t alg_type = psa_get_key_algorithm(&key_attr);
         mbedtls_md_type_t md_type = MBEDTLS_MD_NONE;
         if (PSA_ALG_GET_HASH(alg_type) != PSA_ALG_ANY_HASH) {
             md_type = mbedtls_md_type_from_psa_alg(alg_type);
@@ -968,6 +967,7 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
     } else
 #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
     {
+        (void) key_bits;
         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
     }
 
@@ -1327,43 +1327,19 @@ int mbedtls_pk_sign_ext(mbedtls_pk_type_t pk_type,
     }
 
     if (mbedtls_pk_get_type(ctx) == MBEDTLS_PK_OPAQUE) {
-        psa_key_attributes_t key_attr = PSA_KEY_ATTRIBUTES_INIT;
-        psa_algorithm_t psa_alg, sign_alg;
-#if defined(MBEDTLS_PSA_CRYPTO_C)
-        psa_algorithm_t psa_enrollment_alg;
-#endif /* MBEDTLS_PSA_CRYPTO_C */
         psa_status_t status;
 
-        status = psa_get_key_attributes(ctx->priv_id, &key_attr);
-        if (status != PSA_SUCCESS) {
-            return PSA_PK_RSA_TO_MBEDTLS_ERR(status);
-        }
-        psa_alg = psa_get_key_algorithm(&key_attr);
-#if defined(MBEDTLS_PSA_CRYPTO_C)
-        psa_enrollment_alg = psa_get_key_enrollment_algorithm(&key_attr);
-#endif /* MBEDTLS_PSA_CRYPTO_C */
-        psa_reset_key_attributes(&key_attr);
-
-        /* Since we're PK type is MBEDTLS_PK_RSASSA_PSS at least one between
-         * alg and enrollment alg should be of type RSA_PSS. */
-        if (PSA_ALG_IS_RSA_PSS(psa_alg)) {
-            sign_alg = psa_alg;
-        }
-#if defined(MBEDTLS_PSA_CRYPTO_C)
-        else if (PSA_ALG_IS_RSA_PSS(psa_enrollment_alg)) {
-            sign_alg = psa_enrollment_alg;
-        }
-#endif /* MBEDTLS_PSA_CRYPTO_C */
-        else {
-            /* The opaque key has no RSA PSS algorithm associated. */
-            return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
-        }
-        /* Adjust the hashing algorithm. */
-        sign_alg = (sign_alg & ~PSA_ALG_HASH_MASK) | PSA_ALG_GET_HASH(psa_md_alg);
-
-        status = psa_sign_hash(ctx->priv_id, sign_alg,
+        /* PSA_ALG_RSA_PSS() behaves the same as PSA_ALG_RSA_PSS_ANY_SALT() when
+         * performing a signature, but they are encoded differently. Instead of
+         * extracting the proper one from the wrapped key policy, just try both. */
+        status = psa_sign_hash(ctx->priv_id, PSA_ALG_RSA_PSS(psa_md_alg),
                                hash, hash_len,
                                sig, sig_size, sig_len);
+        if (status == PSA_ERROR_NOT_PERMITTED) {
+            status = psa_sign_hash(ctx->priv_id, PSA_ALG_RSA_PSS_ANY_SALT(psa_md_alg),
+                                   hash, hash_len,
+                                   sig, sig_size, sig_len);
+        }
         return PSA_PK_RSA_TO_MBEDTLS_ERR(status);
     }
 

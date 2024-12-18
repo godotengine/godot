@@ -176,7 +176,7 @@
 			<param index="0" name="refresh_rate" type="float" />
 			<description>
 				Informs the user the HMD refresh rate has changed.
-				[b]Node:[/b] Only emitted if XR runtime supports the refresh rate extension.
+				[b]Note:[/b] Only emitted if XR runtime supports the refresh rate extension.
 			</description>
 		</signal>
 		<signal name="session_begun">

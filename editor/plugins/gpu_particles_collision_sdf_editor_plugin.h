@@ -58,11 +58,10 @@ class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	void _sdf_save_path_and_bake(const String &p_path);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "GPUParticlesCollisionSDF3D"; }
+	virtual String get_plugin_name() const override { return "GPUParticlesCollisionSDF3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

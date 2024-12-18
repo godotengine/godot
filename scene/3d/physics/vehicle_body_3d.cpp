@@ -106,7 +106,7 @@ void VehicleWheel3D::_notification(int p_what) {
 }
 
 PackedStringArray VehicleWheel3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
 		warnings.push_back(RTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D."));
@@ -219,6 +219,14 @@ bool VehicleWheel3D::is_in_contact() const {
 	return m_raycastInfo.m_isInContact;
 }
 
+Vector3 VehicleWheel3D::get_contact_point() const {
+	return m_raycastInfo.m_contactPointWS;
+}
+
+Vector3 VehicleWheel3D::get_contact_normal() const {
+	return m_raycastInfo.m_contactNormalWS;
+}
+
 Node3D *VehicleWheel3D::get_contact_body() const {
 	return m_raycastInfo.m_groundObject;
 }
@@ -256,6 +264,8 @@ void VehicleWheel3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_in_contact"), &VehicleWheel3D::is_in_contact);
 	ClassDB::bind_method(D_METHOD("get_contact_body"), &VehicleWheel3D::get_contact_body);
+	ClassDB::bind_method(D_METHOD("get_contact_point"), &VehicleWheel3D::get_contact_point);
+	ClassDB::bind_method(D_METHOD("get_contact_normal"), &VehicleWheel3D::get_contact_normal);
 
 	ClassDB::bind_method(D_METHOD("set_roll_influence", "roll_influence"), &VehicleWheel3D::set_roll_influence);
 	ClassDB::bind_method(D_METHOD("get_roll_influence"), &VehicleWheel3D::get_roll_influence);
@@ -287,11 +297,11 @@ void VehicleWheel3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_friction_slip"), "set_friction_slip", "get_friction_slip");
 	ADD_GROUP("Suspension", "suspension_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_travel", PROPERTY_HINT_NONE, "suffix:m"), "set_suspension_travel", "get_suspension_travel");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness"), "set_suspension_stiffness", "get_suspension_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness", PROPERTY_HINT_NONE, U"suffix:N/mm"), "set_suspension_stiffness", "get_suspension_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_max_force", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_suspension_max_force", "get_suspension_max_force");
 	ADD_GROUP("Damping", "damping_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression"), "set_damping_compression", "get_damping_compression");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation"), "set_damping_relaxation", "get_damping_relaxation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression", PROPERTY_HINT_NONE, U"suffix:N\u22C5s/mm"), "set_damping_compression", "get_damping_compression");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation", PROPERTY_HINT_NONE, U"suffix:N\u22C5s/mm"), "set_damping_relaxation", "get_damping_relaxation");
 }
 
 void VehicleWheel3D::set_engine_force(real_t p_engine_force) {
@@ -532,7 +542,7 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 	if (body2) {
 		rel_pos2 = pos2 - body2->get_global_transform().origin;
 	}
-	//this jacobian entry could be re-used for all iterations
+	// This Jacobian entry could be reused for all iterations.
 
 	Vector3 vel1 = s->get_linear_velocity() + (s->get_angular_velocity()).cross(rel_pos1); // * mPos);
 	Vector3 vel2;

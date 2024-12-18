@@ -30,6 +30,7 @@
 
 #include "xr_hand_modifier_3d.h"
 
+#include "core/config/project_settings.h"
 #include "servers/xr/xr_pose.h"
 #include "servers/xr_server.h"
 
@@ -207,6 +208,11 @@ void XRHandModifier3D::_process_modification() {
 
 		// Apply previous relative transforms if they are stored.
 		for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
+			const int bone = joints[joint].bone;
+			if (bone == -1) {
+				continue;
+			}
+
 			if (bone_update == BONE_UPDATE_FULL) {
 				skeleton->set_bone_pose_position(joints[joint].bone, previous_relative_transforms[joint].origin);
 			}
@@ -276,6 +282,17 @@ void XRHandModifier3D::_tracker_changed(StringName p_tracker_name, XRServer::Tra
 
 void XRHandModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
 	_get_joint_data();
+}
+
+PackedStringArray XRHandModifier3D::get_configuration_warnings() const {
+	PackedStringArray warnings = SkeletonModifier3D::get_configuration_warnings();
+
+	// Detect OpenXR without the Hand Tracking extension.
+	if (GLOBAL_GET("xr/openxr/enabled") && !GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
+		warnings.push_back("XRHandModifier3D requires the OpenXR Hand Tracking extension to be enabled.");
+	}
+
+	return warnings;
 }
 
 void XRHandModifier3D::_notification(int p_what) {

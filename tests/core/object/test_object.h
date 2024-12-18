@@ -37,6 +37,16 @@
 
 #include "tests/test_macros.h"
 
+#ifdef SANITIZERS_ENABLED
+#ifdef __has_feature
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#endif
+
 // Declared in global namespace because of GDCLASS macro warning (Windows):
 // "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
 // is a Microsoft extension; add a nested name specifier".
@@ -85,10 +95,10 @@ public:
 	}
 	bool property_can_revert(const StringName &p_name) const override {
 		return false;
-	};
+	}
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		return false;
-	};
+	}
 	void get_method_list(List<MethodInfo> *p_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {
@@ -174,6 +184,31 @@ TEST_CASE("[Object] Metadata") {
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
 			"The metadata list should contain 0 items after removing all metadata items.");
+
+	Object other;
+	object.set_meta("conflicting_meta", "string");
+	object.set_meta("not_conflicting_meta", 123);
+	other.set_meta("conflicting_meta", Color(0, 1, 0));
+	other.set_meta("other_meta", "other");
+	object.merge_meta_from(&other);
+
+	CHECK_MESSAGE(
+			Color(object.get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
+			"String meta should be overwritten with Color after merging.");
+
+	CHECK_MESSAGE(
+			int(object.get_meta("not_conflicting_meta")) == 123,
+			"Not conflicting meta on destination should be kept intact.");
+
+	CHECK_MESSAGE(
+			object.get_meta("other_meta", String()) == "other",
+			"Not conflicting meta name on source should merged.");
+
+	List<StringName> meta_list3;
+	object.get_meta_list(&meta_list3);
+	CHECK_MESSAGE(
+			meta_list3.size() == 3,
+			"The metadata list should contain 3 items after merging meta from two objects.");
 }
 
 TEST_CASE("[Object] Construction") {
@@ -497,6 +532,74 @@ TEST_CASE("[Object] Notification order") { // GH-52325
 	}
 
 	memdelete(test_notification_object);
+}
+
+TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
+	Object *object = memnew(Object);
+	ObjectID obj_id = object->get_instance_id();
+
+	class _SelfDestroyingScriptInstance : public _MockScriptInstance {
+		Object *self = nullptr;
+
+		// This has to be static because ~Object() also destroys the script instance.
+		static void free_self(Object *p_self) {
+#if defined(ASAN_OR_TSAN_ENABLED)
+			// Regular deletion is enough becausa asan/tsan will catch a potential heap-after-use.
+			memdelete(p_self);
+#else
+			// Without asan/tsan, try at least to force a crash by replacing the otherwise seemingly good data with garbage.
+			// Operations such as dereferencing pointers or decreasing a refcount would fail.
+			// Unfortunately, we may not poison the memory after the deletion, because the memory would no longer belong to us
+			// and on doing so we may cause a more generalized crash on some platforms (allocator implementations).
+			p_self->~Object();
+			memset((void *)p_self, 0, sizeof(Object));
+			Memory::free_static(p_self, false);
+#endif
+		}
+
+	public:
+		Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		bool has_method(const StringName &p_method) const override {
+			return p_method == "some_method";
+		}
+
+	public:
+		_SelfDestroyingScriptInstance(Object *p_self) :
+				self(p_self) {}
+	};
+
+	_SelfDestroyingScriptInstance *script_instance = memnew(_SelfDestroyingScriptInstance(object));
+	object->set_script_instance(script_instance);
+
+	SUBCASE("Within callp()") {
+		SUBCASE("Through call()") {
+			object->call("some_method");
+		}
+		SUBCASE("Through callv()") {
+			object->callv("some_method", Array());
+		}
+	}
+	SUBCASE("Within call_const()") {
+		Callable::CallError call_error;
+		object->call_const("some_method", nullptr, 0, call_error);
+	}
+	SUBCASE("Within signal handling (from emit_signalp(), through emit_signal())") {
+		Object emitter;
+		emitter.add_user_signal(MethodInfo("some_signal"));
+		emitter.connect("some_signal", Callable(object, "some_method"));
+		emitter.emit_signal("some_signal");
+	}
+
+	CHECK_MESSAGE(
+			ObjectDB::get_instance(obj_id) == nullptr,
+			"Object was tail-deleted without crashes.");
 }
 
 } // namespace TestObject

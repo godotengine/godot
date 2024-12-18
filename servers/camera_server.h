@@ -87,7 +87,7 @@ public:
 	static CameraServer *create() {
 		CameraServer *server = create_func ? create_func() : memnew(CameraServer);
 		return server;
-	};
+	}
 
 	// Right now we identify our feed by it's ID when it's used in the background.
 	// May see if we can change this to purely relying on CameraFeed objects or by name.

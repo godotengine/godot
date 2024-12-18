@@ -103,6 +103,14 @@ void GDExtensionCompatHashes::initialize() {
 	mappings.insert("AcceptDialog", {
 		{ "add_button", 4158837846, 3328440682 },
 	});
+	mappings.insert("AnimatedSprite2D", {
+		{ "play", 2372066587, 3269405555 },
+		{ "play_backwards", 1421762485, 3323268493 },
+	});
+	mappings.insert("AnimatedSprite3D", {
+		{ "play", 2372066587, 3269405555 },
+		{ "play_backwards", 1421762485, 3323268493 },
+	});
 	mappings.insert("Animation", {
 		{ "add_track", 2393815928, 3843682357 },
 		{ "track_insert_key", 1985425300, 808952278 },
@@ -145,6 +153,12 @@ void GDExtensionCompatHashes::initialize() {
 	mappings.insert("AnimationNodeStateMachinePlayback", {
 		{ "travel", 3683006648, 3823612587 },
 		{ "start", 3683006648, 3823612587 },
+	});
+	mappings.insert("AnimationPlayer", {
+		{ "play", 3697947785, 3118260607 },
+		{ "play", 2221377757, 3118260607 },
+		{ "play_backwards", 3890664824, 2787282401 },
+		{ "play_with_capture", 3180464118, 1572969103 },
 	});
 	mappings.insert("ArrayMesh", {
 		{ "add_surface_from_arrays", 172284304, 1796411378 },
@@ -247,13 +261,20 @@ void GDExtensionCompatHashes::initialize() {
 	});
 	mappings.insert("DisplayServer", {
 		{ "global_menu_add_submenu_item", 3806306913, 2828985934 },
-		{ "global_menu_add_item", 3415468211, 3401266716 },
-		{ "global_menu_add_check_item", 3415468211, 3401266716 },
-		{ "global_menu_add_icon_item", 1700867534, 4245856523 },
-		{ "global_menu_add_icon_check_item", 1700867534, 4245856523 },
-		{ "global_menu_add_radio_check_item", 3415468211, 3401266716 },
-		{ "global_menu_add_icon_radio_check_item", 1700867534, 4245856523 },
-		{ "global_menu_add_multistate_item", 635750054, 3431222859 },
+		{ "global_menu_add_item", 3415468211, 3616842746 },
+		{ "global_menu_add_item", 3401266716, 3616842746 },
+		{ "global_menu_add_check_item", 3415468211, 3616842746 },
+		{ "global_menu_add_check_item", 3401266716, 3616842746 },
+		{ "global_menu_add_icon_item", 1700867534, 3867083847 },
+		{ "global_menu_add_icon_item", 4245856523, 3867083847 },
+		{ "global_menu_add_icon_check_item", 1700867534, 3867083847 },
+		{ "global_menu_add_icon_check_item", 4245856523, 3867083847 },
+		{ "global_menu_add_radio_check_item", 3415468211, 3616842746 },
+		{ "global_menu_add_radio_check_item", 3401266716, 3616842746 },
+		{ "global_menu_add_icon_radio_check_item", 1700867534, 3867083847 },
+		{ "global_menu_add_icon_radio_check_item", 4245856523, 3867083847 },
+		{ "global_menu_add_multistate_item", 635750054, 3297554655 },
+		{ "global_menu_add_multistate_item", 3431222859, 3297554655 },
 		{ "global_menu_add_separator", 1041533178, 3214812433 },
 		{ "tts_speak", 3741216677, 903992738 },
 		{ "is_touchscreen_available", 4162880507, 3323674545 },
@@ -285,6 +306,12 @@ void GDExtensionCompatHashes::initialize() {
 		{ "cursor_set_custom_image", 1358907026, 1816663697 },
 		{ "virtual_keyboard_show", 860410478, 3042891259 },
 #endif
+	});
+	mappings.insert("EditorExportPlatform", {
+		{ "export_project_files", 425454869, 1063735070 },
+	});
+	mappings.insert("EditorProperty", {
+		{ "emit_changed", 3069422438, 1822500399 },
 	});
 	mappings.insert("ENetConnection", {
 		{ "create_host_bound", 866250949, 1515002313 },
@@ -453,18 +480,35 @@ void GDExtensionCompatHashes::initialize() {
 	mappings.insert("MultiplayerAPI", {
 		{ "rpc", 1833408346, 2077486355 },
 	});
+	mappings.insert("NativeMenu", {
+		{ "add_item", 2553375659, 980552939 },
+		{ "add_check_item", 2553375659, 980552939 },
+		{ "add_icon_item", 2987595282, 1372188274 },
+		{ "add_icon_check_item", 2987595282, 1372188274 },
+		{ "add_radio_check_item", 2553375659, 980552939 },
+		{ "add_icon_radio_check_item", 2987595282, 1372188274 },
+		{ "add_multistate_item", 1558592568, 2674635658 },
+	});
 	mappings.insert("NavigationMeshGenerator", {
-		{ "parse_source_geometry_data", 3703028813, 685862123 },
-		{ "bake_from_source_geometry_data", 3669016597, 2469318639 },
+		{ "parse_source_geometry_data", 3703028813, 3172802542 },
+		{ "parse_source_geometry_data", 685862123, 3172802542 },
+		{ "bake_from_source_geometry_data", 3669016597, 1286748856 },
+		{ "bake_from_source_geometry_data", 2469318639, 1286748856 },
 	});
 	mappings.insert("NavigationServer2D", {
 		{ "map_get_path", 56240621, 3146466012 },
+		{ "parse_source_geometry_data", 1176164995, 1766905497 },
+		{ "bake_from_source_geometry_data", 2909414286, 2179660022 },
+		{ "bake_from_source_geometry_data_async", 2909414286, 2179660022 },
 	});
 	mappings.insert("NavigationServer3D", {
 		{ "map_get_path", 2121045993, 1187418690 },
-		{ "parse_source_geometry_data", 3703028813, 685862123 },
-		{ "bake_from_source_geometry_data", 3669016597, 2469318639 },
-		{ "bake_from_source_geometry_data_async", 3669016597, 2469318639 },
+		{ "parse_source_geometry_data", 3703028813, 3172802542 },
+		{ "parse_source_geometry_data", 685862123, 3172802542 },
+		{ "bake_from_source_geometry_data", 3669016597, 1286748856 },
+		{ "bake_from_source_geometry_data", 2469318639, 1286748856 },
+		{ "bake_from_source_geometry_data_async", 3669016597, 1286748856 },
+		{ "bake_from_source_geometry_data_async", 2469318639, 1286748856 },
 	});
 	mappings.insert("Node", {
 		{ "add_child", 3070154285, 3863233950 },
@@ -630,6 +674,11 @@ void GDExtensionCompatHashes::initialize() {
 	});
 	mappings.insert("ProjectSettings", {
 		{ "load_resource_pack", 3001721055, 708980503 },
+	});
+	mappings.insert("RDShaderFile", {
+		{ "bake_from_source_geometry_data_async", 2469318639, 1286748856 },
+		{ "set_bytecode", 1558064255, 1526857008 },
+		{ "get_spirv", 3340165340, 2689310080 },
 	});
 	mappings.insert("RegEx", {
 		{ "search", 4087180739, 3365977994 },

@@ -80,14 +80,14 @@ struct ImageLoader : LoadModule
     static ColorSpace cs;                           //desired value
 
     float w = 0, h = 0;                             //default image size
-    Surface surface;
+    RenderSurface surface;
 
     ImageLoader(FileType type) : LoadModule(type) {}
 
     virtual bool animatable() { return false; }  //true if this loader supports animation.
     virtual Paint* paint() { return nullptr; }
 
-    virtual Surface* bitmap()
+    virtual RenderSurface* bitmap()
     {
         if (surface.data) return &surface;
         return nullptr;
@@ -101,7 +101,8 @@ struct FontLoader : LoadModule
 
     FontLoader(FileType type) : LoadModule(type) {}
 
-    virtual bool request(Shape* shape, char* text, bool italic = false) = 0;
+    virtual bool request(Shape* shape, char* text) = 0;
+    virtual bool transform(Paint* paint, float fontSize, bool italic) = 0;
 };
 
 #endif //_TVG_LOAD_MODULE_H_

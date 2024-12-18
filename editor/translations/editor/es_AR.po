@@ -5068,14 +5068,14 @@ msgstr "Quitar Out-Control de la Curva"
 msgid "Remove In-Control from Curve"
 msgstr "Quitar In-Control de la Curva"
 
-msgid "Split Curve"
-msgstr "Partir Curva"
-
 msgid "Move Point in Curve"
 msgstr "Mover Punto en Curva"
 
 msgid "Add Point to Curve"
 msgstr "Agregar Punto a Curva"
+
+msgid "Split Curve"
+msgstr "Partir Curva"
 
 msgid "Move In-Control in Curve"
 msgstr "Mover In-Control en Curva"
@@ -6872,6 +6872,9 @@ msgstr ""
 msgid "The path specified doesn't exist."
 msgstr "La ruta especificada no existe."
 
+msgid "New Game Project"
+msgstr "Nuevo Proyecto de Juego"
+
 msgid "Couldn't create project.godot in project path."
 msgstr "No se pudo crear project.godot en la ruta de proyecto."
 
@@ -6880,9 +6883,6 @@ msgstr "Error al abrir el archivo comprimido, no está en formato ZIP."
 
 msgid "The following files failed extraction from package:"
 msgstr "Los siguientes archivos no se pudieron extraer del paquete:"
-
-msgid "New Game Project"
-msgstr "Nuevo Proyecto de Juego"
 
 msgid "Import & Edit"
 msgstr "Importar y Editar"

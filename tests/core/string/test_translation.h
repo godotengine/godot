@@ -34,6 +34,7 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
+#include "core/string/translation_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/import/resource_importer_csv_translation.h"
@@ -160,7 +161,7 @@ TEST_CASE("[TranslationCSV] CSV import") {
 
 	List<String> gen_files;
 
-	Error result = import_csv_translation->import(TestUtils::get_data_path("translations.csv"),
+	Error result = import_csv_translation->import(0, TestUtils::get_data_path("translations.csv"),
 			"", options, nullptr, &gen_files);
 	CHECK(result == OK);
 	CHECK(gen_files.size() == 4);

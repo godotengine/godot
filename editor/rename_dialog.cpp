@@ -304,7 +304,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 
 	// ---- Connections
 
-	cbut_collapse_features->connect("toggled", callable_mp(this, &RenameDialog::_features_toggled));
+	cbut_collapse_features->connect(SceneStringName(toggled), callable_mp(this, &RenameDialog::_features_toggled));
 
 	// Substitute Buttons
 

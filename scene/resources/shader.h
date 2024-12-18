@@ -52,20 +52,30 @@ public:
 	};
 
 private:
-	RID shader;
+	mutable RID shader_rid;
+	mutable String preprocessed_code;
+	mutable Mutex shader_rid_mutex;
+
 	Mode mode = MODE_SPATIAL;
 	HashSet<Ref<ShaderInclude>> include_dependencies;
 	String code;
 	String include_path;
 
-	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
+	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
 
+	void _check_shader_rid() const;
 	void _dependency_changed();
 	void _recompile();
 	virtual void _update_shader() const; //used for visual shader
 	Array _get_shader_uniform_list(bool p_get_groups = false);
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	void _set_default_texture_parameter_bind_compat_95126(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index = 0);
+	Ref<Texture2D> _get_default_texture_parameter_bind_compat_95126(const StringName &p_name, int p_index = 0) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	static void _bind_methods();
 
 public:
@@ -78,10 +88,12 @@ public:
 	void set_code(const String &p_code);
 	String get_code() const;
 
+	void inspect_native_shader_code();
+
 	void get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_groups = false) const;
 
-	void set_default_texture_parameter(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index = 0);
-	Ref<Texture2D> get_default_texture_parameter(const StringName &p_name, int p_index = 0) const;
+	void set_default_texture_parameter(const StringName &p_name, const Ref<Texture> &p_texture, int p_index = 0);
+	Ref<Texture> get_default_texture_parameter(const StringName &p_name, int p_index = 0) const;
 	void get_default_texture_parameter_list(List<StringName> *r_textures) const;
 
 	virtual bool is_text_shader() const;

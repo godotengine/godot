@@ -135,12 +135,22 @@ void GDScriptParserRef::clear() {
 
 GDScriptParserRef::~GDScriptParserRef() {
 	clear();
+
 	if (!abandoned) {
-		GDScriptCache::remove_parser(path);
+		MutexLock lock(GDScriptCache::singleton->mutex);
+		GDScriptCache::singleton->parser_map.erase(path);
 	}
 }
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
+
+SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex() {
+	return GDScriptCache::mutex;
+}
+
+template <>
+thread_local SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::TLSData SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG>::tls_data(_get_gdscript_cache_mutex());
+SafeBinaryMutex<GDScriptCache::BINARY_MUTEX_TAG> GDScriptCache::mutex;
 
 void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 	if (singleton == nullptr || p_from == p_to) {
@@ -153,15 +163,7 @@ void GDScriptCache::move_script(const String &p_from, const String &p_to) {
 		return;
 	}
 
-	if (singleton->parser_map.has(p_from) && !p_from.is_empty()) {
-		singleton->parser_map[p_to] = singleton->parser_map[p_from];
-	}
-	singleton->parser_map.erase(p_from);
-
-	if (singleton->parser_inverse_dependencies.has(p_from) && !p_from.is_empty()) {
-		singleton->parser_inverse_dependencies[p_to] = singleton->parser_inverse_dependencies[p_from];
-	}
-	singleton->parser_inverse_dependencies.erase(p_from);
+	remove_parser(p_from);
 
 	if (singleton->shallow_gdscript_cache.has(p_from) && !p_from.is_empty()) {
 		singleton->shallow_gdscript_cache[p_to] = singleton->shallow_gdscript_cache[p_from];
@@ -273,7 +275,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	source_file.write[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)source_file.ptr()) != OK) {
+	if (source.parse_utf8((const char *)source_file.ptr(), len) != OK) {
 		ERR_FAIL_V_MSG("", "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 	return source;
@@ -295,6 +297,7 @@ Vector<uint8_t> GDScriptCache::get_binary_tokens(const String &p_path) {
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_error, const String &p_owner) {
 	MutexLock lock(singleton->mutex);
+
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
@@ -305,11 +308,11 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 		return singleton->shallow_gdscript_cache[p_path];
 	}
 
-	String remapped_path = ResourceLoader::path_remap(p_path);
+	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	Ref<GDScript> script;
 	script.instantiate();
-	script->set_path(p_path, true);
+	script->set_path_cache(p_path);
 	if (remapped_path.get_extension().to_lower() == "gdc") {
 		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 		if (buffer.is_empty()) {
@@ -330,6 +333,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	}
 
 	singleton->shallow_gdscript_cache[p_path] = script;
+
 	return script;
 }
 
@@ -356,17 +360,20 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 			return script;
 		}
 	}
+	script->set_path(p_path, true);
+
+	const String remapped_path = ResourceLoader::path_remap(p_path);
 
 	if (p_update_from_disk) {
-		if (p_path.get_extension().to_lower() == "gdc") {
-			Vector<uint8_t> buffer = get_binary_tokens(p_path);
+		if (remapped_path.get_extension().to_lower() == "gdc") {
+			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
 				return script;
 			}
 			script->set_binary_tokens_source(buffer);
 		} else {
-			r_error = script->load_source_code(p_path);
+			r_error = script->load_source_code(remapped_path);
 			if (r_error) {
 				return script;
 			}
@@ -375,7 +382,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 
 	// Allowing lifting the lock might cause a script to be reloaded multiple times,
 	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
-	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(&singleton->mutex);
+	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
 	r_error = script->reload(true);
 	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	if (r_error) {

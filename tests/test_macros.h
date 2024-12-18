@@ -93,8 +93,11 @@ DOCTEST_STRINGIFY_VARIANT(Rect2);
 DOCTEST_STRINGIFY_VARIANT(Rect2i);
 DOCTEST_STRINGIFY_VARIANT(Vector3);
 DOCTEST_STRINGIFY_VARIANT(Vector3i);
+DOCTEST_STRINGIFY_VARIANT(Vector4);
+DOCTEST_STRINGIFY_VARIANT(Vector4i);
 DOCTEST_STRINGIFY_VARIANT(Transform2D);
 DOCTEST_STRINGIFY_VARIANT(Plane);
+DOCTEST_STRINGIFY_VARIANT(Projection);
 DOCTEST_STRINGIFY_VARIANT(Quaternion);
 DOCTEST_STRINGIFY_VARIANT(AABB);
 DOCTEST_STRINGIFY_VARIANT(Basis);
@@ -376,6 +379,9 @@ public:
 
 	bool check_false(const String &p_name) {
 		bool has = _signals.has(p_name);
+		if (has) {
+			MESSAGE("Signal has " << _signals[p_name] << " expected none.");
+		}
 		discard_signal(p_name);
 		return !has;
 	}
@@ -471,6 +477,6 @@ public:
 		for (int i = 0; i < string_list.size(); ++i) {                                           \
 			CHECK(string_list[i] == m_slices[i]);                                                \
 		}                                                                                        \
-	} while (0)
+	} while (false)
 
 #endif // TEST_MACROS_H

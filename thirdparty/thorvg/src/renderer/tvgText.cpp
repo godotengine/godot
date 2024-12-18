@@ -35,9 +35,8 @@
 /************************************************************************/
 
 
-Text::Text() : pImpl(new Impl)
+Text::Text() : pImpl(new Impl(this))
 {
-    Paint::pImpl->id = TVG_CLASS_ID_TEXT;
 }
 
 
@@ -95,20 +94,13 @@ Result Text::unload(const std::string& path) noexcept
 
 Result Text::fill(uint8_t r, uint8_t g, uint8_t b) noexcept
 {
-    if (!pImpl->paint) return Result::InsufficientCondition;
-
-    return pImpl->fill(r, g, b);
+    return pImpl->shape->fill(r, g, b);
 }
 
 
 Result Text::fill(unique_ptr<Fill> f) noexcept
 {
-    if (!pImpl->paint) return Result::InsufficientCondition;
-
-    auto p = f.release();
-    if (!p) return Result::MemoryCorruption;
-
-    return pImpl->fill(p);
+    return pImpl->shape->fill(std::move(f));
 }
 
 
@@ -118,7 +110,7 @@ unique_ptr<Text> Text::gen() noexcept
 }
 
 
-uint32_t Text::identifier() noexcept
+Type Text::type() const noexcept
 {
-    return TVG_CLASS_ID_TEXT;
+    return Type::Text;
 }

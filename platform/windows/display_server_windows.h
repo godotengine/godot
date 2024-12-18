@@ -38,8 +38,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio_server.h"
@@ -167,7 +167,7 @@ typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
-typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOEXW *lpVersionInformation);
 typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
 typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
 typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
@@ -350,8 +350,26 @@ typedef struct {
 	ICONDIRENTRY idEntries[1]; // An entry for each image (idCount of 'em)
 } ICONDIR, *LPICONDIR;
 
+typedef enum _SHC_PROCESS_DPI_AWARENESS {
+	SHC_PROCESS_DPI_UNAWARE = 0,
+	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
+	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2,
+} SHC_PROCESS_DPI_AWARENESS;
+
+#ifndef WS_EX_NOREDIRECTIONBITMAP
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#endif
+
+class DropTargetWindows;
+
+#ifndef WDA_EXCLUDEFROMCAPTURE
+#define WDA_EXCLUDEFROMCAPTURE 0x00000011
+#endif
+
 class DisplayServerWindows : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
+	friend class DropTargetWindows;
 
 	_THREAD_SAFE_CLASS_
 
@@ -388,10 +406,20 @@ class DisplayServerWindows : public DisplayServer {
 	String tablet_driver;
 	Vector<String> tablet_drivers;
 
+	enum DriverID {
+		DRIVER_ID_COMPAT_OPENGL3 = 1 << 0,
+		DRIVER_ID_COMPAT_ANGLE_D3D11 = 1 << 1,
+		DRIVER_ID_RD_VULKAN = 1 << 2,
+		DRIVER_ID_RD_D3D12 = 1 << 3,
+	};
+	static BitField<DriverID> tested_drivers;
+
 	enum TimerID {
 		TIMER_ID_MOVE_REDRAW = 1,
 		TIMER_ID_WINDOW_ACTIVATION = 2,
 	};
+
+	OSVERSIONINFOEXW os_ver;
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
@@ -453,12 +481,15 @@ class DisplayServerWindows : public DisplayServer {
 		bool resizable = true;
 		bool window_focused = false;
 		int activate_state = 0;
-		bool was_maximized = false;
+		bool was_maximized_pre_fs = false;
+		bool was_fullscreen_pre_min = false;
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
 		bool mpass = false;
+		bool sharp_corners = false;
+		bool hide_from_capture = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -505,11 +536,16 @@ class DisplayServerWindows : public DisplayServer {
 		Callable input_text_callback;
 		Callable drop_files_callback;
 
+		// OLE API
+		DropTargetWindows *drop_target = nullptr;
+
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		HashSet<WindowID> transient_children;
 
 		bool is_popup = false;
 		Rect2i parent_safe_rect;
+
+		bool initialized = false;
 	};
 
 	JoypadWindows *joypad = nullptr;
@@ -523,7 +559,7 @@ class DisplayServerWindows : public DisplayServer {
 	RBMap<WindowID, WindowData> windows;
 
 	WindowID last_focused_window = INVALID_WINDOW_ID;
-
+	WindowID last_mouse_button_down_window = INVALID_WINDOW_ID;
 	HCURSOR hCursor;
 
 	WNDPROC user_proc = nullptr;
@@ -536,13 +572,48 @@ class DisplayServerWindows : public DisplayServer {
 	IndicatorID indicator_id_counter = 0;
 	HashMap<IndicatorID, IndicatorData> indicators;
 
+	struct FileDialogData {
+		HWND hwnd_owner = 0;
+		Rect2i wrect;
+		String appid;
+		String title;
+		String current_directory;
+		String root;
+		String filename;
+		bool show_hidden = false;
+		DisplayServer::FileDialogMode mode = FileDialogMode::FILE_DIALOG_MODE_OPEN_ANY;
+		Vector<String> filters;
+		TypedArray<Dictionary> options;
+		WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
+		Callable callback;
+		bool options_in_cb = false;
+		Thread listener_thread;
+		SafeFlag close_requested;
+		SafeFlag finished;
+	};
+	Mutex file_dialog_mutex;
+	List<FileDialogData *> file_dialogs;
+	HashMap<HWND, FileDialogData *> file_dialog_wnd;
+	struct FileDialogCallback {
+		Callable callback;
+		Variant status;
+		Variant files;
+		Variant index;
+		Variant options;
+		bool opt_in_cb = false;
+	};
+	List<FileDialogCallback> pending_cbs;
+	void process_file_dialog_callbacks();
+
+	static void _thread_fd_monitor(void *p_ud);
+
 	HashMap<int64_t, MouseButton> pointer_prev_button;
 	HashMap<int64_t, MouseButton> pointer_button;
 	HashMap<int64_t, LONG> pointer_down_time;
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	int restore_mouse_trails = 0;
@@ -563,6 +634,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	void _drag_event(WindowID p_window, float p_x, float p_y, int idx);
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
+
+	bool _is_always_on_top_recursive(WindowID p_window) const;
 
 	void _update_window_style(WindowID p_window, bool p_repaint = true);
 	void _update_window_mouse_passthrough(WindowID p_window);
@@ -597,6 +670,7 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 public:
+	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT MouseProc(int code, WPARAM wParam, LPARAM lParam);
 
@@ -624,6 +698,8 @@ public:
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
 
+	virtual void beep() const override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
@@ -647,6 +723,7 @@ public:
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override; //disable screensaver
 	virtual bool screen_is_kept_on() const override;
@@ -727,6 +804,8 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

@@ -105,7 +105,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-07-23 03:39+0000\n"
+"PO-Revision-Date: 2024-08-23 10:34+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -114,7 +114,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -957,6 +957,9 @@ msgstr "轨道路径无效，因此无法添加关键帧。"
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "轨道不是 Node3D 类型，无法插入关键帧"
 
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "轨道不是 MeshInstance3D 类型，无法插入关键帧"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "轨道路径无效，所以无法添加方法帧。"
 
@@ -1544,7 +1547,7 @@ msgid "No results for \"%s\"."
 msgstr "未找到 “%s”。"
 
 msgid "This class is marked as deprecated."
-msgstr "这个类被标记为已废弃。"
+msgstr "这个类被标记为已弃用。"
 
 msgid "This class is marked as experimental."
 msgstr "这个类被标记为实验性。"
@@ -3570,7 +3573,7 @@ msgstr "打开项目管理器前要保存下列场景更改吗？"
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
-msgstr "该选项已废弃。必须强制刷新的情况现在属于 Bug。请提交报告。"
+msgstr "该选项已弃用。必须强制刷新的情况现在属于 Bug。请提交报告。"
 
 msgid "Pick a Main Scene"
 msgstr "选择主场景"
@@ -3727,6 +3730,24 @@ msgstr "其他 %d 个文件"
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr "无法写入文件“%s”，文件被占用、已锁定、或权限不足。"
+
+msgid "Preparing scenes for reload"
+msgstr "正在准备场景重新加载"
+
+msgid "Analyzing scene %s"
+msgstr "正在分析场景 %s"
+
+msgid "Preparation done."
+msgstr "准备完成。"
+
+msgid "Scenes reloading"
+msgstr "正在重新加载场景"
+
+msgid "Reloading..."
+msgstr "正在重新加载..."
+
+msgid "Reloading done."
+msgstr "重新加载完成。"
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -8443,7 +8464,7 @@ msgid "Couldn't create any collision shapes."
 msgstr "无法创建碰撞形状。"
 
 msgid "Can't create a collision shape as sibling for the scene root."
-msgstr "无法为场景根节点创建碰撞形状兄弟节点。"
+msgstr "无法为场景根节点创建碰撞形状同级节点。"
 
 msgid "Mesh is empty!"
 msgstr "网格为空！"
@@ -9450,14 +9471,14 @@ msgstr "移除曲线外控制点"
 msgid "Remove In-Control from Curve"
 msgstr "从曲线中移除顶点"
 
-msgid "Split Curve"
-msgstr "拆分曲线"
-
 msgid "Move Point in Curve"
 msgstr "在曲线中移动顶点"
 
 msgid "Add Point to Curve"
 msgstr "向曲线添加顶点"
+
+msgid "Split Curve"
+msgstr "拆分曲线"
 
 msgid "Move In-Control in Curve"
 msgstr "移动曲线内控制点"
@@ -10323,6 +10344,12 @@ msgstr ""
 "编辑模式\n"
 "在关节处显示按钮。"
 
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "为已存在轨道的骨骼插入关键帧（基于遮罩）。"
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "为所有骨骼插入关键帧（基于遮罩）。"
+
 msgid "Insert Key (All Bones)"
 msgstr "插入关键帧（所有骨骼）"
 
@@ -10378,13 +10405,13 @@ msgid "Invalid geometry, can't create collision polygon."
 msgstr "无效的几何体，无法创建多边形碰撞体。"
 
 msgid "Create CollisionPolygon2D Sibling"
-msgstr "创建 CollisionPolygon2D 兄弟节点"
+msgstr "创建 CollisionPolygon2D 同级节点"
 
 msgid "Invalid geometry, can't create light occluder."
 msgstr "无效的几何体，无法创建遮光体。"
 
 msgid "Create LightOccluder2D Sibling"
-msgstr "创建 LightOccluder2D 兄弟节点"
+msgstr "创建 LightOccluder2D 同级节点"
 
 msgid "Sprite2D"
 msgstr "Sprite2D"
@@ -13721,6 +13748,9 @@ msgid ""
 "recommended."
 msgstr "所选路径不为空。强烈建议选择一个空文件夹。"
 
+msgid "New Game Project"
+msgstr "新建游戏项目"
+
 msgid "Supports desktop platforms only."
 msgstr "仅支持桌面平台。"
 
@@ -13795,9 +13825,6 @@ msgstr "以下文件无法从包中提取："
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "无法加载位于“%s”的项目（错误 %d）。项目可能缺失或已损坏。"
-
-msgid "New Game Project"
-msgstr "新建游戏项目"
 
 msgid "Import & Edit"
 msgstr "导入并编辑"
@@ -14421,7 +14448,7 @@ msgid "Can't paste root node into the same scene."
 msgstr "不能将根节点粘贴进相同场景。"
 
 msgid "Paste Node(s) as Sibling of %s"
-msgstr "粘贴为 %s 的兄弟节点"
+msgstr "粘贴为 %s 的同级节点"
 
 msgid "Paste Node(s) as Child of %s"
 msgstr "粘贴为 %s 的子节点"
@@ -14448,7 +14475,7 @@ msgid "Expand/Collapse Branch"
 msgstr "展开/折叠分支"
 
 msgid "Paste as Sibling"
-msgstr "粘贴为兄弟节点"
+msgstr "粘贴为同级节点"
 
 msgid "Change Type..."
 msgstr "更改类型..."
@@ -14813,8 +14840,45 @@ msgstr "导出设置："
 msgid "glTF 2.0 Scene..."
 msgstr "glTF 2.0 场景..."
 
+msgid "Path does not point to a valid executable."
+msgstr "路径未指向有效的可执行文件。"
+
+msgid "Couldn't run Blender executable."
+msgstr "无法运行 Blender 可执行文件。"
+
+msgid "Unexpected --version output from Blender executable at: %s."
+msgstr "位于 %s 的 Blender 可执行文件的 --version 输出与预期不符。"
+
+msgid "Couldn't extract version information from Blender executable at: %s."
+msgstr "无法提取位于 %s 的 Blender 可执行文件的版本。"
+
+msgid ""
+"Found Blender version %d.x, which is too old for this importer (3.0+ is "
+"required)."
+msgstr "检测到 Blender 版本为 %d.x，低于导入器的要求（不是 3.0+）。"
+
+msgid "Path to Blender executable is valid (Autodetected)."
+msgstr "Blender 可执行文件路径有效（自动检测）。"
+
+msgid "Path to Blender executable is valid."
+msgstr "Blender 可执行文件路径有效。"
+
 msgid "Configure Blender Importer"
 msgstr "配置 Blender 导入器"
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender executable."
+msgstr ""
+"导入“.blend”文件需要至少 Blender 3.0 版本。\n"
+"请提供有效的 Blender 可执行文件路径。"
+
+msgid ""
+"On macOS, this should be the `Contents/MacOS/blender` file within the Blender "
+"`.app` folder."
+msgstr ""
+"在 macOS 上，该路径应为 Blender `.app` 文件夹中的 `Contents/MacOS/blender` 文"
+"件。"
 
 msgid "Disable '.blend' Import"
 msgstr "禁用“.blend”导入"
@@ -15397,7 +15461,7 @@ msgstr "OpenXR 合成层的父节点必须为 XROrigin3D。"
 msgid ""
 "OpenXR composition layers must have orthonormalized transforms (ie. no scale "
 "or shearing)."
-msgstr "OpenXR 合成层的变换必须正交归一（即无缩放和切变）。"
+msgstr "OpenXR 合成层的变换必须正交归一（即无缩放和倾斜）。"
 
 msgid ""
 "Hole punching won't work as expected unless the sort order is less than zero."
@@ -16043,6 +16107,9 @@ msgid ""
 "installed."
 msgstr "无法启动 codesign 可执行文件，请确保已安装 Xcode 命令行工具。"
 
+msgid "Cannot sign directory %s."
+msgstr "无法签名目录 %s。"
+
 msgid "Cannot sign file %s."
 msgstr "无法签名文件 %s。"
 
@@ -16559,6 +16626,18 @@ msgid ""
 msgstr "这根骨骼没有合适的放松姿势。请到 Skeleton2D 节点中设置一个。"
 
 msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"TileMap 节点被已弃用，由多个 TileMapLayer 节点代替。\n"
+"将 TileMap 节点转换为多个 TileMapLayer 节点：选中该节点后打开 TileMap 底部面"
+"板，点击右上角的工具箱图标，然后选择“将 TileMap 图层提取为独立的 TileMapLayer "
+"节点”。"
+
+msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
 "This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
 "Y-sorted as a whole with tiles from Y-sorted layers."
@@ -16936,13 +17015,6 @@ msgid ""
 "node to work."
 msgstr ""
 "“Remote Path”属性必须指向有效的 Node3D 或从 Node3D 派生的节点才能正常工作。"
-
-msgid ""
-"Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or "
-"set a path to an external skeleton."
-msgstr ""
-"未设置 Skeleton3D 节点！SkeletonModifier3D 必须是 Skeleton3D 的子节点，或者需"
-"要设置外部骨骼的路径。"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "在设置网格之前，将忽略该实体。"
@@ -17375,15 +17447,22 @@ msgid ""
 "Sampler argument %d of function '%s' called more than once using both built-"
 "ins and uniform textures, this is not supported (use either one or the other)."
 msgstr ""
-"采样器参数 %d：函数“%s”有多次调用，同时使用了内置和 uniform 纹理，不支持这种用"
-"法（请在其中选择一种使用）。"
+"采样器参数 %d 在函数“%s”中存在多次调用，同时使用了内置和 uniform 纹理，不支持"
+"这种用法（请在其中选择一种使用）。"
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using textures "
+"that differ in either filter, repeat, or texture hint setting."
+msgstr ""
+"采样器参数 %d 在函数“%s”中存在多次调用，调用时所使用纹理过滤、纹理重复或纹理提"
+"示设置不同。"
 
 msgid ""
 "Sampler argument %d of function '%s' called more than once using different "
 "built-ins. Only calling with the same built-in is supported."
 msgstr ""
-"采样器参数 %d：函数“%s”有多次调用，使用的内置不同。仅支持使用相同的内置进行调"
-"用。"
+"采样器参数 %d 在函数“%s”中存在多次调用，调用时使用的内置不同。仅支持使用相同的"
+"内置进行调用。"
 
 msgid "Array size is already defined."
 msgstr "数组大小已定义。"

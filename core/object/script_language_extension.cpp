@@ -51,6 +51,7 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_source_code, "code");
 	GDVIRTUAL_BIND(_reload, "keep_state");
 
+	GDVIRTUAL_BIND(_get_doc_class_name);
 	GDVIRTUAL_BIND(_get_documentation);
 	GDVIRTUAL_BIND(_get_class_icon_path);
 
@@ -142,6 +143,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
+	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
@@ -168,8 +170,10 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_METHOD);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_SIGNAL);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ENUM);
-	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE); // Deprecated.
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ANNOTATION);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_CONSTANT);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_VARIABLE);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_MAX);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);

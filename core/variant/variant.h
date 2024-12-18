@@ -62,6 +62,10 @@
 #include "core/variant/dictionary.h"
 
 class Object;
+class RefCounted;
+
+template <typename T>
+class Ref;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -175,6 +179,20 @@ private:
 	struct ObjData {
 		ObjectID id;
 		Object *obj = nullptr;
+
+		void ref(const ObjData &p_from);
+		void ref_pointer(Object *p_object);
+		void ref_pointer(RefCounted *p_object);
+		void unref();
+
+		template <typename T>
+		_ALWAYS_INLINE_ void ref(const Ref<T> &p_from) {
+			if (p_from.is_valid()) {
+				ref(ObjData{ p_from->get_instance_id(), p_from.ptr() });
+			} else {
+				unref();
+			}
+		}
 	};
 
 	/* array helpers */
@@ -254,7 +272,6 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
-	static bool initialize_ref(Object *p_object);
 
 	void _clear_internal();
 
@@ -337,6 +354,7 @@ public:
 		return type;
 	}
 	static String get_type_name(Variant::Type p_type);
+	static Variant::Type get_type_by_name(const String &p_type_name);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 	static bool is_type_shared(Variant::Type p_type);
@@ -775,7 +793,6 @@ public:
 	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
 
-	void static_assign(const Variant &p_variant);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static int get_constants_count_for_type(Variant::Type p_type);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
@@ -784,6 +801,8 @@ public:
 	static void get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums);
 	static void get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations);
 	static int get_enum_value(Variant::Type p_type, const StringName &p_enum_name, const StringName &p_enumeration, bool *r_valid = nullptr);
+	static bool has_enum(Variant::Type p_type, const StringName &p_enum_name);
+	static StringName get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
@@ -792,13 +811,26 @@ public:
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
+	void operator=(Variant &&p_variant) {
+		if (unlikely(this == &p_variant)) {
+			return;
+		}
+		clear();
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
 
 	static void register_types();
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() :
-			type(NIL) {}
+	Variant(Variant &&p_variant) {
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
+	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
 		clear();
 	}
@@ -835,6 +867,19 @@ struct VariantComparator {
 
 struct StringLikeVariantComparator {
 	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
+};
+
+struct StringLikeVariantOrder {
+	static _ALWAYS_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) {
+		if (p_lhs.is_string() && p_rhs.is_string()) {
+			return p_lhs.operator String() < p_rhs.operator String();
+		}
+		return p_lhs < p_rhs;
+	}
+
+	_ALWAYS_INLINE_ bool operator()(const Variant &p_lhs, const Variant &p_rhs) const {
+		return compare(p_lhs, p_rhs);
+	}
 };
 
 Variant::ObjData &Variant::_get_obj() {

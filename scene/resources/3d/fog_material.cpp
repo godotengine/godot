@@ -138,7 +138,7 @@ void FogMaterial::cleanup_shader() {
 }
 
 void FogMaterial::_update_shader() {
-	shader_mutex.lock();
+	MutexLock shader_lock(shader_mutex);
 	if (shader.is_null()) {
 		shader = RS::get_singleton()->shader_create();
 
@@ -165,10 +165,11 @@ void fog() {
 }
 )");
 	}
-	shader_mutex.unlock();
 }
 
 FogMaterial::FogMaterial() {
+	_set_material(RS::get_singleton()->material_create());
+
 	set_density(1.0);
 	set_albedo(Color(1, 1, 1, 1));
 	set_emission(Color(0, 0, 0, 1));

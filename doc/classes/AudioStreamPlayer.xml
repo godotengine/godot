@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The [AudioStreamPlayer] node plays an audio stream non-positionally. It is ideal for user interfaces, menus, or background music.
-		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the time is also supported, see [member max_polyphony].
+		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the same time is also supported, see [member max_polyphony].
 		If you need to play audio at a specific position, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead.
 	</description>
 	<tutorials>
@@ -22,6 +22,7 @@
 			<description>
 				Returns the position in the [AudioStream] of the latest sound, in seconds. Returns [code]0.0[/code] if no sounds are playing.
 				[b]Note:[/b] The position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned position.
+				[b]Note:[/b] This method always returns [code]0.0[/code] if the [member stream] is an [AudioStreamInteractive], since it can have multiple clips playing at once.
 			</description>
 		</method>
 		<method name="get_stream_playback">
@@ -77,7 +78,7 @@
 		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
 			The playback type of the stream player. If set other than to the default value, it will force that playback type.
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], this node is playing sounds. Setting this property has the same effect as [method play] and [method stop].
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">

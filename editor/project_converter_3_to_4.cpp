@@ -716,8 +716,9 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import")) {
 						proper_extension = true;
+					}
 
 					if (proper_extension) {
 						collected_files.append(current_dir.path_join(file_name));
@@ -1270,7 +1271,7 @@ bool ProjectConverter3To4::test_single_array(const char *p_array[][2], bool p_ig
 		}
 	}
 	return valid;
-};
+}
 
 // Returns arguments from given function execution, this cannot be really done as regex.
 // `abc(d,e(f,g),h)` -> [d], [e(f,g)], [h]
@@ -1321,8 +1322,9 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 				break;
 			};
 			case '"': {
-				if (previous_character != '\\')
+				if (previous_character != '\\') {
 					is_inside_string = !is_inside_string;
+				}
 			}
 		}
 		previous_character = character;
@@ -1469,7 +1471,7 @@ void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const
 			}
 		}
 	}
-};
+}
 
 // Convert hexadecimal colors from ARGB to RGBA
 void ProjectConverter3To4::convert_hexadecimal_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
@@ -1566,7 +1568,7 @@ void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, cons
 			}
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
@@ -1618,7 +1620,7 @@ void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_
 			process_gdscript_line(line, reg_container, builtin);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
 	int current_line = 1;
@@ -1675,7 +1677,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- \t.func() -> \tsuper.func()       Object
-	if (line.contains("(") && line.contains(".")) {
+	if (line.contains_char('(') && line.contains_char('.')) {
 		line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this broke String text e.g. "Chosen .gitignore" -> "Chosen super.gitignore"
 	}
 
@@ -1968,7 +1970,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	// -- func c(var a, var b) -> func c(a, b)
 	if (line.contains("func ") && line.contains("var ")) {
 		int start = line.find("func ");
-		start = line.substr(start).find("(") + start;
+		start = line.substr(start).find_char('(') + start;
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
 			Vector<String> parts = parse_arguments(line.substr(start, end));
@@ -2118,12 +2120,12 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- func _init(p_x:int).(p_x):  -> func _init(p_x:int):\n\tsuper(p_x)    Object # https://github.com/godotengine/godot/issues/70542
-	if (line.contains(" _init(") && line.rfind(":") > 0) {
+	if (line.contains(" _init(") && line.rfind_char(':') > 0) {
 		//     func _init(p_arg1).(super4, super5, super6)->void:
 		// ^--^indent            ^super_start   super_end^
 		int indent = line.count("\t", 0, line.find("func"));
 		int super_start = line.find(".(");
-		int super_end = line.rfind(")");
+		int super_end = line.rfind_char(')');
 		if (super_start > 0 && super_end > super_start) {
 			line = line.substr(0, super_start) + line.substr(super_end + 1) + "\n" + String("\t").repeat(indent + 1) + "super" + line.substr(super_start + 1, super_end - super_start);
 		}
@@ -2438,7 +2440,7 @@ void ProjectConverter3To4::rename_csharp_functions(Vector<SourceLine> &source_li
 			process_csharp_line(line, reg_container);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
 	int current_line = 1;
@@ -2847,7 +2849,7 @@ void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const
 			line = reg.sub(line, to, true);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to) {
 	Vector<String> found_renames;

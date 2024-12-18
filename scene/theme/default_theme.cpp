@@ -30,6 +30,7 @@
 
 #include "default_theme.h"
 
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "default_font.gen.h"
 #include "default_theme_icons.gen.h"
@@ -128,6 +129,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// StyleBox colors
 	const Color style_normal_color = Color(0.1, 0.1, 0.1, 0.6);
 	const Color style_hover_color = Color(0.225, 0.225, 0.225, 0.6);
+	const Color style_hover_selected_color = Color(1, 1, 1, 0.4);
 	const Color style_pressed_color = Color(0, 0, 0, 0.6);
 	const Color style_disabled_color = Color(0.1, 0.1, 0.1, 0.3);
 	const Color style_focus_color = Color(1, 1, 1, 0.75);
@@ -156,11 +158,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> button_pressed = make_flat_stylebox(style_pressed_color);
 	const Ref<StyleBoxFlat> button_disabled = make_flat_stylebox(style_disabled_color);
 	Ref<StyleBoxFlat> focus = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
-	// Make the focus outline appear to be flush with the buttons it's focusing.
+	// Make the focus outline appear to be flush with the buttons it's focusing, so not draw on top of the content.
 	focus->set_expand_margin_all(Math::round(2 * scale));
 
 	theme->set_stylebox(CoreStringName(normal), "Button", button_normal);
-	theme->set_stylebox("hover", "Button", button_hover);
+	theme->set_stylebox(SceneStringName(hover), "Button", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "Button", button_pressed);
 	theme->set_stylebox("disabled", "Button", button_disabled);
 	theme->set_stylebox("focus", "Button", focus);
@@ -191,7 +193,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// MenuBar
 	theme->set_stylebox(CoreStringName(normal), "MenuBar", button_normal);
-	theme->set_stylebox("hover", "MenuBar", button_hover);
+	theme->set_stylebox(SceneStringName(hover), "MenuBar", button_hover);
 	theme->set_stylebox(SceneStringName(pressed), "MenuBar", button_pressed);
 	theme->set_stylebox("disabled", "MenuBar", button_disabled);
 
@@ -234,7 +236,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBox> sb_optbutton_disabled = make_flat_stylebox(style_disabled_color, 2 * default_margin, default_margin, 2 * default_margin, default_margin);
 
 	theme->set_stylebox(CoreStringName(normal), "OptionButton", sb_optbutton_normal);
-	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
+	theme->set_stylebox(SceneStringName(hover), "OptionButton", sb_optbutton_hover);
 	theme->set_stylebox(SceneStringName(pressed), "OptionButton", sb_optbutton_pressed);
 	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
 
@@ -270,7 +272,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(CoreStringName(normal), "MenuButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "MenuButton", button_pressed);
-	theme->set_stylebox("hover", "MenuButton", button_hover);
+	theme->set_stylebox(SceneStringName(hover), "MenuButton", button_hover);
 	theme->set_stylebox("disabled", "MenuButton", button_disabled);
 	theme->set_stylebox("focus", "MenuButton", focus);
 
@@ -297,7 +299,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox(CoreStringName(normal), "CheckBox", cbx_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
-	theme->set_stylebox("hover", "CheckBox", cbx_empty);
+	theme->set_stylebox(SceneStringName(hover), "CheckBox", cbx_empty);
 	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
 	theme->set_stylebox("focus", "CheckBox", cbx_focus);
 
@@ -333,7 +335,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox(CoreStringName(normal), "CheckButton", cb_empty);
 	theme->set_stylebox(SceneStringName(pressed), "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
-	theme->set_stylebox("hover", "CheckButton", cb_empty);
+	theme->set_stylebox(SceneStringName(hover), "CheckButton", cb_empty);
 	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("focus", "CheckButton", focus);
 
@@ -364,7 +366,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Button variations
 
-	theme->set_type_variation("FlatButton", "Button");
+	theme->set_type_variation(SceneStringName(FlatButton), "Button");
 	theme->set_type_variation("FlatMenuButton", "MenuButton");
 
 	Ref<StyleBoxEmpty> flat_button_normal = make_empty_stylebox();
@@ -374,13 +376,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> flat_button_pressed = button_pressed->duplicate();
 	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
 
-	theme->set_stylebox(CoreStringName(normal), "FlatButton", flat_button_normal);
-	theme->set_stylebox("hover", "FlatButton", flat_button_normal);
-	theme->set_stylebox(SceneStringName(pressed), "FlatButton", flat_button_pressed);
-	theme->set_stylebox("disabled", "FlatButton", flat_button_normal);
+	theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox(SceneStringName(hover), SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), flat_button_pressed);
+	theme->set_stylebox("disabled", SceneStringName(FlatButton), flat_button_normal);
 
 	theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", flat_button_normal);
-	theme->set_stylebox("hover", "FlatMenuButton", flat_button_normal);
+	theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", flat_button_pressed);
 	theme->set_stylebox("disabled", "FlatMenuButton", flat_button_normal);
 
@@ -504,6 +506,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("can_fold_code_region", "CodeEdit", icons["region_unfolded"]);
 	theme->set_icon("folded_code_region", "CodeEdit", icons["region_folded"]);
 	theme->set_icon("folded_eol_icon", "CodeEdit", icons["text_edit_ellipsis"]);
+	theme->set_icon("completion_color_bg", "CodeEdit", icons["mini_checkerboard"]);
 
 	theme->set_font(SceneStringName(font), "CodeEdit", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "CodeEdit", -1);
@@ -613,13 +616,57 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// SpinBox
 
-	theme->set_icon("updown", "SpinBox", icons["updown"]);
+	theme->set_icon("updown", "SpinBox", empty_icon);
+	theme->set_icon("up", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_hover", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_pressed", "SpinBox", icons["value_up"]);
+	theme->set_icon("up_disabled", "SpinBox", icons["value_up"]);
+	theme->set_icon("down", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_hover", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_pressed", "SpinBox", icons["value_down"]);
+	theme->set_icon("down_disabled", "SpinBox", icons["value_down"]);
+
+	theme->set_stylebox("up_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("up_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("up_background_disabled", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("down_background_hovered", "SpinBox", button_hover);
+	theme->set_stylebox("down_background_pressed", "SpinBox", button_pressed);
+	theme->set_stylebox("down_background_disabled", "SpinBox", make_empty_stylebox());
+
+	theme->set_color("up_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("up_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("up_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+	theme->set_color("down_icon_modulate", "SpinBox", control_font_color);
+	theme->set_color("down_hover_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_pressed_icon_modulate", "SpinBox", control_font_hover_color);
+	theme->set_color("down_disabled_icon_modulate", "SpinBox", control_font_disabled_color);
+
+	theme->set_stylebox("field_and_buttons_separator", "SpinBox", make_empty_stylebox());
+	theme->set_stylebox("up_down_buttons_separator", "SpinBox", make_empty_stylebox());
+
+	theme->set_constant("buttons_vertical_separation", "SpinBox", 0);
+	theme->set_constant("field_and_buttons_separation", "SpinBox", 2);
+	theme->set_constant("buttons_width", "SpinBox", 16);
+#ifndef DISABLE_DEPRECATED
+	theme->set_constant("set_min_buttons_width_from_icons", "SpinBox", 1);
+#endif
 
 	// ScrollContainer
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
 	theme->set_stylebox(SceneStringName(panel), "ScrollContainer", empty);
+
+	const Ref<StyleBoxFlat> focus_style = make_flat_stylebox(style_focus_color);
+	// Make the focus outline appear to be flush with the buttons it's focusing, so not draw on top of the content.
+	sb_expand(focus_style, 4, 4, 4, 4);
+	focus_style->set_border_width_all(Math::round(2 * scale));
+	focus_style->set_draw_center(false);
+	focus_style->set_border_color(style_focus_color);
+	theme->set_stylebox("focus", "ScrollContainer", focus_style);
 
 	// Window
 
@@ -647,11 +694,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
+	theme->set_icon("load", "FileDialog", icons["load"]);
+	theme->set_icon("save", "FileDialog", icons["save"]);
+	theme->set_icon("clear", "FileDialog", icons["clear"]);
 	theme->set_icon("parent_folder", "FileDialog", icons["folder_up"]);
 	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
 	theme->set_icon("forward_folder", "FileDialog", icons["arrow_right"]);
 	theme->set_icon("reload", "FileDialog", icons["reload"]);
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
+	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
@@ -683,7 +734,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	style_popup_panel->set_border_color(style_popup_border_color);
 
 	theme->set_stylebox(SceneStringName(panel), "PopupMenu", style_popup_panel);
-	theme->set_stylebox("hover", "PopupMenu", make_flat_stylebox(style_popup_hover_color));
+	theme->set_stylebox(SceneStringName(hover), "PopupMenu", make_flat_stylebox(style_popup_hover_color));
 	theme->set_stylebox("separator", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_left", "PopupMenu", separator_horizontal);
 	theme->set_stylebox("labeled_separator_right", "PopupMenu", separator_horizontal);
@@ -794,10 +845,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox(SceneStringName(panel), "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
 	theme->set_stylebox("focus", "Tree", focus);
+	theme->set_stylebox("hovered", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
+	theme->set_stylebox("hovered_dimmed", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.03)));
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
 	theme->set_stylebox("cursor_unfocused", "Tree", focus);
+	theme->set_stylebox("button_hover", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("button_pressed", "Tree", button_pressed);
 	theme->set_stylebox("title_button_normal", "Tree", make_flat_stylebox(style_pressed_color, 4, 4, 4, 4));
 	theme->set_stylebox("title_button_pressed", "Tree", make_flat_stylebox(style_hover_color, 4, 4, 4, 4));
@@ -825,6 +879,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color(SceneStringName(font_color), "Tree", control_font_low_color);
+	theme->set_color("font_hovered_color", "Tree", control_font_hover_color);
+	theme->set_color("font_hovered_dimmed_color", "Tree", control_font_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Tree", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", Color(0, 0, 0));
@@ -874,10 +930,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color(SceneStringName(font_color), "ItemList", control_font_lower_color);
 	theme->set_color("font_hovered_color", "ItemList", control_font_hover_color);
+	theme->set_color("font_hovered_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_outline_color", "ItemList", Color(0, 0, 0));
 	theme->set_color("guide_color", "ItemList", Color(0.7, 0.7, 0.7, 0.25));
 	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(Color(1, 1, 1, 0.07)));
+	theme->set_stylebox("hovered_selected", "ItemList", make_flat_stylebox(style_hover_selected_color));
+	theme->set_stylebox("hovered_selected_focus", "ItemList", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("selected", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "ItemList", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "ItemList", focus);
@@ -982,6 +1041,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("label_width", "ColorPicker", Math::round(10 * scale));
 	theme->set_constant("center_slider_grabbers", "ColorPicker", 1);
 
+	theme->set_icon("menu_option", "ColorPicker", icons["tabs_menu_hl"]);
 	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
 	theme->set_icon("expanded_arrow", "ColorPicker", icons["arrow_down"]);
 	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
@@ -1054,7 +1114,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
 	theme->set_stylebox(CoreStringName(normal), "ColorPickerButton", button_normal);
 	theme->set_stylebox(SceneStringName(pressed), "ColorPickerButton", button_pressed);
-	theme->set_stylebox("hover", "ColorPickerButton", button_hover);
+	theme->set_stylebox(SceneStringName(hover), "ColorPickerButton", button_hover);
 	theme->set_stylebox("disabled", "ColorPickerButton", button_disabled);
 	theme->set_stylebox("focus", "ColorPickerButton", focus);
 
@@ -1174,6 +1234,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("v_separation", "VFlowContainer", Math::round(4 * scale));
 
 	theme->set_stylebox(SceneStringName(panel), "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "SplitContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "VSplitContainer", make_empty_stylebox(0, 0, 0, 0));
+	theme->set_stylebox("split_bar_background", "HSplitContainer", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_icon("zoom_out", "GraphEdit", icons["zoom_less"]);
 	theme->set_icon("zoom_in", "GraphEdit", icons["zoom_more"]);

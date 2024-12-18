@@ -33,14 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-void CommandQueueMT::lock() {
-	mutex.lock();
-}
-
-void CommandQueueMT::unlock() {
-	mutex.unlock();
-}
-
 CommandQueueMT::CommandQueueMT() {
 	command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
 }

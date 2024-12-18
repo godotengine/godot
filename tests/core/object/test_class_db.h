@@ -139,6 +139,7 @@ struct NamesCache {
 	StringName vector2_type = StaticCString::create("Vector2");
 	StringName rect2_type = StaticCString::create("Rect2");
 	StringName vector3_type = StaticCString::create("Vector3");
+	StringName vector4_type = StaticCString::create("Vector4");
 
 	// Object not included as it must be checked for all derived classes
 	static constexpr int nullable_types_count = 18;
@@ -247,6 +248,8 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
@@ -274,11 +277,45 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR3I:
 			return p_arg_type.name == p_context.names_cache.vector3_type ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
+		case Variant::VECTOR4I:
+			return p_arg_type.name == p_context.names_cache.vector4_type ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
+			break;
+	}
+	if (r_err_msg) {
+		*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+	}
+	return false;
+}
+
+bool arg_default_value_is_valid_data(const Variant &p_val, String *r_err_msg = nullptr) {
+	switch (p_val.get_type()) {
+		case Variant::RID:
+		case Variant::ARRAY:
+		case Variant::DICTIONARY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::OBJECT:
+			if (p_val.is_zero()) {
+				return true;
+			}
 			if (r_err_msg) {
-				*r_err_msg = "Unexpected Variant type: " + itos(p_val.get_type());
+				*r_err_msg = "Must be zero.";
 			}
 			break;
+		default:
+			return true;
 	}
 
 	return false;
@@ -406,6 +443,14 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 		}
 
 		TEST_COND(!arg_defval_assignable_to_type, err_msg);
+
+		bool arg_defval_valid_data = arg_default_value_is_valid_data(p_arg.defval, &type_error_msg);
+
+		if (!type_error_msg.is_empty()) {
+			err_msg += " " + type_error_msg;
+		}
+
+		TEST_COND(!arg_defval_valid_data, err_msg);
 	}
 }
 
@@ -558,7 +603,7 @@ void add_exposed_classes(Context &r_context) {
 
 			MethodData method;
 			method.name = method_info.name;
-			TEST_FAIL_COND(!String(method.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(method.name).is_valid_ascii_identifier(),
 					"Method name is not a valid identifier: '", exposed_class.name, ".", method.name, "'.");
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
@@ -684,7 +729,7 @@ void add_exposed_classes(Context &r_context) {
 			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
-			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
 			int i = 0;
@@ -818,16 +863,19 @@ void add_global_enums(Context &r_context) {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
-	for (const StringName &E : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		r_context.enum_types.push_back(E);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			r_context.enum_types.push_back(Variant::get_type_name(type) + "." + enum_name);
+		}
 	}
 }
 

@@ -157,10 +157,11 @@ private:
 	bool placeholder_fallback_enabled = false;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
+	StringName doc_class_name;
 	DocData::ClassDoc doc;
 	Vector<DocData::ClassDoc> docs;
+	void _add_doc(const DocData::ClassDoc &p_doc);
 	void _clear_doc();
-	void _add_doc(const DocData::ClassDoc &p_inner_class);
 #endif
 
 	GDScriptFunction *implicit_initializer = nullptr;
@@ -292,14 +293,14 @@ public:
 	virtual void update_exports() override;
 
 #ifdef TOOLS_ENABLED
-	virtual Vector<DocData::ClassDoc> get_documentation() const override {
-		return docs;
-	}
+	virtual StringName get_doc_class_name() const override { return doc_class_name; }
+	virtual Vector<DocData::ClassDoc> get_documentation() const override { return docs; }
 	virtual String get_class_icon_path() const override;
 #endif // TOOLS_ENABLED
 
 	virtual Error reload(bool p_keep_state = false) override;
 
+	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -334,7 +335,7 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 
-	virtual const Variant get_rpc_config() const override;
+	virtual Variant get_rpc_config() const override;
 
 	void unload_static() const;
 
@@ -417,6 +418,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	Vector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
+	Vector<int> global_array_empty_indexes;
 
 	struct CallLevel {
 		Variant *stack = nullptr;
@@ -448,6 +450,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	int _debug_max_call_stack = 0;
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
+	void _remove_global(const StringName &p_name);
 
 	friend class GDScriptInstance;
 
@@ -459,11 +462,18 @@ class GDScriptLanguage : public ScriptLanguage {
 	friend class GDScriptFunction;
 
 	SelfList<GDScriptFunction>::List function_list;
+#ifdef DEBUG_ENABLED
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
+#endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
+
+#ifdef TOOLS_ENABLED
+	void _extension_loaded(const Ref<GDExtension> &p_extension);
+	void _extension_unloading(const Ref<GDExtension> &p_extension);
+#endif
 
 public:
 	int calls;

@@ -77,7 +77,7 @@ void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 }
 
 PackedStringArray XRCamera3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Camera3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
@@ -89,7 +89,7 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
-};
+}
 
 Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	// get our XRServer
@@ -114,7 +114,7 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
 	return ray;
-};
+}
 
 Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	// get our XRServer
@@ -144,7 +144,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	res.y = (-p.normal.y * 0.5 + 0.5) * viewport_size.y;
 
 	return res;
-};
+}
 
 Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) const {
 	// get our XRServer
@@ -174,7 +174,7 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
-};
+}
 
 Vector<Plane> XRCamera3D::get_frustum() const {
 	// get our XRServer
@@ -193,7 +193,7 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
 	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
 	return cm.get_projection_planes(get_camera_transform());
-};
+}
 
 XRCamera3D::XRCamera3D() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -240,7 +240,7 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
 
 	ADD_SIGNAL(MethodInfo("tracking_changed", PropertyInfo(Variant::BOOL, "tracking")));
-};
+}
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -274,7 +274,7 @@ void XRNode3D::set_tracker(const StringName &p_tracker_name) {
 
 	// copy the name
 	tracker_name = p_tracker_name;
-	pose_name = "default";
+	pose_name = SceneStringName(default_);
 
 	// see if it's already available
 	_bind_tracker();
@@ -303,6 +303,8 @@ StringName XRNode3D::get_pose_name() const {
 
 void XRNode3D::set_show_when_tracked(bool p_show) {
 	show_when_tracked = p_show;
+
+	_update_visibility();
 }
 
 bool XRNode3D::get_show_when_tracked() const {
@@ -361,6 +363,9 @@ void XRNode3D::_bind_tracker() {
 		if (pose.is_valid()) {
 			set_transform(pose->get_adjusted_transform());
 			_set_has_tracking_data(pose->get_has_tracking_data());
+		} else {
+			// Pose has been invalidated or was never set.
+			_set_has_tracking_data(false);
 		}
 	}
 }
@@ -407,6 +412,10 @@ void XRNode3D::_pose_lost_tracking(const Ref<XRPose> &p_pose) {
 }
 
 void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
+	// Always update our visibility, we may have set our tracking data
+	// when conditions weren't right.
+	_update_visibility();
+
 	// Ignore if the has_tracking_data state isn't changing.
 	if (p_has_tracking_data == has_tracking_data) {
 		return;
@@ -415,10 +424,19 @@ void XRNode3D::_set_has_tracking_data(bool p_has_tracking_data) {
 	// Handle change of has_tracking_data.
 	has_tracking_data = p_has_tracking_data;
 	emit_signal(SNAME("tracking_changed"), has_tracking_data);
+}
 
+void XRNode3D::_update_visibility() {
 	// If configured, show or hide the node based on tracking data.
 	if (show_when_tracked) {
-		set_visible(has_tracking_data);
+		// Only react to this if we have a primary interface.
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server != nullptr) {
+			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
+			if (xr_interface.is_valid()) {
+				set_visible(has_tracking_data);
+			}
+		}
 	}
 }
 
@@ -443,7 +461,7 @@ XRNode3D::~XRNode3D() {
 }
 
 PackedStringArray XRNode3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// Warn if the node has a parent which isn't an XROrigin3D!
@@ -481,7 +499,7 @@ void XRController3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
-};
+}
 
 void XRController3D::_bind_tracker() {
 	XRNode3D::_bind_tracker();
@@ -626,7 +644,7 @@ Plane XRAnchor3D::get_plane() const {
 Vector<XROrigin3D *> XROrigin3D::origin_nodes;
 
 PackedStringArray XROrigin3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		bool has_camera = false;

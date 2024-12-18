@@ -41,7 +41,7 @@ namespace TestHTTPClient {
 
 TEST_CASE("[HTTPClient] Instantiation") {
 	Ref<HTTPClient> client = HTTPClient::create();
-	CHECK_MESSAGE(client != nullptr, "A HTTP Client created should not be a null pointer");
+	CHECK_MESSAGE(client.is_valid(), "A HTTP Client created should not be a null pointer");
 }
 
 TEST_CASE("[HTTPClient] query_string_from_dict") {

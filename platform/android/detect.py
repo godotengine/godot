@@ -5,6 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from methods import print_error, print_warning
+from platform_methods import validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -30,6 +31,7 @@ def get_opts():
         ),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
         BoolVariable("generate_apk", "Generate an APK/AAB after building Android library by calling Gradle", False),
+        BoolVariable("swappy", "Use Swappy Frame Pacing library", False),
     ]
 
 
@@ -95,15 +97,19 @@ def install_ndk_if_needed(env: "SConsEnvironment"):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
+def detect_swappy():
+    archs = ["arm64-v8a", "armeabi-v7a", "x86", "x86_64"]
+    has_swappy = True
+    for arch in archs:
+        if not os.path.isfile(f"thirdparty/swappy-frame-pacing/{arch}/libswappy_static.a"):
+            has_swappy = False
+    return has_swappy
+
+
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
-    if env["arch"] not in supported_arches:
-        print_error(
-            'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit(255)
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
         print_warning(
@@ -171,10 +177,22 @@ def configure(env: "SConsEnvironment"):
     env["AS"] = compiler_path + "/clang"
 
     env.Append(
-        CCFLAGS=(
-            "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
-        )
+        CCFLAGS=(["-fpic", "-ffunction-sections", "-funwind-tables", "-fstack-protector-strong", "-fvisibility=hidden"])
     )
+
+    has_swappy = detect_swappy()
+    if not has_swappy:
+        print_warning(
+            "Swappy Frame Pacing not detected! It is strongly recommended you download it from https://github.com/darksylinc/godot-swappy/releases and extract it so that the following files can be found:\n"
+            + " thirdparty/swappy-frame-pacing/arm64-v8a/libswappy_static.a\n"
+            + " thirdparty/swappy-frame-pacing/armeabi-v7a/libswappy_static.a\n"
+            + " thirdparty/swappy-frame-pacing/x86/libswappy_static.a\n"
+            + " thirdparty/swappy-frame-pacing/x86_64/libswappy_static.a\n"
+            + "Without Swappy, Godot apps on Android will inevitable suffer stutter and struggle to keep consistent 30/60/90/120 fps. Though Swappy cannot guarantee your app will be stutter-free, not having Swappy will guarantee there will be stutter even on the best phones and the most simple of scenes."
+        )
+        if env["swappy"]:
+            print_error("Use build option `swappy=no` to ignore missing Swappy dependency and build without it.")
+            sys.exit(255)
 
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
@@ -182,20 +200,29 @@ def configure(env: "SConsEnvironment"):
     if env["arch"] == "x86_32":
         # The NDK adds this if targeting API < 24, so we can drop it when Godot targets it at least
         env.Append(CCFLAGS=["-mstackrealign"])
+        if has_swappy:
+            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/x86"])
+    elif env["arch"] == "x86_64":
+        if has_swappy:
+            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/x86_64"])
     elif env["arch"] == "arm32":
-        env.Append(CCFLAGS="-march=armv7-a -mfloat-abi=softfp".split())
+        env.Append(CCFLAGS=["-march=armv7-a", "-mfloat-abi=softfp"])
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
         env.Append(CPPDEFINES=["__ARM_NEON__"])
+        if has_swappy:
+            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/armeabi-v7a"])
     elif env["arch"] == "arm64":
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
+        if has_swappy:
+            env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/arm64-v8a"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
     # Link flags
 
-    env.Append(LINKFLAGS="-Wl,--gc-sections -Wl,--no-undefined -Wl,-z,now".split())
-    env.Append(LINKFLAGS="-Wl,-soname,libgodot_android.so")
+    env.Append(LINKFLAGS=["-Wl,--gc-sections", "-Wl,--no-undefined", "-Wl,-z,now"])
+    env.Append(LINKFLAGS=["-Wl,-soname,libgodot_android.so"])
 
     env.Prepend(CPPPATH=["#platform/android"])
     env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
@@ -203,6 +230,9 @@ def configure(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        if has_swappy:
+            env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
+            env.Append(LIBS=["swappy_static"])
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 

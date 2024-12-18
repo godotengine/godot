@@ -37,7 +37,7 @@
 #include "editor/themes/editor_scale.h"
 #endif
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
 	if (!curve.is_valid() || curve->get_point_count() == 0) {
 		return Rect2(0, 0, 0, 0);
@@ -167,16 +167,15 @@ void Path2D::_curve_changed() {
 		return;
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
-		return;
-	}
-
-	queue_redraw();
 	for (int i = 0; i < get_child_count(); i++) {
 		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
 		if (follow) {
 			follow->path_changed();
 		}
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_paths_hint()) {
+		queue_redraw();
 	}
 }
 
@@ -288,7 +287,7 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray PathFollow2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path2D>(get_parent())) {
@@ -378,9 +377,10 @@ real_t PathFollow2D::get_progress() const {
 }
 
 void PathFollow2D::set_progress_ratio(real_t p_ratio) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		set_progress(p_ratio * path->get_curve()->get_baked_length());
-	}
+	ERR_FAIL_NULL_MSG(path, "Can only set progress ratio on a PathFollow2D that is the child of a Path2D which is itself part of the scene tree.");
+	ERR_FAIL_COND_MSG(path->get_curve().is_null(), "Can't set progress ratio on a PathFollow2D that does not have a Curve.");
+	ERR_FAIL_COND_MSG(!path->get_curve()->get_baked_length(), "Can't set progress ratio on a PathFollow2D that has a 0 length curve.");
+	set_progress(p_ratio * path->get_curve()->get_baked_length());
 }
 
 real_t PathFollow2D::get_progress_ratio() const {

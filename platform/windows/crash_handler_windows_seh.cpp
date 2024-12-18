@@ -118,7 +118,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	HANDLE process = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
 	DWORD offset_from_symbol = 0;
-	IMAGEHLP_LINE64 line = { 0 };
+	IMAGEHLP_LINE64 line = {};
 	std::vector<module_data> modules;
 	DWORD cbNeeded;
 	std::vector<HMODULE> module_handles(1);

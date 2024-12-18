@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "soft_body_3d.h"
+#include "soft_body_3d.compat.inc"
 
 #include "scene/3d/physics/physics_body_3d.h"
 
@@ -200,12 +201,18 @@ bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
 	int point_index;
 	for (int i = 0; i < p_indices_size; ++i) {
 		point_index = p_indices.get(i);
-		if (w[i].point_index != point_index) {
-			if (-1 != w[i].point_index) {
+		if (w[i].point_index != point_index || pinned_points.size() < p_indices_size) {
+			bool insert = false;
+			if (w[i].point_index != -1 && p_indices.find(w[i].point_index) == -1) {
 				pin_point(w[i].point_index, false);
+				insert = true;
 			}
 			w[i].point_index = point_index;
-			pin_point(w[i].point_index, true);
+			if (insert) {
+				pin_point(w[i].point_index, true, NodePath(), i);
+			} else {
+				pin_point(w[i].point_index, true);
+			}
 		}
 	}
 	return true;
@@ -218,7 +225,13 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 
 	if ("spatial_attachment_path" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
-		callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
+
+		if (is_inside_tree()) {
+			callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
+		} else {
+			pin_point(w[p_item].point_index, true, p_value);
+			_make_cache_dirty();
+		}
 	} else if ("offset" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
@@ -350,7 +363,7 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_transform", "point_index"), &SoftBody3D::get_point_transform);
 
-	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path"), &SoftBody3D::pin_point, DEFVAL(NodePath()));
+	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
 
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
@@ -377,7 +390,7 @@ void SoftBody3D::_bind_methods() {
 }
 
 PackedStringArray SoftBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = MeshInstance3D::get_configuration_warnings();
 
 	if (mesh.is_null()) {
 		warnings.push_back(RTR("This body will be ignored until you set a mesh."));
@@ -662,10 +675,11 @@ void SoftBody3D::pin_point_toggle(int p_point_index) {
 	pin_point(p_point_index, !(-1 != _has_pinned_point(p_point_index)));
 }
 
-void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path) {
+void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
+	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
 	_pin_point_on_physics_server(p_point_index, pin);
 	if (pin) {
-		_add_pinned_point(p_point_index, p_spatial_attachment_path);
+		_add_pinned_point(p_point_index, p_spatial_attachment_path, p_insert_at);
 	} else {
 		_remove_pinned_point(p_point_index);
 	}
@@ -724,7 +738,7 @@ void SoftBody3D::_pin_point_on_physics_server(int p_point_index, bool pin) {
 	PhysicsServer3D::get_singleton()->soft_body_pin_point(physics_rid, p_point_index, pin);
 }
 
-void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path) {
+void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at) {
 	SoftBody3D::PinnedPoint *pinned_point;
 	if (-1 == _get_pinned_point(p_point_index, pinned_point)) {
 		// Create new
@@ -737,7 +751,11 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 			pp.offset = (pp.spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pp.point_index));
 		}
 
-		pinned_points.push_back(pp);
+		if (p_insert_at != -1) {
+			pinned_points.insert(p_insert_at, pp);
+		} else {
+			pinned_points.push_back(pp);
+		}
 
 	} else {
 		pinned_point->point_index = p_point_index;

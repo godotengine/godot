@@ -85,7 +85,7 @@ struct [[nodiscard]] AABB {
 	bool intersects_plane(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool has_point(const Vector3 &p_point) const;
-	_FORCE_INLINE_ Vector3 get_support(const Vector3 &p_normal) const;
+	_FORCE_INLINE_ Vector3 get_support(const Vector3 &p_direction) const;
 
 	Vector3 get_longest_axis() const;
 	int get_longest_axis_index() const;
@@ -212,15 +212,18 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 			(src_max.z >= dst_max.z));
 }
 
-Vector3 AABB::get_support(const Vector3 &p_normal) const {
-	Vector3 half_extents = size * 0.5f;
-	Vector3 ofs = position + half_extents;
-
-	return Vector3(
-				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
-				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
-				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
-			ofs;
+Vector3 AABB::get_support(const Vector3 &p_direction) const {
+	Vector3 support = position;
+	if (p_direction.x > 0.0f) {
+		support.x += size.x;
+	}
+	if (p_direction.y > 0.0f) {
+		support.y += size.y;
+	}
+	if (p_direction.z > 0.0f) {
+		support.z += size.z;
+	}
+	return support;
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {

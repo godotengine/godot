@@ -95,7 +95,7 @@ void ResourceImporterOggVorbis::show_advanced_options(const String &p_path) {
 }
 #endif
 
-Error ResourceImporterOggVorbis::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterOggVorbis::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
 	double loop_offset = p_options["loop_offset"];
 	double bpm = p_options["bpm"];
@@ -155,7 +155,6 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_buffer(const Vect
 			char *sync_buf = ogg_sync_buffer(&sync_state, OGG_SYNC_BUFFER_SIZE);
 			err = ogg_sync_check(&sync_state);
 			ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
-			ERR_FAIL_COND_V(cursor > size_t(file_data.size()), Ref<AudioStreamOggVorbis>());
 			size_t copy_size = file_data.size() - cursor;
 			if (copy_size > OGG_SYNC_BUFFER_SIZE) {
 				copy_size = OGG_SYNC_BUFFER_SIZE;

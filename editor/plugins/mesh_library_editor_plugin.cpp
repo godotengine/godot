@@ -156,6 +156,25 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	}
 	p_library->set_item_mesh(item_id, item_mesh);
 
+	GeometryInstance3D::ShadowCastingSetting gi3d_cast_shadows_setting = mesh_instance_node->get_cast_shadows_setting();
+	switch (gi3d_cast_shadows_setting) {
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+		} break;
+		default: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+	}
+
 	Transform3D item_mesh_transform;
 	if (p_apply_xforms) {
 		item_mesh_transform = mesh_instance_node->get_transform();
@@ -242,9 +261,6 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 	}
 }
 
-void MeshLibraryEditor::_bind_methods() {
-}
-
 MeshLibraryEditor::MeshLibraryEditor() {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -263,7 +279,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
-	menu->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();
@@ -311,7 +327,7 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	mesh_library_editor = memnew(MeshLibraryEditor);
 
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(mesh_library_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();

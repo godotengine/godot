@@ -90,6 +90,21 @@
 				Called right after the main swapchains are (re)created.
 			</description>
 		</method>
+		<method name="_on_post_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right after the given viewport is rendered.
+				[b]Note:[/b] The draw commands might only be queued at this point, not executed.
+			</description>
+		</method>
+		<method name="_on_pre_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right before the given viewport is rendered.
+			</description>
+		</method>
 		<method name="_on_pre_render" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -178,6 +193,15 @@
 				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 			</description>
 		</method>
+		<method name="_set_android_surface_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="property_values" type="Dictionary" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures to Android surface swapchains created by [OpenXRCompositionLayer].
+				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
+			</description>
+		</method>
 		<method name="_set_hand_joint_locations_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="hand_index" type="int" />
@@ -191,6 +215,14 @@
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
 				Adds additional data structures when the OpenXR instance is created.
+			</description>
+		</method>
+		<method name="_set_projection_views_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="view_index" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Adds additional data structures to the projection view of the given [param view_index].
 			</description>
 		</method>
 		<method name="_set_session_create_and_get_next_pointer" qualifiers="virtual">
@@ -211,7 +243,7 @@
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when interogating OpenXR system abilities.
+				Adds additional data structures when querying OpenXR system abilities.
 			</description>
 		</method>
 		<method name="_set_viewport_composition_layer_and_get_next_pointer" qualifiers="virtual">

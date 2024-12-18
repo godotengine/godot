@@ -423,6 +423,9 @@ static const char * const features[] = {
 #if defined(MBEDTLS_PSA_CRYPTO_SPM)
     "PSA_CRYPTO_SPM", //no-check-names
 #endif /* MBEDTLS_PSA_CRYPTO_SPM */
+#if defined(MBEDTLS_PSA_KEY_STORE_DYNAMIC)
+    "PSA_KEY_STORE_DYNAMIC", //no-check-names
+#endif /* MBEDTLS_PSA_KEY_STORE_DYNAMIC */
 #if defined(MBEDTLS_PSA_P256M_DRIVER_ENABLED)
     "PSA_P256M_DRIVER_ENABLED", //no-check-names
 #endif /* MBEDTLS_PSA_P256M_DRIVER_ENABLED */

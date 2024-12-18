@@ -62,6 +62,49 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
+
+	ClassDB::bind_method(D_METHOD("has", "property"), &EditorExportPreset::has);
+
+	ClassDB::bind_method(D_METHOD("get_files_to_export"), &EditorExportPreset::get_files_to_export);
+	ClassDB::bind_method(D_METHOD("get_customized_files"), &EditorExportPreset::get_customized_files);
+	ClassDB::bind_method(D_METHOD("get_customized_files_count"), &EditorExportPreset::get_customized_files_count);
+	ClassDB::bind_method(D_METHOD("has_export_file", "path"), &EditorExportPreset::has_export_file);
+	ClassDB::bind_method(D_METHOD("get_file_export_mode", "path", "default"), &EditorExportPreset::get_file_export_mode, DEFVAL(MODE_FILE_NOT_CUSTOMIZED));
+
+	ClassDB::bind_method(D_METHOD("get_preset_name"), &EditorExportPreset::get_name);
+	ClassDB::bind_method(D_METHOD("is_runnable"), &EditorExportPreset::is_runnable);
+	ClassDB::bind_method(D_METHOD("are_advanced_options_enabled"), &EditorExportPreset::are_advanced_options_enabled);
+	ClassDB::bind_method(D_METHOD("is_dedicated_server"), &EditorExportPreset::is_dedicated_server);
+	ClassDB::bind_method(D_METHOD("get_export_filter"), &EditorExportPreset::get_export_filter);
+	ClassDB::bind_method(D_METHOD("get_include_filter"), &EditorExportPreset::get_include_filter);
+	ClassDB::bind_method(D_METHOD("get_exclude_filter"), &EditorExportPreset::get_exclude_filter);
+	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
+	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
+	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);
+	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
+	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
+	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
+	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
+	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
+	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
+
+	ClassDB::bind_method(D_METHOD("get_or_env", "name", "env_var"), &EditorExportPreset::_get_or_env);
+	ClassDB::bind_method(D_METHOD("get_version", "name", "windows_version"), &EditorExportPreset::get_version);
+
+	BIND_ENUM_CONSTANT(EXPORT_ALL_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_SCENES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXCLUDE_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_CUSTOMIZED);
+
+	BIND_ENUM_CONSTANT(MODE_FILE_NOT_CUSTOMIZED);
+	BIND_ENUM_CONSTANT(MODE_FILE_STRIP);
+	BIND_ENUM_CONSTANT(MODE_FILE_KEEP);
+	BIND_ENUM_CONSTANT(MODE_FILE_REMOVE);
+
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_TEXT);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
@@ -93,8 +136,29 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
-		if (!value_overrides.has(E.key) && platform->get_export_option_visibility(this, E.key)) {
-			p_list->push_back(E.value);
+		if (!value_overrides.has(E.key)) {
+			bool property_visible = platform->get_export_option_visibility(this, E.key);
+			if (!property_visible) {
+				continue;
+			}
+
+			// Get option visibility from editor export plugins.
+			Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (!export_plugins[i]->supports_platform(platform)) {
+					continue;
+				}
+
+				export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+				property_visible = export_plugins[i]->_get_export_option_visibility(platform, E.key);
+				if (!property_visible) {
+					break;
+				}
+			}
+
+			if (property_visible) {
+				p_list->push_back(E.value);
+			}
 		}
 	}
 }
@@ -324,6 +388,42 @@ EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(cons
 	return p_default;
 }
 
+void EditorExportPreset::add_patch(const String &p_path, int p_at_pos) {
+	ERR_FAIL_COND_EDMSG(patches.has(p_path), vformat("Failed to add patch \"%s\". Patches must be unique.", p_path));
+
+	if (p_at_pos < 0) {
+		patches.push_back(p_path);
+	} else {
+		patches.insert(p_at_pos, p_path);
+	}
+
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index, const String &p_path) {
+	remove_patch(p_index);
+	add_patch(p_path, p_index);
+}
+
+String EditorExportPreset::get_patch(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
+	return patches[p_index];
+}
+
+void EditorExportPreset::remove_patch(int p_index) {
+	ERR_FAIL_INDEX(p_index, patches.size());
+	patches.remove_at(p_index);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patches(const Vector<String> &p_patches) {
+	patches = p_patches;
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -349,6 +449,15 @@ void EditorExportPreset::set_enc_ex_filter(const String &p_filter) {
 
 String EditorExportPreset::get_enc_ex_filter() const {
 	return enc_ex_filters;
+}
+
+void EditorExportPreset::set_seed(uint64_t p_seed) {
+	seed = p_seed;
+	EditorExport::singleton->save_presets();
+}
+
+uint64_t EditorExportPreset::get_seed() const {
+	return seed;
 }
 
 void EditorExportPreset::set_enc_pck(bool p_enabled) {

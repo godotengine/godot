@@ -69,10 +69,10 @@
 			Represents the size of the [enum Function] enum.
 		</constant>
 		<constant name="COND_ALL" value="0" enum="Condition">
-			The result will be true if all of component in vector satisfy the comparison condition.
+			The result will be [code]true[/code] if all components in the vector satisfy the comparison condition.
 		</constant>
 		<constant name="COND_ANY" value="1" enum="Condition">
-			The result will be true if any of component in vector satisfy the comparison condition.
+			The result will be [code]true[/code] if any component in the vector satisfies the comparison condition.
 		</constant>
 		<constant name="COND_MAX" value="2" enum="Condition">
 			Represents the size of the [enum Condition] enum.

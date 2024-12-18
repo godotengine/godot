@@ -334,15 +334,6 @@ msgstr "iOS"
 msgid "Mix With Others"
 msgstr "Misturar com Outros"
 
-msgid "Editor"
-msgstr "Editor"
-
-msgid "Script"
-msgstr "Script"
-
-msgid "Search in File Extensions"
-msgstr "Pesquisar em Extensões de Arquivo"
-
 msgid "Subwindows"
 msgstr "Subjanelas"
 
@@ -945,6 +936,9 @@ msgstr "Alternar Modo"
 
 msgid "Interface"
 msgstr "Interface"
+
+msgid "Editor"
+msgstr "Editor"
 
 msgid "Editor Language"
 msgstr "Linguagem do Editor"
@@ -2473,6 +2467,9 @@ msgstr "Caminho da Chave Privada SSH"
 msgid "Main Run Args"
 msgstr "Argumentos de Execução Principais"
 
+msgid "Script"
+msgstr "Script"
+
 msgid "Templates Search Path"
 msgstr "Caminho de Pesquisa de Templates"
 
@@ -2658,6 +2655,9 @@ msgstr "Eixo rotativo da entrada de rolagem"
 
 msgid "Text Driver"
 msgstr "Driver de Texto"
+
+msgid "Search in File Extensions"
+msgstr "Pesquisar em Extensões de Arquivo"
 
 msgid "Mouse Cursor"
 msgstr "Cursor do Mouse"

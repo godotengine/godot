@@ -902,8 +902,10 @@ void DisplayServerWeb::process_joypads() {
 		for (int b = 0; b < s_btns_num; b++) {
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JoyAxis::TRIGGER by Godot.
-			if (s_standard && (b == 6 || b == 7)) {
-				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
+			if (s_standard && (b == 6)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_LEFT, s_btns[b]);
+			} else if (s_standard && (b == 7)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_RIGHT, s_btns[b]);
 			} else {
 				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
@@ -1131,6 +1133,7 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_DIALOG_FILE:
+		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:

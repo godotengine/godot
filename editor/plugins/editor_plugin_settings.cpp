@@ -199,9 +199,6 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	return plugins;
 }
 
-void EditorPluginSettings::_bind_methods() {
-}
-
 EditorPluginSettings::EditorPluginSettings() {
 	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
 

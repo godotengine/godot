@@ -51,7 +51,7 @@ android {
         }
     }
 
-    flavorDimensions "products"
+    flavorDimensions = ["products"]
     productFlavors {
         editor {}
         template {}
@@ -104,10 +104,10 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
-        boolean debugSymbols = devBuild || isAndroidStudio()
+        boolean debugSymbols = devBuild
         boolean runTests = devBuild
-        boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"
+        boolean productionBuild = storeRelease
 
         def sconsTarget = flavorName
         if (sconsTarget == "template") {

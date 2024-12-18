@@ -207,16 +207,6 @@ error:
     return 0.0f;
 }
 
-
-int str2int(const char* str, size_t n)
-{
-    int ret = 0;
-    for(size_t i = 0; i < n; ++i) {
-        ret = ret * 10 + (str[i] - '0');
-    }
-    return ret;
-}
-
 char* strDuplicate(const char *str, size_t n)
 {
     auto len = strlen(str);
@@ -227,6 +217,14 @@ char* strDuplicate(const char *str, size_t n)
     ret[n] = '\0';
 
     return (char *) memcpy(ret, str, n);
+}
+
+char* strAppend(char* lhs, const char* rhs, size_t n)
+{
+    if (!rhs) return lhs;
+    if (!lhs) return strDuplicate(rhs, n);
+    lhs = (char*)realloc(lhs, strlen(lhs) + n + 1);
+    return strncat(lhs, rhs, n);
 }
 
 char* strDirname(const char* path)

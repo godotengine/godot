@@ -4,7 +4,7 @@
 		Tile library for tilemaps.
 	</brief_description>
 	<description>
-		A TileSet is a library of tiles for a [TileMap]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
+		A TileSet is a library of tiles for a [TileMapLayer]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
 		Tiles can either be from a [TileSetAtlasSource], which renders tiles out of a texture with support for physics, navigation, etc., or from a [TileSetScenesCollectionSource], which exposes scene-based tiles.
 		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID, and their alternative tile ID.
 		A TileSet can be configured so that its tiles expose more or fewer properties. To do so, the TileSet resources use property layers, which you can add or remove depending on your needs.
@@ -216,6 +216,13 @@
 			<param index="0" name="layer_index" type="int" />
 			<description>
 				Returns the collision mask of bodies on the given TileSet's physics layer.
+			</description>
+		</method>
+		<method name="get_physics_layer_collision_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Returns the collision priority of bodies on the given TileSet's physics layer.
 			</description>
 		</method>
 		<method name="get_physics_layer_physics_material" qualifiers="const">
@@ -547,7 +554,7 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="layer" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision layer (as in the physics server) for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_collision_mask">
@@ -555,7 +562,15 @@
 			<param index="0" name="layer_index" type="int" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets the physics layer (as in the physics server) for bodies in the given TileSet physics layer.
+				Sets the collision mask for bodies in the given TileSet physics layer.
+			</description>
+		</method>
+		<method name="set_physics_layer_collision_priority">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="priority" type="float" />
+			<description>
+				Sets the collision priority for bodies in the given TileSet physics layer.
 			</description>
 		</method>
 		<method name="set_physics_layer_physics_material">

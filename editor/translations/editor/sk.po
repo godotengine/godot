@@ -21,13 +21,14 @@
 # Ellie Star <gender.thief.star@gmail.com>, 2023.
 # Lmpsk <adamgramblicka@hotmail.com>, 2024.
 # Gelissean <gelu586@gmail.com>, 2024.
+# Bobo <ctiborboborkapor@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-31 15:41+0000\n"
-"Last-Translator: Gelissean <gelu586@gmail.com>\n"
+"PO-Revision-Date: 2024-08-30 21:09+0000\n"
+"Last-Translator: Bobo <ctiborboborkapor@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.7.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavné vlákno"
@@ -186,6 +187,12 @@ msgstr "Joypad Tlačidlo %d"
 
 msgid "Pressure:"
 msgstr "Tlak:"
+
+msgid "canceled"
+msgstr "zrušené"
+
+msgid "touched"
+msgstr "dotknuté"
 
 msgid "released"
 msgstr "pustený"
@@ -445,11 +452,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Akcia s názvom '%s' už existuje."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Nemožno vrátiť - Akcia je rovnaká ako pôvodná"
+
 msgid "Revert Action"
 msgstr "Vrátiť akciu"
 
 msgid "Add Event"
 msgstr "Pridať udalosť"
+
+msgid "Remove Action"
+msgstr "Odstrániť Akciu"
 
 msgid "Cannot Remove Action"
 msgstr "Nemožno Odstrániť Akciu"
@@ -465,6 +478,9 @@ msgstr "Filtrovať podľa názvu"
 
 msgid "Clear All"
 msgstr "Vyčistiť všetko"
+
+msgid "Clear all search filters."
+msgstr "Vymazať všetky filtre vyhľadávania."
 
 msgid "Add New Action"
 msgstr "Pridať Novú Akciu"
@@ -517,17 +533,47 @@ msgstr "Spraviť rukoväte lineárne"
 msgid "Make Handles Balanced"
 msgstr "Spraviť rukoväte balancované"
 
+msgid "Make Handles Mirrored"
+msgstr "Urobiť úchytky zrkadlené"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Urobiť úchytky vyvážené (automatická dotyčnica)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Urobiť úchyty zrkadlené (automatická dotyčnica)"
+
 msgid "Add Bezier Point"
 msgstr "Pridať Bezier bod"
 
 msgid "Move Bezier Points"
 msgstr "Presunúť Bazier Points"
 
+msgid "Animation Duplicate Keys"
+msgstr "Animácia: Duplikovať kľúče"
+
+msgid "Animation Cut Keys"
+msgstr "Animácia: Vystrihnúť kľúče"
+
+msgid "Animation Paste Keys"
+msgstr "Animácia: Vložiť kľúče"
+
+msgid "Animation Delete Keys"
+msgstr "Animácia: Zmazať kľúče"
+
+msgid "Focus"
+msgstr "Zamerať"
+
 msgid "Select All Keys"
 msgstr "Vybrať Všetky Kľúče"
 
 msgid "Deselect All Keys"
 msgstr "Odobrať Všetky Kľúče"
+
+msgid "Animation Change Transition"
+msgstr "Animácia: Zmeniť prechod"
+
+msgid "Animation Change Position3D"
+msgstr "Animácia Zmeniť Pozíciu3D"
 
 msgid "Change Animation Length"
 msgstr "Zmeniť Dĺžku Animácie (Change Animation Length)"
@@ -5780,14 +5826,14 @@ msgstr "Vymazať Out-Control z Krivky"
 msgid "Remove In-Control from Curve"
 msgstr "Vymazať In-Control z Krivky"
 
-msgid "Split Curve"
-msgstr "Rozdeliť Krivku"
-
 msgid "Move Point in Curve"
 msgstr "Presunúť Bod v Krivke"
 
 msgid "Add Point to Curve"
 msgstr "Pridať Bod do Krivky"
+
+msgid "Split Curve"
+msgstr "Rozdeliť Krivku"
 
 msgid "Move In-Control in Curve"
 msgstr "Presunúť In-Control v Krivke"

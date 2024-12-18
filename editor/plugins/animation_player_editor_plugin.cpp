@@ -41,6 +41,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
@@ -112,7 +113,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-				stop->set_icon(stop_icon);
+				stop->set_button_icon(stop_icon);
 			}
 
 			last_active = player->is_playing();
@@ -144,16 +145,16 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop_icon = get_editor_theme_icon(SNAME("Stop"));
 			pause_icon = get_editor_theme_icon(SNAME("Pause"));
 			if (player && player->is_playing()) {
-				stop->set_icon(pause_icon);
+				stop->set_button_icon(pause_icon);
 			} else {
-				stop->set_icon(stop_icon);
+				stop->set_button_icon(stop_icon);
 			}
 
-			autoplay->set_icon(get_editor_theme_icon(SNAME("AutoPlay")));
-			play->set_icon(get_editor_theme_icon(SNAME("PlayStart")));
-			play_from->set_icon(get_editor_theme_icon(SNAME("Play")));
-			play_bw->set_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
-			play_bw_from->set_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
+			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
+			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
+			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
+			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
+			play_bw_from->set_button_icon(get_editor_theme_icon(SNAME("PlayBackwards")));
 
 			autoplay_icon = get_editor_theme_icon(SNAME("AutoPlay"));
 			reset_icon = get_editor_theme_icon(SNAME("Reload"));
@@ -167,10 +168,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_icon = ImageTexture::create_from_image(autoplay_reset_img);
 			}
 
-			onion_toggle->set_icon(get_editor_theme_icon(SNAME("Onion")));
-			onion_skinning->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			onion_toggle->set_button_icon(get_editor_theme_icon(SNAME("Onion")));
+			onion_skinning->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
-			pin->set_icon(get_editor_theme_icon(SNAME("Pin")));
+			pin->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 
 			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
@@ -224,6 +225,69 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	}
 }
 
+void AnimationPlayerEditor::_go_to_nearest_keyframe(bool p_backward) {
+	if (_get_current().is_empty()) {
+		return;
+	}
+
+	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
+
+	double current_time = player->get_current_animation_position();
+	// Offset the time to avoid finding the same keyframe with Animation::track_find_key().
+	double time_offset = MAX(CMP_EPSILON * 2, current_time * CMP_EPSILON * 2);
+	double current_time_offset = current_time + (p_backward ? -time_offset : time_offset);
+
+	float nearest_key_time = p_backward ? 0 : anim->get_length();
+	int track_count = anim->get_track_count();
+	bool bezier_active = track_editor->is_bezier_editor_active();
+
+	Node *root = get_tree()->get_edited_scene_root();
+	EditorSelection *selection = EditorNode::get_singleton()->get_editor_selection();
+
+	Vector<int> selected_tracks;
+	for (int i = 0; i < track_count; ++i) {
+		if (selection->is_selected(root->get_node_or_null(anim->track_get_path(i)))) {
+			selected_tracks.push_back(i);
+		}
+	}
+
+	// Find the nearest keyframe in selection if the scene has selected nodes
+	// or the nearest keyframe in the entire animation otherwise.
+	if (selected_tracks.size() > 0) {
+		for (int track : selected_tracks) {
+			if (bezier_active && anim->track_get_type(track) != Animation::TYPE_BEZIER) {
+				continue;
+			}
+			int key = anim->track_find_key(track, current_time_offset, Animation::FIND_MODE_NEAREST, false, !p_backward);
+			if (key == -1) {
+				continue;
+			}
+			double key_time = anim->track_get_key_time(track, key);
+			if ((p_backward && key_time > nearest_key_time) || (!p_backward && key_time < nearest_key_time)) {
+				nearest_key_time = key_time;
+			}
+		}
+	} else {
+		for (int track = 0; track < track_count; ++track) {
+			if (bezier_active && anim->track_get_type(track) != Animation::TYPE_BEZIER) {
+				continue;
+			}
+			int key = anim->track_find_key(track, current_time_offset, Animation::FIND_MODE_NEAREST, false, !p_backward);
+			if (key == -1) {
+				continue;
+			}
+			double key_time = anim->track_get_key_time(track, key);
+			if ((p_backward && key_time > nearest_key_time) || (!p_backward && key_time < nearest_key_time)) {
+				nearest_key_time = key_time;
+			}
+		}
+	}
+
+	player->seek_internal(nearest_key_time, true, true, true);
+	frame->set_value(nearest_key_time);
+	track_editor->set_anim_pos(nearest_key_time);
+}
+
 void AnimationPlayerEditor::_play_pressed() {
 	String current = _get_current();
 
@@ -232,11 +296,18 @@ void AnimationPlayerEditor::_play_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers(current, start_marker, end_marker);
+		} else {
+			player->play(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_from_pressed() {
@@ -249,11 +320,18 @@ void AnimationPlayerEditor::_play_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		player->play(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers(current, start_marker, end_marker);
+		} else {
+			player->play(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 String AnimationPlayerEditor::_get_current() const {
@@ -270,11 +348,18 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play_backwards(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers_backwards(current, start_marker, end_marker);
+		} else {
+			player->play_backwards(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_bw_from_pressed() {
@@ -287,11 +372,18 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek_internal(time, true, true, true);
-		player->play_backwards(current);
+		PackedStringArray markers = track_editor->get_selected_section();
+		if (markers.size() == 2) {
+			StringName start_marker = markers[0];
+			StringName end_marker = markers[1];
+			player->play_section_with_markers_backwards(current, start_marker, end_marker);
+		} else {
+			player->play_backwards(current);
+		}
 	}
 
 	//unstop
-	stop->set_icon(pause_icon);
+	stop->set_button_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_stop_pressed() {
@@ -308,7 +400,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		frame->set_value(0);
 		track_editor->set_anim_pos(0);
 	}
-	stop->set_icon(stop_icon);
+	stop->set_button_icon(stop_icon);
 }
 
 void AnimationPlayerEditor::_animation_selected(int p_which) {
@@ -339,7 +431,17 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 			track_editor->set_animation(anim, animation_is_readonly);
 			Node *root = player->get_node_or_null(player->get_root_node());
-			if (root) {
+
+			// Player shouldn't access parent if it's the scene root.
+			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == SceneStringName(path_pp))) {
+				NodePath cached_root_path = player->get_path_to(get_cached_root_node());
+				if (player->get_node_or_null(cached_root_path) != nullptr) {
+					player->set_root_node(cached_root_path);
+				} else {
+					player->set_root_node(SceneStringName(path_pp)); // No other choice, preventing crash.
+				}
+			} else {
+				cached_root_node_id = root->get_instance_id(); // Caching as `track_editor` can lose track of player's root node.
 				track_editor->set_root(root);
 			}
 		}
@@ -402,7 +504,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	String selected_name = animation->get_item_text(selected);
 
 	// Remove library prefix if present.
-	if (selected_name.contains("/")) {
+	if (selected_name.contains_char('/')) {
 		selected_name = selected_name.get_slice("/", 1);
 	}
 
@@ -435,7 +537,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	ERR_FAIL_COND(al.is_null());
 
 	// For names of form lib_name/anim_name, remove library name prefix.
-	if (current.contains("/")) {
+	if (current.contains_char('/')) {
 		current = current.get_slice("/", 1);
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -474,17 +576,14 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 }
 
 float AnimationPlayerEditor::_get_editor_step() const {
-	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
-	if (track_editor->is_snap_enabled()) {
-		const String current = player->get_assigned_animation();
-		const Ref<Animation> anim = player->get_animation(current);
-		ERR_FAIL_COND_V(!anim.is_valid(), 0.0);
+	const String current = player->get_assigned_animation();
+	const Ref<Animation> anim = player->get_animation(current);
+	ERR_FAIL_COND_V(anim.is_null(), 0.0);
 
-		// Use more precise snapping when holding Shift
-		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
-	}
+	float step = track_editor->get_snap_unit();
 
-	return 0.0f;
+	// Use more precise snapping when holding Shift
+	return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? step * 0.25 : step;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -527,7 +626,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 			// Extract library prefix if present.
 			String new_library_prefix = "";
-			if (current.contains("/")) {
+			if (current.contains_char('/')) {
 				new_library_prefix = current.get_slice("/", 0) + "/";
 				current = current.get_slice("/", 1);
 			}
@@ -802,7 +901,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 					player->connect(SNAME("animation_list_changed"), callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated), CONNECT_DEFERRED);
 				}
 				if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
-					player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed), CONNECT_DEFERRED);
+					player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 				}
 			}
 
@@ -862,9 +961,9 @@ void AnimationPlayerEditor::_update_animation() {
 	updating = true;
 
 	if (player->is_playing()) {
-		stop->set_icon(pause_icon);
+		stop->set_button_icon(pause_icon);
 	} else {
-		stop->set_icon(stop_icon);
+		stop->set_button_icon(stop_icon);
 	}
 
 	scale->set_text(String::num(player->get_speed_scale(), 2));
@@ -1241,7 +1340,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 		break;
 	}
 
-	if (new_name.contains("/")) {
+	if (new_name.contains_char('/')) {
 		// Discard library prefix.
 		new_name = new_name.get_slice("/", 1);
 	}
@@ -1290,17 +1389,17 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 	anim = player->get_animation(current);
 
 	double pos = CLAMP((double)anim->get_length() * (p_value / frame->get_max()), 0, (double)anim->get_length());
-	if (track_editor->is_snap_enabled()) {
+	if (track_editor->is_snap_timeline_enabled()) {
 		pos = Math::snapped(pos, _get_editor_step());
 	}
 	pos = CLAMP(pos, 0, (double)anim->get_length() - CMP_EPSILON2); // Hack: Avoid fposmod with LOOP_LINEAR.
 
-	if (!p_timeline_only && anim.is_valid()) {
+	if (!p_timeline_only && anim.is_valid() && (!player->is_valid() || !Math::is_equal_approx(pos, player->get_current_animation_position()))) {
 		player->seek_internal(pos, true, true, false);
 	}
 
 	track_editor->set_anim_pos(pos);
-};
+}
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	_update_player();
@@ -1408,9 +1507,15 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_timel
 	}
 
 	updating = true;
-	frame->set_value(Math::snapped(p_pos, _get_editor_step()));
+	frame->set_value(track_editor->is_snap_timeline_enabled() ? Math::snapped(p_pos, _get_editor_step()) : p_pos);
 	updating = false;
 	_seek_value_changed(p_pos, p_timeline_only);
+}
+
+void AnimationPlayerEditor::_animation_update_key_frame() {
+	if (player) {
+		player->advance(0);
+	}
 }
 
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
@@ -1505,30 +1610,28 @@ void AnimationPlayerEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	ERR_FAIL_COND(p_ev.is_null());
 
 	Ref<InputEventKey> k = p_ev;
-	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->is_alt_pressed() && !k->is_ctrl_pressed() && !k->is_meta_pressed()) {
-		switch (k->get_keycode()) {
-			case Key::A: {
-				if (!k->is_shift_pressed()) {
-					_play_bw_from_pressed();
-				} else {
-					_play_bw_pressed();
-				}
-				accept_event();
-			} break;
-			case Key::S: {
-				_stop_pressed();
-				accept_event();
-			} break;
-			case Key::D: {
-				if (!k->is_shift_pressed()) {
-					_play_from_pressed();
-				} else {
-					_play_pressed();
-				}
-				accept_event();
-			} break;
-			default:
-				break;
+	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("animation_editor/stop_animation", p_ev)) {
+			_stop_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation", p_ev)) {
+			_play_from_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_backwards", p_ev)) {
+			_play_bw_from_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_start", p_ev)) {
+			_play_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/play_animation_from_end", p_ev)) {
+			_play_bw_pressed();
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/go_to_next_keyframe", p_ev)) {
+			_go_to_nearest_keyframe(false);
+			accept_event();
+		} else if (ED_IS_SHORTCUT("animation_editor/go_to_previous_keyframe", p_ev)) {
+			_go_to_nearest_keyframe(true);
+			accept_event();
 		}
 	}
 }
@@ -1824,6 +1927,10 @@ AnimationMixer *AnimationPlayerEditor::fetch_mixer_for_library() const {
 	return original_node;
 }
 
+Node *AnimationPlayerEditor::get_cached_root_node() const {
+	return Object::cast_to<Node>(ObjectDB::get_instance(cached_root_node_id));
+}
+
 bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 	bool is_valid = true;
 	if (!p_anim.is_valid()) {
@@ -1874,6 +1981,7 @@ bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
 void AnimationPlayerEditor::_bind_methods() {
 	// Needed for UndoRedo.
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(D_METHOD("_animation_update_key_frame"), &AnimationPlayerEditor::_animation_update_key_frame);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
 
@@ -1900,30 +2008,34 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 
+	HBoxContainer *playback_container = memnew(HBoxContainer);
+	playback_container->set_layout_direction(LAYOUT_DIRECTION_LTR);
+	hb->add_child(playback_container);
+
 	play_bw_from = memnew(Button);
-	play_bw_from->set_theme_type_variation("FlatButton");
-	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
-	hb->add_child(play_bw_from);
+	play_bw_from->set_theme_type_variation(SceneStringName(FlatButton));
+	play_bw_from->set_tooltip_text(TTR("Play Animation Backwards"));
+	playback_container->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
-	play_bw->set_theme_type_variation("FlatButton");
-	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
-	hb->add_child(play_bw);
+	play_bw->set_theme_type_variation(SceneStringName(FlatButton));
+	play_bw->set_tooltip_text(TTR("Play Animation Backwards from End"));
+	playback_container->add_child(play_bw);
 
 	stop = memnew(Button);
-	stop->set_theme_type_variation("FlatButton");
-	hb->add_child(stop);
-	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
+	stop->set_theme_type_variation(SceneStringName(FlatButton));
+	stop->set_tooltip_text(TTR("Pause/Stop Animation"));
+	playback_container->add_child(stop);
 
 	play = memnew(Button);
-	play->set_theme_type_variation("FlatButton");
-	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
-	hb->add_child(play);
+	play->set_theme_type_variation(SceneStringName(FlatButton));
+	play->set_tooltip_text(TTR("Play Animation from Start"));
+	playback_container->add_child(play);
 
 	play_from = memnew(Button);
-	play_from->set_theme_type_variation("FlatButton");
-	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
-	hb->add_child(play_from);
+	play_from->set_theme_type_variation(SceneStringName(FlatButton));
+	play_from->set_tooltip_text(TTR("Play Animation"));
+	playback_container->add_child(play_from);
 
 	frame = memnew(SpinBox);
 	hb->add_child(frame);
@@ -1972,7 +2084,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
-	autoplay->set_theme_type_variation("FlatButton");
+	autoplay->set_theme_type_variation(SceneStringName(FlatButton));
 	hb->add_child(autoplay);
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
 
@@ -1984,7 +2096,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(memnew(VSeparator));
 
 	onion_toggle = memnew(Button);
-	onion_toggle->set_theme_type_variation("FlatButton");
+	onion_toggle->set_theme_type_variation(SceneStringName(FlatButton));
 	onion_toggle->set_toggle_mode(true);
 	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
 	onion_toggle->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
@@ -2014,7 +2126,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(memnew(VSeparator));
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
@@ -2085,7 +2197,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_animation_selected));
 
 	frame->connect(SceneStringName(value_changed), callable_mp(this, &AnimationPlayerEditor::_seek_value_changed).bind(false));
-	scale->connect(SNAME("text_submitted"), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
+	scale->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationPlayerEditor::_scale_changed));
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2138,6 +2250,14 @@ void fragment() {
 }
 )");
 	RS::get_singleton()->material_set_shader(onion.capture.material->get_rid(), onion.capture.shader->get_rid());
+
+	ED_SHORTCUT("animation_editor/stop_animation", TTR("Pause/Stop Animation"), Key::S);
+	ED_SHORTCUT("animation_editor/play_animation", TTR("Play Animation"), Key::D);
+	ED_SHORTCUT("animation_editor/play_animation_backwards", TTR("Play Animation Backwards"), Key::A);
+	ED_SHORTCUT("animation_editor/play_animation_from_start", TTR("Play Animation from Start"), KeyModifierMask::SHIFT + Key::D);
+	ED_SHORTCUT("animation_editor/play_animation_from_end", TTR("Play Animation Backwards from End"), KeyModifierMask::SHIFT + Key::A);
+	ED_SHORTCUT("animation_editor/go_to_next_keyframe", TTR("Go to Next Keyframe"), KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::D);
+	ED_SHORTCUT("animation_editor/go_to_previous_keyframe", TTR("Go to Previous Keyframe"), KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::A);
 }
 
 AnimationPlayerEditor::~AnimationPlayerEditor() {
@@ -2165,7 +2285,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 		return;
 	}
 	te->_clear_selection();
-	te->insert_value_key(p_keyed, p_value, p_advance);
+	te->insert_value_key(p_keyed, p_advance);
 }
 
 void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
@@ -2311,4 +2431,25 @@ AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
 
 bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("AnimationTrackKeyEdit");
+}
+
+bool EditorInspectorPluginAnimationMarkerKeyEdit::can_handle(Object *p_object) {
+	return Object::cast_to<AnimationMarkerKeyEdit>(p_object) != nullptr;
+}
+
+void EditorInspectorPluginAnimationMarkerKeyEdit::parse_begin(Object *p_object) {
+	AnimationMarkerKeyEdit *amk = Object::cast_to<AnimationMarkerKeyEdit>(p_object);
+	ERR_FAIL_NULL(amk);
+
+	amk_editor = memnew(AnimationMarkerKeyEditEditor(amk->animation, amk->marker_name, amk->use_fps));
+	add_custom_control(amk_editor);
+}
+
+AnimationMarkerKeyEditEditorPlugin::AnimationMarkerKeyEditEditorPlugin() {
+	amk_plugin = memnew(EditorInspectorPluginAnimationMarkerKeyEdit);
+	EditorInspector::add_inspector_plugin(amk_plugin);
+}
+
+bool AnimationMarkerKeyEditEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("AnimationMarkerKeyEdit");
 }

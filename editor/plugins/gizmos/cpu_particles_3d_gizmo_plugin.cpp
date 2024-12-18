@@ -37,7 +37,7 @@
 #include "scene/3d/cpu_particles_3d.h"
 
 CPUParticles3DGizmoPlugin::CPUParticles3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particles", Color(0.8, 0.7, 0.4));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/particles");
 	create_material("particles_material", gizmo_color);
 	gizmo_color.a = MAX((gizmo_color.a - 0.2) * 0.02, 0.0);
 	create_material("particles_solid_material", gizmo_color);

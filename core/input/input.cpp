@@ -87,11 +87,50 @@ Input *Input::get_singleton() {
 
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
+
+	if (p_mode == mouse_mode) {
+		return;
+	}
+
+	// Allow to be set even if overridden, to see if the platform allows the mode.
 	set_mouse_mode_func(p_mode);
+	mouse_mode = get_mouse_mode_func();
+
+	if (mouse_mode_override_enabled) {
+		set_mouse_mode_func(mouse_mode_override);
+	}
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
-	return get_mouse_mode_func();
+	return mouse_mode;
+}
+
+void Input::set_mouse_mode_override_enabled(bool p_enabled) {
+	if (p_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+
+	mouse_mode_override_enabled = p_enabled;
+
+	if (p_enabled) {
+		set_mouse_mode_func(mouse_mode_override);
+		mouse_mode_override = get_mouse_mode_func();
+	} else {
+		set_mouse_mode_func(mouse_mode);
+	}
+}
+
+void Input::set_mouse_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX((int)p_mode, 5);
+
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+
+	if (mouse_mode_override_enabled) {
+		set_mouse_mode_func(p_mode);
+		mouse_mode_override = get_mouse_mode_func();
+	}
 }
 
 void Input::_bind_methods() {
@@ -197,7 +236,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
 			r_options->push_back(name.quote());
 		}
 	}
@@ -252,7 +291,31 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
+	if (disable_input) {
+		return false;
+	}
+
 	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+		return true;
+	}
+
+	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
+		if (E.value.cache.pressed) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Input::is_anything_pressed_except_mouse() const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
 		return true;
 	}
 
@@ -267,21 +330,41 @@ bool Input::is_anything_pressed() const {
 
 bool Input::is_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
 	return keys_pressed.has(p_keycode);
 }
 
 bool Input::is_physical_key_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
 	return physical_keys_pressed.has(p_keycode);
 }
 
 bool Input::is_key_label_pressed(Key p_keycode) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
 	return key_label_pressed.has(p_keycode);
 }
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
@@ -295,11 +378,21 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (disable_input) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -310,6 +403,11 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (disable_input) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -331,6 +429,11 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (disable_input) {
+		return false;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return false;
@@ -352,6 +455,11 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (disable_input) {
+		return 0.0f;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -366,6 +474,11 @@ float Input::get_action_strength(const StringName &p_action, bool p_exact) const
 
 float Input::get_action_raw_strength(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+
+	if (disable_input) {
+		return 0.0f;
+	}
+
 	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
 	if (!E) {
 		return 0.0f;
@@ -410,6 +523,11 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return 0;
+	}
+
 	JoyAxis c = _combine_device(p_axis, p_device);
 	if (_joy_axis.has(c)) {
 		return _joy_axis[c];
@@ -491,10 +609,9 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		for (int i = 0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
-				js.name = map_db[i].name;
 			}
 		}
-		js.mapping = mapping;
+		_set_joypad_mapping(js, mapping);
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -513,21 +630,49 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!gravity_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
+	}
+#endif
+
 	return gravity;
 }
 
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!accelerometer_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
+	}
+#endif
+
 	return accelerometer;
 }
 
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!magnetometer_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
+	}
+#endif
+
 	return magnetometer;
 }
 
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
+
+#ifdef DEBUG_ENABLED
+	if (!gyroscope_enabled) {
+		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
+	}
+#endif
+
 	return gyroscope;
 }
 
@@ -662,6 +807,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_canceled(st->is_canceled());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
+				button_event->set_window_id(st->get_window_id());
 
 				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
@@ -699,6 +845,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_velocity(sd->get_velocity());
 			motion_event->set_screen_velocity(sd->get_screen_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
+			motion_event->set_window_id(sd->get_window_id());
 
 			_parse_input_event_impl(motion_event, true);
 		}
@@ -906,7 +1053,7 @@ void Input::action_release(const StringName &p_action) {
 
 	// Create or retrieve existing action.
 	ActionState &action_state = action_states[p_action];
-	action_state.cache.pressed = 0;
+	action_state.cache.pressed = false;
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
@@ -1558,7 +1705,7 @@ void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {
-				joy.mapping = map_db.size() - 1;
+				_set_joypad_mapping(joy, map_db.size() - 1);
 			}
 		}
 	}
@@ -1573,9 +1720,20 @@ void Input::remove_joy_mapping(const String &p_guid) {
 	for (KeyValue<int, Joypad> &E : joy_names) {
 		Joypad &joy = E.value;
 		if (joy.uid == p_guid) {
-			joy.mapping = -1;
+			_set_joypad_mapping(joy, -1);
 		}
 	}
+}
+
+void Input::_set_joypad_mapping(Joypad &p_js, int p_map_index) {
+	if (p_map_index != fallback_mapping && p_map_index >= 0 && p_map_index < map_db.size() && p_js.uid != "__XINPUT_DEVICE__") {
+		// Prefer the joypad name defined in the mapping.
+		// Exceptions:
+		// * On Windows for XInput devices the mapping would change the joypad's name to a collective name.
+		// * A fallback mapping is not allowed to override the joypad's name.
+		p_js.name = map_db[p_map_index].name;
+	}
+	p_js.mapping = p_map_index;
 }
 
 void Input::set_fallback_mapping(const String &p_guid) {
@@ -1634,6 +1792,14 @@ int Input::get_unused_joy_id() {
 	return -1;
 }
 
+void Input::set_disable_input(bool p_disable) {
+	disable_input = p_disable;
+}
+
+bool Input::is_input_disabled() const {
+	return disable_input;
+}
+
 Input::Input() {
 	singleton = this;
 
@@ -1683,6 +1849,11 @@ Input::Input() {
 		// Always use standard behavior in the editor.
 		legacy_just_pressed_behavior = false;
 	}
+
+	accelerometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_accelerometer", false);
+	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
+	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
+	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
 }
 
 Input::~Input() {

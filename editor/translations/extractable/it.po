@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "Pick a color from the application window."
+msgstr "Seleziona un colore dalla finestra applicativa."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -33,9 +36,6 @@ msgid ""
 msgstr ""
 "Colore: #%s\n"
 "LMB: Imposta il colore"
-
-msgid "Pick a color from the application window."
-msgstr "Seleziona un colore dalla finestra applicativa."
 
 msgid "Add current color as a preset."
 msgstr "Aggiungi il colore corrente come preset."

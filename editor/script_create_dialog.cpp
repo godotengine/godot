@@ -45,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
+#include "scene/theme/theme_db.h"
 
 static String _get_parent_class_of_script(const String &p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
@@ -100,7 +101,7 @@ static Vector<String> _get_hierarchy(const String &p_class_name) {
 	}
 
 	if (hierarchy.is_empty()) {
-		if (p_class_name.is_valid_identifier()) {
+		if (p_class_name.is_valid_ascii_identifier()) {
 			hierarchy.push_back(p_class_name);
 		}
 		hierarchy.push_back("Object");
@@ -111,15 +112,7 @@ static Vector<String> _get_hierarchy(const String &p_class_name) {
 
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED: {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				Ref<Texture2D> language_icon = get_editor_theme_icon(ScriptServer::get_language(i)->get_type());
-				if (language_icon.is_valid()) {
-					language_menu->set_item_icon(i, language_icon);
-				}
-			}
-
+		case NOTIFICATION_ENTER_TREE: {
 			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 			if (!last_language.is_empty()) {
 				for (int i = 0; i < language_menu->get_item_count(); i++) {
@@ -131,21 +124,43 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-			if (EditorSettings::get_singleton()->has_meta("script_setup_use_script_templates")) {
-				is_using_templates = bool(EditorSettings::get_singleton()->get_meta("script_setup_use_script_templates"));
-				use_templates->set_pressed(is_using_templates);
+			is_using_templates = EDITOR_DEF("_script_setup_use_script_templates", false);
+			use_templates->set_pressed(is_using_templates);
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+
+			EditorData &ed = EditorNode::get_editor_data();
+
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				// Check if the extension has an icon first.
+				String script_type = ScriptServer::get_language(i)->get_type();
+				Ref<Texture2D> language_icon = get_editor_theme_icon(script_type);
+				if (language_icon.is_null() || language_icon == ThemeDB::get_singleton()->get_fallback_icon()) {
+					// The theme doesn't have an icon for this language, ask the extensions.
+					Ref<Texture2D> extension_language_icon = ed.extension_class_get_icon(script_type);
+					if (extension_language_icon.is_valid()) {
+						language_menu->get_popup()->set_item_icon_max_width(i, icon_size);
+						language_icon = extension_language_icon;
+					}
+				}
+
+				if (language_icon.is_valid()) {
+					language_menu->set_item_icon(i, language_icon);
+				}
 			}
 
-			path_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
-			parent_browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
-			parent_search_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
+			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+			parent_browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+			parent_search_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
 		} break;
 	}
 }
 
 void ScriptCreateDialog::_path_hbox_sorted() {
 	if (is_visible()) {
-		int filename_start_pos = file_path->get_text().rfind("/") + 1;
+		int filename_start_pos = file_path->get_text().rfind_char('/') + 1;
 		int filename_end_pos = file_path->get_text().get_basename().length();
 
 		if (!is_built_in) {
@@ -297,12 +312,9 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 			EditorSettings::get_singleton()->set_project_metadata("script_setup", "templates_dictionary", dic_templates_project);
 		} else {
 			// Save template info to editor dictionary (not a project template).
-			Dictionary dic_templates;
-			if (EditorSettings::get_singleton()->has_meta("script_setup_templates_dictionary")) {
-				dic_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup_templates_dictionary");
-			}
+			Dictionary dic_templates = EDITOR_GET("_script_setup_templates_dictionary");
 			dic_templates[parent_name->get_text()] = sinfo.get_hash();
-			EditorSettings::get_singleton()->set_meta("script_setup_templates_dictionary", dic_templates);
+			EditorSettings::get_singleton()->set("_script_setup_templates_dictionary", dic_templates);
 			// Remove template from project dictionary as we last used an editor level template.
 			Dictionary dic_templates_project = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
 			if (dic_templates_project.has(parent_name->get_text())) {
@@ -363,6 +375,7 @@ void ScriptCreateDialog::_create_new() {
 			alert->popup_centered();
 			return;
 		}
+		EditorNode::get_singleton()->ensure_uid_file(lpath);
 	}
 
 	emit_signal(SNAME("script_created"), scr);
@@ -415,7 +428,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_use_template_pressed() {
 	is_using_templates = use_templates->is_pressed();
-	EditorSettings::get_singleton()->set_meta("script_setup_use_script_templates", is_using_templates);
+	EditorSettings::get_singleton()->set("_script_setup_use_script_templates", is_using_templates);
 	validation_panel->update();
 }
 
@@ -509,10 +522,7 @@ void ScriptCreateDialog::_update_template_menu() {
 	if (is_language_using_templates) {
 		// Get the latest templates used for each type of node from project settings then global settings.
 		Dictionary last_local_templates = EditorSettings::get_singleton()->get_project_metadata("script_setup", "templates_dictionary", Dictionary());
-		Dictionary last_global_templates;
-		if (EditorSettings::get_singleton()->has_meta("script_setup_templates_dictionary")) {
-			last_global_templates = (Dictionary)EditorSettings::get_singleton()->get_meta("script_setup_templates_dictionary");
-		}
+		Dictionary last_global_templates = EDITOR_GET("_script_setup_templates_dictionary");
 		String inherits_base_type = parent_name->get_text();
 
 		// If it inherits from a script, get its parent class first.
@@ -734,7 +744,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	List<String> comment_delimiters;
 	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
-		if (!script_delimiter.contains(" ")) {
+		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;
 			break;
 		}
@@ -825,6 +835,8 @@ void ScriptCreateDialog::_bind_methods() {
 }
 
 ScriptCreateDialog::ScriptCreateDialog() {
+	EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+
 	/* Main Controls */
 
 	GridContainer *gc = memnew(GridContainer);
@@ -855,6 +867,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	language_menu = memnew(OptionButton);
 	language_menu->set_custom_minimum_size(Size2(350, 0) * EDSCALE);
+	language_menu->set_expand_icon(true);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);

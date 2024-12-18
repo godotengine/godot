@@ -157,9 +157,13 @@ void CanvasItemMaterial::flush_changes() {
 }
 
 void CanvasItemMaterial::_queue_shader_change() {
+	if (!_is_initialized()) {
+		return;
+	}
+
 	MutexLock lock(material_mutex);
 
-	if (_is_initialized() && !element.in_list()) {
+	if (!element.in_list()) {
 		dirty_materials.add(&element);
 	}
 }
@@ -274,6 +278,8 @@ void CanvasItemMaterial::_bind_methods() {
 
 CanvasItemMaterial::CanvasItemMaterial() :
 		element(this) {
+	_set_material(RS::get_singleton()->material_create());
+
 	set_particles_anim_h_frames(1);
 	set_particles_anim_v_frames(1);
 	set_particles_anim_loop(false);

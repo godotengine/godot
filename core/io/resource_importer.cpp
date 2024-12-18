@@ -35,6 +35,8 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
+ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
+
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
@@ -73,7 +75,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		if (err == ERR_FILE_EOF) {
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT(vformat("ResourceFormatImporter::load - %s.import:%d error: %s.", p_path, lines, error_text));
 			return err;
 		}
 
@@ -137,6 +139,20 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 }
 
 Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+#ifdef TOOLS_ENABLED
+	// When loading a resource on startup, we use the load_on_startup callback,
+	// which executes the loading in the EditorFileSystem. It can reimport
+	// the resource and retry the load, allowing the resource to be loaded
+	// even if it is not yet imported.
+	if (ResourceImporter::load_on_startup != nullptr) {
+		return ResourceImporter::load_on_startup(this, p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
+	}
+#endif
+
+	return load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, false);
+}
+
+Ref<Resource> ResourceFormatImporter::load_internal(const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode, bool p_silence_errors) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat);
 
@@ -146,6 +162,13 @@ Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p
 		}
 
 		return Ref<Resource>();
+	}
+
+	if (p_silence_errors) {
+		// Note: Some importers do not create files in the .godot folder, so we need to check if the path is empty.
+		if (!pat.path.is_empty() && !FileAccess::exists(pat.path)) {
+			return Ref<Resource>();
+		}
 	}
 
 	Ref<Resource> res = ResourceLoader::_load(pat.path, p_path, pat.type, p_cache_mode, r_error, p_use_sub_threads, r_progress);
@@ -312,7 +335,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 		if (err == ERR_FILE_EOF) {
 			return;
 		} else if (err != OK) {
-			ERR_PRINT("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
+			ERR_PRINT(vformat("ResourceFormatImporter::get_internal_resource_path_list - %s.import:%d error: %s.", p_path, lines, error_text));
 			return;
 		}
 
@@ -362,6 +385,27 @@ ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) c
 	}
 
 	return pat.uid;
+}
+
+bool ResourceFormatImporter::has_custom_uid_support() const {
+	return true;
+}
+
+Error ResourceFormatImporter::get_resource_import_info(const String &p_path, StringName &r_type, ResourceUID::ID &r_uid, String &r_import_group_file) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat);
+
+	if (err == OK) {
+		r_type = pat.type;
+		r_uid = pat.uid;
+		r_import_group_file = pat.group_file;
+	} else {
+		r_type = "";
+		r_uid = ResourceUID::INVALID_ID;
+		r_import_group_file = "";
+	}
+
+	return err;
 }
 
 Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) const {
@@ -467,7 +511,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 
 	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == pat.importer) {
-			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
+			if (!importers[i]->are_import_settings_valid(p_path, pat.metadata)) { //importer thinks this is not valid
 				return false;
 			}
 		}

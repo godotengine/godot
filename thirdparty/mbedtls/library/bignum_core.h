@@ -90,6 +90,27 @@
 #define GET_BYTE(X, i)                                \
     (((X)[(i) / ciL] >> (((i) % ciL) * 8)) & 0xff)
 
+/* Constants to identify whether a value is public or secret. If a parameter is marked as secret by
+ * this constant, the function must be constant time with respect to the parameter.
+ *
+ * This is only needed for functions with the _optionally_safe postfix. All other functions have
+ * fixed behavior that can't be changed at runtime and are constant time with respect to their
+ * parameters as prescribed by their documentation or by conventions in their module's documentation.
+ *
+ * Parameters should be named X_public where X is the name of the
+ * corresponding input parameter.
+ *
+ * Implementation should always check using
+ *  if (X_public == MBEDTLS_MPI_IS_PUBLIC) {
+ *      // unsafe path
+ *  } else {
+ *      // safe path
+ *  }
+ * not the other way round, in order to prevent misuse. (This is, if a value
+ * other than the two below is passed, default to the safe path.) */
+#define MBEDTLS_MPI_IS_PUBLIC  0x2a2a2a2a
+#define MBEDTLS_MPI_IS_SECRET  0
+
 /** Count leading zero bits in a given integer.
  *
  * \warning     The result is undefined if \p a == 0
@@ -605,6 +626,42 @@ int mbedtls_mpi_core_random(mbedtls_mpi_uint *X,
 size_t mbedtls_mpi_core_exp_mod_working_limbs(size_t AN_limbs, size_t E_limbs);
 
 /**
+ * \brief            Perform a modular exponentiation with public or secret exponent:
+ *                   X = A^E mod N, where \p A is already in Montgomery form.
+ *
+ * \warning          This function is not constant time with respect to \p E (the exponent).
+ *
+ * \p X may be aliased to \p A, but not to \p RR or \p E, even if \p E_limbs ==
+ * \p AN_limbs.
+ *
+ * \param[out] X     The destination MPI, as a little endian array of length
+ *                   \p AN_limbs.
+ * \param[in] A      The base MPI, as a little endian array of length \p AN_limbs.
+ *                   Must be in Montgomery form.
+ * \param[in] N      The modulus, as a little endian array of length \p AN_limbs.
+ * \param AN_limbs   The number of limbs in \p X, \p A, \p N, \p RR.
+ * \param[in] E      The exponent, as a little endian array of length \p E_limbs.
+ * \param E_limbs    The number of limbs in \p E.
+ * \param[in] RR     The precomputed residue of 2^{2*biL} modulo N, as a little
+ *                   endian array of length \p AN_limbs.
+ * \param[in,out] T  Temporary storage of at least the number of limbs returned
+ *                   by `mbedtls_mpi_core_exp_mod_working_limbs()`.
+ *                   Its initial content is unused and its final content is
+ *                   indeterminate.
+ *                   It must not alias or otherwise overlap any of the other
+ *                   parameters.
+ *                   It is up to the caller to zeroize \p T when it is no
+ *                   longer needed, and before freeing it if it was dynamically
+ *                   allocated.
+ */
+void mbedtls_mpi_core_exp_mod_unsafe(mbedtls_mpi_uint *X,
+                                     const mbedtls_mpi_uint *A,
+                                     const mbedtls_mpi_uint *N, size_t AN_limbs,
+                                     const mbedtls_mpi_uint *E, size_t E_limbs,
+                                     const mbedtls_mpi_uint *RR,
+                                     mbedtls_mpi_uint *T);
+
+/**
  * \brief            Perform a modular exponentiation with secret exponent:
  *                   X = A^E mod N, where \p A is already in Montgomery form.
  *
@@ -759,5 +816,18 @@ void mbedtls_mpi_core_from_mont_rep(mbedtls_mpi_uint *X,
                                     size_t AN_limbs,
                                     mbedtls_mpi_uint mm,
                                     mbedtls_mpi_uint *T);
+
+/*
+ * Can't define thread local variables with our abstraction layer: do nothing if threading is on.
+ */
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+extern int mbedtls_mpi_optionally_safe_codepath;
+
+static inline void mbedtls_mpi_optionally_safe_codepath_reset(void)
+{
+    // Set to a default that is neither MBEDTLS_MPI_IS_PUBLIC nor MBEDTLS_MPI_IS_SECRET
+    mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_PUBLIC + MBEDTLS_MPI_IS_SECRET + 1;
+}
+#endif
 
 #endif /* MBEDTLS_BIGNUM_CORE_H */

@@ -100,13 +100,15 @@ void ProjectExportDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
-			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
+			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
+			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
+			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_READY: {
-			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
-			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
+			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
+			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
+			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
 		} break;
@@ -248,6 +250,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
 		sections->hide();
+		patches->clear();
 		export_error->hide();
 		export_templates_error->hide();
 		return;
@@ -291,6 +294,21 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	patches->clear();
+	TreeItem *patch_root = patches->create_item();
+	Vector<String> patch_list = current->get_patches();
+	for (int i = 0; i < patch_list.size(); i++) {
+		TreeItem *patch = patches->create_item(patch_root);
+		const String &patch_path = patch_list[i];
+		patch->set_cell_mode(0, TreeItem::CELL_MODE_STRING);
+		patch->set_editable(0, true);
+		patch->set_text(0, patch_path.get_file());
+		patch->set_tooltip_text(0, patch_path);
+		patch->set_metadata(0, i);
+		patch->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0);
+		patch->add_button(0, get_editor_theme_icon(SNAME("FileBrowse")), 1);
+	}
 
 	_fill_resource_tree();
 
@@ -364,10 +382,16 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool enc_pck_mode = current->get_enc_pck();
 	enc_pck->set_pressed(enc_pck_mode);
 
+	uint64_t seed = current->get_seed();
+	if (!updating_seed) {
+		seed_input->set_text(itos(seed));
+	}
+
 	enc_directory->set_disabled(!enc_pck_mode);
 	enc_in_filters->set_editable(enc_pck_mode);
 	enc_ex_filters->set_editable(enc_pck_mode);
 	script_key->set_editable(enc_pck_mode);
+	seed_input->set_editable(enc_pck_mode);
 
 	bool enc_directory_mode = current->get_enc_directory();
 	enc_directory->set_pressed(enc_directory_mode);
@@ -573,6 +597,21 @@ void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
 	_update_current_preset();
 }
 
+void ProjectExportDialog::_seed_input_changed(const String &p_text) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_seed(seed_input->get_text().to_int());
+
+	updating_seed = true;
+	_update_current_preset();
+	updating_seed = false;
+}
+
 void ProjectExportDialog::_enc_directory_changed(bool p_pressed) {
 	if (updating) {
 		return;
@@ -664,7 +703,14 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
+	preset->set_patches(current->get_patches());
 	preset->set_custom_features(current->get_custom_features());
+	preset->set_enc_in_filter(current->get_enc_in_filter());
+	preset->set_enc_ex_filter(current->get_enc_ex_filter());
+	preset->set_enc_pck(current->get_enc_pck());
+	preset->set_enc_directory(current->get_enc_directory());
+	preset->set_script_encryption_key(current->get_script_encryption_key());
+	preset->set_script_export_mode(current->get_script_export_mode());
 
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
 		preset->set(E.key, E.value);
@@ -713,14 +759,29 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			drag->add_child(tr);
 			Label *label = memnew(Label);
 			label->set_text(presets->get_item_text(pos));
+			label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
 			drag->add_child(label);
 
 			presets->set_drag_preview(drag);
 
 			return d;
 		}
-	}
+	} else if (p_from == patches) {
+		TreeItem *item = patches->get_item_at_position(p_point);
 
+		if (item) {
+			int item_metadata = item->get_metadata(0);
+			Dictionary d;
+			d["type"] = "export_patch";
+			d["patch"] = item_metadata;
+
+			Label *label = memnew(Label);
+			label->set_text(item->get_text(0));
+			patches->set_drag_preview(label);
+
+			return d;
+		}
+	}
 	return Variant();
 }
 
@@ -734,6 +795,18 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 		if (presets->get_item_at_position(p_point, true) < 0 && !presets->is_pos_at_end_of_items(p_point)) {
 			return false;
 		}
+	} else if (p_from == patches) {
+		Dictionary d = p_data;
+		if (d.get("type", "") != "export_patch") {
+			return false;
+		}
+
+		TreeItem *item = patches->get_item_at_position(p_point);
+		if (!item) {
+			return false;
+		}
+
+		patches->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
 	}
 
 	return true;
@@ -770,6 +843,31 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		} else {
 			_edit_preset(presets->get_item_count() - 1);
 		}
+	} else if (p_from == patches) {
+		Dictionary d = p_data;
+		int from_pos = d["patch"];
+
+		TreeItem *item = patches->get_item_at_position(p_point);
+		if (!item) {
+			return;
+		}
+
+		int to_pos = item->get_metadata(0);
+
+		if (patches->get_drop_section_at_position(p_point) > 0) {
+			to_pos++;
+		}
+
+		if (to_pos > from_pos) {
+			to_pos--;
+		}
+
+		Ref<EditorExportPreset> preset = get_current_preset();
+		String patch = preset->get_patch(from_pos);
+		preset->remove_patch(from_pos);
+		preset->add_patch(patch, to_pos);
+
+		_update_current_preset();
 	}
 }
 
@@ -903,7 +1001,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		if (p_export_filter == EditorExportPreset::EXPORT_SELECTED_SCENES && type != "PackedScene") {
 			continue;
 		}
-		if (type == "TextFile") {
+		if (type == "TextFile" || type == "OtherFile") {
 			continue;
 		}
 
@@ -1025,6 +1123,75 @@ void ProjectExportDialog::_set_file_export_mode(int p_id) {
 	_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
 }
 
+void ProjectExportDialog::_patch_tree_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+
+	patch_index = ti->get_metadata(0);
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	if (p_id == 0) {
+		Vector<String> preset_patches = current->get_patches();
+		ERR_FAIL_INDEX(patch_index, preset_patches.size());
+		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), preset_patches[patch_index].get_file()));
+		patch_erase->popup_centered();
+	} else {
+		patch_dialog->popup_file_dialog();
+	}
+}
+
+void ProjectExportDialog::_patch_tree_item_edited() {
+	TreeItem *item = patches->get_edited();
+	if (!item) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	int index = item->get_metadata(0);
+	String patch_path = item->get_text(0);
+
+	current->set_patch(index, patch_path);
+	item->set_tooltip_text(0, patch_path);
+}
+
+void ProjectExportDialog::_patch_file_selected(const String &p_path) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	String relative_path = ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path);
+
+	Vector<String> preset_patches = current->get_patches();
+	if (patch_index >= preset_patches.size()) {
+		current->add_patch(relative_path);
+	} else {
+		current->set_patch(patch_index, relative_path);
+	}
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_delete_confirmed() {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	Vector<String> preset_patches = current->get_patches();
+	if (patch_index < preset_patches.size()) {
+		current->remove_patch(patch_index);
+		_update_current_preset();
+	}
+}
+
+void ProjectExportDialog::_patch_add_pack_pressed() {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	patch_index = current->get_patches().size();
+	patch_dialog->popup_file_dialog();
+}
+
 void ProjectExportDialog::_export_pck_zip() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
@@ -1043,11 +1210,23 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 
 	const Dictionary &fd_option = export_pck_zip->get_selected_options();
 	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
+	bool export_as_patch = fd_option.get(TTR("Export As Patch"), true);
+
+	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", export_debug);
+	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_as_patch", export_as_patch);
 
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_debug, p_path);
+		if (export_as_patch) {
+			platform->export_zip_patch(current, export_debug, p_path);
+		} else {
+			platform->export_zip(current, export_debug, p_path);
+		}
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_debug, p_path);
+		if (export_as_patch) {
+			platform->export_pack_patch(current, export_debug, p_path);
+		} else {
+			platform->export_pack(current, export_debug, p_path);
+		}
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
@@ -1072,10 +1251,10 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 	if (invalid_path) {
 		export_project->get_ok_button()->set_disabled(true);
-		export_project->get_line_edit()->disconnect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->disconnect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	} else {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 }
 
@@ -1108,9 +1287,9 @@ void ProjectExportDialog::_export_project() {
 	// with _validate_export_path.
 	// FIXME: This is a hack, we should instead change EditorFileDialog to allow
 	// disabling validation by the "text_submitted" signal.
-	if (!export_project->get_line_edit()->is_connected("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
+	if (!export_project->get_line_edit()->is_connected(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted))) {
 		export_project->get_ok_button()->set_disabled(false);
-		export_project->get_line_edit()->connect("text_submitted", callable_mp(export_project, &EditorFileDialog::_file_submitted));
+		export_project->get_line_edit()->connect(SceneStringName(text_submitted), callable_mp(export_project, &EditorFileDialog::_file_submitted));
 	}
 
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -1135,6 +1314,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	Dictionary fd_option = export_project->get_selected_options();
 	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
 
+	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", export_debug);
+
 	Error err = platform->export_project(current, export_debug, current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
@@ -1147,10 +1328,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 }
 
 void ProjectExportDialog::_export_all_dialog() {
-#ifndef ANDROID_ENABLED
 	export_all_dialog->show();
 	export_all_dialog->popup_centered(Size2(300, 80));
-#endif
 }
 
 void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
@@ -1243,6 +1422,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
+	presets->set_theme_type_variation("ItemListSecondary");
 	presets->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(presets, ProjectExportDialog);
 	mc->add_child(presets);
@@ -1387,6 +1567,40 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
+	// Patch packages.
+
+	VBoxContainer *patch_vb = memnew(VBoxContainer);
+	sections->add_child(patch_vb);
+	patch_vb->set_name(TTR("Patches"));
+
+	patches = memnew(Tree);
+	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patches->set_hide_root(true);
+	patches->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	patches->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_patch_tree_button_clicked));
+	patches->connect("item_edited", callable_mp(this, &ProjectExportDialog::_patch_tree_item_edited));
+	SET_DRAG_FORWARDING_GCD(patches, ProjectExportDialog);
+	patches->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
+	patch_vb->add_margin_child(TTR("Base Packs:"), patches, true);
+
+	patch_dialog = memnew(EditorFileDialog);
+	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
+	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_file_selected));
+	add_child(patch_dialog);
+
+	patch_erase = memnew(ConfirmationDialog);
+	patch_erase->set_ok_button_text(TTR("Delete"));
+	patch_erase->connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_patch_delete_confirmed));
+	add_child(patch_erase);
+
+	patch_add_btn = memnew(Button);
+	patch_add_btn->set_text(TTR("Add Pack"));
+	patch_add_btn->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	patch_add_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_patch_add_pack_pressed));
+	patch_vb->add_child(patch_add_btn);
+
 	// Feature tags.
 
 	VBoxContainer *feature_vb = memnew(VBoxContainer);
@@ -1412,12 +1626,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_scroll_container->add_child(sec_vb);
 
 	enc_pck = memnew(CheckButton);
-	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
+	enc_pck->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
 	enc_pck->set_text(TTR("Encrypt Exported PCK"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
-	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
+	enc_directory->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
 	enc_directory->set_text(TTR("Encrypt Index (File Names and Info)"));
 	sec_vb->add_child(enc_directory);
 
@@ -1441,6 +1655,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hexadecimal):"), script_key);
 	sec_vb->add_child(script_key_error);
 	sections->add_child(sec_scroll_container);
+
+	seed_input = memnew(LineEdit);
+	seed_input->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_seed_input_changed));
+	sec_vb->add_margin_child(TTR("Initialization vector seed"), seed_input);
 
 	Label *sec_info = memnew(Label);
 	sec_info->set_text(TTR("Note: Encryption key needs to be stored in the binary,\nyou need to build the export templates from source."));
@@ -1491,13 +1709,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	set_ok_button_text(TTR("Export PCK/ZIP..."));
 	get_ok_button()->set_tooltip_text(TTR("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
 	get_ok_button()->set_disabled(true);
-#ifdef ANDROID_ENABLED
-	export_button = memnew(Button);
-	export_button->hide();
-#else
+
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTR("Export the project as a playable build (Godot executable and project data) for the selected preset."));
-#endif
 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
@@ -1510,14 +1724,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
-#ifdef ANDROID_ENABLED
-	export_all_dialog->hide();
 
-	export_all_button = memnew(Button);
-	export_all_button->hide();
-#else
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-#endif
 	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
@@ -1578,8 +1786,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
 	export_project->get_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_validate_export_path));
 
-	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
-	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);
+	export_project->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
+	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
+	export_pck_zip->add_option(TTR("Export As Patch"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_as_patch", true));
 
 	set_hide_on_ok(false);
 

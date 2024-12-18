@@ -113,6 +113,9 @@ private:
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
 	String line_number_padding = " ";
+	HashMap<int, RID> line_number_text_cache;
+	void _clear_line_number_text_cache();
+	void _update_line_number_gutter_width();
 	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
@@ -230,10 +233,16 @@ private:
 
 	/* Symbol lookup */
 	bool symbol_lookup_on_click_enabled = false;
+	Point2i symbol_lookup_pos; // Column and line.
+	String symbol_lookup_new_word;
+	String symbol_lookup_word;
 
-	String symbol_lookup_new_word = "";
-	String symbol_lookup_word = "";
-	Point2i symbol_lookup_pos;
+	/* Symbol tooltip */
+	bool symbol_tooltip_on_hover_enabled = false;
+	Point2i symbol_tooltip_pos; // Column and line.
+	String symbol_tooltip_word;
+	Timer *symbol_tooltip_timer = nullptr;
+	void _on_symbol_tooltip_timer_timeout();
 
 	/* Visual */
 	struct ThemeCache {
@@ -245,15 +254,16 @@ private:
 		Ref<Texture2D> can_fold_code_region_icon;
 		Ref<Texture2D> folded_code_region_icon;
 		Ref<Texture2D> folded_eol_icon;
+		Ref<Texture2D> completion_color_bg;
 
 		Color breakpoint_color = Color(1, 1, 1);
-		Ref<Texture2D> breakpoint_icon = Ref<Texture2D>();
+		Ref<Texture2D> breakpoint_icon;
 
 		Color bookmark_color = Color(1, 1, 1);
-		Ref<Texture2D> bookmark_icon = Ref<Texture2D>();
+		Ref<Texture2D> bookmark_icon;
 
 		Color executing_line_color = Color(1, 1, 1);
-		Ref<Texture2D> executing_line_icon = Ref<Texture2D>();
+		Ref<Texture2D> executing_line_icon;
 
 		Color line_number_color = Color(1, 1, 1);
 
@@ -299,6 +309,8 @@ private:
 	void _lines_edited_from(int p_from_line, int p_to_line);
 	void _text_set();
 	void _text_changed();
+
+	void _apply_project_settings();
 
 protected:
 	void _notification(int p_what);
@@ -492,6 +504,10 @@ public:
 	String get_text_with_cursor_char(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
+
+	/* Symbol tooltip */
+	void set_symbol_tooltip_on_hover_enabled(bool p_enabled);
+	bool is_symbol_tooltip_on_hover_enabled() const;
 
 	/* Text manipulation */
 	void move_lines_up();

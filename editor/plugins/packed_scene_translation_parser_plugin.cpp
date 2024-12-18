@@ -83,9 +83,8 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 			int idx_last = atr_owners.size() - 1;
 			if (idx_last > 0 && !parent_path.begins_with(atr_owners[idx_last].first)) {
-				// Switch to the previous auto translation owner this was nested in, if that was the case.
+				// Exit from the current owner nesting into the previous one.
 				atr_owners.remove_at(idx_last);
-				idx_last -= 1;
 			}
 
 			if (property == "auto_translate_mode") {
@@ -106,7 +105,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
 		if (!auto_translate_mode_found) {
 			int idx_last = atr_owners.size() - 1;
-			if (idx_last > 0 && atr_owners[idx_last].first == parent_path) {
+			if (idx_last > 0 && parent_path.begins_with(atr_owners[idx_last].first)) {
 				auto_translating = atr_owners[idx_last].second;
 			} else {
 				atr_owners.push_back(Pair(state->get_node_path(i), true));

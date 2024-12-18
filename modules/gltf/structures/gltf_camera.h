@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 
 class Camera3D;
+class GLTFObjectModelProperty;
 
 // Reference and test file:
 // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md
@@ -42,8 +43,8 @@ class GLTFCamera : public Resource {
 	GDCLASS(GLTFCamera, Resource);
 
 private:
-	// GLTF has no default camera values, they should always be specified in
-	// the GLTF file. Here we default to Godot's default camera settings.
+	// glTF has no default camera values, they should always be specified in
+	// the glTF file. Here we default to Godot's default camera settings.
 	bool perspective = true;
 	real_t fov = Math::deg_to_rad(75.0);
 	real_t size_mag = 0.5;
@@ -54,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static void set_fov_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop);
+
 	bool get_perspective() const { return perspective; }
 	void set_perspective(bool p_val) { perspective = p_val; }
 	real_t get_fov() const { return fov; }

@@ -1,6 +1,6 @@
 # Properly detect languages on Github
-*.h linguist-language=cpp
-*.inc linguist-language=cpp
+*.h linguist-language=C++
+*.inc linguist-language=C++
 thirdparty/* linguist-vendored
 
 # Normalize EOL for all files that Git considers text files
