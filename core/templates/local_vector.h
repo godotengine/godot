@@ -31,11 +31,13 @@
 #ifndef LOCAL_VECTOR_H
 #define LOCAL_VECTOR_H
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
+#include <cstring>
 #include <initializer_list>
 #include <type_traits>
 
@@ -48,20 +50,30 @@ private:
 	U capacity = 0;
 	T *data = nullptr;
 
-public:
-	T *ptr() {
-		return data;
+protected:
+	_FORCE_INLINE_ void realloc_more(U p_size) {
+		CRASH_COND_MSG(p_size <= capacity, "Precondition for realloc_more not met");
+
+		T *p_data = (T *)memrealloc(data, p_size * sizeof(T));
+		if (likely(p_data)) {
+			data = p_data;
+			capacity = p_size;
+		} else {
+			CRASH_NOW_MSG(error_names[ERR_OUT_OF_MEMORY]);
+		}
 	}
 
-	const T *ptr() const {
-		return data;
-	}
+public:
+	T *ptr() { return data; }
+	const T *ptr() const { return data; }
 
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {
-			capacity = tight ? (capacity + 1) : MAX((U)1, capacity << 1);
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+			if constexpr (tight) {
+				realloc_more(capacity + 1);
+			} else {
+				realloc_more(MAX((U)1, capacity << 1));
+			}
 		}
 
 		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
@@ -73,9 +85,13 @@ public:
 
 	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
-		count--;
-		for (U i = p_index; i < count; i++) {
-			data[i] = data[i + 1];
+		--count;
+		if constexpr (std::is_trivially_copyable_v<T> /* || force_trivial ?*/) {
+			memmove(&data[p_index], &data[p_index + 1], (count - p_index) * sizeof(T));
+		} else {
+			for (U i = p_index; i < count - 1; i++) {
+				data[i] = data[i + 1];
+			}
 		}
 		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 			data[count].~T();
@@ -138,11 +154,11 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
 	_FORCE_INLINE_ void reserve(U p_size) {
-		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
+		if constexpr (!tight) {
+			p_size = nearest_power_of_2_templated(p_size);
+		}
 		if (p_size > capacity) {
-			capacity = p_size;
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+			realloc_more(p_size);
 		}
 	}
 
@@ -156,11 +172,7 @@ public:
 			}
 			count = p_size;
 		} else if (p_size > count) {
-			if (unlikely(p_size > capacity)) {
-				capacity = tight ? p_size : nearest_power_of_2_templated(p_size);
-				data = (T *)memrealloc(data, capacity * sizeof(T));
-				CRASH_COND_MSG(!data, "Out of memory");
-			}
+			reserve(p_size);
 			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
 				for (U i = count; i < p_size; i++) {
 					memnew_placement(&data[i], T);
@@ -242,16 +254,20 @@ public:
 		return ConstIterator(ptr() + size());
 	}
 
-	void insert(U p_pos, T p_val) {
-		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
-		if (p_pos == count) {
+	void insert(U p_index, T p_val) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count + 1);
+		if (p_index == count) {
 			push_back(p_val);
 		} else {
 			resize(count + 1);
-			for (U i = count - 1; i > p_pos; i--) {
-				data[i] = data[i - 1];
+			if constexpr (std::is_trivially_copyable_v<T> /* || force_trivial ?*/) {
+				memmove(&data[p_index + 1], &data[p_index], (count - p_index - 1) * sizeof(T));
+			} else {
+				for (U i = count - 1; i > p_index; i--) {
+					data[i] = data[i - 1];
+				}
 			}
-			data[p_pos] = p_val;
+			data[p_index] = p_val;
 		}
 	}
 
