@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/metadata_exclusion.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 
@@ -1913,7 +1914,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (skip_editor && PE->get().name.begins_with("__editor")) {
 				continue;
 			}
-			if (PE->get().name == META_PROPERTY_MISSING_RESOURCES) {
+			if (is_meta_property_excluded_from_serialization(PE->get().name)) {
 				continue;
 			}
 

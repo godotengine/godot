@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/metadata_exclusion.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
 #include "core/templates/local_vector.h"
@@ -122,6 +123,18 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 	}
 
 	return remap_resource;
+}
+
+// A node-containing property can be impossible to correct if we're currently dealing with an out-of-date .NET project.
+// Store the node paths as-is and add metadata to ensure that the correct type will be assigned when the project is rebuilt.
+static void _dnp_add_unresolved_node_property(Node *p_dnp_node, const StringName &p_dnp_property) {
+	if (!p_dnp_node->has_meta(META_UNRESOLVED_NODE_PATH_PROPERTIES)) {
+		Array new_array_of_unresolved_properties;
+		new_array_of_unresolved_properties.set_typed(Variant::STRING_NAME, StringName(), Variant());
+		p_dnp_node->set_meta(META_UNRESOLVED_NODE_PATH_PROPERTIES, new_array_of_unresolved_properties);
+	}
+	Array unresolved_node_path_properties = p_dnp_node->get_meta(META_UNRESOLVED_NODE_PATH_PROPERTIES);
+	unresolved_node_path_properties.append(p_dnp_property);
 }
 
 Node *SceneState::instantiate(GenEditState p_edit_state) const {
@@ -527,37 +540,48 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 			bool valid;
 			Array array = dnp.base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, dnp.base->get_name()));
-			array = array.duplicate();
-
-			array.resize(paths.size());
-			for (int i = 0; i < array.size(); i++) {
-				array.set(i, dnp.base->get_node_or_null(paths[i]));
+			if (valid) {
+				array = array.duplicate();
+				array.resize(paths.size());
+				for (int i = 0; i < array.size(); i++) {
+					array.set(i, dnp.base->get_node_or_null(paths[i]));
+				}
+			} else {
+				array = paths.duplicate();
+				_dnp_add_unresolved_node_property(dnp.base, dnp.property);
 			}
+
 			dnp.base->set(dnp.property, array);
 		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
 			Dictionary paths = dnp.value;
 
+			bool convert_key = false;
+			bool convert_value = false;
+
 			bool valid;
 			Dictionary dict = dnp.base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, dnp.base->get_name()));
-			dict = dict.duplicate();
-			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
-					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
-			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
-					ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
-
-			for (int i = 0; i < paths.size(); i++) {
-				Variant key = paths.get_key_at_index(i);
-				if (convert_key) {
-					key = dnp.base->get_node_or_null(key);
+			if (valid) {
+				dict = dict.duplicate();
+				convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
+						ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
+				convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
+						ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
+				for (int i = 0; i < paths.size(); i++) {
+					Variant key = paths.get_key_at_index(i);
+					if (convert_key) {
+						key = dnp.base->get_node_or_null(key);
+					}
+					Variant value = paths.get_value_at_index(i);
+					if (convert_value) {
+						value = dnp.base->get_node_or_null(value);
+					}
+					dict[key] = value;
 				}
-				Variant value = paths.get_value_at_index(i);
-				if (convert_value) {
-					value = dnp.base->get_node_or_null(value);
-				}
-				dict[key] = value;
+			} else {
+				dict = paths.duplicate();
+				_dnp_add_unresolved_node_property(dnp.base, dnp.property);
 			}
+
 			dnp.base->set(dnp.property, dict);
 		} else {
 			dnp.base->set(dnp.property, dnp.base->get_node_or_null(dnp.value));
@@ -784,13 +808,17 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	Array pinned_props = _sanitize_node_pinned_properties(p_node);
 	Dictionary missing_resource_properties = p_node->get_meta(META_MISSING_RESOURCES, Dictionary());
+	Array unresolved_node_path_properties =
+			p_node->has_meta(META_UNRESOLVED_NODE_PATH_PROPERTIES)
+			? (Array)p_node->get_meta(META_UNRESOLVED_NODE_PATH_PROPERTIES)
+			: Array();
 
 	for (const PropertyInfo &E : plist) {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE) && !missing_resource_properties.has(E.name)) {
 			continue;
 		}
 
-		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
+		if (is_meta_property_excluded_from_serialization(E.name)) {
 			continue; // Ignore this property when packing.
 		}
 
@@ -805,7 +833,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		Variant value = p_node->get(name);
 		bool use_deferred_node_path_bit = false;
 
-		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+		if (unresolved_node_path_properties.find(name) != -1) {
+			use_deferred_node_path_bit = true;
+		} else if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
 			if (value.get_type() == Variant::OBJECT) {
 				if (Node *n = Object::cast_to<Node>(value)) {
 					value = p_node->get_path_to(n);

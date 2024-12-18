@@ -35,6 +35,7 @@
 #include "core/io/file_access_compressed.h"
 #include "core/io/image.h"
 #include "core/io/marshalls.h"
+#include "core/io/metadata_exclusion.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
@@ -2243,7 +2244,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 				if (skip_editor && F.name.begins_with("__editor")) {
 					continue;
 				}
-				if (F.name == META_PROPERTY_MISSING_RESOURCES) {
+				if (is_meta_property_excluded_from_serialization(F.name)) {
 					continue;
 				}
 
