@@ -54,14 +54,19 @@ namespace HumanAnim
         }
 
         void set_human_lookat(StringName p_bone,const Vector3& p_lookat) {
-            String name = p_bone.substr(3);
+            
+            HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+            StringName name = mapping->get_bone_name(p_bone);
+            if(mapping == nullptr) return;
 			Vector4& lookat = bone_lookat[name];
 			lookat.x = p_lookat.x;
 			lookat.y = p_lookat.y;
 			lookat.z = p_lookat.z;
         }
 		void set_human_roll(StringName p_bone, float p_roll) {
-			String name = p_bone.substr(3);
+            HumanAnimationBoneNameMapping * mapping = HumanAnimationBoneNameMapping::get_singleton();
+            if(mapping == nullptr) return;
+            StringName name = mapping->get_bone_name(p_bone);
 			Vector4& lookat = bone_lookat[name];
 			lookat.w = p_roll;
 		}
