@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  ip_unix.h                                                             */
+/*  net_socket_web.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IP_UNIX_H
-#define IP_UNIX_H
+#include "net_socket_web.h"
 
-#if defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)
+NetSocket *NetSocketWeb::_create_func() {
+	return memnew(NetSocketWeb);
+}
 
-#include "core/io/ip.h"
-
-class IPUnix : public IP {
-	GDCLASS(IPUnix, IP);
-
-	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
-
-	static IP *_create_unix();
-
-public:
-	virtual void get_local_interfaces(HashMap<String, Interface_Info> *r_interfaces) const override;
-
-	static void make_default();
-	IPUnix();
-};
-
-#endif // UNIX_ENABLED
-
-#endif // IP_UNIX_H
+void NetSocketWeb::make_default() {
+	_create = _create_func;
+}
