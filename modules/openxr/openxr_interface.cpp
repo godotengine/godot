@@ -1274,15 +1274,10 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 		return modes;
 	}
 
-	uint32_t count = 0;
-	const XrEnvironmentBlendMode *env_blend_modes = openxr_api->get_supported_environment_blend_modes(count);
+	const Vector<XrEnvironmentBlendMode> env_blend_modes = openxr_api->get_supported_environment_blend_modes();
 
-	if (!env_blend_modes) {
-		return modes;
-	}
-
-	for (uint32_t i = 0; i < count; i++) {
-		switch (env_blend_modes[i]) {
+	for (const XrEnvironmentBlendMode &env_blend_mode : env_blend_modes) {
+		switch (env_blend_mode) {
 			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
 				modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
 				break;
@@ -1293,7 +1288,7 @@ Array OpenXRInterface::get_supported_environment_blend_modes() {
 				modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
 				break;
 			default:
-				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
+				WARN_PRINT(vformat("Unsupported blend mode found: %s.", String::num_int64(int64_t(env_blend_mode))));
 		}
 	}
 
