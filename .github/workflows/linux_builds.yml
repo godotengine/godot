@@ -176,7 +176,7 @@ jobs:
         if: matrix.build-mono
         run: |
           dotnet --info
-          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd --werror
 
       - name: Prepare artifact
         if: matrix.artifact

@@ -12,6 +12,8 @@ namespace Godot.Bridge;
 
 public static partial class ScriptManagerBridge
 {
+    [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",
+            Justification = "Not applicable. The class functions as a persistent singleton.")]
     private class ScriptTypeBiMap
     {
         public readonly ReaderWriterLockSlim ReadWriteLock = new(LockRecursionPolicy.SupportsRecursion);
@@ -66,7 +68,7 @@ public static partial class ScriptManagerBridge
         private System.Collections.Generic.Dictionary<string, Type> _pathTypeMap = new();
         private System.Collections.Generic.Dictionary<Type, string> _typePathMap = new();
 
-        public IReadOnlyCollection<string> Paths => _pathTypeMap.Keys;
+        public System.Collections.Generic.Dictionary<string, Type>.KeyCollection Paths => _pathTypeMap.Keys;
 
         public void Add(string scriptPath, Type scriptType)
         {
