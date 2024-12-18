@@ -322,6 +322,16 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
+	_FORCE_INLINE_ LocalVector(LocalVector &&p_from) {
+		data = p_from.data;
+		count = p_from.count;
+		capacity = p_from.capacity;
+
+		p_from.data = nullptr;
+		p_from.count = 0;
+		p_from.capacity = 0;
+	}
+
 	inline void operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
@@ -332,6 +342,26 @@ public:
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = p_from[i];
+		}
+	}
+	inline void operator=(LocalVector &&p_from) {
+		if (unlikely(this == &p_from)) {
+			return;
+		}
+		reset();
+
+		data = p_from.data;
+		count = p_from.count;
+		capacity = p_from.capacity;
+
+		p_from.data = nullptr;
+		p_from.count = 0;
+		p_from.capacity = 0;
+	}
+	inline void operator=(Vector<T> &&p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = std::move(p_from[i]);
 		}
 	}
 
