@@ -551,9 +551,9 @@ void EditorAssetInstaller::_install_asset() {
 			da->make_dir_recursive(target_path.get_base_dir());
 
 			Ref<FileAccess> f = FileAccess::open(target_path, FileAccess::WRITE);
-			if (f.is_valid()) {
-				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
-			} else {
+			if (!f.is_valid()) {
+				failed_files.push_back(target_path);
+			} else if (!f->store_buffer(uncomp_data.ptr(), uncomp_data.size())) {
 				failed_files.push_back(target_path);
 			}
 

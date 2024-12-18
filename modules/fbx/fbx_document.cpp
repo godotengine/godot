@@ -1006,7 +1006,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 					// If a file extension was specified, save the original bytes to a file with that extension.
 					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
 					ERR_FAIL_COND_V(err != OK, -1);
-					file->store_buffer(p_bytes);
+					FAIL_ON_WRITE_ERR_V(file, store_buffer(p_bytes), -1);
 					file->close();
 				}
 				// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.

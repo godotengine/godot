@@ -86,14 +86,14 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	fps = p_fps;
 
-	f_wav->store_buffer((const uint8_t *)"RIFF", 4);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_buffer((const uint8_t *)"RIFF", 4), ERR_FILE_CANT_WRITE);
 	int total_size = 4 /* WAVE */ + 8 /* fmt+size */ + 16 /* format */ + 8 /* data+size */;
-	f_wav->store_32(total_size); //will store final later
-	f_wav->store_buffer((const uint8_t *)"WAVE", 4);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_32(total_size), ERR_FILE_CANT_WRITE); //will store final later
+	FAIL_ON_WRITE_ERR_V(f_wav, store_buffer((const uint8_t *)"WAVE", 4), ERR_FILE_CANT_WRITE);
 
 	/* FORMAT CHUNK */
 
-	f_wav->store_buffer((const uint8_t *)"fmt ", 4);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_buffer((const uint8_t *)"fmt ", 4), ERR_FILE_CANT_WRITE);
 
 	uint32_t channels = 2;
 	switch (speaker_mode) {
@@ -111,11 +111,11 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 			break;
 	}
 
-	f_wav->store_32(16); //standard format, no extra fields
-	f_wav->store_16(1); // compression code, standard PCM
-	f_wav->store_16(channels); //CHANNELS: 2
+	FAIL_ON_WRITE_ERR_V(f_wav, store_32(16), ERR_FILE_CANT_WRITE); //standard format, no extra fields
+	FAIL_ON_WRITE_ERR_V(f_wav, store_16(1), ERR_FILE_CANT_WRITE); // compression code, standard PCM
+	FAIL_ON_WRITE_ERR_V(f_wav, store_16(channels), ERR_FILE_CANT_WRITE); //CHANNELS: 2
 
-	f_wav->store_32(mix_rate);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_32(mix_rate), ERR_FILE_CANT_WRITE);
 
 	/* useless stuff the format asks for */
 
@@ -125,15 +125,15 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	audio_block_size = (mix_rate / fps) * blockalign;
 
-	f_wav->store_32(bytes_per_sec);
-	f_wav->store_16(blockalign); // block align (unused)
-	f_wav->store_16(bits_per_sample);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_32(bytes_per_sec), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_16(blockalign), ERR_FILE_CANT_WRITE); // block align (unused)
+	FAIL_ON_WRITE_ERR_V(f_wav, store_16(bits_per_sample), ERR_FILE_CANT_WRITE);
 
 	/* DATA CHUNK */
 
-	f_wav->store_buffer((const uint8_t *)"data", 4);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_buffer((const uint8_t *)"data", 4), ERR_FILE_CANT_WRITE);
 
-	f_wav->store_32(0); //data size... wooh
+	FAIL_ON_WRITE_ERR_V(f_wav, store_32(0), ERR_FILE_CANT_WRITE); //data size... wooh
 	wav_data_size_pos = f_wav->get_position();
 
 	return OK;
@@ -145,8 +145,8 @@ Error MovieWriterPNGWAV::write_frame(const Ref<Image> &p_image, const int32_t *p
 	Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
 
 	Ref<FileAccess> fi = FileAccess::open(base_path + zeros_str(frame_count) + ".png", FileAccess::WRITE);
-	fi->store_buffer(png_buffer.ptr(), png_buffer.size());
-	f_wav->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	FAIL_ON_WRITE_ERR_V(fi, store_buffer(png_buffer.ptr(), png_buffer.size()), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f_wav, store_buffer((const uint8_t *)p_audio_data, audio_block_size), ERR_FILE_CANT_WRITE);
 
 	frame_count++;
 
@@ -158,9 +158,9 @@ void MovieWriterPNGWAV::write_end() {
 		uint32_t total_size = 4 /* WAVE */ + 8 /* fmt+size */ + 16 /* format */ + 8 /* data+size */;
 		uint32_t datasize = f_wav->get_position() - wav_data_size_pos;
 		f_wav->seek(4);
-		f_wav->store_32(total_size + datasize);
+		FAIL_ON_WRITE_ERR(f_wav, store_32(total_size + datasize));
 		f_wav->seek(0x28);
-		f_wav->store_32(datasize);
+		FAIL_ON_WRITE_ERR(f_wav, store_32(datasize));
 	}
 }
 

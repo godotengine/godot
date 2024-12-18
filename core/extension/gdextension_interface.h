@@ -3075,6 +3075,22 @@ typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8Chars)(const char *
  */
 typedef void (*GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)(const char *p_data, GDExtensionInt p_size);
 
+/**
+ * @name file_access_store_buffer2
+ * @since 4.3
+ *
+ * Stores the given buffer using an instance of FileAccess.
+ *
+ * @param p_instance A pointer to a FileAccess object.
+ * @param p_src A pointer to the buffer.
+ * @param p_length The size of the buffer.
+ *
+ * @return true if the operation is valid; otherwise false.
+ *
+ * @see FileAccess::store_buffer()
+ */
+typedef GDExtensionBool (*GDExtensionInterfaceFileAccessStoreBuffer2)(GDExtensionObjectPtr p_instance, const uint8_t *p_src, uint64_t p_length);
+
 #ifdef __cplusplus
 }
 #endif

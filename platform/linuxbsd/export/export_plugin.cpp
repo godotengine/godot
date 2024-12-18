@@ -52,10 +52,10 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 		return ERR_CANT_CREATE;
 	}
 
-	f->store_line("#!/bin/sh");
-	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
-	f->store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\"");
-	f->store_line("\"$base_path/" + p_pkg_name + "\" \"$@\"");
+	FAIL_ON_WRITE_ERR_V(f, store_line("#!/bin/sh"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("base_path=\"$(dirname \"$(realpath \"$0\")\")\""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("\"$base_path/" + p_pkg_name + "\" \"$@\""), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }
@@ -376,12 +376,12 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
-				f->store_32(p_embedded_start);
-				f->store_32(p_embedded_size);
+				FAIL_ON_WRITE_ERR_V(f, store_32(p_embedded_start), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(f, store_32(p_embedded_size), ERR_FILE_CANT_WRITE);
 			} else { // 64
 				f->seek(section_header_pos + 0x18);
-				f->store_64(p_embedded_start);
-				f->store_64(p_embedded_size);
+				FAIL_ON_WRITE_ERR_V(f, store_64(p_embedded_start), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(f, store_64(p_embedded_size), ERR_FILE_CANT_WRITE);
 			}
 
 			found = true;
@@ -555,7 +555,10 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(run_script);
+		if (!f->store_string(run_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+		}
 	}
 
 	{
@@ -570,7 +573,10 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(clean_script);
+		if (!f->store_string(clean_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+		}
 	}
 
 	print_line("Uploading scripts...");

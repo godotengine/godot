@@ -846,4 +846,22 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(UINT64_MAX), m_string)
 
+/**
+ * Try writing to file and restore backup on failure (use only if FileAccess::set_backup_save is enabled).
+ */
+
+#define FAIL_ON_WRITE_ERR(m_file, m_write_op)                                                            \
+	if (!m_file->m_write_op) {                                                                           \
+		m_file->abort_backup_save_and_close();                                                           \
+		ERR_FAIL_MSG(vformat("File write error at '%s': %d.", m_file->get_path(), m_file->get_error())); \
+	} else                                                                                               \
+		((void)0)
+
+#define FAIL_ON_WRITE_ERR_V(m_file, m_write_op, m_retval)                                                            \
+	if (!m_file->m_write_op) {                                                                                       \
+		m_file->abort_backup_save_and_close();                                                                       \
+		ERR_FAIL_V_MSG(m_retval, vformat("File write error at '%s': %d.", m_file->get_path(), m_file->get_error())); \
+	} else                                                                                                           \
+		((void)0)
+
 #endif // ERROR_MACROS_H

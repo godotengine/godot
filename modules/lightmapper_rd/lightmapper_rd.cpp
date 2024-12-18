@@ -838,14 +838,14 @@ Error LightmapperRD::_store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_in
 	Error err = OK;
 	Ref<FileAccess> file = FileAccess::open(p_name, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PFN at path: '%s'.", p_name));
-	file->store_line("PF");
-	file->store_line(vformat("%d %d", img->get_width(), img->get_height()));
+	FAIL_ON_WRITE_ERR_V(file, store_line("PF"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(file, store_line(vformat("%d %d", img->get_width(), img->get_height())), ERR_FILE_CANT_WRITE);
 #ifdef BIG_ENDIAN_ENABLED
-	file->store_line("1.0");
+	FAIL_ON_WRITE_ERR_V(file, store_line("1.0"), ERR_FILE_CANT_WRITE);
 #else
-	file->store_line("-1.0");
+	FAIL_ON_WRITE_ERR_V(file, store_line("-1.0"), ERR_FILE_CANT_WRITE);
 #endif
-	file->store_buffer(data_float);
+	FAIL_ON_WRITE_ERR_V(file, store_buffer(data_float), ERR_FILE_CANT_WRITE);
 	file->close();
 
 	return OK;

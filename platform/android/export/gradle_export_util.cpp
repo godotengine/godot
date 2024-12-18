@@ -143,7 +143,7 @@ Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	}
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
-	fa->store_buffer(p_data.ptr(), p_data.size());
+	FAIL_ON_WRITE_ERR_V(fa, store_buffer(p_data.ptr(), p_data.size()), ERR_FILE_CANT_WRITE);
 	return OK;
 }
 
@@ -160,7 +160,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 	}
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
-	fa->store_string(p_data);
+	FAIL_ON_WRITE_ERR_V(fa, store_string(p_data), ERR_FILE_CANT_WRITE);
 	return OK;
 }
 

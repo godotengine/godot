@@ -448,9 +448,13 @@ Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flag
 				err = FAILED;
 				break;
 			}
-			fdst->store_buffer(buffer.ptr(), bytes_read);
+			FAIL_ON_WRITE_ERR_V(fdst, store_buffer(buffer.ptr(), bytes_read), ERR_FILE_CANT_WRITE);
 
 			size -= bytes_read;
+		}
+
+		if (err != OK) {
+			fdst->abort_backup_save_and_close();
 		}
 	}
 

@@ -3599,7 +3599,7 @@ Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_FILE_CANT_WRITE, "Cannot open file: '" + p_path + "'.");
 
-	file->store_string(p_content.as_string());
+	FAIL_ON_WRITE_ERR_V(file, store_string(p_content.as_string()), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }

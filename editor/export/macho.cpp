@@ -63,7 +63,7 @@ bool MachO::alloc_signature(uint64_t p_size) {
 		if (swap) {
 			lc.cmdsize = BSWAP32(lc.cmdsize);
 		}
-		fa->store_buffer((const uint8_t *)&lc, sizeof(LoadCommandHeader));
+		FAIL_ON_WRITE_ERR_V(fa, store_buffer((const uint8_t *)&lc, sizeof(LoadCommandHeader)), false);
 
 		uint32_t lc_offset = fa->get_length() + PAD(fa->get_length(), 16);
 		uint32_t lc_size = 0;
@@ -71,8 +71,8 @@ bool MachO::alloc_signature(uint64_t p_size) {
 			lc_offset = BSWAP32(lc_offset);
 			lc_size = BSWAP32(lc_size);
 		}
-		fa->store_32(lc_offset);
-		fa->store_32(lc_size);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(lc_offset), false);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(lc_size), false);
 
 		// Write new command number.
 		fa->seek(0x10);
@@ -89,8 +89,8 @@ bool MachO::alloc_signature(uint64_t p_size) {
 			cmdssize = BSWAP32(cmdssize);
 		}
 		fa->seek(0x10);
-		fa->store_32(ncmds);
-		fa->store_32(cmdssize);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(ncmds), false);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(cmdssize), false);
 
 		lc_limit = lc_limit + sizeof(LoadCommandHeader) + 8;
 
@@ -489,16 +489,16 @@ bool MachO::set_signature_size(uint64_t p_size) {
 	if (new_size <= old_size) {
 		fa->seek(get_signature_offset());
 		for (uint64_t i = 0; i < old_size; i++) {
-			fa->store_8(0x00);
+			FAIL_ON_WRITE_ERR_V(fa, store_8(0x00), false);
 		}
 		return true;
 	}
 
 	fa->seek(signature_offset + 12);
 	if (swap) {
-		fa->store_32(BSWAP32(new_size));
+		FAIL_ON_WRITE_ERR_V(fa, store_32(BSWAP32(new_size)), false);
 	} else {
-		fa->store_32(new_size);
+		FAIL_ON_WRITE_ERR_V(fa, store_32(new_size), false);
 	}
 
 	uint64_t end = get_signature_offset() + new_size;
@@ -530,7 +530,7 @@ bool MachO::set_signature_size(uint64_t p_size) {
 				lc_seg.filesize = BSWAP32(lc_seg.filesize);
 			}
 			fa->seek(link_edit_offset + 8);
-			fa->store_buffer((const uint8_t *)&lc_seg, sizeof(LoadCommandSegment));
+			FAIL_ON_WRITE_ERR_V(fa, store_buffer((const uint8_t *)&lc_seg, sizeof(LoadCommandSegment)), false);
 		} break;
 		case LC_SEGMENT_64: {
 			LoadCommandSegment64 lc_seg;
@@ -548,7 +548,7 @@ bool MachO::set_signature_size(uint64_t p_size) {
 				lc_seg.filesize = BSWAP64(lc_seg.filesize);
 			}
 			fa->seek(link_edit_offset + 8);
-			fa->store_buffer((const uint8_t *)&lc_seg, sizeof(LoadCommandSegment64));
+			FAIL_ON_WRITE_ERR_V(fa, store_buffer((const uint8_t *)&lc_seg, sizeof(LoadCommandSegment64)), false);
 		} break;
 		default: {
 			ERR_FAIL_V_MSG(false, "MachO: Invalid __LINKEDIT segment type.");
@@ -556,7 +556,7 @@ bool MachO::set_signature_size(uint64_t p_size) {
 	}
 	fa->seek(get_signature_offset());
 	for (uint64_t i = 0; i < new_size; i++) {
-		fa->store_8(0x00);
+		FAIL_ON_WRITE_ERR_V(fa, store_8(0x00), false);
 	}
 	return true;
 }

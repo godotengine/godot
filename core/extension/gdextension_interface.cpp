@@ -1063,6 +1063,11 @@ static void gdextension_file_access_store_buffer(GDExtensionObjectPtr p_instance
 	fa->store_buffer(p_src, p_length);
 }
 
+static GDExtensionBool gdextension_file_access_store_buffer2(GDExtensionObjectPtr p_instance, const uint8_t *p_src, uint64_t p_length) {
+	FileAccess *fa = (FileAccess *)p_instance;
+	return fa->store_buffer(p_src, p_length);
+}
+
 static uint64_t gdextension_file_access_get_buffer(GDExtensionConstObjectPtr p_instance, uint8_t *p_dst, uint64_t p_length) {
 	const FileAccess *fa = (FileAccess *)p_instance;
 	return fa->get_buffer(p_dst, p_length);
@@ -1826,6 +1831,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(image_ptrw);
 	REGISTER_INTERFACE_FUNC(image_ptr);
+	REGISTER_INTERFACE_FUNC(file_access_store_buffer2);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

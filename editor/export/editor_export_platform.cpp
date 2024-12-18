@@ -273,7 +273,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	}
 
 	// Store file content.
-	ftmp->store_buffer(p_data.ptr(), p_data.size());
+	FAIL_ON_WRITE_ERR_V(ftmp, store_buffer(p_data.ptr(), p_data.size()), ERR_FILE_CANT_WRITE);
 
 	if (fae.is_valid()) {
 		ftmp.unref();
@@ -282,7 +282,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(0);
+		FAIL_ON_WRITE_ERR_V(pd->f, store_8(0), ERR_FILE_CANT_WRITE);
 	}
 
 	// Store MD5 of original file.
@@ -1443,7 +1443,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			for (const KeyValue<String, FileExportCache> &E : export_cache) {
 				if (E.value.used) { // May be old, unused
 					String l = E.key + "::" + E.value.source_md5 + "::" + itos(E.value.source_modified_time) + "::" + E.value.saved_path;
-					f->store_line(l);
+					if (!f->store_line(l)) {
+						f->abort_backup_save_and_close();
+						ERR_PRINT("Cannot write file '" + fcache + "'.");
+						break;
+					}
 				}
 			}
 		} else {
@@ -1596,7 +1600,7 @@ Error EditorExportPlatform::_remove_pack_file(void *p_userdata, const String &p_
 	// This padding will likely never be added, as we should already be aligned when removals are added.
 	int pad = _get_pad(PCK_PADDING, pd->f->get_position());
 	for (int i = 0; i < pad; i++) {
-		pd->f->store_8(0);
+		FAIL_ON_WRITE_ERR_V(pd->f, store_8(0), ERR_FILE_CANT_WRITE);
 	}
 
 	sd.md5.resize(16);
@@ -1895,17 +1899,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		// Ensure embedded PCK starts at a 64-bit multiple
 		int pad = f->get_position() % 8;
 		for (int i = 0; i < pad; i++) {
-			f->store_8(0);
+			FAIL_ON_WRITE_ERR_V(f, store_8(0), ERR_FILE_CANT_WRITE);
 		}
 	}
 
 	int64_t pck_start_pos = f->get_position();
 
-	f->store_32(PACK_HEADER_MAGIC);
-	f->store_32(PACK_FORMAT_VERSION);
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
-	f->store_32(VERSION_PATCH);
+	FAIL_ON_WRITE_ERR_V(f, store_32(PACK_HEADER_MAGIC), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(PACK_FORMAT_VERSION), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(VERSION_MAJOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(VERSION_MINOR), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_32(VERSION_PATCH), ERR_FILE_CANT_WRITE);
 
 	uint32_t pack_flags = 0;
 	bool enc_pck = p_preset->get_enc_pck();
@@ -1916,17 +1920,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	if (p_embed) {
 		pack_flags |= PACK_REL_FILEBASE;
 	}
-	f->store_32(pack_flags); // flags
+	FAIL_ON_WRITE_ERR_V(f, store_32(pack_flags), ERR_FILE_CANT_WRITE); // flags
 
 	uint64_t file_base_ofs = f->get_position();
-	f->store_64(0); // files base
+	FAIL_ON_WRITE_ERR_V(f, store_64(0), ERR_FILE_CANT_WRITE); // files base
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
-		f->store_32(0);
+		FAIL_ON_WRITE_ERR_V(f, store_32(0), ERR_FILE_CANT_WRITE);
 	}
 
-	f->store_32(pd.file_ofs.size()); //amount of files
+	FAIL_ON_WRITE_ERR_V(f, store_32(pd.file_ofs.size()), ERR_FILE_CANT_WRITE); //amount of files
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = f;
@@ -2000,15 +2004,15 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
 		uint32_t pad = _get_pad(4, string_len);
 
-		fhead->store_32(string_len + pad);
-		fhead->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
+		FAIL_ON_WRITE_ERR_V(fhead, store_32(string_len + pad), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(fhead, store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len), ERR_FILE_CANT_WRITE);
 		for (uint32_t j = 0; j < pad; j++) {
-			fhead->store_8(0);
+			FAIL_ON_WRITE_ERR_V(fhead, store_8(0), ERR_FILE_CANT_WRITE);
 		}
 
-		fhead->store_64(pd.file_ofs[i].ofs);
-		fhead->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
-		fhead->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
+		FAIL_ON_WRITE_ERR_V(fhead, store_64(pd.file_ofs[i].ofs), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(fhead, store_64(pd.file_ofs[i].size), ERR_FILE_CANT_WRITE); // pay attention here, this is where file is
+		FAIL_ON_WRITE_ERR_V(fhead, store_buffer(pd.file_ofs[i].md5.ptr(), 16), ERR_FILE_CANT_WRITE); //also save md5 for file
 		uint32_t flags = 0;
 		if (pd.file_ofs[i].encrypted) {
 			flags |= PACK_FILE_ENCRYPTED;
@@ -2016,7 +2020,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		if (pd.file_ofs[i].removal) {
 			flags |= PACK_FILE_REMOVAL;
 		}
-		fhead->store_32(flags);
+		FAIL_ON_WRITE_ERR_V(fhead, store_32(flags), ERR_FILE_CANT_WRITE);
 	}
 
 	if (fae.is_valid()) {
@@ -2026,7 +2030,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	int header_padding = _get_pad(PCK_PADDING, f->get_position());
 	for (int i = 0; i < header_padding; i++) {
-		f->store_8(0);
+		FAIL_ON_WRITE_ERR_V(f, store_8(0), ERR_FILE_CANT_WRITE);
 	}
 
 	uint64_t file_base = f->get_position();
@@ -2035,7 +2039,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		file_base_store -= pck_start_pos;
 	}
 	f->seek(file_base_ofs);
-	f->store_64(file_base_store); // update files base
+	FAIL_ON_WRITE_ERR_V(f, store_64(file_base_store), ERR_FILE_CANT_WRITE); // update files base
 	f->seek(file_base);
 
 	// Save the rest of the data.
@@ -2055,7 +2059,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		if (got == 0) {
 			break;
 		}
-		f->store_buffer(buf, got);
+		FAIL_ON_WRITE_ERR_V(f, store_buffer(buf, got), ERR_FILE_CANT_WRITE);
 	}
 
 	ftmp.unref(); // Close temp file.
@@ -2065,12 +2069,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		uint64_t embed_end = f->get_position() - embed_pos + 12;
 		uint64_t pad = embed_end % 8;
 		for (uint64_t i = 0; i < pad; i++) {
-			f->store_8(0);
+			FAIL_ON_WRITE_ERR_V(f, store_8(0), ERR_FILE_CANT_WRITE);
 		}
 
 		uint64_t pck_size = f->get_position() - pck_start_pos;
-		f->store_64(pck_size);
-		f->store_32(PACK_HEADER_MAGIC);
+		FAIL_ON_WRITE_ERR_V(f, store_64(pck_size), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_32(PACK_HEADER_MAGIC), ERR_FILE_CANT_WRITE);
 
 		if (r_embedded_size) {
 			*r_embedded_size = f->get_position() - embed_pos;

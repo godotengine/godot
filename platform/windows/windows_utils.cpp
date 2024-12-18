@@ -226,14 +226,14 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 
 		Vector<uint8_t> u8 = new_pdb_name.to_utf8_buffer();
 		file->seek(pdb_info.address);
-		file->store_buffer(u8);
+		FAIL_ON_WRITE_ERR_V(file, store_buffer(u8), ERR_FILE_CANT_WRITE);
 
 		// Terminate string and fill the remaining part of the original string with the '\0'.
 		// Can be replaced by file->store_8('\0');
 		Vector<uint8_t> padding_buffer;
 		padding_buffer.resize((int64_t)original_path_size - u8.size());
 		padding_buffer.fill('\0');
-		file->store_buffer(padding_buffer);
+		FAIL_ON_WRITE_ERR_V(file, store_buffer(padding_buffer), ERR_FILE_CANT_WRITE);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to write a new PDB path to '%s'.", p_dll_path));
 
 		return OK;

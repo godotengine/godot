@@ -86,11 +86,11 @@ Error ResourceImporterImage::import(ResourceUID::ID p_source_id, const String &p
 
 	//save the header GDIM
 	const uint8_t header[4] = { 'G', 'D', 'I', 'M' };
-	f->store_buffer(header, 4);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(header, 4), ERR_FILE_CANT_WRITE);
 	//SAVE the extension (so it can be recognized by the loader later
-	f->store_pascal_string(p_source_file.get_extension().to_lower());
+	FAIL_ON_WRITE_ERR_V(f, store_pascal_string(p_source_file.get_extension().to_lower()), ERR_FILE_CANT_WRITE);
 	//SAVE the actual image
-	f->store_buffer(data.ptr(), len);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(data.ptr(), len), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }

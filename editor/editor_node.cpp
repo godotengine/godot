@@ -1456,7 +1456,10 @@ void EditorNode::ensure_uid_file(const String &p_new_resource_path) {
 		Ref<FileAccess> f = FileAccess::open(p_new_resource_path + ".uid", FileAccess::WRITE);
 		if (f.is_valid()) {
 			const ResourceUID::ID id = ResourceUID::get_singleton()->create_id();
-			f->store_line(ResourceUID::get_singleton()->id_to_text(id));
+			if (!f->store_line(ResourceUID::get_singleton()->id_to_text(id))) {
+				f->abort_backup_save_and_close();
+				ERR_PRINT("Cannot write file '" + p_new_resource_path + ".uid'.");
+			}
 		}
 	}
 }

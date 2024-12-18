@@ -57,7 +57,7 @@ Error ResourceSaverWebP::save_image(const String &p_path, const Ref<Image> &p_im
 
 	const uint8_t *reader = buffer.ptr();
 
-	file->store_buffer(reader, buffer.size());
+	FAIL_ON_WRITE_ERR_V(file, store_buffer(reader, buffer.size()), ERR_FILE_CANT_WRITE);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 		return ERR_CANT_CREATE;
 	}

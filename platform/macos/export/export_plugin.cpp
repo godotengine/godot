@@ -1366,7 +1366,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			err = dir_access->make_dir_recursive(p_in_app_path.path_join("Resources"));
 			Ref<FileAccess> f = FileAccess::open(p_in_app_path.path_join("Resources").path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
-				f->store_string(info_plist);
+				FAIL_ON_WRITE_ERR_V(f, store_string(info_plist), ERR_FILE_CANT_WRITE);
 			}
 		}
 	} else {
@@ -1506,22 +1506,22 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 		return ERR_CANT_CREATE;
 	}
 
-	f->store_line("#!/bin/sh");
-	f->store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'");
-	f->store_line("");
-	f->store_line("function app_realpath() {");
-	f->store_line("    SOURCE=$1");
-	f->store_line("    while [ -h \"$SOURCE\" ]; do");
-	f->store_line("        DIR=$(dirname \"$SOURCE\")");
-	f->store_line("        SOURCE=$(readlink \"$SOURCE\")");
-	f->store_line("        [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE");
-	f->store_line("    done");
-	f->store_line("    echo \"$( cd -P \"$( dirname \"$SOURCE\" )\" >/dev/null 2>&1 && pwd )\"");
-	f->store_line("}");
-	f->store_line("");
-	f->store_line("BASE_PATH=\"$(app_realpath \"${BASH_SOURCE[0]}\")\"");
-	f->store_line("\"$BASE_PATH/" + p_pkg_name + "\" \"$@\"");
-	f->store_line("");
+	FAIL_ON_WRITE_ERR_V(f, store_line("#!/bin/sh"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("echo -ne '\\033c\\033]0;" + p_app_name + "\\a'"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("function app_realpath() {"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("    SOURCE=$1"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("    while [ -h \"$SOURCE\" ]; do"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("        DIR=$(dirname \"$SOURCE\")"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("        SOURCE=$(readlink \"$SOURCE\")"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("        [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("    done"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("    echo \"$( cd -P \"$( dirname \"$SOURCE\" )\" >/dev/null 2>&1 && pwd )\""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("}"), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("BASE_PATH=\"$(app_realpath \"${BASH_SOURCE[0]}\")\""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line("\"$BASE_PATH/" + p_pkg_name + "\" \"$@\""), ERR_FILE_CANT_WRITE);
+	FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 
 	return OK;
 }
@@ -1687,43 +1687,43 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-			f->store_line("/* Localized versions of Info.plist keys */");
-			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";");
+			FAIL_ON_WRITE_ERR_V(f, store_line("/* Localized versions of Info.plist keys */"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line("CFBundleDisplayName = \"" + GLOBAL_GET("application/config/name").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
-				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
-				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
-				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
-				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
-			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
+			FAIL_ON_WRITE_ERR_V(f, store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";"), ERR_FILE_CANT_WRITE);
 		}
 
 		HashSet<String> languages;
@@ -1738,46 +1738,46 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-			f->store_line("/* Localized versions of Info.plist keys */");
-			f->store_line("");
+			FAIL_ON_WRITE_ERR_V(f, store_line("/* Localized versions of Info.plist keys */"), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_line(""), ERR_FILE_CANT_WRITE);
 			if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (location_usage_descriptions.has(lang)) {
-				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (address_book_usage_descriptions.has(lang)) {
-				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (calendar_usage_descriptions.has(lang)) {
-				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (photos_library_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (desktop_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (documents_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (downloads_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (network_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (removable_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 			if (copyrights.has(lang)) {
-				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
+				FAIL_ON_WRITE_ERR_V(f, store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";"), ERR_FILE_CANT_WRITE);
 			}
 		}
 	}
@@ -1914,7 +1914,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (err == OK) {
 				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
 				if (f.is_valid()) {
-					f->store_buffer(data.ptr(), data.size());
+					FAIL_ON_WRITE_ERR_V(f, store_buffer(data.ptr(), data.size()), ERR_FILE_CANT_WRITE);
 					f.unref();
 					if (is_executable(file)) {
 						// chmod with 0755 if the file is executable.
@@ -2007,68 +2007,69 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
 			if (ent_f.is_valid()) {
-				ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-				ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
-				ent_f->store_line("<plist version=\"1.0\">");
-				ent_f->store_line("<dict>");
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("<plist version=\"1.0\">"), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("<dict>"), ERR_FILE_CANT_WRITE);
 				if (ClassDB::class_exists("CSharpScript")) {
 					// These entitlements are required to run managed code, and are always enabled in Mono builds.
-					ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
-					ent_f->store_line("<true/>");
-					ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
-					ent_f->store_line("<true/>");
-					ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-jit</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
+					;
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				} else {
 					if ((bool)p_preset->get("codesign/entitlements/allow_jit_code_execution")) {
-						ent_f->store_line("<key>com.apple.security.cs.allow-jit</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-jit</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((bool)p_preset->get("codesign/entitlements/allow_unsigned_executable_memory")) {
-						ent_f->store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-unsigned-executable-memory</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((bool)p_preset->get("codesign/entitlements/allow_dyld_environment_variables")) {
-						ent_f->store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.allow-dyld-environment-variables</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 				}
 
 				if (lib_validation) {
-					ent_f->store_line("<key>com.apple.security.cs.disable-library-validation</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.cs.disable-library-validation</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/audio_input")) {
-					ent_f->store_line("<key>com.apple.security.device.audio-input</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.device.audio-input</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/camera")) {
-					ent_f->store_line("<key>com.apple.security.device.camera</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.device.camera</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/location")) {
-					ent_f->store_line("<key>com.apple.security.personal-information.location</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.personal-information.location</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/address_book")) {
-					ent_f->store_line("<key>com.apple.security.personal-information.addressbook</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.personal-information.addressbook</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/calendars")) {
-					ent_f->store_line("<key>com.apple.security.personal-information.calendars</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.personal-information.calendars</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/photos_library")) {
-					ent_f->store_line("<key>com.apple.security.personal-information.photos-library</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.personal-information.photos-library</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/apple_events")) {
-					ent_f->store_line("<key>com.apple.security.automation.apple-events</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.automation.apple-events</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 				if ((bool)p_preset->get("codesign/entitlements/debugging")) {
-					ent_f->store_line("<key>com.apple.security.get-task-allow</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.get-task-allow</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 				}
 
 				int dist_type = p_preset->get("export/distribution_type");
@@ -2077,82 +2078,82 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					String teamid = p_preset->get("codesign/apple_team_id");
 					String bid = p_preset->get("application/bundle_identifier");
 					if (!pprof.is_empty() && !teamid.is_empty()) {
-						ent_f->store_line("<key>com.apple.developer.team-identifier</key>");
-						ent_f->store_line("<string>" + teamid + "</string>");
-						ent_f->store_line("<key>com.apple.application-identifier</key>");
-						ent_f->store_line("<string>" + teamid + "." + bid + "</string>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.developer.team-identifier</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<string>" + teamid + "</string>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.application-identifier</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<string>" + teamid + "." + bid + "</string>"), ERR_FILE_CANT_WRITE);
 					}
 				}
 
 				if ((bool)p_preset->get("codesign/entitlements/app_sandbox/enabled")) {
-					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
-					ent_f->store_line("<true/>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.app-sandbox</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 
 					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_server")) {
-						ent_f->store_line("<key>com.apple.security.network.server</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.network.server</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/network_client")) {
-						ent_f->store_line("<key>com.apple.security.network.client</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.network.client</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_usb")) {
-						ent_f->store_line("<key>com.apple.security.device.usb</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.device.usb</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((bool)p_preset->get("codesign/entitlements/app_sandbox/device_bluetooth")) {
-						ent_f->store_line("<key>com.apple.security.device.bluetooth</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.device.bluetooth</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 1) {
-						ent_f->store_line("<key>com.apple.security.files.downloads.read-only</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.downloads.read-only</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_downloads") == 2) {
-						ent_f->store_line("<key>com.apple.security.files.downloads.read-write</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.downloads.read-write</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 1) {
-						ent_f->store_line("<key>com.apple.security.files.pictures.read-only</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.pictures.read-only</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_pictures") == 2) {
-						ent_f->store_line("<key>com.apple.security.files.pictures.read-write</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.pictures.read-write</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 1) {
-						ent_f->store_line("<key>com.apple.security.files.music.read-only</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.music.read-only</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_music") == 2) {
-						ent_f->store_line("<key>com.apple.security.files.music.read-write</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.music.read-write</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 1) {
-						ent_f->store_line("<key>com.apple.security.files.movies.read-only</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.movies.read-only</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_movies") == 2) {
-						ent_f->store_line("<key>com.apple.security.files.movies.read-write</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.movies.read-write</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 1) {
-						ent_f->store_line("<key>com.apple.security.files.user-selected.read-only</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.user-selected.read-only</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 					if ((int)p_preset->get("codesign/entitlements/app_sandbox/files_user_selected") == 2) {
-						ent_f->store_line("<key>com.apple.security.files.user-selected.read-write</key>");
-						ent_f->store_line("<true/>");
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.files.user-selected.read-write</key>"), ERR_FILE_CANT_WRITE);
+						FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
 					}
 				}
 
 				const String &additional_entitlements = p_preset->get("codesign/entitlements/additional");
 				if (!additional_entitlements.is_empty()) {
-					ent_f->store_line(additional_entitlements);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line(additional_entitlements), ERR_FILE_CANT_WRITE);
 				}
 
-				ent_f->store_line("</dict>");
-				ent_f->store_line("</plist>");
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("</dict>"), ERR_FILE_CANT_WRITE);
+				FAIL_ON_WRITE_ERR_V(ent_f, store_line("</plist>"), ERR_FILE_CANT_WRITE);
 			} else {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create entitlements file."));
 				err = ERR_CANT_CREATE;
@@ -2161,16 +2162,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if ((err == OK) && sandbox && (helpers.size() > 0 || shared_objects.size() > 0)) {
 				ent_f = FileAccess::open(hlp_ent_path, FileAccess::WRITE);
 				if (ent_f.is_valid()) {
-					ent_f->store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-					ent_f->store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">");
-					ent_f->store_line("<plist version=\"1.0\">");
-					ent_f->store_line("<dict>");
-					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
-					ent_f->store_line("<true/>");
-					ent_f->store_line("<key>com.apple.security.inherit</key>");
-					ent_f->store_line("<true/>");
-					ent_f->store_line("</dict>");
-					ent_f->store_line("</plist>");
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<plist version=\"1.0\">"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<dict>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.app-sandbox</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<key>com.apple.security.inherit</key>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("<true/>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("</dict>"), ERR_FILE_CANT_WRITE);
+					FAIL_ON_WRITE_ERR_V(ent_f, store_line("</plist>"), ERR_FILE_CANT_WRITE);
 				} else {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create helper entitlements file."));
 					err = ERR_CANT_CREATE;
@@ -2661,7 +2662,10 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(run_script);
+		if (!f->store_string(run_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+		}
 	}
 
 	{
@@ -2676,7 +2680,10 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 			CLEANUP_AND_RETURN(err);
 		}
 
-		f->store_string(clean_script);
+		if (!f->store_string(clean_script)) {
+			f->abort_backup_save_and_close();
+			CLEANUP_AND_RETURN(ERR_FILE_CANT_WRITE);
+		}
 	}
 
 	print_line("Uploading scripts...");

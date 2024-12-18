@@ -44,7 +44,7 @@ class GDExtensionInterfaceDump {
             data.resize(_gdextension_interface_data_uncompressed_size);
             int ret = Compression::decompress(data.ptrw(), _gdextension_interface_data_uncompressed_size, _gdextension_interface_data_compressed, _gdextension_interface_data_compressed_size, Compression::MODE_DEFLATE);
             ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
-            fa->store_buffer(data.ptr(), data.size());
+            ERR_FAIL_COND_MSG(!fa->store_buffer(data.ptr(), data.size()), vformat("Cannot write to file '%s'.", p_path));
         };
 };
 

@@ -636,19 +636,19 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_WRITE);
 
 	// Create WAV Header
-	file->store_string("RIFF"); //ChunkID
-	file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
-	file->store_string("WAVE"); //Format
-	file->store_string("fmt "); //Subchunk1ID
-	file->store_32(16); //Subchunk1Size = 16
-	file->store_16(format_code); //AudioFormat
-	file->store_16(n_channels); //Number of Channels
-	file->store_32(sample_rate); //SampleRate
-	file->store_32(sample_rate * n_channels * byte_pr_sample); //ByteRate
-	file->store_16(n_channels * byte_pr_sample); //BlockAlign = NumChannels * BytePrSample
-	file->store_16(byte_pr_sample * 8); //BitsPerSample
-	file->store_string("data"); //Subchunk2ID
-	file->store_32(sub_chunk_2_size); //Subchunk2Size
+	FAIL_ON_WRITE_ERR_V(file, store_string("RIFF"), ERR_FILE_CANT_WRITE); //ChunkID
+	FAIL_ON_WRITE_ERR_V(file, store_32(sub_chunk_2_size + 36), ERR_FILE_CANT_WRITE); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	FAIL_ON_WRITE_ERR_V(file, store_string("WAVE"), ERR_FILE_CANT_WRITE); //Format
+	FAIL_ON_WRITE_ERR_V(file, store_string("fmt "), ERR_FILE_CANT_WRITE); //Subchunk1ID
+	FAIL_ON_WRITE_ERR_V(file, store_32(16), ERR_FILE_CANT_WRITE); //Subchunk1Size = 16
+	FAIL_ON_WRITE_ERR_V(file, store_16(format_code), ERR_FILE_CANT_WRITE); //AudioFormat
+	FAIL_ON_WRITE_ERR_V(file, store_16(n_channels), ERR_FILE_CANT_WRITE); //Number of Channels
+	FAIL_ON_WRITE_ERR_V(file, store_32(sample_rate), ERR_FILE_CANT_WRITE); //SampleRate
+	FAIL_ON_WRITE_ERR_V(file, store_32(sample_rate * n_channels * byte_pr_sample), ERR_FILE_CANT_WRITE); //ByteRate
+	FAIL_ON_WRITE_ERR_V(file, store_16(n_channels * byte_pr_sample), ERR_FILE_CANT_WRITE); //BlockAlign = NumChannels * BytePrSample
+	FAIL_ON_WRITE_ERR_V(file, store_16(byte_pr_sample * 8), ERR_FILE_CANT_WRITE); //BitsPerSample
+	FAIL_ON_WRITE_ERR_V(file, store_string("data"), ERR_FILE_CANT_WRITE); //Subchunk2ID
+	FAIL_ON_WRITE_ERR_V(file, store_32(sub_chunk_2_size), ERR_FILE_CANT_WRITE); //Subchunk2Size
 
 	// Add data
 	Vector<uint8_t> stream_data = get_data();
@@ -657,14 +657,14 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
 				uint8_t data_point = (read_data[i] + 128);
-				file->store_8(data_point);
+				FAIL_ON_WRITE_ERR_V(file, store_8(data_point), ERR_FILE_CANT_WRITE);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_16_BITS:
 		case AudioStreamWAV::FORMAT_QOA:
 			for (unsigned int i = 0; i < data_bytes / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
-				file->store_16(data_point);
+				FAIL_ON_WRITE_ERR_V(file, store_16(data_point), ERR_FILE_CANT_WRITE);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_IMA_ADPCM:

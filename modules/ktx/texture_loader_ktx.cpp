@@ -53,8 +53,11 @@ KTX_error_code ktx_skip(ktxStream *stream, const ktx_size_t count) {
 
 KTX_error_code ktx_write(ktxStream *stream, const void *src, const ktx_size_t size, const ktx_size_t count) {
 	Ref<FileAccess> *f = reinterpret_cast<Ref<FileAccess> *>(stream->data.custom_ptr.address);
-	(*f)->store_buffer(reinterpret_cast<const uint8_t *>(src), size * count);
-	return KTX_SUCCESS;
+	if ((*f)->store_buffer(reinterpret_cast<const uint8_t *>(src), size * count)) {
+		return KTX_SUCCESS;
+	} else {
+		return KTX_FILE_WRITE_ERROR;
+	}
 }
 
 KTX_error_code ktx_getpos(ktxStream *stream, ktx_off_t *const offset) {

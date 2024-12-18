@@ -737,7 +737,7 @@ Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_p
 			return OK;
 		}
 		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
+		FAIL_ON_WRITE_ERR_V(file, store_buffer(buffer_data.ptr(), buffer_data.size()), ERR_FILE_CANT_WRITE);
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -769,7 +769,7 @@ Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> p_state, const String &p_
 			return OK;
 		}
 		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
+		FAIL_ON_WRITE_ERR_V(file, store_buffer(buffer_data.ptr(), buffer_data.size()), ERR_FILE_CANT_WRITE);
 		gltf_buffer["uri"] = filename;
 		gltf_buffer["byteLength"] = buffer_data.size();
 		buffers.push_back(gltf_buffer);
@@ -3986,7 +3986,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 					// If a file extension was specified, save the original bytes to a file with that extension.
 					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
 					ERR_FAIL_COND(err != OK);
-					file->store_buffer(p_bytes);
+					FAIL_ON_WRITE_ERR(file, store_buffer(p_bytes));
 					file->close();
 				}
 				// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
@@ -8077,29 +8077,30 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 		const uint32_t binary_chunk_type = 0x004E4942; //BIN
 
 		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_32(magic);
-		file->store_32(p_state->major_version); // version
+		FAIL_ON_WRITE_ERR_V(file, store_32(magic), ERR_FILE_CANT_WRITE);
+		;
+		FAIL_ON_WRITE_ERR_V(file, store_32(p_state->major_version), ERR_FILE_CANT_WRITE); // version
 		uint32_t total_length = header_size + chunk_header_size + text_chunk_length;
 		if (binary_chunk_length) {
 			total_length += chunk_header_size + binary_chunk_length;
 		}
-		file->store_32(total_length);
+		FAIL_ON_WRITE_ERR_V(file, store_32(total_length), ERR_FILE_CANT_WRITE);
 
 		// Write the JSON text chunk.
-		file->store_32(text_chunk_length);
-		file->store_32(text_chunk_type);
-		file->store_buffer((uint8_t *)&cs[0], cs.length());
+		FAIL_ON_WRITE_ERR_V(file, store_32(text_chunk_length), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(file, store_32(text_chunk_type), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(file, store_buffer((uint8_t *)&cs[0], cs.length()), ERR_FILE_CANT_WRITE);
 		for (uint32_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
-			file->store_8(' ');
+			FAIL_ON_WRITE_ERR_V(file, store_8(' '), ERR_FILE_CANT_WRITE);
 		}
 
 		// Write a single binary chunk.
 		if (binary_chunk_length) {
-			file->store_32(binary_chunk_length);
-			file->store_32(binary_chunk_type);
-			file->store_buffer(p_state->buffers[0].ptr(), binary_data_length);
+			FAIL_ON_WRITE_ERR_V(file, store_32(binary_chunk_length), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(file, store_32(binary_chunk_type), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(file, store_buffer(p_state->buffers[0].ptr(), binary_data_length), ERR_FILE_CANT_WRITE);
 			for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
-				file->store_8(0);
+				FAIL_ON_WRITE_ERR_V(file, store_8(0), ERR_FILE_CANT_WRITE);
 			}
 		}
 	} else {
@@ -8110,7 +8111,7 @@ Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path)
 
 		file->create(FileAccess::ACCESS_RESOURCES);
 		String json = Variant(p_state->json).to_json_string();
-		file->store_string(json);
+		FAIL_ON_WRITE_ERR_V(file, store_string(json), ERR_FILE_CANT_WRITE);
 	}
 	return err;
 }

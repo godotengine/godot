@@ -43,6 +43,12 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
+		<method name="abort_backup_save_and_close">
+			<return type="void" />
+			<description>
+				Closes the currently opened file and prevents subsequent read/write operations. If [method OS.set_use_file_access_save_and_swap] is set to [code]true[/code], the temporary file is removed, and the original file is not modified.
+			</description>
+		</method>
 		<method name="close">
 			<return type="void" />
 			<description>

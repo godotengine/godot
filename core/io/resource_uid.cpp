@@ -195,15 +195,15 @@ Error ResourceUID::save_to_cache() {
 	}
 
 	MutexLock l(mutex);
-	f->store_32(unique_ids.size());
+	FAIL_ON_WRITE_ERR_V(f, store_32(unique_ids.size()), ERR_FILE_CANT_WRITE);
 
 	cache_entries = 0;
 
 	for (KeyValue<ID, Cache> &E : unique_ids) {
-		f->store_64(E.key);
+		FAIL_ON_WRITE_ERR_V(f, store_64(E.key), ERR_FILE_CANT_WRITE);
 		uint32_t s = E.value.cs.length();
-		f->store_32(s);
-		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
+		FAIL_ON_WRITE_ERR_V(f, store_32(s), ERR_FILE_CANT_WRITE);
+		FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)E.value.cs.ptr(), s), ERR_FILE_CANT_WRITE);
 		E.value.saved_to_cache = true;
 		cache_entries++;
 	}
@@ -263,10 +263,10 @@ Error ResourceUID::update_cache() {
 				}
 				f->seek_end();
 			}
-			f->store_64(E.key);
+			FAIL_ON_WRITE_ERR_V(f, store_64(E.key), ERR_FILE_CANT_WRITE);
 			uint32_t s = E.value.cs.length();
-			f->store_32(s);
-			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
+			FAIL_ON_WRITE_ERR_V(f, store_32(s), ERR_FILE_CANT_WRITE);
+			FAIL_ON_WRITE_ERR_V(f, store_buffer((const uint8_t *)E.value.cs.ptr(), s), ERR_FILE_CANT_WRITE);
 			E.value.saved_to_cache = true;
 			cache_entries++;
 		}
@@ -274,7 +274,7 @@ Error ResourceUID::update_cache() {
 
 	if (f.is_valid()) {
 		f->seek(0);
-		f->store_32(cache_entries); //update amount of entries
+		FAIL_ON_WRITE_ERR_V(f, store_32(cache_entries), ERR_FILE_CANT_WRITE); //update amount of entries
 	}
 
 	changed = false;

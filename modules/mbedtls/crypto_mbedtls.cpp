@@ -98,7 +98,7 @@ Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 	}
 
 	size_t len = strlen((char *)w);
-	f->store_buffer(w, len);
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(w, len), ERR_FILE_CANT_WRITE);
 	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
 }
@@ -202,7 +202,7 @@ Error X509CertificateMbedTLS::save(const String &p_path) {
 			ERR_FAIL_V_MSG(FAILED, "Error writing certificate '" + itos(ret) + "'.");
 		}
 
-		f->store_buffer(w, wrote - 1); // don't write the string terminator
+		FAIL_ON_WRITE_ERR_V(f, store_buffer(w, wrote - 1), ERR_FILE_CANT_WRITE); // don't write the string terminator
 		crt = crt->next;
 	}
 	return OK;

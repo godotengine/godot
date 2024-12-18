@@ -97,7 +97,7 @@ Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVecto
 
 	Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Unable to open file for writing to remote filesystem cache: '%s'.", p_path));
-	f->store_buffer(p_file.ptr(), p_file.size());
+	FAIL_ON_WRITE_ERR_V(f, store_buffer(p_file.ptr(), p_file.size()), ERR_FILE_CANT_WRITE);
 	Error err = f->get_error();
 	if (err) {
 		return err;
@@ -119,10 +119,10 @@ Error RemoteFilesystemClient::_store_cache_file(const Vector<FileCache> &p_cache
 
 	Ref<FileAccess> f = FileAccess::open(full_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Unable to open the remote cache file for writing: '%s'.", full_path));
-	f->store_line(itos(FILESYSTEM_CACHE_VERSION));
+	FAIL_ON_WRITE_ERR_V(f, store_line(itos(FILESYSTEM_CACHE_VERSION)), ERR_FILE_CANT_WRITE);
 	for (int i = 0; i < p_cache.size(); i++) {
 		String l = p_cache[i].path + "::" + itos(p_cache[i].server_modified_time) + "::" + itos(p_cache[i].modified_time);
-		f->store_line(l);
+		FAIL_ON_WRITE_ERR_V(f, store_line(l), ERR_FILE_CANT_WRITE);
 	}
 	return OK;
 }

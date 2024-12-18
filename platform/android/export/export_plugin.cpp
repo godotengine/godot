@@ -3193,7 +3193,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 			if (user_data.libs.size() > 0) {
 				Ref<FileAccess> fa = FileAccess::open(gdextension_libs_path, FileAccess::WRITE);
-				fa->store_string(JSON::stringify(user_data.libs, "\t"));
+				FAIL_ON_WRITE_ERR_V(fa, store_string(JSON::stringify(user_data.libs, "\t")), ERR_FILE_CANT_WRITE);
 			}
 		} else {
 			print_verbose("Saving apk expansion file...");

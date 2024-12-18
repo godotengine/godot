@@ -3096,10 +3096,7 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 
 		ERR_FAIL_COND_V_MSG(err, err, "Cannot save GDScript file '" + p_path + "'.");
 
-		file->store_string(source);
-		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-			return ERR_CANT_CREATE;
-		}
+		FAIL_ON_WRITE_ERR_V(file, store_string(source), ERR_CANT_CREATE);
 	}
 
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
