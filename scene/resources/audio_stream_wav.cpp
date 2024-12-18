@@ -186,7 +186,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 						if (p_qoa->data_ofs != new_data_ofs) {
 							p_qoa->data_ofs = new_data_ofs;
 							const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
-							qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
+							qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptrw(), &p_qoa->dec_len);
 						}
 
 						uint32_t dec_idx = (interp_pos % QOA_FRAME_LEN) * p_qoa->desc.channels;
@@ -577,8 +577,8 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 
 	int alloc_len = src_data_len + DATA_PAD * 2;
 	data.resize(alloc_len);
-	memset(data.ptr(), 0, alloc_len);
-	memcpy(data.ptr() + DATA_PAD, p_data.ptr(), src_data_len);
+	memset(data.ptrw(), 0, alloc_len);
+	memcpy(data.ptrw() + DATA_PAD, p_data.ptr(), src_data_len);
 	data_bytes = src_data_len;
 
 	AudioServer::get_singleton()->unlock();

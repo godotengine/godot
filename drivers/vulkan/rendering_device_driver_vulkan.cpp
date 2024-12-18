@@ -545,7 +545,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 	TightLocalVector<VkExtensionProperties> device_extensions;
 	device_extensions.resize(device_extension_count);
-	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptr());
+	err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, device_extensions.ptrw());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
@@ -553,7 +553,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		char **swappy_required_extensions;
 		uint32_t swappy_required_extensions_count = 0;
 		// Determine number of extensions required by Swappy frame pacer.
-		SwappyVk_determineDeviceExtensions(physical_device, device_extension_count, device_extensions.ptr(), &swappy_required_extensions_count, nullptr);
+		SwappyVk_determineDeviceExtensions(physical_device, device_extension_count, device_extensions.ptrw(), &swappy_required_extensions_count, nullptr);
 
 		if (swappy_required_extensions_count < device_extension_count) {
 			// Determine the actual extensions.
@@ -563,7 +563,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 				swappy_required_extensions[i] = &pRequiredExtensionsData[i * (VK_MAX_EXTENSION_NAME_SIZE + 1)];
 			}
 			SwappyVk_determineDeviceExtensions(physical_device, device_extension_count,
-					device_extensions.ptr(), &swappy_required_extensions_count, swappy_required_extensions);
+					device_extensions.ptrw(), &swappy_required_extensions_count, swappy_required_extensions);
 
 			// Enable extensions requested by Swappy.
 			for (uint32_t i = 0; i < swappy_required_extensions_count; i++) {
@@ -2601,7 +2601,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		present_info.swapchainCount = swapchains.size();
 		present_info.pSwapchains = swapchains.ptr();
 		present_info.pImageIndices = image_indices.ptr();
-		present_info.pResults = results.ptr();
+		present_info.pResults = results.ptrw();
 
 		device_queue.submit_mutex.lock();
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
@@ -2840,7 +2840,7 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 
 	TightLocalVector<VkSurfaceFormatKHR> formats;
 	formats.resize(format_count);
-	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptr());
+	err = functions.GetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface->vk_surface, &format_count, formats.ptrw());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
 
 	VkFormat format = VK_FORMAT_UNDEFINED;
@@ -2976,7 +2976,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	present_modes.resize(present_modes_count);
-	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, present_modes.ptr());
+	err = functions.GetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface->vk_surface, &present_modes_count, present_modes.ptrw());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	// Choose the present mode based on the display server setting.
@@ -3108,7 +3108,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	swap_chain->images.resize(image_count);
-	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, swap_chain->images.ptr());
+	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, swap_chain->images.ptrw());
 	ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 	VkImageViewCreateInfo view_create_info = {};

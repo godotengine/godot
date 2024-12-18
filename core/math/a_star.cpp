@@ -350,7 +350,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 			break;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
+		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
@@ -380,9 +380,9 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 			e->abs_f_score = e->f_score - e->g_score;
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 			}
 		}
 	}
@@ -847,7 +847,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 			break;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
+		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = astar.pass; // Mark the point as closed.
 
@@ -877,9 +877,9 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 			e->abs_f_score = e->f_score - e->g_score;
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 			}
 		}
 	}

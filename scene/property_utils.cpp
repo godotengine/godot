@@ -271,7 +271,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 	Vector<SceneState::PackState> states_stack_ret;
 	{
 		states_stack_ret.resize(states_stack.size());
-		_FastPackState *ps = states_stack.ptr();
+		_FastPackState *ps = states_stack.ptrw();
 		if (states_stack.size() > 0) {
 			for (int i = states_stack.size() - 1; i >= 0; --i) {
 				states_stack_ret.write[i].state.reference_ptr(ps->state);

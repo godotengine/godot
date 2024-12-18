@@ -241,7 +241,7 @@ void Skeleton3D::_update_process_order() const {
 		return;
 	}
 
-	Bone *bonesptr = bones.ptr();
+	Bone *bonesptr = bones.ptrw();
 	int len = bones.size();
 
 	parentless_bones.clear();
@@ -335,7 +335,7 @@ void Skeleton3D::_notification(int p_what) {
 
 			updating = true;
 
-			Bone *bonesptr = bones.ptr();
+			Bone *bonesptr = bones.ptrw();
 			int len = bones.size();
 
 			thread_local LocalVector<bool> bone_global_pose_dirty_backup;
@@ -1077,7 +1077,7 @@ void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
 
-	Bone *bonesptr = bones.ptr();
+	Bone *bonesptr = bones.ptrw();
 
 	// Loop through nested set.
 	for (int offset = 0; offset < bone_size; offset++) {

@@ -674,7 +674,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 							} else {
 								// New chunk, resize to be safe and append data.
 								incr_data.resize(MAX(data_size + len, prev_size));
-								memcpy(incr_data.ptr() + data_size, data, len);
+								memcpy(incr_data.ptrw() + data_size, data, len);
 								data_size += len;
 							}
 						} else {
@@ -919,7 +919,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 							uint32_t prev_size = incr_data.size();
 							// New chunk, resize to be safe and append data.
 							incr_data.resize(MAX(data_size + len, prev_size));
-							memcpy(incr_data.ptr() + data_size, data, len);
+							memcpy(incr_data.ptrw() + data_size, data, len);
 							data_size += len;
 						} else if (!(format == 0 && len == 0)) {
 							// For unclear reasons the first GetWindowProperty always returns a length and format of 0.
@@ -5429,7 +5429,7 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 			}
 
 			if (net_wm_icon != None) {
-				XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+				XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptrw(), pd.size());
 			}
 
 			if (!g_set_icon_error) {

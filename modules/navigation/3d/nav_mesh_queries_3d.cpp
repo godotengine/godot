@@ -542,7 +542,7 @@ void NavMeshQueries3D::_query_task_simplified_path_points(NavMeshPathQueryTask3D
 	uint32_t index_count = simplified_path_indices.size();
 
 	{
-		Vector3 *points_ptr = p_query_task.path_points.ptr();
+		Vector3 *points_ptr = p_query_task.path_points.ptrw();
 		for (uint32_t i = 0; i < index_count; i++) {
 			points_ptr[i] = points_ptr[simplified_path_indices[i]];
 		}
@@ -550,7 +550,7 @@ void NavMeshQueries3D::_query_task_simplified_path_points(NavMeshPathQueryTask3D
 	}
 
 	if (p_query_task.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES)) {
-		int32_t *types_ptr = p_query_task.path_meta_point_types.ptr();
+		int32_t *types_ptr = p_query_task.path_meta_point_types.ptrw();
 		for (uint32_t i = 0; i < index_count; i++) {
 			types_ptr[i] = types_ptr[simplified_path_indices[i]];
 		}
@@ -558,7 +558,7 @@ void NavMeshQueries3D::_query_task_simplified_path_points(NavMeshPathQueryTask3D
 	}
 
 	if (p_query_task.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS)) {
-		RID *rids_ptr = p_query_task.path_meta_point_rids.ptr();
+		RID *rids_ptr = p_query_task.path_meta_point_rids.ptrw();
 		for (uint32_t i = 0; i < index_count; i++) {
 			rids_ptr[i] = rids_ptr[simplified_path_indices[i]];
 		}
@@ -566,7 +566,7 @@ void NavMeshQueries3D::_query_task_simplified_path_points(NavMeshPathQueryTask3D
 	}
 
 	if (p_query_task.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS)) {
-		int64_t *owners_ptr = p_query_task.path_meta_point_owners.ptr();
+		int64_t *owners_ptr = p_query_task.path_meta_point_owners.ptrw();
 		for (uint32_t i = 0; i < index_count; i++) {
 			owners_ptr[i] = owners_ptr[simplified_path_indices[i]];
 		}

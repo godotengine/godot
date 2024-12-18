@@ -570,7 +570,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptrw(), p_argcount, ret, ce);                                                                                           \
 			if (m_has_return) {                                                                                                                                   \
 				m_return_type r = ret;                                                                                                                            \
 				PtrToArg<m_return_type>::encode(ret, r_ret);                                                                                                      \
@@ -626,7 +626,7 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 			Variant base = PtrToArg<m_class>::convert(p_base);                                                                                                    \
 			Variant ret;                                                                                                                                          \
 			Callable::CallError ce;                                                                                                                               \
-			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce);                                                                                            \
+			m_method_ptr(&base, vars_ptrs.ptrw(), p_argcount, ret, ce);                                                                                           \
 		}                                                                                                                                                         \
 		static int get_argument_count() {                                                                                                                         \
 			return 1;                                                                                                                                             \

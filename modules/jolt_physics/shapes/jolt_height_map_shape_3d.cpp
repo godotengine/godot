@@ -86,7 +86,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {
 	heights_rev.resize(heights.size());
 
 	const real_t *heights_ptr = heights.ptr();
-	float *heights_rev_ptr = heights_rev.ptr();
+	float *heights_rev_ptr = heights_rev.ptrw();
 
 	for (int z = 0; z < depth; ++z) {
 		const int z_rev = (depth - 1) - z;

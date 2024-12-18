@@ -808,7 +808,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 #else
 		LocalVector<ParticleInstanceData3D> particle_vector;
 		particle_vector.resize(particles->amount);
-		particle_array = particle_vector.ptr();
+		particle_array = particle_vector.ptrw();
 		godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(ParticleInstanceData3D), particle_array);
 #endif
 		SortArray<ParticleInstanceData3D, ParticlesViewSort> sorter;
@@ -1173,7 +1173,7 @@ void ParticlesStorage::_particles_reverse_lifetime_sort(Particles *particles) {
 #else
 	LocalVector<ParticleInstanceData> particle_vector;
 	particle_vector.resize(particles->amount);
-	particle_array = particle_vector.ptr();
+	particle_array = particle_vector.ptrw();
 	godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, particle_array);
 #endif
 

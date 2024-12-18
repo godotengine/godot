@@ -1105,7 +1105,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		if (render_list[RENDER_LIST_OPAQUE].elements.size() > 0) {
-			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptrw(), render_list[RENDER_LIST_OPAQUE].element_info.ptrw(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 			render_list_params.framebuffer_format = fb_format;
 			render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1132,7 +1132,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptrw(), render_list[RENDER_LIST_ALPHA].element_info.ptrw(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1183,7 +1183,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptrw(), render_list[RENDER_LIST_ALPHA].element_info.ptrw(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1490,7 +1490,7 @@ void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
-		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptrw() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptrw() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
 		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
 	}
 
@@ -1534,7 +1534,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
-		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, scene_shader.default_specialization);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].element_info.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, scene_shader.default_specialization);
 		//regular forward for now
 		Vector<Color> clear = {
 			Color(0, 0, 0, 0),
@@ -1579,7 +1579,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	RENDER_TIMESTAMP("Render 3D Material");
 
 	{
-		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, scene_shader.default_specialization, false);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].element_info.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, rp_uniform_set, scene_shader.default_specialization, false);
 		//regular forward for now
 		Vector<Color> clear = {
 			Color(0, 0, 0, 0),
@@ -1663,7 +1663,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 
 	{
 		//regular forward for now
-		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, rp_uniform_set, scene_shader.default_specialization);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].element_info.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, rp_uniform_set, scene_shader.default_specialization);
 		_render_list_with_draw_list(&render_list_params, p_fb);
 	}
 	RD::get_singleton()->draw_command_end_label();

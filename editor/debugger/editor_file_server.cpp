@@ -169,13 +169,13 @@ void EditorFileServer::poll() {
 		LocalVector<uint8_t> file_buffer_decompressed;
 		file_buffer_decompressed.resize(file_buffer_decompressed_size);
 
-		err = tcp_peer->get_data(file_buffer.ptr(), file_buffer_size);
+		err = tcp_peer->get_data(file_buffer.ptrw(), file_buffer_size);
 
 		pr.step(TTR("Decompressing remote file system"), 2, true);
 
 		ERR_FAIL_COND(err != OK);
 		// Decompress the text with all the files
-		Compression::decompress(file_buffer_decompressed.ptr(), file_buffer_decompressed.size(), file_buffer.ptr(), file_buffer.size(), Compression::MODE_ZSTD);
+		Compression::decompress(file_buffer_decompressed.ptrw(), file_buffer_decompressed.size(), file_buffer.ptr(), file_buffer.size(), Compression::MODE_ZSTD);
 		String files_text = String::utf8((const char *)file_buffer_decompressed.ptr(), file_buffer_decompressed.size());
 		Vector<String> files = files_text.split("\n");
 

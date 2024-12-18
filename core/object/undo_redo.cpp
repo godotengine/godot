@@ -392,7 +392,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 							args.push_back(&binds[i]);
 						}
 
-						method_callback(method_callback_ud, obj, op.name, args.ptr(), binds.size());
+						method_callback(method_callback_ud, obj, op.name, args.ptrw(), binds.size());
 					}
 				}
 			} break;

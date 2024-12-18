@@ -2320,7 +2320,7 @@ Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3
 		// reverse indices: Godot wants clockwise, but this is counter-clockwise
 		if (face.indices.size() > 2) {
 			// reverse all but the first index.
-			int *indices = face.indices.ptr();
+			int *indices = face.indices.ptrw();
 			for (uint32_t c = 0; c < (face.indices.size() - 1) / 2; c++) {
 				SWAP(indices[c + 1], indices[face.indices.size() - 1 - c]);
 			}

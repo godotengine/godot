@@ -2009,7 +2009,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 	normal_h = nm->get_height();
 
 	normal_sat_vec.resize(normal_w * normal_h * 3);
-	double *normal_sat = normal_sat_vec.ptr();
+	double *normal_sat = normal_sat_vec.ptrw();
 
 	// Create summed area table.
 	for (int y = 0; y < normal_h; y++) {

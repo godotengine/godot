@@ -41,7 +41,7 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 		LocalVector<char> long_file_path_buffer;
 		long_file_path_buffer.resize(r_file_info.size_filename);
 
-		err = unzGetCurrentFileInfo64(p_zip_file, &r_file_info, long_file_path_buffer.ptr(), long_file_path_buffer.size(), nullptr, 0, nullptr, 0);
+		err = unzGetCurrentFileInfo64(p_zip_file, &r_file_info, long_file_path_buffer.ptrw(), long_file_path_buffer.size(), nullptr, 0, nullptr, 0);
 		if (err != UNZ_OK) {
 			return err;
 		}

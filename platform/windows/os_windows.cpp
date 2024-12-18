@@ -941,7 +941,7 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	int total_wchars = MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, nullptr, 0);
 	if (total_wchars > 0) {
 		wchars.resize(total_wchars);
-		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptr(), total_wchars) == 0) {
+		if (MultiByteToWideChar(CP_ACP, 0, p_bytes, p_size, wchars.ptrw(), total_wchars) == 0) {
 			wchars.clear();
 		}
 	}
@@ -1218,7 +1218,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		DWORD read = 0;
 		for (;;) { // Read StdOut and StdErr from pipe.
 			bytes.resize(bytes_in_buffer + CHUNK_SIZE);
-			const bool success = ReadFile(pipe[0], bytes.ptr() + bytes_in_buffer, CHUNK_SIZE, &read, nullptr);
+			const bool success = ReadFile(pipe[0], bytes.ptrw() + bytes_in_buffer, CHUNK_SIZE, &read, nullptr);
 			if (!success || read == 0) {
 				break;
 			}
@@ -1238,14 +1238,14 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			}
 
 			const int bytes_to_convert = bytes_in_buffer + (newline_index + 1);
-			_append_to_pipe(bytes.ptr(), bytes_to_convert, r_pipe, p_pipe_mutex);
+			_append_to_pipe(bytes.ptrw(), bytes_to_convert, r_pipe, p_pipe_mutex);
 
 			bytes_in_buffer = read - (newline_index + 1);
-			memmove(bytes.ptr(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
+			memmove(bytes.ptrw(), bytes.ptr() + bytes_to_convert, bytes_in_buffer);
 		}
 
 		if (bytes_in_buffer > 0) {
-			_append_to_pipe(bytes.ptr(), bytes_in_buffer, r_pipe, p_pipe_mutex);
+			_append_to_pipe(bytes.ptrw(), bytes_in_buffer, r_pipe, p_pipe_mutex);
 		}
 
 		CloseHandle(pipe[0]); // Close pipe read handle.
