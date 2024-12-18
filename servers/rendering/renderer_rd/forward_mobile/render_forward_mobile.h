@@ -68,6 +68,7 @@ private:
 	enum RenderListType {
 		RENDER_LIST_OPAQUE, //used for opaque objects
 		RENDER_LIST_ALPHA, //used for transparent objects
+		RENDER_LIST_DEPTH, //used for depth pre-pass alpha objects
 		RENDER_LIST_SECONDARY, //used for shadows and other objects
 		RENDER_LIST_MAX
 	};
@@ -106,7 +107,7 @@ private:
 		PASS_MODE_COLOR_TRANSPARENT,
 		PASS_MODE_SHADOW,
 		PASS_MODE_SHADOW_DP,
-		// PASS_MODE_DEPTH,
+		PASS_MODE_DEPTH,
 		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
 		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI,
 		PASS_MODE_DEPTH_MATERIAL,
