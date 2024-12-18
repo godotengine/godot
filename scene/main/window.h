@@ -119,6 +119,7 @@ private:
 
 	String title;
 	String tr_title;
+	mutable DisplayServer::ScreenSubpixelLayout screen_subpixel_layout = DisplayServer::SCREEN_SUBPIXEL_LAYOUT_HRGB;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -373,6 +374,8 @@ public:
 
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;
+
+	virtual DisplayServer::ScreenSubpixelLayout _get_screen_subpixel_layout() const override;
 
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;

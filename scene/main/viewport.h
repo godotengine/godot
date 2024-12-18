@@ -327,6 +327,8 @@ private:
 
 	uint32_t canvas_cull_mask = 0xffffffff; // by default show everything
 
+	DisplayServer::ScreenSubpixelLayout subpixel_layout = DisplayServer::SCREEN_SUBPIXEL_LAYOUT_AUTO;
+
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
 		SUB_WINDOW_DRAG_MOVE,
@@ -552,6 +554,11 @@ public:
 
 	void set_msaa_3d(MSAA p_msaa);
 	MSAA get_msaa_3d() const;
+
+	void set_subpixel_layout(DisplayServer::ScreenSubpixelLayout p_subpixel_layout);
+	DisplayServer::ScreenSubpixelLayout get_subpixel_layout() const;
+
+	virtual DisplayServer::ScreenSubpixelLayout _get_screen_subpixel_layout() const;
 
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;

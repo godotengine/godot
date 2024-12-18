@@ -647,6 +647,20 @@ void RendererCanvasCull::canvas_item_set_modulate(RID p_item, const Color &p_col
 	canvas_item->modulate = p_color;
 }
 
+void RendererCanvasCull::canvas_item_set_subpixel_layout(RID p_item, DisplayServer::ScreenSubpixelLayout p_layout) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->subpixel_layout = p_layout;
+}
+
+DisplayServer::ScreenSubpixelLayout RendererCanvasCull::canvas_item_get_subpixel_layout(RID p_item) {
+	const Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL_V(canvas_item, DisplayServer::SCREEN_SUBPIXEL_LAYOUT_NONE);
+
+	return canvas_item->subpixel_layout;
+}
+
 void RendererCanvasCull::canvas_item_set_self_modulate(RID p_item, const Color &p_color) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

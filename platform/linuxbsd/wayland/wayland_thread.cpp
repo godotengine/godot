@@ -1062,6 +1062,38 @@ void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_outp
 	ss->pending_data.make.parse_utf8(make);
 	ss->pending_data.model.parse_utf8(model);
 
+	switch (transform) {
+		case 1:
+		case 7: {
+			ss->pending_data.orientation = DisplayServer::SCREEN_PORTRAIT;
+		} break;
+		case 2:
+		case 4: {
+			ss->pending_data.orientation = DisplayServer::SCREEN_REVERSE_LANDSCAPE;
+		} break;
+		case 3:
+		case 5: {
+			ss->pending_data.orientation = DisplayServer::SCREEN_REVERSE_PORTRAIT;
+		} break;
+		default: {
+			ss->pending_data.orientation = DisplayServer::SCREEN_LANDSCAPE;
+		} break;
+	}
+	switch (subpixel) {
+		case 3: {
+			ss->pending_data.subpixel = DisplayServer::_subpixel_layout_rotate(DisplayServer::SCREEN_SUBPIXEL_LAYOUT_HBGR, ss->pending_data.orientation);
+		} break;
+		case 4: {
+			ss->pending_data.subpixel = DisplayServer::_subpixel_layout_rotate(DisplayServer::SCREEN_SUBPIXEL_LAYOUT_VRGB, ss->pending_data.orientation);
+		} break;
+		case 5: {
+			ss->pending_data.subpixel = DisplayServer::_subpixel_layout_rotate(DisplayServer::SCREEN_SUBPIXEL_LAYOUT_VBGR, ss->pending_data.orientation);
+		} break;
+		default: {
+			ss->pending_data.subpixel = DisplayServer::_subpixel_layout_rotate(DisplayServer::SCREEN_SUBPIXEL_LAYOUT_HRGB, ss->pending_data.orientation);
+		} break;
+	}
+
 	// `wl_output::done` is a version 2 addition. We'll directly update the data
 	// for compatibility.
 	if (wl_output_get_version(wl_output) == 1) {

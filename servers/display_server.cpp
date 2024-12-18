@@ -905,6 +905,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_image", "screen"), &DisplayServer::screen_get_image, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_image_rect", "rect"), &DisplayServer::screen_get_image_rect);
 
+	ClassDB::bind_method(D_METHOD("screen_get_subpixel_layout", "screen"), &DisplayServer::screen_get_subpixel_layout, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 
@@ -1168,6 +1170,14 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_ENDED);
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_CANCELED);
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
+
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_NONE);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_HRGB);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_HBGR);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_VRGB);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_VBGR);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_AUTO);
+	BIND_ENUM_CONSTANT(SCREEN_SUBPIXEL_LAYOUT_MAX);
 }
 
 Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot) {

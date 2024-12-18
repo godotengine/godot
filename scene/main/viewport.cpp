@@ -3425,6 +3425,33 @@ Viewport::MSAA Viewport::get_msaa_3d() const {
 	return msaa_3d;
 }
 
+void Viewport::set_subpixel_layout(DisplayServer::ScreenSubpixelLayout p_subpixel_layout) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX(p_subpixel_layout, DisplayServer::SCREEN_SUBPIXEL_LAYOUT_MAX);
+	if (subpixel_layout == p_subpixel_layout) {
+		return;
+	}
+	subpixel_layout = p_subpixel_layout;
+}
+
+DisplayServer::ScreenSubpixelLayout Viewport::get_subpixel_layout() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServer::SCREEN_SUBPIXEL_LAYOUT_NONE);
+	return subpixel_layout;
+}
+
+DisplayServer::ScreenSubpixelLayout Viewport::_get_screen_subpixel_layout() const {
+	if (subpixel_layout == DisplayServer::SCREEN_SUBPIXEL_LAYOUT_AUTO) {
+		DisplayServer::ScreenSubpixelLayout proj_layout = ProjectSettings::get_singleton()->has_setting("gui/theme/lcd_subpixel_layout") ? (DisplayServer::ScreenSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout") : DisplayServer::SCREEN_SUBPIXEL_LAYOUT_NONE;
+		if (proj_layout == DisplayServer::SCREEN_SUBPIXEL_LAYOUT_AUTO) {
+			return DisplayServer::SCREEN_SUBPIXEL_LAYOUT_NONE;
+		} else {
+			return proj_layout;
+		}
+	} else {
+		return subpixel_layout;
+	}
+}
+
 void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_screen_space_aa, SCREEN_SPACE_AA_MAX);
@@ -4690,6 +4717,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
 
+	ClassDB::bind_method(D_METHOD("set_subpixel_layout", "_subpixel_layout"), &Viewport::set_subpixel_layout);
+	ClassDB::bind_method(D_METHOD("get_subpixel_layout"), &Viewport::get_subpixel_layout);
+
 	ClassDB::bind_method(D_METHOD("set_use_taa", "enable"), &Viewport::set_use_taa);
 	ClassDB::bind_method(D_METHOD("is_using_taa"), &Viewport::is_using_taa);
 
@@ -4851,6 +4881,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_2d", "get_msaa_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_3d", "get_msaa_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_layout", PROPERTY_HINT_ENUM, "Flat,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR,Auto"), "set_subpixel_layout", "get_subpixel_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_taa"), "set_use_taa", "is_using_taa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");

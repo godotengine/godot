@@ -572,6 +572,26 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	return wayland_thread.screen_get_data(p_screen).refresh_rate;
 }
 
+DisplayServer::ScreenSubpixelLayout DisplayServerWayland::screen_get_subpixel_layout(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	return wayland_thread.screen_get_data(p_screen).subpixel;
+}
+
+DisplayServer::ScreenOrientation DisplayServerWayland::screen_get_orientation(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	return wayland_thread.screen_get_data(p_screen).orientation;
+}
+
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 

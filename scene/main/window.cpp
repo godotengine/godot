@@ -351,9 +351,6 @@ void Window::set_current_screen(int p_screen) {
 int Window::get_current_screen() const {
 	ERR_READ_THREAD_GUARD_V(0);
 
-	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		current_screen = DisplayServer::get_singleton()->window_get_current_screen(window_id);
-	}
 	return current_screen;
 }
 
@@ -729,6 +726,11 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 		return;
 	}
 	position = p_callback.position;
+
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		current_screen = DisplayServer::get_singleton()->window_get_current_screen(window_id);
+		screen_subpixel_layout = DisplayServer::get_singleton()->screen_get_subpixel_layout(current_screen);
+	}
 
 	if (size != p_callback.size) {
 		size = p_callback.size;
@@ -1597,6 +1599,19 @@ Vector<Vector2> Window::get_mouse_passthrough_polygon() const {
 	return mpath;
 }
 
+DisplayServer::ScreenSubpixelLayout Window::_get_screen_subpixel_layout() const {
+	if (get_subpixel_layout() == DisplayServer::SCREEN_SUBPIXEL_LAYOUT_AUTO) {
+		DisplayServer::ScreenSubpixelLayout proj_layout = ProjectSettings::get_singleton()->has_setting("gui/theme/lcd_subpixel_layout") ? (DisplayServer::ScreenSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout") : screen_subpixel_layout;
+		if (proj_layout == DisplayServer::SCREEN_SUBPIXEL_LAYOUT_AUTO) {
+			return screen_subpixel_layout;
+		} else {
+			return proj_layout;
+		}
+	} else {
+		return get_subpixel_layout();
+	}
+}
+
 void Window::set_wrap_controls(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	wrap_controls = p_enable;
@@ -1868,6 +1883,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	} else {
 		int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
 		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
+		screen_subpixel_layout = DisplayServer::get_singleton()->screen_get_subpixel_layout(current_screen);
 	}
 	if (parent_rect != Rect2i() && !parent_rect.intersects(Rect2i(position, size))) {
 		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));

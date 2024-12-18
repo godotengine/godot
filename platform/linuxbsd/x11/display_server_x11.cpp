@@ -1156,6 +1156,111 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return _screen_get_rect(p_screen).size;
 }
 
+DisplayServer::ScreenSubpixelLayout DisplayServerX11::screen_get_subpixel_layout(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_SUBPIXEL_LAYOUT_NONE);
+
+	DisplayServer::ScreenSubpixelLayout ret = SCREEN_SUBPIXEL_LAYOUT_NONE;
+	if (xrandr_ext_ok) {
+		int count = 0;
+		if (xrr_get_monitors && xrr_free_monitors && xrr_get_screen_resources && xrr_free_screen_resources && xrr_get_output_info && xrr_free_output_info && xrr_get_crtc_info && xrr_free_crtc_info) {
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+			if (monitors[p_screen].noutput > 0) {
+				XRRScreenResources *res = xrr_get_screen_resources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+				if (res) {
+					XRROutputInfo *info = xrr_get_output_info(x11_display, res, monitors[p_screen].outputs[0]);
+					if (info) {
+						XRRCrtcInfo *crtc = xrr_get_crtc_info(x11_display, res, info->crtc);
+						if (crtc) {
+							ScreenOrientation ori;
+							switch (crtc->rotation) {
+								case RR_Rotate_90: {
+									ori = SCREEN_PORTRAIT;
+								} break;
+								case RR_Rotate_180: {
+									ori = SCREEN_REVERSE_LANDSCAPE;
+								} break;
+								case RR_Rotate_270: {
+									ori = SCREEN_REVERSE_PORTRAIT;
+								} break;
+								default: {
+									ori = SCREEN_LANDSCAPE;
+								} break;
+							}
+							switch (info->subpixel_order) {
+								case SubPixelHorizontalBGR: {
+									ret = _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_HBGR, ori);
+								} break;
+								case SubPixelVerticalRGB: {
+									ret = _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_VRGB, ori);
+								} break;
+								case SubPixelVerticalBGR: {
+									ret = _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_VBGR, ori);
+								} break;
+								default: {
+									ret = _subpixel_layout_rotate(SCREEN_SUBPIXEL_LAYOUT_HRGB, ori);
+								} break;
+							}
+							xrr_free_crtc_info(crtc);
+						}
+						xrr_free_output_info(info);
+					}
+					xrr_free_screen_resources(res);
+				}
+			}
+			xrr_free_monitors(monitors);
+		}
+	}
+	return ret;
+}
+
+DisplayServer::ScreenOrientation DisplayServerX11::screen_get_orientation(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_LANDSCAPE);
+
+	DisplayServer::ScreenOrientation ret = SCREEN_LANDSCAPE;
+	if (xrandr_ext_ok) {
+		int count = 0;
+		if (xrr_get_monitors && xrr_free_monitors && xrr_get_screen_resources && xrr_free_screen_resources && xrr_get_output_info && xrr_free_output_info && xrr_get_crtc_info && xrr_free_crtc_info) {
+			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
+			if (monitors[p_screen].noutput > 0) {
+				XRRScreenResources *res = xrr_get_screen_resources(x11_display, windows[MAIN_WINDOW_ID].x11_window);
+				if (res) {
+					XRROutputInfo *info = xrr_get_output_info(x11_display, res, monitors[p_screen].outputs[0]);
+					if (info) {
+						XRRCrtcInfo *crtc = xrr_get_crtc_info(x11_display, res, info->crtc);
+						if (crtc) {
+							switch (crtc->rotation) {
+								case RR_Rotate_90: {
+									ret = SCREEN_PORTRAIT;
+								} break;
+								case RR_Rotate_180: {
+									ret = SCREEN_REVERSE_LANDSCAPE;
+								} break;
+								case RR_Rotate_270: {
+									ret = SCREEN_REVERSE_PORTRAIT;
+								} break;
+								default: {
+									ret = SCREEN_LANDSCAPE;
+								} break;
+							}
+							xrr_free_crtc_info(crtc);
+						}
+						xrr_free_output_info(info);
+					}
+					xrr_free_screen_resources(res);
+				}
+			}
+			xrr_free_monitors(monitors);
+		}
+	}
+	return ret;
+}
+
 // A Handler to avoid crashing on non-fatal X errors by default.
 //
 // The original X11 error formatter `_XPrintDefaultError` is defined here:
@@ -1471,7 +1576,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
-		if (xrr_get_monitors) {
+		if (xrr_get_monitors && xrr_free_monitors) {
 			xrr_monitor_info *monitors = xrr_get_monitors(x11_display, windows[MAIN_WINDOW_ID].x11_window, true, &count);
 			if (p_screen < count) {
 				double xdpi = sc.width / (double)monitors[p_screen].mwidth * 25.4;
@@ -6105,13 +6210,41 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			if (!xrr_get_monitors) {
 				err = dlerror();
 				fprintf(stderr, "could not find symbol XRRGetMonitors\nError: %s\n", err);
-			} else {
-				xrr_free_monitors = (xrr_free_monitors_t)dlsym(xrandr_handle, "XRRFreeMonitors");
-				if (!xrr_free_monitors) {
-					err = dlerror();
-					fprintf(stderr, "could not find XRRFreeMonitors\nError: %s\n", err);
-					xrr_get_monitors = nullptr;
-				}
+			}
+			xrr_free_monitors = (xrr_free_monitors_t)dlsym(xrandr_handle, "XRRFreeMonitors");
+			if (!xrr_free_monitors) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRFreeMonitors\nError: %s\n", err);
+			}
+			xrr_get_screen_resources = (xrr_get_screen_resources_t)dlsym(xrandr_handle, "XRRGetScreenResources");
+			if (!xrr_get_screen_resources) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRGetScreenResources\nError: %s\n", err);
+			}
+			xrr_free_screen_resources = (xrr_free_screen_resources_t)dlsym(xrandr_handle, "XRRFreeScreenResources");
+			if (!xrr_free_screen_resources) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRFreeScreenResources\nError: %s\n", err);
+			}
+			xrr_get_output_info = (xrr_get_output_info_t)dlsym(xrandr_handle, "XRRGetOutputInfo");
+			if (!xrr_get_output_info) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRGetOutputInfo\nError: %s\n", err);
+			}
+			xrr_free_output_info = (xrr_free_output_info_t)dlsym(xrandr_handle, "XRRFreeOutputInfo");
+			if (!xrr_free_output_info) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRFreeOutputInfo\nError: %s\n", err);
+			}
+			xrr_get_crtc_info = (xrr_get_crtc_info_t)dlsym(xrandr_handle, "XRRGetCrtcInfo");
+			if (!xrr_get_crtc_info) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRGetCrtcInfo\nError: %s\n", err);
+			}
+			xrr_free_crtc_info = (xrr_free_crtc_info_t)dlsym(xrandr_handle, "XRRFreeCrtcInfo");
+			if (!xrr_free_crtc_info) {
+				err = dlerror();
+				fprintf(stderr, "could not find XRRFreeCrtcInfo\nError: %s\n", err);
 			}
 		}
 	}

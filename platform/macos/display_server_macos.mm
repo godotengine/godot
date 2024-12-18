@@ -1763,6 +1763,28 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 	return img;
 }
 
+DisplayServer::ScreenOrientation DisplayServerMacOS::screen_get_orientation(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		double orientation = CGDisplayRotation([[description objectForKey:@"NSScreenNumber"] unsignedIntValue]);
+		if (Math::is_equal_approx(orientation, 90.0)) {
+			return SCREEN_PORTRAIT;
+		} else if (Math::is_equal_approx(orientation, 180.0)) {
+			return SCREEN_REVERSE_LANDSCAPE;
+		} else if (Math::is_equal_approx(orientation, 270.0)) {
+			return SCREEN_REVERSE_PORTRAIT;
+		} else {
+			return SCREEN_LANDSCAPE;
+		}
+	}
+	ERR_PRINT("An error occurred while trying to get the screen orientation.");
+	return SCREEN_LANDSCAPE;
+}
+
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 

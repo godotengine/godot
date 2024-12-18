@@ -1093,7 +1093,7 @@
 			The default scale factor for [Control]s, when not overridden by a [Theme].
 			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
 		</member>
-		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
+		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="5">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/button_shortcut_feedback_highlight_time" type="float" setter="" getter="" default="0.2">

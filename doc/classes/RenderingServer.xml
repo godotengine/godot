@@ -436,6 +436,13 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_get_subpixel_layout">
+			<return type="int" enum="DisplayServer.ScreenSubpixelLayout" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Return screen subpixel layout used for font anti-aliasing.
+			</description>
+		</method>
 		<method name="canvas_item_reset_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -578,6 +585,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. Y-sorting only affects children that inherit from the canvas item specified by the [param item] RID, not the canvas item itself. Equivalent to [member CanvasItem.y_sort_enabled].
+			</description>
+		</method>
+		<method name="canvas_item_set_subpixel_layout">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="layout" type="int" enum="DisplayServer.ScreenSubpixelLayout" />
+			<description>
+				Sets screen subpixel layout used for font anti-aliasing.
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">

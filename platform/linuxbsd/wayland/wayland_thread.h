@@ -284,6 +284,8 @@ public:
 
 		Size2i size;
 		Size2i physical_size;
+		DisplayServer::ScreenSubpixelLayout subpixel = DisplayServer::SCREEN_SUBPIXEL_LAYOUT_NONE;
+		DisplayServer::ScreenOrientation orientation = DisplayServer::SCREEN_LANDSCAPE;
 
 		float refresh_rate = -1;
 		int scale = 1;

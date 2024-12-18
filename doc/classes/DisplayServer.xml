@@ -1101,7 +1101,7 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the [param screen]'s current orientation. See also [method screen_set_orientation].
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux (X11/Wayland), macOS and Windows.
 			</description>
 		</method>
 		<method name="screen_get_pixel" qualifiers="const">
@@ -1159,6 +1159,14 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the screen's size in pixels. See also [method screen_get_position] and [method screen_get_usable_rect].
+			</description>
+		</method>
+		<method name="screen_get_subpixel_layout" qualifiers="const">
+			<return type="int" enum="DisplayServer.ScreenSubpixelLayout" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns sub-pixel structure of the screen.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland) and Windows.
 			</description>
 		</method>
 		<method name="screen_get_usable_rect" qualifiers="const">
@@ -1970,13 +1978,13 @@
 			Default landscape orientation.
 		</constant>
 		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
-			Default portrait orientation.
+			Default portrait orientation (90 degrees counter-clockwise).
 		</constant>
 		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
-			Reverse landscape orientation (upside down).
+			Reverse landscape orientation (upside down, 180 degrees counter-clockwise).
 		</constant>
 		<constant name="SCREEN_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
-			Reverse portrait orientation (upside down).
+			Reverse portrait orientation (270 degrees counter-clockwise).
 		</constant>
 		<constant name="SCREEN_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
 			Automatic landscape orientation (default or reverse depending on sensor).
@@ -2238,6 +2246,26 @@
 		</constant>
 		<constant name="TTS_UTTERANCE_BOUNDARY" value="3" enum="TTSUtteranceEvent">
 			Utterance reached a word or sentence boundary.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_NONE" value="0" enum="ScreenSubpixelLayout">
+			Display has no subpixel layout.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_HRGB" value="1" enum="ScreenSubpixelLayout">
+			Display has horizontal RGB subpixel layout.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_HBGR" value="2" enum="ScreenSubpixelLayout">
+			Display has horizontal BGR subpixel layout.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_VRGB" value="3" enum="ScreenSubpixelLayout">
+			Display has vertical RGB subpixel layout.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_VBGR" value="4" enum="ScreenSubpixelLayout">
+			Display has vertical BGR subpixel layout.
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_AUTO" value="5" enum="ScreenSubpixelLayout">
+			Automatically detect subpixel layout, this value can be used in [member ProjectSettings.gui/theme/lcd_subpixel_layout] and [member Viewport.subpixel_layout].
+		</constant>
+		<constant name="SCREEN_SUBPIXEL_LAYOUT_MAX" value="6" enum="ScreenSubpixelLayout">
 		</constant>
 	</constants>
 </class>
