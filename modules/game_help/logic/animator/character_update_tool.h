@@ -166,10 +166,9 @@ protected:
     Ref<HumanBoneConfig> human_config;
     HumanAnim::HumanSkeleton temp_anim_skeleton;
     HumanAnim::HumanSkeleton human_skeleton;
-	bool is_new_anim = false;
 
 
-    HashMap<ObjectID,Ref<HumanBonePostRotation>> animation_cache;
+    HashSet<ObjectID> animation_cache;
     LocalVector<AnimationMixer::AnimationInstance> animation_instances;
     ObjectID skeleton_id;
     Skeleton3D *skeleton = nullptr;

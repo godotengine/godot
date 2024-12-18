@@ -118,7 +118,7 @@ void CharacterAnimationUpdateTool::layer_blend_apply(Ref<CharacterAnimatorLayerC
             }
         }
     }
-    if(!is_new_anim &&is_human && is_using_root_motion) {
+    if(is_human && is_using_root_motion) {
         //if(human_config->human) {
         //    human_config->human->app_dof_to_skeleton(t_skeleton,human_key_frame);
         //}
@@ -150,14 +150,7 @@ void CharacterAnimationUpdateTool::add_animation_cache(const Dictionary& bone_ma
     if (animation_cache.has(p_anim->get_instance_id())) {
         return;
     }
-    Ref<HumanBonePostRotation> post_rotation;
-    Ref<HumanBoneConfig> source_config = p_anim->get_human_config();
-    if(source_config.is_valid()) {
-        post_rotation = memnew(HumanBonePostRotation);
-        post_rotation->init(source_config,human_config);
-        is_new_anim = true;
-    }
-    animation_cache.insert(p_anim->get_instance_id(),post_rotation);
+    animation_cache.insert(p_anim->get_instance_id());
 
     Ref<Animation> anim = p_anim;
     for (int i = 0; i < anim->get_track_count(); i++) {
@@ -249,29 +242,21 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     Animation::Track* const* tracks_ptr = tracks.ptr();
     real_t a_length = a->get_length();
 
-    Ref<HumanBonePostRotation> post_rotation = animation_cache.get(a->get_instance_id());
-    if(post_rotation.is_null()) {
-        if (human_config.is_valid()) {
-            temp_anim_skeleton.rest(*human_config.ptr());
-        }        
-    }
+    if (human_config.is_valid()) {
+        temp_anim_skeleton.rest(*human_config.ptr());
+    }       
 
     double blend = ai.playback_info.weight;
     int count = tracks.size();
     for (int i = 0; i < count; i++) {
         const Animation::Track* animation_track = tracks_ptr[i];
+		StringName name = animation_track->path.get_name(0);
         if (!animation_track->enabled) {
             continue;
         }
         switch (animation_track->type) {
         case Animation::TYPE_POSITION_3D: {
-            StringName name = animation_track->path.get_name(0);
-            if(post_rotation.is_valid()) {
-                if(post_rotation->apply_animation(a, animation_track, i, time, delta)) {
-                    continue;
-                }
-            }
-			else if (name.begins_with("hm."))
+			if (name.begins_with("hm."))
 			{
 
 				if (human_config.is_null()) {
@@ -378,10 +363,25 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             }
         } break;
         case Animation::TYPE_ROTATION_3D: {
-			if (post_rotation.is_valid()) {
-				if (post_rotation->apply_animation(a, animation_track, i, time, delta)) {
+			if (name.begins_with("hm."))
+			{
+
+				if (human_config.is_null()) {
 					continue;
 				}
+				if (name.begins_with("hm.v.")) {
+					temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
+				}
+				else if (name.begins_with("hm.p.")) {
+					temp_anim_skeleton.set_root_position_add(a, name, i, time, delta);
+				}
+				else {
+					Vector3 loc;
+					Error err = a->try_position_track_interpolate(i, time, &loc);
+					temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
+
+				}
+				continue;
 			}
             int bone_idx = get_bone_index(ai.animation_data.bone_map, animation_track->path);
             if (bone_idx == -1) {
@@ -568,15 +568,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
         }
 
     }
-	if (post_rotation.is_valid()) {
-		post_rotation->retarget();
-		Skeleton3D* t_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
-		if (t_skeleton) {
-			post_rotation->apply(t_skeleton, bone_blend_weight, blend * blend_weight);
-			human_skeleton.apply_root_motion(root_motion.root_motion_position, root_motion.root_motion_rotation, root_motion.root_motion_position_add, root_motion.root_motion_rotation_add, blend * blend_weight);
-		}
-	}    
-    else if( is_human && human_config.ptr()) {
+	if( is_human && human_config.ptr()) {
 		HumanAnim::HumanAnimmation::retarget(*human_config.ptr(), temp_anim_skeleton);
         human_skeleton.blend(temp_anim_skeleton, blend);
     }

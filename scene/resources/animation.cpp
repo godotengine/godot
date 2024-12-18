@@ -6679,7 +6679,7 @@ void HumanAnimationBoneNameMapping::MapAnimationBoneName(const Ref<Animation> &p
 	for(int i = 0; i < p_animation->get_track_count(); i++) {
 		NodePath path = p_animation->track_get_path(i);
 		Animation::TrackType track_src_type = p_animation->track_get_type(i);
-		if(track_src_type == Animation::TYPE_POSITION_3D || track_src_type == Animation::TYPE_ROTATION_3D) {
+		if(track_src_type == Animation::TYPE_POSITION_3D || track_src_type == Animation::TYPE_VALUE) {
 			
 			StringName bone_name = path.get_name(0);
 			if(mapping.has(bone_name)) {
@@ -6700,6 +6700,14 @@ void HumanAnimationBoneNameMapping::MapAnimationBoneName(const Ref<Animation> &p
 			else if(bone_name.begins_with("hm.gr.")) {				
 				String name = bone_name.substr(6);
 				mapping[bone_name] = name;					
+			}
+			else if (bone_name.begins_with("hm.r.")) {
+				String name = bone_name.substr(5);
+				mapping[bone_name] = name;
+			}
+			else if (bone_name.begins_with("hm.")) {
+				String name = bone_name.substr(3);
+				mapping[bone_name] = name;
 			}
 		}
 	}
