@@ -1248,7 +1248,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						} else if (item_fx->type == ITEM_RAINBOW) {
 							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
-							font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							font_color = font_color.from_hsv(MAX(item_rainbow->frequency, 0) * ABS(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
 						} else if (item_fx->type == ITEM_PULSE) {
 							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
 
@@ -3906,7 +3906,7 @@ void RichTextLabel::push_tornado(float p_frequency = 1.0f, float p_radius = 10.0
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_frequency) {
+void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_frequency, float p_speed) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3914,6 +3914,7 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	ItemRainbow *item = memnew(ItemRainbow);
 	item->owner = get_instance_id();
 	item->rid = items.make_rid(item);
+	item->speed = p_speed;
 	item->frequency = p_frequency;
 	item->saturation = p_saturation;
 	item->value = p_value;
@@ -5379,7 +5380,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				frequency = frequency_option->value.to_float();
 			}
 
-			push_rainbow(saturation, value, frequency);
+			float speed = 1.0f;
+			OptionMap::Iterator speed_option = bbcode_options.find("speed");
+			if (speed_option) {
+				speed = speed_option->value.to_float();
+			}
+
+			push_rainbow(saturation, value, frequency, speed);
 			pos = brk_end + 1;
 			tag_stack.push_front("rainbow");
 			set_process_internal(true);

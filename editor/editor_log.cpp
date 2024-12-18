@@ -486,7 +486,7 @@ EditorLog::EditorLog() {
 	clear_button = memnew(Button);
 	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
 	clear_button->set_focus_mode(FOCUS_NONE);
-	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
+	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
 
@@ -494,7 +494,7 @@ EditorLog::EditorLog() {
 	copy_button = memnew(Button);
 	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
 	copy_button->set_focus_mode(FOCUS_NONE);
-	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
+	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTRC("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
 	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
 	hb_tools->add_child(copy_button);
@@ -523,7 +523,7 @@ EditorLog::EditorLog() {
 	show_search_button->set_focus_mode(FOCUS_NONE);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);
-	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTR("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
+	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));
 	show_search_button->set_shortcut_context(this);
 	show_search_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_visible));
 	hb_tools2->add_child(show_search_button);
