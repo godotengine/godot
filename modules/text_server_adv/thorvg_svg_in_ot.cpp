@@ -175,7 +175,11 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				if (parser->has_attribute("id")) {
 					const String &gl_name = parser->get_named_attribute_value("id");
 					if (gl_name.begins_with("glyph")) {
+#ifdef GDEXTENSION
+						int dot_pos = gl_name.find(".");
+#else
 						int dot_pos = gl_name.find_char('.');
+#endif // GDEXTENSION
 						int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
 
 						TVG_NodeCache node_cache = TVG_NodeCache();
