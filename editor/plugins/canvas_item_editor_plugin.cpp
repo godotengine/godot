@@ -43,6 +43,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
@@ -991,6 +992,19 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			undo_redo->commit_action();
 			_reset_create_position();
 		} break;
+		default: {
+			if (p_result >= EditorContextMenuPlugin::BASE_ID) {
+				TypedArray<Node> nodes;
+				nodes.resize(selection_results.size());
+
+				int i = 0;
+				for (const _SelectResult &result : selection_results) {
+					nodes[i] = result.item;
+					i++;
+				}
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, p_result, nodes);
+			}
+		}
 	}
 }
 
@@ -2459,6 +2473,21 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ToolMove")), TTR("Move Node(s) Here"), ADD_MOVE);
 					break;
 				}
+			}
+
+			// Context menu plugin receives paths of nodes under cursor. It's a complex operation, so perform it only when necessary.
+			if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR)) {
+				selection_results.clear();
+				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), selection_results, true);
+
+				PackedStringArray paths;
+				paths.resize(selection_results.size());
+				String *paths_write = paths.ptrw();
+
+				for (int i = 0; i < paths.size(); i++) {
+					paths_write[i] = selection_results[i].item->get_path();
+				}
+				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths);
 			}
 
 			add_node_menu->reset_size();
