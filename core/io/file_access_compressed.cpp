@@ -125,7 +125,7 @@ void FileAccessCompressed::_close() {
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
 		f->store_32(cmode); //write compression mode 4
 		f->store_32(block_size); //write block size 4
-		f->store_32(write_max); //max amount of data written 4
+		f->store_32(uint32_t(write_max)); //max amount of data written 4
 		uint32_t bc = (write_max / block_size) + 1;
 
 		for (uint32_t i = 0; i < bc; i++) {
@@ -147,7 +147,7 @@ void FileAccessCompressed::_close() {
 
 		f->seek(16); //ok write block sizes
 		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(block_sizes[i]);
+			f->store_32(uint32_t(block_sizes[i]));
 		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
@@ -310,7 +310,9 @@ bool FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length)
 		write_ptr = buffer.ptrw();
 	}
 
-	memcpy(write_ptr + write_pos, p_src, p_length);
+	if (p_length) {
+		memcpy(write_ptr + write_pos, p_src, p_length);
+	}
 
 	write_pos += p_length;
 	return true;
