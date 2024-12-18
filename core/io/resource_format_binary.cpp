@@ -33,8 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
-#include "core/io/image.h"
-#include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
