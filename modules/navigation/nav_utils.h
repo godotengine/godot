@@ -152,7 +152,7 @@ struct NavigationPoly {
 		traversable_poly_index = UINT32_MAX;
 		back_navigation_poly_id = -1;
 		back_navigation_edge = -1;
-		traveled_distance = 0.0;
+		traveled_distance = FLT_MAX;
 		distance_to_destination = 0.0;
 	}
 };
