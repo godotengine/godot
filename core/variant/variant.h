@@ -147,14 +147,18 @@ private:
 		union BucketSmall {
 			BucketSmall() {}
 			~BucketSmall() {}
-			Transform2D _transform2d;
-			::AABB _aabb;
+			union {
+				Transform2D _transform2d;
+				::AABB _aabb;
+			};
 		};
 		union BucketMedium {
 			BucketMedium() {}
 			~BucketMedium() {}
-			Basis _basis;
-			Transform3D _transform3d;
+			union {
+				Basis _basis;
+				Transform3D _transform3d;
+			};
 		};
 		union BucketLarge {
 			BucketLarge() {}
