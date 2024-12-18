@@ -32,6 +32,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "scene/resources/texture.h"
 #include "servers/rendering/storage/variant_converters.h"
 #include "texture_storage.h"
 
@@ -2227,8 +2228,11 @@ void MaterialStorage::material_set_param(RID p_material, const StringName &p_par
 
 	if (p_value.get_type() == Variant::NIL) {
 		material->params.erase(p_param);
+	} else if (p_value.get_type() == Variant::OBJECT) {
+		Ref<Texture> tex = p_value;
+		ERR_FAIL_COND_MSG(tex.is_null(), "Invalid object, only texture based objects are allowed.");
+		material->params[p_param] = p_value;
 	} else {
-		ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT); //object not allowed
 		material->params[p_param] = p_value;
 	}
 
