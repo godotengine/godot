@@ -1648,7 +1648,7 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
 	slot_menu->add_item(TTR("Go to Method"), SLOT_MENU_GO_TO_METHOD);
-	slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTR("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
+	slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTRC("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
 	add_child(slot_menu);
 
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));

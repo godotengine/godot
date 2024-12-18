@@ -149,6 +149,7 @@
 #include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_graph_node.h"
 #include "tests/scene/test_option_button.h"
+#include "tests/scene/test_split_container.h"
 #include "tests/scene/test_tab_bar.h"
 #include "tests/scene/test_tab_container.h"
 #include "tests/scene/test_text_edit.h"

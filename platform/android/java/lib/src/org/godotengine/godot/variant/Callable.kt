@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  random_pcg.cpp                                                        */
+/*  Callable.kt                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,57 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "random_pcg.h"
+package org.godotengine.godot.variant
 
-#include "core/os/os.h"
-#include "core/templates/vector.h"
+import androidx.annotation.Keep
 
-RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
-		pcg(),
-		current_inc(p_inc) {
-	seed(p_seed);
-}
+/**
+ * Android version of a Godot built-in Callable type representing a method or a standalone function.
+ */
+@Keep
+class Callable private constructor(private val nativeCallablePointer: Long) {
 
-void RandomPCG::randomize() {
-	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
-}
-
-int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
-	ERR_FAIL_COND_V_MSG(p_weights.is_empty(), -1, "Weights array is empty.");
-	int64_t weights_size = p_weights.size();
-	const float *weights = p_weights.ptr();
-	float weights_sum = 0.0;
-	for (int64_t i = 0; i < weights_size; ++i) {
-		weights_sum += weights[i];
-	}
-
-	float remaining_distance = randf() * weights_sum;
-	for (int64_t i = 0; i < weights_size; ++i) {
-		remaining_distance -= weights[i];
-		if (remaining_distance < 0) {
-			return i;
+	companion object {
+		/**
+		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
+		 */
+		@JvmStatic
+		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
+			return nativeCallObject(godotObjectId, methodName, methodParameters)
 		}
-	}
 
-	for (int64_t i = weights_size - 1; i >= 0; --i) {
-		if (weights[i] > 0) {
-			return i;
+		/**
+		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
+		 */
+		@JvmStatic
+		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
+			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
 		}
+
+		@JvmStatic
+		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
+
+		@JvmStatic
+		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
+
+		@JvmStatic
+		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
+
+		@JvmStatic
+		private external fun releaseNativePointer(nativePointer: Long)
 	}
-	return -1;
-}
 
-double RandomPCG::random(double p_from, double p_to) {
-	return randd() * (p_to - p_from) + p_from;
-}
+	/**
+	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
+	 */
+	internal fun call(vararg params: Any): Any? {
+		if (nativeCallablePointer == 0L) {
+			return null
+		}
 
-float RandomPCG::random(float p_from, float p_to) {
-	return randf() * (p_to - p_from) + p_from;
-}
-
-int RandomPCG::random(int p_from, int p_to) {
-	if (p_from == p_to) {
-		return p_from;
+		return nativeCall(nativeCallablePointer, params)
 	}
-	return int(rand(uint32_t(Math::abs(p_from - p_to)) + 1U)) + MIN(p_from, p_to);
+
+	/**
+	 * Used to provide access to the native callable pointer to the native logic.
+	 */
+	private fun getNativePointer() = nativeCallablePointer
+
+	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
+	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
+	 * So we resort to using it for the time being until our min api catches up to api 33.
+	 **/
+	protected fun finalize() {
+		releaseNativePointer(nativeCallablePointer)
+	}
 }

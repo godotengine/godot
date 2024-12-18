@@ -200,7 +200,7 @@ Error ResourceUID::save_to_cache() {
 	cache_entries = 0;
 
 	for (KeyValue<ID, Cache> &E : unique_ids) {
-		f->store_64(E.key);
+		f->store_64(uint64_t(E.key));
 		uint32_t s = E.value.cs.length();
 		f->store_32(s);
 		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
@@ -263,7 +263,7 @@ Error ResourceUID::update_cache() {
 				}
 				f->seek_end();
 			}
-			f->store_64(E.key);
+			f->store_64(uint64_t(E.key));
 			uint32_t s = E.value.cs.length();
 			f->store_32(s);
 			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
