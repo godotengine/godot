@@ -31,25 +31,51 @@
 #ifndef SCRIPT_TEXT_EDITOR_H
 #define SCRIPT_TEXT_EDITOR_H
 
-#include "script_editor_plugin.h"
-
 #include "editor/code_editor.h"
+#include "editor/connections_dialog.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+#include "script_editor_plugin.h"
 
 class RichTextLabel;
+class PopupMenu;
 
 class ConnectionInfoDialog : public AcceptDialog {
 	GDCLASS(ConnectionInfoDialog, AcceptDialog);
 
 	Label *method = nullptr;
 	Tree *tree = nullptr;
+	PopupMenu *slot_menu = nullptr;
+	ConnectDialog *connect_dialog = nullptr;
+	Node *selected_node = nullptr;
+
+	enum SlotMenuOption {
+		SLOT_MENU_EDIT,
+		SLOT_MENU_DISCONNECT,
+		SLOT_MENU_SHOW_SOURCE_NODE,
+		SLOT_MENU_SHOW_TARGET_NODE
+	};
+
+	void _connect(const ConnectDialog::ConnectionData &connection);
+	void _disconnect(const ConnectDialog::ConnectionData &connection);
+	void _edit_connection();
+	void _show_node(Node &_node_to_show);
+	void _handle_slot_menu_option(const int &p_option);
+	void _open_edit_connection_dialog(const ConnectDialog::ConnectionData &cd, const TreeItem &parent_tree_item);
+	void _slot_menu_about_to_popup();
+	void _tree_gui_input(const Ref<InputEvent> &p_event);
+	void _tree_item_activated();
+	void update_popup(const String &p_method);
 
 	virtual void ok_pressed() override;
 
+protected:
+	static void _bind_methods();
+
 public:
 	void popup_connections(const String &p_method, const Vector<Node *> &p_nodes);
+	Callable _script_text_editor_update_connected;
 
 	ConnectionInfoDialog();
 };
@@ -210,6 +236,8 @@ protected:
 
 	String _get_absolute_path(const String &rel_path);
 
+	static void _bind_methods();
+
 public:
 	void _update_connected_methods();
 
@@ -267,6 +295,7 @@ public:
 
 	virtual void validate() override;
 
+	Ref<Script> *get_current_script();
 	Variant get_previous_state();
 	void store_previous_state();
 
