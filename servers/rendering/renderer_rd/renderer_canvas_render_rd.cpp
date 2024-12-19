@@ -1056,7 +1056,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	// Then, upload all the occluder transforms to a shared buffer.
 	// We only do this for the first light so we can avoid uploading the same
 	// Transforms over and over again.
-	if (p_shadow_index == 0) {
+	if (p_shadow_index == 0 && occluder_count > 0) {
 		static thread_local LocalVector<float> transforms;
 		transforms.clear();
 		transforms.resize(occluder_count * 8);
@@ -1076,41 +1076,43 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::DRAW_CLEAR_ALL, cc, 1.0f, 0, rect);
 
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[SHADOW_RENDER_MODE_POSITIONAL_SHADOW]);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.shadow_ocluder_uniform_set, 0);
+	if (state.shadow_occluder_buffer.is_valid()) {
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[SHADOW_RENDER_MODE_POSITIONAL_SHADOW]);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.shadow_ocluder_uniform_set, 0);
 
-	for (int i = 0; i < 4; i++) {
-		Rect2i sub_rect((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
-		RD::get_singleton()->draw_list_set_viewport(draw_list, sub_rect);
+		for (int i = 0; i < 4; i++) {
+			Rect2i sub_rect((state.shadow_texture_size / 4) * i, p_shadow_index * 2, (state.shadow_texture_size / 4), 2);
+			RD::get_singleton()->draw_list_set_viewport(draw_list, sub_rect);
 
-		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
-		static const Vector4 rotations[4] = { Vector4(0, -1, 1, 0), Vector4(-1, 0, 0, -1), Vector4(0, 1, -1, 0), Vector4(1, 0, 0, 1) };
+			static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
+			static const Vector4 rotations[4] = { Vector4(0, -1, 1, 0), Vector4(-1, 0, 0, -1), Vector4(0, 1, -1, 0), Vector4(1, 0, 0, 1) };
 
-		PositionalShadowRenderPushConstant push_constant;
-		_update_transform_2d_to_mat2x4(p_light_xform, push_constant.modelview);
-		push_constant.direction[0] = directions[i].x;
-		push_constant.direction[1] = directions[i].y;
-		push_constant.rotation[0] = rotations[i].x;
-		push_constant.rotation[1] = rotations[i].y;
-		push_constant.rotation[2] = rotations[i].z;
-		push_constant.rotation[3] = rotations[i].w;
-		push_constant.z_far = p_far;
-		push_constant.z_near = p_near;
+			PositionalShadowRenderPushConstant push_constant;
+			_update_transform_2d_to_mat2x4(p_light_xform, push_constant.modelview);
+			push_constant.direction[0] = directions[i].x;
+			push_constant.direction[1] = directions[i].y;
+			push_constant.rotation[0] = rotations[i].x;
+			push_constant.rotation[1] = rotations[i].y;
+			push_constant.rotation[2] = rotations[i].z;
+			push_constant.rotation[3] = rotations[i].w;
+			push_constant.z_far = p_far;
+			push_constant.z_near = p_near;
 
-		for (uint32_t j = 0; j < occluders.size(); j++) {
-			OccluderPolygon *co = occluders[j];
+			for (uint32_t j = 0; j < occluders.size(); j++) {
+				OccluderPolygon *co = occluders[j];
 
-			push_constant.pad = occluder_indices[j];
-			push_constant.cull_mode = uint32_t(co->cull_mode);
+				push_constant.pad = occluder_indices[j];
+				push_constant.cull_mode = uint32_t(co->cull_mode);
 
-			// The slowest part about this whole function is that we have to draw the occluders one by one, 4 times.
-			// We can optimize this so that all occluders draw at once if we store vertices and indices in a giant
-			// SSBO and just save an index into that SSBO for each occluder.
-			RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->vertex_array);
-			RD::get_singleton()->draw_list_bind_index_array(draw_list, co->index_array);
-			RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(PositionalShadowRenderPushConstant));
+				// The slowest part about this whole function is that we have to draw the occluders one by one, 4 times.
+				// We can optimize this so that all occluders draw at once if we store vertices and indices in a giant
+				// SSBO and just save an index into that SSBO for each occluder.
+				RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->vertex_array);
+				RD::get_singleton()->draw_list_bind_index_array(draw_list, co->index_array);
+				RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(PositionalShadowRenderPushConstant));
 
-			RD::get_singleton()->draw_list_draw(draw_list, true);
+				RD::get_singleton()->draw_list_draw(draw_list, true);
+			}
 		}
 	}
 	RD::get_singleton()->draw_list_end();
