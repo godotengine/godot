@@ -33,6 +33,16 @@ package org.godotengine.editor
 /**
  * Primary window of the Godot Editor.
  *
- * This is the implementation of the editor used when running on regular Android devices.
+ * This is the implementation of the editor used when running on Android devices.
  */
-open class GodotEditor : BaseGodotEditor()
+open class GodotEditor : BaseGodotEditor() {
+
+	override fun getXRRuntimePermissions(): MutableSet<String> {
+		val xrRuntimePermissions = super.getXRRuntimePermissions()
+
+		xrRuntimePermissions.add("android.permission.EYE_TRACKING_FINE")
+		xrRuntimePermissions.add("android.permission.HAND_TRACKING")
+
+		return xrRuntimePermissions
+	}
+}
