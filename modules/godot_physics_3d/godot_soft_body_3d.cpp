@@ -1143,7 +1143,7 @@ struct RayQueryResult {
 	}
 };
 
-void GodotSoftBody3D::query_ray(const Vector3 &p_from, const Vector3 &p_to, GodotSoftBody3D::QueryResultCallback p_result_callback, void *p_userdata) {
+void GodotSoftBody3D::query_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_dist, GodotSoftBody3D::QueryResultCallback p_result_callback, void *p_userdata) {
 	if (face_tree.is_empty()) {
 		initialize_face_tree();
 	}
@@ -1153,9 +1153,7 @@ void GodotSoftBody3D::query_ray(const Vector3 &p_from, const Vector3 &p_to, Godo
 	query_result.result_callback = p_result_callback;
 	query_result.userdata = p_userdata;
 
-	Vector3 segment = p_to - p_from;
-	real_t length = segment.length();
-	face_tree.ray_query(p_from, segment / length, length, query_result);
+	face_tree.ray_query(p_from, p_dir, p_dist, query_result);
 }
 
 void GodotSoftBody3D::initialize_face_tree() {
@@ -1271,13 +1269,13 @@ struct _SoftBodyIntersectSegmentInfo {
 	}
 };
 
-bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
+bool GodotSoftBodyShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_dir, real_t p_dist, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
 	_SoftBodyIntersectSegmentInfo query_info;
 	query_info.soft_body = soft_body;
 	query_info.from = p_begin;
-	query_info.dir = (p_end - p_begin).normalized();
+	query_info.dir = p_dir;
 
-	soft_body->query_ray(p_begin, p_end, _SoftBodyIntersectSegmentInfo::process_hit, &query_info);
+	soft_body->query_ray(p_begin, p_dir, p_dist, _SoftBodyIntersectSegmentInfo::process_hit, &query_info);
 
 	if (query_info.hit_dist_sq != INFINITY) {
 		r_result = query_info.hit_position;
