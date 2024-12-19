@@ -410,7 +410,14 @@ void EditorFileDialog::update_dir() {
 }
 
 void EditorFileDialog::_dir_submitted(const String &p_dir) {
-	dir_access->change_dir(p_dir);
+	String new_dir = p_dir;
+#ifdef WINDOWS_ENABLED
+	if (drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
+		// Non network path without X:/ prefix on Windows, add drive letter.
+		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+	}
+#endif
+	dir_access->change_dir(new_dir);
 	invalidate();
 	update_dir();
 	_push_history();
