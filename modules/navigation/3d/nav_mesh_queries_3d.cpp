@@ -295,6 +295,10 @@ void NavMeshQueries3D::query_task_polygons_get_path(NavMeshPathQueryTask3D &p_qu
 
 	_query_task_build_path_corridor(p_query_task, p_polygons, p_map_up, p_link_polygons_size, begin_poly, begin_point, end_poly, end_point);
 
+	if (p_query_task.status == NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED || p_query_task.status == NavMeshPathQueryTask3D::TaskStatus::QUERY_FAILED) {
+		return;
+	}
+
 	// Post-Process path.
 	switch (p_query_task.path_postprocessing) {
 		case PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL: {
@@ -473,6 +477,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 
 			if (closest_point_on_start_poly) {
 				_query_task_create_same_polygon_two_point_path(p_query_task, begin_poly, begin_point, end_poly, end_point);
+				p_query_task.status = NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED;
 				return;
 			}
 
@@ -523,6 +528,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			}
 		}
 		_query_task_create_same_polygon_two_point_path(p_query_task, begin_poly, begin_point, begin_poly, end_point);
+		p_query_task.status = NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED;
 		return;
 	}
 }
