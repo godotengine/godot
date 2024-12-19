@@ -6,6 +6,139 @@
 
 #include "../../unity/unity_animation_import.h"
 
+void CharacterAnimationLibraryItem::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_path", "path"), &CharacterAnimationLibraryItem::set_path);
+    ClassDB::bind_method(D_METHOD("get_path"), &CharacterAnimationLibraryItem::get_path);
+
+    ClassDB::bind_method(D_METHOD("set_name", "name"), &CharacterAnimationLibraryItem::set_name);
+    ClassDB::bind_method(D_METHOD("get_name"), &CharacterAnimationLibraryItem::get_name);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_path", "get_path");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_name", "get_name");
+
+#if TOOLS_ENABLED
+    ClassDB::bind_method(D_METHOD("_set_node", "node"), &CharacterAnimationLibraryItem::_set_node);
+    ClassDB::bind_method(D_METHOD("_get_node"), &CharacterAnimationLibraryItem::_get_node);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorNodeBase", PROPERTY_USAGE_EDITOR), "_set_node", "_get_node");
+#endif
+
+}
+
+void CharacterAnimationLibraryItem::load()
+{
+    if (is_loaded == 0)
+    {
+        ResourceLoader::load_threaded_request(path);
+        is_loaded = 1;
+    }
+}
+Ref<CharacterAnimatorNodeBase> CharacterAnimationLibraryItem::get_node()
+{
+    if(is_loaded == 1)
+    {
+        node = ResourceLoader::load_threaded_get(path);
+        is_loaded = 2;
+    }
+    return node;
+}
+
+void CharacterAnimationLibraryItem::_set_node(Ref<CharacterAnimatorNodeBase> p_node)  {
+    if(p_node.is_null())
+    {
+        return;
+    }
+    if(p_node->get_path() == "")
+    {
+        return;
+    }
+    node = p_node; 
+    path = p_node->get_path();
+    name = path.get_file().get_basename();
+}
+/*****************************************************************************************************/
+
+
+void CharacterAnimationLibrary::_bind_methods()
+{
+    ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterAnimationLibrary::set_animation_library);
+    ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterAnimationLibrary::get_animation_library);
+
+    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_library",PROPERTY_HINT_ARRAY_TYPE,"String"), "set_animation_library", "get_animation_library");
+
+    #if TOOLS_ENABLED
+
+
+    ADD_GROUP(L"创建动画节点", "editor_");
+
+    ClassDB::bind_method(D_METHOD("set_base_library", "base_library"), &CharacterAnimationLibrary::set_base_library);
+    ClassDB::bind_method(D_METHOD("get_base_library"), &CharacterAnimationLibrary::get_base_library);
+
+    ClassDB::bind_method(D_METHOD("set_animator_node_name", "animator_node_name"), &CharacterAnimationLibrary::set_animator_node_name);
+    ClassDB::bind_method(D_METHOD("get_animator_node_name"), &CharacterAnimationLibrary::get_animator_node_name);
+
+    ClassDB::bind_method(D_METHOD("set_animator_node_type", "animator_node_type"), &CharacterAnimationLibrary::set_animator_node_type);
+    ClassDB::bind_method(D_METHOD("get_animator_node_type"), &CharacterAnimationLibrary::get_animator_node_type);
+
+
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_library", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimationLibrary"), "set_base_library", "get_base_library");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animator_node_name"), "set_animator_node_name", "get_animator_node_name");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "editor_animator_node_type", PROPERTY_HINT_ENUM, L"1D,2D,循环最后一个"), "set_animator_node_type", "get_animator_node_type");
+    ADD_MEMBER_BUTTON(editor_create_animation_node,L"创建动画节点", CharacterAnimationLibrary);
+
+    #endif
+}
+void CharacterAnimationLibrary::set_animation_library(const TypedArray<CharacterAnimationLibraryItem>& p_animation_library) { 
+    if(animation_library.size() > 0) {
+        return;
+    }
+    animation_library = p_animation_library;
+}
+TypedArray<CharacterAnimationLibraryItem> CharacterAnimationLibrary::get_animation_library() { return animation_library; }
+
+
+Ref<CharacterAnimationLibraryItem> CharacterAnimationLibrary::get_animation_by_name(StringName p_name)
+{
+    if(animations.has(p_name))
+    {
+        return animations[p_name];
+    }
+    if(base_library.is_valid())
+    {
+        return base_library->get_animation_by_name(p_name);
+    }
+    ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
+    return Ref<CharacterAnimationLibraryItem>();
+}
+void CharacterAnimationLibrary::init_animation_library()
+{
+    if(is_init)
+    {
+        return;
+    }
+    for (int i = 0; i < animation_library.size(); i++)
+    {
+        Ref<CharacterAnimationLibraryItem> item = animation_library[i];
+        if(item->get_name()  != StringName())
+        {
+            animations[item->get_name()] =  item;
+        }
+    }
+    is_init = true;
+}
+void CharacterAnimationLibrary::set_base_library(Ref<CharacterAnimationLibrary> p_base_library) { 
+    if(p_base_library.is_valid()) {
+        Ref<CharacterAnimationLibrary> base = p_base_library;
+        while(base.is_valid()) {
+            if(base == this) {
+                ERR_PRINT(L"循环引用 base library!");
+                return;
+            }
+            base = base->base_library;
+        }
+    }
+    base_library = p_base_library; 
+}
 
 void CharacterAnimationLibrary::editor_create_animation_node() {
     if(get_path().is_empty()) {      
@@ -165,6 +298,31 @@ void CharacterAnimatorLayer::_process_animator(const Ref<Blackboard> &p_playback
     }
 
 }
+void CharacterAnimatorLayer::init(Skeleton3D* p_skeleton, CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config)
+{
+        m_Animator = p_animator; 
+        config = _config;
+        skeleton_id = ObjectID();
+        if (p_skeleton != nullptr)
+        {
+            skeleton_id = p_skeleton->get_instance_id();
+        }
+}
+
+void CharacterAnimatorLayer::play_animationm(const Ref<Animation> &p_anim, const PlaybackInfo& p_playback_info,const Dictionary &bone_map)
+{
+    ERR_FAIL_COND(p_anim.is_null());
+    AnimationData ad;
+    ad.name = p_anim->get_name();
+    ad.animation = p_anim;
+    ad.bone_map = bone_map;
+    //ad.animation_library = find_animation_library(ad.animation);
+
+    AnimationInstance ai;
+    ai.animation_data = ad;
+    ai.playback_info = p_playback_info;
+    update_tool->add_animation_instance(ai);
+}
 // 处理动画
 void CharacterAnimatorLayer::_process_animation(const Ref<Blackboard> &p_playback_info,CharacterRootMotion& root_motion, HashMap<String, float>& bone_blend_weight, double p_delta,bool is_using_root_motion,bool is_first)
 {
@@ -232,6 +390,14 @@ void CharacterAnimatorLayer::play_animation(const StringName& p_node_name)
     }
     logic_context.curr_animation = m_Animator->get_animation_by_name(p_node_name);
 }
+void CharacterAnimatorLayer::change_state(const StringName& p_state_name)
+{
+    if(logic_context.curr_name == p_state_name)
+    {
+        logic_context.last_name = logic_context.curr_name;
+        logic_context.curr_name = p_state_name;
+    }
+}
 CharacterAnimatorLayer::CharacterAnimatorLayer()
 {
     update_tool.instantiate();
@@ -277,7 +443,7 @@ void CharacterAnimatorLayerConfigInstance::auto_init()
 	layer->set_owner(m_Body);
 	layer->init(skeleton, m_Body->get_animator().ptr(), config);
 }
-///////////////
+/**********************************************************************************************************/
 
 void CharacterAnimator::set_body(class CharacterBodyMain* p_body)
 {
@@ -290,6 +456,30 @@ void CharacterAnimator::set_body(class CharacterBodyMain* p_body)
 		 layer->set_body(m_Body);
 		 ++it;
 	 }
+}
+void CharacterAnimator::change_state(const StringName& p_state_name) {
+    auto it = m_LayerConfigInstanceList.begin();
+    while(it != m_LayerConfigInstanceList.end())
+    {
+        (*it)->change_state(p_state_name);
+        ++it;
+    }
+}
+
+void CharacterAnimator::on_layer_delete(CharacterAnimatorLayer *p_layer) {
+    auto it = m_LayerConfigInstanceList.begin();
+    while(it != m_LayerConfigInstanceList.end())
+    {
+        if((*it)->get_layer() == p_layer)
+        {
+            it = m_LayerConfigInstanceList.erase(it);
+            break;
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 void CharacterAnimator::add_layer(const Ref<CharacterAnimatorLayerConfig>& _mask)
@@ -365,6 +555,33 @@ Ref<CharacterAnimationLibraryItem> CharacterAnimator::get_animation_by_name(cons
     return Ref<CharacterAnimationLibraryItem>();
 }
 
+void CharacterAnimator::set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays) {
+    m_LayerConfigInstanceList.clear();
+    for (int i = 0; i < p_animation_layer_arrays.size(); ++i) {
+        Ref< CharacterAnimatorLayerConfigInstance> ins = p_animation_layer_arrays[i];
+        if (ins.is_null()) {
+            ins.instantiate();
+        }
+        ins->set_body(m_Body);
+        m_LayerConfigInstanceList.push_back(ins);
+    }
+}
+TypedArray<CharacterAnimatorLayerConfigInstance> CharacterAnimator::get_animation_layer_arrays() {
+    TypedArray<CharacterAnimatorLayerConfigInstance> rs;
+    auto it = m_LayerConfigInstanceList.begin();
+    while (it != m_LayerConfigInstanceList.end()) {
+        rs.append(*it);
+        ++it;
+    }
+    return rs;
+}
+void CharacterAnimator::init() {
+    if(m_LayerConfigInstanceList.size() == 0) {
+        Ref<CharacterAnimatorLayerConfig> _mask;
+        _mask.instantiate();
+        add_layer(_mask);
+    }
+}
 
 void CharacterAnimator::_bind_methods()
 {
@@ -374,8 +591,54 @@ void CharacterAnimator::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "animation_layer_arrays"), "set_animation_layer_arrays", "get_animation_layer_arrays");
 }
 
+CharacterAnimator::~CharacterAnimator() {
+    set_body(nullptr);
+    m_LayerConfigInstanceList.clear();
+}
+
 
 //////////////////////////////////////////////// CharacterAnimationLogicNode /////////////////////////////////////////
+
+
+void CharacterAnimationLogicNode::set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
+{
+    if(p_blackboard_plan == blackboard_plan)
+    {
+        return;
+    }
+    if(blackboard_plan.is_valid())
+    {
+        blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+    }
+        blackboard_plan = p_blackboard_plan; 
+        if(blackboard_plan.is_valid())
+        {
+            blackboard_plan->connect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+        }
+        init_blackboard(blackboard_plan);
+        update_blackboard_plan();
+}
+void CharacterAnimationLogicNode::update_blackboard_plan()
+{
+    if (enter_condtion.is_valid()) {
+        enter_condtion->set_blackboard_plan(blackboard_plan);
+    }
+    if (stop_check_condtion.is_valid()) {
+        stop_check_condtion->set_blackboard_plan(blackboard_plan);
+    }
+    if(start_blackboard_set.is_valid())
+    {
+        start_blackboard_set->set_blackboard_plan(blackboard_plan);
+    }
+
+    if(stop_blackboard_set.is_valid())
+    {
+        stop_blackboard_set->set_blackboard_plan(blackboard_plan);
+    }
+
+}
+
+
 void CharacterAnimationLogicNode::process_start(CharacterAnimatorLayer* animator,Blackboard* blackboard)
 {
     if(start_blackboard_set.is_valid())
@@ -507,6 +770,24 @@ void CharacterAnimationLogicNode::init_blackboard(Ref<BlackboardPlan> p_blackboa
         blackboard_plan->add_var("AI_BrainUpdate_Rate",BBVariable(Variant::FLOAT,1.0f));
     
 }
+
+
+bool CharacterAnimationLogicNode::is_enter(Blackboard* blackboard)
+{
+    if(enter_condtion.is_valid())
+    {
+        return enter_condtion->is_enable(blackboard);
+    }
+    return true;
+}
+CharacterAnimationLogicNode::~CharacterAnimationLogicNode()
+{
+    if(blackboard_plan.is_valid())
+    {
+        blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
+    }
+}
+
 void CharacterAnimationLogicNode::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_blackboard_plan", "blackboard_plan"), &CharacterAnimationLogicNode::set_blackboard_plan);

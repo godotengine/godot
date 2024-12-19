@@ -21,42 +21,10 @@ class CharacterAnimator;
 class CharacterAnimationLibraryItem : public RefCounted
 {
     GDCLASS(CharacterAnimationLibraryItem, RefCounted);
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_path", "path"), &CharacterAnimationLibraryItem::set_path);
-        ClassDB::bind_method(D_METHOD("get_path"), &CharacterAnimationLibraryItem::get_path);
-
-        ClassDB::bind_method(D_METHOD("set_name", "name"), &CharacterAnimationLibraryItem::set_name);
-        ClassDB::bind_method(D_METHOD("get_name"), &CharacterAnimationLibraryItem::get_name);
-
-        ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_path", "get_path");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_STORAGE), "set_name", "get_name");
-
-#if TOOLS_ENABLED
-        ClassDB::bind_method(D_METHOD("_set_node", "node"), &CharacterAnimationLibraryItem::_set_node);
-        ClassDB::bind_method(D_METHOD("_get_node"), &CharacterAnimationLibraryItem::_get_node);
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimatorNodeBase", PROPERTY_USAGE_EDITOR), "_set_node", "_get_node");
-#endif
-
-    }
+    static void _bind_methods();
 public:
-    void load()
-    {
-        if (is_loaded == 0)
-        {
-            ResourceLoader::load_threaded_request(path);
-            is_loaded = 1;
-        }
-    }
-    Ref<CharacterAnimatorNodeBase> get_node()
-    {
-        if(is_loaded == 1)
-        {
-            node = ResourceLoader::load_threaded_get(path);
-            is_loaded = 2;
-        }
-        return node;
-    }
+    void load();
+    Ref<CharacterAnimatorNodeBase> get_node();
     void set_path(String p_path) { path = p_path; }
     String get_path() { return path; }
 
@@ -65,19 +33,7 @@ public:
     }
     StringName get_name() { return name; }
 
-    void _set_node(Ref<CharacterAnimatorNodeBase> p_node)  {
-        if(p_node.is_null())
-        {
-            return;
-        }
-        if(p_node->get_path() == "")
-        {
-            return;
-        }
-        node = p_node; 
-        path = p_node->get_path();
-        name = path.get_file().get_basename();
-    }
+    void _set_node(Ref<CharacterAnimatorNodeBase> p_node);
     Ref<CharacterAnimatorNodeBase> _get_node() { return node; }
 public:
     Ref<CharacterAnimatorNodeBase> node;
@@ -90,96 +46,24 @@ class CharacterAnimationLibrary : public Resource
 {
     GDCLASS(CharacterAnimationLibrary, Resource);
 
-    static void _bind_methods()
-    {
-        ClassDB::bind_method(D_METHOD("set_animation_library", "animation_library"), &CharacterAnimationLibrary::set_animation_library);
-        ClassDB::bind_method(D_METHOD("get_animation_library"), &CharacterAnimationLibrary::get_animation_library);
-
-        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animation_library",PROPERTY_HINT_ARRAY_TYPE,"String"), "set_animation_library", "get_animation_library");
-
-        #if TOOLS_ENABLED
-
-
-        ADD_GROUP(L"创建动画节点", "editor_");
-
-        ClassDB::bind_method(D_METHOD("set_base_library", "base_library"), &CharacterAnimationLibrary::set_base_library);
-        ClassDB::bind_method(D_METHOD("get_base_library"), &CharacterAnimationLibrary::get_base_library);
-
-        ClassDB::bind_method(D_METHOD("set_animator_node_name", "animator_node_name"), &CharacterAnimationLibrary::set_animator_node_name);
-        ClassDB::bind_method(D_METHOD("get_animator_node_name"), &CharacterAnimationLibrary::get_animator_node_name);
-
-        ClassDB::bind_method(D_METHOD("set_animator_node_type", "animator_node_type"), &CharacterAnimationLibrary::set_animator_node_type);
-        ClassDB::bind_method(D_METHOD("get_animator_node_type"), &CharacterAnimationLibrary::get_animator_node_type);
-
-
-        ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_library", PROPERTY_HINT_RESOURCE_TYPE, "CharacterAnimationLibrary"), "set_base_library", "get_base_library");
-        ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "editor_animator_node_name"), "set_animator_node_name", "get_animator_node_name");
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "editor_animator_node_type", PROPERTY_HINT_ENUM, L"1D,2D,循环最后一个"), "set_animator_node_type", "get_animator_node_type");
-        ADD_MEMBER_BUTTON(editor_create_animation_node,L"创建动画节点", CharacterAnimationLibrary);
-
-        #endif
-    }
+    static void _bind_methods();
 
 public:
 
 public:
-    void set_animation_library(const TypedArray<CharacterAnimationLibraryItem>& p_animation_library) { 
-        if(animation_library.size() > 0) {
-            return;
-        }
-        animation_library = p_animation_library;
-    }
-    TypedArray<CharacterAnimationLibraryItem> get_animation_library() { return animation_library; }
+    void set_animation_library(const TypedArray<CharacterAnimationLibraryItem>& p_animation_library);
+    TypedArray<CharacterAnimationLibraryItem> get_animation_library();
 
 
-    Ref<CharacterAnimationLibraryItem> get_animation_by_name(StringName p_name)
-    {
-        if(animations.has(p_name))
-        {
-            return animations[p_name];
-        }
-        if(base_library.is_valid())
-        {
-            return base_library->get_animation_by_name(p_name);
-        }
-        ERR_PRINT(String("not find animation ") +  p_name.operator String().utf8().get_data());
-        return Ref<CharacterAnimationLibraryItem>();
-    }
-    void init_animation_library()
-    {
-        if(is_init)
-        {
-            return;
-        }
-        for (int i = 0; i < animation_library.size(); i++)
-        {
-			Ref<CharacterAnimationLibraryItem> item = animation_library[i];
-            if(item->get_name()  != StringName())
-            {
-                animations[item->get_name()] =  item;
-            }
-        }
-        is_init = true;
-    }
+    Ref<CharacterAnimationLibraryItem> get_animation_by_name(StringName p_name);
+    void init_animation_library();
 public:
     enum AnimationNodeType{
         T_CharacterAnimatorNode1D,
         T_CharacterAnimatorNode2D,
         T_CharacterAnimatorLoopLast,
     };
-    void set_base_library(Ref<CharacterAnimationLibrary> p_base_library) { 
-        if(p_base_library.is_valid()) {
-            Ref<CharacterAnimationLibrary> base = p_base_library;
-            while(base.is_valid()) {
-                if(base == this) {
-                    ERR_PRINT(L"循环引用 base library!");
-                    return;
-                }
-                base = base->base_library;
-            }
-        }
-        base_library = p_base_library; 
-    }
+    void set_base_library(Ref<CharacterAnimationLibrary> p_base_library);
     Ref<CharacterAnimationLibrary> get_base_library() { return base_library; }
 
     void set_animator_node_name(String p_animator_node_name) { animator_node_name = p_animator_node_name; }
@@ -258,47 +142,18 @@ public:
 
     void finish_update();
 
-    void init(Skeleton3D* p_skeleton, CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config)
-    {
-         m_Animator = p_animator; 
-         config = _config;
-		 skeleton_id = ObjectID();
-		 if (p_skeleton != nullptr)
-		 {
-			 skeleton_id = p_skeleton->get_instance_id();
-		 }
-    }
+    void init(Skeleton3D* p_skeleton, CharacterAnimator* p_animator,const Ref<CharacterAnimatorLayerConfig>& _config);
     CharacterAnimationLogicContext* _get_logic_context()
     {
         return &logic_context;
     }
 
-    void play_animationm(const Ref<Animation> &p_anim, const PlaybackInfo& p_playback_info,const Dictionary &bone_map)
-    {
-        ERR_FAIL_COND(p_anim.is_null());
-        AnimationData ad;
-        ad.name = p_anim->get_name();
-        ad.animation = p_anim;
-        ad.bone_map = bone_map;
-        //ad.animation_library = find_animation_library(ad.animation);
-
-        AnimationInstance ai;
-        ai.animation_data = ad;
-        ai.playback_info = p_playback_info;
-        update_tool->add_animation_instance(ai);
-    }
+    void play_animationm(const Ref<Animation> &p_anim, const PlaybackInfo& p_playback_info,const Dictionary &bone_map);
 
 	void play_animation(const Ref<Animation>& p_anim, bool p_is_loop);
     bool play_animation(const Ref<CharacterAnimatorNodeBase>& p_node);
     void play_animation(const StringName& p_node_name);
-    void change_state(const StringName& p_state_name)
-    {
-        if(logic_context.curr_name == p_state_name)
-        {
-            logic_context.last_name = logic_context.curr_name;
-            logic_context.curr_name = p_state_name;
-        }
-    }
+    void change_state(const StringName& p_state_name);
     CharacterAnimatorLayer();
     ~CharacterAnimatorLayer();
 public:
@@ -362,44 +217,9 @@ public:
     };
 
 public:
-    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) 
-    {
-        if(p_blackboard_plan == blackboard_plan)
-        {
-            return;
-        }
-        if(blackboard_plan.is_valid())
-        {
-            blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
-        }
-         blackboard_plan = p_blackboard_plan; 
-         if(blackboard_plan.is_valid())
-         {
-             blackboard_plan->connect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
-         }
-         init_blackboard(blackboard_plan);
-		 update_blackboard_plan();
-    }
+    void set_blackboard_plan(const Ref<BlackboardPlan>& p_blackboard_plan) ;
     Ref<BlackboardPlan> get_blackboard_plan() { return blackboard_plan; }
-	void update_blackboard_plan()
-	{
-		if (enter_condtion.is_valid()) {
-			enter_condtion->set_blackboard_plan(blackboard_plan);
-		}
-		if (stop_check_condtion.is_valid()) {
-			stop_check_condtion->set_blackboard_plan(blackboard_plan);
-		}
-        if(start_blackboard_set.is_valid())
-        {
-            start_blackboard_set->set_blackboard_plan(blackboard_plan);
-        }
-
-        if(stop_blackboard_set.is_valid())
-        {
-            stop_blackboard_set->set_blackboard_plan(blackboard_plan);
-        }
-
-	}
+	void update_blackboard_plan();
     bool get_editor_state() 
     {
         return false; 
@@ -450,21 +270,8 @@ public:
     }
     Callable editor_state_change;
 public:
-    bool is_enter(Blackboard* blackboard)
-    {
-        if(enter_condtion.is_valid())
-        {
-            return enter_condtion->is_enable(blackboard);
-        }
-        return true;
-    }
-    ~CharacterAnimationLogicNode()
-    {
-        if(blackboard_plan.is_valid())
-        {
-            blackboard_plan->disconnect("changed", callable_mp(this, &CharacterAnimationLogicNode::_blackboard_changed));
-        }
-    }
+    bool is_enter(Blackboard* blackboard);
+    ~CharacterAnimationLogicNode();
 
 private:
 	GDVIRTUAL2(_animation_process_start,CharacterAnimatorLayer*,Blackboard*)
@@ -642,64 +449,18 @@ public:
     void _thread_update_animation(float delta);
 
     void finish_update();
-    void change_state(const StringName& p_state_name) {
-        auto it = m_LayerConfigInstanceList.begin();
-        while(it != m_LayerConfigInstanceList.end())
-        {
-            (*it)->change_state(p_state_name);
-            ++it;
-        }
-    }
+    void change_state(const StringName& p_state_name);
 
-    void on_layer_delete(CharacterAnimatorLayer *p_layer) {
-        auto it = m_LayerConfigInstanceList.begin();
-        while(it != m_LayerConfigInstanceList.end())
-        {
-            if((*it)->get_layer() == p_layer)
-            {
-                it = m_LayerConfigInstanceList.erase(it);
-                break;
-            }
-            else
-            {
-                ++it;
-            }
-        }
-    }
+    void on_layer_delete(CharacterAnimatorLayer *p_layer);
     const CharacterRootMotion& get_root_motion() {
         return root_motion;
     }
     Ref<CharacterAnimationLibraryItem> get_animation_by_name(const StringName& p_name);
-    void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays) {
-		m_LayerConfigInstanceList.clear();
-		for (int i = 0; i < p_animation_layer_arrays.size(); ++i) {
-			Ref< CharacterAnimatorLayerConfigInstance> ins = p_animation_layer_arrays[i];
-			if (ins.is_null()) {
-				ins.instantiate();
-			}
-			ins->set_body(m_Body);
-			m_LayerConfigInstanceList.push_back(ins);
-		}
-    }
-    TypedArray<CharacterAnimatorLayerConfigInstance> get_animation_layer_arrays() {
-		TypedArray<CharacterAnimatorLayerConfigInstance> rs;
-		auto it = m_LayerConfigInstanceList.begin();
-		while (it != m_LayerConfigInstanceList.end()) {
-			rs.append(*it);
-			++it;
-		}
-		return rs;
-	}
-    void init() {
-        if(m_LayerConfigInstanceList.size() == 0) {
-            Ref<CharacterAnimatorLayerConfig> _mask;
-            _mask.instantiate();
-            add_layer(_mask);
-        }
-    }
+    void set_animation_layer_arrays(TypedArray<CharacterAnimatorLayerConfigInstance> p_animation_layer_arrays);
+    TypedArray<CharacterAnimatorLayerConfigInstance> get_animation_layer_arrays() ;
+    void init() ;
 
-    ~CharacterAnimator() {
-    }
+    ~CharacterAnimator();
 public:
 
     void editor_play_animation(const Ref<Animation>& p_node) {
