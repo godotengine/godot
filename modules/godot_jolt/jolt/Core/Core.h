@@ -180,6 +180,18 @@
 		#define JPH_VECTOR_ALIGNMENT 8 // 32-bit ARM does not support aligning on the stack on 16 byte boundaries
 		#define JPH_DVECTOR_ALIGNMENT 8
 	#endif
+#elif defined(__riscv)
+	// RISC-V CPU architecture
+	#define JPH_CPU_RISCV
+	#if __riscv_xlen == 64
+		#define JPH_CPU_ADDRESS_BITS 64
+		#define JPH_VECTOR_ALIGNMENT 16
+		#define JPH_DVECTOR_ALIGNMENT 32
+	#else
+		#define JPH_CPU_ADDRESS_BITS 32
+		#define JPH_VECTOR_ALIGNMENT 16
+		#define JPH_DVECTOR_ALIGNMENT 8
+	#endif
 #elif defined(JPH_PLATFORM_WASM)
 	// WebAssembly CPU architecture
 	#define JPH_CPU_WASM
@@ -204,6 +216,13 @@
 	#endif
 #else
 	#error Unsupported CPU architecture
+#endif
+
+// CPU helper macros
+#ifdef JPH_CPU_RISCV
+	#define JPH_IF_RISCV(x) x
+#else
+	#define JPH_IF_RISCV(x)
 #endif
 
 // If this define is set, Jolt is compiled as a shared library
@@ -320,6 +339,7 @@
 	JPH_GCC_SUPPRESS_WARNING("-Wpedantic")														\
 	JPH_GCC_SUPPRESS_WARNING("-Wunused-parameter")												\
 	JPH_GCC_SUPPRESS_WARNING("-Wmaybe-uninitialized")											\
+	JPH_IF_RISCV(JPH_GCC_SUPPRESS_WARNING("-Wuninitialized"))									\
 																								\
 	JPH_MSVC_SUPPRESS_WARNING(4619) /* #pragma warning: there is no warning number 'XXXX' */	\
 	JPH_MSVC_SUPPRESS_WARNING(4514) /* 'X' : unreferenced inline function has been removed */	\
@@ -358,10 +378,10 @@
 #elif defined(JPH_PLATFORM_LINUX) || defined(JPH_PLATFORM_ANDROID) || defined(JPH_PLATFORM_MACOS) || defined(JPH_PLATFORM_IOS) || defined(JPH_PLATFORM_FREEBSD)
 	#if defined(JPH_CPU_X86)
 		#define JPH_BREAKPOINT	__asm volatile ("int $0x3")
-	#elif defined(JPH_CPU_ARM)
+	#elif defined(JPH_CPU_ARM) || defined(JPH_CPU_RISCV) || defined(JPH_CPU_E2K)
 		#define JPH_BREAKPOINT	__builtin_trap()
-	#elif defined(JPH_CPU_E2K)
-		#define JPH_BREAKPOINT	__builtin_trap()
+	#else
+		#error Unknown CPU architecture
 	#endif
 #elif defined(JPH_PLATFORM_WASM)
 	#define JPH_BREAKPOINT		do { } while (false) // Not supported
