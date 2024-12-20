@@ -1005,7 +1005,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	// Built-in Variant Types
 	_find_built_in_variants(r_result, true);
 
-	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data()->class_list;
+	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data() ? EditorHelp::get_doc_data()->class_list : HashMap<String, DocData::ClassDoc>();
 
 	List<StringName> native_types;
 	ClassDB::get_class_list(&native_types);
@@ -1269,7 +1269,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 	GDScriptParser::DataType base_type = p_base.type;
 
-	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data()->class_list;
+	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data() ? EditorHelp::get_doc_data()->class_list : HashMap<String, DocData::ClassDoc>();
 
 	if (!p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
 		// Constructor for a class.
@@ -1301,9 +1301,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							scr->get_script_property_list(&members);
 
 							HashSet<StringName> deprecated_properties;
-							for (const DocData::PropertyDoc &property : class_doc_map.get(base_type.class_type->get_global_name()).properties) {
-								if (property.is_deprecated) {
-									deprecated_properties.insert(property.name);
+							if (base_type.class_type && class_doc_map.has(base_type.class_type->get_global_name())) {
+								for (const DocData::PropertyDoc &property : class_doc_map.get(base_type.class_type->get_global_name()).properties) {
+									if (property.is_deprecated) {
+										deprecated_properties.insert(property.name);
+									}
 								}
 							}
 
@@ -1326,9 +1328,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							scr->get_script_signal_list(&signals);
 
 							HashSet<StringName> deprecated_signals;
-							for (const DocData::MethodDoc &signal_doc : class_doc_map.get(base_type.class_type->get_global_name()).signals) {
-								if (signal_doc.is_deprecated) {
-									deprecated_signals.insert(signal_doc.name);
+							if (base_type.class_type && class_doc_map.has(base_type.class_type->get_global_name())) {
+								for (const DocData::MethodDoc &signal_doc : class_doc_map.get(base_type.class_type->get_global_name()).signals) {
+									if (signal_doc.is_deprecated) {
+										deprecated_signals.insert(signal_doc.name);
+									}
 								}
 							}
 
@@ -1345,9 +1349,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						scr->get_constants(&constants);
 
 						HashSet<StringName> deprecated_consts;
-						for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(base_type.class_type->get_global_name()).constants) {
-							if (constant_doc.is_deprecated) {
-								deprecated_consts.insert(constant_doc.name);
+						if (base_type.class_type && class_doc_map.has(base_type.class_type->get_global_name())) {
+							for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(base_type.class_type->get_global_name()).constants) {
+								if (constant_doc.is_deprecated) {
+									deprecated_consts.insert(constant_doc.name);
+								}
 							}
 						}
 
@@ -1421,7 +1427,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					HashSet<String> deprecated_consts;
 					if (!class_doc_map.has(type)) {
-						print_error(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
+						print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
 					} else {
 						for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(type).constants) {
 							if (constant_doc.is_deprecated) {
@@ -1446,7 +1452,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 						HashSet<String> deprecated_properties;
 						if (!class_doc_map.has(type)) {
-							print_error(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
+							print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
 						} else {
 							for (const DocData::PropertyDoc &property_doc : class_doc_map.get(type).properties) {
 								if (property_doc.is_deprecated) {
@@ -1477,7 +1483,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 						HashSet<String> deprecated_signals;
 						if (!class_doc_map.has(type)) {
-							print_error(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
+							print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
 						} else {
 							for (const DocData::MethodDoc &signal_doc : class_doc_map.get(type).signals) {
 								if (signal_doc.is_deprecated) {
@@ -1507,7 +1513,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				// Assemble a set of deprecated method names.
 				HashSet<String> deprecated_methods;
 				if (!class_doc_map.has(type)) {
-					print_error(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
+					print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
 				} else {
 					for (const DocData::MethodDoc &method_doc : class_doc_map.get(type).methods) {
 						if (method_doc.is_deprecated) {
@@ -1558,7 +1564,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					}
 				} else {
 					if (!class_doc_map.has(type)) {
-						print_error(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
+						print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", type));
 					} else {
 						for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(type).constants) {
 							if (constant_doc.is_deprecated) {
@@ -1630,7 +1636,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				HashSet<String> deprecated_methods;
 				if (!class_doc_map.has(Variant::get_type_name(base_type.builtin_type))) {
-					print_error(vformat("Variant \"%s\" couldn't be found in doc data by the language server", Variant::get_type_name(base_type.builtin_type)));
+					print_line(vformat("Variant \"%s\" couldn't be found in doc data by the language server", Variant::get_type_name(base_type.builtin_type)));
 				} else {
 					for (const DocData::MethodDoc &method_doc : class_doc_map.get(Variant::get_type_name(base_type.builtin_type)).methods) {
 						if (method_doc.is_deprecated) {
@@ -1677,14 +1683,30 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		_find_identifiers_in_class(p_context.current_class, p_only_functions, false, (!p_context.current_function || p_context.current_function->is_static), false, r_result, p_recursion_depth);
 	}
 
-	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data()->class_list;
-	ERR_FAIL_COND_MSG(!class_doc_map.has("@GDScript"), "@GDScript class couldn't be found in doc data by the language server");
-	for (const DocData::MethodDoc &method : class_doc_map.get("@GDScript").methods) {
+	List<StringName> functions;
+	GDScriptUtilityFunctions::get_function_list(&functions);
+
+	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data() ? EditorHelp::get_doc_data()->class_list : HashMap<String, DocData::ClassDoc>();
+
+	HashSet<String> deprecated_methods;
+	if (!class_doc_map.has("@GDScript")) {
+		print_line(vformat("Class \"@GDScript\" couldn't be found in doc data by the language server"));
+	} else {
+		for (const DocData::MethodDoc &method_doc : class_doc_map.get("@GDScript").methods) {
+			if (method_doc.is_deprecated) {
+				deprecated_methods.insert(method_doc.name);
+			}
+		}
+	}
+
+	for (const StringName &E : functions) {
+		MethodInfo function = GDScriptUtilityFunctions::get_function_info(E);
 		// Method in the `@GDScript` namespace/class.
 		// 		Col...  # <-- will suggest `Color8(...)`
-		ScriptLanguage::CodeCompletionOption option(method.name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
-		option.deprecated = method.is_deprecated;
-		if (method.arguments.size()) {
+
+		ScriptLanguage::CodeCompletionOption option(String(E), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+		option.deprecated = deprecated_methods.has(String(E));
+		if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
 			option.insert_text += "(";
 			option.display += U"(\u2026)";
 		} else {
@@ -1751,11 +1773,14 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	Variant::get_utility_function_list(&utility_func_names);
 
 	// Build a set of deprecated constants from @GlobalScope.
-	ERR_FAIL_COND_MSG(!class_doc_map.has("@GlobalScope"), vformat("@GlobalScope class couldn't be found in doc data by the language server"));
 	HashSet<String> deprecated_consts;
-	for (const DocData::ConstantDoc &constant_doc : class_doc_map.get("@GlobalScope").constants) {
-		if (constant_doc.is_deprecated) {
-			deprecated_consts.insert(constant_doc.name);
+	if (!class_doc_map.has("@GlobalScope")) {
+		print_line(vformat("Class \"@GlobalScope\" couldn't be found in doc data by the language server"));
+	} else {
+		for (const DocData::ConstantDoc &constant_doc : class_doc_map.get("@GlobalScope").constants) {
+			if (constant_doc.is_deprecated) {
+				deprecated_consts.insert(constant_doc.name);
+			}
 		}
 	}
 
@@ -3000,7 +3025,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 }
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
-	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data()->class_list;
+	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data() ? EditorHelp::get_doc_data()->class_list : HashMap<String, DocData::ClassDoc>();
 	if (!p_enum_hint.contains_char('.')) {
 		// Global constant or in the current class.
 		StringName current_enum = p_enum_hint;
@@ -3018,13 +3043,12 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 				r_result.insert(option.display, option);
 			}
 		} else {
-			ERR_FAIL_COND_MSG(!class_doc_map.has("@GlobalScope"), vformat("@GlobalScope class couldn't be found in doc data by the language server"));
 			for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 				if (CoreConstants::get_global_constant_enum(i) == current_enum) {
 					// Global constant enum value for a native class's method.
 					// 		my_control.set_anchor(...  # <-- will suggest `SIDE_BOTTOM` and others from `@GlobalScope.Side`
 					ScriptLanguage::CodeCompletionOption option(CoreConstants::get_global_constant_name(i), ScriptLanguage::CODE_COMPLETION_KIND_ENUM);
-					if (class_doc_map.get("@GlobalScope").enums.has(CoreConstants::get_global_constant_name(i))) {
+					if (class_doc_map.has("@GlobalScope") && class_doc_map.get("@GlobalScope").enums.has(CoreConstants::get_global_constant_name(i))) {
 						option.deprecated = class_doc_map.get("@GlobalScope").enums.get(CoreConstants::get_global_constant_name(i)).is_deprecated;
 					}
 					r_result.insert(option.display, option);
@@ -3043,13 +3067,17 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
 
 		// Build set of deprecated enum constants.
-		ERR_FAIL_COND_MSG(!class_doc_map.has(class_name), vformat("%s class couldn't be found in doc data by the language server", class_name));
 		HashSet<String> deprecated_consts;
-		for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(class_name).constants) {
-			if (constant_doc.is_deprecated) {
-				deprecated_consts.insert(constant_doc.name);
+		if (!class_doc_map.has(class_name)) {
+			print_line(vformat("Class \"%s\" couldn't be found in doc data by the language server", class_name));
+		} else {
+			for (const DocData::ConstantDoc &constant_doc : class_doc_map.get(class_name).constants) {
+				if (constant_doc.is_deprecated) {
+					deprecated_consts.insert(constant_doc.name);
+				}
 			}
 		}
+
 		for (const StringName &E : enum_constants) {
 			String candidate = class_name + "." + E;
 			int location = _get_enum_constant_location(class_name, E);
@@ -3523,7 +3551,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	}
 	bool is_function = false;
 
-	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data()->class_list;
+	const HashMap<String, DocData::ClassDoc> class_doc_map = EditorHelp::get_doc_data() ? EditorHelp::get_doc_data()->class_list : HashMap<String, DocData::ClassDoc>();
 
 	switch (completion_context.type) {
 		case GDScriptParser::COMPLETION_NONE:
