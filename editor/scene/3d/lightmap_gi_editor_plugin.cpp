@@ -31,6 +31,7 @@
 #include "lightmap_gi_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -137,6 +138,21 @@ void LightmapGIEditorPlugin::_bake() {
 	_bake_select_file("");
 }
 
+void LightmapGIEditorPlugin::_upgrade() {
+	if (lightmap) {
+		Ref<LightmapGIData> gi_data = lightmap->get_light_data();
+		if (gi_data.is_valid() && gi_data->is_using_spherical_harmonics() && gi_data->_get_directional_version() < LightmapGIData::DIRECTIONAL_VERSION) {
+			gi_data->_upgrade_directional_version();
+			ResourceSaver::save(gi_data);
+
+			lightmap->set_light_data(gi_data);
+			lightmap->update_configuration_warnings();
+
+			upgrade->hide();
+		}
+	}
+}
+
 void LightmapGIEditorPlugin::edit(Object *p_object) {
 	LightmapGI *s = Object::cast_to<LightmapGI>(p_object);
 	if (!s) {
@@ -153,8 +169,16 @@ bool LightmapGIEditorPlugin::handles(Object *p_object) const {
 void LightmapGIEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		bake->show();
+
+		if (lightmap) {
+			Ref<LightmapGIData> gi_data = lightmap->get_light_data();
+			if (gi_data.is_valid() && gi_data->is_using_spherical_harmonics() && gi_data->_get_directional_version() < LightmapGIData::DIRECTIONAL_VERSION) {
+				upgrade->show();
+			}
+		}
 	} else {
 		bake->hide();
+		upgrade->hide();
 	}
 }
 
@@ -184,6 +208,7 @@ void LightmapGIEditorPlugin::bake_func_end(uint64_t p_time_started) {
 
 void LightmapGIEditorPlugin::_bind_methods() {
 	ClassDB::bind_method("_bake", &LightmapGIEditorPlugin::_bake);
+	ClassDB::bind_method("_upgrade", &LightmapGIEditorPlugin::_upgrade);
 }
 
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
@@ -193,6 +218,10 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	// when the editor theme updates.
 	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));
 	bake->set_text(TTR("Bake Lightmaps"));
+
+	upgrade = memnew(Button);
+	upgrade->set_theme_type_variation(SceneStringName(FlatButton));
+	upgrade->set_text(TTR("Upgrade Lightmaps"));
 
 #ifdef MODULE_LIGHTMAPPER_RD_ENABLED
 	// Disable lightmap baking if not supported on the current GPU.
@@ -213,6 +242,11 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake->hide();
 	bake->connect(SceneStringName(pressed), Callable(this, "_bake"));
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
+
+	upgrade->hide();
+	upgrade->connect(SceneStringName(pressed), Callable(this, "_upgrade"));
+	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, upgrade);
+
 	lightmap = nullptr;
 
 	file_dialog = memnew(EditorFileDialog);
