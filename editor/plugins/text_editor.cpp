@@ -31,7 +31,6 @@
 #include "text_editor.h"
 
 #include "core/io/json.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/menu_button.h"

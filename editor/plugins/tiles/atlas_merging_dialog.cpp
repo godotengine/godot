@@ -30,7 +30,6 @@
 
 #include "atlas_merging_dialog.h"
 
-#include "editor/editor_properties_vector.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"

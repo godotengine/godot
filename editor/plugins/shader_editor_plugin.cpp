@@ -43,6 +43,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {

@@ -33,8 +33,6 @@
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 

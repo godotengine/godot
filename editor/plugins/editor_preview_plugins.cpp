@@ -31,11 +31,9 @@
 #include "editor_preview_plugins.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access_memory.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"

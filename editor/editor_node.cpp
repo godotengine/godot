@@ -164,7 +164,6 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.

@@ -38,7 +38,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"

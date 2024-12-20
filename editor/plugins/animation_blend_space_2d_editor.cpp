@@ -30,8 +30,6 @@
 
 #include "animation_blend_space_2d_editor.h"
 
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"

@@ -42,7 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/image_texture.h"
-#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;

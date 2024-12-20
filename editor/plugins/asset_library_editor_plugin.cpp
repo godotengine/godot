@@ -30,7 +30,6 @@
 
 #include "asset_library_editor_plugin.h"
 
-#include "core/input/input.h"
 #include "core/io/json.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
@@ -44,6 +43,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/separator.h"
 #include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {

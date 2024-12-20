@@ -32,8 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
