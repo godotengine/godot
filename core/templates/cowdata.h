@@ -38,6 +38,7 @@
 #include <string.h>
 #include <initializer_list>
 #include <type_traits>
+#include <utility>
 
 template <typename T>
 class Vector;
@@ -226,7 +227,7 @@ public:
 		T *p = ptrw();
 		Size len = size();
 		for (Size i = p_index; i < len - 1; i++) {
-			p[i] = p[i + 1];
+			p[i] = std::move(p[i + 1]);
 		}
 
 		resize(len - 1);
@@ -239,7 +240,7 @@ public:
 		ERR_FAIL_COND_V(err, err);
 		T *p = ptrw();
 		for (Size i = new_size - 1; i > p_pos; i--) {
-			p[i] = p[i - 1];
+			p[i] = std::move(p[i - 1]);
 		}
 		p[p_pos] = p_val;
 
