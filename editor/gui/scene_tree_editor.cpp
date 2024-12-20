@@ -55,6 +55,27 @@ Node *SceneTreeEditor::get_scene_node() const {
 	return get_tree()->get_edited_scene_root();
 }
 
+PackedStringArray SceneTreeEditor::_get_node_configuration_warnings(Node *p_node) {
+	PackedStringArray warnings = p_node->get_configuration_warnings();
+	if (p_node == get_scene_node()) {
+		Node2D *node_2d = Object::cast_to<Node2D>(p_node);
+		if (node_2d) {
+			// Note: Warn for Node2D but not all CanvasItems, don't warn for Control nodes.
+			// Control nodes may have reasons to use a transformed root node like anchors.
+			if (!node_2d->get_transform().is_equal_approx(Transform2D())) {
+				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
+			}
+		}
+		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+		if (node_3d) {
+			if (!node_3d->get_transform().is_equal_approx(Transform3D())) {
+				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
+			}
+		}
+	}
+	return warnings;
+}
+
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -129,7 +150,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		const PackedStringArray warnings = n->get_configuration_warnings();
+		const PackedStringArray warnings = _get_node_configuration_warnings(n);
 
 		if (warnings.is_empty()) {
 			return;
@@ -451,8 +472,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	}
 
 	if (can_rename) { // TODO Should be can edit..
-
-		const PackedStringArray warnings = p_node->get_configuration_warnings();
+		const PackedStringArray warnings = _get_node_configuration_warnings(p_node);
 		const int num_warnings = warnings.size();
 		if (num_warnings > 0) {
 			StringName warning_icon;

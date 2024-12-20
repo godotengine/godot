@@ -34,7 +34,6 @@
 #include "core/math/color.h"
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
@@ -300,7 +299,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::copy_from(const StrRange<char> &p_cstr) {
+void String::parse_latin1(const StrRange<char> &p_cstr) {
 	if (p_cstr.len == 0) {
 		resize(0);
 		return;
@@ -319,7 +318,7 @@ void String::copy_from(const StrRange<char> &p_cstr) {
 	*dst = 0;
 }
 
-void String::copy_from(const StrRange<char32_t> &p_cstr) {
+void String::parse_utf32(const StrRange<char32_t> &p_cstr) {
 	if (p_cstr.len == 0) {
 		resize(0);
 		return;
@@ -328,7 +327,7 @@ void String::copy_from(const StrRange<char32_t> &p_cstr) {
 	copy_from_unchecked(p_cstr.c_str, p_cstr.len);
 }
 
-void String::copy_from(const char32_t &p_char) {
+void String::parse_utf32(const char32_t &p_char) {
 	if (p_char == 0) {
 		print_unicode_error("NUL character", true);
 		return;

@@ -1085,6 +1085,7 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
+	assign_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
@@ -1109,6 +1110,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	edit_button = memnew(Button);
 	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
+	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));

@@ -1250,6 +1250,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	int pan_speed = p_settings.get("editors/panning/2d_editor_pan_speed", 20);
 	Array keys = p_settings.get("canvas_item_editor/pan_view", Array()).operator Array();
 	panner->setup(panning_scheme, DebuggerMarshalls::deserialize_key_shortcut(keys), simple_panning);
+	panner->set_viewport(root);
 	panner->set_scroll_speed(pan_speed);
 	warped_panning = p_settings.get("editors/panning/warped_mouse_panning", false);
 

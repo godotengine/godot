@@ -791,6 +791,10 @@ void GraphEdit::_notification(int p_what) {
 			minimap->queue_redraw();
 			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			panner->set_viewport(get_viewport());
+		} break;
 	}
 }
 
@@ -1453,6 +1457,10 @@ void GraphEdit::_update_connections() {
 		Ref<Gradient> line_gradient = memnew(Gradient);
 
 		float line_width = _get_shader_line_width();
+		if (conn == hovered_connection) {
+			line_width *= 1.0f + (theme_cache.connection_hover_thickness / 100.0f);
+		}
+
 		conn->_cache.line->set_width(line_width);
 		line_gradient->set_color(0, from_color);
 		line_gradient->set_color(1, to_color);
@@ -2842,6 +2850,7 @@ void GraphEdit::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, GraphEdit, activity_color, "activity");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, connection_hover_tint_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, connection_hover_thickness);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, connection_valid_target_tint_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, connection_rim_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphEdit, selection_fill);
