@@ -1875,6 +1875,10 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	window_set_drop_files_callback(Callable(), p_id);
 
 	windows.erase(p_id);
+
+	if (last_focused_window == p_id) {
+		last_focused_window = INVALID_WINDOW_ID;
+	}
 }
 
 int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
