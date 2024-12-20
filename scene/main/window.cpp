@@ -303,6 +303,7 @@ void Window::set_title(const String &p_title) {
 			}
 		}
 	}
+	emit_signal("title_changed");
 }
 
 String Window::get_title() const {
@@ -3051,6 +3052,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
+	ADD_SIGNAL(MethodInfo("title_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
