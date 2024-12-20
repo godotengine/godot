@@ -781,8 +781,18 @@ namespace Godot.SourceGenerators
                     return false; // Non-generic Dictionary, so there's no hint to add
                 Debug.Assert(elementTypes.Length == 2);
 
-                var keyElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[0], typeCache)!.Value;
-                var keyElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType)!.Value;
+                var keyElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[0], typeCache);
+                var valueElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[1], typeCache);
+
+                if (keyElementMarshalType == null || valueElementMarshalType == null)
+                {
+                    // To maintain compatibility with previous versions of Godot before 4.4,
+                    // we must preserve the old behavior for generic dictionaries with non-marshallable
+                    // generic type arguments.
+                    return false;
+                }
+
+                var keyElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(keyElementMarshalType.Value)!.Value;
                 var keyIsPresetHint = false;
                 var keyHintString = (string?)null;
 
@@ -809,8 +819,7 @@ namespace Godot.SourceGenerators
                     }
                 }
 
-                var valueElementMarshalType = MarshalUtils.ConvertManagedTypeToMarshalType(elementTypes[1], typeCache)!.Value;
-                var valueElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType)!.Value;
+                var valueElementVariantType = MarshalUtils.ConvertMarshalTypeToVariantType(valueElementMarshalType.Value)!.Value;
                 var valueIsPresetHint = false;
                 var valueHintString = (string?)null;
 

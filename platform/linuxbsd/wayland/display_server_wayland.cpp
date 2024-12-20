@@ -319,6 +319,10 @@ Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title,
 
 #endif
 
+void DisplayServerWayland::beep() const {
+	wayland_thread.beep();
+}
+
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	if (p_mode == mouse_mode) {
 		return;
@@ -980,6 +984,12 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 #endif // GLES3_ENABLED
 
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerWayland::window_start_drag(WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	wayland_thread.window_start_drag(p_window);
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {

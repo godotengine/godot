@@ -745,6 +745,7 @@ class Godot(private val context: Context) {
 
 		runOnUiThread {
 			registerSensorsIfNeeded()
+			enableImmersiveMode(useImmersive.get(), true)
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
@@ -932,6 +933,13 @@ class Godot(private val context: Context) {
 		return value.data
 	}
 
+	@Keep
+	private fun getBaseColor(): Int {
+		val value = TypedValue()
+		context.theme.resolveAttribute(android.R.attr.colorBackground, value, true)
+		return value.data
+	}
+
 	/**
 	 * Destroys the Godot Engine and kill the process it's running in.
 	 */
@@ -969,15 +977,10 @@ class Godot(private val context: Context) {
 	}
 
 	fun onBackPressed() {
-		var shouldQuit = true
 		for (plugin in pluginRegistry.allPlugins) {
-			if (plugin.onMainBackPressed()) {
-				shouldQuit = false
-			}
+			plugin.onMainBackPressed()
 		}
-		if (shouldQuit) {
-			renderView?.queueOnRenderThread { GodotLib.back() }
-		}
+		renderView?.queueOnRenderThread { GodotLib.back() }
 	}
 
 	/**
@@ -1123,7 +1126,7 @@ class Godot(private val context: Context) {
 
 	@Keep
 	private fun createNewGodotInstance(args: Array<String>): Int {
-		return primaryHost?.onNewGodotInstanceRequested(args) ?: 0
+		return primaryHost?.onNewGodotInstanceRequested(args) ?: -1
 	}
 
 	@Keep

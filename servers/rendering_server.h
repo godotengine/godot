@@ -221,6 +221,12 @@ public:
 		SHADER_MAX
 	};
 
+	enum CullMode {
+		CULL_MODE_DISABLED,
+		CULL_MODE_FRONT,
+		CULL_MODE_BACK,
+	};
+
 	virtual RID shader_create() = 0;
 	virtual RID shader_create_from_code(const String &p_code, const String &p_path_hint = String()) = 0;
 
@@ -438,6 +444,7 @@ public:
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
+	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
@@ -622,6 +629,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) = 0;
 
 	enum ReflectionProbeAmbientMode {
 		REFLECTION_PROBE_AMBIENT_DISABLED,
@@ -709,6 +717,13 @@ public:
 
 	/* LIGHTMAP */
 
+	enum ShadowmaskMode {
+		SHADOWMASK_MODE_NONE,
+		SHADOWMASK_MODE_REPLACE,
+		SHADOWMASK_MODE_OVERLAY,
+		SHADOWMASK_MODE_ONLY,
+	};
+
 	virtual RID lightmap_create() = 0;
 
 	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
@@ -722,8 +737,11 @@ public:
 	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
 
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
-
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
+	virtual ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, ShadowmaskMode p_mode) = 0;
 
 	/* PARTICLES API */
 
@@ -908,6 +926,15 @@ public:
 		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
 
+	enum ViewportAnisotropicFiltering {
+		VIEWPORT_ANISOTROPY_DISABLED,
+		VIEWPORT_ANISOTROPY_2X,
+		VIEWPORT_ANISOTROPY_4X,
+		VIEWPORT_ANISOTROPY_8X,
+		VIEWPORT_ANISOTROPY_16X,
+		VIEWPORT_ANISOTROPY_MAX
+	};
+
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
@@ -921,6 +948,7 @@ public:
 	virtual void viewport_set_scaling_3d_scale(RID p_viewport, float p_scaling_3d_scale) = 0;
 	virtual void viewport_set_fsr_sharpness(RID p_viewport, float p_fsr_sharpness) = 0;
 	virtual void viewport_set_texture_mipmap_bias(RID p_viewport, float p_texture_mipmap_bias) = 0;
+	virtual void viewport_set_anisotropic_filtering_level(RID p_viewport, ViewportAnisotropicFiltering p_anisotropic_filtering_level) = 0;
 
 	enum ViewportUpdateMode {
 		VIEWPORT_UPDATE_DISABLED,
@@ -1014,6 +1042,8 @@ public:
 	virtual void viewport_set_use_taa(RID p_viewport, bool p_use_taa) = 0;
 
 	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
+
+	virtual void viewport_set_force_motion_vectors(RID p_viewport, bool p_force_motion_vectors) = 0;
 
 	virtual void viewport_set_mesh_lod_threshold(RID p_viewport, float p_pixels) = 0;
 
@@ -1533,6 +1563,11 @@ public:
 
 	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable) = 0;
 
+	virtual void canvas_item_set_instance_shader_parameter(RID p_item, const StringName &, const Variant &p_value) = 0;
+	virtual Variant canvas_item_get_instance_shader_parameter(RID p_item, const StringName &) const = 0;
+	virtual Variant canvas_item_get_instance_shader_parameter_default_value(RID p_item, const StringName &) const = 0;
+	virtual void canvas_item_get_instance_shader_parameter_list(RID p_item, List<PropertyInfo> *p_parameters) const = 0;
+
 	virtual void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
 
 	enum CanvasGroupMode {
@@ -1819,6 +1854,7 @@ private:
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
 	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
+	TypedArray<Dictionary> _canvas_item_get_instance_shader_parameter_list(RID p_item) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 #ifdef TOOLS_ENABLED
@@ -1864,6 +1900,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportEnvironmentMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
+VARIANT_ENUM_CAST(RenderingServer::ViewportAnisotropicFiltering);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfoType);

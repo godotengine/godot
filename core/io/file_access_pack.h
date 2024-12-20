@@ -36,7 +36,6 @@
 #include "core/string/print_string.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
@@ -184,7 +183,7 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override;
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override;
 
 	virtual bool file_exists(const String &p_name) override;
 

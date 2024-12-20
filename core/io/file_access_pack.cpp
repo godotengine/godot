@@ -35,8 +35,6 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
-
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
@@ -71,7 +69,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		// Search for directory.
 		PackedDir *cd = root;
 
-		if (simplified_path.contains("/")) { // In a subdirectory.
+		if (simplified_path.contains_char('/')) { // In a subdirectory.
 			Vector<String> ds = simplified_path.get_base_dir().split("/");
 
 			for (int j = 0; j < ds.size(); j++) {
@@ -104,7 +102,7 @@ void PackedData::remove_path(const String &p_path) {
 	// Search for directory.
 	PackedDir *cd = root;
 
-	if (simplified_path.contains("/")) { // In a subdirectory.
+	if (simplified_path.contains_char('/')) { // In a subdirectory.
 		Vector<String> ds = simplified_path.get_base_dir().split("/");
 
 		for (int j = 0; j < ds.size(); j++) {
@@ -309,7 +307,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		cs[sl] = 0;
 
 		String path;
-		path.parse_utf8(cs.ptr());
+		path.parse_utf8(cs.ptr(), sl);
 
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
@@ -417,8 +415,8 @@ void FileAccessPack::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL();
+bool FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_V(false);
 }
 
 bool FileAccessPack::file_exists(const String &p_name) {

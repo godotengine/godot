@@ -123,6 +123,15 @@ public:
 		MSAA_MAX
 	};
 
+	enum AnisotropicFiltering {
+		ANISOTROPY_DISABLED,
+		ANISOTROPY_2X,
+		ANISOTROPY_4X,
+		ANISOTROPY_8X,
+		ANISOTROPY_16X,
+		ANISOTROPY_MAX
+	};
+
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
@@ -303,6 +312,7 @@ private:
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -515,6 +525,7 @@ public:
 	void set_global_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_global_canvas_transform() const;
 
+	Transform2D get_stretch_transform() const;
 	virtual Transform2D get_final_transform() const;
 
 	void gui_set_root_order_dirty();
@@ -560,6 +571,9 @@ public:
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
 	float get_texture_mipmap_bias() const;
 
+	void set_anisotropic_filtering_level(AnisotropicFiltering p_anisotropic_filtering_level);
+	AnisotropicFiltering get_anisotropic_filtering_level() const;
+
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
 
@@ -585,6 +599,7 @@ public:
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
+	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
 
 	void set_physics_object_picking(bool p_enable);
@@ -663,13 +678,17 @@ public:
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
-	Window *get_base_window() const;
+	Window *get_base_window();
 
 	void set_canvas_cull_mask(uint32_t p_layers);
 	uint32_t get_canvas_cull_mask() const;
 
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
+
+#ifdef TOOLS_ENABLED
+	bool is_visible_subviewport() const;
+#endif // TOOLS_ENABLED
 
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
@@ -857,6 +876,7 @@ VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::AnisotropicFiltering);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);

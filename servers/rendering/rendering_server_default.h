@@ -376,6 +376,7 @@ public:
 
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
+	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -460,6 +461,7 @@ public:
 
 	FUNC2(reflection_probe_set_update_mode, RID, ReflectionProbeUpdateMode)
 	FUNC2(reflection_probe_set_intensity, RID, float)
+	FUNC2(reflection_probe_set_blend_distance, RID, float)
 	FUNC2(reflection_probe_set_ambient_color, RID, const Color &)
 	FUNC2(reflection_probe_set_ambient_energy, RID, float)
 	FUNC2(reflection_probe_set_ambient_mode, RID, ReflectionProbeAmbientMode)
@@ -488,6 +490,10 @@ public:
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
 	FUNC1(lightmap_set_probe_capture_update_speed, float)
+
+	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
+	FUNC1R(ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
+	FUNC2(lightmap_set_shadowmask_mode, RID, ShadowmaskMode)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -686,6 +692,7 @@ public:
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
+	FUNC2(viewport_set_anisotropic_filtering_level, RID, ViewportAnisotropicFiltering)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
@@ -724,6 +731,7 @@ public:
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 	FUNC2(viewport_set_use_taa, RID, bool)
 	FUNC2(viewport_set_use_debanding, RID, bool)
+	FUNC2(viewport_set_force_motion_vectors, RID, bool)
 	FUNC2(viewport_set_use_occlusion_culling, RID, bool)
 	FUNC1(viewport_set_occlusion_rays_per_thread, int)
 	FUNC1(viewport_set_occlusion_culling_build_quality, ViewportOcclusionCullingBuildQuality)
@@ -984,6 +992,11 @@ public:
 
 	FUNC2(canvas_item_set_material, RID, RID)
 
+	FUNC3(canvas_item_set_instance_shader_parameter, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter, RID, const StringName &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter_default_value, RID, const StringName &)
+	FUNC2C(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
+
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
@@ -1124,7 +1137,7 @@ public:
 
 	virtual void request_frame_drawn_callback(const Callable &p_callable) override;
 
-	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void draw(bool p_present, double frame_step) override;
 	virtual void sync() override;
 	virtual bool has_changed() const override;
 	virtual void init() override;

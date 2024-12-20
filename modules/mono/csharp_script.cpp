@@ -2344,9 +2344,7 @@ bool CSharpScript::can_instantiate() const {
 }
 
 StringName CSharpScript::get_instance_base_type() const {
-	StringName native_name;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptNativeName(this, &native_name);
-	return native_name;
+	return type_info.native_base_name;
 }
 
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {

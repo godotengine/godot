@@ -436,6 +436,30 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_get_instance_shader_parameter" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<description>
+				Returns the value of the per-instance shader uniform from the specified canvas item instance. Equivalent to [method CanvasItem.get_instance_shader_parameter].
+			</description>
+		</method>
+		<method name="canvas_item_get_instance_shader_parameter_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<description>
+				Returns the default value of the per-instance shader uniform from the specified canvas item instance. Equivalent to [method CanvasItem.get_instance_shader_parameter].
+			</description>
+		</method>
+		<method name="canvas_item_get_instance_shader_parameter_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Returns a dictionary of per-instance shader uniform names of the per-instance shader uniform from the specified canvas item instance.
+				The returned dictionary is in PropertyInfo format, with the keys [code]name[/code], [code]class_name[/code], [code]type[/code], [code]hint[/code], [code]hint_string[/code], and [code]usage[/code].
+			</description>
+		</method>
 		<method name="canvas_item_reset_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -522,6 +546,15 @@
 			<param index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_instance_shader_parameter">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets the per-instance shader uniform on the specified canvas item instance. Equivalent to [method CanvasItem.set_instance_shader_parameter].
 			</description>
 		</method>
 		<method name="canvas_item_set_interpolated">
@@ -1075,7 +1108,7 @@
 			<return type="RenderingDevice" />
 			<description>
 				Creates a RenderingDevice that can be used to do draw and compute operations on a separate thread. Cannot draw to the screen nor share data with the global RenderingDevice.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="debug_canvas_item_get_rect">
@@ -1578,7 +1611,7 @@
 			<return type="RenderingDevice" />
 			<description>
 				Returns the global RenderingDevice.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [code]null[/code].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_rendering_info">
@@ -1641,7 +1674,7 @@
 			<return type="int" enum="RenderingDevice.DeviceType" />
 			<description>
 				Returns the type of the video adapter. Since dedicated graphics cards from a given generation will [i]usually[/i] be significantly faster than integrated graphics made in the same generation, the device type can be used as a basis for automatic graphics settings adjustment. However, this is not always true, so make sure to provide users with a way to manually override graphics settings.
-				[b]Note:[/b] When using the OpenGL backend or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
+				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [constant RenderingDevice.DEVICE_TYPE_OTHER].
 			</description>
 		</method>
 		<method name="get_video_adapter_vendor" qualifiers="const">
@@ -2475,6 +2508,14 @@
 				Returns a mesh's surface's material.
 			</description>
 		</method>
+		<method name="mesh_surface_remove">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Removes a mesh's surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+			</description>
+		</method>
 		<method name="mesh_surface_set_material">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
@@ -3163,6 +3204,14 @@
 				If [code]true[/code], reflections will ignore sky contribution. Equivalent to [member ReflectionProbe.interior].
 			</description>
 		</method>
+		<method name="reflection_probe_set_blend_distance">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="blend_distance" type="float" />
+			<description>
+				Sets the distance in meters over which a probe blends into the scene.
+			</description>
+		</method>
 		<method name="reflection_probe_set_cull_mask">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
@@ -3842,6 +3891,17 @@
 				If [code]true[/code], sets the viewport active, else sets it inactive.
 			</description>
 		</method>
+		<method name="viewport_set_anisotropic_filtering_level">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="anisotropic_filtering_level" type="int" enum="RenderingServer.ViewportAnisotropicFiltering" />
+			<description>
+				Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+				The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member ProjectSettings.rendering/textures/decals/filter] and [member ProjectSettings.rendering/textures/light_projectors/filter].
+				[b]Note:[/b] In 3D, for this setting to have an effect, set [member BaseMaterial3D.texture_filter] to [constant BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on materials.
+				[b]Note:[/b] In 2D, for this setting to have an effect, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
+			</description>
+		</method>
 		<method name="viewport_set_canvas_cull_mask">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4121,7 +4181,7 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
-				[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+				[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
@@ -4998,6 +5058,24 @@
 		<constant name="VIEWPORT_MSAA_MAX" value="4" enum="ViewportMSAA">
 			Represents the size of the [enum ViewportMSAA] enum.
 		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_DISABLED" value="0" enum="ViewportAnisotropicFiltering">
+			Anisotropic filtering is disabled.
+		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_2X" value="1" enum="ViewportAnisotropicFiltering">
+			Use 2× anisotropic filtering.
+		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_4X" value="2" enum="ViewportAnisotropicFiltering">
+			Use 4× anisotropic filtering. This is the default value.
+		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_8X" value="3" enum="ViewportAnisotropicFiltering">
+			Use 8× anisotropic filtering.
+		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_16X" value="4" enum="ViewportAnisotropicFiltering">
+			Use 16× anisotropic filtering.
+		</constant>
+		<constant name="VIEWPORT_ANISOTROPY_MAX" value="5" enum="ViewportAnisotropicFiltering">
+			Represents the size of the [enum ViewportAnisotropicFiltering] enum.
+		</constant>
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_DISABLED" value="0" enum="ViewportScreenSpaceAA">
 			Do not perform any antialiasing in the full screen post-process.
 		</constant>
@@ -5724,7 +5802,7 @@
 			Buffer memory used (in bytes). This includes vertex data, uniform buffers, and many miscellaneous buffer types used internally.
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
+			Video memory used (in bytes). When using the Forward+ or Mobile renderers, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the Compatibility renderer, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
 		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS" value="6" enum="RenderingInfo">
 			Number of pipeline compilations that were triggered by the 2D canvas renderer.

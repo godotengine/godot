@@ -47,7 +47,8 @@ public:
 
 	enum SelectMode {
 		SELECT_SINGLE,
-		SELECT_MULTI
+		SELECT_MULTI,
+		SELECT_TOGGLE,
 	};
 
 private:
@@ -145,6 +146,7 @@ private:
 		int font_size = 0;
 		Color font_color;
 		Color font_hovered_color;
+		Color font_hovered_selected_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
@@ -152,6 +154,8 @@ private:
 		int line_separation = 0;
 		int icon_margin = 0;
 		Ref<StyleBox> hovered_style;
+		Ref<StyleBox> hovered_selected_style;
+		Ref<StyleBox> hovered_selected_focus_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;

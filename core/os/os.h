@@ -39,7 +39,6 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-#include <stdarg.h>
 #include <stdlib.h>
 
 class OS {
@@ -111,7 +110,7 @@ protected:
 	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
-	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
+	bool _separate_thread_render = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -216,6 +215,7 @@ public:
 	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
+	virtual String get_version_alias() const { return get_version(); }
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
@@ -274,7 +274,7 @@ public:
 	virtual uint64_t get_static_memory_peak_usage() const;
 	virtual Dictionary get_memory_info() const;
 
-	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
+	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
 	String get_locale_language() const;
@@ -287,6 +287,7 @@ public:
 	virtual String get_data_path() const;
 	virtual String get_config_path() const;
 	virtual String get_cache_path() const;
+	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
 

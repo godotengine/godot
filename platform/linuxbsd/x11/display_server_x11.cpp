@@ -69,6 +69,8 @@
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
 
+#define _NET_WM_MOVERESIZE_MOVE 8L
+
 // 2.2 is the first release with multitouch
 #define XINPUT_CLIENT_VERSION_MAJOR 2
 #define XINPUT_CLIENT_VERSION_MINOR 2
@@ -399,6 +401,10 @@ Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, con
 }
 
 #endif
+
+void DisplayServerX11::beep() const {
+	XBell(x11_display, 0);
+}
 
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
@@ -4853,14 +4859,7 @@ void DisplayServerX11::process_events() {
 
 					WindowID window_id_other = INVALID_WINDOW_ID;
 					Window wd_other_x11_window;
-					if (wd.focused) {
-						// Handle cases where an unfocused popup is open that needs to receive button-up events.
-						WindowID popup_id = _get_focused_window_or_popup();
-						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
-							window_id_other = popup_id;
-							wd_other_x11_window = windows[popup_id].x11_window;
-						}
-					} else {
+					if (!wd.focused) {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
@@ -5423,6 +5422,40 @@ DisplayServer::VSyncMode DisplayServerX11::window_get_vsync_mode(WindowID p_wind
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerX11::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	XClientMessageEvent m;
+	memset(&m, 0, sizeof(m));
+
+	XUngrabPointer(x11_display, CurrentTime);
+
+	Window root_return, child_return;
+	int root_x, root_y, win_x, win_y;
+	unsigned int mask_return;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, wd.x11_window, &root_return, &child_return, &root_x, &root_y, &win_x, &win_y, &mask_return);
+
+	m.type = ClientMessage;
+	m.window = wd.x11_window;
+	m.message_type = XInternAtom(x11_display, "_NET_WM_MOVERESIZE", True);
+	m.format = 32;
+	if (xquerypointer_result) {
+		m.data.l[0] = root_x;
+		m.data.l[1] = root_y;
+		m.data.l[3] = Button1;
+	}
+	m.data.l[2] = _NET_WM_MOVERESIZE_MOVE;
+	m.data.l[4] = 1; // Source - normal application.
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&m);
+
+	XSync(x11_display, 0);
 }
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {

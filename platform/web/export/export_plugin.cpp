@@ -215,9 +215,6 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 }
 
 Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects) {
-	List<String> preset_features;
-	get_preset_features(p_preset, &preset_features);
-
 	String proj_name = GLOBAL_GET("application/config/name");
 	if (proj_name.is_empty()) {
 		proj_name = "Godot Game";
@@ -244,9 +241,6 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
 
-	if (preset_features.find("threads")) {
-		cache_files.push_back(name + ".worker.js");
-	}
 	cache_files.push_back(name + ".audio.worklet.js");
 	cache_files.push_back(name + ".audio.position.worklet.js");
 	replaces["___GODOT_CACHE___"] = Variant(cache_files).to_json_string();
@@ -376,6 +370,16 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+}
+
+bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option == "custom_template/debug" ||
+			p_option == "custom_template/release") {
+		return advanced_options_enabled;
+	}
+
+	return true;
 }
 
 String EditorExportPlatformWeb::get_name() const {
@@ -823,7 +827,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 }
 
 Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags) {
-	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
+	const String dest = EditorPaths::get_singleton()->get_temp_dir().path_join("web");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
@@ -840,7 +844,6 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 		DirAccess::remove_file_or_error(basepath + ".html");
 		DirAccess::remove_file_or_error(basepath + ".offline.html");
 		DirAccess::remove_file_or_error(basepath + ".js");
-		DirAccess::remove_file_or_error(basepath + ".worker.js");
 		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".audio.position.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".service.worker.js");

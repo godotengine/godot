@@ -31,7 +31,6 @@
 #include "os.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
@@ -276,6 +275,10 @@ String OS::get_cache_path() const {
 	return ".";
 }
 
+String OS::get_temp_path() const {
+	return ".";
+}
+
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
@@ -512,6 +515,10 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "wasm") {
+		return true;
+	}
+#elif defined(__loongarch64)
+	if (p_feature == "loongarch64") {
 		return true;
 	}
 #endif

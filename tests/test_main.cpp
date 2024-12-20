@@ -55,6 +55,8 @@
 #include "tests/core/io/test_resource.h"
 #include "tests/core/io/test_stream_peer.h"
 #include "tests/core/io/test_stream_peer_buffer.h"
+#include "tests/core/io/test_tcp_server.h"
+#include "tests/core/io/test_udp_server.h"
 #include "tests/core/io/test_xml_parser.h"
 #include "tests/core/math/test_aabb.h"
 #include "tests/core/math/test_astar.h"
@@ -147,6 +149,7 @@
 #include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_graph_node.h"
 #include "tests/scene/test_option_button.h"
+#include "tests/scene/test_split_container.h"
 #include "tests/scene/test_tab_bar.h"
 #include "tests/scene/test_tab_container.h"
 #include "tests/scene/test_text_edit.h"
@@ -367,6 +370,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifdef TOOLS_ENABLED
 		if (EditorSettings::get_singleton()) {
 			EditorSettings::destroy();
+
+			// Instantiating the EditorSettings singleton sets the locale to the editor's language.
+			TranslationServer::get_singleton()->set_locale("en");
+		}
+		if (EditorPaths::get_singleton()) {
+			EditorPaths::free();
 		}
 #endif // TOOLS_ENABLED
 

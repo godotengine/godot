@@ -359,6 +359,11 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+        # Ensure intellisense tools like `compile_commands.json` play nice with MSVC syntax.
+        env["CPPDEFPREFIX"] = "-D"
+        env["INCPREFIX"] = "-I"
+        env.AppendUnique(CPPDEFINES=[("alloca", "_alloca")])
+
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
@@ -701,11 +706,7 @@ def configure_mingw(env: "SConsEnvironment"):
         print("Detected GCC to be a wrapper for Clang.")
         env["use_llvm"] = True
 
-    # TODO: Re-evaluate the need for this / streamline with common config.
-    if env["target"] == "template_release":
-        if env["arch"] != "arm64":
-            env.Append(CCFLAGS=["-msse2"])
-    elif env.dev_build:
+    if env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
         # and are the only ones with too big objects).
@@ -811,7 +812,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(CCFLAGS=san_flags)
         env.Append(LINKFLAGS=san_flags)
 
-    if env["use_llvm"] and os.name == "nt" and methods._colorize:
+    if env["use_llvm"] and os.name == "nt" and methods._can_color:
         env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
 
     if get_is_ar_thin_supported(env):

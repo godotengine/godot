@@ -33,7 +33,6 @@
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 
 struct _CoreConstant {
@@ -678,6 +677,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_HIDE_QUATERNION_EDIT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_PASSWORD);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_TOOL_BUTTON);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ONESHOT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
 	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NONE);

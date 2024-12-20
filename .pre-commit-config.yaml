@@ -98,7 +98,7 @@ repos:
         name: doc-status
         language: python
         entry: python doc/tools/doc_status.py
-        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes]
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes, -c]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
 
@@ -184,10 +184,11 @@ repos:
             .*\.patch$|
             .*\.out$|
             modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines\.gd$|
-            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.notest\.gd$|
-            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.notest\.gd$|
+            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.norun\.gd$|
+            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.norun\.gd$|
             platform/android/java/editor/src/main/java/com/android/.*|
-            platform/android/java/lib/src/com/google/.*
+            platform/android/java/lib/src/com/google/.*|
+            tests/data/.*\.bin$
           )
 
       - id: dotnet-format
