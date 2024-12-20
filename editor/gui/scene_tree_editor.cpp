@@ -43,6 +43,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/node_2d.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"

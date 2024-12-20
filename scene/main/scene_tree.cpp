@@ -31,17 +31,12 @@
 #include "scene_tree.h"
 
 #include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
-#include "core/io/dir_access.h"
 #include "core/io/image_loader.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
@@ -49,14 +44,11 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
-#include "scene/resources/font.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "servers/display_server.h"
-#include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -64,8 +56,6 @@
 #include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
 #include "window.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);

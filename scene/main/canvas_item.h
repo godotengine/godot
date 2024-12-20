@@ -32,7 +32,6 @@
 #define CANVAS_ITEM_H
 
 #include "scene/main/node.h"
-#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
 
 class CanvasLayer;

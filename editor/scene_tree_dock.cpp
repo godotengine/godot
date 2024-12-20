@@ -58,6 +58,7 @@
 #include "editor/reparent_dialog.h"
 #include "editor/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/node_2d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/check_box.h"

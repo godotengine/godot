@@ -32,7 +32,6 @@
 #include "tile_map.compat.inc"
 
 #include "core/io/marshalls.h"
-#include "scene/gui/control.h"
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
 	if (layer < 0) {                                 \

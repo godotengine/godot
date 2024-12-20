@@ -37,10 +37,6 @@
 #include "servers/navigation_server_2d.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/navigation_server_3d.h"
-#endif // DEBUG_ENABLED
-
-#ifdef DEBUG_ENABLED
 /////////////////////////////// Debug //////////////////////////////////////////
 constexpr int TILE_MAP_DEBUG_QUADRANT_SIZE = 16;
 

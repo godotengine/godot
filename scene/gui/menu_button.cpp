@@ -30,7 +30,6 @@
 
 #include "menu_button.h"
 
-#include "core/os/keyboard.h"
 #include "scene/main/window.h"
 
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {

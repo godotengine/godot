@@ -31,7 +31,6 @@
 #include "xr_body_modifier_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "servers/xr/xr_pose.h"
 #include "servers/xr_server.h"
 
 void XRBodyModifier3D::_bind_methods() {

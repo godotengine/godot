@@ -35,7 +35,6 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/string/translation.h"
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/resources/atlas_texture.h"

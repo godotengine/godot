@@ -36,7 +36,6 @@
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 #include "visual_shader_particle_nodes.h"
-#include "visual_shader_sdf_nodes.h"
 
 String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
 	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };

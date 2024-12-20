@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/string/translation.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
 #include "scene/2d/audio_listener_2d.h"

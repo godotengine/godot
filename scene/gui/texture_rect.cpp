@@ -30,8 +30,6 @@
 
 #include "texture_rect.h"
 
-#include "servers/rendering_server.h"
-
 void TextureRect::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {

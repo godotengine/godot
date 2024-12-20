@@ -33,7 +33,6 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
 
 void NavigationObstacle2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
