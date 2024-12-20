@@ -58,23 +58,25 @@ struct BonePose {
 	Vector<StringName> child_bones;
 
 	void set_bone_forward(const Vector3& p_forward) {
-		forward = p_forward;
-		right = p_forward;
+		forward = p_forward.normalized();
+		right = forward;
 		local_pose = Transform3D(Basis(rotation),position);
-		Vector3::Axis min_axis = p_forward.min_axis_index();
+		Vector3::Axis min_axis = forward.min_axis_index();
+
+		Vector3 up = Vector3(0, 1, 0);
 		switch (min_axis)
 		{
 		case Vector3::AXIS_X:
-			right = Vector3(1, 0, 0);
+			up = Vector3(1, 0, 0);
 			break;
 		case Vector3::AXIS_Y:
-			right = Vector3(0, 1, 0);
+			up = Vector3(0, 1, 0);
 			break;
 		case Vector3::AXIS_Z:
-			right = Vector3(0, 0, 1);
+			up = Vector3(0, 0, 1);
 			break;
 		}
-		right = right.cross(p_forward);
+		right = up.cross(forward);
 		right.normalize();
 	}
 
