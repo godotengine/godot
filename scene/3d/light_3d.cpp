@@ -202,14 +202,14 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 	RID tex_id = projector.is_valid() ? projector->get_rid() : RID();
 
 #ifdef DEBUG_ENABLED
-	if (
-			p_texture->is_class("AnimatedTexture") ||
-			p_texture->is_class("AtlasTexture") ||
-			p_texture->is_class("CameraTexture") ||
-			p_texture->is_class("CanvasTexture") ||
-			p_texture->is_class("MeshTexture") ||
-			p_texture->is_class("Texture2DRD") ||
-			p_texture->is_class("ViewportTexture")) {
+	if (p_texture.is_valid() &&
+			(p_texture->is_class("AnimatedTexture") ||
+					p_texture->is_class("AtlasTexture") ||
+					p_texture->is_class("CameraTexture") ||
+					p_texture->is_class("CanvasTexture") ||
+					p_texture->is_class("MeshTexture") ||
+					p_texture->is_class("Texture2DRD") ||
+					p_texture->is_class("ViewportTexture"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
 #endif
