@@ -857,7 +857,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		Light *light = p_lights;
 
 		while (light) {
-			if (light->render_index_cache >= 0 && p_item->light_mask & light->item_mask && p_item->z_final >= light->z_min && p_item->z_final <= light->z_max && p_item->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
+			if (light->render_index_cache >= 0 && p_item->light_mask & light->item_mask && p_item->z_final >= light->z_min && p_item->z_final <= light->z_max && p_item->global_rect_cache.intersects(light->rect_cache)) {
 				uint32_t light_index = light->render_index_cache;
 				lights[light_count >> 2] |= light_index << ((light_count & 3) * 8);
 
