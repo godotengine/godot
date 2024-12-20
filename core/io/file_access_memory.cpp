@@ -31,8 +31,6 @@
 #include "file_access_memory.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
-#include "core/templates/rb_map.h"
 
 static HashMap<String, Vector<uint8_t>> *files = nullptr;
 

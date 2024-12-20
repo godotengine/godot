@@ -35,7 +35,6 @@
 #include "core/os/condition_variable.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
-#include "core/string/print_string.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
