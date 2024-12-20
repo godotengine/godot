@@ -378,6 +378,8 @@ private:
 		String tooltip_text;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
+		Rect2 mouse_confined_area; // Only used in native Windows.
+		bool mouse_confined_wrap = false; // Only used in native Windows.
 		Point2 drag_accum;
 		bool drag_attempted = false;
 		Variant drag_data; // Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
@@ -601,6 +603,7 @@ public:
 	void warp_mouse(const Vector2 &p_position);
 	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
+	void confine_mouse(const Rect2 p_rect, bool p_wrap = true);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -866,6 +869,7 @@ public:
 	virtual Transform2D get_popup_base_transform() const override;
 	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
+
 	virtual bool is_sub_viewport() const override { return true; }
 
 	void _validate_property(PropertyInfo &p_property) const;
