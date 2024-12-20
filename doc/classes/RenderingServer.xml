@@ -436,6 +436,30 @@
 				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
+		<method name="canvas_item_get_instance_shader_parameter" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<description>
+				Returns the value of the per-instance shader uniform from the specified canvas item instance. Equivalent to [method CanvasItem.get_instance_shader_parameter].
+			</description>
+		</method>
+		<method name="canvas_item_get_instance_shader_parameter_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<description>
+				Returns the default value of the per-instance shader uniform from the specified canvas item instance. Equivalent to [method CanvasItem.get_instance_shader_parameter].
+			</description>
+		</method>
+		<method name="canvas_item_get_instance_shader_parameter_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Returns a dictionary of per-instance shader uniform names of the per-instance shader uniform from the specified canvas item instance.
+				The returned dictionary is in PropertyInfo format, with the keys [code]name[/code], [code]class_name[/code], [code]type[/code], [code]hint[/code], [code]hint_string[/code], and [code]usage[/code].
+			</description>
+		</method>
 		<method name="canvas_item_reset_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -522,6 +546,15 @@
 			<param index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_instance_shader_parameter">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="parameter" type="StringName" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets the per-instance shader uniform on the specified canvas item instance. Equivalent to [method CanvasItem.set_instance_shader_parameter].
 			</description>
 		</method>
 		<method name="canvas_item_set_interpolated">
