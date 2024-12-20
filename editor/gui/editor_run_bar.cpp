@@ -269,12 +269,12 @@ void EditorRunBar::_profiler_autostart_indicator_pressed() {
 	EditorNode::get_singleton()->get_bottom_panel()->make_item_visible(EditorDebuggerNode::get_singleton(), true);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(2);
-	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(3);
+	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(4);
 	} else {
 		// Switch to the network profiler tab.
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(7);
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(8);
 	}
 }
 
