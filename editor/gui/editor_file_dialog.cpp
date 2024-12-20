@@ -1511,9 +1511,11 @@ void EditorFileDialog::_filter_changed(const String &p_text) {
 	search_string = p_text;
 	invalidate();
 
-	item_list->deselect_all();
-	if (item_list->get_item_count() > 0) {
-		item_list->call_deferred("select", 0);
+	if (item_list->get_selected_items().size() > 0) {
+		item_list->deselect_all();
+		if (item_list->get_item_count() > 0) {
+			item_list->call_deferred("select", 0);
+		}
 	}
 }
 
