@@ -939,7 +939,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 
 #ifdef DEBUG_METHODS_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
-			Pair<MethodInfo, uint32_t> pair(E, 0);
+			Pair<MethodInfo, uint32_t> pair(E, E.get_compatibility_hash());
 			p_methods->push_back(pair);
 		}
 
@@ -2016,6 +2016,22 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 #endif
 }
 
+void ClassDB::add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual, const Vector<String> &p_arg_names, bool p_object_core) {
+	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
+
+	OBJTYPE_WLOCK;
+
+	HashMap<StringName, Vector<uint32_t>> &virtual_methods_compat = classes[p_class].virtual_methods_compat;
+
+	Vector<uint32_t> *compat_hashes = virtual_methods_compat.getptr(p_method.name);
+	if (!compat_hashes) {
+		virtual_methods_compat[p_method.name] = Vector<uint32_t>();
+		compat_hashes = &virtual_methods_compat[p_method.name];
+	}
+
+	compat_hashes->push_back(p_method.get_compatibility_hash());
+}
+
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
 
@@ -2035,6 +2051,25 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 	}
 
 #endif
+}
+
+Vector<uint32_t> ClassDB::get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->virtual_methods_map.has(p_name)) {
+			Vector<uint32_t> *compat_hashes = type->virtual_methods_compat.getptr(p_name);
+			if (compat_hashes) {
+				return *compat_hashes;
+			}
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+
+	return Vector<uint32_t>();
 }
 
 void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
