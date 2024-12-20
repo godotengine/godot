@@ -39,7 +39,8 @@
 namespace TestArrayMesh {
 
 TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
 	StringName name_a{ "ShapeA" };
 	StringName name_b{ "ShapeB" };
 
@@ -76,8 +77,9 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	}
 
 	SUBCASE("Adding blend shape after surface is added causes error") {
-		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-		Array cylinder_array{};
+		Ref<CylinderMesh> cylinder;
+		cylinder.instantiate();
+		Array cylinder_array;
 		cylinder_array.resize(Mesh::ARRAY_MAX);
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
@@ -89,8 +91,9 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	}
 
 	SUBCASE("Adding blend shapes once all surfaces have been removed is allowed") {
-		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-		Array cylinder_array{};
+		Ref<CylinderMesh> cylinder;
+		cylinder.instantiate();
+		Array cylinder_array;
 		cylinder_array.resize(Mesh::ARRAY_MAX);
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
@@ -136,16 +139,17 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	SUBCASE("Clearing all blend shapes once all surfaces have been removed is allowed") {
 		mesh->add_blend_shape(name_a);
 		mesh->add_blend_shape(name_b);
-		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-		Array cylinder_array{};
+		Ref<CylinderMesh> cylinder;
+		cylinder.instantiate();
+		Array cylinder_array;
 		cylinder_array.resize(Mesh::ARRAY_MAX);
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
-		Array blend_shape{};
+		Array blend_shape;
 		blend_shape.resize(Mesh::ARRAY_MAX);
 		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
 		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
 		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
-		Array blend_shapes{};
+		Array blend_shapes;
 		blend_shapes.push_back(blend_shape);
 		blend_shapes.push_back(blend_shape);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
@@ -165,8 +169,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	SUBCASE("Can't add surface with incorrect number of blend shapes.") {
 		mesh->add_blend_shape(name_a);
 		mesh->add_blend_shape(name_b);
-		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-		Array cylinder_array{};
+		Array cylinder_array;
 		ERR_PRINT_OFF
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 		ERR_PRINT_ON
@@ -176,16 +179,17 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 	SUBCASE("Can't clear blend shapes after surface had been added.") {
 		mesh->add_blend_shape(name_a);
 		mesh->add_blend_shape(name_b);
-		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-		Array cylinder_array{};
+		Ref<CylinderMesh> cylinder;
+		cylinder.instantiate();
+		Array cylinder_array;
 		cylinder_array.resize(Mesh::ARRAY_MAX);
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
-		Array blend_shape{};
+		Array blend_shape;
 		blend_shape.resize(Mesh::ARRAY_MAX);
 		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
 		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
 		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
-		Array blend_shapes{};
+		Array blend_shapes;
 		blend_shapes.push_back(blend_shape);
 		blend_shapes.push_back(blend_shape);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
@@ -203,15 +207,18 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 }
 
 TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-	Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-	Array cylinder_array{};
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
+	Ref<CylinderMesh> cylinder;
+	cylinder.instantiate();
+	Array cylinder_array;
 	cylinder_array.resize(Mesh::ARRAY_MAX);
 	cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 
-	Ref<BoxMesh> box = memnew(BoxMesh);
-	Array box_array{};
+	Ref<BoxMesh> box;
+	box.instantiate();
+	Array box_array;
 	box_array.resize(Mesh::ARRAY_MAX);
 	box->create_mesh_array(box_array, Vector3(2.f, 1.2f, 1.6f));
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, box_array);
@@ -255,7 +262,8 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Set material to two different surfaces.") {
-		Ref<Material> mat = memnew(Material);
+		Ref<Material> mat;
+		mat.instantiate();
 		mesh->surface_set_material(0, mat);
 		CHECK(mesh->surface_get_material(0) == mat);
 		mesh->surface_set_material(1, mat);
@@ -263,7 +271,8 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Set same material multiple times doesn't change material of surface.") {
-		Ref<Material> mat = memnew(Material);
+		Ref<Material> mat;
+		mat.instantiate();
 		mesh->surface_set_material(0, mat);
 		mesh->surface_set_material(0, mat);
 		mesh->surface_set_material(0, mat);
@@ -271,8 +280,10 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Set material of surface then change to different material.") {
-		Ref<Material> mat1 = memnew(Material);
-		Ref<Material> mat2 = memnew(Material);
+		Ref<Material> mat1;
+		mat1.instantiate();
+		Ref<Material> mat2;
+		mat2.instantiate();
 		mesh->surface_set_material(1, mat1);
 		CHECK(mesh->surface_get_material(1) == mat1);
 		mesh->surface_set_material(1, mat2);
@@ -280,43 +291,48 @@ TEST_CASE("[SceneTree][ArrayMesh] Surface metadata tests.") {
 	}
 
 	SUBCASE("Get the LOD of the mesh.") {
-		Dictionary lod{};
-		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, TypedArray<Array>{}, lod);
+		Dictionary lod;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, TypedArray<Array>(), lod);
 		CHECK(mesh->surface_get_lods(2) == lod);
 	}
 
 	SUBCASE("Get the blend shape arrays from the mesh.") {
-		TypedArray<Array> blend{};
+		TypedArray<Array> blend;
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend);
 		CHECK(mesh->surface_get_blend_shape_arrays(2) == blend);
 	}
 }
 
 TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
-	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
-	Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
-	Array cylinder_array{};
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
+	Ref<CylinderMesh> cylinder;
+	cylinder.instantiate();
+	Array cylinder_array;
 	cylinder_array.resize(Mesh::ARRAY_MAX);
 	constexpr float cylinder_radius = 3.f;
 	constexpr float cylinder_height = 5.f;
 	cylinder->create_mesh_array(cylinder_array, cylinder_radius, cylinder_radius, cylinder_height);
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
 
-	Ref<BoxMesh> box = memnew(BoxMesh);
-	Array box_array{};
+	Ref<BoxMesh> box;
+	box.instantiate();
+	Array box_array;
 	box_array.resize(Mesh::ARRAY_MAX);
 	const Vector3 box_size = Vector3(2.f, 1.2f, 1.6f);
 	box->create_mesh_array(box_array, box_size);
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, box_array);
 
 	SUBCASE("Set the shadow mesh.") {
-		Ref<ArrayMesh> shadow = memnew(ArrayMesh);
+		Ref<ArrayMesh> shadow;
+		shadow.instantiate();
 		mesh->set_shadow_mesh(shadow);
 		CHECK(mesh->get_shadow_mesh() == shadow);
 	}
 
 	SUBCASE("Set the shadow mesh multiple times.") {
-		Ref<ArrayMesh> shadow = memnew(ArrayMesh);
+		Ref<ArrayMesh> shadow;
+		shadow.instantiate();
 		mesh->set_shadow_mesh(shadow);
 		mesh->set_shadow_mesh(shadow);
 		mesh->set_shadow_mesh(shadow);
@@ -325,8 +341,10 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 	}
 
 	SUBCASE("Set the same shadow mesh on multiple meshes.") {
-		Ref<ArrayMesh> shadow = memnew(ArrayMesh);
-		Ref<ArrayMesh> mesh2 = memnew(ArrayMesh);
+		Ref<ArrayMesh> shadow;
+		shadow.instantiate();
+		Ref<ArrayMesh> mesh2;
+		mesh2.instantiate();
 		mesh->set_shadow_mesh(shadow);
 		mesh2->set_shadow_mesh(shadow);
 
@@ -335,22 +353,24 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 	}
 
 	SUBCASE("Set the shadow mesh and then change it.") {
-		Ref<ArrayMesh> shadow = memnew(ArrayMesh);
+		Ref<ArrayMesh> shadow;
+		shadow.instantiate();
 		mesh->set_shadow_mesh(shadow);
 		CHECK(mesh->get_shadow_mesh() == shadow);
-		Ref<ArrayMesh> shadow2 = memnew(ArrayMesh);
+		Ref<ArrayMesh> shadow2;
+		shadow2.instantiate();
 		mesh->set_shadow_mesh(shadow2);
 		CHECK(mesh->get_shadow_mesh() == shadow2);
 	}
 
 	SUBCASE("Set custom AABB.") {
-		AABB bound{};
+		AABB bound;
 		mesh->set_custom_aabb(bound);
 		CHECK(mesh->get_custom_aabb() == bound);
 	}
 
 	SUBCASE("Set custom AABB multiple times.") {
-		AABB bound{};
+		AABB bound;
 		mesh->set_custom_aabb(bound);
 		mesh->set_custom_aabb(bound);
 		mesh->set_custom_aabb(bound);
@@ -359,8 +379,8 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 	}
 
 	SUBCASE("Set custom AABB then change to another AABB.") {
-		AABB bound{};
-		AABB bound2{};
+		AABB bound;
+		AABB bound2;
 		mesh->set_custom_aabb(bound);
 		CHECK(mesh->get_custom_aabb() == bound);
 		mesh->set_custom_aabb(bound2);
@@ -380,7 +400,8 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 	SUBCASE("Create surface from raw SurfaceData data.") {
 		RID mesh_rid = mesh->get_rid();
 		RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh_rid, 0);
-		Ref<ArrayMesh> mesh2 = memnew(ArrayMesh);
+		Ref<ArrayMesh> mesh2;
+		mesh2.instantiate();
 		mesh2->add_surface(surface_data.format, Mesh::PRIMITIVE_TRIANGLES, surface_data.vertex_data, surface_data.attribute_data,
 				surface_data.skin_data, surface_data.vertex_count, surface_data.index_data, surface_data.index_count, surface_data.aabb);
 		CHECK(mesh2->get_surface_count() == 1);

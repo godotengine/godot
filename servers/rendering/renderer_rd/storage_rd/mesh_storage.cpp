@@ -505,11 +505,11 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	mesh->material_cache.clear();
 }
 
-void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
-	Mesh::Surface &s = *mesh->surfaces[p_surface];
+void MeshStorage::_mesh_surface_clear(Mesh *p_mesh, int p_surface) {
+	Mesh::Surface &s = *p_mesh->surfaces[p_surface];
 
 	if (s.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free(s.vertex_buffer); //clears arrays as dependency automatically, including all versions
+		RD::get_singleton()->free(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
 	}
 	if (s.attribute_buffer.is_valid()) {
 		RD::get_singleton()->free(s.attribute_buffer);
@@ -518,7 +518,7 @@ void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
 		RD::get_singleton()->free(s.skin_buffer);
 	}
 	if (s.versions) {
-		memfree(s.versions); //reallocs, so free with memfree.
+		memfree(s.versions); // reallocs, so free with memfree.
 	}
 
 	if (s.index_buffer.is_valid()) {
@@ -536,7 +536,7 @@ void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
 		RD::get_singleton()->free(s.blend_shape_buffer);
 	}
 
-	memdelete(mesh->surfaces[p_surface]);
+	memdelete(p_mesh->surfaces[p_surface]);
 }
 
 int MeshStorage::mesh_get_blend_shape_count(RID p_mesh) const {

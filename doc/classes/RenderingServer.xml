@@ -2513,7 +2513,7 @@
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>
-				Removes a mesh's surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+				Removes the surface at the given index from the Mesh, shifting surfaces with higher index down by one.
 			</description>
 		</method>
 		<method name="mesh_surface_set_material">
