@@ -765,11 +765,6 @@ public:
 	RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
 	}
-	RBMap(std::initializer_list<KeyValue<K, V>> p_from)
-	{		
-		for (auto&& item : p_from)
-			_insert(item.key, item.value);
-	}
 
 	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {
 		for (const KeyValue<K, V> &E : p_init) {

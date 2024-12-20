@@ -568,14 +568,19 @@ void main() {
 		ivec3 spos = hit_cell;
 		spos.y += hit_cascade * params.grid_size.y;
 		light = texelFetch(sampler3D(light_cascades, linear_sampler), spos, 0).rgb;
-	} else if (params.sky_mode == SKY_MODE_SKY) {
+	} else if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
+		// Reconstruct sky orientation as quaternion and rotate ray_dir before sampling.
+		float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
+		vec4 sky_quat = vec4(params.sky_color_or_osky_colorrientation, sky_sign * sqrt(1.0 - dot(params.sky_color, params.sky_color)));
+		vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
+		sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
 #ifdef USE_CUBEMAP_ARRAY
-		light = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(ray_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+		light.rgb = textureLod(samplerCubeArray(sky_irradiance, linear_sampler_mipmaps), vec4(sky_dir, 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #else
-		light = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), ray_dir, 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+		light.rgb = textureLod(samplerCube(sky_irradiance, linear_sampler_mipmaps), sky_dir, 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
 #endif
 		light *= params.sky_energy;
-	} else if (params.sky_mode == SKY_MODE_COLOR) {
+	} else if (bool(params.sky_flags & SKY_FLAGS_MODE_COLOR)) {
 		light = params.sky_color;
 		light *= params.sky_energy;
 	} else {

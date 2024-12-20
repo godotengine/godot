@@ -1246,7 +1246,7 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 	push_constant.history_size = frames_to_converge;
 	push_constant.ray_bias = probe_bias;
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
-	push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	push_constant.sky_mode = 0;
 	push_constant.y_mult = y_mult;
 
 	RID integrate_sky_uniform_set;
@@ -1256,13 +1256,13 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_mode |= HDDAGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
 			push_constant.sky_color[2] = c.b;
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
-			push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_mode |= HDDAGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
 			push_constant.sky_color[0] = c.r;
 			push_constant.sky_color[1] = c.g;
@@ -1275,8 +1275,15 @@ void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_cou
 						1,
 						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_sky->radiance),
 						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
-
-				push_constant.sky_mode = HDDAGIShader::IntegratePushConstant::SKY_MODE_SKY;
+				push_constant.sky_mode |= HDDAGIShader::IntegratePushConstant::SKY_FLAGS_MODE_SKY;
+				// Encode sky orientation as quaternion in existing push constants.
+				const Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+				const Quaternion sky_quaternion = sky_basis.get_quaternion().inverse();
+				push_constant.sky_color[0] = sky_quaternion.x;
+				push_constant.sky_color[1] = sky_quaternion.y;
+				push_constant.sky_color[2] = sky_quaternion.z;
+				// Ideally we would reconstruct the largest component for least error, but sky contribution to GI is low frequency so just needs to get the idea across.
+				push_constant.sky_mode |= HDDAGIShader::IntegratePushConstant::SKY_FLAGS_ORIENTATION_SIGN * (sky_quaternion.w < 0.0 ? 0 : 1);
 			}
 		}
 	}

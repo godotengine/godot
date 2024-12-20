@@ -336,9 +336,9 @@ namespace HumanAnim
         pose.global_pose = parent_trans * Transform3D(Basis(pose.rotation),pose.position);
         for(int j=0;j<pose.child_bones.size();j++) {
             BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
+            build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
             // 设置骨骼的朝向
             child_pose.set_bone_forward(child_pose.global_pose.origin - pose.global_pose.origin);
-            build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
         }
         
     }

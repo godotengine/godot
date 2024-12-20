@@ -419,9 +419,9 @@ private:
 
 		struct IntegratePushConstant {
 			enum {
-				SKY_MODE_DISABLED,
-				SKY_MODE_COLOR,
-				SKY_MODE_SKY,
+				SKY_FLAGS_MODE_COLOR = 0x01,
+				SKY_FLAGS_MODE_SKY = 0x02,
+				SKY_FLAGS_ORIENTATION_SIGN = 0x04,
 			};
 
 			int32_t grid_size[3];
