@@ -2508,6 +2508,14 @@
 				Returns a mesh's surface's material.
 			</description>
 		</method>
+		<method name="mesh_surface_remove">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Removes a mesh's surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+			</description>
+		</method>
 		<method name="mesh_surface_set_material">
 			<return type="void" />
 			<param index="0" name="mesh" type="RID" />
