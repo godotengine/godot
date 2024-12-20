@@ -169,7 +169,7 @@
 			<return type="void" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
-				Removes a surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+				Removes the surface at the given index from the Mesh, shifting surfaces with higher index down by one.
 			</description>
 		</method>
 		<method name="surface_set_name">
