@@ -187,16 +187,16 @@ struct [[nodiscard]] Color {
 
 	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
-				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow((r + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
-				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow((g + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
-				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow((b + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow(float((r + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
+				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow(float((g + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
+				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow(float((b + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
 				a);
 	}
 	_FORCE_INLINE_ Color linear_to_srgb() const {
 		return Color(
-				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
-				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
-				b < 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math::pow(b, 1.0f / 2.4f) - 0.055f, a);
+				r < 0.0031308f ? 12.92f * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
+				g < 0.0031308f ? 12.92f * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
+				b < 0.0031308f ? 12.92f * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
 	}
 
 	static Color hex(uint32_t p_hex);
