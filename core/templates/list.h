@@ -35,6 +35,8 @@
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 
+#include <initializer_list>
+
 /**
  * Generic Templatized Linked List Implementation.
  * The implementation differs from the STL one because
@@ -549,6 +551,15 @@ public:
 			it = it->next();
 		}
 	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
+
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
@@ -787,10 +798,20 @@ public:
 			it = it->next();
 		}
 	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	_FORCE_INLINE_ List() {}
 
-	_FORCE_INLINE_ ~List() {
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
+
+	~List() {
 		clear();
 		if (_data) {
 			ERR_FAIL_COND(_data->size_cache);

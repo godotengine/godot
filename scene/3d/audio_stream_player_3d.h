@@ -138,6 +138,9 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	void set_unit_size(float p_volume);
 	float get_unit_size() const;
 

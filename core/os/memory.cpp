@@ -31,10 +31,8 @@
 #include "memory.h"
 #include "mutex.h"
 
-#include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "thirdparty/embree/common/sys/mutex.h"
 // #include "thirdparty/embree/common/sys/platform.h"

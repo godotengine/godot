@@ -36,6 +36,8 @@
 #include "core/templates/pair.h"
 #include <initializer_list>
 
+#include <initializer_list>
+
 // based on the very nice implementation of rb-trees by:
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
@@ -767,6 +769,12 @@ public:
 	{		
 		for (auto&& item : p_from)
 			_insert(item.key, item.value);
+	}
+
+	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {
+		for (const KeyValue<K, V> &E : p_init) {
+			insert(E.key, E.value);
+		}
 	}
 
 	_FORCE_INLINE_ RBMap() {}

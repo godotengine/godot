@@ -30,14 +30,10 @@
 
 #include "resource.h"
 
-#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
-
-#include <stdio.h>
 
 void Resource::emit_changed() {
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {

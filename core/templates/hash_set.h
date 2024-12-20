@@ -465,7 +465,14 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
-	_FORCE_INLINE_ void reset() {
+	HashSet(std::initializer_list<TKey> p_init) {
+		reserve(p_init.size());
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
+	}
+
+	void reset() {
 		clear();
 
 		if (keys != nullptr) {

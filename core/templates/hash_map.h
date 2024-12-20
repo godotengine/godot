@@ -31,11 +31,11 @@
 #ifndef HASH_MAP_H
 #define HASH_MAP_H
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/paged_allocator.h"
 #include "core/templates/pair.h"
+#include <initializer_list>
+
 #include <initializer_list>
 
 /**
@@ -665,16 +665,18 @@ public:
 		capacity_index = 0;
 		reserve(p_initial_capacity);
 	}
-	_FORCE_INLINE_ HashMap(const std::initializer_list<KeyValue<TKey, TValue>>& p_from)
-	{		
-		for (auto&& item : p_from)
-			insert(item.key, item.value);
-	}
 	_FORCE_INLINE_ HashMap() {
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
-	_FORCE_INLINE_ uint32_t debug_get_hash(uint32_t p_index) {
+	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
+	}
+
+	uint32_t debug_get_hash(uint32_t p_index) {
 		if (num_elements == 0) {
 			return 0;
 		}

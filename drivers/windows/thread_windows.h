@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  command_queue_mt.cpp                                                  */
+/*  thread_windows.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "command_queue_mt.h"
+#ifndef THREAD_WINDOWS_H
+#define THREAD_WINDOWS_H
 
-CommandQueueMT::CommandQueueMT() {
-	command_mem.reserve(DEFAULT_COMMAND_MEM_SIZE_KB * 1024);
-}
+#ifdef WINDOWS_ENABLED
 
-CommandQueueMT::~CommandQueueMT() {
-}
+void init_thread_win();
+
+#endif // WINDOWS_ENABLED
+
+#endif // THREAD_WINDOWS_H

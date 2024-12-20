@@ -36,11 +36,9 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
-#include <stdio.h>
 #include <cmath>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
