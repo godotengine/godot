@@ -1794,7 +1794,7 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 		pd.discrete_scroll_vector_120.y = discrete * 120;
 	}
 
-	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+	if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
 		pd.discrete_scroll_vector_120.x = discrete * 120;
 	}
 }
@@ -1815,7 +1815,7 @@ void WaylandThread::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *
 		pd.discrete_scroll_vector_120.y += value120;
 	}
 
-	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+	if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
 		pd.discrete_scroll_vector_120.x += value120;
 	}
 }
