@@ -2062,6 +2062,10 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 				if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW) {
 					rl->add_element(surf);
 				}
+			} else if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+				if (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE | GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
+					rl->add_element(surf);
+				}
 			} else {
 				if (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
 					rl->add_element(surf);
