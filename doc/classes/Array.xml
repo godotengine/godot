@@ -332,7 +332,7 @@
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a new copy of the array.
-				By default, a [b]shallow[/b] copy is returned: all nested [Array], [Dictionary], and [Resource] elements are shared with the original array. Modifying them in one array will also affect them in the other.
+				By default, a [b]shallow[/b] copy is returned: all nested [Array], [Dictionary], and [Resource] elements are shared with the original array. Modifying any of those in one array will also affect them in the other.
 				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively). Any [Resource] is still shared with the original array, though.
 			</description>
 		</method>
