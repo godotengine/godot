@@ -938,7 +938,9 @@ uniform ivec2 albedo_texture_size;
 )";
 	}
 
-	code += "uniform float point_size : hint_range(0.1, 128.0, 0.1);\n";
+	if (flags[FLAG_USE_POINT_SIZE]) {
+		code += "uniform float point_size : hint_range(0.1, 128.0, 0.1);\n";
+	}
 
 	if (!orm) {
 		code += vformat(R"(
@@ -1040,12 +1042,19 @@ uniform sampler2D texture_flowmap : hint_anisotropy, %s;
 				texfilter_str);
 	}
 	if (features[FEATURE_AMBIENT_OCCLUSION]) {
-		code += vformat(R"(
+		if (!orm) {
+			code += vformat(R"(
 uniform sampler2D texture_ambient_occlusion : hint_default_white, %s;
 uniform vec4 ao_texture_channel;
 uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
 )",
-				texfilter_str);
+					texfilter_str);
+		} else {
+			// `texture_ambient_occlusion` and `ao_texture_channel` are not used in ORM mode.
+			code += R"(
+uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
+)";
+		}
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -1115,9 +1124,12 @@ varying vec3 uv2_power_normal;
 	code += R"(
 uniform vec3 uv1_scale;
 uniform vec3 uv1_offset;
-uniform vec3 uv2_scale;
-uniform vec3 uv2_offset;
 )";
+
+	if (flags[FLAG_UV2_USE_TRIPLANAR] || (features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) || (features[FEATURE_AMBIENT_OCCLUSION] && flags[FLAG_AO_ON_UV2]) || (features[FEATURE_EMISSION] && flags[FLAG_EMISSION_ON_UV2])) {
+		code += "uniform vec3 uv2_scale;\n";
+		code += "uniform vec3 uv2_offset;\n";
+	}
 
 	// Generate vertex shader.
 	code += R"(
