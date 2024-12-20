@@ -41,6 +41,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/physical_bone_simulator_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/joints/joint_3d.h"
 #include "scene/3d/physics/physical_bone_3d.h"
