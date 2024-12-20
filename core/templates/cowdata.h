@@ -165,6 +165,7 @@ private:
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	USize _copy_on_write();
+	Error _realloc(Size p_alloc_size);
 
 public:
 	void operator=(const CowData<T> &p_from) { _ref(p_from); }
@@ -344,7 +345,7 @@ Error CowData<T>::resize(Size p_size) {
 	}
 
 	// possibly changing size, copy on write
-	USize rc = _copy_on_write();
+	_copy_on_write();
 
 	USize current_alloc_size = _get_alloc_size(current_size);
 	USize alloc_size;
@@ -367,15 +368,10 @@ Error CowData<T>::resize(Size p_size) {
 				_ptr = _data_ptr;
 
 			} else {
-				uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
-				ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
-
-				SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-				T *_data_ptr = _get_data_ptr(mem_new);
-
-				new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
-
-				_ptr = _data_ptr;
+				const Error error = _realloc(alloc_size);
+				if (error) {
+					return error;
+				}
 			}
 		}
 
@@ -401,19 +397,29 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		if (alloc_size != current_alloc_size) {
-			uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, alloc_size + DATA_OFFSET, false);
-			ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
-
-			SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
-			T *_data_ptr = _get_data_ptr(mem_new);
-
-			new (_refc_ptr) SafeNumeric<USize>(rc); //refcount
-
-			_ptr = _data_ptr;
+			const Error error = _realloc(alloc_size);
+			if (error) {
+				return error;
+			}
 		}
 
 		*_get_size() = p_size;
 	}
+
+	return OK;
+}
+
+template <typename T>
+Error CowData<T>::_realloc(Size p_alloc_size) {
+	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, p_alloc_size + DATA_OFFSET, false);
+	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
+
+	SafeNumeric<USize> *_refc_ptr = _get_refcount_ptr(mem_new);
+	T *_data_ptr = _get_data_ptr(mem_new);
+
+	// If we realloc, we're guaranteed to be the only reference.
+	new (_refc_ptr) SafeNumeric<USize>(1);
+	_ptr = _data_ptr;
 
 	return OK;
 }
