@@ -768,6 +768,11 @@
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
 			</description>
 		</signal>
+		<signal name="title_changed">
+			<description>
+				Emitted when window title bar text is changed.
+			</description>
+		</signal>
 		<signal name="titlebar_changed">
 			<description>
 				Emitted when window title bar decorations are changed, e.g. macOS window enter/exit full screen mode, or extend-to-title flag is changed.

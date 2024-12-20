@@ -135,6 +135,8 @@ class MenuBar : public Control {
 		return -1;
 	}
 
+	void _popup_changed(ObjectID p_menu);
+
 	void bind_global_menu();
 	void unbind_global_menu();
 
