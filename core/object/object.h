@@ -247,6 +247,8 @@ struct MethodInfo {
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
 
+	uint32_t get_compatibility_hash() const;
+
 	MethodInfo() {}
 
 	explicit MethodInfo(const GDExtensionMethodInfo &pinfo) :
@@ -360,8 +362,12 @@ struct ObjectGDExtension {
 #endif // DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance2 create_instance2;
 	GDExtensionClassFreeInstance free_instance;
+#ifndef DISABLE_DEPRECATED
 	GDExtensionClassGetVirtual get_virtual;
 	GDExtensionClassGetVirtualCallData get_virtual_call_data;
+#endif // DISABLE_DEPRECATED
+	GDExtensionClassGetVirtual2 get_virtual2;
+	GDExtensionClassGetVirtualCallData2 get_virtual_call_data2;
 	GDExtensionClassCallVirtualWithData call_virtual_with_data;
 	GDExtensionClassRecreateInstance recreate_instance;
 
@@ -380,6 +386,7 @@ struct ObjectGDExtension {
 #else
 #define GDVIRTUAL_BIND(m_name, ...)
 #endif
+#define GDVIRTUAL_BIND_COMPAT(m_alias, ...) ::ClassDB::add_virtual_compatibility_method(get_class_static(), _gdvirtual_##m_alias##_get_method_info(), true, sarray(__VA_ARGS__));
 #define GDVIRTUAL_IS_OVERRIDDEN(m_name) _gdvirtual_##m_name##_overridden()
 #define GDVIRTUAL_IS_OVERRIDDEN_PTR(m_obj, m_name) m_obj->_gdvirtual_##m_name##_overridden()
 
