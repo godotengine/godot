@@ -479,7 +479,7 @@ void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
 	}
 
 	if (s.versions) {
-		memfree(s.versions); //reallocs, so free with memfree.
+		memfree(s.versions); // reallocs, so free with memfree.
 	}
 
 	if (s.wireframe) {
