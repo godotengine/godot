@@ -376,6 +376,7 @@ public:
 
 	FUNC2(mesh_set_shadow_mesh, RID, RID)
 
+	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -691,6 +692,7 @@ public:
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
+	FUNC2(viewport_set_anisotropic_filtering_level, RID, ViewportAnisotropicFiltering)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
@@ -989,6 +991,11 @@ public:
 	FUNC2(canvas_item_set_draw_index, RID, int)
 
 	FUNC2(canvas_item_set_material, RID, RID)
+
+	FUNC3(canvas_item_set_instance_shader_parameter, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter, RID, const StringName &)
+	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter_default_value, RID, const StringName &)
+	FUNC2C(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 

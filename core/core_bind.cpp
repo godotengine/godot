@@ -35,8 +35,6 @@
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/file_access_compressed.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -424,6 +422,10 @@ String OS::get_version() const {
 	return ::OS::get_singleton()->get_version();
 }
 
+String OS::get_version_alias() const {
+	return ::OS::get_singleton()->get_version_alias();
+}
+
 Vector<String> OS::get_video_adapter_driver_info() const {
 	return ::OS::get_singleton()->get_video_adapter_driver_info();
 }
@@ -680,6 +682,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &OS::get_version);
+	ClassDB::bind_method(D_METHOD("get_version_alias"), &OS::get_version_alias);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
 	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
 

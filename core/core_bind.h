@@ -34,8 +34,6 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -208,6 +206,7 @@ public:
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
+	String get_version_alias() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 

@@ -1480,7 +1480,6 @@ void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 	if (p_enable) {
 		const String reason = "Godot Engine running with display/window/energy_saving/keep_screen_on = true";
 		Char16String reason_utf16 = reason.utf16();
-
 		REASON_CONTEXT context;
 		context.Version = POWER_REQUEST_CONTEXT_VERSION;
 		context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
@@ -3802,6 +3801,21 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerWindows::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	ReleaseCapture();
+
+	POINT coords;
+	GetCursorPos(&coords);
+	ScreenToClient(wd.hWnd, &coords);
+
+	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
 }
 
 void DisplayServerWindows::set_context(Context p_context) {

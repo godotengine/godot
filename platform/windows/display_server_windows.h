@@ -167,7 +167,7 @@ typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
 typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
-typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOW *lpVersionInformation);
+typedef HRESULT(WINAPI *RtlGetVersionPtr)(OSVERSIONINFOEXW *lpVersionInformation);
 typedef bool(WINAPI *AllowDarkModeForAppPtr)(bool darkMode);
 typedef PreferredAppMode(WINAPI *SetPreferredAppModePtr)(PreferredAppMode appMode);
 typedef void(WINAPI *RefreshImmersiveColorPolicyStatePtr)();
@@ -419,7 +419,7 @@ class DisplayServerWindows : public DisplayServer {
 		TIMER_ID_WINDOW_ACTIVATION = 2,
 	};
 
-	OSVERSIONINFOW os_ver;
+	OSVERSIONINFOEXW os_ver;
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
@@ -804,6 +804,8 @@ public:
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;

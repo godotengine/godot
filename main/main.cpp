@@ -47,6 +47,7 @@
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/register_core_types.h"
@@ -3817,8 +3818,8 @@ int Main::start() {
 
 #endif // TOOLS_ENABLED
 
-	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
-		game_path = GLOBAL_GET("application/run/main_scene");
+	if (script.is_empty() && game_path.is_empty()) {
+		game_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 	}
 
 #ifdef TOOLS_ENABLED

@@ -850,7 +850,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_instance = RID();
 		}
 		if (g.navigation_debug_edge_connections_mesh.is_valid()) {
-			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_mesh->get_rid());
+			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -891,7 +891,7 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_instance = RID();
 		}
 		if (g.navigation_debug_edge_connections_mesh.is_valid()) {
-			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_mesh->get_rid());
+			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
 #endif // DEBUG_ENABLED

@@ -222,6 +222,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->set_viewport(get_viewport());
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1995,9 +1996,9 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	set_clip_contents(true);
 
-	ED_SHORTCUT("animation_bezier_editor/focus", TTR("Focus"), Key::F);
-	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
-	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/focus", TTRC("Focus"), Key::F);
+	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTRC("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTRC("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

@@ -229,6 +229,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			rb_config.set_screen_space_aa(p_viewport->screen_space_aa);
 			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
 			rb_config.set_texture_mipmap_bias(texture_mipmap_bias);
+			rb_config.set_anisotropic_filtering_level(p_viewport->anisotropic_filtering_level);
 			rb_config.set_use_taa(use_taa);
 			rb_config.set_use_debanding(p_viewport->use_debanding);
 
@@ -498,7 +499,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			while (light) {
 				RENDER_TIMESTAMP("Render PointLight2D Shadow");
 
-				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
+				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders, light->rect_cache);
 				light = light->shadows_next_ptr;
 			}
 
@@ -957,6 +958,14 @@ void RendererViewport::viewport_set_texture_mipmap_bias(RID p_viewport, float p_
 	ERR_FAIL_NULL(viewport);
 
 	viewport->texture_mipmap_bias = p_mipmap_bias;
+	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_set_anisotropic_filtering_level(RID p_viewport, RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	viewport->anisotropic_filtering_level = p_anisotropic_filtering_level;
 	_configure_3d_render_buffers(viewport);
 }
 

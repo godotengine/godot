@@ -138,7 +138,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 	if (use_cube_map) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
-		if (use_ambient_light) {
+		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
 					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
