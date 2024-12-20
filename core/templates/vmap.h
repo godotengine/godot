@@ -195,9 +195,7 @@ public:
 	_FORCE_INLINE_ VMap() {}
 	_FORCE_INLINE_ VMap(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
-	_FORCE_INLINE_ VMap(const VMap &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ VMap(const VMap &p_from) = default;
 
-	inline void operator=(const VMap &p_from) {
-		_cowdata._ref(p_from._cowdata);
-	}
+	void operator=(const VMap &p_from) { _cowdata = p_from._cowdata; }
 };
