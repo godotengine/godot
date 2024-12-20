@@ -733,6 +733,10 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	}
 #endif
 	windows.erase(p_window);
+
+	if (last_focused_window == p_window) {
+		last_focused_window = INVALID_WINDOW_ID;
+	}
 	update_presentation_mode();
 }
 
