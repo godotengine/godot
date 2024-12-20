@@ -599,6 +599,7 @@ public:
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
+	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
 
 	void set_physics_object_picking(bool p_enable);
