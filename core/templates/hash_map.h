@@ -37,6 +37,8 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/pair.h"
 
+#include <initializer_list>
+
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
  * Robin Hood hashing swaps out entries that have a smaller probing distance
@@ -638,6 +640,13 @@ public:
 	}
 	HashMap() {
 		capacity_index = MIN_CAPACITY_INDEX;
+	}
+
+	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
 	}
 
 	uint32_t debug_get_hash(uint32_t p_index) {
