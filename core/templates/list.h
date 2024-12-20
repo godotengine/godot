@@ -524,6 +524,15 @@ public:
 			it = it->next();
 		}
 	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
+
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
@@ -761,6 +770,10 @@ public:
 			push_back(it->get());
 			it = it->next();
 		}
+	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
 	}
 
 	List() {}
