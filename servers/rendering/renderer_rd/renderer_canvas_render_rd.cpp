@@ -1035,14 +1035,14 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	while (instance) {
 		OccluderPolygon *co = occluder_polygon_owner.get_or_null(instance->occluder);
 
+		occluder_count++;
+
 		if (!co || co->index_array.is_null()) {
 			instance = instance->next;
 			continue;
 		}
 
-		occluder_count++;
-
-		if (!(p_light_mask & instance->light_mask) || !p_light_rect.intersects(instance->aabb_cache)) {
+		if (!(p_light_mask & instance->light_mask) || !p_light_rect.intersects_transformed(instance->xform_cache, instance->aabb_cache)) {
 			instance = instance->next;
 			continue;
 		}
@@ -2353,7 +2353,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 		Light *light = p_lights;
 
 		while (light) {
-			if (light->render_index_cache >= 0 && p_item->light_mask & light->item_mask && p_item->z_final >= light->z_min && p_item->z_final <= light->z_max && p_item->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
+			if (light->render_index_cache >= 0 && p_item->light_mask & light->item_mask && p_item->z_final >= light->z_min && p_item->z_final <= light->z_max && p_item->global_rect_cache.intersects(light->rect_cache)) {
 				uint32_t light_index = light->render_index_cache;
 				lights[light_count >> 2] |= light_index << ((light_count & 3) * 8);
 
