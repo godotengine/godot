@@ -206,11 +206,22 @@ void JoltBody3D::_move_kinematic(float p_step, JPH::Body &p_jolt_body) {
 }
 
 void JoltBody3D::_pre_step_static(float p_step, JPH::Body &p_jolt_body) {
-	// Nothing to do.
+	contact_count = 0;
 }
 
 void JoltBody3D::_pre_step_rigid(float p_step, JPH::Body &p_jolt_body) {
 	_integrate_forces(p_step, p_jolt_body);
+
+	// We deliberately don't clear the list of contacts when the body is sleeping, in order for contact-based logic to
+	// not have to consider its sleep state, as Jolt will report contacts as having been removed when a body goes to
+	// sleep. This also better emulates the behavior of Godot Physics, which only clears its list of contacts during
+	// force integration, which only happens for active bodies.
+	//
+	// Note that this can result in stale contacts being incorrectly reported, if a body is moved or removed without
+	// waking up the neighboring bodies.
+	if (p_jolt_body.IsActive()) {
+		contact_count = 0;
+	}
 }
 
 void JoltBody3D::_pre_step_kinematic(float p_step, JPH::Body &p_jolt_body) {
@@ -223,6 +234,8 @@ void JoltBody3D::_pre_step_kinematic(float p_step, JPH::Body &p_jolt_body) {
 		// have their state synchronized on every step) only if its max reported contacts is non-zero.
 		sync_state = true;
 	}
+
+	contact_count = 0;
 }
 
 JPH::EAllowedDOFs JoltBody3D::_calculate_allowed_dofs() const {
@@ -1237,8 +1250,6 @@ void JoltBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
 			_pre_step_kinematic(p_step, p_jolt_body);
 		} break;
 	}
-
-	contact_count = 0;
 }
 
 JoltPhysicsDirectBodyState3D *JoltBody3D::get_direct_state() {
