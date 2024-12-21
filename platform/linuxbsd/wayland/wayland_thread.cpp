@@ -1794,7 +1794,7 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 		pd.discrete_scroll_vector_120.y = discrete * 120;
 	}
 
-	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+	if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
 		pd.discrete_scroll_vector_120.x = discrete * 120;
 	}
 }
@@ -1815,7 +1815,7 @@ void WaylandThread::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *
 		pd.discrete_scroll_vector_120.y += value120;
 	}
 
-	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+	if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
 		pd.discrete_scroll_vector_120.x += value120;
 	}
 }
@@ -3336,6 +3336,22 @@ void WaylandThread::beep() const {
 	if (registry.xdg_system_bell) {
 		xdg_system_bell_v1_ring(registry.xdg_system_bell, nullptr);
 	}
+}
+
+void WaylandThread::window_start_drag(DisplayServer::WindowID p_window_id) {
+	// TODO: Use window IDs for multiwindow support.
+	WindowState &ws = main_window;
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ws.xdg_toplevel) {
+		xdg_toplevel_move(ws.xdg_toplevel, ss->wl_seat, ss->pointer_data.button_serial);
+	}
+
+#ifdef LIBDECOR_ENABLED
+	if (ws.libdecor_frame) {
+		libdecor_frame_move(ws.libdecor_frame, ss->wl_seat, ss->pointer_data.button_serial);
+	}
+#endif
 }
 
 void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size) {

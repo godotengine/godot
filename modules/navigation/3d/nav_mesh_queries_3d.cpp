@@ -295,6 +295,10 @@ void NavMeshQueries3D::query_task_polygons_get_path(NavMeshPathQueryTask3D &p_qu
 
 	_query_task_build_path_corridor(p_query_task, p_polygons, p_map_up, p_link_polygons_size, begin_poly, begin_point, end_poly, end_point);
 
+	if (p_query_task.status == NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED || p_query_task.status == NavMeshPathQueryTask3D::TaskStatus::QUERY_FAILED) {
+		return;
+	}
+
 	// Post-Process path.
 	switch (p_query_task.path_postprocessing) {
 		case PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL: {
@@ -473,6 +477,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 
 			if (closest_point_on_start_poly) {
 				_query_task_create_same_polygon_two_point_path(p_query_task, begin_poly, begin_point, end_poly, end_point);
+				p_query_task.status = NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED;
 				return;
 			}
 
@@ -523,6 +528,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			}
 		}
 		_query_task_create_same_polygon_two_point_path(p_query_task, begin_poly, begin_point, begin_poly, end_point);
+		p_query_task.status = NavMeshPathQueryTask3D::TaskStatus::QUERY_FINISHED;
 		return;
 	}
 }
@@ -920,40 +926,16 @@ LocalVector<uint32_t> NavMeshQueries3D::get_simplified_path_indices(const LocalV
 	p_epsilon = MAX(0.0, p_epsilon);
 	real_t squared_epsilon = p_epsilon * p_epsilon;
 
-	LocalVector<bool> valid_points;
-	valid_points.resize(p_path.size());
-	for (uint32_t i = 0; i < valid_points.size(); i++) {
-		valid_points[i] = false;
-	}
-
-	simplify_path_segment(0, p_path.size() - 1, p_path, squared_epsilon, valid_points);
-
-	int valid_point_index = 0;
-
-	for (bool valid : valid_points) {
-		if (valid) {
-			valid_point_index += 1;
-		}
-	}
-
 	LocalVector<uint32_t> simplified_path_indices;
-	simplified_path_indices.resize(valid_point_index);
-	valid_point_index = 0;
-
-	for (uint32_t i = 0; i < valid_points.size(); i++) {
-		if (valid_points[i]) {
-			simplified_path_indices[valid_point_index] = i;
-			valid_point_index += 1;
-		}
-	}
+	simplified_path_indices.reserve(p_path.size());
+	simplified_path_indices.push_back(0);
+	simplify_path_segment(0, p_path.size() - 1, p_path, squared_epsilon, simplified_path_indices);
+	simplified_path_indices.push_back(p_path.size() - 1);
 
 	return simplified_path_indices;
 }
 
-void NavMeshQueries3D::simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<bool> &r_valid_points) {
-	r_valid_points[p_start_inx] = true;
-	r_valid_points[p_end_inx] = true;
-
+void NavMeshQueries3D::simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices) {
 	Vector3 path_segment[2] = { p_points[p_start_inx], p_points[p_end_inx] };
 
 	real_t point_max_distance = 0.0;
@@ -972,8 +954,9 @@ void NavMeshQueries3D::simplify_path_segment(int p_start_inx, int p_end_inx, con
 	}
 
 	if (point_max_distance > p_epsilon) {
-		simplify_path_segment(p_start_inx, point_max_index, p_points, p_epsilon, r_valid_points);
-		simplify_path_segment(point_max_index, p_end_inx, p_points, p_epsilon, r_valid_points);
+		simplify_path_segment(p_start_inx, point_max_index, p_points, p_epsilon, r_simplified_path_indices);
+		r_simplified_path_indices.push_back(point_max_index);
+		simplify_path_segment(point_max_index, p_end_inx, p_points, p_epsilon, r_simplified_path_indices);
 	}
 }
 
