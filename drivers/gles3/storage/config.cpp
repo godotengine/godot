@@ -33,7 +33,6 @@
 #include "config.h"
 
 #include "../rasterizer_gles3.h"
-#include "texture_storage.h"
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
