@@ -519,9 +519,6 @@
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
-		<member name="editors/grid_map/editor_side" type="int" setter="" getter="">
-			Specifies the side of 3D editor's viewport where GridMap's mesh palette will appear.
-		</member>
 		<member name="editors/grid_map/palette_min_width" type="int" setter="" getter="">
 			Minimum width of GridMap's mesh palette side panel.
 		</member>
