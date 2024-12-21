@@ -4290,7 +4290,7 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 bool GDScriptParser::hide_from_dialog_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
 	ClassNode *class_node = static_cast<ClassNode *>(p_target);
-	if (class_node->set_custom_suffix) {
+	if (class_node->hide_from_dialog) {
 		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
 		return false;
 	}
