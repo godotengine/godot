@@ -50,8 +50,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_encrypted.h"
-#include "core/os/os.h"
 
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"

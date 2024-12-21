@@ -32,7 +32,6 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/os/os.h"
 #include "rasterizer_gles3.h"
 #include "rasterizer_scene_gles3.h"
 

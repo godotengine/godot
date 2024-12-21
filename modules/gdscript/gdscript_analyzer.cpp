@@ -42,7 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
-#include "scene/resources/packed_scene.h"
+#include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES

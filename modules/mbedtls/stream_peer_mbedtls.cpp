@@ -30,7 +30,6 @@
 
 #include "stream_peer_mbedtls.h"
 
-#include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {

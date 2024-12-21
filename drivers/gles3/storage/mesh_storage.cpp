@@ -32,7 +32,6 @@
 
 #include "mesh_storage.h"
 #include "config.h"
-#include "material_storage.h"
 #include "texture_storage.h"
 #include "utilities.h"
 

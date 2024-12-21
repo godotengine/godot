@@ -39,10 +39,6 @@
 #include "core/os/memory.h"
 #include "core/version.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 #include "openxr_platform_inc.h"
 
 #ifdef VULKAN_ENABLED

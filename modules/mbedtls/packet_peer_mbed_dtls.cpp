@@ -30,9 +30,6 @@
 
 #include "packet_peer_mbed_dtls.h"
 
-#include "core/io/file_access.h"
-#include "core/io/stream_peer_tls.h"
-
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
 		return 0;
