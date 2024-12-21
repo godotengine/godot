@@ -748,24 +748,24 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (items[i].selectable && (!items[i].selected || allow_reselect) && select_mode != SELECT_TOGGLE) {
+				if (select_mode == SELECT_TOGGLE) {
+					if (items[i].selectable) {
+						if (items[i].selected) {
+							deselect(i);
+							current = i;
+							emit_signal(SNAME("multi_selected"), i, false);
+						} else {
+							select(i, false);
+							current = i;
+							emit_signal(SNAME("multi_selected"), i, true);
+						}
+					}
+				} else if (items[i].selectable && (!items[i].selected || allow_reselect)) {
 					select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
 
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SceneStringName(item_selected), i);
 					} else {
-						emit_signal(SNAME("multi_selected"), i, true);
-					}
-				}
-
-				if (items[i].selectable && select_mode == SELECT_TOGGLE) {
-					if (items[i].selected) {
-						deselect(i);
-						current = i;
-						emit_signal(SNAME("multi_selected"), i, false);
-					} else {
-						select(i, false);
-						current = i;
 						emit_signal(SNAME("multi_selected"), i, true);
 					}
 				}
