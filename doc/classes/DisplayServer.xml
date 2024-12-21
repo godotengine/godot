@@ -1730,7 +1730,7 @@
 				DisplayServer.WindowSetMousePassthrough(GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon);
 
 				// Reset region to default.
-				DisplayServer.WindowSetMousePassthrough(new Vector2[] {});
+				DisplayServer.WindowSetMousePassthrough([]);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.

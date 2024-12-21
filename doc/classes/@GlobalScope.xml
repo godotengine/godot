@@ -853,7 +853,7 @@
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/gdscript]
 				[csharp]
-				var a = new Godot.Collections.Array { 1, 2, 3 };
+				Godot.Collections.Array a = [1, 2, 3];
 				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
 				[/csharp]
 				[/codeblocks]
