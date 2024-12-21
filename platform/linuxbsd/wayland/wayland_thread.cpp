@@ -2734,7 +2734,7 @@ void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 
 		msg.instantiate();
 		msg->text = ss->ime_text_commit;
 		ss->wayland_thread->push_message(msg);
-	} else if (!ss->ime_text.is_empty()) {
+	} else {
 		Ref<IMEUpdateEventMessage> msg;
 		msg.instantiate();
 		msg->text = ss->ime_text;
