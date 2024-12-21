@@ -229,7 +229,7 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		int32_t len = f->get_32();
 		Cache c;
 		c.cs.resize(len + 1);
-		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // out of memory
+		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // Out of memory.
 		c.cs[len] = 0;
 		int32_t rl = f->get_buffer((uint8_t *)c.cs.ptrw(), len);
 		ERR_FAIL_COND_V(rl != len, ERR_FILE_CORRUPT);
@@ -257,7 +257,7 @@ Error ResourceUID::update_cache() {
 	for (KeyValue<ID, Cache> &E : unique_ids) {
 		if (!E.value.saved_to_cache) {
 			if (f.is_null()) {
-				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); //append
+				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); // Append.
 				if (f.is_null()) {
 					return ERR_CANT_OPEN;
 				}
@@ -280,6 +280,25 @@ Error ResourceUID::update_cache() {
 	changed = false;
 
 	return OK;
+}
+
+String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string) {
+	const uint32_t entry_count = p_cache_file->get_32();
+	CharString cs;
+	for (uint32_t i = 0; i < entry_count; i++) {
+		int64_t id = p_cache_file->get_64();
+		int32_t len = p_cache_file->get_32();
+		cs.resize(len + 1);
+		ERR_FAIL_COND_V(cs.size() != len + 1, String());
+		cs[len] = 0;
+		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
+		ERR_FAIL_COND_V(rl != len, String());
+
+		if (singleton->id_to_text(id) == p_uid_string) {
+			return String(cs);
+		}
+	}
+	return String();
 }
 
 void ResourceUID::clear() {
