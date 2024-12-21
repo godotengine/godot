@@ -764,8 +764,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/grid_map/palette_min_width", 230);
 	set_restart_if_changed("editors/grid_map/palette_min_width", true);
 	_initial_set("editors/grid_map/preview_size", 64);
-	// GridMapEditorPlugin
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/grid_map/editor_side", 1, "Left,Right");
 
 	// 3D
 	EDITOR_SETTING_BASIC(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5), "")
