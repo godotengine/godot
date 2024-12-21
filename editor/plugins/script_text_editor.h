@@ -157,6 +157,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		DEBUG_GOTO_PREV_BREAKPOINT,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		GOTO_DEFINITION,
 	};
 
 	void _enable_code_editor();
@@ -164,7 +165,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
-	void _breakpoint_toggled(int p_row);
+	void _breakpoint_toggled(int p_line);
 
 	void _on_caret_moved();
 
@@ -197,10 +198,11 @@ protected:
 	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
-	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+	void _lookup_symbol(const String &p_symbol, int p_line, int p_column, bool p_goto_definition);
+	void _lookup_symbol_handler(const String &p_symbol, int p_line, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
-	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+	void _show_symbol_tooltip(const String &p_symbol, int p_line, int p_column);
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
