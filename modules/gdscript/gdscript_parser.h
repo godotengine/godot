@@ -744,6 +744,9 @@ public:
 		IdentifierNode *identifier = nullptr;
 		String icon_path;
 		String simplified_icon_path;
+		bool hide_from_dialog = false;
+		bool set_custom_suffix = false;
+		String suffix;
 		Vector<Member> members;
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;
@@ -1510,6 +1513,8 @@ private:
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool hide_from_dialog_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool suffix_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

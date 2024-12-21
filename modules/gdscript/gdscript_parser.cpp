@@ -98,6 +98,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
+		register_annotation(MethodInfo("@hide_from_dialog"), AnnotationInfo::SCRIPT, &GDScriptParser::hide_from_dialog_annotation);
+		register_annotation(MethodInfo("@suffix", PropertyInfo(Variant::STRING, "suffix")), AnnotationInfo::SCRIPT, &GDScriptParser::suffix_annotation, varray());
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4282,6 +4284,32 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	}
 	variable->onready = true;
 	current_class->onready_used = true;
+	return true;
+}
+
+bool GDScriptParser::hide_from_dialog_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	if (class_node->set_custom_suffix) {
+		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	class_node->hide_from_dialog = true;
+	return true;
+}
+
+bool GDScriptParser::suffix_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to classes.)", p_annotation->name));
+
+	ClassNode *class_node = static_cast<ClassNode *>(p_target);
+	if (class_node->set_custom_suffix) {
+		push_error(vformat(R"("%s" annotation can only be used once per script.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	class_node->set_custom_suffix = true;
+
+	String path = p_annotation->resolved_arguments[0];
+	class_node->suffix = path;
 	return true;
 }
 

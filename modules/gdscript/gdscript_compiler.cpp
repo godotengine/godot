@@ -3090,6 +3090,9 @@ void GDScriptCompiler::make_scripts(GDScript *p_script, const GDScriptParser::Cl
 	p_script->local_name = p_class->identifier ? p_class->identifier->name : StringName();
 	p_script->global_name = p_class->get_global_name();
 	p_script->simplified_icon_path = p_class->simplified_icon_path;
+	p_script->hide_from_dialog = p_class->hide_from_dialog;
+	p_script->use_custom_suffix = p_class->set_custom_suffix;
+	p_script->script_custom_suffix = p_class->suffix;
 
 	HashMap<StringName, Ref<GDScript>> old_subclasses;
 

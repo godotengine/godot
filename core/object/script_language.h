@@ -114,6 +114,10 @@ protected:
 	// Scripts are reloaded via the Script Editor when edited in Godot,
 	// the LSP server when edited in a connected external editor, or
 	// through EditorFileSystem::_update_script_documentation when updated directly on disk.
+	bool hide_from_dialog = false;
+	bool use_custom_suffix = false;
+	String script_custom_suffix;
+
 	virtual bool editor_can_reload_from_file() override { return false; }
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -162,6 +166,10 @@ public:
 	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
+
+	virtual bool is_hidden_from_dialog() const { return hide_from_dialog; }
+	virtual bool is_using_custom_script_suffix() const { return use_custom_suffix; }
+	virtual String get_script_custom_suffix() const { return script_custom_suffix; }
 
 	virtual bool is_tool() const = 0;
 	virtual bool is_valid() const = 0;

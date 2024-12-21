@@ -250,6 +250,10 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 			}
 			ERR_FAIL_COND(scr.is_null());
 
+			if (scr->is_hidden_from_dialog()) {
+				return;
+			}
+
 			Ref<Script> base = scr->get_base_script();
 			if (base.is_null()) {
 				// Must be a native base type.
@@ -262,6 +266,11 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 				inherits = extends;
 				inherited_type = TypeCategory::CPP_TYPE;
 			} else {
+				// If the base script is hidden from dialog, the child should not appear as well.
+				if (base->is_hidden_from_dialog()) {
+					return;
+				}
+
 				inherits = base->get_global_name();
 
 				if (inherits == StringName()) {
@@ -306,8 +315,12 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
 		String suffix = script_path.get_file();
-		if (scr.is_valid() && custom_type_suffixes.has(p_type)) {
-			suffix = custom_type_suffixes.get(p_type);
+		if (scr.is_valid()) {
+			if (custom_type_suffixes.has(p_type)) {
+				suffix = custom_type_suffixes.get(p_type);
+			} else if (scr->is_using_custom_script_suffix()) {
+				suffix = scr->get_script_custom_suffix();
+			}
 		}
 		if (!suffix.is_empty()) {
 			r_item->set_suffix(0, "(" + suffix + ")");
