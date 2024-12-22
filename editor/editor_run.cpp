@@ -285,6 +285,9 @@ void EditorRun::stop() {
 }
 
 OS::ProcessID EditorRun::get_current_process() const {
+	if (pids.front() == nullptr) {
+		return 0;
+	}
 	return pids.front()->get();
 }
 
