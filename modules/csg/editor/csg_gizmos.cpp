@@ -363,7 +363,13 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 }
 
 bool CSGShape3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<CSGSphere3D>(p_spatial) || Object::cast_to<CSGBox3D>(p_spatial) || Object::cast_to<CSGCylinder3D>(p_spatial) || Object::cast_to<CSGTorus3D>(p_spatial) || Object::cast_to<CSGMesh3D>(p_spatial) || Object::cast_to<CSGPolygon3D>(p_spatial);
+	return Object::cast_to<CSGSphere3D>(p_spatial) ||
+			Object::cast_to<CSGBox3D>(p_spatial) ||
+			Object::cast_to<CSGCylinder3D>(p_spatial) ||
+			Object::cast_to<CSGTorus3D>(p_spatial) ||
+			Object::cast_to<CSGMesh3D>(p_spatial) ||
+			Object::cast_to<CSGPolygon3D>(p_spatial) ||
+			Object::cast_to<CSGConvexHull3D>(p_spatial);
 }
 
 String CSGShape3DGizmoPlugin::get_gizmo_name() const {

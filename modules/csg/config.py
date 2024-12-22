@@ -13,6 +13,7 @@ def get_doc_classes():
         "CSGCylinder3D",
         "CSGMesh3D",
         "CSGPolygon3D",
+        "CSGConvexHull3D",
         "CSGPrimitive3D",
         "CSGShape3D",
         "CSGSphere3D",
