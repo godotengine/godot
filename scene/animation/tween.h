@@ -105,6 +105,7 @@ public:
 private:
 	TweenProcessMode process_mode = TweenProcessMode::TWEEN_PROCESS_IDLE;
 	TweenPauseMode pause_mode = TweenPauseMode::TWEEN_PAUSE_BOUND;
+	bool ignore_time_scale = false;
 	TransitionType default_transition = TransitionType::TRANS_LINEAR;
 	EaseType default_ease = EaseType::EASE_IN_OUT;
 	ObjectID bound_node;
@@ -158,9 +159,11 @@ public:
 
 	Ref<Tween> bind_node(const Node *p_node);
 	Ref<Tween> set_process_mode(TweenProcessMode p_mode);
-	TweenProcessMode get_process_mode();
+	TweenProcessMode get_process_mode() const;
 	Ref<Tween> set_pause_mode(TweenPauseMode p_mode);
-	TweenPauseMode get_pause_mode();
+	TweenPauseMode get_pause_mode() const;
+	Ref<Tween> set_ignore_time_scale(bool p_ignore);
+	bool get_ignore_time_scale() const;
 
 	Ref<Tween> set_parallel(bool p_parallel);
 	Ref<Tween> set_loops(int p_loops);
