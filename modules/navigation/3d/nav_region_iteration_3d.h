@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdextension_compat_hashes.h                                           */
+/*  nav_region_iteration_3d.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_COMPAT_HASHES_H
-#define GDEXTENSION_COMPAT_HASHES_H
+#ifndef NAV_REGION_ITERATION_3D_H
+#define NAV_REGION_ITERATION_3D_H
 
-#ifndef DISABLE_DEPRECATED
+#include "../nav_utils.h"
+#include "nav_base_iteration_3d.h"
 
-#include "core/string/string_name.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
+#include "core/math/aabb.h"
 
-class GDExtensionCompatHashes {
-	struct Mapping {
-		StringName method;
-		uint32_t legacy_hash;
-		uint32_t current_hash;
-	};
-
-	static HashMap<StringName, LocalVector<Mapping>> mappings;
-
-public:
-	static void initialize();
-	static void finalize();
-	static bool lookup_current_hash(const StringName &p_class, const StringName &p_method, uint32_t p_legacy_hash, uint32_t *r_current_hash);
-	static bool get_legacy_hashes(const StringName &p_class, const StringName &p_method, Array &r_hashes, bool p_check_valid = true);
+struct NavRegionIteration : NavBaseIteration {
+	Transform3D transform;
+	LocalVector<gd::Polygon> navmesh_polygons;
+	real_t surface_area = 0.0;
+	AABB bounds;
 };
 
-#endif // DISABLE_DEPRECATED
-
-#endif // GDEXTENSION_COMPAT_HASHES_H
+#endif // NAV_REGION_ITERATION_3D_H

@@ -3018,24 +3018,14 @@ void EditorInspector::update_tree() {
 				category_label = p.name;
 
 				// Use category's owner script to update some of its information.
-				if (!EditorNode::get_editor_data().is_type_recognized(p.name) && ResourceLoader::exists(p.hint_string)) {
+				if (!EditorNode::get_editor_data().is_type_recognized(p.name) && ResourceLoader::exists(p.hint_string, "Script")) {
 					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
 					if (scr.is_valid()) {
-						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+						doc_name = scr->get_doc_class_name();
 
-						// Update the docs reference and the label based on the script.
-						Vector<DocData::ClassDoc> docs = scr->get_documentation();
-						if (!docs.is_empty()) {
-							// The documentation of a GDScript's main class is at the end of the array.
-							// Hacky because this isn't necessarily always guaranteed.
-							doc_name = docs[docs.size() - 1].name;
-						}
+						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 						if (script_name != StringName()) {
 							category_label = script_name;
-						}
-
-						// Find the icon corresponding to the script.
-						if (script_name != StringName()) {
 							category_icon = EditorNode::get_singleton()->get_class_icon(script_name);
 						} else {
 							category_icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
@@ -4648,6 +4638,7 @@ void EditorInspector::_handle_menu_option(int p_option) {
 }
 
 void EditorInspector::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("edit", "object"), &EditorInspector::edit);
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 	ClassDB::bind_method("get_selected_path", &EditorInspector::get_selected_path);
 	ClassDB::bind_method("get_edited_object", &EditorInspector::get_edited_object);
@@ -4717,9 +4708,9 @@ EditorInspector::EditorInspector() {
 		refresh_countdown = 0.33;
 	}
 
-	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
-	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
-	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("property_editor/copy_value", TTRC("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_value", TTRC("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_property_path", TTRC("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 
 	// `use_settings_name_style` is true by default, set the name style accordingly.
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());

@@ -1119,7 +1119,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
-	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
+	idle_time = EDITOR_GET("text_editor/completion/idle_parse_delay");
+	idle_time_with_errors = EDITOR_GET("text_editor/completion/idle_parse_delay_with_errors_found");
 
 	// Appearance: Guidelines
 	if (EDITOR_GET("text_editor/appearance/guidelines/show_line_length_guidelines")) {
@@ -1599,6 +1600,11 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_error_count(0);
+			set_warning_count(0);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
@@ -1624,8 +1630,11 @@ void CodeTextEditor::_notification(int p_what) {
 void CodeTextEditor::set_error_count(int p_error_count) {
 	error_button->set_text(itos(p_error_count));
 	error_button->set_visible(p_error_count > 0);
-	if (!p_error_count) {
+	if (p_error_count > 0) {
 		_set_show_errors_panel(false);
+		idle->set_wait_time(idle_time_with_errors); // Parsing should happen sooner.
+	} else {
+		idle->set_wait_time(idle_time);
 	}
 }
 
@@ -1777,9 +1786,9 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
-	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
-	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
-	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTR("Reset Zoom"),
+	ED_SHORTCUT("script_editor/zoom_in", TTRC("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
+	ED_SHORTCUT("script_editor/zoom_out", TTRC("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
+	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTRC("Reset Zoom"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KEY_0), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_0) });
 
 	text_editor = memnew(CodeEdit);
@@ -1797,7 +1806,6 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the warning icon.
-
 	idle = memnew(Timer);
 	add_child(idle);
 	idle->set_one_shot(true);
@@ -1838,7 +1846,6 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_error_button_pressed));
 	error_button->set_tooltip_text(TTR("Errors"));
-	set_error_count(0);
 
 	// Warnings
 	warning_button = memnew(Button);
@@ -1848,7 +1855,6 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTR("Warnings"));
-	set_warning_count(0);
 
 	status_bar->add_child(memnew(VSeparator));
 

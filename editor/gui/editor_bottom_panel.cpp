@@ -289,6 +289,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->hide();
 	expand_button->set_theme_type_variation("FlatMenuButton");
 	expand_button->set_toggle_mode(true);
-	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
+	expand_button->set_shortcut(ED_SHORTCUT_AND_COMMAND("editor/bottom_panel_expand", TTRC("Expand Bottom Panel"), KeyModifierMask::SHIFT | Key::F12));
 	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
 }
