@@ -94,7 +94,7 @@ void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
 	ignore_time_scale = p_ignore;
 }
 
-bool SceneTreeTimer::is_ignore_time_scale() {
+bool SceneTreeTimer::is_ignoring_time_scale() {
 	return ignore_time_scale;
 }
 
@@ -657,7 +657,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 		}
 
 		double time_left = E->get()->get_time_left();
-		if (E->get()->is_ignore_time_scale()) {
+		if (E->get()->is_ignoring_time_scale()) {
 			time_left -= Engine::get_singleton()->get_process_step();
 		} else {
 			time_left -= p_delta;
