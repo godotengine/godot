@@ -36,7 +36,7 @@ class JoltSeparationRayShape3D final : public JoltShape3D {
 	float length = 0.0f;
 	bool slide_on_slope = false;
 
-	virtual JPH::ShapeRefC _build() const override;
+	virtual JPH::Ref<JPH::Shape> _build() const override;
 
 public:
 	virtual ShapeType get_type() const override { return ShapeType::SHAPE_SEPARATION_RAY; }

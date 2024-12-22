@@ -37,7 +37,7 @@ class JoltConvexPolygonShape3D final : public JoltShape3D {
 	PackedVector3Array vertices;
 	float margin = 0.04f;
 
-	virtual JPH::ShapeRefC _build() const override;
+	virtual JPH::Ref<JPH::Shape> _build() const override;
 
 	AABB _calculate_aabb() const;
 
