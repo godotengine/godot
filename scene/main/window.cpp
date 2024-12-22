@@ -303,6 +303,7 @@ void Window::set_title(const String &p_title) {
 			}
 		}
 	}
+	emit_signal("title_changed");
 }
 
 String Window::get_title() const {
@@ -728,7 +729,11 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
 	}
-	position = p_callback.position;
+
+	if (position != p_callback.position) {
+		position = p_callback.position;
+		_propagate_window_notification(this, NOTIFICATION_WM_POSITION_CHANGED);
+	}
 
 	if (size != p_callback.size) {
 		size = p_callback.size;
@@ -1096,14 +1101,17 @@ void Window::_update_window_size() {
 
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		if (reset_min_first && wrap_controls) {
-			// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
-			DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
-		}
+		// When main window embedded in the editor, we can't resize the main window.
+		if (window_id != DisplayServer::MAIN_WINDOW_ID || !Engine::get_singleton()->is_embedded_in_editor()) {
+			if (reset_min_first && wrap_controls) {
+				// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
+				DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+			}
 
-		DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
-		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
-		DisplayServer::get_singleton()->window_set_size(size, window_id);
+			DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
+			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+			DisplayServer::get_singleton()->window_set_size(size, window_id);
+		}
 	}
 
 	//update the viewport
@@ -1259,6 +1267,10 @@ void Window::_update_viewport_size() {
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
 
 	if (embedder) {
+		float scale = MIN(embedder->stretch_transform.get_scale().width, embedder->stretch_transform.get_scale().height);
+		Size2 s = Size2(final_size.width * scale, final_size.height * scale).ceil();
+		RS::get_singleton()->viewport_set_global_canvas_transform(get_viewport_rid(), global_canvas_transform * scale * content_scale_factor);
+		RS::get_singleton()->viewport_set_size(get_viewport_rid(), s.width, s.height);
 		embedder->_sub_window_update(this);
 	}
 }
@@ -3044,6 +3056,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
+	ADD_SIGNAL(MethodInfo("title_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);

@@ -485,8 +485,6 @@ class GDScriptLanguage : public ScriptLanguage {
 #endif
 
 public:
-	int calls;
-
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 

@@ -33,7 +33,6 @@
 
 #include "core/os/thread.h"
 #include "scene/resources/material.h"
-#include "scene/resources/texture.h"
 
 class Sky : public Resource {
 	GDCLASS(Sky, Resource);

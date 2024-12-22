@@ -269,12 +269,12 @@ void EditorRunBar::_profiler_autostart_indicator_pressed() {
 	EditorNode::get_singleton()->get_bottom_panel()->make_item_visible(EditorDebuggerNode::get_singleton(), true);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(2);
-	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(3);
+	} else if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(4);
 	} else {
 		// Switch to the network profiler tab.
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(7);
+		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(8);
 	}
 }
 
@@ -359,6 +359,10 @@ void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
 	if (!editor_run.get_child_process_count()) { // All children stopped. Closing.
 		stop_playing();
 	}
+}
+
+OS::ProcessID EditorRunBar::get_current_process() const {
+	return editor_run.get_current_process();
 }
 
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
