@@ -113,6 +113,37 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 // Index out of bounds error macros.
 // These macros should be used instead of `ERR_FAIL_COND` for bounds checking.
 
+/**
+ * Internal index out of bounds check.
+ * WARNING: Do not use this macro directly.
+ *
+ * This macro accepts signed and unsigned integers, even mismatched a pair.
+ * Returns a boolean.
+ */
+#define ___gd_is_index_out_of_bounds(m_index, m_size)                                                    \
+	[](auto ___p_index, auto ___p_size) -> bool {                                                        \
+		using ___GDIndex = std::decay_t<decltype(___p_index)>;                                           \
+		using ___GDSize = std::decay_t<decltype(___p_size)>;                                             \
+		using ___GDSignedIndex = std::make_signed_t<___GDIndex>;                                         \
+		using ___GDSignedSize = std::make_signed_t<___GDSize>;                                           \
+		using ___GDUnsignedIndex = std::make_unsigned_t<___GDIndex>;                                     \
+		using ___GDUnsignedSize = std::make_unsigned_t<___GDSize>;                                       \
+		if (___p_size == 0) {                                                                            \
+			return true;                                                                                 \
+		}                                                                                                \
+		if constexpr (std::is_signed_v<___GDIndex>) {                                                    \
+			if (static_cast<___GDSignedIndex>(___p_index) < 0) {                                         \
+				return true;                                                                             \
+			}                                                                                            \
+		}                                                                                                \
+		if constexpr (std::is_signed_v<___GDSize>) {                                                     \
+			if (static_cast<___GDSignedSize>(___p_size) < 0) {                                           \
+				return true;                                                                             \
+			}                                                                                            \
+		}                                                                                                \
+		return static_cast<___GDUnsignedIndex>(___p_index) >= static_cast<___GDUnsignedSize>(___p_size); \
+	}(m_index, m_size)
+
 // Integer index out of bounds error macros.
 
 /**
@@ -123,7 +154,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, the current function returns.
  */
 #define ERR_FAIL_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                              \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 		return;                                                                                                 \
 	} else                                                                                                      \
@@ -134,7 +165,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, prints `m_msg` and the current function returns.
  */
 #define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                     \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                     \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
 		return;                                                                                                        \
 	} else                                                                                                             \
@@ -144,7 +175,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Same as `ERR_FAIL_INDEX_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                           \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
 		return;                                                                                                              \
 	} else                                                                                                                   \
@@ -158,7 +189,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, the current function returns `m_retval`.
  */
 #define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                              \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
 		return m_retval;                                                                                        \
 	} else                                                                                                      \
@@ -169,7 +200,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
 #define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                     \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
 		return m_retval;                                                                                               \
 	} else                                                                                                             \
@@ -179,7 +210,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Same as `ERR_FAIL_INDEX_V_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                           \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
 		return m_retval;                                                                                                     \
 	} else                                                                                                                   \
@@ -194,7 +225,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, the application crashes.
  */
 #define CRASH_BAD_INDEX(m_index, m_size)                                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                      \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                               \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
 		_err_flush_stdout();                                                                                                     \
 		GENERATE_TRAP();                                                                                                         \
@@ -209,7 +240,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * If not, prints `m_msg` and the application crashes.
  */
 #define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                 \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                         \
+	if (unlikely(___gd_is_index_out_of_bounds(m_index, m_size))) {                                                                  \
 		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
 		_err_flush_stdout();                                                                                                        \
 		GENERATE_TRAP();                                                                                                            \
@@ -219,6 +250,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 // Unsigned integer index out of bounds error macros.
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX` instead.
  * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG`.
  * Only use this macro if there is no sensible error message.
  *
@@ -233,6 +265,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX_MSG` instead.
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns.
  */
@@ -244,6 +277,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX_EDMSG` instead.
  * Same as `ERR_FAIL_UNSIGNED_INDEX_MSG` but also notifies the editor.
  */
 #define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg)                                                                \
@@ -254,6 +288,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX_V` instead.
  * Try using `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
  * Only use this macro if there is no sensible error message.
  *
@@ -268,6 +303,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX_V_MSG` instead.
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
@@ -279,6 +315,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `ERR_FAIL_INDEX_V_EDMSG` instead.
  * Same as `ERR_FAIL_UNSIGNED_INDEX_V_EDMSG` but also notifies the editor.
  */
 #define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                    \
@@ -289,6 +326,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `CRASH_BAD_INDEX` instead.
  * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG` or `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
  * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable, and
  * there is no sensible error message.
@@ -305,6 +343,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		((void)0)
 
 /**
+ * DEPRECATED: Use `CRASH_BAD_INDEX_MSG` instead.
  * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG` or `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
  * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable.
  *

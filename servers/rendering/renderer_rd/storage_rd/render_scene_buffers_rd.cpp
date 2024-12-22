@@ -400,10 +400,10 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 	ERR_FAIL_COND_V(named_texture.texture.is_null(), RID());
 
 	// check if we're in bounds
-	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, named_texture.format.array_layers, RID());
+	ERR_FAIL_INDEX_V(p_layer, named_texture.format.array_layers, RID());
 	ERR_FAIL_COND_V(p_layers == 0, RID());
 	ERR_FAIL_COND_V(p_layer + p_layers > named_texture.format.array_layers, RID());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, named_texture.format.mipmaps, RID());
+	ERR_FAIL_INDEX_V(p_mipmap, named_texture.format.mipmaps, RID());
 	ERR_FAIL_COND_V(p_mipmaps == 0, RID());
 	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > named_texture.format.mipmaps, RID());
 
@@ -450,7 +450,7 @@ Size2i RenderSceneBuffersRD::get_texture_slice_size(const StringName &p_context,
 	ERR_FAIL_COND_V(named_texture.texture.is_null(), Size2i());
 
 	// check if we're in bounds
-	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, named_texture.format.mipmaps, Size2i());
+	ERR_FAIL_INDEX_V(p_mipmap, named_texture.format.mipmaps, Size2i());
 
 	// return our size
 	return named_texture.sizes[p_mipmap];

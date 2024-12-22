@@ -50,13 +50,13 @@ uint32_t RenderSceneDataRD::get_view_count() const {
 }
 
 Vector3 RenderSceneDataRD::get_view_eye_offset(uint32_t p_view) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Vector3());
+	ERR_FAIL_INDEX_V(p_view, view_count, Vector3());
 
 	return view_eye_offset[p_view];
 }
 
 Projection RenderSceneDataRD::get_view_projection(uint32_t p_view) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Projection());
+	ERR_FAIL_INDEX_V(p_view, view_count, Projection());
 
 	Projection correction;
 	correction.set_depth_correction(flip_y);

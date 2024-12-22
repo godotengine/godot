@@ -359,19 +359,19 @@ bool OpenXRHandTrackingExtension::get_active() {
 }
 
 const OpenXRHandTrackingExtension::HandTracker *OpenXRHandTrackingExtension::get_hand_tracker(HandTrackedHands p_hand) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, nullptr);
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, nullptr);
 
 	return &hand_trackers[p_hand];
 }
 
 XrHandJointsMotionRangeEXT OpenXRHandTrackingExtension::get_motion_range(HandTrackedHands p_hand) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XR_HAND_JOINTS_MOTION_RANGE_MAX_ENUM_EXT);
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XR_HAND_JOINTS_MOTION_RANGE_MAX_ENUM_EXT);
 
 	return hand_trackers[p_hand].motion_range;
 }
 
 OpenXRHandTrackingExtension::HandTrackedSource OpenXRHandTrackingExtension::get_hand_tracking_source(HandTrackedHands p_hand) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, OPENXR_SOURCE_UNKNOWN);
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, OPENXR_SOURCE_UNKNOWN);
 
 	if (hand_tracking_source_ext) {
 		if (!hand_trackers[p_hand].data_source.isActive) {
@@ -391,13 +391,13 @@ OpenXRHandTrackingExtension::HandTrackedSource OpenXRHandTrackingExtension::get_
 }
 
 void OpenXRHandTrackingExtension::set_motion_range(HandTrackedHands p_hand, XrHandJointsMotionRangeEXT p_motion_range) {
-	ERR_FAIL_UNSIGNED_INDEX(p_hand, OPENXR_MAX_TRACKED_HANDS);
+	ERR_FAIL_INDEX(p_hand, OPENXR_MAX_TRACKED_HANDS);
 	hand_trackers[p_hand].motion_range = p_motion_range;
 }
 
 XrSpaceLocationFlags OpenXRHandTrackingExtension::get_hand_joint_location_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XrSpaceLocationFlags(0));
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, XrSpaceLocationFlags(0));
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XrSpaceLocationFlags(0));
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, XrSpaceLocationFlags(0));
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return XrSpaceLocationFlags(0);
@@ -408,8 +408,8 @@ XrSpaceLocationFlags OpenXRHandTrackingExtension::get_hand_joint_location_flags(
 }
 
 Quaternion OpenXRHandTrackingExtension::get_hand_joint_rotation(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Quaternion());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Quaternion());
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Quaternion());
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Quaternion());
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return Quaternion();
@@ -420,8 +420,8 @@ Quaternion OpenXRHandTrackingExtension::get_hand_joint_rotation(HandTrackedHands
 }
 
 Vector3 OpenXRHandTrackingExtension::get_hand_joint_position(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return Vector3();
@@ -432,8 +432,8 @@ Vector3 OpenXRHandTrackingExtension::get_hand_joint_position(HandTrackedHands p_
 }
 
 float OpenXRHandTrackingExtension::get_hand_joint_radius(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, 0.0);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, 0.0);
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, 0.0);
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, 0.0);
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return 0.0;
@@ -443,8 +443,8 @@ float OpenXRHandTrackingExtension::get_hand_joint_radius(HandTrackedHands p_hand
 }
 
 XrSpaceVelocityFlags OpenXRHandTrackingExtension::get_hand_joint_velocity_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XrSpaceVelocityFlags(0));
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, XrSpaceVelocityFlags(0));
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, XrSpaceVelocityFlags(0));
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, XrSpaceVelocityFlags(0));
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return XrSpaceVelocityFlags(0);
@@ -455,8 +455,8 @@ XrSpaceVelocityFlags OpenXRHandTrackingExtension::get_hand_joint_velocity_flags(
 }
 
 Vector3 OpenXRHandTrackingExtension::get_hand_joint_linear_velocity(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return Vector3();
@@ -467,8 +467,8 @@ Vector3 OpenXRHandTrackingExtension::get_hand_joint_linear_velocity(HandTrackedH
 }
 
 Vector3 OpenXRHandTrackingExtension::get_hand_joint_angular_velocity(HandTrackedHands p_hand, XrHandJointEXT p_joint) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
+	ERR_FAIL_INDEX_V(p_hand, OPENXR_MAX_TRACKED_HANDS, Vector3());
+	ERR_FAIL_INDEX_V(p_joint, XR_HAND_JOINT_COUNT_EXT, Vector3());
 
 	if (!hand_trackers[p_hand].is_initialized) {
 		return Vector3();

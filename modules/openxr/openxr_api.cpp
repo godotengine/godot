@@ -2610,7 +2610,7 @@ int OpenXRAPI::get_foveation_level() const {
 }
 
 void OpenXRAPI::set_foveation_level(int p_foveation_level) {
-	ERR_FAIL_UNSIGNED_INDEX(p_foveation_level, 4);
+	ERR_FAIL_INDEX(p_foveation_level, 4);
 	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
 	if (fov_ext != nullptr && fov_ext->is_enabled()) {
 		XrFoveationLevelFB levels[] = { XR_FOVEATION_LEVEL_NONE_FB, XR_FOVEATION_LEVEL_LOW_FB, XR_FOVEATION_LEVEL_MEDIUM_FB, XR_FOVEATION_LEVEL_HIGH_FB };

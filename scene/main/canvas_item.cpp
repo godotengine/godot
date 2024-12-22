@@ -1489,7 +1489,7 @@ uint32_t CanvasItem::get_visibility_layer() const {
 
 void CanvasItem::set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_enable) {
 	ERR_THREAD_GUARD;
-	ERR_FAIL_UNSIGNED_INDEX(p_visibility_layer, 32);
+	ERR_FAIL_INDEX(p_visibility_layer, 32);
 	if (p_enable) {
 		set_visibility_layer(visibility_layer | (1 << p_visibility_layer));
 	} else {
@@ -1499,7 +1499,7 @@ void CanvasItem::set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_en
 
 bool CanvasItem::get_visibility_layer_bit(uint32_t p_visibility_layer) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_visibility_layer, 32, false);
+	ERR_FAIL_INDEX_V(p_visibility_layer, 32, false);
 	return (visibility_layer & (1 << p_visibility_layer));
 }
 
