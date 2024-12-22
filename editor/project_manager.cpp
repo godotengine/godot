@@ -1139,7 +1139,7 @@ ProjectManager::ProjectManager() {
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
+	SceneTree::get_singleton()->get_root()->set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 

@@ -282,11 +282,13 @@ void Window::set_title(const String &p_title) {
 
 	title = p_title;
 	tr_title = atr(p_title);
+
 #ifdef DEBUG_ENABLED
-	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
 		// Append a suffix to the window title to denote that the project is running
-		// from a debug build (including the editor). Since this results in lower performance,
-		// this should be clearly presented to the user.
+		// from a debug build (including the editor, excluding the project manager).
+		// Since this results in lower performance, this should be clearly presented
+		// to the user.
 		tr_title = vformat("%s (DEBUG)", tr_title);
 	}
 #endif
@@ -1435,10 +1437,11 @@ void Window::_notification(int p_what) {
 
 			tr_title = atr(title);
 #ifdef DEBUG_ENABLED
-			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+			if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
 				// Append a suffix to the window title to denote that the project is running
-				// from a debug build (including the editor). Since this results in lower performance,
-				// this should be clearly presented to the user.
+				// from a debug build (including the editor, excluding the project manager).
+				// Since this results in lower performance, this should be clearly presented
+				// to the user.
 				tr_title = vformat("%s (DEBUG)", tr_title);
 			}
 #endif
