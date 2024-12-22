@@ -595,16 +595,19 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 		t.set_look_at(t.origin, t.origin - camera_xform.basis.get_column(2), camera_xform.basis.get_column(1));
 	}
 
-	float min_d = 1e20;
+	real_t max_z = -INFINITY;
+	const Projection cam_projection = p_camera->get_camera_projection();
+	const Transform3D cam_transform = p_camera->get_camera_transform();
+	const Size2 viewport_size = p_camera->get_viewport()->get_visible_rect().size;
 
 	for (int i = 0; i < secondary_handles.size(); i++) {
 		Vector3 hpos = t.xform(secondary_handles[i]);
-		Vector2 p = p_camera->unproject_position(hpos);
+		Vector3 ndc = cam_projection.xform(cam_transform.xform_inv(hpos));
+		Vector2 p = Vector2(ndc.x + 1, -ndc.y + 1) * 0.5 * viewport_size;
 
 		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
-			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
-			if (dp < min_d) {
-				min_d = dp;
+			if (ndc.z > max_z) {
+				max_z = ndc.z;
 				if (secondary_handle_ids.is_empty()) {
 					r_id = i;
 				} else {
@@ -619,16 +622,16 @@ void EditorNode3DGizmo::handles_intersect_ray(Camera3D *p_camera, const Vector2 
 		return;
 	}
 
-	min_d = 1e20;
+	max_z = -INFINITY;
 
 	for (int i = 0; i < handles.size(); i++) {
 		Vector3 hpos = t.xform(handles[i]);
-		Vector2 p = p_camera->unproject_position(hpos);
+		Vector3 ndc = cam_projection.xform(cam_transform.xform_inv(hpos));
+		Vector2 p = Vector2(ndc.x + 1, -ndc.y + 1) * 0.5 * viewport_size;
 
 		if (p.distance_to(p_point) < HANDLE_HALF_SIZE) {
-			real_t dp = p_camera->get_transform().origin.distance_to(hpos);
-			if (dp < min_d) {
-				min_d = dp;
+			if (ndc.z > max_z) {
+				max_z = ndc.z;
 				if (handle_ids.is_empty()) {
 					r_id = i;
 				} else {
