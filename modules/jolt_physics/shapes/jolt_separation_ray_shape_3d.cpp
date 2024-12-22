@@ -36,7 +36,7 @@
 JPH::ShapeRefC JoltSeparationRayShape3D::_build() const {
 	ERR_FAIL_COND_V_MSG(length <= 0.0f, nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. Its length must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
 
-	const JoltCustomRayShapeSettings shape_settings(length, slide_on_slope);
+	const JoltCustomRayShapeSettings shape_settings(length, slide_on_slope, material);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
 

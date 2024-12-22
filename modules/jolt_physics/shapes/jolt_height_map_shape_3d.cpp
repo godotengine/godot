@@ -107,6 +107,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {
 
 	shape_settings.mBitsPerSample = shape_settings.CalculateBitsPerSampleForError(0.0f);
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::active_edge_threshold_cos;
+	shape_settings.mMaterials = JPH::PhysicsMaterialList{ static_cast<JPH::PhysicsMaterialRefC>(material) };
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
@@ -150,17 +151,18 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_mesh() const {
 			const int index_upper_left = (z + 1) * width + (x + 1);
 
 			if (!_is_triangle_hole(vertices, index_lower_right, index_upper_right, index_lower_left)) {
-				indices.emplace_back(index_lower_right, index_upper_right, index_lower_left);
+				indices.emplace_back(index_lower_right, index_upper_right, index_lower_left, 0);
 			}
 
 			if (!_is_triangle_hole(vertices, index_lower_left, index_upper_right, index_upper_left)) {
-				indices.emplace_back(index_lower_left, index_upper_right, index_upper_left);
+				indices.emplace_back(index_lower_left, index_upper_right, index_upper_left, 0);
 			}
 		}
 	}
 
 	JPH::MeshShapeSettings shape_settings(std::move(vertices), std::move(indices));
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::active_edge_threshold_cos;
+	shape_settings.mMaterials = JPH::PhysicsMaterialList{ static_cast<JPH::PhysicsMaterialRefC>(material) };
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape (as polygon) with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
