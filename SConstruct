@@ -961,7 +961,7 @@ methods.sort_module_list(env)
 
 if env.editor_build:
     # Add editor-specific dependencies to the dependency graph.
-    env.module_add_dependencies("editor", ["freetype", "svg"])
+    env.module_add_dependencies("editor", ["freetype", "regex", "svg"])
 
     # And check if they are met.
     if not env.module_check_dependencies("editor"):

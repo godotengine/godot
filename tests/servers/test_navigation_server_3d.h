@@ -31,10 +31,11 @@
 #ifndef TEST_NAVIGATION_SERVER_3D_H
 #define TEST_NAVIGATION_SERVER_3D_H
 
-#include "modules/navigation/nav_utils.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
+
+#include "modules/navigation/nav_utils.h"
 
 namespace TestNavigationServer3D {
 
