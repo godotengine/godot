@@ -128,6 +128,7 @@
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
+#include "editor/plugins/visual_shape_2d_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
 #include "editor/register_exporters.h"
 
@@ -266,6 +267,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Cast2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
+	EditorPlugins::add_by_type<VisualShape2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
 

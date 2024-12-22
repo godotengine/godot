@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShape2D" inherits="Node2D" keywords="square, rectangle, circle, oval, triangle, capsule, hexagon" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		2D shape-drawing node.
+	</brief_description>
+	<description>
+		[VisualShape2D] is a node that draws common geometric shapes like rectangles, circles, triangles, and capsules. It is very useful to prototype 2D applications, as it needs very little setup without needing a [Texture2D]. If a texture is wanted, [member CanvasItem.clip_children] and a child [Sprite2D] can be used, or the Editor can convert a [VisualShape2D] into a [Polygon2D] or [MeshInstance2D].
+		For more advanced capabilities, see [Polygon2D], [Sprite2D], or [MeshInstance2D]. For custom drawing, see [method CanvasItem._draw] and the [CanvasItem] draw methods.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_points" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a list of points representing the vertices of the polygon.
+			</description>
+		</method>
+		<method name="get_uvs" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a list of UV values for each vertex of the polygon.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="false">
+			If [code]true[/code], the shape is antialiased. UVs are not supported on antialiased edges. Scaling may affect antialiasing quality.
+			[b]Note:[/b] This may cause unintentional artifacts when using transparency. Consider adding this to a [CanvasGroup] and using its [member CanvasItem.self_modulate] property for transparency. Alternatively, consider enabling MSAA ([member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d]).
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+			The color of the shape.
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
+			The offset amount of the shape in pixels. An offset of [code]Vector2(0, 0)[/code] will center the shape. This can be used to move the shape without changing its pivot point.
+		</member>
+		<member name="outline_width" type="float" setter="set_outline_width" getter="get_outline_width" default="0.0">
+			If greater than [code]0[/code], the shape uses an outline instead of being filled. This is the outline width of the shape in pixels. UVs are not supported on outlines.
+		</member>
+		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" default="64">
+			The resolution to use when the [member shape_type] is [constant SHAPE_CIRCLE] or [constant SHAPE_CAPSULE]. This value determines the number of points in the shape. Higher values look smoother but may negatively affect performance.
+		</member>
+		<member name="shape_type" type="int" setter="set_shape_type" getter="get_shape_type" enum="VisualShape2D.ShapeType" default="0">
+			The type of shape to draw.
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(128, 128)">
+			The size of the shape in pixels.
+		</member>
+	</members>
+	<constants>
+		<constant name="SHAPE_RECTANGLE" value="0" enum="ShapeType">
+			A square or rectangle shape.
+		</constant>
+		<constant name="SHAPE_CIRCLE" value="1" enum="ShapeType">
+			A circle or regular polygon shape. When [member resolution] is high, this approximates a circle. This can also be an oval if the [member size] is non-uniform.
+		</constant>
+		<constant name="SHAPE_EQUILATERAL_TRIANGLE" value="2" enum="ShapeType">
+			An equilateral triangle shape, pointing up.
+		</constant>
+		<constant name="SHAPE_RIGHT_TRIANGLE" value="3" enum="ShapeType">
+			A right triangle shape, with its right angle placed on the node's bottom-left corner.
+		</constant>
+		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
+			A vertical or horizontal capsule shape. The number of points is determined by the [member resolution], rounded up to the next even number, plus two.
+		</constant>
+	</constants>
+</class>
