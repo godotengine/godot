@@ -971,7 +971,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
-		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name)) {
+		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name) && !EditorHelp::get_doc_data()->class_list[result.class_name].is_script_doc) {
 			switch (result.type) {
 				case ScriptLanguage::LOOKUP_RESULT_CLASS: {
 					emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
