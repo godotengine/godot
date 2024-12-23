@@ -31,7 +31,7 @@
 #include "world_environment.h"
 
 #include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 void WorldEnvironment::_notification(int p_what) {
 	switch (p_what) {

@@ -45,10 +45,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/tile_map_layer.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/separator.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/image_texture.h"
 

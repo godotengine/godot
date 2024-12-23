@@ -39,16 +39,11 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/plugins/tiles/tile_set_editor.h"
-#include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tab_container.h"
 
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
