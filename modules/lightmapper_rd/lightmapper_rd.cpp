@@ -485,8 +485,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			RID material = mi.data.material[i];
 			if (material.is_valid()) {
 				t.cull_mode = RSG::material_storage->material_get_cull_mode(material);
-			} else {
-				print_line("No material for mesh with vertex count ", mi.data.points.size());
 			}
 			t.pad1 = 0; //make valgrind not complain
 			triangles.push_back(t);
