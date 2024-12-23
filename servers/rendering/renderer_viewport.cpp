@@ -413,7 +413,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						cl->xform_cache = xf * cl->xform_cache;
 					}
 
-					if (clip_rect.intersects_transformed(cl->xform_cache, cl->rect_cache)) {
+					Rect2 temp_rect = cl->xform_cache.xform(cl->rect_cache);
+
+					if (clip_rect.intersects(temp_rect)) {
 						cl->filter_next_ptr = lights;
 						lights = cl;
 						Transform2D scale;
@@ -423,12 +425,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						if (cl->use_shadow) {
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == nullptr) {
-								shadow_rect = cl->xform_cache.xform(cl->rect_cache);
+								shadow_rect = temp_rect;
 							} else {
-								shadow_rect = shadow_rect.merge(cl->xform_cache.xform(cl->rect_cache));
+								shadow_rect = shadow_rect.merge(temp_rect);
 							}
 							lights_with_shadow = cl;
 							cl->radius_cache = cl->rect_cache.size.length();
+							cl->rect_cache = temp_rect;
 						}
 					}
 				}

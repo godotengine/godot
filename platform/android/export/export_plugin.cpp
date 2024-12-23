@@ -1005,6 +1005,57 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	store_string_at_path(manifest_path, manifest_text);
 }
 
+void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
+	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
+	bool enable_swipe_to_dismiss = p_preset->get("wear_os/swipe_to_dismiss");
+
+	if (!FileAccess::exists(themes_xml_path)) {
+		print_error("res/values/themes.xml does not exist.");
+		return;
+	}
+
+	String xml_content;
+	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
+	PackedStringArray lines = file->get_as_text().split("\n");
+	file->close();
+
+	// Check if the line contains the existing <item name="android:windowSwipeToDismiss"> element.
+	// If found and `enable_swipe_to_dismiss` is true, remove the item.
+	// If found and `enable_swipe_to_dismiss` is false, update its value to "false".
+	bool found = false;
+	bool modified = false;
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+		if (line.contains("<item name") && line.contains("\"android:windowSwipeToDismiss\">")) {
+			lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
+			found = true;
+			modified = true;
+			break;
+		}
+	}
+
+	// If <item name="android:windowSwipeToDismiss"> is not found and `enable_swipe_to_dismiss` is false:
+	// Add a new <item> element before the closing </style> tag.
+	if (!found && !enable_swipe_to_dismiss) {
+		for (int i = 0; i < lines.size(); i++) {
+			if (lines[i].contains("</style>")) {
+				lines.insert(i, "		<item name=\"android:windowSwipeToDismiss\">false</item>");
+				modified = true;
+				break;
+			}
+		}
+	}
+
+	// Reconstruct the XML content from the modified lines.
+	if (modified) {
+		xml_content = String("\n").join(lines);
+		store_string_at_path(themes_xml_path, xml_content);
+		print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
+	} else {
+		print_verbose("No changes needed for " + themes_xml_path);
+	}
+}
+
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
 	// Leaving the unused types commented because looking these constants up
 	// again later would be annoying
@@ -1802,6 +1853,11 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!is_package_name_valid(pn, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
 			}
+		} else if (p_name == "wear_os/swipe_to_dismiss") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (!bool(p_preset->get("wear_os/swipe_to_dismiss")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to disable \"Swipe to dismiss\".");
+			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			String enabled_plugins_names = _get_plugins_names(Ref<EditorExportPreset>(p_preset));
@@ -1932,6 +1988,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "wear_os/swipe_to_dismiss"), true));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
@@ -1969,6 +2027,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||
 			p_option == "package/show_as_launcher_app" ||
+			p_option == "wear_os/swipe_to_dismiss" ||
 			p_option == "apk_expansion/enable" ||
 			p_option == "apk_expansion/SALT" ||
 			p_option == "apk_expansion/public_key") {
@@ -3171,6 +3230,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
 		_write_tmp_manifest(p_preset, p_give_internet, p_debug);
+		// Modify res/values/themes.xml file.
+		_fix_themes_xml(p_preset);
 
 		//stores all the project files inside the Gradle project directory. Also includes all ABIs
 		_clear_assets_directory(p_preset);
