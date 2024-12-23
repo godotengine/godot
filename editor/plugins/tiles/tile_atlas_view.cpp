@@ -39,7 +39,7 @@
 #include "scene/gui/view_panner.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
-	if (panner->gui_input(p_event)) {
+	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
 	}
 }
@@ -613,7 +613,7 @@ void TileAtlasView::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->set_viewport(get_viewport());
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
