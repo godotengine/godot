@@ -173,7 +173,6 @@ void CollisionShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape3D::get_debug_color);
 
@@ -185,7 +184,6 @@ void CollisionShape3D::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_fill"), "set_enable_debug_fill", "get_enable_debug_fill");
-#endif // DEBUG_ENABLED
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
@@ -246,8 +244,6 @@ bool CollisionShape3D::is_disabled() const {
 	return disabled;
 }
 
-#ifdef DEBUG_ENABLED
-
 Color CollisionShape3D::_get_default_debug_color() const {
 	const SceneTree *st = SceneTree::get_singleton();
 	return st ? st->get_debug_collisions_color() : Color(0.0, 0.0, 0.0, 0.0);
@@ -284,6 +280,8 @@ void CollisionShape3D::set_debug_fill_enabled(bool p_enable) {
 bool CollisionShape3D::get_debug_fill_enabled() const {
 	return debug_fill;
 }
+
+#ifdef DEBUG_ENABLED
 
 bool CollisionShape3D::_property_can_revert(const StringName &p_name) const {
 	if (p_name == "debug_color") {
@@ -324,9 +322,7 @@ void CollisionShape3D::_shape_changed() {
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	set_notify_local_transform(true);
-#ifdef DEBUG_ENABLED
 	debug_color = _get_default_debug_color();
-#endif // DEBUG_ENABLED
 }
 
 CollisionShape3D::~CollisionShape3D() {
