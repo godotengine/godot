@@ -63,7 +63,7 @@
 
 #include <string.h>
 
-static const char *android_perms[] = {
+static const char *ANDROID_PERMS[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",
 	"ACCESS_FINE_LOCATION",
@@ -223,7 +223,7 @@ static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch
 
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
-// This template string must always match the content of 'platform/android/java/lib/res/mipmap-anydpi-v26/icon.xml'.
+// This template string must be in sync with the content of 'platform/android/java/lib/res/mipmap-anydpi-v26/icon.xml'.
 static const String ICON_XML_TEMPLATE =
 		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 		"<adaptive-icon xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
@@ -235,13 +235,13 @@ static const String ICON_XML_TEMPLATE =
 static const String ICON_XML_PATH = "res/mipmap-anydpi-v26/icon.xml";
 static const String THEMED_ICON_XML_PATH = "res/mipmap-anydpi-v26/themed_icon.xml";
 
-static const int icon_densities_count = 6;
-static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
-static const char *launcher_adaptive_icon_foreground_option = PNAME("launcher_icons/adaptive_foreground_432x432");
-static const char *launcher_adaptive_icon_background_option = PNAME("launcher_icons/adaptive_background_432x432");
-static const char *launcher_adaptive_icon_monochrome_option = PNAME("launcher_icons/adaptive_monochrome_432x432");
+static const int ICON_DENSITIES_COUNT = 6;
+static const char *LAUNCHER_ICON_OPTION = PNAME("launcher_icons/main_192x192");
+static const char *LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION = PNAME("launcher_icons/adaptive_foreground_432x432");
+static const char *LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION = PNAME("launcher_icons/adaptive_background_432x432");
+static const char *LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION = PNAME("launcher_icons/adaptive_monochrome_432x432");
 
-static const LauncherIcon launcher_icons[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ICONS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
 	{ "res/mipmap-xxhdpi-v4/icon.png", 144 },
 	{ "res/mipmap-xhdpi-v4/icon.png", 96 },
@@ -250,7 +250,7 @@ static const LauncherIcon launcher_icons[icon_densities_count] = {
 	{ "res/mipmap/icon.png", 192 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_foregrounds[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_foreground.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_foreground.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_foreground.png", 216 },
@@ -259,7 +259,7 @@ static const LauncherIcon launcher_adaptive_icon_foregrounds[icon_densities_coun
 	{ "res/mipmap/icon_foreground.png", 432 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_background.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_background.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_background.png", 216 },
@@ -268,7 +268,7 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap/icon_background.png", 432 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_monochromes[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_monochrome.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_monochrome.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_monochrome.png", 216 },
@@ -938,7 +938,7 @@ void EditorExportPlatformAndroid::_create_editor_debug_keystore_if_needed() {
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
-	const char **aperms = android_perms;
+	const char **aperms = ANDROID_PERMS;
 	while (*aperms) {
 		bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
 		if (enabled) {
@@ -1019,9 +1019,8 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	PackedStringArray lines = file->get_as_text().split("\n");
 	file->close();
 
-	// Check if the line contains the existing <item name="android:windowSwipeToDismiss"> element.
-	// If found and `enable_swipe_to_dismiss` is true, remove the item.
-	// If found and `enable_swipe_to_dismiss` is false, update its value to "false".
+	// Check if the themes.xml already contains <item name="android:windowSwipeToDismiss"> element.
+	// If found, update its value based on `enable_swipe_to_dismiss`.
 	bool found = false;
 	bool modified = false;
 	for (int i = 0; i < lines.size(); i++) {
@@ -1732,7 +1731,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	monochrome.instantiate();
 
 	// Regular icon: user selection -> project icon -> default.
-	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+	String path = static_cast<String>(p_preset->get(LAUNCHER_ICON_OPTION)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
@@ -1744,7 +1743,7 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
 	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
 		print_verbose("- falling back to using the regular icon");
@@ -1752,14 +1751,14 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 
 	// Adaptive background: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
 		ImageLoader::load_image(path, background);
 	}
 
 	// Adaptive monochrome: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
 		ImageLoader::load_image(path, monochrome);
@@ -1778,36 +1777,36 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 	// Prepare images to be resized for the icons. If some image ends up being uninitialized,
 	// the default image from the export template will be used.
 
-	for (int i = 0; i < icon_densities_count; ++i) {
+	for (int i = 0; i < ICON_DENSITIES_COUNT; ++i) {
 		if (p_main_image.is_valid() && !p_main_image->is_empty()) {
-			print_verbose("Processing launcher icon for dimension " + itos(launcher_icons[i].dimensions) + " into " + launcher_icons[i].export_path);
+			print_verbose("Processing launcher icon for dimension " + itos(LAUNCHER_ICONS[i].dimensions) + " into " + LAUNCHER_ICONS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_icons[i].export_path, p_main_image, launcher_icons[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_icons[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ICONS[i].export_path, p_main_image, LAUNCHER_ICONS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ICONS[i].export_path), data);
 		}
 
 		if (p_foreground.is_valid() && !p_foreground->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_foreground for dimension " + itos(launcher_adaptive_icon_foregrounds[i].dimensions) + " into " + launcher_adaptive_icon_foregrounds[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_foreground for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, p_foreground,
-					launcher_adaptive_icon_foregrounds[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_foregrounds[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path, p_foreground,
+					LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path), data);
 		}
 
 		if (p_background.is_valid() && !p_background->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_background for dimension " + itos(launcher_adaptive_icon_backgrounds[i].dimensions) + " into " + launcher_adaptive_icon_backgrounds[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_background for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, p_background,
-					launcher_adaptive_icon_backgrounds[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_backgrounds[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path, p_background,
+					LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path), data);
 		}
 
 		if (p_monochrome.is_valid() && !p_monochrome->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_monochrome for dimension " + itos(launcher_adaptive_icon_monochromes[i].dimensions) + " into " + launcher_adaptive_icon_monochromes[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_monochrome for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_monochromes[i].export_path, p_monochrome,
-					launcher_adaptive_icon_monochromes[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_monochromes[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path, p_monochrome,
+					LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path), data);
 			monochrome_tag = "    <monochrome android:drawable=\"@mipmap/icon_monochrome\"/>\n";
 		}
 	}
@@ -1979,10 +1978,10 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_app_library"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_as_launcher_app"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_background_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_monochrome_option, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ICON_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
@@ -2006,7 +2005,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 
-	const char **perms = android_perms;
+	const char **perms = ANDROID_PERMS;
 	while (*perms) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("permissions"), String(*perms).to_lower())), false));
 		perms++;
@@ -3574,25 +3573,25 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		if (file.ends_with(".png") && file.contains("mipmap")) {
-			for (int i = 0; i < icon_densities_count; ++i) {
+			for (int i = 0; i < ICON_DENSITIES_COUNT; ++i) {
 				if (main_image.is_valid() && !main_image->is_empty()) {
-					if (file == launcher_icons[i].export_path) {
-						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+					if (file == LAUNCHER_ICONS[i].export_path) {
+						_process_launcher_icons(file, main_image, LAUNCHER_ICONS[i].dimensions, data);
 					}
 				}
 				if (foreground.is_valid() && !foreground->is_empty()) {
-					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
-						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path) {
+						_process_launcher_icons(file, foreground, LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions, data);
 					}
 				}
 				if (background.is_valid() && !background->is_empty()) {
-					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
-						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path) {
+						_process_launcher_icons(file, background, LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions, data);
 					}
 				}
 				if (monochrome.is_valid() && !monochrome->is_empty()) {
-					if (file == launcher_adaptive_icon_monochromes[i].export_path) {
-						_process_launcher_icons(file, monochrome, launcher_adaptive_icon_monochromes[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path) {
+						_process_launcher_icons(file, monochrome, LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions, data);
 					}
 				}
 			}
