@@ -364,6 +364,19 @@ RID GodotNavigationServer3D::agent_get_map(RID p_agent) const {
 	return RID();
 }
 
+COMMAND_2(map_set_use_async_iterations, RID, p_map, bool, p_enabled) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+	map->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::map_get_use_async_iterations(RID p_map) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_use_async_iterations();
+}
+
 Vector3 GodotNavigationServer3D::map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, Vector3());

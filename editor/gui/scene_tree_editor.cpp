@@ -369,7 +369,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			item->set_selectable(0, false);
 			item->deselect(0);
 			if (selected == p_node) {
-				set_selected(nullptr, false);
+				selected = nullptr;
 			}
 		}
 	}
