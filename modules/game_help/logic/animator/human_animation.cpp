@@ -288,37 +288,16 @@ namespace HumanAnim
 
             pose.position = trans.origin;
             pose.rotation = trans.basis.get_rotation_quaternion();
-            float inv_height = 1.0 / height;
-            pose.scale = Vector3(inv_height,inv_height,inv_height);
-            pose.length = height;
             pose.bone_index = root_bone;
             p_config.virtual_pose[bone_name] = pose;
 
             // 构建所有子骨骼的姿势
             for(int j=0;j<pose.child_bones.size();j++) {
-                build_virtual_pose(p_config,p_skeleton, trans, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
+                build_virtual_pose(p_skeleton, p_config, pose,pose.bone_index, p_human_bone_label);
             }
             p_config.root_bone.push_back(bone_name);
         }
 
-        // 根据骨骼的高度计算虚拟姿势
-        for(int i=0;i<p_skeleton->get_bone_count();i++) {
-            String bone_name = p_skeleton->get_bone_name(i);
-            if (!p_config.virtual_pose.has(bone_name)) {
-                continue;
-            }
-            int parent = p_skeleton->get_bone_parent(i);
-            if (parent < 0) {
-                continue;
-            }
-            String parent_bone_name = p_skeleton->get_bone_name(parent);
-            if (!p_config.virtual_pose.has(parent_bone_name)) {
-                continue;
-            }
-            BonePose& child_pose = p_config.virtual_pose[bone_name];
-            child_pose.position *= child_pose.scale;
-            
-        }
         // 计算骨骼的世界空间姿势
         for(int i=0;i<p_config.root_bone.size();i++) {
             BonePose& pose = p_config.virtual_pose[p_config.root_bone[i]];
@@ -326,19 +305,60 @@ namespace HumanAnim
             pose.set_bone_forward(Vector3(0,0,1));
             for(int j=0;j<pose.child_bones.size();j++) {
                 BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
-                build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
+				child_pose.global_pose = pose.global_pose * Transform3D(Basis(child_pose.rotation), child_pose.position);
+                // 设置骨骼的朝向
+                child_pose.set_bone_forward(child_pose.global_pose.origin - pose.global_pose.origin);
+                build_virtual_pose_global(p_config,child_pose,p_human_bone_label);
+                
+            }
+        }                
+    }
+    void HumanAnimmation::build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose, int bone_index, HashMap<String, String>& p_human_bone_label) {
+        
+        //Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
+        //for(int i=0; i < child_bones.size(); i++)
+        {
+            String bone_name = p_skeleton->get_bone_name(bone_index);
+            BonePose & pose = p_config.virtual_pose[bone_name];
+            Transform3D trans = p_skeleton->get_bone_global_pose(bone_index);
+            float height = 1.0;
+            Vector<int> children = p_skeleton->get_bone_children(bone_index);
+
+            for (int j = 0; j < children.size(); j++) {
+                StringName bone_name = p_skeleton->get_bone_name(children[j]);
+                if(!p_human_bone_label.has(bone_name)) {
+                    return;
+                }
+                pose.child_bones.push_back(bone_name);
+            }
+            pose.child_bones.sort_custom<SortStringName>();
+
+
+            Transform3D local_trans = p_skeleton->get_bone_pose(bone_index);
+            pose.rotation = local_trans.basis.get_rotation_quaternion();
+            float inv_height = 1.0 / height;
+            Vector3 bone_forward = local_trans.origin;
+            height = bone_forward.length();
+            bone_forward /= height;            
+            pose.position = local_trans.origin / height;
+            pose.bone_index = bone_index;
+            for(int j=0;j<pose.child_bones.size();j++) {
+				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
+				child_pose.global_pose = pose.global_pose * Transform3D(Basis(child_pose.rotation), child_pose.position);
+                build_virtual_pose(p_skeleton, p_config, child_pose, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
             }
         }
-
         
     }
-    void HumanAnimmation::build_virtual_pose_global(HumanBoneConfig& p_config,Transform3D& parent_trans, BonePose& pose, HashMap<String, String>& p_human_bone_label) {
-        pose.global_pose = parent_trans * Transform3D(Basis(pose.rotation),pose.position);
+    void HumanAnimmation::build_virtual_pose_global(HumanBoneConfig& p_config, BonePose& pose, HashMap<String, String>& p_human_bone_label) {
+        
         for(int j=0;j<pose.child_bones.size();j++) {
             BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
-            build_virtual_pose_global(p_config,pose.global_pose,child_pose,p_human_bone_label);
-            // 设置骨骼的朝向
-            child_pose.set_bone_forward(child_pose.global_pose.origin - pose.global_pose.origin);
+			child_pose.global_pose = pose.global_pose * Transform3D(Basis(child_pose.rotation), child_pose.position);
+			// 设置骨骼的朝向
+			child_pose.set_bone_forward(child_pose.global_pose.origin - pose.global_pose.origin);
+
+            build_virtual_pose_global(p_config,child_pose,p_human_bone_label);
         }
         
     }
@@ -704,7 +724,7 @@ namespace HumanAnim
                 BonePose& pose = p_config.virtual_pose[it];
                 Transform3D& trans = p_skeleton_config.bone_result[it].real_global_pose;
                 trans = p_skeleton->get_bone_global_pose(pose.bone_index);
-				p_skeleton_config.root_lookat[it] = pose.get_look_at_and_roll(Transform3D(),trans.basis,local_trans);
+				p_skeleton_config.root_lookat[it] = BonePose::get_root_lookat(Basis(pose.rotation),trans.basis,pose.forward,pose.right);
 				p_skeleton_config.root_position[it] = (trans.origin - pose.position);
 				p_skeleton_config.root_global_rotation[it] = trans.basis.get_rotation_quaternion();
 
@@ -732,42 +752,6 @@ namespace HumanAnim
     }
 
 
-    void HumanAnimmation::build_virtual_pose(HumanBoneConfig& p_config,Skeleton3D* p_skeleton,Transform3D parent_trans,  int bone_index,HashMap<String, String>& p_human_bone_label) {
-        
-        //Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
-        //for(int i=0; i < child_bones.size(); i++)
-        {
-            String bone_name = p_skeleton->get_bone_name(bone_index);
-            BonePose & pose = p_config.virtual_pose[bone_name];
-            Transform3D trans = p_skeleton->get_bone_global_pose(bone_index);
-            float height = 1.0;
-            Vector<int> children = p_skeleton->get_bone_children(bone_index);
-
-            for (int j = 0; j < children.size(); j++) {
-                StringName bone_name = p_skeleton->get_bone_name(children[j]);
-                if(!p_human_bone_label.has(bone_name)) {
-                    return;
-                }
-                pose.child_bones.push_back(bone_name);
-            }
-            pose.child_bones.sort_custom<SortStringName>();
-
-            Vector3 bone_forward = trans.origin - parent_trans.origin;
-            height = bone_forward.length();
-
-            Transform3D local_trans = p_skeleton->get_bone_pose(bone_index);
-            pose.position = local_trans.origin;
-            pose.rotation = local_trans.basis.get_rotation_quaternion();
-            float inv_height = 1.0 / height;
-            pose.scale = Vector3(inv_height,inv_height,inv_height);
-            pose.length = height;
-            pose.bone_index = bone_index;
-            for(int j=0;j<pose.child_bones.size();j++) {
-                build_virtual_pose(p_config, p_skeleton, trans, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
-            }
-        }
-        
-    }
     void HumanAnimmation::build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) {
         for(auto& it : parent_pose.child_bones) {
             BonePose& pose = p_config.virtual_pose[it];

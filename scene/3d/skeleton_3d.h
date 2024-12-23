@@ -49,10 +49,8 @@ struct BonePose {
 	int bone_index;
 	Vector3 position;
 	Quaternion rotation;
-	Vector3 scale;
 	Vector3 forward;
 	Vector3 right;
-	float length;
 	Transform3D global_pose;
 	Transform3D local_pose;
 	Vector<StringName> child_bones;
@@ -63,6 +61,7 @@ struct BonePose {
 	void save(Dictionary& aDict);
 	void clear();
 public:
+	static Vector4 get_root_lookat(const Basis& rest_rotation,const Basis& curr_rotation,const Vector3& forward,const Vector3& right);
 	// xyz 是世界位置,,我是自身轴旋转角度
 	Vector4 get_look_at_and_roll(const Transform3D& p_parent_trans, Basis& p_curr_basis, Transform3D& p_curr_global_trans);
 	// 重定向骨骼

@@ -77,7 +77,7 @@ namespace HumanAnim
         */
         // 构建虚拟姿势
         static void build_virtual_pose(Skeleton3D *p_skeleton,HumanBoneConfig& p_config,HashMap<String, String>& p_human_bone_label) ;
-        static void build_virtual_pose_global(HumanBoneConfig& p_config,Transform3D& parent_trans, BonePose& pose, HashMap<String, String>& p_human_bone_label) ;
+        static void build_virtual_pose_global(HumanBoneConfig& p_config, BonePose& pose, HashMap<String, String>& p_human_bone_label) ;
         
         
         static int get_bone_human_index(Skeleton3D* p_skeleton, Dictionary& p_bone_map,const NodePath& path) ;
@@ -105,8 +105,8 @@ namespace HumanAnim
         };
         
 
-        static void build_virtual_pose(HumanBoneConfig& p_config,Skeleton3D* p_skeleton,Transform3D parent_trans,  int bone_index,HashMap<String, String>& p_human_bone_label) ;
-        static void build_skeleton_local_pose(Skeleton3D* p_skeleton,HumanBoneConfig& p_config,BonePose& parent_pose, Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) ;
+        static void build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose, int bone_index, HashMap<String, String>& p_human_bone_label) ;
+        static void build_skeleton_local_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& parent_pose, Transform3D& parent_trans, HumanSkeleton& p_skeleton_config) ;
 
         static void build_skeleton_lookat(Skeleton3D* p_skeleton,HumanBoneConfig& p_config, BonePose& bone_pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config);
         static void retarget(HumanBoneConfig& p_config,BonePose& pose,Transform3D& parent_trans,HumanSkeleton& p_skeleton_config) ;
