@@ -1300,7 +1300,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 
 bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted) {
 	panner->set_force_drag(tool == TOOL_PAN);
-	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
+	bool panner_active = panner->gui_input(p_event, viewport->get_global_rect());
 	if (panner->is_panning() != pan_pressed) {
 		pan_pressed = panner->is_panning();
 		_update_cursor();
@@ -4080,7 +4080,7 @@ void CanvasItemEditor::_update_editor_settings() {
 
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
-	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
+	panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
 void CanvasItemEditor::_project_settings_changed() {
@@ -4178,18 +4178,16 @@ void CanvasItemEditor::_notification(int p_what) {
 			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
-			panner->set_viewport(get_viewport());
 
 			connect("item_lock_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
 			connect("item_group_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorThemeManager::is_generated_theme_outdated() &&
-					!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
-				break;
+			if (EditorThemeManager::is_generated_theme_outdated() ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				_update_editor_settings();
 			}
-			_update_editor_settings();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:

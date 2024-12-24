@@ -44,7 +44,6 @@
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/3d/physics/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
@@ -57,7 +56,6 @@
 #include "scene/resources/bone_map.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/surface_tool.h"
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
 	uint32_t ret;

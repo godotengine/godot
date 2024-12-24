@@ -853,7 +853,7 @@
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/gdscript]
 				[csharp]
-				var a = new Godot.Collections.Array { 1, 2, 3 };
+				Godot.Collections.Array a = [1, 2, 3];
 				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
 				[/csharp]
 				[/codeblocks]
@@ -2365,7 +2365,7 @@
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask" is_bitfield="true">
+		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask" is_bitfield="true">
 			Modifier key mask.
 		</constant>
 		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">

@@ -31,9 +31,7 @@
 #include "animation_blend_tree_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
@@ -43,17 +41,14 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
-#include "scene/resources/style_box_flat.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
@@ -935,14 +930,13 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+	graph->set_warped_panning(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_editor_settings();
-			graph->get_panner()->set_viewport(get_viewport());
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {

@@ -32,7 +32,6 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"

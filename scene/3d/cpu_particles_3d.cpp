@@ -35,7 +35,6 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
-#include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 
 AABB CPUParticles3D::get_aabb() const {
