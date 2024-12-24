@@ -293,3 +293,7 @@ Rect2::operator String() const {
 Rect2::operator Rect2i() const {
 	return Rect2i(position, size);
 }
+
+bool Rect2::operator==(const Rect2i &p_recti) const {
+	return operator==(Rect2(p_recti));
+}

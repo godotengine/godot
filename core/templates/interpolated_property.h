@@ -82,10 +82,6 @@ public:
 		return p_o == curr;
 	}
 
-	bool operator!=(const T &p_o) const {
-		return p_o != curr;
-	}
-
 	InterpolatedProperty &operator=(T p_val) {
 		curr = p_val;
 		_interpolated = p_val;

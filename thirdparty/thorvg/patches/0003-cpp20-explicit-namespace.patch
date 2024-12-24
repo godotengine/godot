@@ -1,0 +1,24 @@
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+index 175739250a..5c2b36d394 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+@@ -218 +218 @@ static bool _appendClipUseNode(SvgLoaderData& loaderData, SvgNode* node, Shape*
+-    return _appendClipShape(loaderData, child, shape, vBox, svgPath, identity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
++    return _appendClipShape(loaderData, child, shape, vBox, svgPath, tvg::identity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
+diff --git a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
+index e012465b70..380e547dcf 100644
+--- a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
++++ b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
+@@ -231 +231 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& tr
+-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
++    bool isTransformation = !tvg::identity((const Matrix*)(&gradTransform));
+@@ -298 +298 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& tr
+-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
++    bool isTransformation = !tvg::identity((const Matrix*)(&gradTransform));
+diff --git a/thirdparty/thorvg/src/renderer/tvgPaint.cpp b/thirdparty/thorvg/src/renderer/tvgPaint.cpp
+index e00c2c1954..873e65527b 100644
+--- a/thirdparty/thorvg/src/renderer/tvgPaint.cpp
++++ b/thirdparty/thorvg/src/renderer/tvgPaint.cpp
+@@ -316 +316 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
+-    if (!transformed || identity(&m)) {
++    if (!transformed || tvg::identity(&m)) {
