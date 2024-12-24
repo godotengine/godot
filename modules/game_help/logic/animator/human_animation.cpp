@@ -274,7 +274,7 @@ namespace HumanAnim
 
             StringName bone_name = p_skeleton->get_bone_name(root_bone);
             BonePose pose;
-            Transform3D trans = p_skeleton->get_bone_global_pose(root_bone);
+            Transform3D trans = p_skeleton->get_bone_global_rest(root_bone);
             float height = 1.0;
             Vector<int> children = p_skeleton->get_bone_children(root_bone);
             for(int j=0;j<children.size();j++) {
@@ -293,7 +293,9 @@ namespace HumanAnim
 
             // 构建所有子骨骼的姿势
             for(int j=0;j<pose.child_bones.size();j++) {
-                build_virtual_pose(p_skeleton, p_config, pose,pose.bone_index, p_human_bone_label);
+				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
+                child_pose.bone_index = p_skeleton->find_bone(pose.child_bones[j]);
+                build_virtual_pose(p_skeleton, p_config, child_pose, pose.child_bones[j],p_human_bone_label);
             }
             p_config.root_bone.push_back(bone_name);
         }
@@ -313,16 +315,14 @@ namespace HumanAnim
             }
         }                
     }
-    void HumanAnimmation::build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose, int bone_index, HashMap<String, String>& p_human_bone_label) {
+    void HumanAnimmation::build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose,  const String& bone_name,HashMap<String, String>& p_human_bone_label) {
         
         //Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
         //for(int i=0; i < child_bones.size(); i++)
         {
-            String bone_name = p_skeleton->get_bone_name(bone_index);
-            BonePose & pose = p_config.virtual_pose[bone_name];
-            Transform3D trans = p_skeleton->get_bone_global_pose(bone_index);
+            Transform3D trans = p_skeleton->get_bone_global_pose(pose.bone_index);
             float height = 1.0;
-            Vector<int> children = p_skeleton->get_bone_children(bone_index);
+            Vector<int> children = p_skeleton->get_bone_children(pose.bone_index);
 
             for (int j = 0; j < children.size(); j++) {
                 StringName bone_name = p_skeleton->get_bone_name(children[j]);
@@ -331,21 +331,19 @@ namespace HumanAnim
                 }
                 pose.child_bones.push_back(bone_name);
             }
-            pose.child_bones.sort_custom<SortStringName>();
 
 
-            Transform3D local_trans = p_skeleton->get_bone_pose(bone_index);
+            Transform3D local_trans = p_skeleton->get_bone_rest(pose.bone_index);
             pose.rotation = local_trans.basis.get_rotation_quaternion();
             float inv_height = 1.0 / height;
             Vector3 bone_forward = local_trans.origin;
             height = bone_forward.length();
             bone_forward /= height;            
             pose.position = local_trans.origin / height;
-            pose.bone_index = bone_index;
             for(int j=0;j<pose.child_bones.size();j++) {
 				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
-				child_pose.global_pose = pose.global_pose * Transform3D(Basis(child_pose.rotation), child_pose.position);
-                build_virtual_pose(p_skeleton, p_config, child_pose, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
+                child_pose.bone_index = p_skeleton->find_bone(pose.child_bones[j]);
+                build_virtual_pose(p_skeleton, p_config, child_pose, pose.child_bones[j], p_human_bone_label);
             }
         }
         

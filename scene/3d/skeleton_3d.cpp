@@ -102,17 +102,35 @@ Vector4 BonePose::get_root_lookat(const Basis& rest_rotation,const Basis& curr_r
 	Basis diff_rotation = rest_rotation.inverse() * curr_rotation;
 	Vector3 new_forward = diff_rotation.xform(forward);
 
-	Vector3 new_right = diff_rotation.xform(right);
 
-	Basis new_basis; 
-	new_basis.rotate_to_align(forward, new_forward);
 
-	Vector3 org_right = new_basis.xform(right);
-	float angle = org_right.signed_angle_to(new_right, new_forward);
+	// 计算沿着自身轴的旋转角度
+	{
+		Basis new_basis; 
+		new_basis.rotate_to_align(forward, new_forward);
+		// 
+		Vector3 org_rest_right = new_basis.xform(right);
+		
+		Vector3 new_right = diff_rotation.xform(right);
+
+
+		Plane plane = Plane(new_forward, 0.0);
+		Vector3 intersect;
+		plane.intersects_ray(new_right - new_forward,-new_forward, intersect);
+
+		
+		if(intersect.x + intersect.y + intersect.z == 0)
+		{
+			lookat.w = 0;
+		}
+		else {
+			float angle = org_rest_right.signed_angle_to(intersect.normalized(), new_forward);
+			lookat.w = angle;
+		}
+	}
 	lookat.x = new_forward.x;
 	lookat.y = new_forward.y;
 	lookat.z = new_forward.z;
-	lookat.w = angle;
 	return lookat;
 
 	
@@ -126,20 +144,35 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 	// 计算出观察方向
 	Vector3 lookat = p_curr_global_trans.xform(forward);
 
-	Vector3 new_forward = lookat - p_curr_global_trans.origin;
-	new_rest.basis.rotate_to_align(rest_forward, new_forward);
-	// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
-	Vector3 org_rest_right = new_rest.basis.xform(right);
+	{
+		Vector3 new_forward = lookat - p_curr_global_trans.origin;
+		new_rest.basis.rotate_to_align(rest_forward, new_forward);
+		// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
+		Vector3 org_rest_right = new_rest.basis.xform(right);
 
-	// 计算原始动画姿势计算后的右方向朝向
-	Vector3 new_rest_right = p_curr_global_trans.basis.xform(right);
-	// 计算自身轴的旋转角度
-	float angle = org_rest_right.signed_angle_to(new_rest_right, new_forward);
+		// 计算原始动画姿势计算后的右方向朝向
+		Vector3 new_right = p_curr_global_trans.basis.xform(right);
+
+
+		Vector3 intersect;
+		plane.intersects_ray(new_right - new_forward,-new_forward, intersect);
+
+
+		// 计算自身轴的旋转角度		
+		if(intersect.x + intersect.y + intersect.z == 0)
+		{
+			lookat.w = 0;
+		}
+		else {
+			float angle = org_rest_right.signed_angle_to(intersect.normalized(), new_forward);
+			lookat.w = angle;
+		}
+		
+	}
 	Vector4 ret;
 	ret.x = lookat.x;
 	ret.y = lookat.y;
 	ret.z = lookat.z;
-	ret.w = angle;
 	return ret;
 }
 // 重定向骨骼

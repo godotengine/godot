@@ -105,7 +105,7 @@ namespace HumanAnim
         };
         
 
-        static void build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose, int bone_index, HashMap<String, String>& p_human_bone_label) ;
+        static void build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& pose, const String& bone_name, HashMap<String, String>& p_human_bone_label) ;
         static void build_skeleton_local_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, BonePose& parent_pose, Transform3D& parent_trans, HumanSkeleton& p_skeleton_config) ;
 
         static void build_skeleton_lookat(Skeleton3D* p_skeleton,HumanBoneConfig& p_config, BonePose& bone_pose,Transform3D& parent_pose,HumanSkeleton& p_skeleton_config);
