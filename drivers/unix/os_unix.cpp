@@ -437,7 +437,7 @@ Dictionary OS_Unix::get_memory_info() const {
 			 ** subtract used memory from total memory != vmstat.free_count: this can be observed from manual testing...
 			 ** correct value matches code from running macOS's open source top(1) utility; vmstat.free_count doesn't...
 			 ** https://github.com/apple-opensource/top/blob/e7979606cf63270663a62cfe69f82d35cef9ba58/globalstats.c#L433
-			 ** printf("incorrect value: %lld\ncorrect value: %lld\n", vmstat.free_count, total_free); // please try it!
+			 ** printf("incorrect value: %lld\ncorrect value: %lld\n", vmstat.free_count * pagesize, total_free); // try
 			 */
 			meminfo["free"] = total_free;
 			if (swap_used.xsu_avail + total_free != 0) {
