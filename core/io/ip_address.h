@@ -79,6 +79,9 @@ public:
 		return false;
 	}
 
+	bool operator==(const String &p_ip) const { return operator==(IPAddress(p_ip)); }
+	bool operator!=(const String &p_ip) const { return operator!=(IPAddress(p_ip)); }
+
 	void clear();
 	bool is_wildcard() const { return wildcard; }
 	bool is_valid() const { return valid; }
