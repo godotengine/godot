@@ -184,7 +184,4 @@ public:
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
 		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
 	}
-	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
-	}
 };
