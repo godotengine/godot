@@ -81,8 +81,6 @@ public:
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
-	bool operator!=(const String &p_name) const;
-	bool operator!=(const char *p_name) const;
 
 	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
 	char32_t operator[](int p_index) const;
@@ -111,9 +109,6 @@ public:
 		// The real magic of all this mess happens here.
 		// This is why path comparisons are very fast.
 		return _data == p_name._data;
-	}
-	_FORCE_INLINE_ bool operator!=(const StringName &p_name) const {
-		return _data != p_name._data;
 	}
 	_FORCE_INLINE_ uint32_t hash() const {
 		if (_data) {
@@ -192,11 +187,6 @@ public:
 // Zero-constructing StringName initializes _data to nullptr (and thus empty).
 template <>
 struct is_zero_constructible<StringName> : std::true_type {};
-
-bool operator==(const String &p_name, const StringName &p_string_name);
-bool operator!=(const String &p_name, const StringName &p_string_name);
-bool operator==(const char *p_name, const StringName &p_string_name);
-bool operator!=(const char *p_name, const StringName &p_string_name);
 
 /*
  * The SNAME macro is used to speed up StringName creation, as it allows caching it after the first usage in a very efficient way.
