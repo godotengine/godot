@@ -126,7 +126,6 @@ struct [[nodiscard]] Vector2i {
 	constexpr bool operator>=(const Vector2i &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	constexpr bool operator==(const Vector2i &p_vec2) const;
-	constexpr bool operator!=(const Vector2i &p_vec2) const;
 
 	int64_t length_squared() const;
 	double length() const;
@@ -213,10 +212,6 @@ constexpr Vector2i Vector2i::operator-() const {
 
 constexpr bool Vector2i::operator==(const Vector2i &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
-}
-
-constexpr bool Vector2i::operator!=(const Vector2i &p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
 }
 
 // Multiplication operators required to workaround issues with LLVM using implicit conversion.
