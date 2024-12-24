@@ -153,12 +153,11 @@ struct [[nodiscard]] Vector2 {
 	constexpr Vector2 operator-() const;
 
 	constexpr bool operator==(const Vector2 &p_vec2) const;
-	constexpr bool operator!=(const Vector2 &p_vec2) const;
-
 	constexpr bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
 	constexpr bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
 	constexpr bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	constexpr bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator==(const Vector2i &p_vector2i) const;
 
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
@@ -247,10 +246,6 @@ constexpr Vector2 Vector2::operator-() const {
 
 constexpr bool Vector2::operator==(const Vector2 &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
-}
-
-constexpr bool Vector2::operator!=(const Vector2 &p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
 }
 
 Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
