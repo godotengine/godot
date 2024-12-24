@@ -209,6 +209,9 @@ struct [[nodiscard]] Rect2 {
 	constexpr bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	constexpr bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
+	bool operator==(const Rect2i &p_rect2i) const;
+	bool operator!=(const Rect2i &p_rect2i) const;
+
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;
 		g.grow_by(p_amount);

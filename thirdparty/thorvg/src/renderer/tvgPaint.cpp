@@ -310,7 +310,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
     const auto& m = this->transform(origin);
 
     //Case: No transformed, quick return!
-    if (!transformed || identity(&m)) {
+    if (!transformed || tvg::identity(&m)) {
         PAINT_METHOD(ret, bounds(x, y, w, h, stroking));
         return ret;
     }
