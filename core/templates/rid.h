@@ -40,9 +40,7 @@ class RID {
 	uint64_t _id = 0;
 
 public:
-	_ALWAYS_INLINE_ bool operator==(const RID &p_rid) const {
-		return _id == p_rid._id;
-	}
+	bool operator==(const RID &p_rid) const = default;
 	_ALWAYS_INLINE_ bool operator<(const RID &p_rid) const {
 		return _id < p_rid._id;
 	}

@@ -98,9 +98,8 @@ public:
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 		return reference < p_r.reference;
 	}
-	_FORCE_INLINE_ bool operator==(const Ref<T> &p_r) const {
-		return reference == p_r.reference;
-	}
+	bool operator==(const Ref<T> &p_r) const = default;
+
 	template <typename T_Other>
 	_FORCE_INLINE_ bool operator==(const Ref<T_Other> &p_r) const {
 		return reference == p_r.ptr();

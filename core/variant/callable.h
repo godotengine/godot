@@ -182,7 +182,7 @@ public:
 	ObjectID get_object_id() const;
 	StringName get_name() const;
 
-	bool operator==(const Signal &p_signal) const;
+	bool operator==(const Signal &p_signal) const = default;
 	bool operator<(const Signal &p_signal) const;
 
 	operator String() const;
