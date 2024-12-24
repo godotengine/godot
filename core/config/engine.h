@@ -108,6 +108,7 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 	bool extension_reloading = false;
+	bool embedded_in_editor = false;
 
 	bool _print_header = true;
 
@@ -227,6 +228,8 @@ public:
 	void remove_globale_ticker(GlolaleTicker *p_ticker);
 
 	void set_freeze_time_scale(bool p_frozen);
+	void set_embedded_in_editor(bool p_enabled);
+	bool is_embedded_in_editor() const;
 
 	Engine();
 	virtual ~Engine();

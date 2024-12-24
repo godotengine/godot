@@ -259,6 +259,14 @@ uint32_t GodotNavigationServer2D::map_get_iteration_id(RID p_map) const {
 	return NavigationServer3D::get_singleton()->map_get_iteration_id(p_map);
 }
 
+void GodotNavigationServer2D::map_set_use_async_iterations(RID p_map, bool p_enabled) {
+	return NavigationServer3D::get_singleton()->map_set_use_async_iterations(p_map, p_enabled);
+}
+
+bool GodotNavigationServer2D::map_get_use_async_iterations(RID p_map) const {
+	return NavigationServer3D::get_singleton()->map_get_use_async_iterations(p_map);
+}
+
 void FORWARD_2(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
