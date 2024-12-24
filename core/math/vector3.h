@@ -211,6 +211,13 @@ struct [[nodiscard]] Vector3 {
 	constexpr bool operator>(const Vector3 &p_v) const;
 	constexpr bool operator>=(const Vector3 &p_v) const;
 
+	bool operator==(const Vector3i &p_vector3i) const;
+	bool operator!=(const Vector3i &p_vector3i) const;
+	bool operator<(const Vector3i &p_vector3i) const;
+	bool operator>(const Vector3i &p_vector3i) const;
+	bool operator<=(const Vector3i &p_vector3i) const;
+	bool operator>=(const Vector3i &p_vector3i) const;
+
 	explicit operator String() const;
 	operator Vector3i() const;
 

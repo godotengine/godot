@@ -1,0 +1,54 @@
+diff --git a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+index 668f7aa051..299efa7143 100644
+--- a/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
++++ b/thirdparty/thorvg/src/loaders/svg/tvgSvgSceneBuilder.cpp
+@@ -215,7 +215,7 @@ static bool _appendClipUseNode(SvgLoaderData& loaderData, SvgNode* node, Shape*
+     }
+     if (child->transform) finalTransform *= *child->transform;
+ 
+-    return _appendClipShape(loaderData, child, shape, vBox, svgPath, identity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
++    return _appendClipShape(loaderData, child, shape, vBox, svgPath, tvg::identity((const Matrix*)(&finalTransform)) ? nullptr : &finalTransform);
+ }
+ 
+ 
+ thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
+index 25d76aa710..c332406b35 100644
+--- a/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
++++ b/thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
+@@ -221,7 +221,7 @@ bool _prepareLinear(SwFill* fill, const LinearGradient* linear, const Matrix& tr
+     fill->linear.offset = -fill->linear.dx * x1 - fill->linear.dy * y1;
+ 
+     auto gradTransform = linear->transform();
+-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
++    bool isTransformation = !tvg::identity((const Matrix*)(&gradTransform));
+ 
+     if (isTransformation) {
+         gradTransform = transform * gradTransform;
+@@ -290,7 +290,7 @@ bool _prepareRadial(SwFill* fill, const RadialGradient* radial, const Matrix& tr
+     if (fill->radial.a > 0) fill->radial.invA = 1.0f / fill->radial.a;
+ 
+     auto gradTransform = radial->transform();
+-    bool isTransformation = !identity((const Matrix*)(&gradTransform));
++    bool isTransformation = !tvg::identity((const Matrix*)(&gradTransform));
+ 
+     if (isTransformation) gradTransform = transform * gradTransform;
+     else {
+ thirdparty/thorvg/src/renderer/tvgPaint.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/thirdparty/thorvg/src/renderer/tvgPaint.cpp b/thirdparty/thorvg/src/renderer/tvgPaint.cpp
+index ba7ea606b8..e62b0b2c6d 100644
+--- a/thirdparty/thorvg/src/renderer/tvgPaint.cpp
++++ b/thirdparty/thorvg/src/renderer/tvgPaint.cpp
+@@ -310,7 +310,7 @@ bool Paint::Impl::bounds(float* x, float* y, float* w, float* h, bool transforme
+     const auto& m = this->transform(origin);
+ 
+     //Case: No transformed, quick return!
+-    if (!transformed || identity(&m)) {
++    if (!transformed || tvg::identity(&m)) {
+         PAINT_METHOD(ret, bounds(x, y, w, h, stroking));
+         return ret;
+     }
