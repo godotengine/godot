@@ -440,7 +440,7 @@ Dictionary OS_Unix::get_memory_info() const {
 			** printf("incorrect value: %lld\ncorrect value: %lld\n", vmstat.free_count, total_free); // please try it!
    			*/
 			meminfo["free"] = total_free;
-			if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
+			if (swap_used.xsu_avail + total_free != 0) {
 				meminfo["available"] = swap_used.xsu_avail + total_free;
 			}
 		}
