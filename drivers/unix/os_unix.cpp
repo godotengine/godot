@@ -428,17 +428,17 @@ Dictionary OS_Unix::get_memory_info() const {
 
 	// used memory: https://github.com/apple-opensource/top/blob/e7979606cf63270663a62cfe69f82d35cef9ba58/globalstats.c#L433
 	int64_t total_used_count = vmstat.wire_count + vmstat.inactive_count + vmstat.active_count + vmstat.compressor_page_count;
-    	int64_t total_used = total_used_count * (int64_t)pagesize;
+	int64_t total_used = total_used_count * (int64_t)pagesize;
 	if (phy_mem != 0) {
 		meminfo["physical"] = phy_mem;
 		int64_t total_free = phy_mem - total_used;
 		if (total_free != 0) {
-			/* 
-                        ** subtract used memory from total memory != vmstat.free_count: this can be observed from manual testing...
-			** correct value matches code from running macOS's open source top(1) utility; vmstat.free_count doesn't...
-			** https://github.com/apple-opensource/top/blob/e7979606cf63270663a62cfe69f82d35cef9ba58/globalstats.c#L433
-			** printf("incorrect value: %lld\ncorrect value: %lld\n", vmstat.free_count, total_free); // please try it!
-   			*/
+			/*
+			 ** subtract used memory from total memory != vmstat.free_count: this can be observed from manual testing...
+			 ** correct value matches code from running macOS's open source top(1) utility; vmstat.free_count doesn't...
+			 ** https://github.com/apple-opensource/top/blob/e7979606cf63270663a62cfe69f82d35cef9ba58/globalstats.c#L433
+			 ** printf("incorrect value: %lld\ncorrect value: %lld\n", vmstat.free_count, total_free); // please try it!
+			 */
 			meminfo["free"] = total_free;
 			if (swap_used.xsu_avail + total_free != 0) {
 				meminfo["available"] = swap_used.xsu_avail + total_free;
