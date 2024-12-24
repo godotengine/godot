@@ -1039,7 +1039,8 @@ class Godot(private val context: Context) {
 	}
 
 	fun requestPermission(name: String?): Boolean {
-		return requestPermission(name, getActivity())
+		val activity = getActivity() ?: return false
+		return requestPermission(name, activity)
 	}
 
 	fun requestPermissions(): Boolean {
