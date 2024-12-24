@@ -2934,38 +2934,22 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 
 	Dictionary subresources = p_options["_subresources"];
 
-	Dictionary node_data;
-	if (subresources.has("nodes")) {
-		node_data = subresources["nodes"];
-	}
-
-	Dictionary material_data;
-	if (subresources.has("materials")) {
-		material_data = subresources["materials"];
-	}
-
-	Dictionary animation_data;
-	if (subresources.has("animations")) {
-		animation_data = subresources["animations"];
-	}
-
-	Dictionary mesh_data;
-	if (subresources.has("meshes")) {
-		mesh_data = subresources["meshes"];
-	}
-
 	Error err = OK;
 
 	// Check whether any of the meshes or animations have nonexistent save paths
 	// and if they do, fail the import immediately.
-	err = _check_resource_save_paths(mesh_data);
-	if (err != OK) {
-		return err;
+	if (subresources.has("meshes")) {
+		err = _check_resource_save_paths(subresources["meshes"]);
+		if (err != OK) {
+			return err;
+		}
 	}
 
-	err = _check_resource_save_paths(animation_data);
-	if (err != OK) {
-		return err;
+	if (subresources.has("animations")) {
+		err = _check_resource_save_paths(subresources["animations"]);
+		if (err != OK) {
+			return err;
+		}
 	}
 
 	List<String> missing_deps; // for now, not much will be done with this
@@ -3003,6 +2987,27 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->pre_process(scene, p_options);
+	}
+
+	// data in _subresources may be modified by pre_process(), so wait until now to check.
+	Dictionary node_data;
+	if (subresources.has("nodes")) {
+		node_data = subresources["nodes"];
+	}
+
+	Dictionary material_data;
+	if (subresources.has("materials")) {
+		material_data = subresources["materials"];
+	}
+
+	Dictionary animation_data;
+	if (subresources.has("animations")) {
+		animation_data = subresources["animations"];
+	}
+
+	Dictionary mesh_data;
+	if (subresources.has("meshes")) {
+		mesh_data = subresources["meshes"];
 	}
 
 	float fps = 30;
