@@ -313,7 +313,6 @@ public:
 	/* Compatibility Operators */
 
 	bool operator==(const String &p_str) const;
-	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
 	String operator+(const char *p_char) const;
 	String operator+(const wchar_t *p_char) const;
@@ -330,10 +329,6 @@ public:
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const Span<char32_t> &p_str_range) const;
-
-	bool operator!=(const char *p_str) const;
-	bool operator!=(const wchar_t *p_str) const;
-	bool operator!=(const char32_t *p_str) const;
 
 	bool operator<(const char32_t *p_str) const;
 	bool operator<(const char *p_str) const;
@@ -649,11 +644,6 @@ public:
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
 struct is_zero_constructible<String> : std::true_type {};
-
-bool operator==(const char *p_chr, const String &p_str);
-bool operator==(const wchar_t *p_chr, const String &p_str);
-bool operator!=(const char *p_chr, const String &p_str);
-bool operator!=(const wchar_t *p_chr, const String &p_str);
 
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);

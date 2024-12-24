@@ -54,11 +54,6 @@ bool operator==(const Pair<F, S> &pair, const Pair<F, S> &other) {
 }
 
 template <typename F, typename S>
-bool operator!=(const Pair<F, S> &pair, const Pair<F, S> &other) {
-	return (pair.first != other.first) || (pair.second != other.second);
-}
-
-template <typename F, typename S>
 struct PairSort {
 	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
 		if (A.first != B.first) {
@@ -100,11 +95,6 @@ struct KeyValue {
 template <typename K, typename V>
 bool operator==(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
 	return (pair.key == other.key) && (pair.value == other.value);
-}
-
-template <typename K, typename V>
-bool operator!=(const KeyValue<K, V> &pair, const KeyValue<K, V> &other) {
-	return (pair.key != other.key) || (pair.value != other.value);
 }
 
 template <typename K, typename V>
