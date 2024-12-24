@@ -116,7 +116,7 @@ Vector4 BonePose::get_root_lookat(const Basis& rest_rotation,const Basis& curr_r
 
 		Plane plane = Plane(new_forward, 0.0);
 		Vector3 intersect;
-		plane.intersects_ray(new_right - new_forward,-new_forward, intersect);
+		plane.intersects_ray(new_right - new_forward,-new_forward, &intersect);
 
 		
 		if(intersect.x + intersect.y + intersect.z == 0)
@@ -144,6 +144,7 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 	// 计算出观察方向
 	Vector3 lookat = p_curr_global_trans.xform(forward);
 
+	Vector4 ret;
 	{
 		Vector3 new_forward = lookat - p_curr_global_trans.origin;
 		new_rest.basis.rotate_to_align(rest_forward, new_forward);
@@ -154,22 +155,22 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 		Vector3 new_right = p_curr_global_trans.basis.xform(right);
 
 
+		Plane plane = Plane(new_forward, 0.0);
 		Vector3 intersect;
-		plane.intersects_ray(new_right - new_forward,-new_forward, intersect);
+		plane.intersects_ray(new_right - new_forward,-new_forward, &intersect);
 
 
 		// 计算自身轴的旋转角度		
 		if(intersect.x + intersect.y + intersect.z == 0)
 		{
-			lookat.w = 0;
+			ret.w = 0;
 		}
 		else {
 			float angle = org_rest_right.signed_angle_to(intersect.normalized(), new_forward);
-			lookat.w = angle;
+			ret.w = angle;
 		}
 		
 	}
-	Vector4 ret;
 	ret.x = lookat.x;
 	ret.y = lookat.y;
 	ret.z = lookat.z;
