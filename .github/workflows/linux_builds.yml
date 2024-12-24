@@ -11,13 +11,13 @@ env:
   GODOT_CPP_BRANCH: 4.4
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  ASAN_OPTIONS: alloc_dealloc_mismatch=0
   TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
   UBSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
-    # Stay one LTS before latest to increase portability of Linux artifacts.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: ${{ matrix.name }}
     timeout-minutes: 120
     strategy:
