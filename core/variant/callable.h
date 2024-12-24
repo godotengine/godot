@@ -182,8 +182,7 @@ public:
 	ObjectID get_object_id() const;
 	StringName get_name() const;
 
-	bool operator==(const Signal &p_signal) const = default;
-	bool operator<(const Signal &p_signal) const;
+	std::strong_ordering operator<=>(const Signal &p_signal) const = default;
 
 	operator String() const;
 
