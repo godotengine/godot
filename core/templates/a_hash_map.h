@@ -446,7 +446,6 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return pair == b.pair; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return pair != b.pair; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return pair != end;
@@ -495,7 +494,6 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return pair == b.pair; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return pair != b.pair; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return pair != end;
