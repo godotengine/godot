@@ -1044,6 +1044,7 @@ Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
 - `0002-use-heap-alloc.patch` (GH-109530)
+- `0003-cpp20-explicit-namespace.patch` (GH-100749)
 
 
 ## tinyexr
