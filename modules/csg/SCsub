@@ -38,6 +38,8 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 env_csg.Prepend(CPPPATH=[thirdparty_dir + "include"])
 env_thirdparty = env_csg.Clone()
 env_thirdparty.disable_warnings()
+if env.msvc:  # FIXME: Temporary workaround. Remove after bumping to manifold v3.5.3 and beyond.
+    env_thirdparty.Append(CPPDEFINES=["_SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING"])
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj
 
