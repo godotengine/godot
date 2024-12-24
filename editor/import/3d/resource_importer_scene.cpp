@@ -91,8 +91,20 @@ Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_f
 	ERR_FAIL_V(nullptr);
 }
 
+void EditorSceneFormatImporter::add_import_option(const String &p_name, const Variant &p_default_value) {
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option() can only be called from get_import_options().");
+	add_import_option_advanced(p_default_value.get_type(), p_name, p_default_value);
+}
+
+void EditorSceneFormatImporter::add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint, const String &p_hint_string, int p_usage_flags) {
+	ERR_FAIL_NULL_MSG(current_option_list, "add_import_option_advanced() can only be called from get_import_options().");
+	current_option_list->push_back(ResourceImporter::ImportOption(PropertyInfo(p_type, p_name, p_hint, p_hint_string, p_usage_flags), p_default_value));
+}
+
 void EditorSceneFormatImporter::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
+	current_option_list = r_options;
 	GDVIRTUAL_CALL(_get_import_options, p_path);
+	current_option_list = nullptr;
 }
 
 Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options) {
@@ -103,6 +115,9 @@ Variant EditorSceneFormatImporter::get_option_visibility(const String &p_path, c
 }
 
 void EditorSceneFormatImporter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_import_option", "name", "value"), &EditorSceneFormatImporter::add_import_option);
+	ClassDB::bind_method(D_METHOD("add_import_option_advanced", "type", "name", "default_value", "hint", "hint_string", "usage_flags"), &EditorSceneFormatImporter::add_import_option_advanced, DEFVAL(PROPERTY_HINT_NONE), DEFVAL(""), DEFVAL(PROPERTY_USAGE_DEFAULT));
+
 	GDVIRTUAL_BIND(_get_import_flags);
 	GDVIRTUAL_BIND(_get_extensions);
 	GDVIRTUAL_BIND(_import_scene, "path", "flags", "options");
