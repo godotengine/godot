@@ -1260,11 +1260,15 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				}
 			}
 
-			if (fi->uid == ResourceUID::INVALID_ID && ResourceLoader::exists(path) && !ResourceLoader::has_custom_uid_support(path) && !FileAccess::exists(path + ".uid")) {
-				// Create a UID.
+			if (ResourceLoader::exists(path) && !ResourceLoader::has_custom_uid_support(path) && !FileAccess::exists(path + ".uid")) {
+				// Create a UID file and new UID, if it's invalid.
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
-					fi->uid = ResourceUID::get_singleton()->create_id();
+					if (fi->uid == ResourceUID::INVALID_ID) {
+						fi->uid = ResourceUID::get_singleton()->create_id();
+					} else {
+						WARN_PRINT(vformat("Missing .uid file for path \"%s\". The file was re-created from cache.", path));
+					}
 					f->store_line(ResourceUID::get_singleton()->id_to_text(fi->uid));
 				}
 			}
