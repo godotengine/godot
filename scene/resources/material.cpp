@@ -740,13 +740,65 @@ void BaseMaterial3D::_update_shader() {
 			break; // Internal value, skip.
 	}
 
-	// if (flags[FLAG_USE_TEXTURE_REPEAT]) {
-	// 	texfilter_str += ", repeat_enable";
-	// 	texfilter_height_str += ", repeat_enable";
-	// } else {
-	// 	texfilter_str += ", repeat_disable";
-	// 	texfilter_height_str += ", repeat_disable";
-	// }
+	switch (u_repeat_mode) {
+		case REPEAT_MODE_REPEAT:
+			texfilter_str += ", u_repeat_repeat";
+			texfilter_height_str += ", u_repeat_repeat";
+		case REPEAT_MODE_MIRRORED_REPEAT:
+			texfilter_str += ", u_repeat_mirrored_repeat";
+			texfilter_height_str += ", u_repeat_mirrored_repeat";
+		case REPEAT_MODE_CLAMP_TO_EDGE:
+			texfilter_str += ", u_repeat_clamp_to_edge";
+			texfilter_height_str += ", u_repeat_clamp_to_edge";
+		case REPEAT_MODE_CLAMP_TO_BORDER:
+			texfilter_str += ", u_repeat_clamp_to_border";
+			texfilter_height_str += ", u_repeat_clamp_to_border";
+		case REPEAT_MODE_MIRROR_CLAMP_TO_EDGE:
+			texfilter_str += ", u_repeat_mirror_clamp_to_edge";
+			texfilter_height_str += ", u_repeat_mirror_clamp_to_edge";
+		case REPEAT_MODE_MAX:
+			break; // Internal value, skip.
+	}
+
+	switch (v_repeat_mode) {
+		case REPEAT_MODE_REPEAT:
+			texfilter_str += ", v_repeat_repeat";
+		texfilter_height_str += ", v_repeat_repeat";
+		case REPEAT_MODE_MIRRORED_REPEAT:
+			texfilter_str += ", v_repeat_mirrored_repeat";
+		texfilter_height_str += ", v_repeat_mirrored_repeat";
+		case REPEAT_MODE_CLAMP_TO_EDGE:
+			texfilter_str += ", v_repeat_clamp_to_edge";
+		texfilter_height_str += ", v_repeat_clamp_to_edge";
+		case REPEAT_MODE_CLAMP_TO_BORDER:
+			texfilter_str += ", v_repeat_clamp_to_border";
+		texfilter_height_str += ", v_repeat_clamp_to_border";
+		case REPEAT_MODE_MIRROR_CLAMP_TO_EDGE:
+			texfilter_str += ", v_repeat_mirror_clamp_to_edge";
+		texfilter_height_str += ", v_repeat_mirror_clamp_to_edge";
+		case REPEAT_MODE_MAX:
+			break; // Internal value, skip.
+	}
+
+	switch (w_repeat_mode) {
+		case REPEAT_MODE_REPEAT:
+			texfilter_str += ", w_repeat_repeat";
+		texfilter_height_str += ", w_repeat_repeat";
+		case REPEAT_MODE_MIRRORED_REPEAT:
+			texfilter_str += ", w_repeat_mirrored_repeat";
+		texfilter_height_str += ", w_repeat_mirrored_repeat";
+		case REPEAT_MODE_CLAMP_TO_EDGE:
+			texfilter_str += ", w_repeat_clamp_to_edge";
+		texfilter_height_str += ", w_repeat_clamp_to_edge";
+		case REPEAT_MODE_CLAMP_TO_BORDER:
+			texfilter_str += ", w_repeat_clamp_to_border";
+		texfilter_height_str += ", w_repeat_clamp_to_border";
+		case REPEAT_MODE_MIRROR_CLAMP_TO_EDGE:
+			texfilter_str += ", w_repeat_mirror_clamp_to_edge";
+		texfilter_height_str += ", w_repeat_mirror_clamp_to_edge";
+		case REPEAT_MODE_MAX:
+			break; // Internal value, skip.
+	}
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = vformat(
