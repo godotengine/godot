@@ -471,7 +471,6 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return E != nullptr;
@@ -507,7 +506,6 @@ public:
 		}
 
 		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return E != nullptr;
