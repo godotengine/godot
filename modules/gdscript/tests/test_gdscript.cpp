@@ -152,10 +152,7 @@ static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<
 	print_line(current.get_name()); // Should be EOF
 }
 
-static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
-	GDScriptParser parser;
-	Error err = parser.parse(p_code, p_script_path, false);
-
+static void print_test_parser_result(GDScriptParser parser, Error err) {
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
@@ -177,6 +174,18 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	GDScriptParser::TreePrinter printer;
 	printer.print_tree(parser);
 #endif
+}
+
+static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
+	GDScriptParser parser;
+	Error err = parser.parse(p_code, p_script_path, false);
+	print_test_parser_result(parser, err);
+}
+
+static void test_parser(const Vector<uint8_t> &p_buffer, const String &p_script_path) {
+	GDScriptParser parser;
+	Error err = parser.parse_binary(p_buffer, p_script_path);
+	print_test_parser_result(parser, err);
 }
 
 static void disassemble_function(const GDScriptFunction *p_func, const Vector<String> &p_lines) {
@@ -305,9 +314,8 @@ void test(TestType p_type) {
 
 	Vector<uint8_t> buf;
 	uint64_t flen = fa->get_length();
-	buf.resize(flen + 1);
+	buf.resize(flen);
 	fa->get_buffer(buf.ptrw(), flen);
-	buf.write[flen] = 0;
 
 	String code;
 	code.parse_utf8((const char *)&buf[0]);
@@ -333,7 +341,11 @@ void test(TestType p_type) {
 			}
 			break;
 		case TEST_PARSER:
-			test_parser(code, test, lines);
+			if (test.ends_with(".gdc")) {
+				test_parser(buf, test);
+			} else {
+				test_parser(code, test, lines);
+			}
 			break;
 		case TEST_COMPILER:
 			test_compiler(code, test, lines);

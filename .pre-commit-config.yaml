@@ -183,6 +183,7 @@ repos:
             .*\.svg$|
             .*\.patch$|
             .*\.out$|
+            modules/gdscript/tests/scripts/parser/features/lambda_at_eof_without_newline\.bin\.gd$|
             modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines\.gd$|
             modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.norun\.gd$|
             modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.norun\.gd$|
