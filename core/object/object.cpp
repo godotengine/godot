@@ -1247,8 +1247,9 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 
 	add_user_signal(mi);
 
-	if (signal_map.has(p_name)) {
-		signal_map.getptr(p_name)->removable = true;
+	SignalData *data = signal_map.getptr(p_name);
+	if (data) {
+		data->removable = true;
 	}
 }
 
@@ -1319,8 +1320,8 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	//find maybe usersignals?
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
-		if (!E.value.user.name.is_empty()) {
-			//user signal
+		if (E.value.removable) {
+			// User signal.
 			p_signals->push_back(E.value.user);
 		}
 	}
@@ -1509,8 +1510,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
-		//not user signal, delete
+	if (s->slot_map.is_empty() && !s->removable) {
+		// Not user signal, delete.
 		signal_map.erase(p_signal);
 	}
 
