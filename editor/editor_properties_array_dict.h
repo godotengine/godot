@@ -33,10 +33,9 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
-#include "editor/filesystem_dock.h"
-#include "scene/gui/check_button.h"
 
 class Button;
+class CheckButton;
 class EditorSpinSlider;
 class MarginContainer;
 

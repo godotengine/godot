@@ -136,25 +136,6 @@ public:
 };
 
 class Skeleton3D;
-class SkeletonModifier3D;
-class HumanSkeletonConfig : public Resource
-{
-    GDCLASS(HumanSkeletonConfig, Resource);
-    static void _bind_methods()
-    {
-		ClassDB::bind_method(D_METHOD("set_human", "human"), &HumanSkeletonConfig::set_human);
-		ClassDB::bind_method(D_METHOD("get_human"), &HumanSkeletonConfig::get_human);
-
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "human",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), "set_human", "get_human");
-    }
-
-public:
-
-    void set_human(const Dictionary& p_human) ;
-    Dictionary get_human() ;
-	~HumanSkeletonConfig() ;    
-    human_anim::human::Human* human = nullptr;
-};
 
 class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)

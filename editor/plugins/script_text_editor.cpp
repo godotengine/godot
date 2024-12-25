@@ -929,6 +929,9 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 }
 
 void ScriptTextEditor::_on_caret_moved() {
+	if (code_editor->is_previewing_navigation_change()) {
+		return;
+	}
 	int current_line = code_editor->get_text_editor()->get_caret_line();
 	if (ABS(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
@@ -968,7 +971,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
-		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name)) {
+		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name) && !EditorHelp::get_doc_data()->class_list[result.class_name].is_script_doc) {
 			switch (result.type) {
 				case ScriptLanguage::LOOKUP_RESULT_CLASS: {
 					emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
@@ -1617,7 +1620,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			quick_open->set_title(TTR("Go to Function"));
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(tx);
+			goto_line_popup->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
 			code_editor->toggle_bookmark();
@@ -2372,8 +2375,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
 	add_child(quick_open);
 
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
 
 	add_child(connection_info_dialog);
 
@@ -2481,6 +2484,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
 	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);

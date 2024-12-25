@@ -32,13 +32,10 @@
 
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-
-#ifdef TOOLS_ENABLED
-#include "core/config/engine.h"
-#endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
