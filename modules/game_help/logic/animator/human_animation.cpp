@@ -274,7 +274,7 @@ namespace HumanAnim
 
             StringName bone_name = p_skeleton->get_bone_name(root_bone);
             BonePose pose;
-            Transform3D trans = p_skeleton->get_bone_global_rest(root_bone);
+            Transform3D trans = p_skeleton->get_bone_global_pose(root_bone);
             float height = 1.0;
             Vector<int> children = p_skeleton->get_bone_children(root_bone);
             for(int j=0;j<children.size();j++) {
@@ -333,13 +333,38 @@ namespace HumanAnim
             }
 
 
-            Transform3D local_trans = p_skeleton->get_bone_rest(pose.bone_index);
+            Transform3D local_trans = p_skeleton->get_bone_pose(pose.bone_index);
             pose.rotation = local_trans.basis.get_rotation_quaternion();
             float inv_height = 1.0 / height;
             Vector3 bone_forward = local_trans.origin;
             height = bone_forward.length();
-            bone_forward /= height;            
-            pose.position = local_trans.origin / height;
+
+			if (height == 0) {
+
+				if (pose.child_bones.size() >= 1) {
+					height = 1;
+					Transform3D child_local_trans = p_skeleton->get_bone_global_pose(p_skeleton->find_bone(pose.child_bones[0]));
+                    bone_forward = p_skeleton->get_bone_global_pose(pose.bone_index).basis.inverse().xform(child_local_trans.origin);
+                    int parent = p_skeleton->get_bone_parent(pose.bone_index);
+                    if (parent != -1) {
+                        bone_forward = p_skeleton->get_bone_global_pose(parent).basis.inverse().xform(bone_forward);
+                    }
+					height = bone_forward.length();
+					pose.position = child_local_trans.origin / height;
+
+				}
+				else {
+					bone_forward = Vector3(0,1,0);
+					height = bone_forward.length();
+					pose.position = bone_forward / height;
+
+				}
+
+			}
+			else {
+				bone_forward /= height;
+				pose.position = local_trans.origin / height;
+			}
             for(int j=0;j<pose.child_bones.size();j++) {
 				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
                 child_pose.bone_index = p_skeleton->find_bone(pose.child_bones[j]);

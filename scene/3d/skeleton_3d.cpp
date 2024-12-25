@@ -38,6 +38,10 @@
 #include "./human_anim/human.h"
 
 void BonePose::set_bone_forward(const Vector3& p_forward) {
+	if (p_forward.dot(p_forward) == 0) {
+
+		ERR_FAIL_COND_MSG(!p_forward.is_normalized(), "The axis Vector3 " + p_forward.operator String() + " must be not zero.");
+	}
 	forward = p_forward.normalized();
 	right = forward;
 	local_pose = Transform3D(Basis(rotation), position);
@@ -135,17 +139,16 @@ Vector4 BonePose::get_root_lookat(const Basis& rest_rotation,const Basis& curr_r
 }
 // xyz 是世界位置,,我是自身轴旋转角度
 Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis& p_curr_basis, Transform3D& p_curr_global_trans) {
-	Transform3D new_rest = p_parent_trans * Transform3D(Basis(rotation), position);
 
-	Vector3 rest_forward = new_rest.basis.xform(forward);
 	p_curr_global_trans = p_parent_trans * Transform3D(p_curr_basis, position);
 	// 计算出观察方向
 	Vector3 lookat = p_curr_global_trans.xform(forward);
 
 	Vector4 ret;
 	{
-		Vector3 new_forward = lookat - p_curr_global_trans.origin;
-		new_rest.basis.rotate_to_align(rest_forward, new_forward);
+		Transform3D new_rest = p_parent_trans * Transform3D(Basis(rotation), position);
+		Vector3 rest_forward = new_rest.basis.xform(forward);
+
 		// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
 		Vector3 org_rest_right = new_rest.basis.xform(right);
 
@@ -153,9 +156,9 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 		Vector3 new_right = p_curr_global_trans.basis.xform(right);
 
 
-		Plane plane = Plane(new_forward, 0.0);
+		Plane plane = Plane(lookat - p_curr_global_trans.origin, 0.0);
 		Vector3 intersect;
-		plane.intersects_ray(new_right - new_forward,-new_forward, &intersect);
+		plane.intersects_ray(new_right - plane.normal,-plane.normal, &intersect);
 
 
 		// 计算自身轴的旋转角度		
@@ -164,7 +167,7 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 			ret.w = 0;
 		}
 		else {
-			float angle = org_rest_right.signed_angle_to(intersect.normalized(), new_forward);
+			float angle = org_rest_right.signed_angle_to(intersect.normalized(), org_rest_right);
 			ret.w = angle;
 		}
 		
@@ -185,8 +188,9 @@ void BonePose::retarget(const Transform3D& parent_trans, const Vector4& lookat, 
 		return;
 	}
 	Vector3 rest_forward = out_global_trans.basis.xform(forward);
+	Vector3 new_forward = Vector3(lookat.x, lookat.y, lookat.z) - out_global_trans.origin;
 	// 朝向观察点
-	out_global_trans.basis.rotate_to_align(rest_forward, Vector3(lookat.x, lookat.y, lookat.z) - out_global_trans.origin);
+	out_global_trans.basis.rotate_to_align(rest_forward, new_forward);
 	// if (lookat.w != 0) {
 	// 	// 计算自身轴旋转
 	// 	Vector3 new_forward = out_global_trans.basis.xform(forward);
@@ -197,27 +201,6 @@ void BonePose::retarget(const Transform3D& parent_trans, const Vector4& lookat, 
 }
 /**********************************************************************************************************************/
 
-void HumanSkeletonConfig::set_human(const Dictionary& p_human) {
-	if(human == nullptr) {
-		human = memnew(human_anim::human::Human);
-	}
-	human->load(p_human);
-}
-Dictionary HumanSkeletonConfig::get_human() {
-	Dictionary human_dict;
-	if(human != nullptr) {
-		human->save(human_dict);		
-	}
-	return human_dict;
-}
-
-HumanSkeletonConfig::~HumanSkeletonConfig() {
-	if(human != nullptr) {
-		memdelete(human);
-		human = nullptr;
-	}
-	
-}
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
@@ -2514,18 +2497,31 @@ static void auto_mapping_process(Skeleton3D *skeleton, Dictionary &p_bone_map) {
 				left_bone_name = p_bone_map[left_bones[i]];
 				left_bone_idx = skeleton->find_bone(left_bone_name);
 			}
+			Vector3 right_bone;
+			Vector3 left_bone;
 			if(right_bones_idx != -1) {
-				Vector3 right_bone = skeleton->get_bone_global_pose(right_bones_idx).origin - center;
+				right_bone = skeleton->get_bone_global_pose(right_bones_idx).origin - center;
 				if(right_bone.x > 0) {
 					if(left_bone_idx != -1) {
-						p_bone_map[right_bones[i]] = left_bone_name;
 					}
 				}		
 			}
 			if(left_bone_idx != -1) {
-				Vector3 left_bone = skeleton->get_bone_global_pose(left_bone_idx).origin - center;
-				if(left_bone.x < 0) {
+				left_bone = skeleton->get_bone_global_pose(left_bone_idx).origin - center;
+			}
+			if (left_bone.x < 0 || right_bone.x > 0) {
+				if (left_bone_idx != -1) {
+					p_bone_map[right_bones[i]] = left_bone_name;
+				}
+				else {
+					p_bone_map.erase(right_bones[i]);
+				}
+
+				if (right_bones_idx != -1) {
 					p_bone_map[left_bones[i]] = right_bone_name;
+				}
+				else {
+					p_bone_map.erase(left_bones[i]);
 				}
 			}
 		}

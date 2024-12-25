@@ -1,6 +1,7 @@
 #include "beehave_graph_node.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/check_box.h"
 
 
 

@@ -623,7 +623,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 
 	GDREGISTER_CLASS(HumanBoneConfig);
-	GDREGISTER_CLASS(HumanSkeletonConfig);
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);

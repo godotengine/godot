@@ -510,7 +510,6 @@ public:
 		slot.object = object;
 		slot.container = hbox;
 		slot.reorder_button = reorder_button;
-		slot.state_button = nullptr;
 		slot.set_index(idx + page_index * page_length);
 		slots.push_back(slot);
 	}
