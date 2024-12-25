@@ -762,8 +762,15 @@ SpringBoneSimulator3D::RotationAxis SpringBoneSimulator3D::get_rotation_axis(int
 
 void SpringBoneSimulator3D::set_setting_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	int delta = p_count - settings.size() + 1;
+
+	int delta = p_count - settings.size();
+	if (delta < 0) {
+		for (int i = delta; i < 0; i++) {
+			memdelete(settings[settings.size() + i]);
+		}
+	}
 	settings.resize(p_count);
+	delta++;
 	if (delta > 1) {
 		for (int i = 1; i < delta; i++) {
 			settings.write[p_count - i] = memnew(SpringBone3DSetting);
@@ -949,8 +956,14 @@ void SpringBoneSimulator3D::set_joint_count(int p_index, int p_count) {
 	ERR_FAIL_INDEX(p_index, settings.size());
 	ERR_FAIL_COND(p_count < 0);
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
-	int delta = p_count - joints.size() + 1;
+	int delta = p_count - joints.size();
+	if (delta < 0) {
+		for (int i = delta; i < 0; i++) {
+			memdelete(joints[joints.size() + i]);
+		}
+	}
 	joints.resize(p_count);
+	delta++;
 	if (delta > 1) {
 		for (int i = 1; i < delta; i++) {
 			joints.write[p_count - i] = memnew(SpringBone3DJointSetting);
@@ -1646,4 +1659,8 @@ Quaternion SpringBoneSimulator3D::get_from_to_rotation(const Vector3 &p_from, co
 		angle = 0.0;
 	}
 	return Quaternion(axis.normalized(), angle);
+}
+
+SpringBoneSimulator3D::~SpringBoneSimulator3D() {
+	clear_settings();
 }
