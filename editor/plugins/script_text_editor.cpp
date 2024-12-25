@@ -1102,6 +1102,11 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 }
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column) {
+	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
+		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		return;
+	}
+
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base, base, script);
