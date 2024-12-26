@@ -135,10 +135,11 @@ def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
 
+
 def generate_target_path(env, source):
     def wrap_target(target):
         # Scons will append objsuffix only if target didn't get any extension. This works for most files, but not for gen files, because they essentially has .gen suffix.
-        # Because of that we simply will apply objprefix ourselves. 
+        # Because of that we simply will apply objprefix ourselves.
         (head, tail) = os.path.split(target)
         return os.path.join(head, env["OBJPREFIX"] + os.path.splitext(tail)[0] + env["OBJSUFFIX"])
 
@@ -146,7 +147,7 @@ def generate_target_path(env, source):
         return wrap_target(str(source))
 
     path_str = str(source)
-    if path_str.startswith('#'):
+    if path_str.startswith("#"):
         target_path = os.path.join(env.get_current_intermediate_path(), path_str[1:])
         return wrap_target(target_path)
 
@@ -154,12 +155,12 @@ def generate_target_path(env, source):
         target_path = os.path.join(env.get_current_intermediate_path(), path_str)
         return wrap_target(target_path)
 
-    current_dir = str(env.Dir('.').get_abspath())
+    current_dir = str(env.Dir(".").get_abspath())
     if path_str.startswith(current_dir):
         target_path = os.path.join(env.get_current_intermediate_path(), os.path.relpath(path_str, current_dir))
         return wrap_target(target_path)
 
-    root_dir = str(env.Dir('#').get_abspath())
+    root_dir = str(env.Dir("#").get_abspath())
     if path_str.startswith(root_dir):
         target_path = os.path.join(env.get_current_intermediate_path(), os.path.relpath(path_str, root_dir))
         return wrap_target(target_path)
@@ -168,12 +169,14 @@ def generate_target_path(env, source):
     target_path = path_str
     return wrap_target(target_path)
 
+
 def generate_source_object(env, source):
     if type(source) is str:
         target_path = generate_target_path(env, source)
         return env.Object(source=source, target=target_path)
 
     return env.Object(source)
+
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
     # Convert string to list of absolute paths (including expanding wildcard)
@@ -697,6 +700,7 @@ def glob_recursive(pattern, node="."):
     results += Glob(str(node) + "/" + pattern, source=True)
     return results
 
+
 def process_source_objects(env, sources):
     objects = []
     for source in sources:
@@ -706,6 +710,7 @@ def process_source_objects(env, sources):
             objects.append(source)
 
     return objects
+
 
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, process_source_objects(env, sources), **args)
