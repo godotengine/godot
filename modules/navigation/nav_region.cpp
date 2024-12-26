@@ -250,51 +250,21 @@ void NavRegion::get_iteration_update(NavRegionIteration &r_iteration) {
 	r_iteration.travel_cost = get_travel_cost();
 	r_iteration.owner_object_id = get_owner_id();
 	r_iteration.owner_type = get_type();
-
-	r_iteration.enabled = enabled;
-	r_iteration.transform = transform;
-	r_iteration.owner_use_edge_connections = use_edge_connections;
-	r_iteration.bounds = get_bounds();
-
-	r_iteration.navmesh_polygons.resize(navmesh_polygons.size());
-
-	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
-		const gd::Polygon &from_polygon = navmesh_polygons[i];
-		gd::Polygon &to_polygon = r_iteration.navmesh_polygons[i];
-
-		to_polygon.surface_area = from_polygon.surface_area;
-		to_polygon.owner = &r_iteration;
-		to_polygon.points.resize(from_polygon.points.size());
-
-		const LocalVector<gd::Point> &from_points = from_polygon.points;
-		LocalVector<gd::Point> &to_points = to_polygon.points;
-
-		to_points.resize(from_points.size());
-
-		for (uint32_t j = 0; j < from_points.size(); j++) {
-			to_points[j].pos = from_points[j].pos;
-			to_points[j].key = from_points[j].key;
-		}
-
-		const LocalVector<gd::Edge> &from_edges = from_polygon.edges;
-		LocalVector<gd::Edge> &to_edges = to_polygon.edges;
-
-		to_edges.resize(from_edges.size());
-
-		for (uint32_t j = 0; j < from_edges.size(); j++) {
-			const LocalVector<gd::Edge::Connection> &from_connections = from_edges[j].connections;
-			LocalVector<gd::Edge::Connection> &to_connections = to_edges[j].connections;
-
-			to_connections.resize(from_connections.size());
-
-			for (uint32_t k = 0; k < from_connections.size(); k++) {
-				to_connections[k] = from_connections[k];
-			}
-		}
-	}
-
-	r_iteration.surface_area = surface_area;
 	r_iteration.owner_rid = get_self();
+
+	r_iteration.enabled = get_enabled();
+	r_iteration.transform = get_transform();
+	r_iteration.owner_use_edge_connections = get_use_edge_connections();
+	r_iteration.bounds = get_bounds();
+	r_iteration.surface_area = get_surface_area();
+
+	r_iteration.navmesh_polygons.clear();
+	r_iteration.navmesh_polygons.resize(navmesh_polygons.size());
+	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
+		gd::Polygon &navmesh_polygon = navmesh_polygons[i];
+		navmesh_polygon.owner = &r_iteration;
+		r_iteration.navmesh_polygons[i] = navmesh_polygon;
+	}
 }
 
 void NavRegion::request_sync() {
