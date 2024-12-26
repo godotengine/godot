@@ -37,15 +37,10 @@
 #endif // _DISABLE_DEPRECATED
 #include "./human_anim/human.h"
 
-void BonePose::set_bone_forward(const Vector3& p_forward) {
-	if (p_forward.dot(p_forward) == 0) {
-
-		ERR_FAIL_COND_MSG(!p_forward.is_normalized(), "The axis Vector3 " + p_forward.operator String() + " must be not zero.");
-	}
-	forward = p_forward.normalized();
-	right = forward;
+void BonePose::set_bone_forward() {
+	right = position.normalized();
 	local_pose = Transform3D(Basis(rotation), position);
-	Vector3::Axis min_axis = forward.min_axis_index();
+	Vector3::Axis min_axis = right.min_axis_index();
 
 	Vector3 up = Vector3(0, 1, 0);
 	switch (min_axis)
@@ -60,8 +55,9 @@ void BonePose::set_bone_forward(const Vector3& p_forward) {
 		up = Vector3(0, 0, 1);
 		break;
 	}
-	right = up.cross(forward);
+	right = up.cross(position);
 	right.normalize();
+
 }
 
 void BonePose::load(Dictionary& aDict) {
@@ -69,7 +65,6 @@ void BonePose::load(Dictionary& aDict) {
 	bone_index = aDict["bone_index"];
 	position = aDict["position"];
 	rotation = aDict["rotation"];
-	forward = aDict["forward"];
 	right = aDict["right"];
 	global_pose = aDict["global_pose"];
 	Vector<String> child = aDict["child_bones"];
@@ -83,7 +78,6 @@ void BonePose::save(Dictionary& aDict) {
 	aDict["bone_index"] = bone_index;
 	aDict["position"] = position;
 	aDict["rotation"] = rotation;
-	aDict["forward"] = forward;
 	aDict["right"] = right;
 	aDict["global_pose"] = global_pose;
 	Vector<String> child;
@@ -100,6 +94,8 @@ void BonePose::clear() {
 	right = Vector3();
 }
 Vector4 BonePose::get_root_lookat(const Basis& rest_rotation,const Basis& curr_rotation,const Vector3& forward,const Vector3& right) {
+
+
 	Vector4 lookat;
 	Basis diff_rotation = rest_rotation.inverse() * curr_rotation;
 	Vector3 new_forward = diff_rotation.xform(forward);
@@ -142,62 +138,62 @@ Vector4 BonePose::get_look_at_and_roll(const Transform3D& p_parent_trans, Basis&
 
 	p_curr_global_trans = p_parent_trans * Transform3D(p_curr_basis, position);
 	// 计算出观察方向
-	Vector3 lookat = p_curr_global_trans.xform(forward);
+	//Vector3 lookat = p_curr_global_trans.xform(forward);
 
 	Vector4 ret;
-	{
-		Transform3D new_rest = p_parent_trans * Transform3D(Basis(rotation), position);
-		Vector3 rest_forward = new_rest.basis.xform(forward);
+	//{
+	//	Transform3D new_rest = p_parent_trans * Transform3D(Basis(rotation), position);
+	//	Vector3 rest_forward = new_rest.basis.xform(forward);
 
-		// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
-		Vector3 org_rest_right = new_rest.basis.xform(right);
+	//	// 初始状态直接对齐新的观察点得到预测后不带有自身轴旋转的新的右方向
+	//	Vector3 org_rest_right = new_rest.basis.xform(right);
 
-		// 计算原始动画姿势计算后的右方向朝向
-		Vector3 new_right = p_curr_global_trans.basis.xform(right);
-
-
-		Plane plane = Plane(lookat - p_curr_global_trans.origin, 0.0);
-		Vector3 intersect;
-		plane.intersects_ray(new_right - plane.normal,-plane.normal, &intersect);
+	//	// 计算原始动画姿势计算后的右方向朝向
+	//	Vector3 new_right = p_curr_global_trans.basis.xform(right);
 
 
-		// 计算自身轴的旋转角度		
-		if(intersect.x + intersect.y + intersect.z == 0)
-		{
-			ret.w = 0;
-		}
-		else {
-			float angle = org_rest_right.signed_angle_to(intersect.normalized(), org_rest_right);
-			ret.w = angle;
-		}
-		
-	}
-	ret.x = lookat.x;
-	ret.y = lookat.y;
-	ret.z = lookat.z;
+	//	Plane plane = Plane(lookat - p_curr_global_trans.origin, 0.0);
+	//	Vector3 intersect;
+	//	plane.intersects_ray(new_right - plane.normal,-plane.normal, &intersect);
+
+
+	//	// 计算自身轴的旋转角度		
+	//	if(intersect.x + intersect.y + intersect.z == 0)
+	//	{
+	//		ret.w = 0;
+	//	}
+	//	else {
+	//		float angle = org_rest_right.signed_angle_to(intersect.normalized(), org_rest_right);
+	//		ret.w = angle;
+	//	}
+	//	
+	//}
+	//ret.x = lookat.x;
+	//ret.y = lookat.y;
+	//ret.z = lookat.z;
 	return ret;
 }
 // 重定向骨骼
 void BonePose::retarget(const Transform3D& parent_trans, const Vector4& lookat, Transform3D& out_global_trans, Basis& local_rotation) {
 
 	// 重定向骨骼的世界坐标
-	out_global_trans = parent_trans * local_pose;
-	if (forward.dot(forward) == 0)
-	{
-		local_rotation = local_pose.basis;
-		return;
-	}
-	Vector3 rest_forward = out_global_trans.basis.xform(forward);
-	Vector3 new_forward = Vector3(lookat.x, lookat.y, lookat.z) - out_global_trans.origin;
-	// 朝向观察点
-	out_global_trans.basis.rotate_to_align(rest_forward, new_forward);
-	// if (lookat.w != 0) {
-	// 	// 计算自身轴旋转
-	// 	Vector3 new_forward = out_global_trans.basis.xform(forward);
-	// 	out_global_trans.basis.rotate(new_forward, lookat.w);
-	// }
-	// 计算出本地旋转
-	local_rotation = parent_trans.basis.inverse() * out_global_trans.basis;
+	//out_global_trans = parent_trans * local_pose;
+	//if (forward.dot(forward) == 0)
+	//{
+	//	local_rotation = local_pose.basis;
+	//	return;
+	//}
+	//Vector3 rest_forward = out_global_trans.basis.xform(forward);
+	//Vector3 new_forward = Vector3(lookat.x, lookat.y, lookat.z) - out_global_trans.origin;
+	//// 朝向观察点
+	//out_global_trans.basis.rotate_to_align(rest_forward, new_forward);
+	//// if (lookat.w != 0) {
+	//// 	// 计算自身轴旋转
+	//// 	Vector3 new_forward = out_global_trans.basis.xform(forward);
+	//// 	out_global_trans.basis.rotate(new_forward, lookat.w);
+	//// }
+	//// 计算出本地旋转
+	//local_rotation = parent_trans.basis.inverse() * out_global_trans.basis;
 }
 /**********************************************************************************************************************/
 

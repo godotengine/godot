@@ -49,13 +49,13 @@ struct BonePose {
 	int bone_index;
 	Vector3 position;
 	Quaternion rotation;
-	Vector3 forward;
+	// 虛擬子骨骼的前方
 	Vector3 right;
 	Transform3D global_pose;
 	Transform3D local_pose;
 	Vector<StringName> child_bones;
 
-	void set_bone_forward(const Vector3& p_forward);
+	void set_bone_forward();
 
 	void load(Dictionary& aDict);
 	void save(Dictionary& aDict);
