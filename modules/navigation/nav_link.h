@@ -40,6 +40,10 @@ struct NavLinkIteration : NavBaseIteration {
 	Vector3 start_position;
 	Vector3 end_position;
 	LocalVector<gd::Polygon> navmesh_polygons;
+
+	Vector3 get_start_position() const { return start_position; }
+	Vector3 get_end_position() const { return end_position; }
+	bool is_bidirectional() const { return bidirectional; }
 };
 
 #include "core/templates/self_list.h"

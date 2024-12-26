@@ -41,6 +41,11 @@ struct NavRegionIteration : NavBaseIteration {
 	LocalVector<gd::Polygon> navmesh_polygons;
 	real_t surface_area = 0.0;
 	AABB bounds;
+
+	const Transform3D &get_transform() const { return transform; }
+	const LocalVector<gd::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+	real_t get_surface_area() const { return surface_area; }
+	AABB get_bounds() const { return bounds; }
 };
 
 #endif // NAV_REGION_ITERATION_3D_H

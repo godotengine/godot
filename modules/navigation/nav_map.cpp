@@ -165,7 +165,6 @@ void NavMap::query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task) 
 	}
 
 	p_query_task.map_up = map_iteration.map_up;
-	p_query_task.link_polygons_size = map_iteration.link_polygon_count;
 
 	NavMeshQueries3D::query_task_polygons_get_path(p_query_task, map_iteration.navmesh_polygons);
 

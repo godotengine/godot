@@ -79,6 +79,7 @@ struct NavMapIteration {
 
 	Vector3 map_up;
 	LocalVector<gd::Polygon> navmesh_polygons;
+	LocalVector<gd::Polygon> link_polygons;
 
 	LocalVector<NavRegionIteration> region_iterations;
 	LocalVector<NavLinkIteration> link_iterations;
