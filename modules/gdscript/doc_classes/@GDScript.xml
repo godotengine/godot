@@ -11,7 +11,7 @@
 		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
 	</tutorials>
 	<methods>
-		<method name="Color8">
+		<method name="Color8" deprecated="Use [method Color.from_rgba8] instead.">
 			<return type="Color" />
 			<param index="0" name="r8" type="int" />
 			<param index="1" name="g8" type="int" />
