@@ -939,7 +939,7 @@ void Object::set_script(const Variant &p_script) {
 		script_instance = nullptr;
 	}
 
-	if (!s.is_null()) {
+	if (s.is_valid()) {
 		if (s->can_instantiate()) {
 			OBJ_DEBUG_LOCK
 			script_instance = s->instance_create(this);
@@ -1578,7 +1578,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> r = p_var;
-			if (!r.is_valid()) {
+			if (r.is_null()) {
 				return;
 			}
 

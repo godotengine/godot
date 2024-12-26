@@ -59,7 +59,7 @@
 				var pid = OS.create_process(OS.get_executable_path(), [])
 				[/gdscript]
 				[csharp]
-				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), []);
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
@@ -105,8 +105,8 @@
 				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				Godot.Collections.Array output = [];
+				int exitCode = OS.Execute("ls", ["-l", "/tmp"], output);
 				[/csharp]
 				[/codeblocks]
 				If you wish to access a shell built-in or execute a composite command, a platform-specific shell can be invoked. For example:
@@ -116,8 +116,8 @@
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				Godot.Collections.Array output = [];
+				OS.Execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.

@@ -508,6 +508,7 @@ public:
 	HBoxContainer *get_menu_hbox();
 	Ref<ViewPanner> get_panner();
 	void set_warped_panning(bool p_warped);
+	void update_warped_panning();
 
 	void arrange_nodes();
 
