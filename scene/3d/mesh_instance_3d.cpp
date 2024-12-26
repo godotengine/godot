@@ -218,13 +218,11 @@ NodePath MeshInstance3D::get_skeleton_path() {
 AABB MeshInstance3D::get_aabb() const {
 	if (!mesh.is_null()) {
 		return mesh->get_aabb();
-	} else {
-		AABB ret;
-		GDVIRTUAL_CALL(_get_aabb, ret);
-		return ret;
 	}
 
-	return AABB();
+	AABB aabb;
+	GDVIRTUAL_CALL(_get_aabb, aabb);
+	return aabb;
 }
 
 Node *MeshInstance3D::create_trimesh_collision_node() {
