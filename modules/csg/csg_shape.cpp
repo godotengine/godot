@@ -2255,7 +2255,11 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					current_xform.translate_local(Vector3(0, 0, -depth));
 				} break;
 				case MODE_SPIN: {
-					current_xform.rotate(Vector3(0, 1, 0), spin_step);
+					if (end_count == 0 && x0 == extrusions - 1) {
+						current_xform = base_xform;
+					} else {
+						current_xform.rotate(Vector3(0, 1, 0), spin_step);
+					}
 				} break;
 				case MODE_PATH: {
 					double previous_offset = x0 * extrusion_step;
