@@ -852,7 +852,7 @@ namespace HumanAnim
             }
 
             // 计算自身轴旋转
-            compute_self_roll(p_config, parent_pose, child_pose, trans, Vector3(result.bone_global_lookat.x, result.bone_global_lookat.y, result.bone_global_lookat.z), child_pose.right);
+			result.bone_global_lookat.w = compute_self_roll(p_config, parent_pose, child_pose, trans, Vector3(result.bone_global_lookat.x, result.bone_global_lookat.y, result.bone_global_lookat.z), child_pose.right);
         }
         
     }
@@ -871,7 +871,7 @@ namespace HumanAnim
         }
     }
 
-    static void retarget(HumanBoneConfig& p_config,BonePose& pose,Transform3D& parent_trans,HumanAnimationBoneResult& result) {
+    static void lookat_to_bone_pose(HumanBoneConfig& p_config,BonePose& pose,Transform3D& parent_trans,HumanAnimationBoneResult& result) {
         Vector3 lookat = Vector3(result.bone_global_lookat.x, result.bone_global_lookat.y, result.bone_global_lookat.z);
 
         Transform3D trans = Transform3D(Basis(pose.rotation),pose.position);
@@ -907,8 +907,7 @@ namespace HumanAnim
             if (p_skeleton_config.bone_result.has(it)) {
 			    HumanAnimationBoneResult& r = p_skeleton_config.bone_result[it];
                 Vector4& lookat = r.bone_global_lookat;
-                pose.retarget(parent_trans,lookat,r.real_global_pose,local_trans);
-                r.real_local_pose = local_trans.get_rotation_quaternion();
+				lookat_to_bone_pose(p_config, pose, parent_pose.global_pose,r);
                 retarget(p_config,pose,r.real_global_pose,p_skeleton_config);
             }
             else {

@@ -17,20 +17,41 @@ public:
     };
     SceneDataCompoent() {}
 
+    void set_position(const Vector3& p_position) {
+        transform.origin = p_position;
+    }
+    void set_rotation(const Quaternion& p_rotation) {
+        Vector3 scale = transform.basis.get_scale();
+        transform.basis.set_quaternion_scale(p_rotation,scale);
+    }
+    void set_scale(const Vector3& p_scale) {
+        transform.basis.set_quaternion_scale(transform.basis.get_quaternion(),p_scale);
+    }
+
+    Vector3 get_position() {
+        return transform.origin;
+    }
+    Quaternion get_rotation() {
+        return transform.basis.get_quaternion();
+    }
+    Vector3 get_scale() {
+        return transform.basis.get_scale();
+    }
+
     String resource_path;
     bool is_visible = true;
     Transform3D transform;
 
 };
-class SceneDataCompoentBlock : public RefCounted {
-    GDCLASS(SceneDataCompoentBlock, RefCounted);
+class SceneDataCompoentBlock : public Resource {
+    GDCLASS(SceneDataCompoentBlock, Resource);
     static void _bind_methods() {}
 public:
     String block_name;
     LocalVector<Ref<SceneDataCompoent>> compoents;
 };
-class SceneChunkGroupLod : public Resource {
-    GDCLASS(SceneChunkGroupLod, Resource);    
+class SceneChunkGroupLod : public SceneDataCompoentBlock {
+    GDCLASS(SceneChunkGroupLod, SceneDataCompoentBlock);    
 
 public:
     SceneChunkGroupLod() {}
