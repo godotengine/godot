@@ -41,11 +41,7 @@
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
-#define OP_ARGS (GDScriptInstance * p_instance,                        \
-		int *p_variant_address_limits,                                 \
-		Variant *p_variant_addresses[GDScriptFunction::ADDR_TYPE_MAX], \
-		int p_ip,                                                      \
-		String p_err_text)
+#define OP_ARGS (GDScriptInstance * p_instance, OpcodeInfo * p_info)
 #define OP_EXEC_H(m_opcode) void _exec_##m_opcode OP_ARGS
 
 class GDScriptInstance;
@@ -268,16 +264,8 @@ public:
 	enum Opcode {
 		OPCODE_OPERATOR, // Can be Validated
 		OPCODE_TYPE_TEST, // Args is TestArguments
-		OPCODE_SET_KEYED, // Can be Validated
-		OPCODE_SET_INDEXED, // Only Validated
-		OPCODE_GET_KEYED, // Can be Validated
-		OPCODE_GET_INDEXED, // Only Validated
-		OPCODE_SET_NAMED, // Can be Validated
-		OPCODE_GET_NAMED, // Can be Validated
-		OPCODE_SET_MEMBER,
-		OPCODE_GET_MEMBER,
-		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
-		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
+		OPCODE_SET, // Args is SetArgs
+		OPCODE_GET,
 		OPCODE_ASSIGN, // Args is AssignArguments
 		OPCODE_CAST, // Args is CastArgs
 		OPCODE_CONSTRUCT, // Only for basic types! Args is ConstructArguments
@@ -336,6 +324,14 @@ private:
 	enum ArgumentMask {
 		ARGUMENT = 0xFF >> 1,
 		IS_VALIDATED = 0xFF ^ ARGUMENT,
+	};
+
+	enum SetGetArgs {
+		KEYED, // Can be Validated
+		INDEXED, // Only Validated
+		NAMED, // Can be Validated
+		MEMBER,
+		STATIC_VARIABLE,
 	};
 
 	// Arguments for Opcode::OPCODE_JUMP.
@@ -410,12 +406,11 @@ private:
 		GDSCRIPT_UTILITY,
 		BUILTIN_TYPE, // Only Validated
 		SELF_BASE,
-		METHOD_BIND,
-		METHOD_BIND_RET,
 		BUILTIN_STATIC,
 		NATIVE_STATIC,
 		NATIVE_STATIC_RETURN, // Only Validated
 		NATIVE_STATIC_NO_RETURN, // Only Validated
+		METHOD_BIND,
 		METHOD_BIND_RETURN, // Only Validated
 		METHOD_BIND_NO_RETURN, // Only Validated
 		ARGS_MAX,
@@ -563,37 +558,6 @@ private:
 	MethodBind **_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
-	OP_EXEC_H(OPCODE_OPERATOR);
-	OP_EXEC_H(OPCODE_TYPE_TEST);
-	OP_EXEC_H(OPCODE_SET_KEYED);
-	OP_EXEC_H(OPCODE_SET_INDEXED);
-	OP_EXEC_H(OPCODE_GET_KEYED);
-	OP_EXEC_H(OPCODE_GET_INDEXED);
-	OP_EXEC_H(OPCODE_SET_NAMED);
-	OP_EXEC_H(OPCODE_GET_NAMED);
-	OP_EXEC_H(OPCODE_SET_MEMBER);
-	OP_EXEC_H(OPCODE_GET_MEMBER);
-	OP_EXEC_H(OPCODE_SET_STATIC_VARIABLE);
-	OP_EXEC_H(OPCODE_GET_STATIC_VARIABLE);
-	OP_EXEC_H(OPCODE_ASSIGN);
-	OP_EXEC_H(OPCODE_CAST);
-	OP_EXEC_H(OPCODE_CONSTRUCT);
-	OP_EXEC_H(OPCODE_CALL);
-	OP_EXEC_H(OPCODE_AWAIT);
-	OP_EXEC_H(OPCODE_AWAIT_RESUME);
-	OP_EXEC_H(OPCODE_CREATE_LAMBDA);
-	OP_EXEC_H(OPCODE_CREATE_SELF_LAMBDA);
-	OP_EXEC_H(OPCODE_JUMP);
-	OP_EXEC_H(OPCODE_RETURN);
-	OP_EXEC_H(OPCODE_ITERATE_BEGIN);
-	OP_EXEC_H(OPCODE_ITERATE);
-	OP_EXEC_H(OPCODE_STORE_GLOBAL);
-	OP_EXEC_H(OPCODE_STORE_NAMED_GLOBAL);
-	OP_EXEC_H(OPCODE_TYPE_ADJUST);
-	OP_EXEC_H(OPCODE_ASSERT);
-	OP_EXEC_H(OPCODE_BREAKPOINT);
-	OP_EXEC_H(OPCODE_LINE);
-
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
 	const char *_func_cname = nullptr;
@@ -648,6 +612,46 @@ public:
 		int defarg = 0;
 		Variant result;
 	};
+
+	struct OpcodeInfo {
+		Variant *stack;
+		int *variant_address_limits;
+		Variant *variant_addresses[GDScriptFunction::ADDR_TYPE_MAX];
+		int ip;
+		String err_text;
+		Variant **instruction_args;
+		uint64_t *function_call_time;
+		uint32_t alloca_size;
+		Ref<Variant> retvalue;
+		int line;
+		Ref<bool> exit_ok;
+		Ref<bool> awaited;
+		CallState *state;
+		int defarg;
+	};
+
+	OP_EXEC_H(OPCODE_OPERATOR);
+	OP_EXEC_H(OPCODE_TYPE_TEST);
+	OP_EXEC_H(OPCODE_SET);
+	OP_EXEC_H(OPCODE_GET);
+	OP_EXEC_H(OPCODE_ASSIGN);
+	OP_EXEC_H(OPCODE_CAST);
+	OP_EXEC_H(OPCODE_CONSTRUCT);
+	OP_EXEC_H(OPCODE_CALL);
+	OP_EXEC_H(OPCODE_AWAIT);
+	OP_EXEC_H(OPCODE_AWAIT_RESUME);
+	OP_EXEC_H(OPCODE_CREATE_LAMBDA);
+	OP_EXEC_H(OPCODE_CREATE_SELF_LAMBDA);
+	OP_EXEC_H(OPCODE_JUMP);
+	OP_EXEC_H(OPCODE_RETURN);
+	OP_EXEC_H(OPCODE_ITERATE_BEGIN);
+	OP_EXEC_H(OPCODE_ITERATE);
+	OP_EXEC_H(OPCODE_STORE_GLOBAL);
+	OP_EXEC_H(OPCODE_STORE_NAMED_GLOBAL);
+	OP_EXEC_H(OPCODE_TYPE_ADJUST);
+	OP_EXEC_H(OPCODE_ASSERT);
+	OP_EXEC_H(OPCODE_BREAKPOINT);
+	OP_EXEC_H(OPCODE_LINE);
 
 	_FORCE_INLINE_ StringName get_name() const { return name; }
 	_FORCE_INLINE_ StringName get_source() const { return source; }

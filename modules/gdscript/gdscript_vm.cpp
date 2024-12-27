@@ -227,207 +227,6 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<PackedVector4Array>::init, // PACKED_VECTOR4_ARRAY.
 };
 
-#if defined(__GNUC__) || defined(__clang__)
-#define OPCODES_TABLE                                    \
-	static const void *switch_table_ops[] = {            \
-		&&OPCODE_OPERATOR,                               \
-		&&OPCODE_OPERATOR_VALIDATED,                     \
-		&&OPCODE_TYPE_TEST_BUILTIN,                      \
-		&&OPCODE_TYPE_TEST_ARRAY,                        \
-		&&OPCODE_TYPE_TEST_DICTIONARY,                   \
-		&&OPCODE_TYPE_TEST_NATIVE,                       \
-		&&OPCODE_TYPE_TEST_SCRIPT,                       \
-		&&OPCODE_SET_KEYED,                              \
-		&&OPCODE_SET_KEYED_VALIDATED,                    \
-		&&OPCODE_SET_INDEXED_VALIDATED,                  \
-		&&OPCODE_GET_KEYED,                              \
-		&&OPCODE_GET_KEYED_VALIDATED,                    \
-		&&OPCODE_GET_INDEXED_VALIDATED,                  \
-		&&OPCODE_SET_NAMED,                              \
-		&&OPCODE_SET_NAMED_VALIDATED,                    \
-		&&OPCODE_GET_NAMED,                              \
-		&&OPCODE_GET_NAMED_VALIDATED,                    \
-		&&OPCODE_SET_MEMBER,                             \
-		&&OPCODE_GET_MEMBER,                             \
-		&&OPCODE_SET_STATIC_VARIABLE,                    \
-		&&OPCODE_GET_STATIC_VARIABLE,                    \
-		&&OPCODE_ASSIGN,                                 \
-		&&OPCODE_ASSIGN_NULL,                            \
-		&&OPCODE_ASSIGN_TRUE,                            \
-		&&OPCODE_ASSIGN_FALSE,                           \
-		&&OPCODE_ASSIGN_TYPED_BUILTIN,                   \
-		&&OPCODE_ASSIGN_TYPED_ARRAY,                     \
-		&&OPCODE_ASSIGN_TYPED_DICTIONARY,                \
-		&&OPCODE_ASSIGN_TYPED_NATIVE,                    \
-		&&OPCODE_ASSIGN_TYPED_SCRIPT,                    \
-		&&OPCODE_CAST_TO_BUILTIN,                        \
-		&&OPCODE_CAST_TO_NATIVE,                         \
-		&&OPCODE_CAST_TO_SCRIPT,                         \
-		&&OPCODE_CONSTRUCT,                              \
-		&&OPCODE_CONSTRUCT_VALIDATED,                    \
-		&&OPCODE_CONSTRUCT_ARRAY,                        \
-		&&OPCODE_CONSTRUCT_TYPED_ARRAY,                  \
-		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
-		&&OPCODE_CONSTRUCT_TYPED_DICTIONARY,             \
-		&&OPCODE_CALL,                                   \
-		&&OPCODE_CALL_RETURN,                            \
-		&&OPCODE_CALL_ASYNC,                             \
-		&&OPCODE_CALL_UTILITY,                           \
-		&&OPCODE_CALL_UTILITY_VALIDATED,                 \
-		&&OPCODE_CALL_GDSCRIPT_UTILITY,                  \
-		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,            \
-		&&OPCODE_CALL_SELF_BASE,                         \
-		&&OPCODE_CALL_METHOD_BIND,                       \
-		&&OPCODE_CALL_METHOD_BIND_RET,                   \
-		&&OPCODE_CALL_BUILTIN_STATIC,                    \
-		&&OPCODE_CALL_NATIVE_STATIC,                     \
-		&&OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN,    \
-		&&OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN, \
-		&&OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,      \
-		&&OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN,   \
-		&&OPCODE_AWAIT,                                  \
-		&&OPCODE_AWAIT_RESUME,                           \
-		&&OPCODE_CREATE_LAMBDA,                          \
-		&&OPCODE_CREATE_SELF_LAMBDA,                     \
-		&&OPCODE_JUMP,                                   \
-		&&OPCODE_JUMP_IF,                                \
-		&&OPCODE_JUMP_IF_NOT,                            \
-		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                   \
-		&&OPCODE_JUMP_IF_SHARED,                         \
-		&&OPCODE_RETURN,                                 \
-		&&OPCODE_RETURN_TYPED_BUILTIN,                   \
-		&&OPCODE_RETURN_TYPED_ARRAY,                     \
-		&&OPCODE_RETURN_TYPED_DICTIONARY,                \
-		&&OPCODE_RETURN_TYPED_NATIVE,                    \
-		&&OPCODE_RETURN_TYPED_SCRIPT,                    \
-		&&OPCODE_ITERATE_BEGIN,                          \
-		&&OPCODE_ITERATE_BEGIN_INT,                      \
-		&&OPCODE_ITERATE_BEGIN_FLOAT,                    \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2,                  \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2I,                 \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3,                  \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
-		&&OPCODE_ITERATE_BEGIN_STRING,                   \
-		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
-		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
-		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,        \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,      \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_OBJECT,                   \
-		&&OPCODE_ITERATE,                                \
-		&&OPCODE_ITERATE_INT,                            \
-		&&OPCODE_ITERATE_FLOAT,                          \
-		&&OPCODE_ITERATE_VECTOR2,                        \
-		&&OPCODE_ITERATE_VECTOR2I,                       \
-		&&OPCODE_ITERATE_VECTOR3,                        \
-		&&OPCODE_ITERATE_VECTOR3I,                       \
-		&&OPCODE_ITERATE_STRING,                         \
-		&&OPCODE_ITERATE_DICTIONARY,                     \
-		&&OPCODE_ITERATE_ARRAY,                          \
-		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,              \
-		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,             \
-		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,             \
-		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,            \
-		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,             \
-		&&OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,           \
-		&&OPCODE_ITERATE_OBJECT,                         \
-		&&OPCODE_STORE_GLOBAL,                           \
-		&&OPCODE_STORE_NAMED_GLOBAL,                     \
-		&&OPCODE_TYPE_ADJUST_BOOL,                       \
-		&&OPCODE_TYPE_ADJUST_INT,                        \
-		&&OPCODE_TYPE_ADJUST_FLOAT,                      \
-		&&OPCODE_TYPE_ADJUST_STRING,                     \
-		&&OPCODE_TYPE_ADJUST_VECTOR2,                    \
-		&&OPCODE_TYPE_ADJUST_VECTOR2I,                   \
-		&&OPCODE_TYPE_ADJUST_RECT2,                      \
-		&&OPCODE_TYPE_ADJUST_RECT2I,                     \
-		&&OPCODE_TYPE_ADJUST_VECTOR3,                    \
-		&&OPCODE_TYPE_ADJUST_VECTOR3I,                   \
-		&&OPCODE_TYPE_ADJUST_TRANSFORM2D,                \
-		&&OPCODE_TYPE_ADJUST_VECTOR4,                    \
-		&&OPCODE_TYPE_ADJUST_VECTOR4I,                   \
-		&&OPCODE_TYPE_ADJUST_PLANE,                      \
-		&&OPCODE_TYPE_ADJUST_QUATERNION,                 \
-		&&OPCODE_TYPE_ADJUST_AABB,                       \
-		&&OPCODE_TYPE_ADJUST_BASIS,                      \
-		&&OPCODE_TYPE_ADJUST_TRANSFORM3D,                \
-		&&OPCODE_TYPE_ADJUST_PROJECTION,                 \
-		&&OPCODE_TYPE_ADJUST_COLOR,                      \
-		&&OPCODE_TYPE_ADJUST_STRING_NAME,                \
-		&&OPCODE_TYPE_ADJUST_NODE_PATH,                  \
-		&&OPCODE_TYPE_ADJUST_RID,                        \
-		&&OPCODE_TYPE_ADJUST_OBJECT,                     \
-		&&OPCODE_TYPE_ADJUST_CALLABLE,                   \
-		&&OPCODE_TYPE_ADJUST_SIGNAL,                     \
-		&&OPCODE_TYPE_ADJUST_DICTIONARY,                 \
-		&&OPCODE_TYPE_ADJUST_ARRAY,                      \
-		&&OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY,          \
-		&&OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY,         \
-		&&OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY,         \
-		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY,        \
-		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,       \
-		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,         \
-		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY,       \
-		&&OPCODE_ASSERT,                                 \
-		&&OPCODE_BREAKPOINT,                             \
-		&&OPCODE_LINE,                                   \
-		&&OPCODE_END                                     \
-	};                                                   \
-	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
-
-#define OPCODE(m_op) \
-	m_op:
-#define OPCODE_WHILE(m_test)
-#define OPCODES_END \
-	OPSEXIT:
-#define OPCODES_OUT \
-	OPSOUT:
-#define OPCODE_SWITCH(m_test) goto *switch_table_ops[m_test];
-
-#ifdef DEBUG_ENABLED
-#define DISPATCH_OPCODE          \
-	last_opcode = _code_ptr[ip]; \
-	goto *switch_table_ops[last_opcode]
-#else // !DEBUG_ENABLED
-#define DISPATCH_OPCODE goto *switch_table_ops[_code_ptr[ip]]
-#endif // DEBUG_ENABLED
-
-#define OPCODE_BREAK goto OPSEXIT
-#define OPCODE_OUT goto OPSOUT
-#else // !(defined(__GNUC__) || defined(__clang__))
-#define OPCODES_TABLE
-#define OPCODE(m_op) case m_op:
-#define OPCODE_WHILE(m_test) while (m_test)
-#define OPCODES_END
-#define OPCODES_OUT
-#define DISPATCH_OPCODE continue
-
-#ifdef _MSC_VER
-#define OPCODE_SWITCH(m_test)       \
-	__assume(m_test <= OPCODE_END); \
-	switch (m_test)
-#else // !_MSC_VER
-#define OPCODE_SWITCH(m_test) switch (m_test)
-#endif // _MSC_VER
-
-#define OPCODE_BREAK break
-#define OPCODE_OUT break
-#endif // defined(__GNUC__) || defined(__clang__)
-
 // Helpers for VariantInternal methods in macros.
 #define OP_GET_BOOL get_bool
 #define OP_GET_INT get_int
@@ -481,42 +280,42 @@ void (*type_init_function_table[])(Variant *) = {
 	}
 
 #define CHECK_SPACE(m_space) \
-	GD_ERR_BREAK((p_ip + m_space) > _code_size)
+	GD_ERR_BREAK((p_info->ip + m_space) > _code_size)
 
-#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                              \
-	Variant *m_v;                                                                                     \
-	{                                                                                                 \
-		int address = _code_ptr[p_ip + 1 + (m_code_ofs)];                                             \
-		int address_type = (address & ADDR_TYPE_MASK) >> ADDR_BITS;                                   \
-		if (unlikely(address_type < 0 || address_type >= ADDR_TYPE_MAX)) {                            \
-			p_err_text = "Bad address type.";                                                         \
-			return;                                                                                   \
-		}                                                                                             \
-		int address_index = address & ADDR_MASK;                                                      \
-		if (unlikely(address_index < 0 || address_index >= p_variant_address_limits[address_type])) { \
-			if (address_type == ADDR_TYPE_MEMBER && !p_instance) {                                    \
-				p_err_text = "Cannot access member without instance.";                                \
-			} else {                                                                                  \
-				p_err_text = "Bad address index.";                                                    \
-			}                                                                                         \
-			return;                                                                                   \
-		}                                                                                             \
-		m_v = &p_variant_addresses[address_type][address_index];                                      \
-		if (unlikely(!m_v))                                                                           \
-			return;                                                                                   \
+#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                                    \
+	Variant *m_v;                                                                                           \
+	{                                                                                                       \
+		int address = _code_ptr[p_info->ip + 1 + (m_code_ofs)];                                             \
+		int address_type = (address & ADDR_TYPE_MASK) >> ADDR_BITS;                                         \
+		if (unlikely(address_type < 0 || address_type >= ADDR_TYPE_MAX)) {                                  \
+			p_info->err_text = "Bad address type.";                                                         \
+			return;                                                                                         \
+		}                                                                                                   \
+		int address_index = address & ADDR_MASK;                                                            \
+		if (unlikely(address_index < 0 || address_index >= p_info->variant_address_limits[address_type])) { \
+			if (address_type == ADDR_TYPE_MEMBER && !p_instance) {                                          \
+				p_info->err_text = "Cannot access member without instance.";                                \
+			} else {                                                                                        \
+				p_info->err_text = "Bad address index.";                                                    \
+			}                                                                                               \
+			return;                                                                                         \
+		}                                                                                                   \
+		m_v = &p_info->variant_addresses[address_type][address_index];                                      \
+		if (unlikely(!m_v))                                                                                 \
+			return;                                                                                         \
 	}
 
 #else // !DEBUG_ENABLED
 #define GD_ERR_BREAK(m_cond)
 #define CHECK_SPACE(m_space)
 
-#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                                                                                \
-	Variant *m_v;                                                                                                                                       \
-	{                                                                                                                                                   \
-		int address = p_code_ptr[p_ip + 1 + (m_code_ofs)];                                                                                              \
-		m_v = &p_variant_addresses[(address & GDScriptFunction::ADDR_TYPE_MASK) >> GDScriptFunction::ADDR_BITS][address & GDScriptFunction::ADDR_MASK]; \
-		if (unlikely(!m_v))                                                                                                                             \
-			return;                                                                                                                                     \
+#define GET_VARIANT_PTR(m_v, m_code_ofs)                                                                                                                      \
+	Variant *m_v;                                                                                                                                             \
+	{                                                                                                                                                         \
+		int address = p_code_ptr[p_info->ip + 1 + (m_code_ofs)];                                                                                              \
+		m_v = &p_info->variant_addresses[(address & GDScriptFunction::ADDR_TYPE_MASK) >> GDScriptFunction::ADDR_BITS][address & GDScriptFunction::ADDR_MASK]; \
+		if (unlikely(!m_v))                                                                                                                                   \
+			return;                                                                                                                                           \
 	}
 
 #endif // DEBUG_ENABLED
@@ -524,22 +323,20 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_EXEC_IMPLEMENT(m_opcode) void GDScriptFunction::_exec_##m_opcode OP_ARGS
 
 #define GET_CALL_ARGUMENT(m_v) \
-	int m_v = _code_ptr[p_ip + 1];
+	int m_v = _code_ptr[p_info->ip + 1];
 
-#define LOAD_INSTRUCTION_ARGS                   \
-	int instr_arg_count = _code_ptr[p_ip + 1];  \
-	for (int i = 0; i < instr_arg_count; i++) { \
-		GET_VARIANT_PTR(v, i + 1);              \
-		instruction_args[i] = v;                \
-	}                                           \
-	ip += 1; // Offset to skip instruction argcount.
+#define LOAD_INSTRUCTION_ARGS                        \
+	int instr_arg_count = _code_ptr[p_info->ip + 1]; \
+	for (int i = 0; i < instr_arg_count; i++) {      \
+		GET_VARIANT_PTR(v, i + 1);                   \
+		instruction_args[i] = v;                     \
+	}                                                \
+	p_info->ip += 1; // Offset to skip instruction argcount.
 
 #define GET_INSTRUCTION_ARG(m_v, m_idx) \
-	Variant *m_v = instruction_args[m_idx]
+	Variant *m_v = p_info->instruction_args[m_idx]
 
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state) {
-	OPCODES_TABLE;
-
 	if (!_code_ptr) {
 		return _get_default_variant_for_data_type(return_type);
 	}
@@ -712,13 +509,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
 
 #ifdef DEBUG_ENABLED
-	OPCODE_WHILE(ip < _code_size) {
+	while (ip < _code_size) {
 		int last_opcode = _code_ptr[ip];
 #else
 	OPCODE_WHILE(true) {
 #endif
 
-		OPCODE_SWITCH(_code_ptr[ip]) {
+		switch (_code_ptr[ip]) {
 		}
 	}
 #ifdef DEBUG_ENABLED
@@ -762,7 +559,7 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 	constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*_code_ptr);
 
 	bool valid;
-	Variant::Operator op = (Variant::Operator)_code_ptr[p_ip + 4];
+	Variant::Operator op = (Variant::Operator)_code_ptr[p_info->> ip + 4];
 	GD_ERR_BREAK(op >= Variant::OP_MAX);
 
 	GET_CALL_ARGUMENT(arg);
@@ -776,7 +573,7 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 
 		CHECK_SPACE(OP_SIZE);
 
-		int operator_idx = _code_ptr[p_ip + 4];
+		int operator_idx = _code_ptr[p_info->ip + 4];
 		GD_ERR_BREAK(operator_idx < 0 || operator_idx >= _operator_funcs_count);
 		Variant::ValidatedOperatorEvaluator operator_func = _operator_funcs_ptr[operator_idx];
 
@@ -786,7 +583,7 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 
 		operator_func(a, b, dst);
 
-		p_ip += OP_SIZE;
+		p_info->ip += OP_SIZE;
 	} else {
 		const int OP_SIZE = 8;
 		const int LHS_INDEX = 1;
@@ -798,14 +595,14 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 		GET_VARIANT_PTR(b, RHS_INDEX);
 		GET_VARIANT_PTR(dst, DST_INDEX);
 		// Compute signatures (types of operands) so it can be optimized when matching.
-		uint32_t op_signature = _code_ptr[p_ip + 5];
+		uint32_t op_signature = _code_ptr[p_info->ip + 5];
 		uint32_t actual_signature = (a->get_type() << 8) | (b->get_type());
 
 #ifdef DEBUG_ENABLED
 		if (op == Variant::OP_DIVIDE || op == Variant::OP_MODULE) {
 			// Don't optimize division and modulo since there's not check for division by zero with validated calls.
 			op_signature = 0xFFFF;
-			_code_ptr[p_ip + 5] = op_signature;
+			_code_ptr[p_info->ip + 5] = op_signature;
 		}
 #endif
 
@@ -820,7 +617,7 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 
 			if (unlikely(!op_func)) {
 #ifdef DEBUG_ENABLED
-				p_err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+				p_info->err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
 #endif
 				initializer_mutex.unlock();
 			} else {
@@ -829,18 +626,18 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 				op_func(a, b, dst);
 
 				// Check again in case another thread already set it.
-				if (_code_ptr[p_ip + 5] == 0) {
-					_code_ptr[p_ip + 5] = actual_signature;
-					_code_ptr[p_ip + 6] = static_cast<int>(ret_type);
-					Variant::ValidatedOperatorEvaluator *tmp = reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[p_ip + 7]);
+				if (_code_ptr[p_info->ip + 5] == 0) {
+					_code_ptr[p_info->ip + 5] = actual_signature;
+					_code_ptr[p_info->ip + 6] = static_cast<int>(ret_type);
+					Variant::ValidatedOperatorEvaluator *tmp = reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[p_info->ip + 7]);
 					*tmp = op_func;
 				}
 			}
 			initializer_mutex.unlock();
 		} else if (likely(op_signature == actual_signature)) {
 			// If the signature matches, we can use the optimized path.
-			Variant::Type ret_type = static_cast<Variant::Type>(_code_ptr[p_ip + 6]);
-			Variant::ValidatedOperatorEvaluator op_func = *reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[p_ip + 7]);
+			Variant::Type ret_type = static_cast<Variant::Type>(_code_ptr[p_info->ip + 6]);
+			Variant::ValidatedOperatorEvaluator op_func = *reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[p_info->ip + 7]);
 
 			// Make sure the return value has the correct type.
 			VariantInternal::initialize(dst, ret_type);
@@ -858,17 +655,17 @@ OP_EXEC_IMPLEMENT(OPCODE_OPERATOR) {
 			if (!valid) {
 				if (ret.get_type() == Variant::STRING) {
 					//return a string when invalid with the error
-					p_err_text = ret;
-					p_err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
+					p_info->err_text = ret;
+					p_info->err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
 				} else {
-					p_err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+					p_info->err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
 				}
 				return;
 			}
 			*dst = ret;
 #endif
 		}
-		p_ip += OP_SIZE + _pointer_size;
+		p_info->ip += OP_SIZE + _pointer_size;
 	}
 }
 
@@ -890,11 +687,11 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			GET_VARIANT_PTR(dst, DST_POS);
 			GET_VARIANT_PTR(value, VAL_POS);
 
-			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_ip + BUILTIN_POS];
+			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_POS];
 			GD_ERR_BREAK(builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX);
 
 			*dst = value->get_type() == builtin_type;
-			p_ip += OP_SIZE;
+			p_info->ip += OP_SIZE;
 			break;
 		}
 
@@ -913,8 +710,8 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			GET_VARIANT_PTR(value, VAL_POS);
 
 			GET_VARIANT_PTR(script_type, SCRIPT_POS);
-			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_ip + BUILTIN_POS];
-			int native_type_idx = _code_ptr[p_ip + NATIVE_POS];
+			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_POS];
+			int native_type_idx = _code_ptr[p_info->ip + NATIVE_POS];
 			GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 			const StringName native_type = _global_names_ptr[native_type_idx];
 
@@ -925,7 +722,7 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			}
 
 			*dst = result;
-			p_ip += OP_SIZE;
+			p_info->ip += OP_SIZE;
 			break;
 		}
 
@@ -947,14 +744,14 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			GET_VARIANT_PTR(value, VAL_POS);
 
 			GET_VARIANT_PTR(key_script_type, SCRIPT_A_POS);
-			Variant::Type key_builtin_type = (Variant::Type)_code_ptr[p_ip + BUILTIN_A_POS];
-			int key_native_type_idx = _code_ptr[p_ip + NATIVE_B_POS];
+			Variant::Type key_builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_A_POS];
+			int key_native_type_idx = _code_ptr[p_info->ip + NATIVE_B_POS];
 			GD_ERR_BREAK(key_native_type_idx < 0 || key_native_type_idx >= _global_names_count);
 			const StringName key_native_type = _global_names_ptr[key_native_type_idx];
 
 			GET_VARIANT_PTR(value_script_type, SCRIPT_B_POS);
-			Variant::Type value_builtin_type = (Variant::Type)_code_ptr[p_ip + BUILTIN_B_POS];
-			int value_native_type_idx = _code_ptr[p_ip + NATIVE_B_POS];
+			Variant::Type value_builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_B_POS];
+			int value_native_type_idx = _code_ptr[p_info->ip + NATIVE_B_POS];
 			GD_ERR_BREAK(value_native_type_idx < 0 || value_native_type_idx >= _global_names_count);
 			const StringName value_native_type = _global_names_ptr[value_native_type_idx];
 
@@ -966,7 +763,7 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			}
 
 			*dst = result;
-			p_ip += OP_SIZE;
+			p_info->ip += OP_SIZE;
 			break;
 		}
 
@@ -982,19 +779,19 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			GET_VARIANT_PTR(dst, DST_POS);
 			GET_VARIANT_PTR(value, VAL_POS);
 
-			int native_type_idx = _code_ptr[p_ip + NATIVE_POS];
+			int native_type_idx = _code_ptr[p_info->ip + NATIVE_POS];
 			GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 			const StringName native_type = _global_names_ptr[native_type_idx];
 
 			bool was_freed = false;
 			Object *object = value->get_validated_object_with_check(was_freed);
 			if (was_freed) {
-				p_err_text = "Left operand of 'is' is a previously freed instance.";
+				p_info->err_text = "Left operand of 'is' is a previously freed instance.";
 				return;
 			}
 
 			*dst = object && ClassDB::is_parent_class(object->get_class_name(), native_type);
-			p_ip += OP_SIZE;
+			p_info->ip += OP_SIZE;
 			break;
 		}
 
@@ -1017,7 +814,7 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			bool was_freed = false;
 			Object *object = value->get_validated_object_with_check(was_freed);
 			if (was_freed) {
-				p_err_text = "Left operand of 'is' is a previously freed instance.";
+				p_info->err_text = "Left operand of 'is' is a previously freed instance.";
 				return;
 			}
 
@@ -1034,68 +831,1873 @@ OP_EXEC_IMPLEMENT(OPCODE_TYPE_TEST) {
 			}
 
 			*dst = result;
-			p_ip += OP_SIZE;
+			p_info->ip += OP_SIZE;
 			break;
 		}
 
 		default:
-			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Invalid opcode argument for OPCODE_TYPE_TEST: ' " + String::num_int64(arg) + " '. This is a bug, please report it!...");
+			_report_invalid_arg_error(arg, _STR(OPCODE_TYPE_TEST));
 			break;
 	}
 }
 
-OP_EXEC_IMPLEMENT(OPCODE_SET_KEYED) {} // Can be Validated
+OP_EXEC_IMPLEMENT(OPCODE_SET) {
+	GET_CALL_ARGUMENT(arg)
 
-OP_EXEC_IMPLEMENT(OPCODE_SET_INDEXED) {} // Only Validated
+	switch (arg) {
+		case SetGetArgs::KEYED: {
+			const int
+					OP_SIZE = 4,
+					DST_POS = 1,
+					IDX_POS = 2,
+					VAL_POS = 3;
 
-OP_EXEC_IMPLEMENT(OPCODE_GET_KEYED) {} // Can be Validated
+			CHECK_SPACE(OP_SIZE);
 
-OP_EXEC_IMPLEMENT(OPCODE_GET_INDEXED) {} // Only Validated
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(index, IDX_POS);
+			GET_VARIANT_PTR(value, VAL_POS);
 
-OP_EXEC_IMPLEMENT(OPCODE_SET_NAMED) {} // Can be Validated
+			bool valid;
+#ifdef DEBUG_ENABLED
+			Variant::VariantSetError err_code;
+			dst->set(*index, *value, &valid, &err_code);
+#else
+			dst->set(*index, *value, &valid);
+#endif
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				if (dst->is_read_only()) {
+					p_info->err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
+				} else {
+					Object *obj = dst->get_validated_object();
+					String v = index->operator String();
+					bool read_only_property = false;
+					if (obj) {
+						read_only_property = ClassDB::has_property(obj->get_class_name(), v) && (ClassDB::get_property_setter(obj->get_class_name(), v) == StringName());
+					}
+					if (read_only_property) {
+						p_info->err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", v, _get_var_type(dst));
+					} else {
+						if (!v.is_empty()) {
+							v = "'" + v + "'";
+						} else {
+							v = "of type '" + _get_var_type(index) + "'";
+						}
+						p_info->err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+						if (err_code == Variant::VariantSetError::SET_INDEXED_ERR) {
+							p_info->err_text = "Invalid assignment of index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+						}
+					}
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
 
-OP_EXEC_IMPLEMENT(OPCODE_GET_NAMED) {} // Can be Validated
+		case SetGetArgs::KEYED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 5,
+					DST_POS = 1,
+					IDX_POS = 2,
+					VAL_POS = 3,
+					SETTER_POS = 4;
 
-OP_EXEC_IMPLEMENT(OPCODE_SET_MEMBER) {}
+			CHECK_SPACE(OP_SIZE);
 
-OP_EXEC_IMPLEMENT(OPCODE_GET_MEMBER) {}
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(index, IDX_POS);
+			GET_VARIANT_PTR(value, VAL_POS);
 
-OP_EXEC_IMPLEMENT(OPCODE_SET_STATIC_VARIABLE) {} // Only for GDScript.
+			int index_setter = _code_ptr[p_info->ip + SETTER_POS];
+			GD_ERR_BREAK(index_setter < 0 || index_setter >= _keyed_setters_count);
+			const Variant::ValidatedKeyedSetter setter = _keyed_setters_ptr[index_setter];
 
-OP_EXEC_IMPLEMENT(OPCODE_GET_STATIC_VARIABLE) {} // Only for GDScript.
+			bool valid;
+			setter(dst, index, value, &valid);
 
-OP_EXEC_IMPLEMENT(OPCODE_ASSIGN) {} // Args is AssignArguments
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				if (dst->is_read_only()) {
+					p_info->err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
+				} else {
+					String v = index->operator String();
+					if (!v.is_empty()) {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(index) + "'";
+					}
+					p_info->err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
 
-OP_EXEC_IMPLEMENT(OPCODE_CAST) {} // Args is CastArgs
+		case SetGetArgs::INDEXED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 5,
+					DST_POS = 1,
+					IDX_POS = 2,
+					VAL_POS = 3,
+					SETTER_POS = 4;
 
-OP_EXEC_IMPLEMENT(OPCODE_CONSTRUCT) {} // Only for basic types! Args is ConstructArguments
+			CHECK_SPACE(OP_SIZE);
 
-OP_EXEC_IMPLEMENT(OPCODE_CALL) {} // Args is CallArguments
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(index, IDX_POS);
+			GET_VARIANT_PTR(value, VAL_POS);
 
-OP_EXEC_IMPLEMENT(OPCODE_AWAIT) {}
+			int index_setter = _code_ptr[p_info->ip + SETTER_POS];
+			GD_ERR_BREAK(index_setter < 0 || index_setter >= _indexed_setters_count);
+			const Variant::ValidatedIndexedSetter setter = _indexed_setters_ptr[index_setter];
 
-OP_EXEC_IMPLEMENT(OPCODE_AWAIT_RESUME) {}
+			int64_t int_index = *VariantInternal::get_int(index);
+
+			bool oob;
+			setter(dst, int_index, value, &oob);
+
+#ifdef DEBUG_ENABLED
+			if (oob) {
+				if (dst->is_read_only()) {
+					p_info->err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
+				} else {
+					String v = index->operator String();
+					if (!v.is_empty()) {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(index) + "'";
+					}
+					p_info->err_text = "Out of bounds set index " + v + " (on base: '" + _get_var_type(dst) + "')";
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::NAMED: {
+			const int
+					OP_SIZE = 4,
+					DST_POS = 1,
+					VAL_POS = 2,
+					IDX_POS = 3;
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(value, VAL_POS);
+
+			int indexname = _code_ptr[p_info->ip + IDX_POS];
+
+			GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+			const StringName *index = &_global_names_ptr[indexname];
+
+			bool valid;
+			dst->set_named(*index, *value, valid);
+
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				if (dst->is_read_only()) {
+					p_info->err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
+				} else {
+					Object *obj = dst->get_validated_object();
+					bool read_only_property = false;
+					if (obj) {
+						read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
+					}
+					if (read_only_property) {
+						p_info->err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+					} else {
+						p_info->err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+					}
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::NAMED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					DST_POS = 1,
+					VAL_POS = 2,
+					IDX_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(value, VAL_POS);
+
+			int index_setter = _code_ptr[p_info->ip + IDX_POS];
+			GD_ERR_BREAK(index_setter < 0 || index_setter >= _setters_count);
+			const Variant::ValidatedSetter setter = _setters_ptr[index_setter];
+
+			setter(dst, value);
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::MEMBER: {
+			const int
+					OP_SIZE = 4,
+					SRC_POS = 1,
+					VAL_POS = 2,
+					IDX_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(src, SRC_POS);
+			int indexname = _code_ptr[p_info->ip + IDX_POS];
+			GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+			const StringName *index = &_global_names_ptr[indexname];
+
+			bool valid;
+#ifndef DEBUG_ENABLED
+			ClassDB::set_property(p_instance->owner, *index, *src, &valid);
+#else
+			bool ok = ClassDB::set_property(p_instance->owner, *index, *src, &valid);
+			if (!ok) {
+				p_info->err_text = "Internal error setting property: " + String(*index);
+				return;
+			} else if (!valid) {
+				p_info->err_text = "Error setting property '" + String(*index) + "' with value of type " + Variant::get_type_name(src->get_type()) + ".";
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::STATIC_VARIABLE: {
+			const int
+					OP_SIZE = 5,
+					VAL_POS = 1,
+					CLASS_POS = 2,
+					IDX_POS = 4;
+			CHECK_SPACE(4);
+
+			GET_VARIANT_PTR(value, VAL_POS);
+
+			GET_VARIANT_PTR(_class, CLASS_POS);
+			GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+			GD_ERR_BREAK(!gdscript);
+
+			int index = _code_ptr[p_info->ip + IDX_POS];
+			GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+			gdscript->static_variables.write[index] = *value;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		default:
+			_report_invalid_arg_error(arg, _STR(OPCODE_SET));
+			break;
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_GET) {
+	GET_CALL_ARGUMENT(arg)
+
+	switch (arg) {
+		case SetGetArgs::KEYED: {
+			const int
+					OP_SIZE = 4,
+					SRC_POS = 1,
+					IDX_POS = 2,
+					DST_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(src, SRC_POS);
+			GET_VARIANT_PTR(index, IDX_POS);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			bool valid;
+#ifdef DEBUG_ENABLED
+			// Allow better error message in cases where src and dst are the same stack position.
+			Variant::VariantGetError err_code;
+			Variant ret = src->get(*index, &valid, &err_code);
+#else
+			*dst = src->get(*index, &valid);
+
+#endif
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				String v = index->operator String();
+				if (!v.is_empty()) {
+					v = "'" + v + "'";
+				} else {
+					v = "of type '" + _get_var_type(index) + "'";
+				}
+				p_info->err_text = "Invalid access to property or key " + v + " on a base object of type '" + _get_var_type(src) + "'.";
+				if (err_code == Variant::VariantGetError::GET_INDEXED_ERR) {
+					p_info->err_text = "Invalid access of index " + v + " on a base object of type: '" + _get_var_type(src) + "'.";
+				}
+				return;
+			}
+			*dst = ret;
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::KEYED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 5,
+					SRC_POS = 1,
+					KEY_POS = 2,
+					DST_POS = 3,
+					GETTER_POS = 5;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(src, SRC_POS);
+			GET_VARIANT_PTR(key, KEY_POS);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			int index_getter = _code_ptr[p_info->ip + 4];
+			GD_ERR_BREAK(index_getter < 0 || index_getter >= _keyed_getters_count);
+			const Variant::ValidatedKeyedGetter getter = _keyed_getters_ptr[index_getter];
+
+			bool valid;
+#ifdef DEBUG_ENABLED
+			// Allow better error message in cases where src and dst are the same stack position.
+			Variant ret;
+			getter(src, key, &ret, &valid);
+#else
+			getter(src, key, dst, &valid);
+#endif
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				String v = key->operator String();
+				if (!v.is_empty()) {
+					v = "'" + v + "'";
+				} else {
+					v = "of type '" + _get_var_type(key) + "'";
+				}
+				p_info->err_text = "Invalid access to property or key " + v + " on a base object of type '" + _get_var_type(src) + "'.";
+				return;
+			}
+			*dst = ret;
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::INDEXED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 5,
+					SRC_POS = 1,
+					IDX_POS = 2,
+					DST_POS = 3,
+					GETTER_POS = 5;
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(src, SRC_POS);
+			GET_VARIANT_PTR(index, IDX_POS);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			int index_getter = _code_ptr[p_info->ip + GETTER_POS];
+			GD_ERR_BREAK(index_getter < 0 || index_getter >= _indexed_getters_count);
+			const Variant::ValidatedIndexedGetter getter = _indexed_getters_ptr[index_getter];
+
+			int64_t int_index = *VariantInternal::get_int(index);
+
+			bool oob;
+			getter(src, int_index, dst, &oob);
+
+#ifdef DEBUG_ENABLED
+			if (oob) {
+				String v = index->operator String();
+				if (!v.is_empty()) {
+					v = "'" + v + "'";
+				} else {
+					v = "of type '" + _get_var_type(index) + "'";
+				}
+				p_info->err_text = "Out of bounds get index " + v + " (on base: '" + _get_var_type(src) + "')";
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case SetGetArgs::NAMED: {
+			const int
+					OP_SIZE = 5,
+					SRC_POS = 1,
+					DST_POS = 2,
+					IDX_NAME_POS = 4;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(src, SRC_POS);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			int indexname = _code_ptr[p_info->ip + IDX_NAME_POS];
+
+			GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+			const StringName *index = &_global_names_ptr[indexname];
+
+			bool valid;
+#ifdef DEBUG_ENABLED
+			//allow better error message in cases where src and dst are the same stack position
+			Variant ret = src->get_named(*index, valid);
+
+#else
+			*dst = src->get_named(*index, valid);
+#endif
+#ifdef DEBUG_ENABLED
+			if (!valid) {
+				p_info->err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+				return;
+			}
+			*dst = ret;
+#endif
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case SetGetArgs::NAMED | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					SRC_POS = 1,
+					DST_POS = 2,
+					IDX_NAME_POS = 4;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(src, SRC_POS);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			int index_getter = _code_ptr[p_info->ip + 3];
+			GD_ERR_BREAK(index_getter < 0 || index_getter >= _getters_count);
+			const Variant::ValidatedGetter getter = _getters_ptr[index_getter];
+
+			getter(src, dst);
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case SetGetArgs::MEMBER: {
+			const int
+					OP_SIZE = 4,
+					DST_POS = 1,
+					IDX_NAME_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			int indexname = _code_ptr[p_info->ip + IDX_NAME_POS];
+			GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+			const StringName *index = &_global_names_ptr[indexname];
+#ifndef DEBUG_ENABLED
+			ClassDB::get_property(p_instance->owner, *index, *dst);
+#else
+			bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
+			if (!ok) {
+				p_info->err_text = "Internal error getting property: " + String(*index);
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case SetGetArgs::STATIC_VARIABLE: {
+			static int
+					OP_SIZE = 5,
+					TARGET_POS = 1,
+					CLASS_POS = 2,
+					IDX_POS = 4;
+
+			CHECK_SPACE(OP_SIZE);
+
+			GET_VARIANT_PTR(target, TARGET_POS);
+
+			GET_VARIANT_PTR(_class, CLASS_POS);
+			GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+			GD_ERR_BREAK(!gdscript);
+
+			int index = _code_ptr[p_info->ip + IDX_POS];
+			GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+			*target = gdscript->static_variables[index];
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		default: {
+			_report_invalid_arg_error(arg, _STR(OPCODE_GET));
+			break;
+		}
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_ASSIGN) {
+	GET_CALL_ARGUMENT(arg);
+
+	switch (arg) {
+		case AssignArguments::OTHER: {
+			const int
+					OP_SIZE = 4,
+					DST_POS = 1,
+					SRC_POS = 2;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+			*dst = *src;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::NULL_VAL: {
+			const int
+					OP_SIZE = 3,
+					DST_POS = 1;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			*dst = Variant();
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::TRUE: {
+			const int
+					OP_SIZE = 3,
+					DST_POS = 1;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			*dst = true;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::FALSE: {
+			const int
+					OP_SIZE = 3,
+					DST_POS = 1;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+
+			*dst = Variant();
+
+			p_info->ip += false;
+			break;
+		}
+
+		case AssignArguments::TYPED_BUILTIN: {
+			const int
+					OP_SIZE = 5,
+					DST_POS = 1,
+					SRC_POS = 2,
+					TYPE_POS = 4;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+			Variant::Type var_type = (Variant::Type)_code_ptr[p_info->ip + TYPE_POS];
+			GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
+
+			if (src->get_type() != var_type) {
+#ifdef DEBUG_ENABLED
+				if (Variant::can_convert_strict(src->get_type(), var_type)) {
+#endif // DEBUG_ENABLED
+					Callable::CallError ce;
+					Variant::construct(var_type, *dst, const_cast<const Variant **>(&src), 1, ce);
+				} else {
+#ifdef DEBUG_ENABLED
+					p_info->err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+							"' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
+					return;
+				}
+			} else {
+#endif // DEBUG_ENABLED
+				*dst = *src;
+			}
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::TYPED_ARRAY: {
+			const int
+					OP_SIZE = 7,
+					DST_POS = 1,
+					SRC_POS = 2,
+					SCRIPT_TYPE_POS = 3,
+					BUILTIN_TYPE_POS = 5,
+					NATIVE_TYPE_POS = 6;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+			GET_VARIANT_PTR(script_type, SCRIPT_TYPE_POS);
+			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_TYPE_POS];
+			int native_type_idx = _code_ptr[p_info->ip + NATIVE_TYPE_POS];
+			GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+			const StringName native_type = _global_names_ptr[native_type_idx];
+
+			if (src->get_type() != Variant::ARRAY) {
+#ifdef DEBUG_ENABLED
+				p_info->err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Array[%s]".)",
+						_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+				return;
+			}
+
+			Array *array = VariantInternal::get_array(src);
+
+			if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
+#ifdef DEBUG_ENABLED
+				p_info->err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
+						_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+#endif // DEBUG_ENABLED
+				return;
+			}
+
+			*dst = *src;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::TYPED_DICTIONARY: {
+			const int
+					OP_SIZE = 10,
+					DST_POS = 1,
+					SRC_POS = 2,
+					KEY_SCRIPT_TYPE_POS = 3,
+					VAL_SCRIPT_TYPE_POS = 4,
+					KEY_TYPE_POS = 6,
+					KEY_NATIVE_TYPE_POS = 7,
+					VAL_TYPE_POS = 8,
+					VAL_NATIVE_TYPE_POS = 9;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+			GET_VARIANT_PTR(key_script_type, KEY_SCRIPT_TYPE_POS);
+			Variant::Type key_builtin_type = (Variant::Type)_code_ptr[p_info->ip + KEY_SCRIPT_TYPE_POS];
+			int key_native_type_idx = _code_ptr[p_info->ip + KEY_NATIVE_TYPE_POS];
+			GD_ERR_BREAK(key_native_type_idx < 0 || key_native_type_idx >= _global_names_count);
+			const StringName key_native_type = _global_names_ptr[key_native_type_idx];
+
+			GET_VARIANT_PTR(value_script_type, VAL_SCRIPT_TYPE_POS);
+			Variant::Type value_builtin_type = (Variant::Type)_code_ptr[p_info->ip + VAL_TYPE_POS];
+			int value_native_type_idx = _code_ptr[p_info->ip + VAL_NATIVE_TYPE_POS];
+			GD_ERR_BREAK(value_native_type_idx < 0 || value_native_type_idx >= _global_names_count);
+			const StringName value_native_type = _global_names_ptr[value_native_type_idx];
+
+			if (src->get_type() != Variant::DICTIONARY) {
+#ifdef DEBUG_ENABLED
+				p_info->err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Dictionary[%s, %s]".)",
+						_get_var_type(src), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
+						_get_element_type(value_builtin_type, value_native_type, *value_script_type));
+#endif // DEBUG_ENABLED
+				return;
+			}
+
+			Dictionary *dictionary = VariantInternal::get_dictionary(src);
+
+			if (dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
+					dictionary->get_typed_value_builtin() != ((uint32_t)value_builtin_type) || dictionary->get_typed_value_class_name() != value_native_type || dictionary->get_typed_value_script() != *value_script_type) {
+#ifdef DEBUG_ENABLED
+				p_info->err_text = vformat(R"(Trying to assign a dictionary of type "%s" to a variable of type "Dictionary[%s, %s]".)",
+						_get_var_type(src), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
+						_get_element_type(value_builtin_type, value_native_type, *value_script_type));
+#endif // DEBUG_ENABLED
+				return;
+			}
+
+			*dst = *src;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::TYPED_NATIVE: {
+			const int
+					OP_SIZE = 5,
+					DST_POS = 1,
+					SRC_POS = 2,
+					TYPE_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+#ifdef DEBUG_ENABLED
+			GET_VARIANT_PTR(type, TYPE_POS);
+			GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
+			GD_ERR_BREAK(!nc);
+			if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+				p_info->err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+						"' to a variable of type '" + nc->get_name() + "'.";
+				return;
+			}
+
+			if (src->get_type() == Variant::OBJECT) {
+				bool was_freed = false;
+				Object *src_obj = src->get_validated_object_with_check(was_freed);
+				if (!src_obj && was_freed) {
+					p_info->err_text = "Trying to assign invalid previously freed instance.";
+					return;
+				}
+
+				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+					p_info->err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
+							"' to a variable of type '" + nc->get_name() + "'.";
+					return;
+				}
+			}
+#endif // DEBUG_ENABLED
+			*dst = *src;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case AssignArguments::TYPED_SCRIPT: {
+			const int
+					OP_SIZE = 5,
+					DST_POS = 1,
+					SRC_POS = 2,
+					TYPE_POS = 3;
+
+			CHECK_SPACE(OP_SIZE);
+			GET_VARIANT_PTR(dst, DST_POS);
+			GET_VARIANT_PTR(src, SRC_POS);
+
+#ifdef DEBUG_ENABLED
+			GET_VARIANT_PTR(type, TYPE_POS);
+			Script *base_type = Object::cast_to<Script>(type->operator Object *());
+
+			GD_ERR_BREAK(!base_type);
+
+			if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+				p_info->err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
+				return;
+			}
+
+			if (src->get_type() == Variant::OBJECT) {
+				bool was_freed = false;
+				Object *val_obj = src->get_validated_object_with_check(was_freed);
+				if (!val_obj && was_freed) {
+					p_info->err_text = "Trying to assign invalid previously freed instance.";
+					return;
+				}
+
+				if (val_obj) { // src is not null
+					ScriptInstance *scr_inst = val_obj->get_script_instance();
+					if (!scr_inst) {
+						p_info->err_text = "Trying to assign value of type '" + val_obj->get_class_name() +
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
+						return;
+					}
+
+					Script *src_type = scr_inst->get_script().ptr();
+					bool valid = false;
+
+					while (src_type) {
+						if (src_type == base_type) {
+							valid = true;
+							break;
+						}
+						src_type = src_type->get_base_script().ptr();
+					}
+
+					if (!valid) {
+						p_info->err_text = "Trying to assign value of type '" + val_obj->get_script_instance()->get_script()->get_path().get_file() +
+								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
+						return;
+					}
+				}
+			}
+#endif // DEBUG_ENABLED
+
+			*dst = *src;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		default: {
+			_report_invalid_arg_error(arg, _STR(OPCODE_ASSIGN));
+			break;
+		}
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_CAST) {
+	GET_CALL_ARGUMENT(arg);
+
+	const int
+			OP_SIZE = 5,
+			SRC_POS = 1,
+			DST_POS = 2,
+			TYPE_POS = 4;
+
+	CHECK_SPACE(OP_SIZE);
+	GET_VARIANT_PTR(src, SRC_POS);
+	GET_VARIANT_PTR(dst, DST_POS);
+
+	switch (arg) {
+		case CastArgs::BUILTIN: {
+			Variant::Type to_type = (Variant::Type)_code_ptr[p_info->ip + TYPE_POS];
+			GD_ERR_BREAK(to_type < 0 || to_type >= Variant::VARIANT_MAX);
+
+#ifdef DEBUG_ENABLED
+			if (src->operator Object *() && !src->get_validated_object()) {
+				p_info->err_text = "Trying to cast a freed object.";
+				return;
+			}
+#endif
+
+			Callable::CallError err;
+			Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
+
+#ifdef DEBUG_ENABLED
+			if (err.error != Callable::CallError::CALL_OK) {
+				p_info->err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
+				return;
+			}
+#endif
+			break;
+		}
+
+		case CastArgs::NATIVE: {
+			GET_VARIANT_PTR(to_type, 2);
+			GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(to_type->operator Object *());
+			GD_ERR_BREAK(!nc);
+
+#ifdef DEBUG_ENABLED
+			if (src->operator Object *() && !src->get_validated_object()) {
+				p_info->err_text = "Trying to cast a freed object.";
+				return;
+			}
+			if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+				p_info->err_text = "Invalid cast: can't convert a non-object value to an object type.";
+				return;
+			}
+#endif
+			Object *src_obj = src->operator Object *();
+
+			if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+				*dst = Variant(); // invalid cast, assign NULL
+			} else {
+				*dst = *src;
+			}
+			break;
+		}
+
+		case CastArgs::SCRIPT: {
+			GET_VARIANT_PTR(to_type, 2);
+			Script *base_type = Object::cast_to<Script>(to_type->operator Object *());
+
+			GD_ERR_BREAK(!base_type);
+
+#ifdef DEBUG_ENABLED
+			if (src->operator Object *() && !src->get_validated_object()) {
+				p_info->err_text = "Trying to cast a freed object.";
+				return;
+			}
+			if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+				p_info->err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
+				return;
+			}
+#endif
+
+			bool valid = false;
+
+			if (src->get_type() != Variant::NIL && src->operator Object *() != nullptr) {
+				ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
+
+				if (scr_inst) {
+					Script *src_type = src->operator Object *()->get_script_instance()->get_script().ptr();
+
+					while (src_type) {
+						if (src_type == base_type) {
+							valid = true;
+							break;
+						}
+						src_type = src_type->get_base_script().ptr();
+					}
+				}
+			}
+
+			if (valid) {
+				*dst = *src; // Valid cast, copy the source object
+			} else {
+				*dst = Variant(); // invalid cast, assign NULL
+			}
+		}
+
+		default: {
+			_report_invalid_arg_error(arg, _STR(OPCODE_CAST));
+			break;
+		}
+	}
+
+	p_info->ip += OP_SIZE;
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_CONSTRUCT) {
+	GET_CALL_ARGUMENT(arg);
+
+	const int
+			ARGS_POS = 2;
+
+	int instr_arg_count = _code_ptr[p_info->ip + 2];
+	for (int i = 0; i < instr_arg_count; i++) {
+		GET_VARIANT_PTR(v, i + 1);
+		p_info->instruction_args[i] = v;
+	}
+	p_info->ip += 1; // Offset to skip instruction argcount.
+
+	p_info->ip += instr_arg_count;
+
+	int argc = _code_ptr[p_info->ip + ARGS_POS];
+
+	switch (arg) {
+		case ConstructArguments::OTHER: {
+			const int OP_SIZE = 3;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			Variant::Type t = Variant::Type(_code_ptr[p_info->ip + 2]);
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			Callable::CallError err;
+			Variant::construct(t, *dst, (const Variant **)argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+			if (err.error != Callable::CallError::CALL_OK) {
+				p_info->err_text = _get_call_error("'" + Variant::get_type_name(t) + "' constructor", (const Variant **)argptrs, *dst, err);
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 3,
+					CONSTRUCTOR_POS = 3;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+			int constructor_idx = _code_ptr[p_info->ip + CONSTRUCTOR_POS];
+			GD_ERR_BREAK(constructor_idx < 0 || constructor_idx >= _constructors_count);
+			Variant::ValidatedConstructor constructor = _constructors_ptr[constructor_idx];
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			constructor(dst, (const Variant **)argptrs);
+
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case ConstructArguments::ARRAY: {
+			const int OP_SIZE = 2;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+			Array array;
+			array.resize(argc);
+
+			for (int i = 0; i < argc; i++) {
+				array[i] = *(p_info->instruction_args[i]);
+			}
+
+			GET_INSTRUCTION_ARG(dst, argc);
+			*dst = Variant(); // Clear potential previous typed array.
+
+			*dst = array;
+
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case ConstructArguments::TYPED_ARRAY: {
+			const int
+					OP_SIZE = 4,
+					BUILTIN_TYPE_POS = 3,
+					NATIVE_TYPE_POS = 4;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+			GET_INSTRUCTION_ARG(script_type, argc + 1);
+			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_info->ip + BUILTIN_TYPE_POS];
+			int native_type_idx = _code_ptr[p_info->ip + NATIVE_TYPE_POS];
+			GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+			const StringName native_type = _global_names_ptr[native_type_idx];
+
+			Array array;
+			array.resize(argc);
+			for (int i = 0; i < argc; i++) {
+				array[i] = *(p_info->instruction_args[i]);
+			}
+
+			GET_INSTRUCTION_ARG(dst, argc);
+			*dst = Variant(); // Clear potential previous typed array.
+
+			*dst = Array(array, builtin_type, native_type, *script_type);
+
+			p_info->ip += OP_SIZE + 1;
+			break;
+		}
+
+		case ConstructArguments::DICTIONARY: {
+			const int OP_SIZE = 3;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+			Dictionary dict;
+
+			for (int i = 0; i < argc; i++) {
+				GET_INSTRUCTION_ARG(k, i * 2 + 0);
+				GET_INSTRUCTION_ARG(v, i * 2 + 1);
+				dict[*k] = *v;
+			}
+
+			GET_INSTRUCTION_ARG(dst, argc * 2);
+
+			*dst = Variant(); // Clear potential previous typed dictionary.
+
+			*dst = dict;
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case ConstructArguments::TYPED_DICTIONARY: {
+			const int
+					OP_SIZE = 7,
+					KEY_BUILTIN_TYPE_POS = 3,
+					KEY_NATIVE_TYPE_POS = 4,
+					VAL_BUILTIN_TYPE_POS = 5,
+					VAL_NATIVE_TYPE_POS = 6;
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			GET_INSTRUCTION_ARG(key_script_type, argc * 2 + 1);
+			Variant::Type key_builtin_type = (Variant::Type)_code_ptr[p_info->ip + KEY_BUILTIN_TYPE_POS];
+			int key_native_type_idx = _code_ptr[p_info->ip + KEY_NATIVE_TYPE_POS];
+			GD_ERR_BREAK(key_native_type_idx < 0 || key_native_type_idx >= _global_names_count);
+			const StringName key_native_type = _global_names_ptr[key_native_type_idx];
+
+			GET_INSTRUCTION_ARG(value_script_type, argc * 2 + 2);
+			Variant::Type value_builtin_type = (Variant::Type)_code_ptr[p_info->ip + VAL_BUILTIN_TYPE_POS];
+			int value_native_type_idx = _code_ptr[p_info->ip + VAL_NATIVE_TYPE_POS];
+			GD_ERR_BREAK(value_native_type_idx < 0 || value_native_type_idx >= _global_names_count);
+			const StringName value_native_type = _global_names_ptr[value_native_type_idx];
+
+			Dictionary dict;
+
+			for (int i = 0; i < argc; i++) {
+				GET_INSTRUCTION_ARG(k, i * 2 + 0);
+				GET_INSTRUCTION_ARG(v, i * 2 + 1);
+				dict[*k] = *v;
+			}
+
+			GET_INSTRUCTION_ARG(dst, argc * 2);
+
+			*dst = Variant(); // Clear potential previous typed dictionary.
+
+			*dst = Dictionary(dict, key_builtin_type, key_native_type, *key_script_type, value_builtin_type, value_native_type, *value_script_type);
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		default: {
+			_report_invalid_arg_error(arg, _STR(OPCODE_CONSTRUCT));
+			break;
+		}
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_CALL) {
+	GET_CALL_ARGUMENT(arg);
+
+#define LOAD_ARGS                                    \
+	int instr_arg_count = _code_ptr[p_info->ip + 2]; \
+	for (int i = 0; i < instr_arg_count; i++) {      \
+		GET_VARIANT_PTR(v, i + 1);                   \
+		p_info->instruction_args[i] = v;             \
+	}                                                \
+	p_info->ip += 1; // Offset to skip instruction argcount.
+
+	bool is_validated = arg & ArgumentMask::IS_VALIDATED;
+
+	switch (arg) {
+		case CallArguments::ASYNC:
+		case CallArguments::RETURN:
+		case CallArguments::OTHER: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHODNAME = 3;
+			bool call_ret = arg != CallArguments::OTHER;
+#ifdef DEBUG_ENABLED
+			bool call_async = arg == CallArguments::ASYNC;
+#endif
+			LOAD_ARGS
+			CHECK_SPACE(3 + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			int methodname_idx = _code_ptr[p_info->ip + METHODNAME];
+			GD_ERR_BREAK(methodname_idx < 0 || methodname_idx >= _global_names_count);
+			const StringName *methodname = &_global_names_ptr[methodname_idx];
+
+			GET_INSTRUCTION_ARG(base, argc);
+			Variant **argptrs = p_info->instruction_args;
+
+#ifdef DEBUG_ENABLED
+			uint64_t call_time = 0;
+
+			if (GDScriptLanguage::get_singleton()->profiling) {
+				call_time = OS::get_singleton()->get_ticks_usec();
+			}
+			Variant::Type base_type = base->get_type();
+			Object *base_obj = base->get_validated_object();
+			StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
+#endif
+
+			Variant temp_ret;
+			Callable::CallError err;
+			if (call_ret) {
+				GET_INSTRUCTION_ARG(ret, argc + 1);
+				base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
+				*ret = temp_ret;
+#ifdef DEBUG_ENABLED
+				if (ret->get_type() == Variant::NIL) {
+					if (base_type == Variant::OBJECT) {
+						if (base_obj) {
+							MethodBind *method = ClassDB::get_method(base_class, *methodname);
+							if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
+								p_info->err_text = R"(Trying to get a return value of a method that returns "void")";
+								return;
+							}
+						}
+					} else if (Variant::has_builtin_method(base_type, *methodname) && !Variant::has_builtin_method_return_value(base_type, *methodname)) {
+						p_info->err_text = R"(Trying to get a return value of a method that returns "void")";
+						return;
+					}
+				}
+
+				if (!call_async && ret->get_type() == Variant::OBJECT) {
+					// Check if getting a function state without await.
+					bool was_freed = false;
+					Object *obj = ret->get_validated_object_with_check(was_freed);
+
+					if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+						p_info->err_text = R"(Trying to call an async function without "await".)";
+						return;
+					}
+				}
+#endif
+			} else {
+				base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
+			}
+#ifdef DEBUG_ENABLED
+
+			if (GDScriptLanguage::get_singleton()->profiling) {
+				uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+				if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
+					_profile_native_call(t_taken, *methodname, base_class);
+				}
+				p_info->function_call_time += t_taken;
+			}
+
+			if (err.error != Callable::CallError::CALL_OK) {
+				String methodstr = *methodname;
+				String basestr = _get_var_type(base);
+				bool is_callable = false;
+
+				if (methodstr == "call") {
+					if (argc >= 1 && base->get_type() != Variant::CALLABLE) {
+						methodstr = String(*argptrs[0]) + " (via call)";
+						if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+							err.argument += 1;
+						}
+					} else {
+						methodstr = base->operator String() + " (Callable)";
+						is_callable = true;
+					}
+				} else if (methodstr == "free") {
+					if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
+						if (base->is_ref_counted()) {
+							p_info->err_text = "Attempted to free a RefCounted object.";
+							return;
+						} else if (base->get_type() == Variant::OBJECT) {
+							p_info->err_text = "Attempted to free a locked object (calling or emitting).";
+							return;
+						}
+					}
+				} else if (methodstr == "call_recursive" && basestr == "TreeItem") {
+					if (argc >= 1) {
+						methodstr = String(*argptrs[0]) + " (via TreeItem.call_recursive)";
+						if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+							err.argument += 1;
+						}
+					}
+				}
+				p_info->err_text = _get_call_error("function '" + methodstr + (is_callable ? "" : "' in base '" + basestr) + "'", (const Variant **)argptrs, temp_ret, err);
+				return;
+			}
+#endif // DEBUG_ENABLED
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::UTILITY: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _global_names_count);
+			StringName function = _global_names_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			Callable::CallError err;
+			Variant::call_utility_function(function, dst, (const Variant **)argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+			if (err.error != Callable::CallError::CALL_OK) {
+				String methodstr = function;
+				if (dst->get_type() == Variant::STRING && !dst->operator String().is_empty()) {
+					// Call provided error string.
+					p_info->err_text = vformat(R"*(Error calling utility function "%s()": %s)*", methodstr, *dst);
+				} else {
+					p_info->err_text = _get_call_error(vformat(R"*(utility function "%s()")*", methodstr), (const Variant **)argptrs, *dst, err);
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::UTILITY | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _utilities_count);
+			Variant::ValidatedUtilityFunction function = _utilities_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			function(dst, (const Variant **)argptrs, argc);
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::GDSCRIPT_UTILITY: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _gds_utilities_count);
+			GDScriptUtilityFunctions::FunctionPtr function = _gds_utilities_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			Callable::CallError err;
+			function(dst, (const Variant **)argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+			if (err.error != Callable::CallError::CALL_OK) {
+				String methodstr = gds_utilities_names[_code_ptr[ip + 2]];
+				if (dst->get_type() == Variant::STRING && !dst->operator String().is_empty()) {
+					// Call provided error string.
+					p_info->err_text = vformat(R"*(Error calling GDScript utility function "%s()": %s)*", methodstr, *dst);
+				} else {
+					p_info->err_text = _get_call_error(vformat(R"*(GDScript utility function "%s()")*", methodstr), (const Variant **)argptrs, *dst, err);
+				}
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::BUILTIN_TYPE | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GET_INSTRUCTION_ARG(base, argc);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _builtin_methods_count);
+			Variant::ValidatedBuiltInMethod method = _builtin_methods_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(ret, argc + 1);
+			method(base, (const Variant **)argptrs, argc, ret);
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::SELF_BASE: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			int self_fun = _code_ptr[p_info->ip + METHOD_POS];
+#ifdef DEBUG_ENABLED
+			if (self_fun < 0 || self_fun >= _global_names_count) {
+				p_info->err_text = "compiler bug, function name not found";
+				return;
+			}
+#endif
+			const StringName *methodname = &_global_names_ptr[self_fun];
+
+			Variant **argptrs = p_info->instruction_args;
+
+			GET_INSTRUCTION_ARG(dst, argc);
+
+			const GDScript *gds = _script;
+
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E;
+			while (gds->base.ptr()) {
+				gds = gds->base.ptr();
+				E = gds->member_functions.find(*methodname);
+				if (E) {
+					break;
+				}
+			}
+
+			Callable::CallError err;
+
+			if (E) {
+				*dst = E->value->call(p_instance, (const Variant **)argptrs, argc, err);
+			} else if (gds->native.ptr()) {
+				if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
+					MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
+					if (!mb) {
+						err.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+					} else {
+						*dst = mb->call(p_instance->owner, (const Variant **)argptrs, argc, err);
+					}
+				} else {
+					err.error = Callable::CallError::CALL_OK;
+				}
+			} else {
+				if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
+					err.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+				} else {
+					err.error = Callable::CallError::CALL_OK;
+				}
+			}
+
+			if (err.error != Callable::CallError::CALL_OK) {
+				String methodstr = *methodname;
+				p_info->err_text = _get_call_error("function '" + methodstr + "'", (const Variant **)argptrs, *dst, err);
+
+				return;
+			}
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::METHOD_BIND:
+		case CallArguments::METHOD_BIND_RETURN: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+
+			bool call_ret = arg == CallArguments::METHOD_BIND_RETURN;
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _methods_count);
+			MethodBind *method = _methods_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			GET_INSTRUCTION_ARG(base, argc);
+
+#ifdef DEBUG_ENABLED
+			bool freed = false;
+			Object *base_obj = base->get_validated_object_with_check(freed);
+			if (freed) {
+				p_info->err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);
+				return;
+			} else if (!base_obj) {
+				p_info->err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
+				return;
+			}
+#else
+			Object *base_obj = base->operator Object *();
+#endif
+			Variant **argptrs = p_info->instruction_args;
+
+#ifdef DEBUG_ENABLED
+			uint64_t call_time = 0;
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				call_time = OS::get_singleton()->get_ticks_usec();
+			}
+#endif
+
+			Variant temp_ret;
+			Callable::CallError err;
+			if (call_ret) {
+				GET_INSTRUCTION_ARG(ret, argc + 1);
+				temp_ret = method->call(base_obj, (const Variant **)argptrs, argc, err);
+				*ret = temp_ret;
+			} else {
+				temp_ret = method->call(base_obj, (const Variant **)argptrs, argc, err);
+			}
+
+#ifdef DEBUG_ENABLED
+
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+				_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+				p_function_call_time += t_taken;
+			}
+
+			if (err.error != Callable::CallError::CALL_OK) {
+				String methodstr = method->get_name();
+				String basestr = _get_var_type(base);
+
+				if (methodstr == "call") {
+					if (argc >= 1) {
+						methodstr = String(*argptrs[0]) + " (via call)";
+						if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+							err.argument += 1;
+						}
+					}
+				} else if (methodstr == "free") {
+					if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
+						if (base->is_ref_counted()) {
+							p_info->err_text = "Attempted to free a RefCounted object.";
+							return;
+						} else if (base->get_type() == Variant::OBJECT) {
+							p_info->err_text = "Attempted to free a locked object (calling or emitting).";
+							return;
+						}
+					}
+				}
+				p_info->err_text = _get_call_error("function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs, temp_ret, err);
+				return;
+			}
+#endif
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::BUILTIN_STATIC: {
+			const int
+					OP_SIZE = 5,
+					METHOD_POS = 2,
+					METHOD_NAME_POS = 3,
+					ARGS_POS = 4;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= Variant::VARIANT_MAX);
+			Variant::Type builtin_type = (Variant::Type)_code_ptr[p_info->ip + METHOD_POS];
+
+			int methodname_idx = _code_ptr[p_info->ip + METHOD_NAME_POS];
+			GD_ERR_BREAK(methodname_idx < 0 || methodname_idx >= _global_names_count);
+			const StringName *methodname = &_global_names_ptr[methodname_idx];
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GET_INSTRUCTION_ARG(ret, argc);
+
+			const Variant **argptrs = const_cast<const Variant **>(p_info->instruction_args);
+
+			Callable::CallError err;
+			Variant::call_static(builtin_type, *methodname, argptrs, argc, *ret, err);
+
+#ifdef DEBUG_ENABLED
+			if (err.error != Callable::CallError::CALL_OK) {
+				p_info->err_text = _get_call_error("static function '" + methodname->operator String() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, *ret, err);
+				return;
+			}
+#endif
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::NATIVE_STATIC: {
+			const int
+					OP_SIZE = 4,
+					METHOD_POS = 2,
+					ARGS_POS = 3;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _methods_count);
+			MethodBind *method = _methods_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GET_INSTRUCTION_ARG(ret, argc);
+
+			const Variant **argptrs = const_cast<const Variant **>(p_info->instruction_args);
+
+#ifdef DEBUG_ENABLED
+			uint64_t call_time = 0;
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				call_time = OS::get_singleton()->get_ticks_usec();
+			}
+#endif
+
+			Callable::CallError err;
+			*ret = method->call(nullptr, argptrs, argc, err);
+
+#ifdef DEBUG_ENABLED
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+				_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+				p_function_call_time += t_taken;
+			}
+#endif
+
+			if (err.error != Callable::CallError::CALL_OK) {
+				p_info->err_text = _get_call_error("static function '" + method->get_name().operator String() + "' in type '" + method->get_instance_class().operator String() + "'", argptrs, *ret, err);
+				return;
+			}
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::NATIVE_STATIC_RETURN | ArgumentMask::IS_VALIDATED:
+		case CallArguments::NATIVE_STATIC_NO_RETURN | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+			bool is_return = arg == CallArguments::NATIVE_STATIC_RETURN | ArgumentMask::IS_VALIDATED;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _methods_count);
+			MethodBind *method = _methods_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			Variant **argptrs = p_info->instruction_args;
+
+#ifdef DEBUG_ENABLED
+			uint64_t call_time = 0;
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				call_time = OS::get_singleton()->get_ticks_usec();
+			}
+#endif
+			if (is_return) {
+				GET_INSTRUCTION_ARG(ret, argc);
+				method->validated_call(nullptr, (const Variant **)argptrs, ret);
+			}
+#ifdef DEBUG_ENABLED
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+				_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+				p_function_call_time += t_taken;
+			}
+#endif
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		case CallArguments::METHOD_BIND_RETURN | ArgumentMask::IS_VALIDATED:
+		case CallArguments::METHOD_BIND_NO_RETURN | ArgumentMask::IS_VALIDATED: {
+			const int
+					OP_SIZE = 4,
+					ARGS_POS = 2,
+					METHOD_POS = 3;
+			bool is_return = arg == CallArguments::METHOD_BIND_RETURN | ArgumentMask::IS_VALIDATED;
+
+			LOAD_ARGS
+			CHECK_SPACE(OP_SIZE + instr_arg_count);
+
+			p_info->ip += instr_arg_count;
+
+			int argc = _code_ptr[p_info->ip + ARGS_POS];
+			GD_ERR_BREAK(argc < 0);
+
+			GD_ERR_BREAK(_code_ptr[p_info->ip + METHOD_POS] < 0 || _code_ptr[p_info->ip + METHOD_POS] >= _methods_count);
+			MethodBind *method = _methods_ptr[_code_ptr[p_info->ip + METHOD_POS]];
+
+			GET_INSTRUCTION_ARG(base, argc);
+#ifdef DEBUG_ENABLED
+			bool freed = false;
+			Object *base_obj = base->get_validated_object_with_check(freed);
+			if (freed) {
+				p_info->err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);
+				return;
+			} else if (!base_obj) {
+				p_info->err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
+				return;
+			}
+#else
+			Object *base_obj = *VariantInternal::get_object(base);
+#endif
+			Variant **argptrs = p_info->instruction_args;
+#ifdef DEBUG_ENABLED
+			uint64_t call_time = 0;
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				call_time = OS::get_singleton()->get_ticks_usec();
+			}
+#endif
+
+			GET_INSTRUCTION_ARG(ret, argc + 1);
+			if (is_return) {
+				VariantInternal::initialize(ret, Variant::NIL);
+			}
+			method->validated_call(base_obj, (const Variant **)argptrs, nullptr);
+
+#ifdef DEBUG_ENABLED
+			if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
+				uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
+				_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
+				p_info->function_call_time += t_taken;
+			}
+#endif
+
+			p_info->ip += OP_SIZE;
+			break;
+		}
+
+		default: {
+			_report_invalid_arg_error(arg, _STR(OPCODE_CALL));
+			break;
+		}
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_AWAIT) {
+	const int
+			OP_SIZE = 2,
+			OBJ_POS = 0;
+
+	CHECK_SPACE(OP_SIZE);
+
+	// Do the one-shot connect.
+	GET_VARIANT_PTR(argobj, OBJ_POS);
+
+	Signal sig;
+	bool is_signal = true;
+
+	{
+		Variant result = *argobj;
+
+		if (argobj->get_type() == Variant::OBJECT) {
+			bool was_freed = false;
+			Object *obj = argobj->get_validated_object_with_check(was_freed);
+
+			if (was_freed) {
+				p_info->err_text = "Trying to await on a freed object.";
+				return;
+			}
+
+			// Is this even possible to be null at this point?
+			if (obj) {
+				if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+					result = Signal(obj, "completed");
+				}
+			}
+		}
+
+		if (result.get_type() != Variant::SIGNAL) {
+			// Not async, return immediately using the target from OPCODE_AWAIT_RESUME.
+			GET_VARIANT_PTR(target, 2);
+			*target = result;
+			p_info->ip += 4; // Skip OPCODE_AWAIT_RESUME and its data.
+			is_signal = false;
+		} else {
+			sig = result;
+		}
+	}
+
+	if (is_signal) {
+		Ref<GDScriptFunctionState> gdfs = memnew(GDScriptFunctionState);
+		gdfs->function = this;
+
+		gdfs->state.stack.resize(p_info->alloca_size);
+
+		// First 3 stack addresses are special, so we just skip them here.
+		for (int i = 3; i < _stack_size; i++) {
+			memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(p_info->stack[i]));
+		}
+		gdfs->state.stack_size = _stack_size;
+		gdfs->state.alloca_size = p_info->alloca_size;
+		gdfs->state.ip = p_info->ip + 2;
+		gdfs->state.line = p_info->line;
+		gdfs->state.script = _script;
+		{
+			MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+			_script->pending_func_states.add(&gdfs->scripts_list);
+			if (p_instance) {
+				gdfs->state.instance = p_instance;
+				p_instance->pending_func_states.add(&gdfs->instances_list);
+			} else {
+				gdfs->state.instance = nullptr;
+			}
+		}
+#ifdef DEBUG_ENABLED
+		gdfs->state.function_name = name;
+		gdfs->state.script_path = _script->get_script_path();
+#endif
+		gdfs->state.defarg = p_info->defarg;
+		gdfs->function = this;
+
+		p_info->retvalue = gdfs;
+
+		Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(p_info->retvalue), Object::CONNECT_ONE_SHOT);
+		if (err != OK) {
+			p_info->err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
+			return;
+		}
+
+#ifdef DEBUG_ENABLED
+		p_info->exit_ok = true;
+		p_info->awaited = true;
+#endif
+	}
+}
+
+OP_EXEC_IMPLEMENT(OPCODE_AWAIT_RESUME) {
+	const int
+			OP_SIZE = 3,
+			RES_POS = 1;
+
+	CHECK_SPACE(OP_SIZE);
+#ifdef DEBUG_ENABLED
+	if (!p_info->state) {
+		p_info->err_text = ("Invalid Resume (bug?)");
+		return;
+	}
+#endif
+	GET_VARIANT_PTR(result, RES_POS);
+	*result = p_info->state->result;
+	p_info->ip += 2;
+}
 
 OP_EXEC_IMPLEMENT(OPCODE_CREATE_LAMBDA) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_CREATE_SELF_LAMBDA) {}
 
-OP_EXEC_IMPLEMENT(OPCODE_JUMP) {} // Args is JumpArgs
+OP_EXEC_IMPLEMENT(OPCODE_JUMP) {}
 
-OP_EXEC_IMPLEMENT(OPCODE_RETURN) {} // Args is ReturnArgs
+OP_EXEC_IMPLEMENT(OPCODE_RETURN) {}
 
-OP_EXEC_IMPLEMENT(OPCODE_ITERATE_BEGIN) {} // Args is IterateArguments
+OP_EXEC_IMPLEMENT(OPCODE_ITERATE_BEGIN) {}
 
-OP_EXEC_IMPLEMENT(OPCODE_ITERATE) {} // Args is IterateArguments
+OP_EXEC_IMPLEMENT(OPCODE_ITERATE) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_STORE_GLOBAL) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_STORE_NAMED_GLOBAL) {}
 
-OP_EXEC_IMPLEMENT(OPCODE_TYPE_ADJUST) {} // Args is AdjustArguments
+OP_EXEC_IMPLEMENT(OPCODE_TYPE_ADJUST) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_ASSERT) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_BREAKPOINT) {}
 
 OP_EXEC_IMPLEMENT(OPCODE_LINE) {}
+
+void _report_invalid_arg_error(int arg, String opcode_name) {
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Invalid opcode argument for" + opcode_name + ": ' " + String::num_int64(arg) + " '. This is a bug, please report it!...");
+}
