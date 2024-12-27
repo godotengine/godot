@@ -589,6 +589,9 @@
 		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
 			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
 		</constant>
+		<constant name="COMPRESSION_LZ4" value="5" enum="CompressionMode">
+			Uses the [url=https://lz4.org]LZ4[/url] compression method.
+		</constant>
 		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
 			Read for owner bit.
 		</constant>

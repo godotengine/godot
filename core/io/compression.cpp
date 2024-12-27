@@ -42,6 +42,10 @@
 #include <brotli/decode.h>
 #endif
 
+#ifdef LZ4_ENABLED
+#include <lz4.h>
+#endif
+
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 	switch (p_mode) {
 		case MODE_BROTLI: {
@@ -57,6 +61,14 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 				return fastlz_compress(p_src, p_src_size, p_dst);
 			}
 
+		} break;
+		case MODE_LZ4: {
+#ifdef LZ4_ENABLED
+			return LZ4_compress_default(reinterpret_cast<const char *>(p_src), reinterpret_cast<char *>(p_dst),
+					p_src_size, LZ4_compressBound(p_src_size));
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without LZ4 support.");
+#endif
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
@@ -113,6 +125,13 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 			return ss;
 
 		} break;
+		case MODE_LZ4: {
+#ifdef LZ4_ENABLED
+			return LZ4_compressBound(p_src_size);
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without LZ4 support.");
+#endif
+		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
@@ -161,6 +180,14 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 				ret_size = fastlz_decompress(p_src, p_src_size, p_dst, p_dst_max_size);
 			}
 			return ret_size;
+		} break;
+		case MODE_LZ4: {
+#ifdef LZ4_ENABLED
+			return LZ4_decompress_safe_partial(reinterpret_cast<const char *>(p_src), reinterpret_cast<char *>(p_dst),
+					p_src_size, p_dst_max_size, p_dst_max_size);
+#else
+			ERR_FAIL_V_MSG(-1, "Godot was compiled without LZ4 support.");
+#endif
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {

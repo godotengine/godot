@@ -564,6 +564,17 @@ Patch `godot-node-debug-fix.patch` workarounds shadowing of Godot's Node class
 in the MSVC debugger.
 
 
+## LZ4
+
+- Upstream: https://github.com/lz4/lz4
+- Version: 1.10.0 (ebb370ca83af193212df4dcbadcc5d87bc0de2f0, 2024)
+- License: BSD-2-Clause
+
+Files extracted from upstream source:
+
+- `lib/lz4.c`, `lib/lz4.h` and `LICENSE`
+
+
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
