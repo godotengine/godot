@@ -292,8 +292,3 @@ bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
 Array CameraFeed::get_formats() const {
 	return Array();
 }
-
-CameraFeed::FeedFormat CameraFeed::get_format() const {
-	FeedFormat feed_format = {};
-	return feed_format;
-}

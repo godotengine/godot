@@ -62,22 +62,12 @@ private:
 	int id; // unique id for this, for internal use in case feeds are removed
 
 protected:
-	struct FeedFormat {
-		int width = 0;
-		int height = 0;
-		String format;
-		int frame_numerator = 0;
-		int frame_denominator = 0;
-		uint32_t pixel_format = 0;
-	};
-
 	String name; // name of our camera feed
 	FeedDataType datatype; // type of texture data stored
 	FeedPosition position; // position of camera on the device
 	Transform2D transform; // display transform
 	int base_width = 0;
 	int base_height = 0;
-	Vector<FeedFormat> formats;
 	Dictionary parameters;
 	int selected_format = -1;
 
@@ -118,7 +108,6 @@ public:
 
 	virtual bool set_format(int p_index, const Dictionary &p_parameters);
 	virtual Array get_formats() const;
-	virtual FeedFormat get_format() const;
 
 	virtual bool activate_feed();
 	virtual void deactivate_feed();

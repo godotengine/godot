@@ -304,7 +304,7 @@ Array CameraFeedLinux::get_formats() const {
 	return result;
 }
 
-CameraFeed::FeedFormat CameraFeedLinux::get_format() const {
+CameraFeedLinux::FeedFormat CameraFeedLinux::get_format() const {
 	FeedFormat feed_format = {};
 	return selected_format == -1 ? feed_format : formats[selected_format];
 }
