@@ -1174,7 +1174,6 @@ void fragment_shader(in SceneData scene_data) {
 		normal = -normal;
 	}
 #endif // DO_SIDE_CHECK
-	vec3 geo_normal = normalize(normal);
 #endif // NORMAL_USED
 
 #ifdef UV_USED
@@ -1253,6 +1252,10 @@ void fragment_shader(in SceneData scene_data) {
 	view = -normalize(vertex);
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
+
+#ifdef NORMAL_USED
+	vec3 geo_normal = normalize(normal);
+#endif // NORMAL_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
