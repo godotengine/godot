@@ -88,7 +88,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="t" type="float" />
 			<description>
-				Returns the position between the control point [param idx] and the control point [code]idx + 1[/code], where [param t] controls if the point is the first point ([code]t = 0.0[/code]), the las tpoint ([code]t = 1.0[/code]), or in between. Values of [param t] outside the range ([code]0.0 &lt;= t &lt;= 1.0[/code]) give strange, but predictable results.
+				Returns the position between the control point [param idx] and the control point [code]idx + 1[/code], where [param t] controls if the point is the first point ([code]t = 0.0[/code]), the last point ([code]t = 1.0[/code]), or in between. Values of [param t] outside the range ([code]0.0 &lt;= t &lt;= 1.0[/code]) give strange, but predictable results.
 				If [param idx] is out of bounds it is truncated to the first or last control point, and [param t] is ignored. If the curve has no points, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
