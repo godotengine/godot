@@ -59,21 +59,21 @@
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the control point leading to the curve point [param idx]. The returned position is relative to the curve point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
+				Returns the position of the control point leading to the control point [param idx]. The returned position is relative to the control point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_out" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the control point leading out of the curve point [param idx]. The returned position is relative to the curve point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
+				Returns the position of the control point leading out of the control point [param idx]. The returned position is relative to the control point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the curve point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
+				Returns the position of the control point [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
 		<method name="remove_point">
@@ -88,8 +88,8 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="t" type="float" />
 			<description>
-				Returns the position between the curve point [param idx] and the curve point [code]idx + 1[/code], where [param t] controls if the point is the first point ([code]t = 0.0[/code]), the las tpoint ([code]t = 1.0[/code]), or in between. Values of [param t] outside the range ([code]0.0 &lt;= t &lt;= 1.0[/code]) give strange, but predictable results.
-				If [param idx] is out of bounds it is truncated to the first or last curve point, and [param t] is ignored. If the curve has no points, the function sends an error to the console, and returns [code](0, 0)[/code].
+				Returns the position between the control point [param idx] and the control point [code]idx + 1[/code], where [param t] controls if the point is the first point ([code]t = 0.0[/code]), the las tpoint ([code]t = 1.0[/code]), or in between. Values of [param t] outside the range ([code]0.0 &lt;= t &lt;= 1.0[/code]) give strange, but predictable results.
+				If [param idx] is out of bounds it is truncated to the first or last control point, and [param t] is ignored. If the curve has no points, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
 		<method name="sample_baked" qualifiers="const">
@@ -130,7 +130,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="position" type="Vector2" />
 			<description>
-				Sets the position of the control point leading to the curve point [param idx]. If the index is out of bounds, the function sends an error to the console. The position is relative to the curve point.
+				Sets the position of the control point leading to the control point [param idx]. If the index is out of bounds, the function sends an error to the console. The position is relative to the control point.
 			</description>
 		</method>
 		<method name="set_point_out">
@@ -138,7 +138,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="position" type="Vector2" />
 			<description>
-				Sets the position of the control point leading out of the curve point [param idx]. If the index is out of bounds, the function sends an error to the console. The position is relative to the curve point.
+				Sets the position of the control point leading out of the control point [param idx]. If the index is out of bounds, the function sends an error to the console. The position is relative to the control point.
 			</description>
 		</method>
 		<method name="set_point_position">
