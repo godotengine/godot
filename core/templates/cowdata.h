@@ -37,6 +37,7 @@
 
 #include <string.h>
 #include <initializer_list>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -69,7 +70,7 @@ class CowData {
 public:
 	typedef int64_t Size;
 	typedef uint64_t USize;
-	static constexpr USize MAX_INT = INT64_MAX;
+	static constexpr USize MAX_INT = std::numeric_limits<int64_t>::max();
 
 private:
 	// Function to find the next power of 2 to an integer.

@@ -137,7 +137,7 @@ GDScriptParser::GDScriptParser() {
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
 	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
-		warning_ignore_start_lines[i] = INT_MAX;
+		warning_ignore_start_lines[i] = std::numeric_limits<int>::max();
 	}
 #endif
 
@@ -2727,10 +2727,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 			constant->value = Math_TAU;
 			break;
 		case GDScriptTokenizer::Token::CONST_INF:
-			constant->value = INFINITY;
+			constant->value = std::numeric_limits<double>::infinity();
 			break;
 		case GDScriptTokenizer::Token::CONST_NAN:
-			constant->value = NAN;
+			constant->value = std::numeric_limits<double>::quiet_NaN();
 			break;
 		default:
 			return nullptr; // Unreachable.
@@ -4948,14 +4948,14 @@ bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotat
 			continue;
 		}
 		if (is_start) {
-			if (warning_ignore_start_lines[warning_code] != INT_MAX) {
+			if (warning_ignore_start_lines[warning_code] != std::numeric_limits<int>::max()) {
 				push_error(vformat(R"(Warning "%s" is already being ignored by "@warning_ignore_start" at line %d.)", String(warning_name).to_upper(), warning_ignore_start_lines[warning_code]), p_annotation);
 				has_error = true;
 				continue;
 			}
 			warning_ignore_start_lines[warning_code] = p_annotation->start_line;
 		} else {
-			if (warning_ignore_start_lines[warning_code] == INT_MAX) {
+			if (warning_ignore_start_lines[warning_code] == std::numeric_limits<int>::max()) {
 				push_error(vformat(R"(Warning "%s" is not being ignored by "@warning_ignore_start".)", String(warning_name).to_upper()), p_annotation);
 				has_error = true;
 				continue;
@@ -4965,7 +4965,7 @@ bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotat
 			for (int i = start_line; i <= end_line; i++) {
 				warning_ignored_lines[warning_code].insert(i);
 			}
-			warning_ignore_start_lines[warning_code] = INT_MAX;
+			warning_ignore_start_lines[warning_code] = std::numeric_limits<int>::max();
 		}
 	}
 	return !has_error;

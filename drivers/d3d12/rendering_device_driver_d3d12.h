@@ -304,7 +304,7 @@ private:
 
 		TextureInfo *main_texture = nullptr;
 
-		UINT mapped_subresource = UINT_MAX;
+		UINT mapped_subresource = std::numeric_limits<uint32_t>::max();
 		SelfList<TextureInfo> pending_clear{ this };
 	};
 	SelfList<TextureInfo>::List textures_pending_clear;
@@ -447,7 +447,7 @@ private:
 	struct FramebufferInfo;
 	struct RenderPassInfo;
 	struct RenderPassState {
-		uint32_t current_subpass = UINT32_MAX;
+		uint32_t current_subpass = std::numeric_limits<uint32_t>::max();
 		const FramebufferInfo *fb_info = nullptr;
 		const RenderPassInfo *pass_info = nullptr;
 		CD3DX12_RECT region_rect = {};
@@ -596,8 +596,8 @@ private:
 			uint32_t has_sampler = 0;
 			uint32_t dxil_stages = 0;
 			struct RootSignatureLocation {
-				uint32_t root_param_idx = UINT32_MAX; // UINT32_MAX if unused.
-				uint32_t range_idx = UINT32_MAX; // UINT32_MAX if unused.
+				uint32_t root_param_idx = std::numeric_limits<uint32_t>::max(); // std::numeric_limits<uint32_t>::max() if unused.
+				uint32_t range_idx = std::numeric_limits<uint32_t>::max(); // std::numeric_limits<uint32_t>::max() if unused.
 			};
 			RootSignatureLocation root_sig_locations[2]; // Index is RootSignatureLocationType.
 
@@ -641,20 +641,20 @@ private:
 
 	struct ShaderInfo {
 		uint32_t dxil_push_constant_size = 0;
-		uint32_t nir_runtime_data_root_param_idx = UINT32_MAX;
+		uint32_t nir_runtime_data_root_param_idx = std::numeric_limits<uint32_t>::max();
 		bool is_compute = false;
 
 		struct UniformBindingInfo {
 			uint32_t stages = 0; // Actual shader stages using the uniform (0 if totally optimized out).
 			ResourceClass res_class = RES_CLASS_INVALID;
 			UniformType type = UNIFORM_TYPE_MAX;
-			uint32_t length = UINT32_MAX;
+			uint32_t length = std::numeric_limits<uint32_t>::max();
 #ifdef DEV_ENABLED
 			bool writable = false;
 #endif
 			struct RootSignatureLocation {
-				uint32_t root_param_idx = UINT32_MAX;
-				uint32_t range_idx = UINT32_MAX;
+				uint32_t root_param_idx = std::numeric_limits<uint32_t>::max();
+				uint32_t range_idx = std::numeric_limits<uint32_t>::max();
 			};
 			struct {
 				RootSignatureLocation resource;
@@ -673,8 +673,8 @@ private:
 		TightLocalVector<UniformSet> sets;
 
 		struct SpecializationConstant {
-			uint32_t constant_id = UINT32_MAX;
-			uint32_t int_value = UINT32_MAX;
+			uint32_t constant_id = std::numeric_limits<uint32_t>::max();
+			uint32_t int_value = std::numeric_limits<uint32_t>::max();
 			uint64_t stages_bit_offsets[D3D12_BITCODE_OFFSETS_NUM_STAGES] = {};
 		};
 
@@ -715,7 +715,7 @@ public:
 
 private:
 	struct RootDescriptorTable {
-		uint32_t root_param_idx = UINT32_MAX;
+		uint32_t root_param_idx = std::numeric_limits<uint32_t>::max();
 		D3D12_GPU_DESCRIPTOR_HANDLE start_gpu_handle = {};
 	};
 

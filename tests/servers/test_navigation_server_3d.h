@@ -940,11 +940,11 @@ TEST_SUITE("[Navigation]") {
 		CHECK(heap.pop() == 2);
 		CHECK(heap.pop() == 4);
 
-		CHECK(heap_indexes[0] == UINT32_MAX);
-		CHECK(heap_indexes[1] == UINT32_MAX);
-		CHECK(heap_indexes[2] == UINT32_MAX);
-		CHECK(heap_indexes[3] == UINT32_MAX);
-		CHECK(heap_indexes[4] == UINT32_MAX);
+		CHECK(heap_indexes[0] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[1] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[2] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[3] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[4] == std::numeric_limits<uint32_t>::max());
 	}
 
 	TEST_CASE("[Heap] clear") {
@@ -961,10 +961,10 @@ TEST_SUITE("[Navigation]") {
 
 		CHECK(heap.size() == 0);
 
-		CHECK(heap_indexes[0] == UINT32_MAX);
-		CHECK(heap_indexes[1] == UINT32_MAX);
-		CHECK(heap_indexes[2] == UINT32_MAX);
-		CHECK(heap_indexes[3] == UINT32_MAX);
+		CHECK(heap_indexes[0] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[1] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[2] == std::numeric_limits<uint32_t>::max());
+		CHECK(heap_indexes[3] == std::numeric_limits<uint32_t>::max());
 	}
 }
 } //namespace TestNavigationServer3D

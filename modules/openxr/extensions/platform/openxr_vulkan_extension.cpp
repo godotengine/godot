@@ -205,8 +205,8 @@ void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_f
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
 
 void *OpenXRVulkanExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
-	DEV_ASSERT(vulkan_queue_family_index < UINT32_MAX && "Direct queue family index was not specified yet.");
-	DEV_ASSERT(vulkan_queue_index < UINT32_MAX && "Direct queue index was not specified yet.");
+	DEV_ASSERT(vulkan_queue_family_index < std::numeric_limits<uint32_t>::max() && "Direct queue family index was not specified yet.");
+	DEV_ASSERT(vulkan_queue_index < std::numeric_limits<uint32_t>::max() && "Direct queue index was not specified yet.");
 
 	graphics_binding_vulkan.type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
 	graphics_binding_vulkan.next = p_next_pointer;

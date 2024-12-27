@@ -324,7 +324,7 @@ TEST_CASE("[Vector4] Linear algebra methods") {
 }
 
 TEST_CASE("[Vector4] Finite number checks") {
-	const double infinite[] = { NAN, INFINITY, -INFINITY };
+	const double infinite[] = { std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity() };
 
 	CHECK_MESSAGE(
 			Vector4(0, 1, 2, 3).is_finite(),

@@ -786,7 +786,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 
 			for (unsigned int weight_index = 0; weight_index < bones_per_vertex; weight_index++) {
 				float bone_weight = source_weights_ptr[vertex_index * bones_per_vertex + weight_index];
-				if (bone_weight < FLT_EPSILON) {
+				if (bone_weight < std::numeric_limits<float>::epsilon()) {
 					continue;
 				}
 				int vertex_bone_index = source_bones_ptr[vertex_index * bones_per_vertex + weight_index];

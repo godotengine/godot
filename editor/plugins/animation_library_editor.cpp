@@ -829,17 +829,17 @@ void AnimationLibraryEditor::_save_mixer_lib_folding(TreeItem *p_item) {
 	if (p_item->is_collapsed()) {
 		if (at != -1) {
 			//Entry exists and needs updating
-			collapsed_lib_ids.set(at, String::num_int64(lib_id + INT64_MIN));
+			collapsed_lib_ids.set(at, String::num_int64(lib_id + std::numeric_limits<int64_t>::min()));
 		} else {
 			//Check if it's a rename
-			int id_at = collapsed_lib_ids.find(String::num_int64(lib_id + INT64_MIN));
+			int id_at = collapsed_lib_ids.find(String::num_int64(lib_id + std::numeric_limits<int64_t>::min()));
 			if (id_at != -1) {
 				//It's actually a rename
 				collapsed_lib_names.set(id_at, lib_name);
 			} else {
 				//It's a new entry
 				collapsed_lib_names.append(lib_name);
-				collapsed_lib_ids.append(String::num_int64(lib_id + INT64_MIN));
+				collapsed_lib_ids.append(String::num_int64(lib_id + std::numeric_limits<int64_t>::min()));
 			}
 		}
 	} else {
@@ -935,7 +935,7 @@ void AnimationLibraryEditor::_load_config_libs_folding(Vector<uint64_t> &p_lib_i
 	} else {
 		// Root same - uses saved instance IDs
 		for (const String &saved_id : String(p_config->get_value(p_section, "id")).split("\n")) {
-			p_lib_ids.append(uint64_t(saved_id.to_int() - INT64_MIN));
+			p_lib_ids.append(uint64_t(saved_id.to_int() - std::numeric_limits<int64_t>::min()));
 		}
 	}
 }

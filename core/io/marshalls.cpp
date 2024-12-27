@@ -35,7 +35,6 @@
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
-#include <limits.h>
 #include <stdio.h>
 
 void EncodedObjectAsID::_bind_methods() {
@@ -53,8 +52,8 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 	return id;
 }
 
-#define ERR_FAIL_ADD_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(b)) < 0 || ((int32_t)(a)) < 0 || ((int32_t)(a)) > INT_MAX - ((int32_t)(b)), err)
-#define ERR_FAIL_MUL_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(a)) < 0 || ((int32_t)(b)) <= 0 || ((int32_t)(a)) > INT_MAX / ((int32_t)(b)), err)
+#define ERR_FAIL_ADD_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(b)) < 0 || ((int32_t)(a)) < 0 || ((int32_t)(a)) > std::numeric_limits<int32_t>::max() - ((int32_t)(b)), err)
+#define ERR_FAIL_MUL_OF(a, b, err) ERR_FAIL_COND_V(((int32_t)(a)) < 0 || ((int32_t)(b)) <= 0 || ((int32_t)(a)) > std::numeric_limits<int32_t>::max() / ((int32_t)(b)), err)
 
 // Byte 0: `Variant::Type`, byte 1: unused, bytes 2 and 3: additional data.
 #define HEADER_TYPE_MASK 0xFF
@@ -1369,7 +1368,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	switch (p_variant.get_type()) {
 		case Variant::INT: {
 			int64_t val = p_variant;
-			if (val > (int64_t)INT_MAX || val < (int64_t)INT_MIN) {
+			if (val > static_cast<int64_t>(std::numeric_limits<int>::max()) || val < static_cast<int64_t>(std::numeric_limits<int>::min())) {
 				header |= HEADER_DATA_FLAG_64;
 			}
 		} break;

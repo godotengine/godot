@@ -1742,7 +1742,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		uint32_t memory_type_index = 0;
 		VmaAllocationCreateInfo lazy_memory_requirements = alloc_create_info;
 		lazy_memory_requirements.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
-		VkResult result = vmaFindMemoryTypeIndex(allocator, UINT32_MAX, &lazy_memory_requirements, &memory_type_index);
+		VkResult result = vmaFindMemoryTypeIndex(allocator, std::numeric_limits<uint32_t>::max(), &lazy_memory_requirements, &memory_type_index);
 		if (VK_SUCCESS == result) {
 			alloc_create_info = lazy_memory_requirements;
 			create_info.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
@@ -2075,7 +2075,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	const VkFormatFeatureFlags &flags = p_cpu_readable ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 
 	// Everything supported by default makes an all-or-nothing check easier for the caller.
-	BitField<RDD::TextureUsageBits> supported = INT64_MAX;
+	BitField<RDD::TextureUsageBits> supported = std::numeric_limits<int64_t>::max();
 
 	if (!(flags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_SAMPLING_BIT);
@@ -2341,7 +2341,7 @@ Error RenderingDeviceDriverVulkan::fence_wait(FenceID p_fence) {
 	Fence *fence = (Fence *)(p_fence.id);
 	VkResult fence_status = vkGetFenceStatus(vk_device, fence->vk_fence);
 	if (fence_status == VK_NOT_READY) {
-		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
+		VkResult err = vkWaitForFences(vk_device, 1, &fence->vk_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
 	}
 
@@ -2401,7 +2401,7 @@ void RenderingDeviceDriverVulkan::semaphore_free(SemaphoreID p_semaphore) {
 RDD::CommandQueueFamilyID RenderingDeviceDriverVulkan::command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface) {
 	// Pick the queue with the least amount of bits that can fulfill the requirements.
 	VkQueueFlags picked_queue_flags = VK_QUEUE_FLAG_BITS_MAX_ENUM;
-	uint32_t picked_family_index = UINT_MAX;
+	uint32_t picked_family_index = std::numeric_limits<uint32_t>::max();
 	for (uint32_t i = 0; i < queue_family_properties.size(); i++) {
 		if (queue_families[i].is_empty()) {
 			// Ignore empty queue families.
@@ -2440,8 +2440,8 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 	// Make a virtual queue on top of a real queue. Use the queue from the family with the least amount of virtual queues created.
 	uint32_t family_index = p_cmd_queue_family.id - 1;
 	TightLocalVector<Queue> &queue_family = queue_families[family_index];
-	uint32_t picked_queue_index = UINT_MAX;
-	uint32_t picked_virtual_count = UINT_MAX;
+	uint32_t picked_queue_index = std::numeric_limits<uint32_t>::max();
+	uint32_t picked_virtual_count = std::numeric_limits<uint32_t>::max();
 	for (uint32_t i = 0; i < queue_family.size(); i++) {
 		if (queue_family[i].virtual_count < picked_virtual_count) {
 			picked_queue_index = i;
@@ -2620,7 +2620,7 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		bool any_result_is_out_of_date = false;
 		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 			SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
-			swap_chain->image_index = UINT_MAX;
+			swap_chain->image_index = std::numeric_limits<uint32_t>::max();
 			if (results[i] == VK_ERROR_OUT_OF_DATE_KHR) {
 				context_driver->surface_set_needs_resize(swap_chain->surface, true);
 				any_result_is_out_of_date = true;
@@ -2801,7 +2801,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 		vkDestroyImageView(vk_device, view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	}
 
-	swap_chain->image_index = UINT_MAX;
+	swap_chain->image_index = std::numeric_limits<uint32_t>::max();
 	swap_chain->images.clear();
 	swap_chain->image_views.clear();
 	swap_chain->framebuffers.clear();
@@ -3201,7 +3201,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	swap_chain->command_queues_acquired.push_back(command_queue);
 	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
 
-	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
+	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, std::numeric_limits<uint64_t>::max(), semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
 		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);

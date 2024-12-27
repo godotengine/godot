@@ -142,7 +142,7 @@ class Skeleton2D : public Node2D {
 	struct InterpolationData {
 		Transform2D xform_curr;
 		Transform2D xform_prev;
-		uint32_t last_update_physics_tick = UINT32_MAX; // Ensure tick 0 is detected as a change.
+		uint32_t last_update_physics_tick = std::numeric_limits<uint32_t>::max(); // Ensure tick 0 is detected as a change.
 	} _interpolation_data;
 
 	void _update_process_mode();

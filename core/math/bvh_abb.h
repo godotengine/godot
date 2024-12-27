@@ -265,7 +265,7 @@ struct BVH_ABB {
 
 	void set_to_max_opposite_extents() {
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			neg_max[axis] = FLT_MAX;
+			neg_max[axis] = std::numeric_limits<real_t>::max();
 		}
 		min = neg_max;
 	}

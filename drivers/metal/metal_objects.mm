@@ -553,7 +553,7 @@ void MDCommandBuffer::render_begin_pass(RDD::RenderPassID p_render_pass, RDD::Fr
 
 	type = MDCommandBufferStateType::Render;
 	render.pass = pass;
-	render.current_subpass = UINT32_MAX;
+	render.current_subpass = std::numeric_limits<uint32_t>::max();
 	render.render_area = p_rect;
 	render.clear_values.resize(p_clear_values.size());
 	for (uint32_t i = 0; i < p_clear_values.size(); i++) {
@@ -627,7 +627,7 @@ void MDCommandBuffer::_render_clear_render_area() {
 void MDCommandBuffer::render_next_subpass() {
 	DEV_ASSERT(commandBuffer != nil);
 
-	if (render.current_subpass == UINT32_MAX) {
+	if (render.current_subpass == std::numeric_limits<uint32_t>::max()) {
 		render.current_subpass = 0;
 	} else {
 		_end_render_pass();
@@ -870,7 +870,7 @@ void MDCommandBuffer::RenderState::reset() {
 	pass = nil;
 	frameBuffer = nil;
 	pipeline = nil;
-	current_subpass = UINT32_MAX;
+	current_subpass = std::numeric_limits<uint32_t>::max();
 	render_area = {};
 	is_rendering_entire_area = false;
 	desc = nil;
@@ -1615,7 +1615,7 @@ MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const 
 }
 
 void MDAttachment::linkToSubpass(const MDRenderPass &p_pass) {
-	firstUseSubpassIndex = UINT32_MAX;
+	firstUseSubpassIndex = std::numeric_limits<uint32_t>::max();
 	lastUseSubpassIndex = 0;
 
 	for (MDSubpass const &subpass : p_pass.subpasses) {

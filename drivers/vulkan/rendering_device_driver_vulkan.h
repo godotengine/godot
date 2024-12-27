@@ -192,7 +192,7 @@ public:
 		VkBuffer vk_buffer = VK_NULL_HANDLE;
 		struct {
 			VmaAllocation handle = nullptr;
-			uint64_t size = UINT64_MAX;
+			uint64_t size = std::numeric_limits<uint64_t>::max();
 		} allocation;
 		uint64_t size = 0;
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.

@@ -34,7 +34,7 @@
 #include "servers/navigation/navigation_utilities.h"
 
 struct NavBaseIteration {
-	uint32_t id = UINT32_MAX;
+	uint32_t id = std::numeric_limits<uint32_t>::max();
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;

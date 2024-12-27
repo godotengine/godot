@@ -132,7 +132,7 @@ public:
 		Vector2 from;
 		Vector2 to;
 		HashSet<RID> exclude;
-		uint32_t collision_mask = UINT32_MAX;
+		uint32_t collision_mask = std::numeric_limits<uint32_t>::max();
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
@@ -162,7 +162,7 @@ public:
 		Vector2 position;
 		ObjectID canvas_instance_id;
 		HashSet<RID> exclude;
-		uint32_t collision_mask = UINT32_MAX;
+		uint32_t collision_mask = std::numeric_limits<uint32_t>::max();
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;
@@ -178,7 +178,7 @@ public:
 		Vector2 motion;
 		real_t margin = 0.0;
 		HashSet<RID> exclude;
-		uint32_t collision_mask = UINT32_MAX;
+		uint32_t collision_mask = std::numeric_limits<uint32_t>::max();
 
 		bool collide_with_bodies = true;
 		bool collide_with_areas = false;

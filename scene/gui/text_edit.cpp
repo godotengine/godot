@@ -4749,7 +4749,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 	begin_multicaret_edit();
 	int view_target_caret = -1;
-	int view_line = p_below ? -1 : INT_MAX;
+	int view_line = p_below ? -1 : std::numeric_limits<int>::max();
 	int num_carets = get_caret_count();
 	for (int i = 0; i < num_carets; i++) {
 		const int caret_line = get_caret_line(i);
@@ -5496,7 +5496,7 @@ Vector<Point2i> TextEdit::get_line_ranges_from_carets(bool p_only_selections, bo
 	// Get a series of line ranges that cover all lines that have a caret or selection.
 	// For each Point2i range, x is the first line and y is the last line.
 	Vector<Point2i> ret;
-	int last_to_line = INT_MIN;
+	int last_to_line = std::numeric_limits<int>::min();
 
 	Vector<int> sorted_carets = get_sorted_carets();
 	for (int i = 0; i < sorted_carets.size(); i++) {

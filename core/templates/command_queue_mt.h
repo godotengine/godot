@@ -338,7 +338,7 @@ class CommandQueueMT {
 	template <typename T>
 	T *allocate() {
 		// alloc size is size+T+safeguard
-		static_assert(sizeof(T) < UINT32_MAX, "Type too large to fit in the command queue.");
+		static_assert(sizeof(T) < std::numeric_limits<uint32_t>::max(), "Type too large to fit in the command queue.");
 
 		uint32_t alloc_size = ((sizeof(T) + 8U - 1U) & ~(8U - 1U));
 		uint64_t size = command_mem.size();

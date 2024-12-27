@@ -548,8 +548,8 @@ TEST_CASE("[String] String to integer") {
 	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
 
 	ERR_PRINT_OFF
-	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
-	CHECK(String("-999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == std::numeric_limits<int64_t>::max()); // Too large, largest possible is returned.
+	CHECK(String("-999999999999999999999999999999999999999999999999999999999").to_int() == std::numeric_limits<int64_t>::min()); // Too small, smallest possible is returned.
 	ERR_PRINT_ON
 }
 
@@ -569,8 +569,8 @@ TEST_CASE("[String] Hex to integer") {
 		CHECK(String(invalid_nums[i]).hex_to_int() == 0);
 	}
 
-	CHECK(String("0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MAX); // Too large, largest possible is returned.
-	CHECK(String("-0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	CHECK(String("0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == std::numeric_limits<int64_t>::max()); // Too large, largest possible is returned.
+	CHECK(String("-0xFFFFFFFFFFFFFFFFFFFFFFF").hex_to_int() == std::numeric_limits<int64_t>::min()); // Too small, smallest possible is returned.
 	ERR_PRINT_ON
 }
 
@@ -590,8 +590,8 @@ TEST_CASE("[String] Bin to integer") {
 	}
 
 	ERR_PRINT_OFF
-	CHECK(String("0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MAX); // Too large, largest possible is returned.
-	CHECK(String("-0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == INT64_MIN); // Too small, smallest possible is returned.
+	CHECK(String("0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == std::numeric_limits<int64_t>::max()); // Too large, largest possible is returned.
+	CHECK(String("-0b111111111111111111111111111111111111111111111111111111111111111111111111111111111").bin_to_int() == std::numeric_limits<int64_t>::min()); // Too small, smallest possible is returned.
 	ERR_PRINT_ON
 }
 
@@ -615,15 +615,15 @@ TEST_CASE("[String] String to float") {
 	CHECK(String("-1e308").to_float() == -1e308);
 
 	// Exponent is so high that value is INFINITY/-INFINITY.
-	CHECK(String("1e309").to_float() == INFINITY);
-	CHECK(String("1e511").to_float() == INFINITY);
-	CHECK(String("-1e309").to_float() == -INFINITY);
-	CHECK(String("-1e511").to_float() == -INFINITY);
+	CHECK(String("1e309").to_float() == std::numeric_limits<double>::infinity());
+	CHECK(String("1e511").to_float() == std::numeric_limits<double>::infinity());
+	CHECK(String("-1e309").to_float() == -std::numeric_limits<double>::infinity());
+	CHECK(String("-1e511").to_float() == -std::numeric_limits<double>::infinity());
 
 	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
 	ERR_PRINT_OFF
-	CHECK(String("1e512").to_float() == INFINITY);
-	CHECK(String("-1e512").to_float() == -INFINITY);
+	CHECK(String("1e512").to_float() == std::numeric_limits<double>::infinity());
+	CHECK(String("-1e512").to_float() == -std::numeric_limits<double>::infinity());
 	ERR_PRINT_ON
 }
 
@@ -920,7 +920,7 @@ TEST_CASE("[String] sprintf") {
 	// Real (infinity) left-padded
 	format = "fish %11f frog";
 	args.clear();
-	args.push_back(INFINITY);
+	args.push_back(std::numeric_limits<double>::infinity());
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish         inf frog"));
@@ -1044,7 +1044,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with inf/nan
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(INFINITY, NAN)));
+	args.push_back(Variant(Vector2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::quiet_NaN())));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (        inf,         nan) frog"));

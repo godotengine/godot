@@ -268,7 +268,7 @@ private:
 	AABB sbox_3d_bounds;
 #endif
 
-	Point2 selection_position = Point2(INFINITY, INFINITY);
+	Point2 selection_position = Point2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity());
 	bool list_shortcut_pressed = false;
 
 	NodeType node_select_type = NODE_TYPE_2D;

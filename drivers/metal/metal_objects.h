@@ -339,7 +339,7 @@ public:
 		LocalVector<MTLViewport> viewports;
 		LocalVector<MTLScissorRect> scissors;
 		std::optional<Color> blend_constants;
-		uint32_t current_subpass = UINT32_MAX;
+		uint32_t current_subpass = std::numeric_limits<uint32_t>::max();
 		Rect2i render_area = {};
 		bool is_rendering_entire_area = false;
 		MTLRenderPassDescriptor *desc = nil;

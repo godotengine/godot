@@ -117,7 +117,7 @@ void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
 	}
 
 	for (int i = 0; i < data_size; i++) {
-		data[i] = FLT_MAX;
+		data[i] = std::numeric_limits<float>::max();
 	}
 
 	debug_data.resize(sizes[0].x * sizes[0].y);

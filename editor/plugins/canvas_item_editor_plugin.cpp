@@ -4207,8 +4207,8 @@ void CanvasItemEditor::_selection_changed() {
 	}
 	selected_from_canvas = false;
 
-	if (temp_pivot != Vector2(INFINITY, INFINITY)) {
-		temp_pivot = Vector2(INFINITY, INFINITY);
+	if (temp_pivot != Vector2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity())) {
+		temp_pivot = Vector2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity());
 		viewport->queue_redraw();
 	}
 }

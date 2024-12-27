@@ -40,7 +40,7 @@ bool godotsharp::SemVer::parse_digit_only_field(const String &p_field, uint64_t 
 	for (int i = 0; i < p_field.length(); i++) {
 		char32_t c = p_field[i];
 		if (is_digit(c)) {
-			bool overflow = ((uint64_t)integer > UINT64_MAX / 10) || ((uint64_t)integer == UINT64_MAX / 10 && c > '5');
+			bool overflow = ((uint64_t)integer > std::numeric_limits<uint64_t>::max() / 10) || ((uint64_t)integer == std::numeric_limits<uint64_t>::max() / 10 && c > '5');
 			ERR_FAIL_COND_V_MSG(overflow, false, "Cannot represent '" + p_field + "' as a 64-bit unsigned integer, since the value is too large.");
 			integer *= 10;
 			integer += c - '0';

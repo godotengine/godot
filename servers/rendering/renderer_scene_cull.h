@@ -757,7 +757,7 @@ public:
 				// Having a long-ish timeout prevents rapid cycling.
 				if (light_intersects_multiple_cameras && (p_frame_id >= light_intersects_multiple_cameras_timeout_frame_id)) {
 					light_intersects_multiple_cameras = false;
-					light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+					light_intersects_multiple_cameras_timeout_frame_id = std::numeric_limits<uint32_t>::max();
 				}
 			}
 			light_update_frame_id = p_frame_id;
@@ -779,8 +779,8 @@ public:
 			baked_light = nullptr;
 
 			shadow_dirty_count = 1;
-			light_update_frame_id = UINT32_MAX;
-			light_intersects_multiple_cameras_timeout_frame_id = UINT32_MAX;
+			light_update_frame_id = std::numeric_limits<uint32_t>::max();
+			light_intersects_multiple_cameras_timeout_frame_id = std::numeric_limits<uint32_t>::max();
 			light_intersects_multiple_cameras = false;
 		}
 	};

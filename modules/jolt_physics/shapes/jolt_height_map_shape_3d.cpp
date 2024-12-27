@@ -40,7 +40,7 @@ namespace {
 
 bool _is_vertex_hole(const JPH::VertexList &p_vertices, int p_index) {
 	const float height = p_vertices[(size_t)p_index].y;
-	return height == FLT_MAX || Math::is_nan(height);
+	return height == std::numeric_limits<float>::max() || Math::is_nan(height);
 }
 
 bool _is_triangle_hole(const JPH::VertexList &p_vertices, int p_index0, int p_index1, int p_index2) {
@@ -99,7 +99,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {
 
 			// Godot has undocumented (accidental?) support for holes by passing NaN as the height value, whereas Jolt
 			// uses `FLT_MAX` instead, so we translate any NaN to `FLT_MAX` in order to be drop-in compatible.
-			row_rev[x] = Math::is_nan(height) ? FLT_MAX : (float)height;
+			row_rev[x] = Math::is_nan(height) ? std::numeric_limits<float>::max() : (float)height;
 		}
 	}
 

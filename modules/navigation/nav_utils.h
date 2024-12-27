@@ -100,7 +100,7 @@ struct Edge {
 
 struct Polygon {
 	/// Id of the polygon in the map.
-	uint32_t id = UINT32_MAX;
+	uint32_t id = std::numeric_limits<uint32_t>::max();
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration *owner = nullptr;
@@ -119,7 +119,7 @@ struct NavigationPoly {
 	const Polygon *poly = nullptr;
 
 	/// Index in the heap of traversable polygons.
-	uint32_t traversable_poly_index = UINT32_MAX;
+	uint32_t traversable_poly_index = std::numeric_limits<uint32_t>::max();
 
 	/// Those 4 variables are used to travel the path backwards.
 	int back_navigation_poly_id = -1;
@@ -149,7 +149,7 @@ struct NavigationPoly {
 
 	void reset() {
 		poly = nullptr;
-		traversable_poly_index = UINT32_MAX;
+		traversable_poly_index = std::numeric_limits<uint32_t>::max();
 		back_navigation_poly_id = -1;
 		back_navigation_edge = -1;
 		traveled_distance = 0.0;
@@ -222,7 +222,7 @@ public:
 	T pop() {
 		ERR_FAIL_COND_V_MSG(_buffer.is_empty(), T(), "Can't pop an empty heap.");
 		T value = _buffer[0];
-		_indexer(value, UINT32_MAX);
+		_indexer(value, std::numeric_limits<uint32_t>::max());
 		if (_buffer.size() > 1) {
 			_buffer[0] = _buffer[_buffer.size() - 1];
 			_indexer(_buffer[0], 0);
@@ -246,7 +246,7 @@ public:
 
 	void clear() {
 		for (const T &value : _buffer) {
-			_indexer(value, UINT32_MAX);
+			_indexer(value, std::numeric_limits<uint32_t>::max());
 		}
 		_buffer.clear();
 	}

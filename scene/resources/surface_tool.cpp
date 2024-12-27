@@ -1211,7 +1211,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 		for (int i = 0; i < 3; i++) {
 			// Add face normal to smooth vertex influence if vertex is member of a smoothing group
-			if (v[i].smooth_group != UINT32_MAX) {
+			if (v[i].smooth_group != std::numeric_limits<uint32_t>::max()) {
 				Vector3 *lv = smooth_hash.getptr(v[i]);
 				if (!lv) {
 					smooth_hash.insert(v[i], normal);
@@ -1225,7 +1225,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 	}
 
 	for (Vertex &vertex : vertex_array) {
-		if (vertex.smooth_group != UINT32_MAX) {
+		if (vertex.smooth_group != std::numeric_limits<uint32_t>::max()) {
 			Vector3 *lv = smooth_hash.getptr(vertex);
 			if (!lv) {
 				vertex.normal = Vector3();

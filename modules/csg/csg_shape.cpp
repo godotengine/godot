@@ -361,7 +361,7 @@ static void _pack_manifold(
 	}
 	// runIndex needs an explicit end value.
 	mesh.runIndex.push_back(mesh.triVerts.size());
-	mesh.tolerance = 2 * FLT_EPSILON;
+	mesh.tolerance = 2 * std::numeric_limits<double>::epsilon();
 	ERR_FAIL_COND_MSG(mesh.vertProperties.size() % mesh.numProp != 0, "Invalid vertex properties size.");
 	mesh.Merge();
 #ifdef DEV_ENABLED

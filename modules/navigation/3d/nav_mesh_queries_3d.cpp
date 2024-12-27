@@ -302,7 +302,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	bool found_route = false;
 
 	const gd::Polygon *reachable_end = nullptr;
-	real_t distance_to_reachable_end = FLT_MAX;
+	real_t distance_to_reachable_end = std::numeric_limits<real_t>::max();
 	bool is_reachable = true;
 
 	while (true) {
@@ -382,7 +382,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 
 			// Set as end point the furthest reachable point.
 			end_poly = reachable_end;
-			real_t end_d = FLT_MAX;
+			real_t end_d = std::numeric_limits<real_t>::max();
 			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
 				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_target_position);
@@ -451,7 +451,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	// We did not find a route but we have both a start polygon and an end polygon at this point.
 	// Usually this happens because there was not a single external or internal connected edge, e.g. our start polygon is an isolated, single convex polygon.
 	if (!found_route) {
-		real_t end_d = FLT_MAX;
+		real_t end_d = std::numeric_limits<real_t>::max();
 		// Search all faces of the start polygon for the closest point to our target position.
 		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
@@ -521,8 +521,8 @@ void NavMeshQueries3D::_query_task_simplified_path_points(NavMeshPathQueryTask3D
 }
 
 void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask3D &p_query_task, const LocalVector<gd::Polygon> &p_polygons) {
-	real_t begin_d = FLT_MAX;
-	real_t end_d = FLT_MAX;
+	real_t begin_d = std::numeric_limits<real_t>::max();
+	real_t end_d = std::numeric_limits<real_t>::max();
 
 	// Find the initial poly and the end poly on this map.
 	for (const gd::Polygon &p : p_polygons) {
@@ -703,7 +703,7 @@ void NavMeshQueries3D::_query_task_post_process_nopostprocessing(NavMeshPathQuer
 Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) {
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
-	real_t closest_point_distance = FLT_MAX;
+	real_t closest_point_distance = std::numeric_limits<real_t>::max();
 
 	for (const gd::Polygon &polygon : p_polygons) {
 		// For each face check the distance to the segment.
@@ -775,12 +775,12 @@ Vector3 NavMeshQueries3D::polygons_get_closest_point_normal(const LocalVector<gd
 
 gd::ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(const LocalVector<gd::Polygon> &p_polygons, const Vector3 &p_point) {
 	gd::ClosestPointQueryResult result;
-	real_t closest_point_distance_squared = FLT_MAX;
+	real_t closest_point_distance_squared = std::numeric_limits<real_t>::max();
 
 	for (const gd::Polygon &polygon : p_polygons) {
 		Vector3 plane_normal = (polygon.points[1].pos - polygon.points[0].pos).cross(polygon.points[2].pos - polygon.points[0].pos);
 		Vector3 closest_on_polygon;
-		real_t closest = FLT_MAX;
+		real_t closest = std::numeric_limits<real_t>::max();
 		bool inside = true;
 		Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
 		for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {

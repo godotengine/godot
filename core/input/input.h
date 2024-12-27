@@ -110,10 +110,10 @@ private:
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 
 	struct ActionState {
-		uint64_t pressed_physics_frame = UINT64_MAX;
-		uint64_t pressed_process_frame = UINT64_MAX;
-		uint64_t released_physics_frame = UINT64_MAX;
-		uint64_t released_process_frame = UINT64_MAX;
+		uint64_t pressed_physics_frame = std::numeric_limits<uint64_t>::max();
+		uint64_t pressed_process_frame = std::numeric_limits<uint64_t>::max();
+		uint64_t released_physics_frame = std::numeric_limits<uint64_t>::max();
+		uint64_t released_process_frame = std::numeric_limits<uint64_t>::max();
 		bool exact = true;
 
 		struct DeviceState {
@@ -261,7 +261,7 @@ private:
 	List<Ref<InputEvent>> buffered_events;
 #ifdef DEBUG_ENABLED
 	HashSet<Ref<InputEvent>> frame_parsed_events;
-	uint64_t last_parsed_frame = UINT64_MAX;
+	uint64_t last_parsed_frame = std::numeric_limits<uint64_t>::max();
 #endif
 
 	friend class DisplayServer;

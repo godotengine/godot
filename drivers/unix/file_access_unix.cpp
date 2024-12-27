@@ -42,8 +42,8 @@
 #include <unistd.h>
 
 #if defined(TOOLS_ENABLED)
-#include <limits.h>
 #include <stdlib.h>
+#include <limits>
 #endif
 
 void FileAccessUnix::check_errors(bool p_write) const {

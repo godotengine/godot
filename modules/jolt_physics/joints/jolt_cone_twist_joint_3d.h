@@ -50,8 +50,8 @@ class JoltConeTwistJoint3D final : public JoltJoint3D {
 	double swing_motor_target_speed_z = 0.0;
 	double twist_motor_target_speed = 0.0;
 
-	double swing_motor_max_torque = FLT_MAX;
-	double twist_motor_max_torque = FLT_MAX;
+	double swing_motor_max_torque = std::numeric_limits<float>::max();
+	double twist_motor_max_torque = std::numeric_limits<float>::max();
 
 	bool swing_limit_enabled = true;
 	bool twist_limit_enabled = true;

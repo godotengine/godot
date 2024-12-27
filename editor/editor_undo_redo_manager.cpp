@@ -321,7 +321,7 @@ bool EditorUndoRedoManager::redo() {
 	}
 
 	int selected_history = INVALID_HISTORY;
-	double global_timestamp = INFINITY;
+	double global_timestamp = std::numeric_limits<double>::infinity();
 
 	// Pick the history with lowest last action timestamp (either global or current scene).
 	{

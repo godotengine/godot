@@ -328,7 +328,7 @@ public:
 		int32_t compare(const Rational64 &b) const;
 
 		real_t to_scalar() const {
-			return sign * ((denominator == 0) ? FLT_MAX : (real_t)numerator / denominator);
+			return sign * ((denominator == 0) ? std::numeric_limits<real_t>::max() : (real_t)numerator / denominator);
 		}
 	};
 
@@ -377,7 +377,7 @@ public:
 		int32_t compare(int64_t b) const;
 
 		real_t to_scalar() const {
-			return sign * ((denominator.get_sign() == 0) ? FLT_MAX : numerator.to_scalar() / denominator.to_scalar());
+			return sign * ((denominator.get_sign() == 0) ? std::numeric_limits<real_t>::max() : numerator.to_scalar() / denominator.to_scalar());
 		}
 	};
 
@@ -1744,7 +1744,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 	int32_t face_count = faces.size();
 
 	if (p_clamp_amount > 0) {
-		real_t min_dist = FLT_MAX;
+		real_t min_dist = std::numeric_limits<real_t>::max();
 		for (int32_t i = 0; i < face_count; i++) {
 			Vector3 normal = get_gd_normal(faces[i]);
 			real_t dist = normal.dot(to_gd_vector(faces[i]->origin) - hull_center);

@@ -498,12 +498,12 @@ void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_const
 
 	Pair<String, Variant> infinity;
 	infinity.first = "INF";
-	infinity.second = INFINITY;
+	infinity.second = std::numeric_limits<double>::infinity();
 	p_constants->push_back(infinity);
 
 	Pair<String, Variant> nan;
 	nan.first = "NAN";
-	nan.second = NAN;
+	nan.second = std::numeric_limits<double>::quiet_NaN();
 	p_constants->push_back(nan);
 }
 

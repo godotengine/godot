@@ -508,7 +508,7 @@ void NavMap::_sync_iteration() {
 	performance_data.pm_edge_connection_count = iteration_build.performance_data.pm_edge_connection_count;
 	performance_data.pm_edge_free_count = iteration_build.performance_data.pm_edge_free_count;
 
-	iteration_id = iteration_id % UINT32_MAX + 1;
+	iteration_id = iteration_id % std::numeric_limits<uint32_t>::max() + 1;
 
 	// Finally ping-pong switch the iteration slot.
 	iteration_slot_rwlock.write_lock();

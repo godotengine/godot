@@ -402,7 +402,7 @@ TEST_CASE("[Stress][Quaternion] Many vector xforms") {
 }
 
 TEST_CASE("[Quaternion] Finite number checks") {
-	const real_t x = NAN;
+	const real_t x = std::numeric_limits<real_t>::quiet_NaN();
 
 	CHECK_MESSAGE(
 			Quaternion(0, 1, 2, 3).is_finite(),

@@ -203,7 +203,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// Cast a segment from each support point of A in the motion direction.
 	int segment_support_idx = -1;
-	float segment_hit_length = FLT_MAX;
+	float segment_hit_length = std::numeric_limits<float>::max();
 	Vector3 segment_hit_local;
 	for (int i = 0; i < support_count_A; i++) {
 		supports_A[i] = p_xform_A.xform(supports_A[i]);

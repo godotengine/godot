@@ -1435,7 +1435,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	int to_line = main->first_invalid_line.load();
 	int from_line = _find_first_line(0, to_line, vofs);
 
-	int total_height = INT32_MAX;
+	int total_height = std::numeric_limits<int32_t>::max();
 	if (to_line && vertical_alignment != VERTICAL_ALIGNMENT_TOP) {
 		MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
 		if (theme_cache.line_separation < 0) {
@@ -1593,7 +1593,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 											_find_click_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, 0, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
-												table_range = Vector2i(INT32_MAX, 0);
+												table_range = Vector2i(std::numeric_limits<int32_t>::max(), 0);
 												for (Item *F : table->subitems) {
 													ItemFrame *sub_frame = static_cast<ItemFrame *>(F);
 													for (int k = 0; k < (int)sub_frame->lines.size(); k++) {
@@ -1930,7 +1930,7 @@ void RichTextLabel::_notification(int p_what) {
 			// Bottom margin for text clipping.
 			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 
-			int total_height = INT32_MAX;
+			int total_height = std::numeric_limits<int32_t>::max();
 			if (to_line && vertical_alignment != VERTICAL_ALIGNMENT_TOP) {
 				MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
 				if (theme_cache.line_separation < 0) {

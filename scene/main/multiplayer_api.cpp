@@ -85,21 +85,21 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 			}
 			r_len += 1;
 			int64_t val = p_variant;
-			if (val <= (int64_t)INT8_MAX && val >= (int64_t)INT8_MIN) {
+			if (val <= (int64_t)std::numeric_limits<int8_t>::max() && val >= (int64_t)std::numeric_limits<int8_t>::min()) {
 				// Use 8 bit
 				encode_mode = ENCODE_8;
 				if (buf) {
 					buf[0] = val;
 				}
 				r_len += 1;
-			} else if (val <= (int64_t)INT16_MAX && val >= (int64_t)INT16_MIN) {
+			} else if (val <= (int64_t)std::numeric_limits<int16_t>::max() && val >= (int64_t)std::numeric_limits<int16_t>::min()) {
 				// Use 16 bit
 				encode_mode = ENCODE_16;
 				if (buf) {
 					encode_uint16(val, buf);
 				}
 				r_len += 2;
-			} else if (val <= (int64_t)INT32_MAX && val >= (int64_t)INT32_MIN) {
+			} else if (val <= (int64_t)std::numeric_limits<int32_t>::max() && val >= (int64_t)std::numeric_limits<int32_t>::min()) {
 				// Use 32 bit
 				encode_mode = ENCODE_32;
 				if (buf) {

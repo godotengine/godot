@@ -276,9 +276,9 @@ public:
 	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return _thread_enter_unlock_allowance_zone(p_mutex._get_lock()); }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
 #else
-	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return UINT32_MAX; }
+	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return std::numeric_limits<uint32_t>::max(); }
 	template <int Tag>
-	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return UINT32_MAX; }
+	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return std::numeric_limits<uint32_t>::max(); }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
 #endif
 

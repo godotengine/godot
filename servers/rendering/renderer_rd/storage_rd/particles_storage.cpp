@@ -1466,7 +1466,7 @@ void ParticlesStorage::update_particles() {
 				// Set the frame number so that we are able to distinguish an uninitialized
 				// frame from the true frame number zero. See issue #88712 for details.
 				for (int i = 0; i < history_size; i++) {
-					particles->frame_history[i].frame = UINT32_MAX;
+					particles->frame_history[i].frame = std::numeric_limits<uint32_t>::max();
 				}
 			}
 

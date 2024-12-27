@@ -258,7 +258,7 @@ private:
 	bool expand_hovered = false;
 	bool expanded = false;
 	int expansion_rows = 0;
-	uint32_t hovered_index = INT32_MAX; // Nothing is hovered.
+	uint32_t hovered_index = std::numeric_limits<int32_t>::max(); // Nothing is hovered.
 	bool read_only = false;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;

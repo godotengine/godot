@@ -737,7 +737,7 @@ uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(THREADING_NAMESPA
 			return i;
 		}
 	}
-	ERR_FAIL_V_MSG(UINT32_MAX, "No more unlockable lock slots available. Engine bug.");
+	ERR_FAIL_V_MSG(std::numeric_limits<uint32_t>::max(), "No more unlockable lock slots available. Engine bug.");
 }
 
 void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {

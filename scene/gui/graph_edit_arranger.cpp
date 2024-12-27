@@ -60,7 +60,7 @@ void GraphEditArranger::arrange_nodes() {
 
 	HashMap<StringName, HashSet<StringName>> upper_neighbours;
 	HashMap<StringName, Pair<int, int>> port_info;
-	Vector2 origin(FLT_MAX, FLT_MAX);
+	Vector2 origin(std::numeric_limits<real_t>::max(), std::numeric_limits<real_t>::max());
 
 	float gap_v = 100.0f;
 	float gap_h = 100.0f;
@@ -105,14 +105,14 @@ void GraphEditArranger::arrange_nodes() {
 	_horizontal_alignment(root, align, layers, upper_neighbours, selected_nodes);
 
 	HashMap<StringName, Vector2> new_positions;
-	Vector2 default_position(FLT_MAX, FLT_MAX);
+	Vector2 default_position(std::numeric_limits<real_t>::max(), std::numeric_limits<real_t>::max());
 	Dictionary inner_shift;
 	HashSet<StringName> block_heads;
 
 	for (const StringName &E : selected_nodes) {
 		inner_shift[E] = 0.0f;
 		sink[E] = E;
-		shift[E] = FLT_MAX;
+		shift[E] = std::numeric_limits<double>::max();
 		new_positions.insert(E, default_position);
 		if ((StringName)root[E] == E) {
 			block_heads.insert(E);
@@ -458,14 +458,14 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 			// If connected block node is selected, calculate thershold or add current block to list.
 			if (gnode_from->is_selected()) {
 				Vector2 connected_block_pos = r_node_positions[r_root[incoming->from_node]];
-				if (connected_block_pos.y != FLT_MAX) {
+				if (connected_block_pos.y != std::numeric_limits<real_t>::max()) {
 					//Connected block is placed, calculate threshold.
 					threshold = connected_block_pos.y + (real_t)r_inner_shift[incoming->from_node] - (real_t)r_inner_shift[p_w] + pos_from.y - pos_to.y;
 				}
 			}
 		}
 	}
-	if (threshold == FLT_MIN && (StringName)r_align[p_w] == p_v) {
+	if (threshold == std::numeric_limits<real_t>::min() && (StringName)r_align[p_w] == p_v) {
 		// This time, pick an outgoing edge and repeat as above!
 		int min_order = MAX_ORDER;
 		Ref<GraphEdit::Connection> outgoing;
@@ -489,7 +489,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 			// If connected block node is selected, calculate thershold or add current block to list.
 			if (gnode_to->is_selected()) {
 				Vector2 connected_block_pos = r_node_positions[r_root[outgoing->to_node]];
-				if (connected_block_pos.y != FLT_MAX) {
+				if (connected_block_pos.y != std::numeric_limits<real_t>::max()) {
 					//Connected block is placed. Calculate threshold
 					threshold = connected_block_pos.y + (real_t)r_inner_shift[outgoing->to_node] - (real_t)r_inner_shift[p_w] + pos_from.y - pos_to.y;
 				}
@@ -516,11 +516,11 @@ void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const
 	StringName successor;
 	Vector2 pos = r_node_positions[p_v];
 
-	if (pos.y == FLT_MAX) {
+	if (pos.y == std::numeric_limits<real_t>::max()) {
 		pos.y = 0;
 		bool initial = false;
 		StringName w = p_v;
-		real_t threshold = FLT_MIN;
+		real_t threshold = std::numeric_limits<real_t>::min();
 		do {
 			PRED(w, r_layers);
 			if (predecessor != StringName()) {

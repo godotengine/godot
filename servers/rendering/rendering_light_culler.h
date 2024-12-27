@@ -84,7 +84,7 @@ private:
 		LightSource() {
 			type = ST_UNKNOWN;
 			angle = 0.0f;
-			range = FLT_MAX;
+			range = std::numeric_limits<float>::max();
 		}
 
 		// All in world space, culling done in world space.

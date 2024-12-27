@@ -343,8 +343,8 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 
 	// Encode meta.
 	uint8_t command_type = SceneMultiplayer::NETWORK_COMMAND_REMOTE_CALL;
-	uint8_t node_id_compression = UINT8_MAX;
-	uint8_t name_id_compression = UINT8_MAX;
+	uint8_t node_id_compression = std::numeric_limits<uint8_t>::max();
+	uint8_t name_id_compression = std::numeric_limits<uint8_t>::max();
 	bool byte_only_or_no_args = false;
 
 	MAKE_ROOM(1);
@@ -383,7 +383,7 @@ void SceneRPCInterface::_send_rpc(Node *p_node, int p_to, uint16_t p_rpc_id, con
 	}
 
 	// Encode method ID
-	if (p_rpc_id <= UINT8_MAX) {
+	if (p_rpc_id <= std::numeric_limits<uint8_t>::max()) {
 		// The ID fits in 1 byte
 		name_id_compression = NETWORK_NAME_ID_COMPRESSION_8;
 		MAKE_ROOM(ofs + 1);
@@ -470,8 +470,8 @@ Error SceneRPCInterface::rpcp(Object *p_obj, int p_peer_id, const StringName &p_
 	bool call_local_native = false;
 	bool call_local_script = false;
 	const RPCConfigCache &config_cache = _get_node_config(node);
-	uint16_t rpc_id = config_cache.ids.has(p_method) ? config_cache.ids[p_method] : UINT16_MAX;
-	ERR_FAIL_COND_V_MSG(rpc_id == UINT16_MAX, ERR_INVALID_PARAMETER,
+	uint16_t rpc_id = config_cache.ids.has(p_method) ? config_cache.ids[p_method] : std::numeric_limits<uint16_t>::max();
+	ERR_FAIL_COND_V_MSG(rpc_id == std::numeric_limits<uint16_t>::max(), ERR_INVALID_PARAMETER,
 			vformat("Unable to get the RPC configuration for the function \"%s\" at path: \"%s\". This happens when the method is missing or not marked for RPCs in the local script.", p_method, node->get_path()));
 	const RPCConfig &config = config_cache.configs[rpc_id];
 

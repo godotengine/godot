@@ -149,7 +149,7 @@ void JoltGeneric6DOFJoint3D::_update_motor_limit(int p_axis) {
 
 	JPH::MotorSettings &motor_settings = constraint->GetMotorSettings((JoltAxis)p_axis);
 
-	float limit = FLT_MAX;
+	float limit = std::numeric_limits<float>::max();
 
 	if (motor_enabled[p_axis]) {
 		limit = (float)motor_limit[p_axis];

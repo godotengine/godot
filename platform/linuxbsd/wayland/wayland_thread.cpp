@@ -3189,7 +3189,7 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	wl_pointer_set_cursor(p_ss->wl_pointer, p_ss->pointer_enter_serial, p_ss->cursor_surface, hotspot_x, hotspot_y);
 	wl_surface_set_buffer_scale(p_ss->cursor_surface, scale);
 	wl_surface_attach(p_ss->cursor_surface, cursor_buffer, 0, 0);
-	wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, INT_MAX, INT_MAX);
+	wl_surface_damage_buffer(p_ss->cursor_surface, 0, 0, std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max());
 
 	wl_surface_commit(p_ss->cursor_surface);
 }

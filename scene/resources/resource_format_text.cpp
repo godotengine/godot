@@ -1038,7 +1038,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 	uint32_t num_read;
 
 	num_read = f->get_buffer(buffer, buffer_size);
-	ERR_FAIL_COND_V_MSG(num_read == UINT32_MAX, ERR_CANT_CREATE, "Failed to allocate memory for buffer.");
+	ERR_FAIL_COND_V_MSG(num_read == std::numeric_limits<uint32_t>::max(), ERR_CANT_CREATE, "Failed to allocate memory for buffer.");
 	ERR_FAIL_COND_V(num_read == 0, ERR_FILE_CORRUPT);
 
 	if (*buffer == '\n') {

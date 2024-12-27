@@ -254,8 +254,8 @@ void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, rea
 	map_depth = p_image->get_height();
 	map_data.resize(map_width * map_depth);
 
-	real_t new_min_height = FLT_MAX;
-	real_t new_max_height = -FLT_MAX;
+	real_t new_min_height = std::numeric_limits<real_t>::max();
+	real_t new_max_height = -std::numeric_limits<real_t>::max();
 
 	float remap_height_min = float(p_height_min);
 	float remap_height_max = float(p_height_max);

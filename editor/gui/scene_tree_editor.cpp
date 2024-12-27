@@ -2214,14 +2214,14 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 
 	HashMap<Node *, CachedNode>::Iterator I = cache.find(p_node);
 	if (I) {
-		if (I->value.delete_serial != UINT16_MAX) {
+		if (I->value.delete_serial != std::numeric_limits<uint16_t>::max()) {
 			// Don't give us a node marked for deletion.
 			if (!p_deleted_ok) {
 				return HashMap<Node *, CachedNode>::Iterator();
 			}
 
 			to_delete.erase(&I->value);
-			I->value.delete_serial = UINT16_MAX;
+			I->value.delete_serial = std::numeric_limits<uint16_t>::max();
 
 			// If we were resurrected from near-death we might have been renamed.
 			// Make sure that we are updated properly.

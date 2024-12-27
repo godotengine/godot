@@ -68,7 +68,7 @@ TEST_CASE("[Vector4i] Axis methods") {
 TEST_CASE("[Vector4i] Clamp method") {
 	const Vector4i vector = Vector4i(10, 10, 10, 10);
 	CHECK_MESSAGE(
-			Vector4i(-5, 5, 15, INT_MAX).clamp(Vector4i(), vector) == Vector4i(0, 5, 10, 10),
+			Vector4i(-5, 5, 15, std::numeric_limits<int32_t>::max()).clamp(Vector4i(), vector) == Vector4i(0, 5, 10, 10),
 			"Vector4i clamp should work as expected.");
 	CHECK_MESSAGE(
 			vector.clamp(Vector4i(0, 10, 15, -10), Vector4i(5, 10, 20, -5)) == Vector4i(5, 10, 15, -5),

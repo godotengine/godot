@@ -45,7 +45,6 @@
 #include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
-#include <climits>
 #include <initializer_list>
 #include <utility>
 

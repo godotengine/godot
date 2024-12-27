@@ -612,7 +612,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverMetal::texture_get_usages_s
 	MTLFmtCaps caps = pf.getCapabilities(p_format);
 
 	// Everything supported by default makes an all-or-nothing check easier for the caller.
-	BitField<RDD::TextureUsageBits> supported = INT64_MAX;
+	BitField<RDD::TextureUsageBits> supported = std::numeric_limits<int64_t>::max();
 	supported.clear_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT); // No VRS support for Metal.
 
 	if (!flags::any(caps, kMTLFmtCapsColorAtt)) {
@@ -1362,8 +1362,8 @@ struct ComputeSize {
 
 struct ShaderStageData {
 	RD::ShaderStage stage = RD::ShaderStage::SHADER_STAGE_MAX;
-	uint32_t is_position_invariant = UINT32_MAX;
-	uint32_t supports_fast_math = UINT32_MAX;
+	uint32_t is_position_invariant = std::numeric_limits<uint32_t>::max();
+	uint32_t supports_fast_math = std::numeric_limits<uint32_t>::max();
 	CharString entry_point_name;
 	CharString source;
 
@@ -1394,12 +1394,12 @@ struct ShaderStageData {
 };
 
 struct SpecializationConstantData {
-	uint32_t constant_id = UINT32_MAX;
+	uint32_t constant_id = std::numeric_limits<uint32_t>::max();
 	RD::PipelineSpecializationConstantType type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
 	ShaderStageUsage stages = ShaderStageUsage::None;
 	// Specifies the stages the constant is used by Metal.
 	ShaderStageUsage used_stages = ShaderStageUsage::None;
-	uint32_t int_value = UINT32_MAX;
+	uint32_t int_value = std::numeric_limits<uint32_t>::max();
 
 	size_t serialize_size() const {
 		return sizeof(constant_id) + sizeof(uint32_t) // type
@@ -1426,9 +1426,9 @@ struct SpecializationConstantData {
 
 struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformData {
 	RD::UniformType type = RD::UniformType::UNIFORM_TYPE_MAX;
-	uint32_t binding = UINT32_MAX;
+	uint32_t binding = std::numeric_limits<uint32_t>::max();
 	bool writable = false;
-	uint32_t length = UINT32_MAX;
+	uint32_t length = std::numeric_limits<uint32_t>::max();
 	ShaderStageUsage stages = ShaderStageUsage::None;
 	// Specifies the stages the uniform data is
 	// used by the Metal shader.
@@ -1481,7 +1481,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformData {
 };
 
 struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSetData {
-	uint32_t index = UINT32_MAX;
+	uint32_t index = std::numeric_limits<uint32_t>::max();
 	LocalVector<UniformData> uniforms;
 
 	size_t serialize_size() const {
@@ -1509,7 +1509,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSetData {
 };
 
 struct PushConstantData {
-	uint32_t size = UINT32_MAX;
+	uint32_t size = std::numeric_limits<uint32_t>::max();
 	ShaderStageUsage stages = ShaderStageUsage::None;
 	ShaderStageUsage used_stages = ShaderStageUsage::None;
 	HashMap<RD::ShaderStage, uint32_t> msl_binding;
@@ -1547,10 +1547,10 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 	CharString shader_name;
 	// The Metal language version specified when compiling SPIR-V to MSL.
 	// Format is major * 10000 + minor * 100 + patch.
-	uint32_t msl_version = UINT32_MAX;
-	uint32_t vertex_input_mask = UINT32_MAX;
-	uint32_t fragment_output_mask = UINT32_MAX;
-	uint32_t spirv_specialization_constants_ids_mask = UINT32_MAX;
+	uint32_t msl_version = std::numeric_limits<uint32_t>::max();
+	uint32_t vertex_input_mask = std::numeric_limits<uint32_t>::max();
+	uint32_t fragment_output_mask = std::numeric_limits<uint32_t>::max();
+	uint32_t spirv_specialization_constants_ids_mask = std::numeric_limits<uint32_t>::max();
 	uint32_t flags = NONE;
 	ComputeSize compute_local_size;
 	PushConstantData push_constant;
@@ -4118,7 +4118,7 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 		multiview_capabilities.is_supported = true;
 		multiview_capabilities.max_view_count = device_properties->limits.maxViewports;
 		// NOTE: I'm not sure what the limit is as I don't see it referenced anywhere
-		multiview_capabilities.max_instance_count = UINT32_MAX;
+		multiview_capabilities.max_instance_count = std::numeric_limits<uint32_t>::max();
 
 		print_verbose("- Metal multiview supported:");
 		print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));

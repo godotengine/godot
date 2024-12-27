@@ -6217,7 +6217,7 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 		Glyph *w = (Glyph *)memalloc(glyph_count * sizeof(Glyph));
 
 		int end = (p_direction == HB_DIRECTION_RTL || p_direction == HB_DIRECTION_BTT) ? p_end : 0;
-		uint32_t last_cluster_id = UINT32_MAX;
+		uint32_t last_cluster_id = std::numeric_limits<uint32_t>::max();
 		unsigned int last_cluster_index = 0;
 		bool last_cluster_valid = true;
 

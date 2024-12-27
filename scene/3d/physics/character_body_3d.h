@@ -145,7 +145,7 @@ private:
 	int platform_layer = 0;
 	RID platform_rid;
 	ObjectID platform_object_id;
-	uint32_t platform_floor_layers = UINT32_MAX;
+	uint32_t platform_floor_layers = std::numeric_limits<uint32_t>::max();
 	uint32_t platform_wall_layers = 0;
 	real_t floor_snap_length = 0.1;
 	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);

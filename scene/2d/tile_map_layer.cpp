@@ -1523,7 +1523,7 @@ TileSet::TerrainsPattern TileMapLayer::_get_best_terrain_pattern_for_constraints
 
 	// Compute the minimum score.
 	TileSet::TerrainsPattern min_score_pattern = p_current_pattern;
-	int min_score = INT32_MAX;
+	int min_score = std::numeric_limits<int32_t>::max();
 	for (KeyValue<TileSet::TerrainsPattern, int> E : terrain_pattern_score) {
 		if (E.value < min_score) {
 			min_score_pattern = E.key;

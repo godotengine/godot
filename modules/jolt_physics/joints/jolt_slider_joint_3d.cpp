@@ -512,7 +512,7 @@ void JoltSliderJoint3D::rebuild() {
 	ERR_FAIL_COND(jolt_body_a == nullptr && jolt_body_b == nullptr);
 
 	float ref_shift = 0.0f;
-	float limit = FLT_MAX;
+	float limit = std::numeric_limits<float>::max();
 
 	if (limits_enabled && limit_lower <= limit_upper) {
 		const double limit_midpoint = (limit_lower + limit_upper) / 2.0f;

@@ -72,9 +72,9 @@ Vector<uint8_t> gen_pcm8_test(float wav_rate, int wav_count, bool stereo) {
 		}
 
 		// Map sin wave to full range of 8-bit values.
-		uint8_t wav_8bit = Math::fast_ftoi(((wav + 1) / 2) * UINT8_MAX);
+		uint8_t wav_8bit = Math::fast_ftoi(((wav + 1) / 2) * std::numeric_limits<uint8_t>::max());
 		// Unlike the .wav format, AudioStreamWAV expects signed 8-bit wavs.
-		uint8_t wav_8bit_signed = wav_8bit - (INT8_MAX + 1);
+		uint8_t wav_8bit_signed = wav_8bit - (std::numeric_limits<int8_t>::max() + 1);
 		write_ptr[i] = wav_8bit_signed;
 	}
 
@@ -100,9 +100,9 @@ Vector<uint8_t> gen_pcm16_test(float wav_rate, int wav_count, bool stereo) {
 		}
 
 		// Map sin wave to full range of 16-bit values.
-		uint16_t wav_16bit = Math::fast_ftoi(((wav + 1) / 2) * UINT16_MAX);
+		uint16_t wav_16bit = Math::fast_ftoi(((wav + 1) / 2) * std::numeric_limits<uint16_t>::max());
 		// The .wav format expects wavs larger than 8 bits to be signed.
-		uint16_t wav_16bit_signed = wav_16bit - (INT16_MAX + 1);
+		uint16_t wav_16bit_signed = wav_16bit - (std::numeric_limits<int16_t>::max() + 1);
 		encode_uint16(wav_16bit_signed, write_ptr + (i * 2));
 	}
 

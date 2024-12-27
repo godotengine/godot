@@ -1567,7 +1567,7 @@ private:
 	TypeNode *parse_type(bool p_allow_void = false);
 
 #ifdef TOOLS_ENABLED
-	int max_script_doc_line = INT_MAX;
+	int max_script_doc_line = std::numeric_limits<int>::max();
 	int min_member_doc_line = 1;
 	bool has_comment(int p_line, bool p_must_be_doc = false);
 	MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);

@@ -4682,7 +4682,7 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		}
 	}
 
-	float time = p_id.time == FLT_MAX ? timeline->get_play_position() : p_id.time;
+	float time = p_id.time == std::numeric_limits<float>::max() ? timeline->get_play_position() : p_id.time;
 	Variant value;
 
 	switch (p_id.type) {
@@ -8678,8 +8678,8 @@ PackedStringArray AnimationMarkerEdit::get_selected_section() const {
 		PackedStringArray arr;
 		arr.push_back(""); // Marker with smallest time.
 		arr.push_back(""); // Marker with largest time.
-		double min_time = INFINITY;
-		double max_time = -INFINITY;
+		double min_time = std::numeric_limits<double>::infinity();
+		double max_time = -std::numeric_limits<double>::infinity();
 		for (const StringName &marker_name : selection) {
 			double time = animation->get_marker_time(marker_name);
 			if (time < min_time) {

@@ -4357,7 +4357,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 		dl->state.set_count = MAX(dl->state.set_count, pcount);
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
-		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
+		uint32_t first_invalid_set = std::numeric_limits<uint32_t>::max(); // All valid by default.
 		if (pipeline->push_constant_size != dl->state.pipeline_push_constant_size) {
 			// All sets must be invalidated as the pipeline layout is not compatible if the push constant range is different.
 			dl->state.pipeline_push_constant_size = pipeline->push_constant_size;
@@ -4997,7 +4997,7 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		cl->state.set_count = MAX(cl->state.set_count, pcount);
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
-		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
+		uint32_t first_invalid_set = std::numeric_limits<uint32_t>::max(); // All valid by default.
 		switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
 			case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
 				first_invalid_set = 0;

@@ -491,7 +491,7 @@ TEST_CASE("[Vector3] Linear algebra methods") {
 }
 
 TEST_CASE("[Vector3] Finite number checks") {
-	const double infinite[] = { NAN, INFINITY, -INFINITY };
+	const double infinite[] = { std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity() };
 
 	CHECK_MESSAGE(
 			Vector3(0, 1, 2).is_finite(),

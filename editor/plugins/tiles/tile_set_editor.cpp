@@ -982,7 +982,7 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 
 		id_input = memnew(SpinBox);
 		vbox->add_child(id_input);
-		id_input->set_max(INT_MAX);
+		id_input->set_max(std::numeric_limits<int>::max());
 
 		id_edit_dialog->connect(SceneStringName(confirmed), callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
 	}

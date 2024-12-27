@@ -78,8 +78,8 @@ private:
 	VkInstance vulkan_instance = nullptr;
 	VkPhysicalDevice vulkan_physical_device = nullptr;
 	VkDevice vulkan_device = nullptr;
-	uint32_t vulkan_queue_family_index = UINT32_MAX;
-	uint32_t vulkan_queue_index = UINT32_MAX;
+	uint32_t vulkan_queue_family_index = std::numeric_limits<uint32_t>::max();
+	uint32_t vulkan_queue_index = std::numeric_limits<uint32_t>::max();
 
 	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsRequirements2KHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsVulkanKHR *), p_graphics_requirements)
 	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanInstanceKHR, (XrInstance), p_instance, (const XrVulkanInstanceCreateInfoKHR *), p_create_info, (VkInstance *), r_vulkan_instance, (VkResult *), r_vulkan_result)

@@ -177,7 +177,7 @@ TypedArray<RID> PhysicsRayQueryParameters2D::get_exclude() const {
 }
 
 void PhysicsRayQueryParameters2D::_bind_methods() {
-	ClassDB::bind_static_method("PhysicsRayQueryParameters2D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters2D::create, DEFVAL(UINT32_MAX), DEFVAL(TypedArray<RID>()));
+	ClassDB::bind_static_method("PhysicsRayQueryParameters2D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters2D::create, DEFVAL(std::numeric_limits<uint32_t>::max()), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters2D::set_from);
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters2D::get_from);

@@ -70,7 +70,7 @@ class SceneTreeEditor : public Control {
 		// HashMap never moves elements.
 		HashMap<Node *, CachedNode>::Iterator cache_iterator;
 		// This is safe because it gets compared to a uint8_t.
-		uint16_t delete_serial = UINT16_MAX;
+		uint16_t delete_serial = std::numeric_limits<uint16_t>::max();
 
 		// To know whether to update children or not.
 		bool can_process = false;

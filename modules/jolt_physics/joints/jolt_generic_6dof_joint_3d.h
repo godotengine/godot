@@ -65,13 +65,13 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	double limit_spring_damping[AXIS_COUNT] = {};
 
 	double motor_speed[AXIS_COUNT] = {};
-	double motor_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	double motor_limit[AXIS_COUNT] = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
 
 	double spring_stiffness[AXIS_COUNT] = {};
 	double spring_frequency[AXIS_COUNT] = {};
 	double spring_damping[AXIS_COUNT] = {};
 	double spring_equilibrium[AXIS_COUNT] = {};
-	double spring_limit[AXIS_COUNT] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+	double spring_limit[AXIS_COUNT] = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
 
 	bool limit_enabled[AXIS_COUNT] = {};
 

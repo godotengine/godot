@@ -1480,7 +1480,7 @@ void RuntimeNodeSelect::_process_frame() {
 void RuntimeNodeSelect::_physics_frame() {
 	if (!Math::is_inf(selection_position.x) || !Math::is_inf(selection_position.y)) {
 		_click_point();
-		selection_position = Point2(INFINITY, INFINITY);
+		selection_position = Point2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity());
 	}
 }
 

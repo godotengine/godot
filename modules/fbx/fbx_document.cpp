@@ -1069,7 +1069,7 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 		}
 		path = path.simplify_path();
 		Vector<uint8_t> data;
-		if (fbx_texture_file.content.size > 0 && fbx_texture_file.content.size <= INT_MAX) {
+		if (fbx_texture_file.content.size > 0 && fbx_texture_file.content.size <= std::numeric_limits<size_t>::max()) {
 			data.resize(int(fbx_texture_file.content.size));
 			memcpy(data.ptrw(), fbx_texture_file.content.data, fbx_texture_file.content.size);
 		} else {

@@ -50,7 +50,7 @@ class JoltSliderJoint3D final : public JoltJoint3D {
 	double limit_spring_damping = 0.0;
 
 	double motor_target_speed = 0.0f;
-	double motor_max_force = FLT_MAX;
+	double motor_max_force = std::numeric_limits<float>::max();
 
 	bool limits_enabled = true;
 	bool limit_spring_enabled = false;

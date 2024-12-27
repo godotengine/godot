@@ -190,7 +190,7 @@ struct Lightmap {
 	PackedInt32Array bsp_tree;
 
 	struct BSP {
-		static const int32_t EMPTY_LEAF = INT32_MIN;
+		static const int32_t EMPTY_LEAF = std::numeric_limits<int32_t>::min();
 		float plane[4];
 		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
 	};

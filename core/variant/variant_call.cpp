@@ -2127,7 +2127,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(NodePath, get_subname, sarray("idx"), varray());
 	bind_method(NodePath, get_concatenated_names, sarray(), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
-	bind_method(NodePath, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(NodePath, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
 
@@ -2371,7 +2371,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, bsearch_custom, sarray("value", "func", "before"), varray(true));
 	bind_method(Array, reverse, sarray(), varray());
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
-	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(INT_MAX, 1, false));
+	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(std::numeric_limits<int>::max(), 1, false));
 	bind_method(Array, filter, sarray("method"), varray());
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
@@ -2413,7 +2413,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, clear, sarray(), varray());
 	bind_method(PackedByteArray, has, sarray("value"), varray());
 	bind_method(PackedByteArray, reverse, sarray(), varray());
-	bind_method(PackedByteArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedByteArray, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedByteArray, sort, sarray(), varray());
 	bind_method(PackedByteArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedByteArray, duplicate, sarray(), varray());
@@ -2479,7 +2479,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt32Array, clear, sarray(), varray());
 	bind_method(PackedInt32Array, has, sarray("value"), varray());
 	bind_method(PackedInt32Array, reverse, sarray(), varray());
-	bind_method(PackedInt32Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedInt32Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedInt32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt32Array, sort, sarray(), varray());
 	bind_method(PackedInt32Array, bsearch, sarray("value", "before"), varray(true));
@@ -2503,7 +2503,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt64Array, clear, sarray(), varray());
 	bind_method(PackedInt64Array, has, sarray("value"), varray());
 	bind_method(PackedInt64Array, reverse, sarray(), varray());
-	bind_method(PackedInt64Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedInt64Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedInt64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedInt64Array, sort, sarray(), varray());
 	bind_method(PackedInt64Array, bsearch, sarray("value", "before"), varray(true));
@@ -2527,7 +2527,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat32Array, clear, sarray(), varray());
 	bind_method(PackedFloat32Array, has, sarray("value"), varray());
 	bind_method(PackedFloat32Array, reverse, sarray(), varray());
-	bind_method(PackedFloat32Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedFloat32Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedFloat32Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat32Array, sort, sarray(), varray());
 	bind_method(PackedFloat32Array, bsearch, sarray("value", "before"), varray(true));
@@ -2551,7 +2551,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat64Array, clear, sarray(), varray());
 	bind_method(PackedFloat64Array, has, sarray("value"), varray());
 	bind_method(PackedFloat64Array, reverse, sarray(), varray());
-	bind_method(PackedFloat64Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedFloat64Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedFloat64Array, to_byte_array, sarray(), varray());
 	bind_method(PackedFloat64Array, sort, sarray(), varray());
 	bind_method(PackedFloat64Array, bsearch, sarray("value", "before"), varray(true));
@@ -2575,7 +2575,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, clear, sarray(), varray());
 	bind_method(PackedStringArray, has, sarray("value"), varray());
 	bind_method(PackedStringArray, reverse, sarray(), varray());
-	bind_method(PackedStringArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedStringArray, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
@@ -2599,7 +2599,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, clear, sarray(), varray());
 	bind_method(PackedVector2Array, has, sarray("value"), varray());
 	bind_method(PackedVector2Array, reverse, sarray(), varray());
-	bind_method(PackedVector2Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector2Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector2Array, sort, sarray(), varray());
 	bind_method(PackedVector2Array, bsearch, sarray("value", "before"), varray(true));
@@ -2623,7 +2623,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector3Array, clear, sarray(), varray());
 	bind_method(PackedVector3Array, has, sarray("value"), varray());
 	bind_method(PackedVector3Array, reverse, sarray(), varray());
-	bind_method(PackedVector3Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector3Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector3Array, sort, sarray(), varray());
 	bind_method(PackedVector3Array, bsearch, sarray("value", "before"), varray(true));
@@ -2647,7 +2647,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedColorArray, clear, sarray(), varray());
 	bind_method(PackedColorArray, has, sarray("value"), varray());
 	bind_method(PackedColorArray, reverse, sarray(), varray());
-	bind_method(PackedColorArray, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedColorArray, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
 	bind_method(PackedColorArray, bsearch, sarray("value", "before"), varray(true));
@@ -2671,7 +2671,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, clear, sarray(), varray());
 	bind_method(PackedVector4Array, has, sarray("value"), varray());
 	bind_method(PackedVector4Array, reverse, sarray(), varray());
-	bind_method(PackedVector4Array, slice, sarray("begin", "end"), varray(INT_MAX));
+	bind_method(PackedVector4Array, slice, sarray("begin", "end"), varray(std::numeric_limits<int>::max()));
 	bind_method(PackedVector4Array, to_byte_array, sarray(), varray());
 	bind_method(PackedVector4Array, sort, sarray(), varray());
 	bind_method(PackedVector4Array, bsearch, sarray("value", "before"), varray(true));
@@ -2695,7 +2695,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity()));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
@@ -2717,7 +2717,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR4, "ZERO", Vector4(0, 0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR4, "ONE", Vector4(1, 1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(INFINITY, INFINITY, INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR4, "INF", Vector4(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity()));
 
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_X", Vector3i::AXIS_X);
 	_VariantCall::add_enum_constant(Variant::VECTOR3I, "Axis", "AXIS_Y", Vector3i::AXIS_Y);
@@ -2730,13 +2730,13 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ZERO", Vector4i(0, 0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR4I, "ONE", Vector4i(1, 1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MIN", Vector4i(INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MAX", Vector4i(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MIN", Vector4i(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min()));
+	_VariantCall::add_variant_constant(Variant::VECTOR4I, "MAX", Vector4i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max()));
 
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ZERO", Vector3i(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min()));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max()));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i(0, 1, 0));
@@ -2752,7 +2752,7 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(INFINITY, INFINITY));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(std::numeric_limits<real_t>::infinity(), std::numeric_limits<real_t>::infinity()));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
@@ -2760,8 +2760,8 @@ static void _register_variant_builtin_constants() {
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min()));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::max()));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));

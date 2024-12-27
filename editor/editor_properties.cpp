@@ -819,7 +819,7 @@ EditorPropertyFlags::EditorPropertyFlags() {
 
 void EditorPropertyLayersGrid::_rename_pressed(int p_menu) {
 	// Show rename popup for active layer.
-	if (renamed_layer_index == INT32_MAX) {
+	if (renamed_layer_index == std::numeric_limits<int32_t>::max()) {
 		return;
 	}
 	String name = names[renamed_layer_index];
@@ -912,8 +912,8 @@ void EditorPropertyLayersGrid::_update_hovered(const Vector2 &p_position) {
 	}
 
 	// Remove highlight when no square is hovered.
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != std::numeric_limits<uint32_t>::max()) {
+		hovered_index = std::numeric_limits<uint32_t>::max();
 		queue_redraw();
 	}
 }
@@ -923,14 +923,14 @@ void EditorPropertyLayersGrid::_on_hover_exit() {
 		expand_hovered = false;
 		queue_redraw();
 	}
-	if (hovered_index != INT32_MAX) {
-		hovered_index = INT32_MAX;
+	if (hovered_index != std::numeric_limits<uint32_t>::max()) {
+		hovered_index = std::numeric_limits<uint32_t>::max();
 		queue_redraw();
 	}
 }
 
 void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
-	if (hovered_index != INT32_MAX) {
+	if (hovered_index != std::numeric_limits<uint32_t>::max()) {
 		// Toggle the flag.
 		// We base our choice on the hovered flag, so that it always matches the hovered flag.
 		if (p_replace) {
@@ -939,7 +939,7 @@ void EditorPropertyLayersGrid::_update_flag(bool p_replace) {
 			if (value == uint32_t(1 << hovered_index)) {
 				// If the flag is already enabled, enable all other items and disable the current flag.
 				// This allows for quicker toggling.
-				value = INT32_MAX - (1 << hovered_index);
+				value = std::numeric_limits<uint32_t>::max() - (1 << hovered_index);
 			} else {
 				value = 1 << hovered_index;
 			}
@@ -976,7 +976,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		_update_flag(mb->is_command_or_control_pressed());
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
-		if (hovered_index != INT32_MAX) {
+		if (hovered_index != std::numeric_limits<uint32_t>::max()) {
 			renamed_layer_index = hovered_index;
 			layer_rename->set_position(get_screen_position() + mb->get_position());
 			layer_rename->reset_size();

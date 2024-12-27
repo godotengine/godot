@@ -135,7 +135,7 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 		l->light_type = "directional";
 		const DirectionalLight3D *light = cast_to<const DirectionalLight3D>(p_light);
 		l->intensity = light->get_param(DirectionalLight3D::PARAM_ENERGY);
-		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
+		l->range = std::numeric_limits<float>::max(); // Range for directional lights is infinite in Godot.
 	} else if (cast_to<const OmniLight3D>(p_light)) {
 		l->light_type = "point";
 		const OmniLight3D *light = cast_to<const OmniLight3D>(p_light);

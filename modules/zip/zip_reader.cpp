@@ -103,7 +103,7 @@ PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive
 	unz_file_info info;
 	err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "Unable to read file information from zip archive.");
-	ERR_FAIL_COND_V_MSG(info.uncompressed_size > INT_MAX, PackedByteArray(), "File contents too large to read from zip archive (>2 GB).");
+	ERR_FAIL_COND_V_MSG(info.uncompressed_size > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()), PackedByteArray(), "File contents too large to read from zip archive (>2 GB).");
 
 	// Read the file data.
 	PackedByteArray data;

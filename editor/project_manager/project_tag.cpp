@@ -56,7 +56,7 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 
 	Color tag_color = Color(1, 0, 0);
 	tag_color.set_ok_hsl_s(0.8);
-	tag_color.set_ok_hsl_h(float(p_text.hash() * 10001 % UINT32_MAX) / float(UINT32_MAX));
+	tag_color.set_ok_hsl_h(float(p_text.hash() * 10001 % std::numeric_limits<uint32_t>::max()) / float(std::numeric_limits<uint32_t>::max()));
 	set_self_modulate(tag_color);
 
 	ColorRect *cr = memnew(ColorRect);

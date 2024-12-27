@@ -284,7 +284,7 @@ void ImporterMesh::optimize_indices() {
 	for (unsigned int weight_idx = 0; weight_idx < bone_count; weight_idx++) {                                     \
 		int bone_idx = bone_array[vert_idx * bone_count + weight_idx];                                             \
 		float w = weight_array[vert_idx * bone_count + weight_idx];                                                \
-		if (w < FLT_EPSILON) {                                                                                     \
+		if (w < std::numeric_limits<float>::epsilon()) {                                                           \
 			continue;                                                                                              \
 		}                                                                                                          \
 		ERR_FAIL_INDEX(bone_idx, static_cast<int>(transform_array.size()));                                        \
@@ -450,7 +450,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
 
-		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		const float max_mesh_error = std::numeric_limits<float>::max(); // We don't want to limit by error, just by index target
 		float mesh_error = 0.0f;
 
 		while (index_target < index_count) {

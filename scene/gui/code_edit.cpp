@@ -2995,7 +2995,7 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 		remove_secondary_carets();
 		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE);
 		if (p_line == get_line_count() - 1) {
-			select(p_line, 0, p_line, INT_MAX);
+			select(p_line, 0, p_line, std::numeric_limits<int>::max());
 		} else {
 			select(p_line, 0, p_line + 1, 0);
 		}

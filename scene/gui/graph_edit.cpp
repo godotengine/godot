@@ -799,8 +799,8 @@ void GraphEdit::_notification(int p_what) {
 }
 
 Rect2 GraphEdit::_compute_shrinked_frame_rect(const GraphFrame *p_frame) {
-	Vector2 min_point{ FLT_MAX, FLT_MAX };
-	Vector2 max_point{ -FLT_MAX, -FLT_MAX };
+	Vector2 min_point{ std::numeric_limits<real_t>::max(), std::numeric_limits<real_t>::max() };
+	Vector2 max_point{ -std::numeric_limits<real_t>::max(), -std::numeric_limits<real_t>::max() };
 
 	if (!frame_attached_nodes.has(p_frame->get_name())) {
 		return Rect2(p_frame->get_position_offset(), Size2());
@@ -825,7 +825,7 @@ Rect2 GraphEdit::_compute_shrinked_frame_rect(const GraphFrame *p_frame) {
 	}
 
 	// It's sufficient to check only one value here.
-	if (min_point.x == FLT_MAX) {
+	if (min_point.x == std::numeric_limits<real_t>::max()) {
 		return Rect2(p_frame->get_position_offset(), Size2());
 	}
 

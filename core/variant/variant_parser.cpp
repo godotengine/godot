@@ -75,7 +75,7 @@ uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_
 
 	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
 	uint64_t num_read = f->get_buffer(temp, p_num_chars);
-	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
+	ERR_FAIL_COND_V(num_read == std::numeric_limits<uint64_t>::max(), 0);
 
 	// translate to wchar
 	for (uint32_t n = 0; n < num_read; n++) {
@@ -147,11 +147,11 @@ const char *VariantParser::tk_name[TK_MAX] = {
 
 static double stor_fix(const String &p_str) {
 	if (p_str == "inf") {
-		return INFINITY;
+		return std::numeric_limits<double>::infinity();
 	} else if (p_str == "inf_neg") {
-		return -INFINITY;
+		return -std::numeric_limits<double>::infinity();
 	} else if (p_str == "nan") {
-		return NAN;
+		return std::numeric_limits<double>::quiet_NaN();
 	}
 	return -1;
 }
@@ -697,11 +697,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "null" || id == "nil") {
 			value = Variant();
 		} else if (id == "inf") {
-			value = INFINITY;
+			value = std::numeric_limits<double>::infinity();
 		} else if (id == "inf_neg") {
-			value = -INFINITY;
+			value = -std::numeric_limits<double>::infinity();
 		} else if (id == "nan") {
-			value = NAN;
+			value = std::numeric_limits<double>::quiet_NaN();
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
 			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);

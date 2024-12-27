@@ -36,7 +36,7 @@ void BitMap::create(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.width < 1);
 	ERR_FAIL_COND(p_size.height < 1);
 
-	ERR_FAIL_COND(static_cast<int64_t>(p_size.width) * static_cast<int64_t>(p_size.height) > INT32_MAX);
+	ERR_FAIL_COND(static_cast<int64_t>(p_size.width) * static_cast<int64_t>(p_size.height) > std::numeric_limits<int32_t>::max());
 
 	Error err = bitmask.resize(Math::division_round_up(p_size.width * p_size.height, 8));
 	ERR_FAIL_COND(err != OK);

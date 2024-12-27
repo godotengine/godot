@@ -183,7 +183,7 @@ TEST_CASE("[Transform2D] Interpolation") {
 
 TEST_CASE("[Transform2D] Finite number checks") {
 	const Vector2 x = Vector2(0, 1);
-	const Vector2 infinite = Vector2(NAN, NAN);
+	const Vector2 infinite = Vector2(std::numeric_limits<real_t>::quiet_NaN(), std::numeric_limits<real_t>::quiet_NaN());
 
 	CHECK_MESSAGE(
 			Transform2D(x, x, x).is_finite(),

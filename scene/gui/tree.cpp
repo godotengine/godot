@@ -40,8 +40,6 @@
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 
-#include <limits.h>
-
 Size2 TreeItem::Cell::get_icon_size() const {
 	if (icon.is_null()) {
 		return Size2();
@@ -347,8 +345,8 @@ void TreeItem::set_text(int p_column, String p_text) {
 
 	if (cells[p_column].mode == TreeItem::CELL_MODE_RANGE) {
 		Vector<String> strings = p_text.split(",");
-		cells.write[p_column].min = INT_MAX;
-		cells.write[p_column].max = INT_MIN;
+		cells.write[p_column].min = std::numeric_limits<double>::max();
+		cells.write[p_column].max = std::numeric_limits<double>::min();
 		for (int i = 0; i < strings.size(); i++) {
 			int value = i;
 			if (!strings[i].get_slicec(':', 1).is_empty()) {

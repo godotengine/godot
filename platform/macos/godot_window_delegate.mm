@@ -111,7 +111,7 @@
 
 	// Reset window size limits.
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
-	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	[wd.window_object setContentMaxSize:NSMakeSize(std::numeric_limits<float>::max(), std::numeric_limits<float>::max())];
 
 	// Reset custom window buttons.
 	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {

@@ -844,6 +844,6 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, m_object_id, m_string)
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
-	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(UINT64_MAX), m_string)
+	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(std::numeric_limits<uint64_t>::max()), m_string)
 
 #endif // ERROR_MACROS_H

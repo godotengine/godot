@@ -114,7 +114,7 @@ private:
 		Transform3D xform_interpolated;
 		Transform3D camera_xform_interpolated; // After modification according to camera type.
 		uint32_t last_update_physics_tick = 0;
-		uint32_t last_update_frame = UINT32_MAX;
+		uint32_t last_update_frame = std::numeric_limits<uint32_t>::max();
 	} _interpolation_data;
 
 	void _update_process_mode();

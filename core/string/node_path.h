@@ -62,7 +62,7 @@ public:
 	Vector<StringName> get_subnames() const;
 	StringName get_concatenated_names() const;
 	StringName get_concatenated_subnames() const;
-	NodePath slice(int p_begin, int p_end = INT_MAX) const;
+	NodePath slice(int p_begin, int p_end = std::numeric_limits<int>::max()) const;
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;

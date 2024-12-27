@@ -440,7 +440,7 @@ private:
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
-		params.result_max = INT_MAX;
+		params.result_max = std::numeric_limits<int>::max();
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 

@@ -2271,8 +2271,8 @@ void GDScriptLanguage::init() {
 
 	_add_global(StaticCString::create("PI"), Math_PI);
 	_add_global(StaticCString::create("TAU"), Math_TAU);
-	_add_global(StaticCString::create("INF"), INFINITY);
-	_add_global(StaticCString::create("NAN"), NAN);
+	_add_global(StaticCString::create("INF"), std::numeric_limits<double>::infinity());
+	_add_global(StaticCString::create("NAN"), std::numeric_limits<double>::quiet_NaN());
 
 	//populate native classes
 

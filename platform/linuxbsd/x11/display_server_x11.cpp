@@ -51,13 +51,13 @@
 #endif
 
 #include <dlfcn.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits>
 
 #undef CursorShape
 #include <X11/XKBlib.h>
@@ -654,7 +654,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, (XPointer)&selection)) {
 					result = XGetWindowProperty(x11_display, x11_window,
 							selection, // selection type
-							0, LONG_MAX, // offset - len
+							0, std::numeric_limits<long>::max(), // offset - len
 							True, // delete property to notify the owner
 							AnyPropertyType, // flag
 							&type, // return type
@@ -904,7 +904,7 @@ Ref<Image> DisplayServerX11::clipboard_get_image() const {
 				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, (XPointer)&transfer_prop)) {
 					result = XGetWindowProperty(x11_display, x11_window,
 							transfer_prop, // output property
-							0, LONG_MAX, // offset - len
+							0, std::numeric_limits<long>::max(), // offset - len
 							True, // delete property to notify the owner
 							AnyPropertyType, // flag
 							&type, // return type
@@ -1214,7 +1214,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	if (desktop_prop != None) {
 		unsigned long desktop_len = 0;
 		unsigned char *desktop_data = nullptr;
-		if (XGetWindowProperty(x11_display, x11_window, desktop_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &desktop_len, &remaining, &desktop_data) == Success) {
+		if (XGetWindowProperty(x11_display, x11_window, desktop_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &desktop_len, &remaining, &desktop_data) == Success) {
 			if ((format == 32) && (desktop_len > 0) && desktop_data) {
 				desktop_index = (unsigned int)desktop_data[0];
 			}
@@ -1237,7 +1237,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 			if (gtk_workarea_prop != None) {
 				unsigned long workarea_len = 0;
 				unsigned char *workarea_data = nullptr;
-				if (XGetWindowProperty(x11_display, x11_window, gtk_workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
+				if (XGetWindowProperty(x11_display, x11_window, gtk_workarea_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
 					if ((format == 32) && (workarea_len % 4 == 0) && workarea_data) {
 						long *rect_data = (long *)workarea_data;
 						for (uint32_t data_offset = 0; data_offset < workarea_len; data_offset += 4) {
@@ -1268,7 +1268,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 		if (client_list_prop != None) {
 			unsigned long clients_len = 0;
 			unsigned char *clients_data = nullptr;
-			if (XGetWindowProperty(x11_display, x11_window, client_list_prop, 0, LONG_MAX, False, XA_WINDOW, &type, &format, &clients_len, &remaining, &clients_data) == Success) {
+			if (XGetWindowProperty(x11_display, x11_window, client_list_prop, 0, std::numeric_limits<long>::max(), False, XA_WINDOW, &type, &format, &clients_len, &remaining, &clients_data) == Success) {
 				if ((format == 32) && (clients_len > 0) && clients_data) {
 					Window *windows_data = (Window *)clients_data;
 
@@ -1281,7 +1281,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 						if (desktop_geometry_prop != None) {
 							unsigned long geom_len = 0;
 							unsigned char *geom_data = nullptr;
-							if (XGetWindowProperty(x11_display, x11_window, desktop_geometry_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &geom_len, &remaining, &geom_data) == Success) {
+							if (XGetWindowProperty(x11_display, x11_window, desktop_geometry_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &geom_len, &remaining, &geom_data) == Success) {
 								if ((format == 32) && (geom_len >= 2) && geom_data) {
 									desktop_valid = true;
 									long *size_data = (long *)geom_data;
@@ -1301,7 +1301,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 						if (desktop_viewport_prop != None) {
 							unsigned long viewport_len = 0;
 							unsigned char *viewport_data = nullptr;
-							if (XGetWindowProperty(x11_display, x11_window, desktop_viewport_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &viewport_len, &remaining, &viewport_data) == Success) {
+							if (XGetWindowProperty(x11_display, x11_window, desktop_viewport_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &viewport_len, &remaining, &viewport_data) == Success) {
 								if ((format == 32) && (viewport_len >= 2) && viewport_data) {
 									desktop_valid = true;
 									long *pos_data = (long *)viewport_data;
@@ -1331,7 +1331,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 							unsigned char *strut_data = nullptr;
 							Atom strut_partial_prop = XInternAtom(x11_display, "_NET_WM_STRUT_PARTIAL", True);
 							if (strut_partial_prop != None) {
-								if (XGetWindowProperty(x11_display, windows_data[win_index], strut_partial_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
+								if (XGetWindowProperty(x11_display, windows_data[win_index], strut_partial_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
 									strut_found = true;
 								}
 							}
@@ -1339,7 +1339,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 							if (!g_bad_window && !strut_found) {
 								Atom strut_prop = XInternAtom(x11_display, "_NET_WM_STRUT", True);
 								if (strut_prop != None) {
-									if (XGetWindowProperty(x11_display, windows_data[win_index], strut_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
+									if (XGetWindowProperty(x11_display, windows_data[win_index], strut_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &strut_len, &remaining, &strut_data) == Success) {
 										strut_found = true;
 									}
 								}
@@ -1435,7 +1435,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 		if (workarea_prop != None) {
 			unsigned long workarea_len = 0;
 			unsigned char *workarea_data = nullptr;
-			if (XGetWindowProperty(x11_display, x11_window, workarea_prop, 0, LONG_MAX, False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
+			if (XGetWindowProperty(x11_display, x11_window, workarea_prop, 0, std::numeric_limits<long>::max(), False, XA_CARDINAL, &type, &format, &workarea_len, &remaining, &workarea_data) == Success) {
 				if ((format == 32) && (workarea_len >= ((desktop_index + 1) * 4)) && workarea_data) {
 					long *rect_data = (long *)workarea_data;
 					int data_offset = desktop_index * 4;
@@ -3904,7 +3904,7 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 		unsigned long len;
 		unsigned long remaining;
 		unsigned char *data = nullptr;
-		if (XGetWindowProperty(x11_display, p_event->requestor, p_event->property, 0, LONG_MAX, False, atom_pair, &type, &format, &len, &remaining, &data) == Success) {
+		if (XGetWindowProperty(x11_display, p_event->requestor, p_event->property, 0, std::numeric_limits<long>::max(), False, atom_pair, &type, &format, &len, &remaining, &data) == Success) {
 			if ((len >= 2) && data) {
 				Atom *targets = (Atom *)data;
 				for (uint64_t i = 0; i < len; i += 2) {
