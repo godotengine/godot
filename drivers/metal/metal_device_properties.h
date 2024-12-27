@@ -70,9 +70,14 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 	SampleCount64 = (1UL << 6),
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) MetalFeatures {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	uint32_t mslVersion = 0;
 	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
+	bool supportsBCTextureCompression = false;
+	bool supportsDepth24Stencil8 = false;
+	bool supports32BitFloatFiltering = false;
+	bool supports32BitMSAA = false;
+	bool supportsMac = TARGET_OS_OSX;
 	MTLLanguageVersion mslVersionEnum = MTLLanguageVersion1_2;
 	SampleCount supportedSampleCounts = SampleCount1;
 	long hostMemoryPageSize = 0;
@@ -84,6 +89,8 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) MetalFeatures {
 	bool tessellationShader = false; /**< If true, tessellation shaders are supported. */
 	bool imageCubeArray = false; /**< If true, image cube arrays are supported. */
 	MTLArgumentBuffersTier argument_buffers_tier = MTLArgumentBuffersTier1;
+	/// If true, argument encoders are required to encode arguments into an argument buffer.
+	bool needs_arg_encoders = true;
 	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
 	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
 };
@@ -126,7 +133,7 @@ struct MetalLimits {
 	BitField<RD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MetalDeviceProperties {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
 private:
 	void init_features(id<MTLDevice> p_device);
 	void init_limits(id<MTLDevice> p_device);
