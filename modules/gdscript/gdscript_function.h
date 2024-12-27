@@ -41,6 +41,13 @@
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
+#define OP_ARGS (GDScriptInstance * p_instance,                        \
+		int *p_variant_address_limits,                                 \
+		Variant *p_variant_addresses[GDScriptFunction::ADDR_TYPE_MAX], \
+		int p_ip,                                                      \
+		String p_err_text)
+#define OP_EXEC_H(m_opcode) void _exec_##m_opcode OP_ARGS
+
 class GDScriptInstance;
 class GDScript;
 
@@ -292,6 +299,39 @@ public:
 		OPCODE_END
 	};
 
+	enum Address {
+		ADDR_BITS = 24,
+		ADDR_MASK = ((1 << ADDR_BITS) - 1),
+		ADDR_TYPE_MASK = ~ADDR_MASK,
+		ADDR_TYPE_STACK = 0,
+		ADDR_TYPE_CONSTANT = 1,
+		ADDR_TYPE_MEMBER = 2,
+		ADDR_TYPE_MAX = 3,
+	};
+
+	enum FixedAddresses {
+		ADDR_STACK_SELF = 0,
+		ADDR_STACK_CLASS = 1,
+		ADDR_STACK_NIL = 2,
+		FIXED_ADDRESSES_MAX = 3,
+		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
+		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
+		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
+	};
+
+	struct StackDebug {
+		int line;
+		int pos;
+		bool added;
+		StringName identifier;
+	};
+
+private:
+	friend class GDScript;
+	friend class GDScriptCompiler;
+	friend class GDScriptByteCodeGenerator;
+	friend class GDScriptLanguage;
+
 	// Used for bit masking to find arguments.
 	enum ArgumentMask {
 		ARGUMENT = 0xFF >> 1,
@@ -450,39 +490,6 @@ public:
 		ARGS_MAX,
 	};
 
-	enum Address {
-		ADDR_BITS = 24,
-		ADDR_MASK = ((1 << ADDR_BITS) - 1),
-		ADDR_TYPE_MASK = ~ADDR_MASK,
-		ADDR_TYPE_STACK = 0,
-		ADDR_TYPE_CONSTANT = 1,
-		ADDR_TYPE_MEMBER = 2,
-		ADDR_TYPE_MAX = 3,
-	};
-
-	enum FixedAddresses {
-		ADDR_STACK_SELF = 0,
-		ADDR_STACK_CLASS = 1,
-		ADDR_STACK_NIL = 2,
-		FIXED_ADDRESSES_MAX = 3,
-		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
-		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
-		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
-	};
-
-	struct StackDebug {
-		int line;
-		int pos;
-		bool added;
-		StringName identifier;
-	};
-
-private:
-	friend class GDScript;
-	friend class GDScriptCompiler;
-	friend class GDScriptByteCodeGenerator;
-	friend class GDScriptLanguage;
-
 	StringName name;
 	StringName source;
 	bool _static = false;
@@ -555,6 +562,37 @@ private:
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	MethodBind **_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
+
+	OP_EXEC_H(OPCODE_OPERATOR);
+	OP_EXEC_H(OPCODE_TYPE_TEST);
+	OP_EXEC_H(OPCODE_SET_KEYED);
+	OP_EXEC_H(OPCODE_SET_INDEXED);
+	OP_EXEC_H(OPCODE_GET_KEYED);
+	OP_EXEC_H(OPCODE_GET_INDEXED);
+	OP_EXEC_H(OPCODE_SET_NAMED);
+	OP_EXEC_H(OPCODE_GET_NAMED);
+	OP_EXEC_H(OPCODE_SET_MEMBER);
+	OP_EXEC_H(OPCODE_GET_MEMBER);
+	OP_EXEC_H(OPCODE_SET_STATIC_VARIABLE);
+	OP_EXEC_H(OPCODE_GET_STATIC_VARIABLE);
+	OP_EXEC_H(OPCODE_ASSIGN);
+	OP_EXEC_H(OPCODE_CAST);
+	OP_EXEC_H(OPCODE_CONSTRUCT);
+	OP_EXEC_H(OPCODE_CALL);
+	OP_EXEC_H(OPCODE_AWAIT);
+	OP_EXEC_H(OPCODE_AWAIT_RESUME);
+	OP_EXEC_H(OPCODE_CREATE_LAMBDA);
+	OP_EXEC_H(OPCODE_CREATE_SELF_LAMBDA);
+	OP_EXEC_H(OPCODE_JUMP);
+	OP_EXEC_H(OPCODE_RETURN);
+	OP_EXEC_H(OPCODE_ITERATE_BEGIN);
+	OP_EXEC_H(OPCODE_ITERATE);
+	OP_EXEC_H(OPCODE_STORE_GLOBAL);
+	OP_EXEC_H(OPCODE_STORE_NAMED_GLOBAL);
+	OP_EXEC_H(OPCODE_TYPE_ADJUST);
+	OP_EXEC_H(OPCODE_ASSERT);
+	OP_EXEC_H(OPCODE_BREAKPOINT);
+	OP_EXEC_H(OPCODE_LINE);
 
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
