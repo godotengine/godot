@@ -33,6 +33,9 @@
 
 #include "scene/3d/node_3d.h"
 
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+
 class NavigationObstacle3D : public Node3D {
 	GDCLASS(NavigationObstacle3D, Node3D);
 
@@ -122,6 +125,14 @@ public:
 	bool get_carve_navigation_mesh() const;
 
 	PackedStringArray get_configuration_warnings() const override;
+
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 
 private:
 	void _update_map(RID p_map);
