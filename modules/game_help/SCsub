@@ -16,6 +16,7 @@ env_game_help.add_source_files(env.modules_sources, "human_anim/Simd/*.cpp")
 
 
 env_game_help.add_source_files(env.modules_sources, "logic/beehave/*.cpp")
+env_game_help.add_source_files(env.modules_sources, "logic/scene/*.cpp")
 
 env_game_help.add_source_files(env.modules_sources, "logic/character_ai/*.cpp")
 env_game_help.add_source_files(env.modules_sources, "logic/character_ai/condition/*.cpp")

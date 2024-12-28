@@ -669,12 +669,13 @@ namespace HumanAnim
 
     // 重定向骨骼
     void HumanAnimmation::retarget(HumanBoneConfig& p_config,HumanSkeleton& p_skeleton_config) {
+		Transform3D local_trans;
         for(auto& it : p_config.root_bone) {
             BonePose& pose = p_config.virtual_pose[it];
             Transform3D& trans = p_skeleton_config.bone_result[it].real_global_pose;
-            Transform3D local_trans;
-            local_trans.basis = trans.basis;        
 
+
+            local_trans.basis = Basis(pose.rotation);
             retarget(p_config, pose, local_trans,p_skeleton_config);
 
             
@@ -838,18 +839,16 @@ namespace HumanAnim
             
             Vector3 forward;
             if(child_pose.child_bones.size() == 0) {
-				forward = child_pose.global_pose.origin + (child_pose.global_pose.origin - parent_pose.origin);
-				result.bone_global_lookat.x = forward.x;
-				result.bone_global_lookat.y = forward.y;
-				result.bone_global_lookat.z = forward.z;
+				forward = child_pose.global_pose.origin - parent_pose.origin;
             }
             else {
-
 				BonePose& first_child_pose = p_config.virtual_pose[child_pose.child_bones[0]];
-				result.bone_global_lookat.x = first_child_pose.global_pose.origin.x;
-				result.bone_global_lookat.y = first_child_pose.global_pose.origin.y;
-				result.bone_global_lookat.z = first_child_pose.global_pose.origin.z;
+				forward = first_child_pose.global_pose.origin - child_pose.global_pose.origin;
             }
+			forward = child_pose.global_pose.origin + forward.normalized();
+			result.bone_global_lookat.x = forward.x;
+			result.bone_global_lookat.y = forward.y;
+			result.bone_global_lookat.z = forward.z;
 
             // 计算自身轴旋转
 			result.bone_global_lookat.w = compute_self_roll(p_config, parent_pose, child_pose, trans, Vector3(result.bone_global_lookat.x, result.bone_global_lookat.y, result.bone_global_lookat.z), child_pose.right);
@@ -890,7 +889,11 @@ namespace HumanAnim
             global_trans.basis.rotate_to_align(rest_forward, curr_forward);
         }
         // 计算自身轴旋转
-        global_trans.basis.rotate(curr_forward, result.bone_global_lookat.w);
+		if (result.bone_global_lookat.w != 0) {
+			Basis rot;
+			rot.rotate(curr_forward, result.bone_global_lookat.w);
+			global_trans.basis = rot * global_trans.basis;
+		}
         result.real_global_pose = global_trans;
         // 计算出本地旋转
         Basis local_trans = parent_trans.basis.inverse() * global_trans.basis;

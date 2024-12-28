@@ -1,7 +1,7 @@
 #include "body_main.h"
 #include "character_manager.h"
 #include "scene/resources/animation.h"
-#include "message_manager.h"
+#include "core/message_manager.h"
 
 CharacterManager* CharacterManager::singleton = nullptr;
 static float time_delta = 0.0f;

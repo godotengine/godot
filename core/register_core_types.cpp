@@ -79,6 +79,8 @@
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
 
+#include "core/message_manager.h"
+
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
@@ -265,6 +267,9 @@ void register_core_types() {
 	GDREGISTER_CLASS(ImageFormatLoaderExtension);
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
+	
+	GDREGISTER_CLASS(MessageManager);
+
 	GDREGISTER_CLASS(GDExtension);
 
 	GDREGISTER_ABSTRACT_CLASS(GDExtensionManager);
@@ -315,6 +320,7 @@ void register_core_settings() {
 }
 
 void register_early_core_singletons() {
+
 	GDREGISTER_CLASS(core_bind::Engine);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
 
@@ -326,6 +332,9 @@ void register_early_core_singletons() {
 
 	GDREGISTER_CLASS(Time);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
+
+	MessageManager::singleton = memnew(MessageManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("MessageManager", MessageManager::singleton));
 }
 
 void register_core_singletons() {
@@ -445,6 +454,13 @@ void unregister_core_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
 	resource_loader_gdextension.unref();
+
+	
+	if(MessageManager::singleton != nullptr) {
+		MessageManager::singleton->clear();
+		memdelete(MessageManager::singleton);
+		MessageManager::singleton = nullptr;
+	}
 
 	ResourceLoader::finalize();
 
