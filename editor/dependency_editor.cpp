@@ -317,12 +317,8 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 
 void DependencyEditorOwners::_select_file(int p_idx) {
 	String fpath = owners->get_item_text(p_idx);
+	EditorNode::get_singleton()->load_scene_or_resource(fpath);
 
-	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		EditorNode::get_singleton()->open_request(fpath);
-	} else {
-		EditorNode::get_singleton()->load_resource(fpath);
-	}
 	hide();
 	emit_signal(SceneStringName(confirmed));
 }
@@ -713,8 +709,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 //////////////
 
-void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Vector<String> &report) {
-	mode = p_mode;
+void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> &report) {
 	for_file = p_for_file;
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());
 	files->clear();
@@ -739,14 +734,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 }
 
 void DependencyErrorDialog::ok_pressed() {
-	switch (mode) {
-		case MODE_SCENE:
-			EditorNode::get_singleton()->load_scene(for_file, true);
-			break;
-		case MODE_RESOURCE:
-			EditorNode::get_singleton()->load_resource(for_file, true);
-			break;
-	}
+	EditorNode::get_singleton()->load_scene_or_resource(for_file, true);
 }
 
 void DependencyErrorDialog::custom_action(const String &) {
@@ -770,8 +758,6 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	text = memnew(Label);
 	vb->add_child(text);
 	text->set_text(TTR("Which action should be taken?"));
-
-	mode = Mode::MODE_RESOURCE;
 
 	fdep = add_button(TTR("Fix Dependencies"), true, "fixdeps");
 
