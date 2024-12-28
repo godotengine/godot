@@ -50,11 +50,15 @@ repos:
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.3
+    rev: v0.8.4
     hooks:
       - id: ruff
         args: [--fix]
+        files: (\.py|SConstruct|SCsub)$
+        types_or: [text]
       - id: ruff-format
+        files: (\.py|SConstruct|SCsub)$
+        types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
@@ -170,7 +174,7 @@ repos:
         language: python
         entry: python misc/scripts/header_guards.py
         files: \.(h|hpp|hh|hxx)$
-        exclude: ^.*/(thread|platform_config|platform_gl)\.h$
+        exclude: ^.*/(dummy|thread|platform_config|platform_gl)\.h$
 
       - id: file-format
         name: file-format
