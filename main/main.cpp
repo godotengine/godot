@@ -164,10 +164,8 @@ static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
 static ThemeDB *theme_db = nullptr;
-static NavigationServer2D *navigation_server_2d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
-static NavigationServer3D *navigation_server_3d = nullptr;
 #ifndef _3D_DISABLED
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
@@ -376,44 +374,6 @@ void finalize_display() {
 	memdelete(rendering_server);
 
 	memdelete(display_server);
-}
-
-void initialize_navigation_server() {
-	ERR_FAIL_COND(navigation_server_3d != nullptr);
-	ERR_FAIL_COND(navigation_server_2d != nullptr);
-
-	// Init 3D Navigation Server
-	navigation_server_3d = NavigationServer3DManager::new_default_server();
-
-	// Fall back to dummy if no default server has been registered.
-	if (!navigation_server_3d) {
-		navigation_server_3d = memnew(NavigationServer3DDummy);
-	}
-
-	// Should be impossible, but make sure it's not null.
-	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
-	navigation_server_3d->init();
-
-	// Init 2D Navigation Server
-	navigation_server_2d = NavigationServer2DManager::new_default_server();
-	if (!navigation_server_2d) {
-		navigation_server_2d = memnew(NavigationServer2DDummy);
-	}
-
-	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
-	navigation_server_2d->init();
-}
-
-void finalize_navigation_server() {
-	ERR_FAIL_NULL(navigation_server_3d);
-	navigation_server_3d->finish();
-	memdelete(navigation_server_3d);
-	navigation_server_3d = nullptr;
-
-	ERR_FAIL_NULL(navigation_server_2d);
-	navigation_server_2d->finish();
-	memdelete(navigation_server_2d);
-	navigation_server_2d = nullptr;
 }
 
 void initialize_theme_db() {
@@ -772,6 +732,9 @@ Error Main::test_setup() {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+	NavigationServer2DManager::initialize_server();
+
 	register_scene_types();
 	register_driver_types();
 
@@ -793,8 +756,6 @@ Error Main::test_setup() {
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
 	theme_db->initialize_theme_noproject();
-
-	initialize_navigation_server();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 
@@ -856,7 +817,8 @@ void Main::test_cleanup() {
 
 	finalize_theme_db();
 
-	finalize_navigation_server();
+	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+	NavigationServer3DManager::finalize_server();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -3402,6 +3364,11 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
 
+	MAIN_PRINT("Main: Load Navigation");
+
+	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+	NavigationServer2DManager::initialize_server();
+
 	register_scene_types();
 	register_driver_types();
 
@@ -3471,10 +3438,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 	MAIN_PRINT("Main: Load Physics");
 
 	initialize_physics();
-
-	MAIN_PRINT("Main: Load Navigation");
-
-	initialize_navigation_server();
 
 	register_server_singletons();
 
@@ -4716,7 +4679,8 @@ void Main::cleanup(bool p_force) {
 	finalize_theme_db();
 
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
-	finalize_navigation_server();
+	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+	NavigationServer3DManager::finalize_server();
 	finalize_physics();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);

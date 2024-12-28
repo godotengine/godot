@@ -39,6 +39,9 @@
 
 #include "thirdparty/misc/mikktspace.h"
 
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+
 class CSGShape3D : public GeometryInstance3D {
 	GDCLASS(CSGShape3D, GeometryInstance3D);
 
@@ -170,6 +173,14 @@ public:
 	Ref<ConcavePolygonShape3D> bake_collision_shape();
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
+
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 
 	CSGShape3D();
 	~CSGShape3D();
