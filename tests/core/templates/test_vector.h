@@ -32,7 +32,6 @@
 #define TEST_VECTOR_H
 
 #include "core/templates/vector.h"
-
 #include "tests/test_macros.h"
 
 namespace TestVector {

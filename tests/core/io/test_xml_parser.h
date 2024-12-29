@@ -32,7 +32,6 @@
 #define TEST_XML_PARSER_H
 
 #include "core/io/xml_parser.h"
-
 #include "tests/test_macros.h"
 
 namespace TestXMLParser {

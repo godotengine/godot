@@ -32,7 +32,6 @@
 #define TEST_OPTION_BUTTON_H
 
 #include "scene/gui/option_button.h"
-
 #include "tests/test_macros.h"
 
 namespace TestOptionButton {

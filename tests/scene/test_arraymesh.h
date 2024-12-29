@@ -33,7 +33,6 @@
 
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
-
 #include "tests/test_macros.h"
 
 namespace TestArrayMesh {

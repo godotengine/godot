@@ -32,7 +32,6 @@
 #define TEST_SHADER_PREPROCESSOR_H
 
 #include "servers/rendering/shader_preprocessor.h"
-
 #include "tests/test_macros.h"
 
 #include <cctype>

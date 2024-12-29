@@ -32,7 +32,6 @@
 #define TEST_COLOR_H
 
 #include "core/math/color.h"
-
 #include "tests/test_macros.h"
 
 namespace TestColor {

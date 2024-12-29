@@ -33,7 +33,6 @@
 
 #include "core/templates/oa_hash_map.h"
 #include "scene/resources/texture.h"
-
 #include "tests/test_macros.h"
 
 namespace TestOAHashMap {

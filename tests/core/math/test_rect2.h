@@ -33,8 +33,7 @@
 
 #include "core/math/rect2.h"
 #include "core/math/rect2i.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestRect2 {
 TEST_CASE("[Rect2] Constructor methods") {

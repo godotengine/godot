@@ -32,7 +32,6 @@
 #define DISPLAY_SERVER_MOCK_H
 
 #include "servers/display_server_headless.h"
-
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 // Specialized DisplayServer for unittests based on DisplayServerHeadless, that

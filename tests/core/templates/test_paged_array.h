@@ -32,8 +32,7 @@
 #define TEST_PAGED_ARRAY_H
 
 #include "core/templates/paged_array.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestPagedArray {
 

@@ -33,7 +33,6 @@
 
 #include "scene/2d/path_2d.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPathFollow2D {

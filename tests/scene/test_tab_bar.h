@@ -33,7 +33,6 @@
 
 #include "scene/gui/tab_bar.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTabBar {

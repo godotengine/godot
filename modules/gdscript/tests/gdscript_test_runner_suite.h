@@ -32,7 +32,6 @@
 #define GDSCRIPT_TEST_RUNNER_SUITE_H
 
 #include "gdscript_test_runner.h"
-
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {

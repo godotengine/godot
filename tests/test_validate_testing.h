@@ -32,8 +32,6 @@
 #define TEST_VALIDATE_TESTING_H
 
 #include "core/core_globals.h"
-#include "core/os/os.h"
-
 #include "tests/test_macros.h"
 #include "tests/test_tools.h"
 

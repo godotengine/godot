@@ -32,7 +32,6 @@
 #define TEST_HASHING_CONTEXT_H
 
 #include "core/crypto/hashing_context.h"
-
 #include "tests/test_macros.h"
 
 namespace TestHashingContext {

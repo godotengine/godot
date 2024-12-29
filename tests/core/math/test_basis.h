@@ -33,7 +33,6 @@
 
 #include "core/math/basis.h"
 #include "core/math/random_number_generator.h"
-
 #include "tests/test_macros.h"
 
 namespace TestBasis {

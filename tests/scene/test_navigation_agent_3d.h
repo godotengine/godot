@@ -34,7 +34,6 @@
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNavigationAgent3D {

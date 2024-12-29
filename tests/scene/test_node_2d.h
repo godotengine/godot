@@ -33,7 +33,6 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNode2D {

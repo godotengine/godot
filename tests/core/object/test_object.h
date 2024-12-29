@@ -34,7 +34,6 @@
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
-
 #include "tests/test_macros.h"
 
 #ifdef SANITIZERS_ENABLED
@@ -47,18 +46,17 @@
 #endif
 #endif
 
-// Declared in global namespace because of GDCLASS macro warning (Windows):
-// "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
-// is a Microsoft extension; add a nested name specifier".
-class _TestDerivedObject : public Object {
-	GDCLASS(_TestDerivedObject, Object);
+namespace TestObject {
+
+class TestDerivedObject : public Object {
+	GDCLASS(TestDerivedObject, Object);
 
 	int property_value;
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestDerivedObject::set_property);
-		ClassDB::bind_method(D_METHOD("get_property"), &_TestDerivedObject::get_property);
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &TestDerivedObject::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &TestDerivedObject::get_property);
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "property"), "set_property", "get_property");
 	}
 
@@ -67,9 +65,7 @@ public:
 	int get_property() const { return property_value; }
 };
 
-namespace TestObject {
-
-class _MockScriptInstance : public ScriptInstance {
+class MockScriptInstance : public ScriptInstance {
 	StringName property_name = "NO_NAME";
 	Variant property_value;
 
@@ -226,7 +222,7 @@ TEST_CASE("[Object] Construction") {
 
 TEST_CASE("[Object] Script instance property setter") {
 	Object object;
-	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
+	MockScriptInstance *script_instance = memnew(MockScriptInstance);
 	object.set_script_instance(script_instance);
 
 	bool valid = false;
@@ -243,7 +239,7 @@ TEST_CASE("[Object] Script instance property setter") {
 
 TEST_CASE("[Object] Script instance property getter") {
 	Object object;
-	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
+	MockScriptInstance *script_instance = memnew(MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
 	object.set_script_instance(script_instance);
 
@@ -256,8 +252,8 @@ TEST_CASE("[Object] Script instance property getter") {
 }
 
 TEST_CASE("[Object] Built-in property setter") {
-	GDREGISTER_CLASS(_TestDerivedObject);
-	_TestDerivedObject derived_object;
+	GDREGISTER_CLASS(TestDerivedObject);
+	TestDerivedObject derived_object;
 
 	bool valid = false;
 	derived_object.set("property", 100, &valid);
@@ -268,8 +264,8 @@ TEST_CASE("[Object] Built-in property setter") {
 }
 
 TEST_CASE("[Object] Built-in property getter") {
-	GDREGISTER_CLASS(_TestDerivedObject);
-	_TestDerivedObject derived_object;
+	GDREGISTER_CLASS(TestDerivedObject);
+	TestDerivedObject derived_object;
 	derived_object.set_property(100);
 
 	bool valid = false;
@@ -538,7 +534,7 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 	Object *object = memnew(Object);
 	ObjectID obj_id = object->get_instance_id();
 
-	class _SelfDestroyingScriptInstance : public _MockScriptInstance {
+	class SelfDestroyingScriptInstance : public MockScriptInstance {
 		Object *self = nullptr;
 
 		// This has to be static because ~Object() also destroys the script instance.
@@ -571,11 +567,11 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 		}
 
 	public:
-		_SelfDestroyingScriptInstance(Object *p_self) :
+		SelfDestroyingScriptInstance(Object *p_self) :
 				self(p_self) {}
 	};
 
-	_SelfDestroyingScriptInstance *script_instance = memnew(_SelfDestroyingScriptInstance(object));
+	SelfDestroyingScriptInstance *script_instance = memnew(SelfDestroyingScriptInstance(object));
 	object->set_script_instance(script_instance);
 
 	SUBCASE("Within callp()") {

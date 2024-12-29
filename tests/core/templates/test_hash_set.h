@@ -32,7 +32,6 @@
 #define TEST_HASH_SET_H
 
 #include "core/templates/hash_set.h"
-
 #include "tests/test_macros.h"
 
 namespace TestHashSet {

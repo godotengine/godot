@@ -32,7 +32,6 @@
 #define TEST_TRANSFORM_3D_H
 
 #include "core/math/transform_3d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTransform3D {

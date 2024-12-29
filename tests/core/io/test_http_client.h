@@ -32,10 +32,8 @@
 #define TEST_HTTP_CLIENT_H
 
 #include "core/io/http_client.h"
-
-#include "tests/test_macros.h"
-
 #include "modules/modules_enabled.gen.h"
+#include "tests/test_macros.h"
 
 namespace TestHTTPClient {
 

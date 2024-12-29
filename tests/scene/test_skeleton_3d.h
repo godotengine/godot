@@ -31,9 +31,8 @@
 #ifndef TEST_SKELETON_3D_H
 #define TEST_SKELETON_3D_H
 
-#include "tests/test_macros.h"
-
 #include "scene/3d/skeleton_3d.h"
+#include "tests/test_macros.h"
 
 namespace TestSkeleton3D {
 

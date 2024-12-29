@@ -32,7 +32,6 @@
 #define TEST_NAVIGATION_SERVER_2D_H
 
 #include "servers/navigation_server_2d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNavigationServer2D {

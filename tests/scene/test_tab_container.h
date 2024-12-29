@@ -32,7 +32,6 @@
 #define TEST_TAB_CONTAINER_H
 
 #include "scene/gui/tab_container.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTabContainer {

@@ -32,7 +32,6 @@
 #define TEST_SPRITE_FRAMES_H
 
 #include "scene/resources/sprite_frames.h"
-
 #include "tests/test_macros.h"
 
 namespace TestSpriteFrames {

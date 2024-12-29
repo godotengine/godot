@@ -32,8 +32,7 @@
 #define TEST_JSON_H
 
 #include "core/io/json.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestJSON {
 

@@ -34,9 +34,8 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/pck_packer.h"
 #include "core/os/os.h"
-
+#include "tests/test_macros.h"
 #include "tests/test_utils.h"
-#include "thirdparty/doctest/doctest.h"
 
 namespace TestPCKPacker {
 

@@ -32,8 +32,7 @@
 #define TEST_GRADIENT_H
 
 #include "scene/resources/gradient.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestGradient {
 

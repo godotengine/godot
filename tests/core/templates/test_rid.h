@@ -32,7 +32,6 @@
 #define TEST_RID_H
 
 #include "core/templates/rid.h"
-
 #include "tests/test_macros.h"
 
 namespace TestRID {

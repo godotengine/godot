@@ -32,7 +32,6 @@
 #define TEST_PATH_2D_H
 
 #include "scene/2d/path_2d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPath2D {

@@ -32,8 +32,7 @@
 #define TEST_TIME_H
 
 #include "core/os/time.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 #define YEAR_KEY "year"
 #define MONTH_KEY "month"

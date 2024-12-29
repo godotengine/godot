@@ -32,7 +32,6 @@
 #define TEST_IP_H
 
 #include "core/io/ip.h"
-
 #include "tests/test_macros.h"
 
 namespace TestIP {

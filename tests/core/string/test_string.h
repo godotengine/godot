@@ -32,7 +32,6 @@
 #define TEST_STRING_H
 
 #include "core/string/ustring.h"
-
 #include "tests/test_macros.h"
 
 namespace TestString {

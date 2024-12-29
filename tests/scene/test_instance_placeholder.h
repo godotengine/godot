@@ -33,7 +33,6 @@
 
 #include "scene/main/instance_placeholder.h"
 #include "scene/resources/packed_scene.h"
-
 #include "tests/test_macros.h"
 
 class _TestInstancePlaceholderNode : public Node {

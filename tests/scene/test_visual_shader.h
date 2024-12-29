@@ -32,7 +32,6 @@
 #define TEST_VISUAL_SHADER_H
 
 #include "scene/resources/visual_shader.h"
-
 #include "tests/test_macros.h"
 
 namespace TestVisualArray {

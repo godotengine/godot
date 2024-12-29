@@ -32,7 +32,6 @@
 #define TEST_TRANSLATION_SERVER_H
 
 #include "core/string/translation_server.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTranslationServer {

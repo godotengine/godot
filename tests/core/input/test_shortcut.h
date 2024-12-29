@@ -37,7 +37,6 @@
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-
 #include "tests/test_macros.h"
 
 namespace TestShortcut {

@@ -33,22 +33,14 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "tests/test_macros.h"
-
 #include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
 #include "../language_server/godot_lsp.h"
-
 #include "core/io/dir_access.h"
-#include "core/io/file_access_pack.h"
-#include "core/os/os.h"
-#include "editor/editor_help.h"
-#include "editor/editor_node.h"
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 template <>
 struct doctest::StringMaker<lsp::Position> {

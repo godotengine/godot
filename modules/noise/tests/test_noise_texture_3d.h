@@ -31,8 +31,8 @@
 #ifndef TEST_NOISE_TEXTURE_3D_H
 #define TEST_NOISE_TEXTURE_3D_H
 
+#include "../fastnoise_lite.h"
 #include "../noise_texture_3d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNoiseTexture3D {

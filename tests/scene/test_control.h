@@ -32,7 +32,6 @@
 #define TEST_CONTROL_H
 
 #include "scene/gui/control.h"
-
 #include "tests/test_macros.h"
 
 namespace TestControl {
