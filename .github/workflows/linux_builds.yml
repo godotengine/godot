@@ -129,7 +129,7 @@ jobs:
         continue-on-error: true
 
       - name: Setup Python and SCons
-        if: '!matrix.legacy-scons'
+        if: "!matrix.legacy-scons"
         uses: ./.github/actions/godot-deps
 
       - name: Setup Python and SCons (legacy versions)
@@ -150,7 +150,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # Targeting the oldest version we want to support to ensure it still builds.
-          dotnet-version: '8.0.100'
+          dotnet-version: 8.0.100
 
       - name: Compilation
         uses: ./.github/actions/godot-build
