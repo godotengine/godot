@@ -39,7 +39,6 @@
 
 void BonePose::set_bone_forward() {
 	right = position.normalized();
-	local_pose = Transform3D(Basis(rotation), position);
 	Vector3::Axis min_axis = right.min_axis_index();
 
 	Vector3 up = Vector3(0, 1, 0);
@@ -66,9 +65,8 @@ void BonePose::load(Dictionary& aDict) {
 	position = aDict["position"];
 	rotation = aDict["rotation"];
 	right = aDict["right"];
-	global_pose = aDict["global_pose"];
-	Vector<String> child = aDict["child_bones"];
 	local_pose = Transform3D(Basis(rotation), position);
+	Vector<String> child = aDict["child_bones"];
 	for (int i = 0; i < child.size(); i++) {
 		child_bones.push_back(StringName(child[i]));
 	}
@@ -79,7 +77,6 @@ void BonePose::save(Dictionary& aDict) {
 	aDict["position"] = position;
 	aDict["rotation"] = rotation;
 	aDict["right"] = right;
-	aDict["global_pose"] = global_pose;
 	Vector<String> child;
 	for (int i = 0; i < child_bones.size(); i++) {
 		child.push_back(child_bones[i]);

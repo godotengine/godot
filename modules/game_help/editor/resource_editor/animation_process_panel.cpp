@@ -103,7 +103,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
         property_preview_prefab_path = memnew(EditorPropertyPath);
         property_preview_prefab_path->set_label(L"選擇预制件：");
         property_preview_prefab_path->set_object_and_property(this, SNAME("preview_prefab_path"));
-        property_preview_prefab_path->setup({ "*.res", "*.tres" }, false, false);
+        property_preview_prefab_path->setup({ "*.fbx", "*.gltf","*.glb" }, false, false);
         property_preview_prefab_path->set_h_size_flags(SIZE_EXPAND_FILL);
 		property_preview_prefab_path->set_custom_property(true);
         property_preview_prefab_path->update_property();
