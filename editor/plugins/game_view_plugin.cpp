@@ -260,6 +260,12 @@ void GameView::_embedded_process_updated() {
 	game_size_label->set_text(vformat("%dx%d", game_rect.size.x, game_rect.size.y));
 }
 
+void GameView::_embedded_process_focused() {
+	if (embed_on_play && !window_wrapper->get_window_enabled()) {
+		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+	}
+}
+
 void GameView::_project_settings_changed() {
 	// Update the window size and aspect ratio.
 	_update_embed_window_size();
@@ -730,6 +736,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	embedded_process->connect("embedding_failed", callable_mp(this, &GameView::_embedding_failed));
 	embedded_process->connect("embedding_completed", callable_mp(this, &GameView::_embedding_completed));
 	embedded_process->connect("embedded_process_updated", callable_mp(this, &GameView::_embedded_process_updated));
+	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
 	state_label = memnew(Label());

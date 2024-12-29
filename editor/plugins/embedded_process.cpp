@@ -296,6 +296,7 @@ void EmbeddedProcess::_check_focused_process_id() {
 		focused_process_id = process_id;
 		if (focused_process_id == current_process_id) {
 			// The embedded process got the focus.
+			emit_signal(SNAME("embedded_process_focused"));
 			if (has_focus()) {
 				// Redraw to updated the focus style.
 				queue_redraw();
@@ -312,6 +313,7 @@ void EmbeddedProcess::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("embedding_completed"));
 	ADD_SIGNAL(MethodInfo("embedding_failed"));
 	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
+	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
 }
 
 EmbeddedProcess::EmbeddedProcess() {
