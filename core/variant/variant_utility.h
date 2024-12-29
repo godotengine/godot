@@ -111,6 +111,7 @@ struct VariantUtilityFunctions {
 	static Variant min(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	static double minf(double x, double y);
 	static int64_t mini(int64_t x, int64_t y);
+	static double normalize(double x, double min, double max, double range_left, double range_right);
 	static Variant clamp(const Variant &x, const Variant &min, const Variant &max, Callable::CallError &r_error);
 	static double clampf(double x, double min, double max);
 	static int64_t clampi(int64_t x, int64_t min, int64_t max);

@@ -127,6 +127,11 @@ constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
 	return m_a < m_min ? m_min : (m_a > m_max ? m_max : m_a);
 }
 
+template <typename T>
+constexpr auto NORMALIZE(const T m_x, const T m_min, const T m_max, const T m_a, const T m_b) {
+	return m_a + (((m_x - m_min) * (m_b - m_a)) / (m_max + m_min));
+}
+
 // Generic swap template.
 #ifndef SWAP
 #define SWAP(m_x, m_y) __swap_tmpl((m_x), (m_y))

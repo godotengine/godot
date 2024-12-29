@@ -723,6 +723,10 @@ double VariantUtilityFunctions::minf(double x, double y) {
 	return MIN(x, y);
 }
 
+double VariantUtilityFunctions::normalize(double x, double min, double max, double a, double b) {
+	return NORMALIZE(x, min, max, a, b);
+}
+
 int64_t VariantUtilityFunctions::mini(int64_t x, int64_t y) {
 	return MIN(x, y);
 }
@@ -1779,6 +1783,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVARARG(min, sarray(), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(mini, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(minf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDR(normalize, sarray("x", "min", "max", "a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDVR3(clamp, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(clampi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);

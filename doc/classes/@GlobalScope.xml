@@ -754,6 +754,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="normalize">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="min" type="float" />
+			<param index="2" name="max" type="float" />
+			<param index="3" name="a" type="float" />
+			<param index="4" name="b" type="float" />
+			<description>
+				Returns a normalized value of [param x] across the interval [code][a, b][/code]. Parameters [param min] and [param max] are the minimum and maximum values that initial [param x] can have. The most common use is to map any values to the range [code][0, 1][/code] but any range can be set.
+				[codeblock]
+				normalize(30, 0, 100, 0, 1)   # Returns 0.3
+				normalize(0.25, 0, 1, 0, 10)  # Returns 2.5
+				normalize(0.5, 0, 1, 2, 6)    # Returns 4.0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="move_toward">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
