@@ -89,7 +89,7 @@ void CollisionShape2D::_notification(int p_what) {
 				break;
 			}
 
-			if (!shape.is_valid()) {
+			if (shape.is_null()) {
 				break;
 			}
 
@@ -161,7 +161,7 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	if (!shape.is_valid()) {
+	if (shape.is_null()) {
 		return false;
 	}
 
@@ -175,7 +175,7 @@ PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 	if (col_object == nullptr) {
 		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node.\nPlease only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
-	if (!shape.is_valid()) {
+	if (shape.is_null()) {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(col_object)) {

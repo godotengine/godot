@@ -4375,7 +4375,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	ERR_FAIL_COND_MSG(!te->get_current_animation().is_valid(), "Cannot insert animation key. No animation selected.");
+	ERR_FAIL_COND_MSG(te->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
 
 	te->make_insert_queue();
 	for (const KeyValue<Node *, Object *> &E : selection) {
@@ -6007,7 +6007,7 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 
 bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	Ref<PackedScene> sdata = ResourceLoader::load(p_path);
-	if (!sdata.is_valid()) { // invalid scene
+	if (sdata.is_null()) { // invalid scene
 		return false;
 	}
 
