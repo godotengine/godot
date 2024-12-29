@@ -2112,6 +2112,7 @@
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
