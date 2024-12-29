@@ -44,7 +44,7 @@ AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
 # AllowShortEnumsOnASingleLine: true
-# AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
 # AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLambdasOnASingleLine: All
 # AllowShortLoopsOnASingleLine: false
