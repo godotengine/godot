@@ -405,6 +405,40 @@ GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_p
 	_error_handler.errfunc = error_handler;
 }
 
+static void generate_gdc(const String path) {
+	if (!path.ends_with(".gd")) {
+		print_line("This command expect a path to a GDScript file. Got: " + path);
+		exit(-1);
+	}
+
+	// open .gd file and generate .gdc
+	Error origin_error = OK;
+	Ref<FileAccess> origin_file = FileAccess::open(path, FileAccess::READ, &origin_error);
+
+	if (origin_error != OK) {
+		print_line("Error with GDScript file open.");
+		exit(-1);
+	}
+
+	String code = origin_file->get_as_text();
+	Vector<uint8_t> buffer = GDScriptTokenizerBuffer::parse_code_string(code, GDScriptTokenizerBuffer::COMPRESS_NONE);
+	origin_file->close();
+
+	// save .gdc file
+	Error result_err = OK;
+	String output_path = path.get_basename() + ".gdc";
+	Ref<FileAccess> output_file = FileAccess::open(output_path, FileAccess::WRITE, &result_err);
+
+	if (result_err != OK) {
+		print_line("Error with .gdc file open for write");
+		exit(-1);
+	}
+
+	output_file->store_buffer(buffer);
+	output_file->close();
+	exit(0);
+}
+
 void GDScriptTestRunner::handle_cmdline() {
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
 
@@ -423,6 +457,16 @@ void GDScriptTestRunner::handle_cmdline() {
 			bool completed = runner.generate_outputs();
 			int failed = completed ? 0 : -1;
 			exit(failed);
+		}
+
+		if (cmd == "--gdscript-generate-gdc") {
+			if (!E->next()) {
+				print_line("This command expect a path to a GDScript file.");
+				exit(-1);
+			}
+
+			String path = E->next()->get();
+			generate_gdc(path);
 		}
 	}
 }

@@ -1,6 +1,9 @@
 # Some tests handle invalid syntax deliberately; exclude relevant attributes.
 # See also the `file-format` section in `.pre-commit-config.yaml`.
 
+[parser/features/lambda_at_eof_without_newline.bin.gd]
+insert_final_newline = false
+
 [parser/features/mixed_indentation_on_blank_lines.gd]
 trim_trailing_whitespace = false
 
