@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "openxr_dpad_binding_extension.h"
-#include "../action_map/openxr_interaction_profile_metadata.h"
 #include "../openxr_api.h"
 #include "core/math/math_funcs.h"
 

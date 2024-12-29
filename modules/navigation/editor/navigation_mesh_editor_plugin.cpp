@@ -32,11 +32,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

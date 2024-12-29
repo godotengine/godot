@@ -47,6 +47,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/fog_material.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
