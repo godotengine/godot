@@ -121,7 +121,7 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 
 		Variant id;
 		if (dict.has("id")) {
-			id = dict["id"];
+			id = (int64_t)dict["id"];
 		}
 
 		if (object == nullptr || !object->has_method(method)) {
