@@ -2177,6 +2177,10 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		args.push_back("-s");
 		args.push_back(devices[p_device].id);
 		args.push_back("uninstall");
+		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+			args.push_back("--user");
+			args.push_back("0");
+		}
 		args.push_back(get_package_name(package_name));
 
 		output.clear();
@@ -2193,6 +2197,10 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	args.push_back("-s");
 	args.push_back(devices[p_device].id);
 	args.push_back("install");
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+		args.push_back("--user");
+		args.push_back("0");
+	}
 	args.push_back("-r");
 	args.push_back(tmp_export_path);
 
@@ -2268,7 +2276,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	args.push_back("shell");
 	args.push_back("am");
 	args.push_back("start");
-	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) { // Multi-user introduced in Android 17
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
 		args.push_back("--user");
 		args.push_back("0");
 	}
