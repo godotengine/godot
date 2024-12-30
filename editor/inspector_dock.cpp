@@ -125,17 +125,20 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					List<PropertyInfo> props;
 					current->get_property_list(&props);
 
-					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+					for (const PropertyInfo &property : props) {
+						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+						if (property.usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
 							continue;
 						}
 
-						Variant v = current->get(E->get().name);
+						Variant v = current->get(property.name);
 						Ref<RefCounted> ref = v;
 						Ref<Resource> res = ref;
 						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
 							// Valid resource which would be duplicated if action is confirmed.
-							resource_propnames.append(E->get().name);
+							resource_propnames.append(property.name);
 						}
 					}
 				}
