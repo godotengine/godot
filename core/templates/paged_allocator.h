@@ -115,6 +115,10 @@ private:
 			available_pool = nullptr;
 			pages_allocated = 0;
 			allocs_available = 0;
+
+			page_shift = 0;
+			page_mask = 0;
+			page_size = 0;
 		}
 	}
 

@@ -1612,3 +1612,7 @@ ProjectSettings::~ProjectSettings() {
 		singleton = nullptr;
 	}
 }
+
+void ProjectSettings::reset() {
+	singleton = nullptr;
+}

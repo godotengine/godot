@@ -402,4 +402,5 @@ GDExtensionManager::~GDExtensionManager() {
 #ifndef DISABLE_DEPRECATED
 	GDExtensionSpecialCompatHashes::finalize();
 #endif
+	singleton = nullptr;
 }

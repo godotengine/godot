@@ -43,6 +43,8 @@
 #include "core/templates/safe_refcount.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
+#include "main/main.h"
+#include <queue>
 
 template <typename T>
 class TypedArray;
@@ -404,11 +406,20 @@ public:                                                                         
 		return String(#m_class);                                                                                                                 \
 	}                                                                                                                                            \
 	virtual const StringName *_get_class_namev() const override {                                                                                \
-		static StringName _class_name_static;                                                                                                    \
-		if (unlikely(!_class_name_static)) {                                                                                                     \
-			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                          \
+		static std::queue<StringName> _class_name_statics;                                                                                       \
+		static int local_version = -1;                                                                                                           \
+		if (unlikely(Main::version != local_version)) {                                                                                          \
+			local_version = Main::version;                                                                                                       \
+			if (_class_name_statics.size() > 0) {																								 \
+				/* TODO: find a way to pop old refs */                                                                                           \
+				/*_class_name_statics.pop();*/                                                                                                   \
+			}                                                                                                                                    \
+			_class_name_statics.push(StringName());                                                                                              \
 		}                                                                                                                                        \
-		return &_class_name_static;                                                                                                              \
+		if (unlikely(!_class_name_statics.back())) {                                                                                             \
+			StringName::assign_static_unique_class_name(&_class_name_statics.back(), #m_class);                                                  \
+		}                                                                                                                                        \
+		return &_class_name_statics.back();                                                                                                      \
 	}                                                                                                                                            \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                         \
 		static int ptr;                                                                                                                          \
@@ -450,8 +461,8 @@ protected:                                                                      
                                                                                                                                                  \
 public:                                                                                                                                          \
 	static void initialize_class() {                                                                                                             \
-		static bool initialized = false;                                                                                                         \
-		if (initialized) {                                                                                                                       \
+		static int local_version = -1;                                                                                                    	     \
+		if (Main::version == local_version) {                                                                                         			 \
 			return;                                                                                                                              \
 		}                                                                                                                                        \
 		m_inherits::initialize_class();                                                                                                          \
@@ -462,7 +473,7 @@ public:                                                                         
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
 			_bind_compatibility_methods();                                                                                                       \
 		}                                                                                                                                        \
-		initialized = true;                                                                                                                      \
+		local_version++;                                                                                                                  		 \
 	}                                                                                                                                            \
                                                                                                                                                  \
 protected:                                                                                                                                       \
@@ -588,6 +599,8 @@ public:
 		Connection() {}
 		Connection(const Variant &p_variant);
 	};
+
+	static bool initialized;
 
 private:
 #ifdef DEBUG_ENABLED
@@ -739,11 +752,20 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
+		static std::queue<StringName> _class_name_statics;
+		static int local_version = -1;
+		if (unlikely(Main::version != local_version)) {
+			local_version = Main::version;
+			if (_class_name_statics.size() > 0) {
+				/* TODO: pop unused references */
+				/*_class_name_statics.pop();*/
+			}
+			_class_name_statics.push(StringName());
+		}     
+		if (unlikely(!_class_name_statics.back())) {
+			StringName::assign_static_unique_class_name(&_class_name_statics.back(), "Object");
 		}
-		return &_class_name_static;
+		return &_class_name_statics.back();
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;

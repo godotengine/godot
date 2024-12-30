@@ -92,6 +92,7 @@ NavMeshGenerator3D::NavMeshGenerator3D() {
 
 NavMeshGenerator3D::~NavMeshGenerator3D() {
 	cleanup();
+	singleton = nullptr;
 }
 
 void NavMeshGenerator3D::sync() {
