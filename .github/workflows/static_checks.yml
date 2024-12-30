@@ -2,6 +2,9 @@ name: 📊 Static Checks
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-static
   cancel-in-progress: true

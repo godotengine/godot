@@ -2,6 +2,9 @@ name: 🍏 iOS Builds
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.

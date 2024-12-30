@@ -1,0 +1,67 @@
+name: Link build artifacts in pull request description
+on:
+  workflow_run:
+    workflows:
+      - 🔗 GHA
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-artifacts:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    steps:
+      - id: pr-number
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const {owner, repo} = context.repo;
+            const pullHeadSHA = '${{github.event.workflow_run.head_sha}}';
+            const pullUserId = ${{github.event.sender.id}};
+            const prNumber = await (async () => {
+              const pulls = await github.rest.pulls.list({owner, repo});
+              for await (const {data} of github.paginate.iterator(pulls)) {
+                for (const pull of data) {
+                  if (pull.head.sha === pullHeadSHA && pull.user.id === pullUserId) {
+                    return pull.number;
+                  }
+                }
+              }
+            })();
+
+            if (!prNumber) {
+              return core.error(`No matching pull request found`);
+            }
+
+            return prNumber;
+
+      - id: artifacts-text
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
+            return allArtifacts.data.artifacts.reduce((acc, item) => {
+              if (item.name === "assets") return acc;
+              acc += `
+              - [${item.name}.zip](https://nightly.link/${context.repo.owner}/${context.repo.repo}/actions/artifacts/${item.id}.zip)`;
+              return acc;
+            }, '### Build artifacts');
+
+      - id: add-to-pr
+        uses: garrettjoecox/pr-section@3.1.0
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          pr-number: ${{ steps.pr-number.outputs.result }}
+          section-name: artifacts
+          section-value: '${{ steps.artifacts-text.outputs.result }}'
