@@ -114,6 +114,8 @@ public:
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
 
+	GDVIRTUAL2R(bool, _set_format, int, const Dictionary &);
+	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_formats);
 	GDVIRTUAL0R(bool, _activate_feed)
 	GDVIRTUAL0(_deactivate_feed)
 };
