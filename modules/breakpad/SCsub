@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_breakpad = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/breakpad/"
+
+# TODO: find out when these are needed (if at all)
+dwarf_module = False
+stabs_module = False
+
+# Parts of this build script is based on the previous PR trying to implement this
+# https://github.com/godotengine/godot/pull/22778/files
+
+env_breakpad.Append(
+    CPPDEFINES=[
+        "PUBLIC",
+        "_HAS_EXCEPTIONS=0",
+        "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS",
+    ]
+)
+
+breakpad_src = [
+    "src/common/convert_UTF.cc",
+    "src/common/md5.cc",
+    "src/common/string_conversion.cc",
+]
+
+if env["platform"] == "linuxbsd":
+    breakpad_src += [
+        "src/client/linux/crash_generation/crash_generation_client.cc",
+        "src/client/linux/crash_generation/crash_generation_server.cc",
+        "src/client/linux/dump_writer_common/thread_info.cc",
+        "src/client/linux/dump_writer_common/ucontext_reader.cc",
+        "src/client/linux/handler/exception_handler.cc",
+        "src/client/linux/handler/minidump_descriptor.cc",
+        "src/client/linux/log/log.cc",
+        "src/client/linux/microdump_writer/microdump_writer.cc",
+        "src/client/linux/minidump_writer/pe_file.cc",
+        "src/client/linux/minidump_writer/linux_core_dumper.cc",
+        "src/client/linux/minidump_writer/linux_dumper.cc",
+        "src/client/linux/minidump_writer/linux_ptrace_dumper.cc",
+        "src/client/linux/minidump_writer/minidump_writer.cc",
+        "src/client/minidump_file_writer.cc",
+        "src/common/language.cc",
+        "src/common/linux/breakpad_getcontext.S",
+        "src/common/linux/crc32.cc",
+        "src/common/linux/elf_core_dump.cc",
+        "src/common/linux/elf_symbols_to_module.cc",
+        "src/common/linux/elfutils.cc",
+        "src/common/linux/file_id.cc",
+        "src/common/linux/guid_creator.cc",
+        "src/common/linux/linux_libc_support.cc",
+        "src/common/linux/memory_mapped_file.cc",
+        "src/common/linux/safe_readlink.cc",
+        "src/common/path_helper.cc",
+    ]
+
+if env["platform"] == "windows":
+    env_breakpad.Append(
+        CPPDEFINES=[
+            "_CRT_SECURE_NO_WARNINGS",
+            "NOMINMAX",
+            "WIN32_LEAN_AND_MEAN",
+            "_UNICODE",
+            "UNICODE",
+        ]
+    )
+
+    breakpad_src += [
+        "src/client/windows/crash_generation/client_info.cc",
+        "src/client/windows/crash_generation/crash_generation_client.cc",
+        "src/client/windows/crash_generation/crash_generation_server.cc",
+        "src/client/windows/crash_generation/minidump_generator.cc",
+        "src/client/windows/handler/exception_handler.cc",
+        "src/common/windows/guid_string.cc",
+        "src/common/windows/pe_source_line_writer.cc",
+        "src/common/windows/string_utils.cc",
+    ]
+
+
+if env["platform"] == "osx" or env["platform"] == "iphone":
+    breakpad_src += [
+        "src/common/simple_string_dictionary.cc",
+    ]
+
+if env["platform"] == "osx":
+    breakpad_src += [
+        "src/client/mac/Framework/Breakpad.mm",
+        "src/client/mac/Framework/OnDemandServer.mm",
+        "src/client/mac/crash_generation/ConfigFile.mm",
+        "src/client/mac/crash_generation/Inspector.mm",
+        "src/client/mac/crash_generation/InspectorMain.mm",
+        "src/client/mac/crash_generation/crash_generation_client.cc",
+        "src/client/mac/crash_generation/crash_generation_server.cc",
+        "src/client/mac/handler/breakpad_nlist_64.cc",
+        "src/client/mac/handler/dynamic_images.cc",
+        "src/client/mac/handler/exception_handler.cc",
+        "src/client/mac/handler/minidump_generator.cc",
+        "src/client/mac/handler/protected_memory_allocator.cc",
+        "src/common/mac/GTMLogger.m",
+        "src/common/mac/HTTPGetRequest.m",
+        "src/common/mac/HTTPPutRequest.m",
+        "src/common/mac/HTTPRequest.m",
+        "src/common/mac/HTTPSimplePostRequest.m",
+        "src/common/mac/MachIPC.mm",
+        "src/common/mac/arch_utilities.cc",
+        "src/common/mac/bootstrap_compat.cc",
+        "src/common/mac/encoding_util.m",
+        "src/common/mac/file_id.cc",
+        "src/common/mac/launch_reporter.cc",
+        "src/common/mac/macho_id.cc",
+        "src/common/mac/macho_reader.cc",
+        "src/common/mac/macho_utilities.cc",
+        "src/common/mac/macho_walker.cc",
+        "src/common/mac/string_utilities.cc",
+    ]
+
+if env["platform"] == "iphone":
+    breakpad_src += [
+        "src/client/ios/Breakpad.mm",
+        "src/client/ios/BreakpadController.mm",
+        "src/client/ios/exception_handler_no_mach.cc",
+        "src/client/ios/handler/ios_exception_minidump_generator.mm",
+        "src/common/long_string_dictionary.cc",
+    ]
+
+# if solaris:
+#     breakpad_src += [
+#         "src/client/solaris/handler/Makefile",
+#         "src/client/solaris/handler/exception_handler.cc",
+#         "src/client/solaris/handler/minidump_generator.cc",
+#         "src/client/solaris/handler/solaris_lwp.cc",
+#         "src/common/solaris/file_id.cc",
+#         "src/common/solaris/guid_creator.cc",
+#     ]
+
+if dwarf_module:
+    breakpad_src += [
+        "src/common/dwarf/bytereader.cc",
+        "src/common/dwarf/cfi_assembler.cc",
+        "src/common/dwarf/dwarf2diehandler.cc",
+        "src/common/dwarf/dwarf2reader.cc",
+        "src/common/dwarf/elf_reader.cc",
+        "src/common/dwarf/functioninfo.cc",
+        "src/common/dwarf_cfi_to_module.cc",
+        "src/common/dwarf_cu_to_module.cc",
+        "src/common/dwarf_line_to_module.cc",
+        "src/common/dwarf_range_list_handler.cc",
+        "src/common/module.cc",
+    ]
+
+if stabs_module:
+    breakpad_src += [
+        "src/common/stabs_reader.cc",
+        "src/common/stabs_to_module.cc",
+    ]
+
+breakpad_src = [thirdparty_dir + file for file in breakpad_src]
+
+env_breakpad.Prepend(CPPPATH=[thirdparty_dir + "src"])
+
+env_thirdparty = env_breakpad.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, breakpad_src)
+env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+if env["platform"] == "linuxbsd" or env["platform"] == "windows":
+    env_breakpad.add_source_files(module_obj, ["breakpad_linuxbsd_windows.cpp"])
+else:
+    raise Exception("Breakpad not implemented for selected platform")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
