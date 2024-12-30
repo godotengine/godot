@@ -72,7 +72,7 @@ public:
 	}
 
 	void remove_at(U p_index) {
-		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		ERR_FAIL_INDEX(p_index, count);
 		count--;
 		for (U i = p_index; i < count; i++) {
 			data[i] = std::move(data[i + 1]);
@@ -170,11 +170,11 @@ public:
 		}
 	}
 	_FORCE_INLINE_ const T &operator[](U p_index) const {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
+		CRASH_BAD_INDEX(p_index, count);
 		return data[p_index];
 	}
 	_FORCE_INLINE_ T &operator[](U p_index) {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
+		CRASH_BAD_INDEX(p_index, count);
 		return data[p_index];
 	}
 
@@ -243,7 +243,7 @@ public:
 	}
 
 	void insert(U p_pos, T p_val) {
-		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
+		ERR_FAIL_INDEX(p_pos, count + 1);
 		if (p_pos == count) {
 			push_back(std::move(p_val));
 		} else {

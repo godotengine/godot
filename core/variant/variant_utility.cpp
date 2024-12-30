@@ -963,7 +963,7 @@ String VariantUtilityFunctions::error_string(Error error) {
 }
 
 String VariantUtilityFunctions::type_string(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
+	ERR_FAIL_INDEX_V_MSG(p_type, Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
 	return Variant::get_type_name(p_type);
 }
 

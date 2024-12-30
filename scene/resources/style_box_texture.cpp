@@ -31,7 +31,7 @@
 #include "style_box_texture.h"
 
 float StyleBoxTexture::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return texture_margin[p_side];
 }
@@ -49,7 +49,7 @@ Ref<Texture2D> StyleBoxTexture::get_texture() const {
 }
 
 void StyleBoxTexture::set_texture_margin(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	texture_margin[p_side] = p_size;
 	emit_changed();
@@ -71,13 +71,13 @@ void StyleBoxTexture::set_texture_margin_individual(float p_left, float p_top, f
 }
 
 float StyleBoxTexture::get_texture_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0.0);
 
 	return texture_margin[p_side];
 }
 
 void StyleBoxTexture::set_expand_margin(Side p_side, float p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 	expand_margin[p_side] = p_size;
 	emit_changed();
 }
@@ -98,7 +98,7 @@ void StyleBoxTexture::set_expand_margin_individual(float p_left, float p_top, fl
 }
 
 float StyleBoxTexture::get_expand_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return expand_margin[p_side];
 }
 
@@ -125,7 +125,7 @@ bool StyleBoxTexture::is_draw_center_enabled() const {
 }
 
 void StyleBoxTexture::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_h = p_mode;
 	emit_changed();
 }
@@ -135,7 +135,7 @@ StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_h_axis_stretch_mode() cons
 }
 
 void StyleBoxTexture::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_v = p_mode;
 	emit_changed();
 }

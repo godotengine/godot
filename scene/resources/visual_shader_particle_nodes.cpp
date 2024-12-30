@@ -1009,7 +1009,7 @@ String VisualShaderNodeParticleRandomness::generate_code(Shader::Mode p_mode, Vi
 }
 
 void VisualShaderNodeParticleRandomness::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -1138,7 +1138,7 @@ String VisualShaderNodeParticleAccelerator::generate_code(Shader::Mode p_mode, V
 }
 
 void VisualShaderNodeParticleAccelerator::set_mode(Mode p_mode) {
-	ERR_FAIL_INDEX(int(p_mode), int(MODE_MAX));
+	ERR_FAIL_INDEX(p_mode, MODE_MAX);
 	if (mode == p_mode) {
 		return;
 	}

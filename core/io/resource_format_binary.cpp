@@ -401,7 +401,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					String path;
 
 					if (using_named_scene_ids) { // New format.
-						ERR_FAIL_INDEX_V((int)index, internal_resources.size(), ERR_PARSE_ERROR);
+						ERR_FAIL_INDEX_V(index, internal_resources.size(), ERR_PARSE_ERROR);
 						path = internal_resources[index].path;
 					} else {
 						path += res_path + "::" + itos(index);

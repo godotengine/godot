@@ -295,31 +295,31 @@ int Variant::get_constructor_count(Variant::Type p_type) {
 
 Variant::ValidatedConstructor Variant::get_validated_constructor(Variant::Type p_type, int p_constructor) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), nullptr);
+	ERR_FAIL_INDEX_V(p_constructor, construct_data[p_type].size(), nullptr);
 	return construct_data[p_type][p_constructor].validated_construct;
 }
 
 Variant::PTRConstructor Variant::get_ptr_constructor(Variant::Type p_type, int p_constructor) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), nullptr);
+	ERR_FAIL_INDEX_V(p_constructor, construct_data[p_type].size(), nullptr);
 	return construct_data[p_type][p_constructor].ptr_construct;
 }
 
 int Variant::get_constructor_argument_count(Variant::Type p_type, int p_constructor) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), -1);
+	ERR_FAIL_INDEX_V(p_constructor, construct_data[p_type].size(), -1);
 	return construct_data[p_type][p_constructor].argument_count;
 }
 
 Variant::Type Variant::get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::VARIANT_MAX);
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), Variant::VARIANT_MAX);
+	ERR_FAIL_INDEX_V(p_constructor, construct_data[p_type].size(), Variant::VARIANT_MAX);
 	return construct_data[p_type][p_constructor].get_argument_type(p_argument);
 }
 
 String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), String());
+	ERR_FAIL_INDEX_V(p_constructor, construct_data[p_type].size(), String());
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
 }
 

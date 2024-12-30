@@ -341,7 +341,7 @@ public:
 	_FORCE_INLINE_ void *mesh_get_surface(RID p_mesh, uint32_t p_surface_index) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_NULL_V(mesh, nullptr);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
+		ERR_FAIL_INDEX_V(p_surface_index, mesh->surface_count, nullptr);
 
 		return mesh->surfaces[p_surface_index];
 	}
@@ -464,7 +464,7 @@ public:
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_NULL(mi);
 		Mesh *mesh = mi->mesh;
-		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
+		ERR_FAIL_INDEX(p_surface_index, mesh->surface_count);
 
 		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];

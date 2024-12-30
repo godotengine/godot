@@ -238,7 +238,7 @@ public:
 	 * Update the position of the element in the heap if necessary.
 	 */
 	void shift(uint32_t p_index) {
-		ERR_FAIL_UNSIGNED_INDEX_MSG(p_index, _buffer.size(), "Heap element index is out of range.");
+		ERR_FAIL_INDEX_MSG(p_index, _buffer.size(), "Heap element index is out of range.");
 		if (!_shift_up(p_index)) {
 			_shift_down(p_index);
 		}

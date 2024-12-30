@@ -62,7 +62,7 @@ VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_output_port
 }
 
 void VisualShaderNodeVectorBase::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -896,7 +896,7 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeTexture::set_source(Source p_source) {
-	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
+	ERR_FAIL_INDEX(p_source, SOURCE_MAX);
 	if (source == p_source) {
 		return;
 	}
@@ -946,7 +946,7 @@ Ref<Texture2D> VisualShaderNodeTexture::get_texture() const {
 }
 
 void VisualShaderNodeTexture::set_texture_type(TextureType p_texture_type) {
-	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
+	ERR_FAIL_INDEX(p_texture_type, TYPE_MAX);
 	if (texture_type == p_texture_type) {
 		return;
 	}
@@ -1289,7 +1289,7 @@ String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader
 }
 
 void VisualShaderNodeSample3D::set_source(Source p_source) {
-	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
+	ERR_FAIL_INDEX(p_source, SOURCE_MAX);
 	if (source == p_source) {
 		return;
 	}
@@ -1555,7 +1555,7 @@ bool VisualShaderNodeCubemap::is_input_port_default(int p_port, Shader::Mode p_m
 }
 
 void VisualShaderNodeCubemap::set_source(Source p_source) {
-	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
+	ERR_FAIL_INDEX(p_source, SOURCE_MAX);
 	if (source == p_source) {
 		return;
 	}
@@ -1577,7 +1577,7 @@ Ref<TextureLayered> VisualShaderNodeCubemap::get_cube_map() const {
 }
 
 void VisualShaderNodeCubemap::set_texture_type(TextureType p_texture_type) {
-	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
+	ERR_FAIL_INDEX(p_texture_type, TYPE_MAX);
 	if (texture_type == p_texture_type) {
 		return;
 	}
@@ -1892,7 +1892,7 @@ String VisualShaderNodeFloatOp::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeFloatOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), int(OP_ENUM_SIZE));
+	ERR_FAIL_INDEX(p_op, OP_ENUM_SIZE);
 	if (op == p_op) {
 		return;
 	}
@@ -2011,7 +2011,7 @@ String VisualShaderNodeIntOp::generate_code(Shader::Mode p_mode, VisualShader::T
 }
 
 void VisualShaderNodeIntOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), OP_ENUM_SIZE);
+	ERR_FAIL_INDEX(p_op, OP_ENUM_SIZE);
 	if (op == p_op) {
 		return;
 	}
@@ -2132,7 +2132,7 @@ String VisualShaderNodeUIntOp::generate_code(Shader::Mode p_mode, VisualShader::
 }
 
 void VisualShaderNodeUIntOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), OP_ENUM_SIZE);
+	ERR_FAIL_INDEX(p_op, OP_ENUM_SIZE);
 	if (op == p_op) {
 		return;
 	}
@@ -2251,7 +2251,7 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 }
 
 void VisualShaderNodeVectorOp::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -2276,7 +2276,7 @@ void VisualShaderNodeVectorOp::set_op_type(OpType p_op_type) {
 }
 
 void VisualShaderNodeVectorOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), int(OP_ENUM_SIZE));
+	ERR_FAIL_INDEX(p_op, OP_ENUM_SIZE);
 	if (op == p_op) {
 		return;
 	}
@@ -2454,7 +2454,7 @@ String VisualShaderNodeColorOp::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeColorOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), int(OP_MAX));
+	ERR_FAIL_INDEX(p_op, OP_MAX);
 	if (op == p_op) {
 		return;
 	}
@@ -2582,7 +2582,7 @@ String VisualShaderNodeTransformOp::generate_code(Shader::Mode p_mode, VisualSha
 }
 
 void VisualShaderNodeTransformOp::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), int(OP_MAX));
+	ERR_FAIL_INDEX(p_op, OP_MAX);
 	if (op == p_op) {
 		return;
 	}
@@ -2666,7 +2666,7 @@ String VisualShaderNodeTransformVecMult::generate_code(Shader::Mode p_mode, Visu
 }
 
 void VisualShaderNodeTransformVecMult::set_operator(Operator p_op) {
-	ERR_FAIL_INDEX(int(p_op), int(OP_MAX));
+	ERR_FAIL_INDEX(p_op, OP_MAX);
 	if (op == p_op) {
 		return;
 	}
@@ -2771,7 +2771,7 @@ String VisualShaderNodeFloatFunc::generate_code(Shader::Mode p_mode, VisualShade
 }
 
 void VisualShaderNodeFloatFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -2876,7 +2876,7 @@ String VisualShaderNodeIntFunc::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeIntFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -2951,7 +2951,7 @@ String VisualShaderNodeUIntFunc::generate_code(Shader::Mode p_mode, VisualShader
 }
 
 void VisualShaderNodeUIntFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3073,7 +3073,7 @@ String VisualShaderNodeVectorFunc::generate_code(Shader::Mode p_mode, VisualShad
 }
 
 void VisualShaderNodeVectorFunc::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -3095,7 +3095,7 @@ void VisualShaderNodeVectorFunc::set_op_type(OpType p_op_type) {
 }
 
 void VisualShaderNodeVectorFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3272,7 +3272,7 @@ String VisualShaderNodeColorFunc::generate_code(Shader::Mode p_mode, VisualShade
 }
 
 void VisualShaderNodeColorFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3352,7 +3352,7 @@ String VisualShaderNodeTransformFunc::generate_code(Shader::Mode p_mode, VisualS
 }
 
 void VisualShaderNodeTransformFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3486,7 +3486,7 @@ String VisualShaderNodeUVFunc::generate_code(Shader::Mode p_mode, VisualShader::
 }
 
 void VisualShaderNodeUVFunc::set_function(VisualShaderNodeUVFunc::Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3696,7 +3696,7 @@ String VisualShaderNodeVectorLen::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeVectorLen::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -3857,7 +3857,7 @@ String VisualShaderNodeDerivativeFunc::get_warning(Shader::Mode p_mode, VisualSh
 }
 
 void VisualShaderNodeDerivativeFunc::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -3886,7 +3886,7 @@ VisualShaderNodeDerivativeFunc::OpType VisualShaderNodeDerivativeFunc::get_op_ty
 }
 
 void VisualShaderNodeDerivativeFunc::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -3899,7 +3899,7 @@ VisualShaderNodeDerivativeFunc::Function VisualShaderNodeDerivativeFunc::get_fun
 }
 
 void VisualShaderNodeDerivativeFunc::set_precision(Precision p_precision) {
-	ERR_FAIL_INDEX(int(p_precision), int(PRECISION_MAX));
+	ERR_FAIL_INDEX(p_precision, PRECISION_MAX);
 	if (precision == p_precision) {
 		return;
 	}
@@ -4024,7 +4024,7 @@ String VisualShaderNodeClamp::generate_code(Shader::Mode p_mode, VisualShader::T
 }
 
 void VisualShaderNodeClamp::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4125,7 +4125,7 @@ String VisualShaderNodeFaceForward::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeFaceForward::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4287,7 +4287,7 @@ String VisualShaderNodeStep::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeStep::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4443,7 +4443,7 @@ String VisualShaderNodeSmoothStep::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeSmoothStep::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4559,7 +4559,7 @@ String VisualShaderNodeVectorDistance::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeVectorDistance::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4627,7 +4627,7 @@ String VisualShaderNodeVectorRefract::generate_code(Shader::Mode p_mode, VisualS
 }
 
 void VisualShaderNodeVectorRefract::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4732,7 +4732,7 @@ String VisualShaderNodeMix::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeMix::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -4886,7 +4886,7 @@ String VisualShaderNodeVectorCompose::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeVectorCompose::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -5068,7 +5068,7 @@ String VisualShaderNodeVectorDecompose::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeVectorDecompose::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -5227,7 +5227,7 @@ bool VisualShaderNodeFloatParameter::is_use_prop_slots() const {
 }
 
 void VisualShaderNodeFloatParameter::set_hint(Hint p_hint) {
-	ERR_FAIL_INDEX(int(p_hint), int(HINT_MAX));
+	ERR_FAIL_INDEX(p_hint, HINT_MAX);
 	if (hint == p_hint) {
 		return;
 	}
@@ -5432,7 +5432,7 @@ bool VisualShaderNodeIntParameter::is_use_prop_slots() const {
 }
 
 void VisualShaderNodeIntParameter::set_hint(Hint p_hint) {
-	ERR_FAIL_INDEX(int(p_hint), int(HINT_MAX));
+	ERR_FAIL_INDEX(p_hint, HINT_MAX);
 	if (hint == p_hint) {
 		return;
 	}
@@ -6478,7 +6478,7 @@ String VisualShaderNodeTextureParameter::generate_code(Shader::Mode p_mode, Visu
 }
 
 void VisualShaderNodeTextureParameter::set_texture_type(TextureType p_texture_type) {
-	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
+	ERR_FAIL_INDEX(p_texture_type, TYPE_MAX);
 	if (texture_type == p_texture_type) {
 		return;
 	}
@@ -6491,7 +6491,7 @@ VisualShaderNodeTextureParameter::TextureType VisualShaderNodeTextureParameter::
 }
 
 void VisualShaderNodeTextureParameter::set_color_default(ColorDefault p_color_default) {
-	ERR_FAIL_INDEX(int(p_color_default), int(COLOR_DEFAULT_MAX));
+	ERR_FAIL_INDEX(p_color_default, COLOR_DEFAULT_MAX);
 	if (color_default == p_color_default) {
 		return;
 	}
@@ -6504,7 +6504,7 @@ VisualShaderNodeTextureParameter::ColorDefault VisualShaderNodeTextureParameter:
 }
 
 void VisualShaderNodeTextureParameter::set_texture_filter(TextureFilter p_filter) {
-	ERR_FAIL_INDEX(int(p_filter), int(FILTER_MAX));
+	ERR_FAIL_INDEX(p_filter, FILTER_MAX);
 	if (texture_filter == p_filter) {
 		return;
 	}
@@ -6517,7 +6517,7 @@ VisualShaderNodeTextureParameter::TextureFilter VisualShaderNodeTextureParameter
 }
 
 void VisualShaderNodeTextureParameter::set_texture_repeat(TextureRepeat p_repeat) {
-	ERR_FAIL_INDEX(int(p_repeat), int(REPEAT_MAX));
+	ERR_FAIL_INDEX(p_repeat, REPEAT_MAX);
 	if (texture_repeat == p_repeat) {
 		return;
 	}
@@ -6530,7 +6530,7 @@ VisualShaderNodeTextureParameter::TextureRepeat VisualShaderNodeTextureParameter
 }
 
 void VisualShaderNodeTextureParameter::set_texture_source(TextureSource p_source) {
-	ERR_FAIL_INDEX(int(p_source), int(SOURCE_MAX));
+	ERR_FAIL_INDEX(p_source, SOURCE_MAX);
 	if (texture_source == p_source) {
 		return;
 	}
@@ -7070,7 +7070,7 @@ String VisualShaderNodeSwitch::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeSwitch::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX(int(p_op_type), int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -7329,7 +7329,7 @@ String VisualShaderNodeIs::generate_code(Shader::Mode p_mode, VisualShader::Type
 }
 
 void VisualShaderNodeIs::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -7509,7 +7509,7 @@ String VisualShaderNodeCompare::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeCompare::set_comparison_type(ComparisonType p_comparison_type) {
-	ERR_FAIL_INDEX(int(p_comparison_type), int(CTYPE_MAX));
+	ERR_FAIL_INDEX(p_comparison_type, CTYPE_MAX);
 	if (comparison_type == p_comparison_type) {
 		return;
 	}
@@ -7562,7 +7562,7 @@ VisualShaderNodeCompare::ComparisonType VisualShaderNodeCompare::get_comparison_
 }
 
 void VisualShaderNodeCompare::set_function(Function p_func) {
-	ERR_FAIL_INDEX(int(p_func), int(FUNC_MAX));
+	ERR_FAIL_INDEX(p_func, FUNC_MAX);
 	if (func == p_func) {
 		return;
 	}
@@ -7575,7 +7575,7 @@ VisualShaderNodeCompare::Function VisualShaderNodeCompare::get_function() const 
 }
 
 void VisualShaderNodeCompare::set_condition(Condition p_condition) {
-	ERR_FAIL_INDEX(int(p_condition), int(COND_MAX));
+	ERR_FAIL_INDEX(p_condition, COND_MAX);
 	if (condition == p_condition) {
 		return;
 	}
@@ -7705,7 +7705,7 @@ String VisualShaderNodeMultiplyAdd::generate_code(Shader::Mode p_mode, VisualSha
 }
 
 void VisualShaderNodeMultiplyAdd::set_op_type(OpType p_op_type) {
-	ERR_FAIL_INDEX((int)p_op_type, int(OP_TYPE_MAX));
+	ERR_FAIL_INDEX(p_op_type, OP_TYPE_MAX);
 	if (op_type == p_op_type) {
 		return;
 	}
@@ -7843,7 +7843,7 @@ bool VisualShaderNodeBillboard::is_show_prop_names() const {
 }
 
 void VisualShaderNodeBillboard::set_billboard_type(BillboardType p_billboard_type) {
-	ERR_FAIL_INDEX(int(p_billboard_type), int(BILLBOARD_TYPE_MAX));
+	ERR_FAIL_INDEX(p_billboard_type, BILLBOARD_TYPE_MAX);
 	if (billboard_type == p_billboard_type) {
 		return;
 	}

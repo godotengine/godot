@@ -3994,7 +3994,7 @@ void RichTextLabel::set_table_column_expand(int p_column, bool p_expand, int p_r
 	ERR_FAIL_COND(current->type != ITEM_TABLE);
 
 	ItemTable *table = static_cast<ItemTable *>(current);
-	ERR_FAIL_INDEX(p_column, (int)table->columns.size());
+	ERR_FAIL_INDEX(p_column, table->columns.size());
 	table->columns[p_column].expand = p_expand;
 	table->columns[p_column].expand_ratio = p_ratio;
 }

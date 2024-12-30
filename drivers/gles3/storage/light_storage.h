@@ -831,52 +831,52 @@ public:
 	_FORCE_INLINE_ int shadow_atlas_get_quadrant_shadows_length(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
 		return atlas->quadrants[p_quadrant].shadows.size();
 	}
 
 	_FORCE_INLINE_ uint32_t shadow_atlas_get_quadrant_shadows_allocated(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
 		return atlas->quadrants[p_quadrant].textures.size();
 	}
 
 	_FORCE_INLINE_ uint32_t shadow_atlas_get_quadrant_subdivision(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
 		return atlas->quadrants[p_quadrant].subdivision;
 	}
 
 	_FORCE_INLINE_ GLuint shadow_atlas_get_quadrant_shadow_texture(RID p_atlas, uint32_t p_quadrant, uint32_t p_shadow) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_shadow, atlas->quadrants[p_quadrant].textures.size(), 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_shadow, atlas->quadrants[p_quadrant].textures.size(), 0);
 		return atlas->quadrants[p_quadrant].textures[p_shadow];
 	}
 
 	_FORCE_INLINE_ GLuint shadow_atlas_get_quadrant_shadow_fb(RID p_atlas, uint32_t p_quadrant, uint32_t p_shadow) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_shadow, atlas->quadrants[p_quadrant].fbos.size(), 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_shadow, atlas->quadrants[p_quadrant].fbos.size(), 0);
 		return atlas->quadrants[p_quadrant].fbos[p_shadow];
 	}
 
 	_FORCE_INLINE_ int shadow_atlas_get_quadrant_shadow_size(RID p_atlas, uint32_t p_quadrant) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, 0);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, 0);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, 0);
 		return (atlas->size >> 1) / atlas->quadrants[p_quadrant].subdivision;
 	}
 
 	_FORCE_INLINE_ bool shadow_atlas_get_quadrant_shadow_is_omni(RID p_atlas, uint32_t p_quadrant, uint32_t p_shadow) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, false);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_quadrant, 4, false);
-		ERR_FAIL_UNSIGNED_INDEX_V(p_shadow, (uint32_t)atlas->quadrants[p_quadrant].shadows.size(), false);
+		ERR_FAIL_INDEX_V(p_quadrant, 4, false);
+		ERR_FAIL_INDEX_V(p_shadow, atlas->quadrants[p_quadrant].shadows.size(), false);
 		return atlas->quadrants[p_quadrant].shadows[p_shadow].owner_is_omni;
 	}
 

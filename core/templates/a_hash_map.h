@@ -648,7 +648,7 @@ public:
 	}
 
 	KeyValue<TKey, TValue> &get_by_index(uint32_t p_index) {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, num_elements);
+		CRASH_BAD_INDEX(p_index, num_elements);
 		return elements[p_index];
 	}
 

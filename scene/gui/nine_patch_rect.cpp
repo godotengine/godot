@@ -118,7 +118,7 @@ Ref<Texture2D> NinePatchRect::get_texture() const {
 }
 
 void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
-	ERR_FAIL_INDEX((int)p_side, 4);
+	ERR_FAIL_INDEX(p_side, 4);
 
 	if (margin[p_side] == p_size) {
 		return;
@@ -130,7 +130,7 @@ void NinePatchRect::set_patch_margin(Side p_side, int p_size) {
 }
 
 int NinePatchRect::get_patch_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 	return margin[p_side];
 }
 

@@ -482,7 +482,7 @@ void Node::move_child(Node *p_child, int p_index) {
 		if (p_index < 0) {
 			p_index += get_child_count(false);
 		}
-		ERR_FAIL_INDEX_MSG(p_index, (int)data.children_cache.size() + 1 - data.internal_children_front_count_cache - data.internal_children_back_count_cache, vformat("Invalid new child index: %d.", p_index));
+		ERR_FAIL_INDEX_MSG(p_index, data.children_cache.size() + 1 - data.internal_children_front_count_cache - data.internal_children_back_count_cache, vformat("Invalid new child index: %d.", p_index));
 		_move_child(p_child, p_index + data.internal_children_front_count_cache);
 	}
 }
@@ -1770,13 +1770,13 @@ Node *Node::get_child(int p_index, bool p_include_internal) const {
 		if (p_index < 0) {
 			p_index += data.children_cache.size();
 		}
-		ERR_FAIL_INDEX_V(p_index, (int)data.children_cache.size(), nullptr);
+		ERR_FAIL_INDEX_V(p_index, data.children_cache.size(), nullptr);
 		return data.children_cache[p_index];
 	} else {
 		if (p_index < 0) {
 			p_index += (int)data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache;
 		}
-		ERR_FAIL_INDEX_V(p_index, (int)data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache, nullptr);
+		ERR_FAIL_INDEX_V(p_index, data.children_cache.size() - data.internal_children_front_count_cache - data.internal_children_back_count_cache, nullptr);
 		p_index += data.internal_children_front_count_cache;
 		return data.children_cache[p_index];
 	}

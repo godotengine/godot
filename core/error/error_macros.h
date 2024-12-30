@@ -35,6 +35,7 @@
 #include "core/typedefs.h"
 
 #include <atomic> // We'd normally use safe_refcount.h, but that would cause circular includes.
+#include <type_traits>
 
 class String;
 
@@ -94,6 +95,72 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #define GENERATE_TRAP() __builtin_trap()
 #endif
 
+// Helper function to automatically parse values passed as-is.
+template <typename T1, typename T2>
+constexpr bool _is_index_valid(T1 p_index, T2 p_size) {
+	if constexpr (std::is_enum_v<T1>) {
+		if constexpr (std::is_enum_v<T2>) {
+			if constexpr (std::is_signed_v<std::underlying_type_t<T1>>) {
+				if constexpr (std::is_signed_v<std::underlying_type_t<T2>>) {
+					return static_cast<std::underlying_type_t<T1>>(p_index) >= 0 && static_cast<std::underlying_type_t<T1>>(p_index) < static_cast<std::underlying_type_t<T2>>(p_size);
+				} else {
+					return static_cast<std::underlying_type_t<T1>>(p_index) >= 0 && static_cast<std::make_unsigned_t<std::underlying_type_t<T1>>>(p_index) < static_cast<std::underlying_type_t<T2>>(p_size);
+				}
+			} else {
+				if constexpr (std::is_signed_v<std::underlying_type_t<T2>>) {
+					return static_cast<std::underlying_type_t<T2>>(p_size) > 0 && static_cast<std::underlying_type_t<T1>>(p_index) < static_cast<std::make_unsigned_t<std::underlying_type_t<T2>>>(p_size);
+				} else {
+					return static_cast<std::underlying_type_t<T1>>(p_index) < static_cast<std::underlying_type_t<T2>>(p_size);
+				}
+			}
+		} else {
+			if constexpr (std::is_signed_v<std::underlying_type_t<T1>>) {
+				if constexpr (std::is_signed_v<T2>) {
+					return static_cast<std::underlying_type_t<T1>>(p_index) >= 0 && static_cast<std::underlying_type_t<T1>>(p_index) < p_size;
+				} else {
+					return static_cast<std::underlying_type_t<T1>>(p_index) >= 0 && static_cast<std::make_unsigned_t<std::underlying_type_t<T1>>>(p_index) < p_size;
+				}
+			} else {
+				if constexpr (std::is_signed_v<T2>) {
+					return p_size > 0 && static_cast<std::underlying_type_t<T1>>(p_index) < static_cast<std::make_unsigned_t<T2>>(p_size);
+				} else {
+					return static_cast<std::underlying_type_t<T1>>(p_index) < p_size;
+				}
+			}
+		}
+	} else {
+		if constexpr (std::is_enum_v<T2>) {
+			if constexpr (std::is_signed_v<T1>) {
+				if constexpr (std::is_signed_v<std::underlying_type_t<T2>>) {
+					return p_index >= 0 && p_index < static_cast<std::underlying_type_t<T2>>(p_size);
+				} else {
+					return p_index >= 0 && static_cast<std::make_unsigned_t<T1>>(p_index) < static_cast<std::underlying_type_t<T2>>(p_size);
+				}
+			} else {
+				if constexpr (std::is_signed_v<std::underlying_type_t<T2>>) {
+					return static_cast<std::underlying_type_t<T2>>(p_size) > 0 && p_index < static_cast<std::make_unsigned_t<std::underlying_type_t<T2>>>(p_size);
+				} else {
+					return p_index < static_cast<std::underlying_type_t<T2>>(p_size);
+				}
+			}
+		} else {
+			if constexpr (std::is_signed_v<T1>) {
+				if constexpr (std::is_signed_v<T2>) {
+					return p_index >= 0 && p_index < p_size;
+				} else {
+					return p_index >= 0 && static_cast<std::make_unsigned_t<T1>>(p_index) < p_size;
+				}
+			} else {
+				if constexpr (std::is_signed_v<T2>) {
+					return p_size > 0 && p_index < static_cast<std::make_unsigned_t<T2>>(p_size);
+				} else {
+					return p_index < p_size;
+				}
+			}
+		}
+	}
+}
+
 /**
  * Error macros.
  * WARNING: These macros work in the opposite way to assert().
@@ -122,32 +189,32 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns.
  */
-#define ERR_FAIL_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX(m_index, m_size)                                                                                           \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size)); \
+		return;                                                                                                                   \
+	} else                                                                                                                        \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns.
  */
-#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                     \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return;                                                                                                        \
-	} else                                                                                                             \
+#define ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)                                                                                       \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                   \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), m_msg); \
+		return;                                                                                                                          \
+	} else                                                                                                                               \
 		((void)0)
 
 /**
  * Same as `ERR_FAIL_INDEX_MSG` but also notifies the editor.
  */
-#define ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return;                                                                                                              \
-	} else                                                                                                                   \
+#define ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)                                                                                           \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), m_msg, true); \
+		return;                                                                                                                                \
+	} else                                                                                                                                     \
 		((void)0)
 
 /**
@@ -157,32 +224,32 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                     \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
+#define ERR_FAIL_INDEX_V(m_index, m_size, m_retval)                                                                               \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                            \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size)); \
+		return m_retval;                                                                                                          \
+	} else                                                                                                                        \
 		((void)0)
 
 /**
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the current function returns `m_retval`.
  */
-#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                            \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return m_retval;                                                                                               \
-	} else                                                                                                             \
+#define ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                                           \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                   \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), m_msg); \
+		return m_retval;                                                                                                                 \
+	} else                                                                                                                               \
 		((void)0)
 
 /**
  * Same as `ERR_FAIL_INDEX_V_MSG` but also notifies the editor.
  */
-#define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                             \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return m_retval;                                                                                                     \
-	} else                                                                                                                   \
+#define ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                                               \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), m_msg, true); \
+		return m_retval;                                                                                                                       \
+	} else                                                                                                                                     \
 		((void)0)
 
 /**
@@ -193,12 +260,12 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the application crashes.
  */
-#define CRASH_BAD_INDEX(m_index, m_size)                                                                                         \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
-		_err_flush_stdout();                                                                                                     \
-		GENERATE_TRAP();                                                                                                         \
-	} else                                                                                                                       \
+#define CRASH_BAD_INDEX(m_index, m_size)                                                                                                           \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                             \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                                       \
+		GENERATE_TRAP();                                                                                                                           \
+	} else                                                                                                                                         \
 		((void)0)
 
 /**
@@ -208,116 +275,41 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                 \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                         \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
-		_err_flush_stdout();                                                                                                        \
-		GENERATE_TRAP();                                                                                                            \
-	} else                                                                                                                          \
+#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                                   \
+	if (unlikely(!_is_index_valid(m_index, m_size))) {                                                                                                \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, int64_t(m_index), int64_t(m_size), _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                                          \
+		GENERATE_TRAP();                                                                                                                              \
+	} else                                                                                                                                            \
 		((void)0)
 
-// Unsigned integer index out of bounds error macros.
-
-/**
- * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG`.
- * Only use this macro if there is no sensible error message.
- *
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, the current function returns.
- */
-#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size)                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return;                                                                                                 \
-	} else                                                                                                      \
-		((void)0)
-
-/**
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, prints `m_msg` and the current function returns.
- */
-#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                            \
-	if (unlikely((m_index) >= (m_size))) {                                                                             \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return;                                                                                                        \
-	} else                                                                                                             \
-		((void)0)
-
-/**
- * Same as `ERR_FAIL_UNSIGNED_INDEX_MSG` but also notifies the editor.
- */
-#define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg)                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return;                                                                                                              \
-	} else                                                                                                                   \
-		((void)0)
-
-/**
- * Try using `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
- * Only use this macro if there is no sensible error message.
- *
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, the current function returns `m_retval`.
- */
-#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                    \
-	if (unlikely((m_index) >= (m_size))) {                                                                      \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
-		return m_retval;                                                                                        \
-	} else                                                                                                      \
-		((void)0)
-
-/**
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, prints `m_msg` and the current function returns `m_retval`.
- */
-#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                             \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg); \
-		return m_retval;                                                                                               \
-	} else                                                                                                             \
-		((void)0)
-
-/**
- * Same as `ERR_FAIL_UNSIGNED_INDEX_V_EDMSG` but also notifies the editor.
- */
-#define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)                                                    \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		return m_retval;                                                                                                     \
-	} else                                                                                                                   \
-		((void)0)
-
-/**
- * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG` or `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
- * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable, and
- * there is no sensible error message.
- *
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, the application crashes.
- */
-#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                \
-	if (unlikely((m_index) >= (m_size))) {                                                                                       \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
-		_err_flush_stdout();                                                                                                     \
-		GENERATE_TRAP();                                                                                                         \
-	} else                                                                                                                       \
-		((void)0)
-
-/**
- * Try using `ERR_FAIL_UNSIGNED_INDEX_MSG` or `ERR_FAIL_UNSIGNED_INDEX_V_MSG`.
- * Only use this macro if there is no sensible fallback i.e. the error is unrecoverable.
- *
- * Ensures an unsigned integer index `m_index` is less than `m_size`.
- * If not, prints `m_msg` and the application crashes.
- */
-#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                        \
-	if (unlikely((m_index) >= (m_size))) {                                                                                          \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
-		_err_flush_stdout();                                                                                                        \
-		GENERATE_TRAP();                                                                                                            \
-	} else                                                                                                                          \
-		((void)0)
+#ifndef DISABLE_DEPRECATED
+// Deprecated! Use `ERR_FAIL_INDEX` instead.
+#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size) ERR_FAIL_INDEX(m_index, m_size)
+// Deprecated! Use `ERR_FAIL_INDEX_MSG` instead.
+#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg) ERR_FAIL_INDEX_MSG(m_index, m_size, m_msg)
+// Deprecated! Use `ERR_FAIL_INDEX_EDMSG` instead.
+#define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg) ERR_FAIL_INDEX_EDMSG(m_index, m_size, m_msg)
+// Deprecated! Use `ERR_FAIL_INDEX_V` instead.
+#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval) ERR_FAIL_INDEX_V(m_index, m_size, m_retval)
+// Deprecated! Use `ERR_FAIL_INDEX_V_MSG` instead.
+#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg) ERR_FAIL_INDEX_V_MSG(m_index, m_size, m_retval, m_msg)
+// Deprecated! Use `ERR_FAIL_INDEX_V_EDMSG` instead.
+#define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg) ERR_FAIL_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg)
+// Deprecated! Use `CRASH_BAD_INDEX` instead.
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size) CRASH_BAD_INDEX(m_index, m_size)
+// Deprecated! Use `CRASH_BAD_INDEX_MSG` instead.
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg) CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)
+#else
+#define ERR_FAIL_UNSIGNED_INDEX(m_index, m_size) static_assert(false, "Unsigned error macros are deprecated!")
+#define ERR_FAIL_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg) static_assert(false, "Unsigned error macros are deprecated!")
+#define ERR_FAIL_UNSIGNED_INDEX_EDMSG(m_index, m_size, m_msg) static_assert(false, "Unsigned error macros are deprecated!")
+#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval) static_assert(false, "Unsigned error macros are deprecated!")
+#define ERR_FAIL_UNSIGNED_INDEX_V_MSG(m_index, m_size, m_retval, m_msg) static_assert(false, "Unsigned error macros are deprecated!")
+#define ERR_FAIL_UNSIGNED_INDEX_V_EDMSG(m_index, m_size, m_retval, m_msg) static_assert(false, "Unsigned error macros are deprecated!")
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size) static_assert(false, "Unsigned error macros are deprecated!")
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg) static_assert(false, "Unsigned error macros are deprecated!")
+#endif // DISABLE_DEPRECATED
 
 // Null reference error macros.
 

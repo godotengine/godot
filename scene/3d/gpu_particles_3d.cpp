@@ -571,7 +571,7 @@ Ref<Skin> GPUParticles3D::get_skin() const {
 }
 
 void GPUParticles3D::set_transform_align(TransformAlign p_align) {
-	ERR_FAIL_INDEX(uint32_t(p_align), 4);
+	ERR_FAIL_INDEX(p_align, 4);
 	transform_align = p_align;
 	RS::get_singleton()->particles_set_transform_align(particles, RS::ParticlesTransformAlign(transform_align));
 }

@@ -548,7 +548,7 @@ int MeshStorage::mesh_get_blend_shape_count(RID p_mesh) const {
 void MeshStorage::mesh_set_blend_shape_mode(RID p_mesh, RS::BlendShapeMode p_mode) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
-	ERR_FAIL_INDEX((int)p_mode, 2);
+	ERR_FAIL_INDEX(p_mode, 2);
 
 	mesh->blend_shape_mode = p_mode;
 }
@@ -562,7 +562,7 @@ RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
-	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_INDEX(p_surface, mesh->surface_count);
 	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->vertex_buffer.is_null());
 	uint64_t data_size = p_data.size();
@@ -574,7 +574,7 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
-	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_INDEX(p_surface, mesh->surface_count);
 	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->attribute_buffer.is_null());
 	uint64_t data_size = p_data.size();
@@ -586,7 +586,7 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
-	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_INDEX(p_surface, mesh->surface_count);
 	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->skin_buffer.is_null());
 	uint64_t data_size = p_data.size();
@@ -598,7 +598,7 @@ void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
-	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_INDEX(p_surface, mesh->surface_count);
 	mesh->surfaces[p_surface]->material = p_material;
 
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
@@ -608,7 +608,7 @@ void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_mat
 RID MeshStorage::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL_V(mesh, RID());
-	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surface_count, RID());
 
 	return mesh->surfaces[p_surface]->material;
 }
@@ -616,7 +616,7 @@ RID MeshStorage::mesh_surface_get_material(RID p_mesh, int p_surface) const {
 RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL_V(mesh, RS::SurfaceData());
-	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RS::SurfaceData());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surface_count, RS::SurfaceData());
 
 	Mesh::Surface &s = *mesh->surfaces[p_surface];
 
@@ -974,7 +974,7 @@ void MeshStorage::mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton
 void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) {
 	MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 	ERR_FAIL_NULL(mi);
-	ERR_FAIL_INDEX(p_shape, (int)mi->blend_weights.size());
+	ERR_FAIL_INDEX(p_shape, mi->blend_weights.size());
 	mi->blend_weights[p_shape] = p_weight;
 	mi->weights_dirty = true;
 	//will be eventually updated
@@ -1705,7 +1705,7 @@ void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool 
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
 	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
-	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
+	ERR_FAIL_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
 		multimesh->data_cache_dirty_regions[region_index] = true;

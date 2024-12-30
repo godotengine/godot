@@ -1156,9 +1156,9 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 
 	// Create view.
 
-	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
+	ERR_FAIL_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
 	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > src_texture->mipmaps, RID());
-	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
+	ERR_FAIL_INDEX_V(p_layer, src_texture->layers, RID());
 
 	int slice_layers = 1;
 	if (p_layers != 0) {
@@ -6987,18 +6987,18 @@ uint64_t RenderingDevice::get_captured_timestamps_frame() const {
 
 uint64_t RenderingDevice::get_captured_timestamp_gpu_time(uint32_t p_index) const {
 	ERR_RENDER_THREAD_GUARD_V(0);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return driver->timestamp_query_result_to_time(frames[frame].timestamp_result_values[p_index]);
 }
 
 uint64_t RenderingDevice::get_captured_timestamp_cpu_time(uint32_t p_index) const {
 	ERR_RENDER_THREAD_GUARD_V(0);
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_cpu_result_values[p_index];
 }
 
 String RenderingDevice::get_captured_timestamp_name(uint32_t p_index) const {
-	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
 	return frames[frame].timestamp_result_names[p_index];
 }
 

@@ -541,7 +541,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (drag_type == DRAG_TYPE_DRAG_POINT) {
-			ERR_FAIL_INDEX(drag_polygon_index, (int)polygons.size());
+			ERR_FAIL_INDEX(drag_polygon_index, polygons.size());
 			ERR_FAIL_INDEX(drag_point_index, polygons[drag_polygon_index].size());
 			Point2 point = xform.affine_inverse().xform(mm->get_position());
 			float distance = grab_threshold * 2.0;
@@ -831,7 +831,7 @@ int GenericTilePolygonEditor::add_polygon(const Vector<Point2> &p_polygon, int p
 }
 
 void GenericTilePolygonEditor::remove_polygon(int p_index) {
-	ERR_FAIL_INDEX(p_index, (int)polygons.size());
+	ERR_FAIL_INDEX(p_index, polygons.size());
 	polygons.remove_at(p_index);
 
 	if (polygons.size() == 0) {
@@ -846,7 +846,7 @@ void GenericTilePolygonEditor::clear_polygons() {
 }
 
 void GenericTilePolygonEditor::set_polygon(int p_polygon_index, const Vector<Point2> &p_polygon) {
-	ERR_FAIL_INDEX(p_polygon_index, (int)polygons.size());
+	ERR_FAIL_INDEX(p_polygon_index, polygons.size());
 	ERR_FAIL_COND(p_polygon.size() < 3);
 	polygons[p_polygon_index] = p_polygon;
 	button_edit->set_pressed(true);
@@ -854,7 +854,7 @@ void GenericTilePolygonEditor::set_polygon(int p_polygon_index, const Vector<Poi
 }
 
 Vector<Point2> GenericTilePolygonEditor::get_polygon(int p_polygon_index) {
-	ERR_FAIL_INDEX_V(p_polygon_index, (int)polygons.size(), Vector<Point2>());
+	ERR_FAIL_INDEX_V(p_polygon_index, polygons.size(), Vector<Point2>());
 	return polygons[p_polygon_index];
 }
 

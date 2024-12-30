@@ -3632,7 +3632,7 @@ TextMesh::~TextMesh() {
 }
 
 void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			dirty_lines = true;
@@ -3647,7 +3647,7 @@ HorizontalAlignment TextMesh::get_horizontal_alignment() const {
 }
 
 void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX(p_alignment, 4);
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
 		request_update();

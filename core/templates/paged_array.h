@@ -166,14 +166,14 @@ class PagedArray {
 
 public:
 	_FORCE_INLINE_ const T &operator[](uint64_t p_index) const {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
+		CRASH_BAD_INDEX(p_index, count);
 		uint32_t page = p_index >> page_size_shift;
 		uint32_t offset = p_index & page_size_mask;
 
 		return page_data[page][offset];
 	}
 	_FORCE_INLINE_ T &operator[](uint64_t p_index) {
-		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
+		CRASH_BAD_INDEX(p_index, count);
 		uint32_t page = p_index >> page_size_shift;
 		uint32_t offset = p_index & page_size_mask;
 
@@ -230,7 +230,7 @@ public:
 	}
 
 	void remove_at_unordered(uint64_t p_index) {
-		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		ERR_FAIL_INDEX(p_index, count);
 		(*this)[p_index] = (*this)[count - 1];
 		pop_back();
 	}

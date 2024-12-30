@@ -33,7 +33,7 @@
 #include "servers/rendering_server.h"
 
 float StyleBoxLine::get_style_margin(Side p_side) const {
-	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	ERR_FAIL_INDEX_V(p_side, 4, 0);
 
 	if (vertical) {
 		if (p_side == SIDE_LEFT || p_side == SIDE_RIGHT) {

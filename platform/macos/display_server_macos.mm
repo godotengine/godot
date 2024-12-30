@@ -983,7 +983,7 @@ Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, c
 Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+	ERR_FAIL_INDEX_V(p_mode, FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
 	WindowID prev_focus = last_focused_window;

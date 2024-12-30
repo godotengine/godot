@@ -43,7 +43,7 @@ bool MultiplayerSpawner::_set(const StringName &p_name, const Variant &p_value) 
 		String ns = p_name;
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
-			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
+			ERR_FAIL_INDEX_V(index, spawnable_scenes.size(), false);
 			spawnable_scenes[index].path = ResourceUID::ensure_path(p_value);
 			return true;
 		}
@@ -59,7 +59,7 @@ bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
 		String ns = p_name;
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
-			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
+			ERR_FAIL_INDEX_V(index, spawnable_scenes.size(), false);
 			r_ret = ResourceUID::path_to_uid(spawnable_scenes[index].path);
 			return true;
 		}
@@ -116,7 +116,7 @@ int MultiplayerSpawner::get_spawnable_scene_count() const {
 }
 
 String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, (int)spawnable_scenes.size(), "");
+	ERR_FAIL_INDEX_V(p_idx, spawnable_scenes.size(), "");
 	return spawnable_scenes[p_idx].path;
 }
 
@@ -294,7 +294,7 @@ const Variant MultiplayerSpawner::get_spawn_argument(const ObjectID &p_id) const
 
 Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_id, spawnable_scenes.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_id, spawnable_scenes.size(), nullptr);
 	SpawnableScene &sc = spawnable_scenes[p_id];
 	if (sc.cache.is_null()) {
 		sc.cache = ResourceLoader::load(sc.path);

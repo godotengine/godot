@@ -1851,7 +1851,7 @@ void EditorInspectorArray::_vbox_visibility_changed() {
 }
 
 void EditorInspectorArray::_panel_draw(int p_index) {
-	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
+	ERR_FAIL_INDEX(p_index, array_elements.size());
 
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("Focus"), EditorStringName(EditorStyles));
 	if (style.is_null()) {
@@ -1863,7 +1863,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 }
 
 void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index) {
-	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
+	ERR_FAIL_INDEX(p_index, array_elements.size());
 
 	if (read_only) {
 		return;

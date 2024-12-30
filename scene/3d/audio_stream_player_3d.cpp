@@ -679,7 +679,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 }
 
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
-	ERR_FAIL_INDEX((int)p_model, 4);
+	ERR_FAIL_INDEX(p_model, 4);
 	attenuation_model = p_model;
 	update_gizmos();
 }
