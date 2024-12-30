@@ -1287,7 +1287,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
-	changing_type_index = -1;
+	changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
 	has_borders = true;
 
 	key_subtype = Variant::NIL;
