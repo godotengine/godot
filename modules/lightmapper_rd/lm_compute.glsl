@@ -473,6 +473,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	}
 
 	float penumbra = 0.0;
+	vec3 penumbra_color = vec3(0.0);
 	if (p_soft_shadowing) {
 		const bool use_soft_shadows = (light_data.size > 0.0);
 		const uint ray_count = AA_SAMPLES;
@@ -502,6 +503,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			vec3 light_dir = normalize(light_pos - origin);
 
 			float power = 0.0;
+			vec3 light_color = vec3(0.0);
 			uint power_accm = 0;
 			vec3 prev_pos = origin;
 			if (use_soft_shadows) {
@@ -528,6 +530,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					vec2 light_disk_sample = get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt) * soft_shadowing_disk_size * light_data.shadow_blur;
 					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
 					float sample_penumbra = 0.0;
+					vec3 sample_penumbra_color = light_data.color.rgb;
 					bool sample_did_hit = false;
 
 					for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
@@ -551,7 +554,8 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							soft_shadow_hits += 1;
 
 							if (contribute) {
-								sample_penumbra = max(sample_penumbra - hit_albedo.a - EPSILON, 0.0);
+								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+								sample_penumbra *= 1.0 - hit_albedo.a;
 							}
 							origin = hit_position + r_light_dir * bake_params.bias;
 
@@ -562,11 +566,13 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					}
 
 					power += sample_penumbra;
+					light_color += sample_penumbra_color;
 					power_accm++;
 				}
 
 			} else { // No soft shadows (size == 0).
 				float sample_penumbra = 0.0;
+				vec3 sample_penumbra_color = light_data.color.rgb;
 				bool sample_did_hit = false;
 				for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 					vec4 hit_albedo = vec4(1.0);
@@ -586,7 +592,8 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 						}
 
 						if (contribute) {
-							sample_penumbra = max(sample_penumbra - hit_albedo.a - EPSILON, 0.0);
+							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+							sample_penumbra *= 1.0 - hit_albedo.a;
 						}
 						origin = hit_position + r_light_dir * bake_params.bias;
 
@@ -596,14 +603,18 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					}
 				}
 				power = sample_penumbra;
+				light_color = sample_penumbra_color;
 				power_accm = 1;
 			}
 			aa_power += power / float(power_accm);
+			penumbra_color += light_color / float(power_accm);
 		}
 		penumbra = aa_power / ray_count;
+		penumbra_color /= ray_count;
 	} else { // No soft shadows and anti-aliasing (disabled via parameter).
 		bool did_hit = false;
 		penumbra = 0.0;
+		penumbra_color = light_data.color.rgb;
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 			vec4 hit_albedo = vec4(1.0);
 			vec3 hit_position;
@@ -621,7 +632,8 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 				}
 
 				if (contribute) {
-					penumbra = max(penumbra - hit_albedo.a - EPSILON, 0.0);
+					penumbra_color = mix(penumbra_color, penumbra_color * hit_albedo.rgb, hit_albedo.a);
+					penumbra *= 1.0 - hit_albedo.a;
 				}
 
 				p_position = hit_position + r_light_dir * bake_params.bias;
@@ -636,7 +648,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	}
 
 	r_shadow = penumbra;
-	r_light = light_data.color * light_data.energy * attenuation * penumbra;
+	r_light = light_data.color * light_data.energy * attenuation * penumbra * penumbra_color;
 }
 
 #endif
