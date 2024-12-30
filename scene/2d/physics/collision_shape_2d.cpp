@@ -227,8 +227,6 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
-#ifdef DEBUG_ENABLED
-
 Color CollisionShape2D::_get_default_debug_color() const {
 	const SceneTree *st = SceneTree::get_singleton();
 	return st ? st->get_debug_collisions_color() : Color(0.0, 0.0, 0.0, 0.0);
@@ -246,6 +244,8 @@ void CollisionShape2D::set_debug_color(const Color &p_color) {
 Color CollisionShape2D::get_debug_color() const {
 	return debug_color;
 }
+
+#ifdef DEBUG_ENABLED
 
 bool CollisionShape2D::_property_can_revert(const StringName &p_name) const {
 	if (p_name == "debug_color") {
@@ -289,20 +289,16 @@ void CollisionShape2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 	// Default value depends on a project setting, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
-#endif // DEBUG_ENABLED
 }
 
 CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
-#ifdef DEBUG_ENABLED
 	debug_color = _get_default_debug_color();
-#endif // DEBUG_ENABLED
 }
