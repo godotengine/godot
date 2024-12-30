@@ -78,7 +78,7 @@ public:
 	bool activate_feed();
 	void deactivate_feed();
 	bool set_format(int p_index, const Dictionary &p_parameters);
-	Array get_formats() const;
+	TypedArray<Dictionary> get_formats() const;
 	FeedFormat get_format() const;
 
 	CameraFeedLinux(const String &p_device_name);

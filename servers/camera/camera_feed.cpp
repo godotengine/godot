@@ -289,6 +289,6 @@ bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {
 	return false;
 }
 
-Array CameraFeed::get_formats() const {
-	return Array();
+	TypedArray<Dictionary> ret;
+	return ret;
 }
