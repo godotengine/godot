@@ -261,11 +261,11 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
             if (name.begins_with("hm.v.") && animation_track->type == Animation::TYPE_POSITION_3D) {
                 temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
             }
-            else if (name.begins_with("hm.vr.") && animation_track->type == Animation::TYPE_VALUE) {
-                float loc = a->value_track_interpolate(i, time);
-                temp_anim_skeleton.set_root_lookat_roll(a, name, loc);
-                //temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
-            }
+            //else if (name.begins_with("hm.vr.") && animation_track->type == Animation::TYPE_VALUE) {
+            //    float loc = a->value_track_interpolate(i, time);
+            //    temp_anim_skeleton.set_root_lookat_roll(a, name, loc);
+            //    //temp_anim_skeleton.set_root_lookat(a, name, i, time, delta);
+            //}
             else if (name.begins_with("hm.p.") && animation_track->type == Animation::TYPE_POSITION_3D) {
                 temp_anim_skeleton.set_root_position_add(a, name, i, time, delta);
             }
@@ -274,11 +274,11 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
                 Error err = a->try_position_track_interpolate(i, time, &loc);
                 temp_anim_skeleton.set_human_lookat(animation_track->path.get_name(0), loc);
             }
-            else if (name.begins_with("hm.r.") && animation_track->type == Animation::TYPE_VALUE) {
-                float loc = a->value_track_interpolate(i, time);
-                temp_anim_skeleton.set_human_roll(animation_track->path.get_name(0), loc);
+            //else if (name.begins_with("hm.r.") && animation_track->type == Animation::TYPE_VALUE) {
+            //    float loc = a->value_track_interpolate(i, time);
+            //    temp_anim_skeleton.set_human_roll(animation_track->path.get_name(0), loc);
 
-            }
+            //}
             continue;
         }
 
