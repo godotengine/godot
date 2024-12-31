@@ -104,7 +104,7 @@ public:
 		SHAPE_MAX
 	};
 
-	static const int SLIDER_COUNT = 3;
+	static const int SLIDER_COUNT = 4;
 
 private:
 	enum class MenuOption {
@@ -268,6 +268,8 @@ private:
 		Ref<Texture2D> picker_cursor;
 		Ref<Texture2D> picker_cursor_bg;
 		Ref<Texture2D> color_hue;
+
+		Ref<Texture2D> color_script;
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
