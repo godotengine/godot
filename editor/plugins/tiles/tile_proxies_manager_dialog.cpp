@@ -318,7 +318,7 @@ void TileProxiesManagerDialog::_bind_methods() {
 }
 
 void TileProxiesManagerDialog::update_tile_set(Ref<TileSet> p_tile_set) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	tile_set = p_tile_set;
 	commited_actions_count = 0;
 	_update_lists();

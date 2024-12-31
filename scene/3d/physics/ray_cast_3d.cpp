@@ -468,7 +468,7 @@ void RayCast3D::_create_debug_shape() {
 }
 
 void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
-	if (!debug_material.is_valid()) {
+	if (debug_material.is_null()) {
 		Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 		debug_material = material;
 

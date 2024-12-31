@@ -8066,7 +8066,7 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 }
 
 AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps) {
-	if (!p_animation.is_valid()) {
+	if (p_animation.is_null()) {
 		return;
 	}
 
