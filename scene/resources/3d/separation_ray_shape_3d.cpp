@@ -43,7 +43,31 @@ Vector<Vector3> SeparationRayShape3D::get_debug_mesh_lines() const {
 }
 
 Ref<ArrayMesh> SeparationRayShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
-	return memnew(ArrayMesh);
+	Vector<Vector3> verts;
+	Vector<Color> colors;
+	Vector<int> indices;
+
+	verts.push_back(Vector3());
+	verts.push_back(Vector3(0.0f, 0.0f, get_length()));
+	verts.push_back(Vector3());
+
+	colors.push_back(p_modulate);
+	colors.push_back(p_modulate);
+	colors.push_back(p_modulate);
+
+	indices.push_back(0);
+	indices.push_back(1);
+	indices.push_back(2);
+
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+	a[RS::ARRAY_VERTEX] = verts;
+	a[RS::ARRAY_COLOR] = colors;
+	a[RS::ARRAY_INDEX] = indices;
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+
+	return mesh;
 }
 
 real_t SeparationRayShape3D::get_enclosing_radius() const {
