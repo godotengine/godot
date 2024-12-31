@@ -53,6 +53,7 @@
 #include "tests/core/io/test_packet_peer.h"
 #include "tests/core/io/test_pck_packer.h"
 #include "tests/core/io/test_resource.h"
+#include "tests/core/io/test_resource_uid.h"
 #include "tests/core/io/test_stream_peer.h"
 #include "tests/core/io/test_stream_peer_buffer.h"
 #include "tests/core/io/test_tcp_server.h"
