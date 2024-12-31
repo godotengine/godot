@@ -145,8 +145,8 @@ void TilesEditorUtils::_thread() {
 }
 
 void TilesEditorUtils::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
-	ERR_FAIL_COND(!p_pattern.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
+	ERR_FAIL_COND(p_pattern.is_null());
 	{
 		MutexLock lock(pattern_preview_mutex);
 		pattern_preview_queue.push_back({ p_tile_set, p_pattern, p_callback });

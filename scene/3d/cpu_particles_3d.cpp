@@ -309,7 +309,7 @@ real_t CPUParticles3D::get_param_max(Parameter p_param) const {
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, real_t p_min, real_t p_max) {
 	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid()) {
+	if (curve.is_null()) {
 		return;
 	}
 

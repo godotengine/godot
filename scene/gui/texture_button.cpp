@@ -171,7 +171,7 @@ void TextureButton::_notification(int p_what) {
 			bool draw_focus = (has_focus() && focused.is_valid());
 
 			// If no other texture is valid, try using focused texture.
-			bool draw_focus_only = draw_focus && !texdraw.is_valid();
+			bool draw_focus_only = draw_focus && texdraw.is_null();
 			if (draw_focus_only) {
 				texdraw = focused;
 			}

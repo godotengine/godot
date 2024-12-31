@@ -473,7 +473,7 @@ Ref<AnimationNode> AnimationNode::find_node_by_path(const String &p_name) const 
 	Ref<AnimationNode> ret = const_cast<AnimationNode *>(this);
 	for (int i = 0; i < split.size(); i++) {
 		ret = ret->get_child_by_name(split[i]);
-		if (!ret.is_valid()) {
+		if (ret.is_null()) {
 			break;
 		}
 	}
@@ -635,7 +635,7 @@ Ref<AnimationRootNode> AnimationTree::get_root_animation_node() const {
 bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	_update_properties(); // If properties need updating, update them.
 
-	if (!root_animation_node.is_valid()) {
+	if (root_animation_node.is_null()) {
 		return false;
 	}
 
@@ -711,7 +711,7 @@ uint64_t AnimationTree::get_last_process_pass() const {
 
 PackedStringArray AnimationTree::get_configuration_warnings() const {
 	PackedStringArray warnings = AnimationMixer::get_configuration_warnings();
-	if (!root_animation_node.is_valid()) {
+	if (root_animation_node.is_null()) {
 		warnings.push_back(RTR("No root AnimationNode for the graph is set."));
 	}
 	return warnings;

@@ -310,7 +310,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 					break;
 				}
 
-				if (!playback[play_order[play_index]].is_valid()) {
+				if (playback[play_order[play_index]].is_null()) {
 					todo = to_mix; // Weird error.
 					active = false;
 					break;
