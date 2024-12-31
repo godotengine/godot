@@ -12,6 +12,7 @@ namespace HumanAnim
 		HashMap<StringName, Quaternion> real_local_pose;
 		HashMap<StringName, Transform3D> real_global_pose;
 		HashMap<StringName, Vector3> bone_global_lookat;
+		HashMap<StringName, float> bone_global_roll;
 
 		HashMap<StringName, Node3D*> bones;
 
@@ -281,6 +282,37 @@ namespace HumanAnim
 		Hip骨骼的世界朝向应用到角色的朝向,Hip的世界位置应用到角色的位置
 		*/
 		// 构建虚拟姿势
+		static void computer_bone_right(HumanBoneConfig& p_config, BonePose& parent_pose, BonePose& pose) {
+
+			Vector3 forward;
+			if (pose.child_bones.size() == 0) {
+				forward = pose.global_pose.origin - parent_pose.global_pose.origin;
+			}
+			else {
+				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[0]];
+				forward = child_pose.global_pose.origin - parent_pose.global_pose.origin;
+			}
+
+			Vector3::Axis min_axis = forward.min_axis_index();
+
+			Vector3 up = Vector3(0, 1, 0);
+			switch (min_axis)
+			{
+			case Vector3::AXIS_X:
+				up = Vector3(1, 0, 0);
+				break;
+			case Vector3::AXIS_Y:
+				up = Vector3(0, 1, 0);
+				break;
+			case Vector3::AXIS_Z:
+				up = Vector3(0, 0, 1);
+				break;
+			}
+			Vector3 right = up.cross(forward.normalized());
+
+			pose.right = pose.global_pose.basis.inverse().xform(right);
+			pose.right.normalize();
+		}
 		static void build_virtual_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HashMap<String, String>& p_human_bone_label) {
 			Vector<int> root_bones = p_skeleton->get_root_bones();
 			p_skeleton->_update_bones_nested_set();
@@ -307,8 +339,6 @@ namespace HumanAnim
 
 				pose.position = trans.origin;
 				pose.rotation = trans.basis.get_rotation_quaternion();
-				float inv_height = 1.0 / height;
-				pose.scale = Vector3(inv_height, inv_height, inv_height);
 				pose.bone_index = root_bone;
 				p_config.virtual_pose[bone_name] = pose;
 
@@ -334,8 +364,8 @@ namespace HumanAnim
 					continue;
 				}
 				BonePose& child_pose = p_config.virtual_pose[bone_name];
-				child_pose.position *= child_pose.scale;
-
+				child_pose.position.normalize();// *= child_pose.scale;
+				child_pose.local_pose = Transform3D(child_pose.rotation, child_pose.position);
 			}
 			// 计算骨骼的世界空间姿势
 			for (int i = 0; i < p_config.root_bone.size(); i++) {
@@ -344,6 +374,7 @@ namespace HumanAnim
 				for (int j = 0; j < pose.child_bones.size(); j++) {
 					BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
 					build_virtual_pose_global(p_config, pose.global_pose, child_pose, p_human_bone_label);
+					computer_bone_right(p_config, pose, child_pose);
 				}
 			}
 
@@ -354,6 +385,7 @@ namespace HumanAnim
 			for (int j = 0; j < pose.child_bones.size(); j++) {
 				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[j]];
 				build_virtual_pose_global(p_config, pose.global_pose, child_pose, p_human_bone_label);
+				computer_bone_right(p_config, pose, child_pose);
 			}
 
 		}
@@ -581,13 +613,14 @@ namespace HumanAnim
 
 		// 重定向骨骼
 		static void retarget(HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config) {
+			RetargetTemp temp;
 			for (auto& it : p_config.root_bone) {
 				BonePose& pose = p_config.virtual_pose[it];
 				Transform3D& trans = p_skeleton_config.real_global_pose[it];
 				Transform3D local_trans;
 				local_trans.basis = trans.basis;
 
-				retarget(p_config, pose, local_trans, p_skeleton_config);
+				retarget(p_config, pose, local_trans, p_skeleton_config, temp);
 
 
 			}
@@ -678,6 +711,7 @@ namespace HumanAnim
 			return label_map;
 		}
 
+
 		// 构建真实姿势
 		static void build_skeleton_pose(Skeleton3D* p_skeleton, HumanBoneConfig& p_config, HumanSkeleton& p_skeleton_config, bool position_by_hip = false) {
 			p_skeleton->_update_bones_nested_set();
@@ -697,17 +731,17 @@ namespace HumanAnim
 			bool is_hip = false;
 			for (auto& it : root_bone) {
 				Vector3 bone_foreard = Vector3(0, 0, 1);
-				BonePose* pose = nullptr;
+				BonePose& pose =  p_config.virtual_pose[it];
 				{
 					Transform3D& trans = p_skeleton_config.real_global_pose[it];
-					pose = &p_config.virtual_pose[it];
+					
 					local_trans.basis = trans.basis;
 					p_skeleton_config.root_lookat[it] = local_trans.basis.xform(bone_foreard).normalized();
-					p_skeleton_config.root_position[it] = (trans.origin - pose->position);
+					p_skeleton_config.root_position[it] = (trans.origin - pose.position);
 					p_skeleton_config.bone_global_rotation[it] = trans.basis.get_rotation_quaternion();
 				}
 				// 臀部的朝向计算到全身的旋转
-				build_skeleton_global_lookat(p_config, *pose, local_trans, p_skeleton_config);
+				build_skeleton_global_lookat(p_config, pose, local_trans, p_skeleton_config);
 			}
 		}
 	private:
@@ -718,37 +752,6 @@ namespace HumanAnim
 			}
 		};
 
-		static void computer_bone_right(HumanBoneConfig& p_config,BonePose& parent_pose,BonePose& pose) {
-
-			Vector3 forward;
-			if(pose.child_bones.size() == 0) {
-				forward = pose.global_pose.origin - parent_pose.global_pose.origin;
-			}
-			else {
-				BonePose& child_pose = p_config.virtual_pose[pose.child_bones[0]];
-				forward = child_pose.global_pose.origin - parent_pose.global_pose.origin;
-			}
-        
-			Vector3::Axis min_axis = forward.min_axis_index();
-
-			Vector3 up = Vector3(0, 1, 0);
-			switch (min_axis)
-			{
-			case Vector3::AXIS_X:
-				up = Vector3(1, 0, 0);
-				break;
-			case Vector3::AXIS_Y:
-				up = Vector3(0, 1, 0);
-				break;
-			case Vector3::AXIS_Z:
-				up = Vector3(0, 0, 1);
-				break;
-			}
-			Vector3 right = up.cross(forward.normalized());
-
-			pose.right = pose.global_pose.basis.inverse().xform(right);
-			pose.right.normalize();
-		}
 		static void build_virtual_pose(HumanBoneConfig& p_config, Skeleton3D* p_skeleton, Transform3D parent_trans, int bone_index, HashMap<String, String>& p_human_bone_label) {
 
 			//Vector<int> child_bones = p_skeleton->get_bone_children(bone_index);
@@ -769,14 +772,10 @@ namespace HumanAnim
 				}
 				pose.child_bones.sort_custom<SortStringName>();
 
-				Vector3 bone_foreard = trans.origin - parent_trans.origin;
-				height = bone_foreard.length();
 
 				Transform3D local_trans = p_skeleton->get_bone_pose(bone_index);
 				pose.position = local_trans.origin;
 				pose.rotation = local_trans.basis.get_rotation_quaternion();
-				float inv_height = 1.0 / height;
-				pose.scale = Vector3(inv_height, inv_height, inv_height);
 				pose.bone_index = bone_index;
 				for (int j = 0; j < pose.child_bones.size(); j++) {
 					build_virtual_pose(p_config, p_skeleton, trans, p_skeleton->find_bone(pose.child_bones[j]), p_human_bone_label);
@@ -796,52 +795,94 @@ namespace HumanAnim
 
 			}
 		}
+		static float compute_self_roll(HumanBoneConfig& p_config, Transform3D& parent_pose, BonePose& bone_pose, const Vector3& lookat, const Vector3& curr_forward) {
 
+			Transform3D rest_trans = parent_pose * bone_pose.local_pose;
+
+			Vector3 rest_forward;
+			if (bone_pose.child_bones.size() == 0) {
+				// 貌似末端骨骼没有啥自身轴的旋转,比如手指,脚趾
+				rest_forward = rest_trans.origin - parent_pose.origin;
+			}
+			else {
+				rest_forward = rest_trans.xform(p_config.virtual_pose[bone_pose.child_bones[0]].position) - rest_trans.origin;
+			}
+			rest_trans.basis.rotate_to_align(rest_forward, curr_forward);
+
+			Vector3 rest_right = rest_trans.basis.xform(bone_pose.right);
+
+			Basis curr_trans = parent_pose.basis * bone_pose.local_pose.basis;
+			Vector3 curr_right = curr_trans.xform(bone_pose.right);
+
+
+			if (curr_right.dot(rest_right) > 0.999) {
+				return 0;
+			}
+			Plane plane = Plane(curr_forward, 0.0);
+			Vector3 intersect;
+			plane.intersects_ray(curr_right + curr_forward, -curr_forward, &intersect);
+
+
+			if (intersect.x + intersect.y + intersect.z == 0)
+			{
+				return 0;
+			}
+
+			return rest_right.signed_angle_to(intersect.normalized(), curr_forward);
+		}
 		static void build_skeleton_global_lookat(HumanBoneConfig& p_config, BonePose& bone_pose, Transform3D& parent_pose, HumanSkeleton& p_skeleton_config) {
 
 			for (auto& it : bone_pose.child_bones) {
 				BonePose& child_pose = p_config.virtual_pose[it];
-				Transform3D& trans = p_skeleton_config.real_global_pose[it];
+				Transform3D& real_global_pose = p_skeleton_config.real_global_pose[it];
 				Vector3 forward;
 				if (child_pose.child_bones.size() > 0) {
 					Transform3D& child_trans = p_skeleton_config.real_global_pose[child_pose.child_bones[0]];
-					forward = child_trans.origin - trans.origin;
+					forward = child_trans.origin - real_global_pose.origin;
 				}
 				else {
-					forward = trans.origin - parent_pose.origin;
+					forward = real_global_pose.origin - parent_pose.origin;
 				}
-				p_skeleton_config.bone_global_lookat[it] = trans.origin + forward.normalized();
-				p_skeleton_config.bone_global_rotation[it] = trans.basis.get_rotation_quaternion();
-				build_skeleton_global_lookat(p_config, child_pose, trans, p_skeleton_config);
+				p_skeleton_config.bone_global_lookat[it] = real_global_pose.origin + forward.normalized();
+				p_skeleton_config.bone_global_rotation[it] = real_global_pose.basis.get_rotation_quaternion();
+				float roll = compute_self_roll(p_config, parent_pose, child_pose, p_skeleton_config.bone_global_lookat[it], forward);
+				if (ABS(roll) > 0.001) {
+					p_skeleton_config.bone_global_roll[it] = roll;
+				}
+				build_skeleton_global_lookat(p_config, child_pose, real_global_pose, p_skeleton_config);
 			}
 
 		}
-		static void retarget(HumanBoneConfig& p_config, BonePose& pose, Transform3D& parent_trans, HumanSkeleton& p_skeleton_config) {
+		struct RetargetTemp
+		{
+			Vector3 forward;
+			Transform3D  child_trans;
+			Basis local_trans;
+
+		};
+		static void retarget(HumanBoneConfig& p_config, BonePose& pose, Transform3D& parent_trans, HumanSkeleton& p_skeleton_config, RetargetTemp & temp) {
 
 			// 重定向骨骼的世界坐标
-			Quaternion rot;
-
 			for (auto& it : pose.child_bones) {
 				BonePose& pose = p_config.virtual_pose[it];
-				Transform3D& trans = p_skeleton_config.real_global_pose[it];
-				trans = parent_trans * trans;
-				Vector3 forward;
+				Transform3D& real_global_pose = p_skeleton_config.real_global_pose[it];
+				real_global_pose = parent_trans * real_global_pose;
 				if (pose.child_bones.size() > 0) {
-					Transform3D  child_trans = p_skeleton_config.real_global_pose[pose.child_bones[0]];
-					child_trans = trans * child_trans;
-					forward = child_trans.origin - trans.origin;
+					temp.child_trans = p_skeleton_config.real_global_pose[pose.child_bones[0]];
+					temp.child_trans = real_global_pose * temp.child_trans;
+					temp.forward = temp.child_trans.origin - real_global_pose.origin;
 				}
 				else {
-					forward = trans.origin - parent_trans.origin;
+					temp.forward = real_global_pose.origin - parent_trans.origin;
 				}
 				if (p_skeleton_config.bone_global_lookat.has(it)) {
-					float length = (p_skeleton_config.bone_global_lookat[it] - trans.origin).length();
-					trans.basis.rotate_to_align(forward, p_skeleton_config.bone_global_lookat[it] - trans.origin);
+					float length = (p_skeleton_config.bone_global_lookat[it] - real_global_pose.origin).length();
+					real_global_pose.basis.rotate_to_align(temp.forward, p_skeleton_config.bone_global_lookat[it] - real_global_pose.origin);
 				}
 
-				Transform3D local_trans = parent_trans.inverse() * trans;
-				p_skeleton_config.real_local_pose[it] = local_trans.basis.get_rotation_quaternion();
-				retarget(p_config, pose, trans, p_skeleton_config);
+				temp.local_trans = parent_trans.basis.inverse() * real_global_pose.basis;
+				p_skeleton_config.real_local_pose[it] = temp.local_trans.get_rotation_quaternion();
+				retarget(p_config, pose, real_global_pose, p_skeleton_config, temp);
 			}
 
 		}

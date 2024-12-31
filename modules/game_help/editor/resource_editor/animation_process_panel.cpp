@@ -140,7 +140,7 @@ AnimationProcessPanel::AnimationProcessPanel() {
                 single_path = memnew(EditorPropertyPath);
                 single_path->set_label(L"选择动画文件");
                 single_path->set_object_and_property(this, SNAME("single_animation_file_path"));
-                single_path->setup({ "fbx", "gltf","glb"}, false, false);
+                single_path->setup({ "*.fbx", "*.gltf","*.glb"}, false, false);
                 single_path->set_h_size_flags(SIZE_EXPAND_FILL);
 				single_path->set_custom_property(true);
                 single_path->update_property();

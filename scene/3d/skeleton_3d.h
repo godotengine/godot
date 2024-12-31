@@ -51,7 +51,6 @@ struct BonePose {
 	Quaternion rotation;
 	// 虛擬子骨骼的前方
 	Vector3 right;
-	Vector3 scale;
 	Transform3D global_pose;
 	Transform3D local_pose;
 	Vector<StringName> child_bones;
