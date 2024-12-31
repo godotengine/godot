@@ -1,7 +1,23 @@
 #pragma once
 #include "scene/3d/node_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 class SceneChunk;
+class SceneChunkGroupInstance;
+class MeshCollisionResource : public Resource{
+    GDCLASS(MeshCollisionResource, Resource);
+    static void _bind_methods() {
+        ClassDB::bind_method(D_METHOD("set_points", "points"), &MeshCollisionResource::set_points);
+        ClassDB::bind_method(D_METHOD("get_points"), &MeshCollisionResource::get_points);
+
+        ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "points"), "set_points", "get_points");
+    }
+public:
+    void set_points(const Vector<Vector3> &p_points) { points = p_points; }
+    Vector<Vector3> get_points() const { return points; }
+protected:
+    Vector<Vector3> points;
+};
 // 非模型的擴展數據，粒子，聲音，自定义逻辑脚本
 class SceneDataCompoent : public RefCounted{
     GDCLASS(SceneDataCompoent, RefCounted);
@@ -92,8 +108,10 @@ public:
         return collision_shape_type;
     }
 
+    virtual void show(int p_show_level,const Transform3D& p_parent, SceneChunkGroupInstance * instance) ;
+
     String resource_path;
-    bool is_visible = true;
+    ResourceType resource_type = ResourceType::RT_Mesh;
     Transform3D transform;
 
     CollisionShapeType collision_shape_type = SHAPE_SPHERE;
@@ -109,6 +127,7 @@ public:
     float collision_capsule_height = 1;
     float collision_capsule_radius = 1;
     String collision_mesh_path;
+    bool is_visible = true;
 
 };
 class SceneDataCompoentBlock : public SceneDataCompoent {
@@ -118,37 +137,60 @@ public:
     void set_editor_source_scene_path(const String& p_path) {
         editor_source_scene_path = p_path;
     }
+    virtual void show(int p_show_level,const Transform3D& p_parent, SceneChunkGroupInstance * instance) override;
 protected:
-    String resource_group;
-    String resource_tag;
     String editor_source_scene_path;
     String block_name;
 
-    LocalVector<Ref<SceneDataCompoent>> compoents;
+    LocalVector<Pair<Ref<SceneDataCompoent>,int>> compoents;
 };
-class SceneChunkGroupLod : public SceneDataCompoentBlock {
-    GDCLASS(SceneChunkGroupLod, SceneDataCompoentBlock);
-	static void _bind_methods() {}
-
+class SceneBlock : public Resource {
+    GDCLASS(SceneBlock, Resource);
+    static void _bind_methods() {}
 public:
-    SceneChunkGroupLod() {}
+    void set_position(const Vector3& p_position) {
+        transform.origin = p_position;
+    }
+    void set_rotation(const Quaternion& p_rotation) {
+        Vector3 scale = transform.basis.get_scale();
+        transform.basis.set_quaternion_scale(p_rotation,scale);
+    }
+    void set_scale(const Vector3& p_scale) {
+        transform.basis.set_quaternion_scale(transform.basis.get_quaternion(),p_scale);
+    }
 
-    LocalVector<Ref<SceneDataCompoent>> objects_blocks;
+    Vector3 get_position() {
+        return transform.origin;
+    }
+    Quaternion get_rotation() {
+        return transform.basis.get_quaternion();
+    }
+    Vector3 get_scale() {
+        return transform.basis.get_scale();
+    }
+    virtual void show(int p_show_level,const Transform3D& p_parent, SceneChunkGroupInstance * instance);
+public:
+    Transform3D transform;
+    LocalVector<Pair<Ref<SceneDataCompoent>,int>> blocks;
 };
 
-class SceneChunkGroup : public Resource {
-    GDCLASS(SceneChunkGroup, Resource);
+class SceneResource : public Resource {
+    GDCLASS(SceneResource, Resource);
     static void _bind_methods() {}
 
 public:
-    SceneChunkGroup() {}
+    SceneResource() {}
 
     void on_chunk_load(SceneChunk* p_chunk) {}
     void update_lod(Vector3 camera_pos) {}
+    virtual void show(int lod,int p_show_level,const Transform3D& p_parent, SceneChunkGroupInstance * instance);
     String resource_group;
     String resource_tag;
+
+    int lod_count = 0;
+    float lod_distance[4] = {32,64,128,256};
     
-    LocalVector<Ref<SceneChunkGroupLod>> scene_lods;
+    LocalVector<Pair<Ref<SceneBlock>,int>>  scene_lods;
 };
 
 class SceneChunkGroupInstance : public Node3D {
@@ -159,13 +201,26 @@ public:
         if (p_what == NOTIFICATION_ENTER_TREE) {
         }
         else if (p_what == NOTIFICATION_EXIT_TREE) {
+            clear_show_instance_ids();
         }
     }
 	struct LodInfo {
 		HashMap<ObjectID, Ref<SceneDataCompoent>> data_compoents;
 	};
+    int _add_mesh_instance(const String& p_path,const Transform3D& t);
+    int _add_collision_instance(const Transform3D& t,SceneDataCompoent::CollisionShapeType type,const Vector3& box_size,float height,float radius);
+    int _add_mesh_collision_instance(const String& p_path,const Transform3D& t);
+
+    void set_lod(int p_lod) ;
+    void clear_show_instance_ids();
+    SceneChunk* get_chunk();
+protected:
+    ObjectID chunk_id;
     int curr_lod = 0;
-    LocalVector<LodInfo> lods;
+    Ref<SceneResource> resource;
+    HashMap<int32_t,String> curr_show_meshinstance_ids;
+    HashMap<int32_t,String> curr_show_mesh_collision_ids;
+    HashSet<int32_t> curr_show_collision_ids;
 };
 
 class SceneChunk : public Node3D {
@@ -181,6 +236,13 @@ public:
 
     int add_multimesh_instance(const String& res_path, const Transform3D& t) ;
     void remove_multimesh_instance(const String& res_path, int id) ;
+
+    int add_collision_instance(const Transform3D& t,SceneDataCompoent::CollisionShapeType type,const Vector3& box_size,float height,float radius) ;
+    void remove_collision_instance( int id) ;
+
+    
+    int add_mesh_collision_instance(const Transform3D& t,const String& p_path) ;
+    void remove_mesh_collision_instance( int id,const String& p_path) ;
 
     int get_free_id() {
         int id = 0;
@@ -219,17 +281,22 @@ public:
         
     };
     struct Collision{
-        Transform3D transform;
-        int instance_id;
+		RID node_id;
+        RID shape;
+        int collision_layer = 0;
+        int collision_mask = 0;
     };
-    struct CollisionInstance : public RefCounted{
-        ObjectID mult_mesh_instances_id;
+    struct MeshCollisionInstance : public RefCounted{
         HashMap<int32_t,Collision> mesh_transforms;
-        ObjectID node_id;
+        RID shape;
+		void clear() {
+
+		}
         
     };
     HashMap<String,Ref<MeshInstance>> mult_mesh_instances;  
-    HashMap<String,Ref<CollisionInstance>> collision_instances;  
+    HashMap<int,Collision> collision_instances;
+    HashMap<String,Ref<MeshCollisionInstance>> mesh_collision_instances;  
     int curr_id = 0;
     List<int> unuse_id_list;
 };
