@@ -226,27 +226,33 @@ public:
 		v->type = Variant::STRING;
 	}
 	_FORCE_INLINE_ static void init_transform2d(Variant *v) {
-		v->_data._transform2d = (Transform2D *)Variant::Pools::_bucket_small.alloc();
+		v->_data._transform2d = (Transform2D *)Variant::Pools::alloc_small_bucket();
+		v->_data.allocator_id = Variant::Pools::cached_small_allocator_id;
+
 		memnew_placement(v->_data._transform2d, Transform2D);
 		v->type = Variant::TRANSFORM2D;
 	}
 	_FORCE_INLINE_ static void init_aabb(Variant *v) {
-		v->_data._aabb = (AABB *)Variant::Pools::_bucket_small.alloc();
+		v->_data._aabb = (AABB *)Variant::Pools::alloc_small_bucket();
+		v->_data.allocator_id = Variant::Pools::cached_small_allocator_id;
 		memnew_placement(v->_data._aabb, AABB);
 		v->type = Variant::AABB;
 	}
 	_FORCE_INLINE_ static void init_basis(Variant *v) {
-		v->_data._basis = (Basis *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._basis = (Basis *)Variant::Pools::alloc_meduim_bucket();
+		v->_data.allocator_id = Variant::Pools::cached_medium_allocator_id;
 		memnew_placement(v->_data._basis, Basis);
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform3d(Variant *v) {
-		v->_data._transform3d = (Transform3D *)Variant::Pools::_bucket_medium.alloc();
+		v->_data._transform3d = (Transform3D *)Variant::Pools::alloc_meduim_bucket();
+		v->_data.allocator_id = Variant::Pools::cached_medium_allocator_id;
 		memnew_placement(v->_data._transform3d, Transform3D);
 		v->type = Variant::TRANSFORM3D;
 	}
 	_FORCE_INLINE_ static void init_projection(Variant *v) {
-		v->_data._projection = (Projection *)Variant::Pools::_bucket_large.alloc();
+		v->_data._projection = (Projection *)Variant::Pools::alloc_large_bucket();
+		v->_data.allocator_id = Variant::Pools::cached_large_allocator_id;
 		memnew_placement(v->_data._projection, Projection);
 		v->type = Variant::PROJECTION;
 	}
@@ -831,11 +837,15 @@ struct VariantInternalAccessor<bool> {
 	static _FORCE_INLINE_ void set(Variant *v, bool p_value) { *VariantInternal::get_bool(v) = p_value; }
 };
 
-#define VARIANT_ACCESSOR_NUMBER(m_type)                                                                        \
-	template <>                                                                                                \
-	struct VariantInternalAccessor<m_type> {                                                                   \
-		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type) * VariantInternal::get_int(v); }  \
-		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { *VariantInternal::get_int(v) = p_value; } \
+#define VARIANT_ACCESSOR_NUMBER(m_type)                              \
+	template <>                                                      \
+	struct VariantInternalAccessor<m_type> {                         \
+		static _FORCE_INLINE_ m_type get(const Variant *v) {         \
+			return (m_type) * VariantInternal::get_int(v);           \
+		}                                                            \
+		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { \
+			*VariantInternal::get_int(v) = p_value;                  \
+		}                                                            \
 	};
 
 VARIANT_ACCESSOR_NUMBER(int8_t)
@@ -1130,10 +1140,12 @@ struct VariantInitializer<bool> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<bool>(v); }
 };
 
-#define INITIALIZER_INT(m_type)                                                                    \
-	template <>                                                                                    \
-	struct VariantInitializer<m_type> {                                                            \
-		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<int64_t>(v); } \
+#define INITIALIZER_INT(m_type)                        \
+	template <>                                        \
+	struct VariantInitializer<m_type> {                \
+		static _FORCE_INLINE_ void init(Variant *v) {  \
+			VariantInternal::init_generic<int64_t>(v); \
+		}                                              \
 	};
 
 INITIALIZER_INT(uint8_t)

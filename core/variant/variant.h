@@ -162,9 +162,15 @@ private:
 			Projection _projection;
 		};
 
-		static PagedAllocator<BucketSmall, true> _bucket_small;
-		static PagedAllocator<BucketMedium, true> _bucket_medium;
-		static PagedAllocator<BucketLarge, true> _bucket_large;
+		static thread_local int64_t cached_small_allocator_id;
+		static thread_local int64_t cached_medium_allocator_id;
+		static thread_local int64_t cached_large_allocator_id;
+
+		static BucketSmall *alloc_small_bucket();
+		static BucketMedium *alloc_meduim_bucket();
+		static BucketLarge *alloc_large_bucket();
+
+		static void free_bucket(int64_t p_allocator_id, void *p_small);
 	};
 
 	friend struct _VariantCall;
@@ -261,11 +267,17 @@ private:
 		bool _bool;
 		int64_t _int;
 		double _float;
-		Transform2D *_transform2d;
-		::AABB *_aabb;
-		Basis *_basis;
-		Transform3D *_transform3d;
-		Projection *_projection;
+		struct {
+			union {
+				Transform2D *_transform2d;
+				::AABB *_aabb;
+				Basis *_basis;
+				Transform3D *_transform3d;
+				Projection *_projection;
+			};
+			int64_t allocator_id;
+		};
+
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
