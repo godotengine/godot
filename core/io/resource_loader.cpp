@@ -1198,6 +1198,13 @@ bool ResourceLoader::has_custom_uid_support(const String &p_path) {
 
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
+
+	bool generate_uid_files = GLOBAL_GET("editor/resource/generate_uid_files");
+	bool generate_uid_files_for_addons = GLOBAL_GET("editor/resource/generate_uid_files_for_addons");
+	if (!generate_uid_files || (!generate_uid_files_for_addons && local_path.begins_with("res://addons/"))) {
+		return false;
+	}
+
 	if (FileAccess::exists(local_path + ".uid")) {
 		return false;
 	}
