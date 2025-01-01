@@ -29,13 +29,13 @@
 /**************************************************************************/
 
 #include "platform_config.h"
-#ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h
+
+#ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h.
 
 #include "thread.h"
 
 #ifdef THREADS_ENABLED
 #include "core/object/script_language.h"
-#include "core/templates/safe_refcount.h"
 
 SafeNumeric<uint64_t> Thread::id_counter(1); // The first value after .increment() is 2, hence by default the main thread ID should be 1.
 
