@@ -36,12 +36,12 @@
 
 void ProjectTag::_notification(int p_what) {
 	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
-		button->set_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+		button->set_button_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
 	}
 }
 
 void ProjectTag::connect_button_to(const Callable &p_callable) {
-	button->connect(SNAME("pressed"), p_callable, CONNECT_DEFERRED);
+	button->connect(SceneStringName(pressed), p_callable, CONNECT_DEFERRED);
 }
 
 const String ProjectTag::get_tag() const {

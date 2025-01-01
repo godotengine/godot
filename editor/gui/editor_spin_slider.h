@@ -87,6 +87,11 @@ class EditorSpinSlider : public Range {
 	void _ensure_input_popup();
 	void _draw_spin_slider();
 
+	struct ThemeCache {
+		Ref<Texture2D> updown_icon;
+		Ref<Texture2D> updown_disabled_icon;
+	} theme_cache;
+
 protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

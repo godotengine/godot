@@ -31,8 +31,8 @@
 #ifndef COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 #define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
-#include "scene/2d/collision_shape_2d.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 
 class CanvasItemEditor;
 
@@ -74,6 +74,7 @@ class CollisionShape2DEditor : public Control {
 	Transform2D original_transform;
 	Vector2 original_point;
 	Point2 last_point;
+	Vector2 original_mouse_pos;
 
 	Ref<Shape2D> current_shape;
 
@@ -104,7 +105,7 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { collision_shape_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const override { return "CollisionShape2D"; }
+	virtual String get_plugin_name() const override { return "CollisionShape2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_obj) override;
 	virtual bool handles(Object *p_obj) const override;

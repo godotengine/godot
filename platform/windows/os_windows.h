@@ -37,7 +37,6 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "servers/audio_server.h"
@@ -69,7 +68,7 @@
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
 
-template <class T>
+template <typename T>
 class ComAutoreleaseRef {
 public:
 	T *reference = nullptr;
@@ -95,8 +94,10 @@ public:
 class JoypadWindows;
 
 class OS_Windows : public OS {
+	uint64_t target_ticks = 0;
 	uint64_t ticks_start = 0;
 	uint64_t ticks_per_second = 0;
+	uint64_t delay_resolution = 1000;
 
 	HINSTANCE hInstance;
 	MainLoop *main_loop = nullptr;
@@ -127,9 +128,14 @@ class OS_Windows : public OS {
 	bool dwrite_init = false;
 	bool dwrite2_init = false;
 
+	HashMap<void *, String> temp_libraries;
+
+	void _remove_temp_library(void *p_library_handle);
 	String _get_default_fontname(const String &p_font_name) const;
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
 	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
+
+	bool is_using_con_wrapper() const;
 
 	// functions used by main to initialize/deinitialize the OS
 protected:
@@ -140,22 +146,30 @@ protected:
 
 	virtual void finalize() override;
 	virtual void finalize_core() override;
-	virtual String get_stdin_string() override;
+
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
+	virtual StdHandleType get_stdin_type() const override;
+	virtual StdHandleType get_stdout_type() const override;
+	virtual StdHandleType get_stderr_type() const override;
 
 	String _quote_command_line_argument(const String &p_text) const;
 
 	struct ProcessInfo {
-		STARTUPINFO si;
+		STARTUPINFOEX si;
 		PROCESS_INFORMATION pi;
+		mutable bool is_running = true;
+		mutable int exit_code = -1;
 	};
 	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
+	Mutex process_map_mutex;
 
 public:
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
-	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
@@ -164,8 +178,10 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
+	virtual bool get_user_prefers_integrated_gpu() const override;
 
 	virtual void initialize_joypads() override {}
 
@@ -175,16 +191,19 @@ public:
 
 	virtual Error set_cwd(const String &p_cwd) override;
 
+	virtual void add_frame_delay(bool p_can_draw) override;
 	virtual void delay_usec(uint32_t p_usec) const override;
 	virtual uint64_t get_ticks_usec() const override;
 
 	virtual Dictionary get_memory_info() const override;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
+	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual int get_process_id() const override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
+	virtual int get_process_exit_code(const ProcessID &p_pid) const override;
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
@@ -201,11 +220,14 @@ public:
 
 	virtual String get_processor_name() const override;
 
+	virtual String get_model_name() const override;
+
 	virtual uint64_t get_embedded_pck_offset() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
+	virtual String get_temp_path() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;

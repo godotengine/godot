@@ -171,13 +171,15 @@ int widechar_main(int argc, wchar_t **argv) {
 		delete[] argv_utf8;
 
 		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return 0;
+			return EXIT_SUCCESS;
 		}
-		return 255;
+		return EXIT_FAILURE;
 	}
 
-	if (Main::start()) {
+	if (Main::start() == EXIT_SUCCESS) {
 		os.run();
+	} else {
+		os.set_exit_code(EXIT_FAILURE);
 	}
 	Main::cleanup();
 
@@ -213,7 +215,7 @@ int main(int argc, char **argv) {
 
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-#ifdef CRASH_HANDLER_EXCEPTION
+#if defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
 	__try {
 		return _main();
 	} __except (CrashHandlerException(GetExceptionInformation())) {

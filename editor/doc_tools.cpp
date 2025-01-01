@@ -35,12 +35,11 @@
 #include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_settings.h"
-#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -76,6 +75,243 @@ static String _translate_doc_string(const String &p_text) {
 	return translated.indent(indent);
 }
 
+// Comparator for constructors, based on `MetodDoc` operator.
+struct ConstructorCompare {
+	_FORCE_INLINE_ bool operator()(const DocData::MethodDoc &p_lhs, const DocData::MethodDoc &p_rhs) const {
+		// Must be a constructor (i.e. assume named for the class)
+		// We want this arbitrary order for a class "Foo":
+		// - 1. Default constructor: Foo()
+		// - 2. Copy constructor: Foo(Foo)
+		// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
+		if (p_lhs.arguments.is_empty() || p_rhs.arguments.is_empty()) { // 1.
+			return p_lhs.arguments.size() < p_rhs.arguments.size();
+		}
+		if (p_lhs.arguments[0].type == p_lhs.return_type || p_rhs.arguments[0].type == p_lhs.return_type) { // 2.
+			return (p_lhs.arguments[0].type == p_lhs.return_type) || (p_rhs.arguments[0].type != p_lhs.return_type);
+		}
+		return p_lhs.arguments[0] < p_rhs.arguments[0];
+	}
+};
+
+// Comparator for operators, compares on name and type.
+struct OperatorCompare {
+	_FORCE_INLINE_ bool operator()(const DocData::MethodDoc &p_lhs, const DocData::MethodDoc &p_rhs) const {
+		if (p_lhs.name == p_rhs.name) {
+			if (p_lhs.arguments.size() == p_rhs.arguments.size()) {
+				if (p_lhs.arguments.is_empty()) {
+					return false;
+				}
+				return p_lhs.arguments[0].type < p_rhs.arguments[0].type;
+			}
+			return p_lhs.arguments.size() < p_rhs.arguments.size();
+		}
+		return p_lhs.name.naturalcasecmp_to(p_rhs.name) < 0;
+	}
+};
+
+// Comparator for methods, compares on names.
+struct MethodCompare {
+	_FORCE_INLINE_ bool operator()(const DocData::MethodDoc &p_lhs, const DocData::MethodDoc &p_rhs) const {
+		return p_lhs.name.naturalcasecmp_to(p_rhs.name) < 0;
+	}
+};
+
+static void merge_constructors(Vector<DocData::MethodDoc> &p_to, const Vector<DocData::MethodDoc> &p_from) {
+	// Get data from `p_from`, to avoid mutation checks.
+	const DocData::MethodDoc *from_ptr = p_from.ptr();
+	int64_t from_size = p_from.size();
+
+	// TODO: Improve constructor merging.
+	for (DocData::MethodDoc &to : p_to) {
+		for (int64_t from_i = 0; from_i < from_size; ++from_i) {
+			const DocData::MethodDoc &from = from_ptr[from_i];
+
+			// Compare argument count first.
+			if (from.arguments.size() != to.arguments.size()) {
+				continue;
+			}
+
+			if (from.name != to.name) {
+				continue;
+			}
+
+			{
+				// Since constructors can repeat, we need to check the type of
+				// the arguments so we make sure they are different.
+				int64_t arg_count = from.arguments.size();
+				Vector<bool> arg_used;
+				arg_used.resize_zeroed(arg_count);
+				// Also there is no guarantee that argument ordering will match,
+				// so we have to check one by one so we make sure we have an exact match.
+				for (int64_t arg_i = 0; arg_i < arg_count; ++arg_i) {
+					for (int64_t arg_j = 0; arg_j < arg_count; ++arg_j) {
+						if (from.arguments[arg_i].type == to.arguments[arg_j].type && !arg_used[arg_j]) {
+							arg_used.write[arg_j] = true;
+							break;
+						}
+					}
+				}
+				bool not_the_same = false;
+				for (int64_t arg_i = 0; arg_i < arg_count; ++arg_i) {
+					if (!arg_used[arg_i]) { // At least one of the arguments was different.
+						not_the_same = true;
+						break;
+					}
+				}
+				if (not_the_same) {
+					continue;
+				}
+			}
+
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+			break;
+		}
+	}
+}
+
+static void merge_methods(Vector<DocData::MethodDoc> &p_to, const Vector<DocData::MethodDoc> &p_from) {
+	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
+	DocData::MethodDoc *to_ptrw = p_to.ptrw();
+	int64_t to_size = p_to.size();
+
+	SearchArray<DocData::MethodDoc, MethodCompare> search_array;
+
+	for (const DocData::MethodDoc &from : p_from) {
+		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+
+		if (found >= to_size) {
+			continue;
+		}
+
+		DocData::MethodDoc &to = to_ptrw[found];
+
+		// Check found entry on name.
+		if (to.name == from.name) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+			to.keywords = from.keywords;
+		}
+	}
+}
+
+static void merge_constants(Vector<DocData::ConstantDoc> &p_to, const Vector<DocData::ConstantDoc> &p_from) {
+	// Get data from `p_from`, to avoid mutation checks. Searching will be done in the sorted `p_from` from the unsorted `p_to`.
+	const DocData::ConstantDoc *from_ptr = p_from.ptr();
+	int64_t from_size = p_from.size();
+
+	SearchArray<DocData::ConstantDoc> search_array;
+
+	for (DocData::ConstantDoc &to : p_to) {
+		int64_t found = search_array.bisect(from_ptr, from_size, to, true);
+
+		if (found >= from_size) {
+			continue;
+		}
+
+		// Check found entry on name.
+		const DocData::ConstantDoc &from = from_ptr[found];
+
+		if (from.name == to.name) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+			to.keywords = from.keywords;
+		}
+	}
+}
+
+static void merge_properties(Vector<DocData::PropertyDoc> &p_to, const Vector<DocData::PropertyDoc> &p_from) {
+	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
+	DocData::PropertyDoc *to_ptrw = p_to.ptrw();
+	int64_t to_size = p_to.size();
+
+	SearchArray<DocData::PropertyDoc> search_array;
+
+	for (const DocData::PropertyDoc &from : p_from) {
+		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+
+		if (found >= to_size) {
+			continue;
+		}
+
+		DocData::PropertyDoc &to = to_ptrw[found];
+
+		// Check found entry on name.
+		if (to.name == from.name) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+			to.keywords = from.keywords;
+		}
+	}
+}
+
+static void merge_theme_properties(Vector<DocData::ThemeItemDoc> &p_to, const Vector<DocData::ThemeItemDoc> &p_from) {
+	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
+	DocData::ThemeItemDoc *to_ptrw = p_to.ptrw();
+	int64_t to_size = p_to.size();
+
+	SearchArray<DocData::ThemeItemDoc> search_array;
+
+	for (const DocData::ThemeItemDoc &from : p_from) {
+		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+
+		if (found >= to_size) {
+			continue;
+		}
+
+		DocData::ThemeItemDoc &to = to_ptrw[found];
+
+		// Check found entry on name and data type.
+		if (to.name == from.name && to.data_type == from.data_type) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+			to.keywords = from.keywords;
+		}
+	}
+}
+
+static void merge_operators(Vector<DocData::MethodDoc> &p_to, const Vector<DocData::MethodDoc> &p_from) {
+	// Get data from `p_to`, to avoid mutation checks. Searching will be done in the sorted `p_to` from the (potentially) unsorted `p_from`.
+	DocData::MethodDoc *to_ptrw = p_to.ptrw();
+	int64_t to_size = p_to.size();
+
+	SearchArray<DocData::MethodDoc, OperatorCompare> search_array;
+
+	for (const DocData::MethodDoc &from : p_from) {
+		int64_t found = search_array.bisect(to_ptrw, to_size, from, true);
+
+		if (found >= to_size) {
+			continue;
+		}
+
+		DocData::MethodDoc &to = to_ptrw[found];
+
+		// Check found entry on name and argument.
+		if (to.name == from.name && to.arguments.size() == from.arguments.size() && (to.arguments.is_empty() || to.arguments[0].type == from.arguments[0].type)) {
+			to.description = from.description;
+			to.is_deprecated = from.is_deprecated;
+			to.deprecated_message = from.deprecated_message;
+			to.is_experimental = from.is_experimental;
+			to.experimental_message = from.experimental_message;
+		}
+	}
+}
+
 void DocTools::merge_from(const DocTools &p_data) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
@@ -96,237 +332,21 @@ void DocTools::merge_from(const DocTools &p_data) {
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
 
-		for (int i = 0; i < c.constructors.size(); i++) {
-			DocData::MethodDoc &m = c.constructors.write[i];
+		merge_constructors(c.constructors, cf.constructors);
 
-			for (int j = 0; j < cf.constructors.size(); j++) {
-				if (cf.constructors[j].name != m.name) {
-					continue;
-				}
+		merge_methods(c.methods, cf.methods);
 
-				{
-					// Since constructors can repeat, we need to check the type of
-					// the arguments so we make sure they are different.
-					if (cf.constructors[j].arguments.size() != m.arguments.size()) {
-						continue;
-					}
-					int arg_count = cf.constructors[j].arguments.size();
-					Vector<bool> arg_used;
-					arg_used.resize(arg_count);
-					for (int l = 0; l < arg_count; ++l) {
-						arg_used.write[l] = false;
-					}
-					// also there is no guarantee that argument ordering will match, so we
-					// have to check one by one so we make sure we have an exact match
-					for (int k = 0; k < arg_count; ++k) {
-						for (int l = 0; l < arg_count; ++l) {
-							if (cf.constructors[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-								arg_used.write[l] = true;
-								break;
-							}
-						}
-					}
-					bool not_the_same = false;
-					for (int l = 0; l < arg_count; ++l) {
-						if (!arg_used[l]) { // at least one of the arguments was different
-							not_the_same = true;
-						}
-					}
-					if (not_the_same) {
-						continue;
-					}
-				}
+		merge_methods(c.signals, cf.signals);
 
-				const DocData::MethodDoc &mf = cf.constructors[j];
+		merge_constants(c.constants, cf.constants);
 
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				break;
-			}
-		}
+		merge_methods(c.annotations, cf.annotations);
 
-		for (int i = 0; i < c.methods.size(); i++) {
-			DocData::MethodDoc &m = c.methods.write[i];
+		merge_properties(c.properties, cf.properties);
 
-			for (int j = 0; j < cf.methods.size(); j++) {
-				if (cf.methods[j].name != m.name) {
-					continue;
-				}
+		merge_theme_properties(c.theme_properties, cf.theme_properties);
 
-				const DocData::MethodDoc &mf = cf.methods[j];
-
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				m.keywords = mf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.signals.size(); i++) {
-			DocData::MethodDoc &m = c.signals.write[i];
-
-			for (int j = 0; j < cf.signals.size(); j++) {
-				if (cf.signals[j].name != m.name) {
-					continue;
-				}
-				const DocData::MethodDoc &mf = cf.signals[j];
-
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				m.keywords = mf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.constants.size(); i++) {
-			DocData::ConstantDoc &m = c.constants.write[i];
-
-			for (int j = 0; j < cf.constants.size(); j++) {
-				if (cf.constants[j].name != m.name) {
-					continue;
-				}
-				const DocData::ConstantDoc &mf = cf.constants[j];
-
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				m.keywords = mf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.annotations.size(); i++) {
-			DocData::MethodDoc &m = c.annotations.write[i];
-
-			for (int j = 0; j < cf.annotations.size(); j++) {
-				if (cf.annotations[j].name != m.name) {
-					continue;
-				}
-				const DocData::MethodDoc &mf = cf.annotations[j];
-
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				m.keywords = mf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.properties.size(); i++) {
-			DocData::PropertyDoc &p = c.properties.write[i];
-
-			for (int j = 0; j < cf.properties.size(); j++) {
-				if (cf.properties[j].name != p.name) {
-					continue;
-				}
-				const DocData::PropertyDoc &pf = cf.properties[j];
-
-				p.description = pf.description;
-				p.is_deprecated = pf.is_deprecated;
-				p.deprecated_message = pf.deprecated_message;
-				p.is_experimental = pf.is_experimental;
-				p.experimental_message = pf.experimental_message;
-				p.keywords = pf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.theme_properties.size(); i++) {
-			DocData::ThemeItemDoc &ti = c.theme_properties.write[i];
-
-			for (int j = 0; j < cf.theme_properties.size(); j++) {
-				if (cf.theme_properties[j].name != ti.name || cf.theme_properties[j].data_type != ti.data_type) {
-					continue;
-				}
-				const DocData::ThemeItemDoc &pf = cf.theme_properties[j];
-
-				ti.description = pf.description;
-				ti.keywords = pf.keywords;
-				break;
-			}
-		}
-
-		for (int i = 0; i < c.operators.size(); i++) {
-			DocData::MethodDoc &m = c.operators.write[i];
-
-			for (int j = 0; j < cf.operators.size(); j++) {
-				if (cf.operators[j].name != m.name) {
-					continue;
-				}
-
-				{
-					// Since operators can repeat, we need to check the type of
-					// the arguments so we make sure they are different.
-					if (cf.operators[j].arguments.size() != m.arguments.size()) {
-						continue;
-					}
-					int arg_count = cf.operators[j].arguments.size();
-					Vector<bool> arg_used;
-					arg_used.resize(arg_count);
-					for (int l = 0; l < arg_count; ++l) {
-						arg_used.write[l] = false;
-					}
-					// also there is no guarantee that argument ordering will match, so we
-					// have to check one by one so we make sure we have an exact match
-					for (int k = 0; k < arg_count; ++k) {
-						for (int l = 0; l < arg_count; ++l) {
-							if (cf.operators[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-								arg_used.write[l] = true;
-								break;
-							}
-						}
-					}
-					bool not_the_same = false;
-					for (int l = 0; l < arg_count; ++l) {
-						if (!arg_used[l]) { // at least one of the arguments was different
-							not_the_same = true;
-						}
-					}
-					if (not_the_same) {
-						continue;
-					}
-				}
-
-				const DocData::MethodDoc &mf = cf.operators[j];
-
-				m.description = mf.description;
-				m.is_deprecated = mf.is_deprecated;
-				m.deprecated_message = mf.deprecated_message;
-				m.is_experimental = mf.is_experimental;
-				m.experimental_message = mf.experimental_message;
-				break;
-			}
-		}
-
-#ifndef MODULE_MONO_ENABLED
-		// The Mono module defines some properties that we want to keep when
-		// re-generating docs with a non-Mono build, to prevent pointless diffs
-		// (and loss of descriptions) depending on the config of the doc writer.
-		// We use a horrible hack to force keeping the relevant properties,
-		// hardcoded below. At least it's an ad hoc hack... ¯\_(ツ)_/¯
-		// Don't show this to your kids.
-		if (c.name == "@GlobalScope") {
-			// Retrieve GodotSharp singleton.
-			for (int j = 0; j < cf.properties.size(); j++) {
-				if (cf.properties[j].name == "GodotSharp") {
-					c.properties.push_back(cf.properties[j]);
-				}
-			}
-		}
-#endif
+		merge_operators(c.operators, cf.operators);
 	}
 }
 
@@ -440,10 +460,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
 				List<ResourceImporter::ImportOption> options;
 				resimp->get_import_options("", &options);
-				for (int i = 0; i < options.size(); i++) {
-					const PropertyInfo &prop = options[i].option;
+				for (const ResourceImporter::ImportOption &option : options) {
+					const PropertyInfo &prop = option.option;
 					properties.push_back(prop);
-					import_options_default[prop.name] = options[i].default_value;
+					import_options_default[prop.name] = option.default_value;
 				}
 				own_properties = properties;
 				memdelete(resimp);
@@ -477,7 +497,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				}
 
 				if (properties_from_instance) {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script" || E.name == "resource_scene_unique_id") {
 						// Don't include spurious properties from Object property list.
 						continue;
 					}
@@ -554,6 +574,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							prop.type = retinfo.class_name;
 						} else if (retinfo.type == Variant::ARRAY && retinfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 							prop.type = retinfo.hint_string + "[]";
+						} else if (retinfo.type == Variant::DICTIONARY && retinfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+							prop.type = "Dictionary[" + retinfo.hint_string.replace(";", ", ") + "]";
 						} else if (retinfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 							prop.type = retinfo.hint_string;
 						} else if (retinfo.type == Variant::NIL && retinfo.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -620,7 +642,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				c.methods.push_back(method);
 			}
 
-			c.methods.sort();
+			c.methods.sort_custom<MethodCompare>();
 
 			List<MethodInfo> signal_list;
 			ClassDB::get_signal_list(name, &signal_list, true);
@@ -629,8 +651,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
 					DocData::MethodDoc signal;
 					signal.name = EV->get().name;
-					for (int i = 0; i < EV->get().arguments.size(); i++) {
-						const PropertyInfo &arginfo = EV->get().arguments[i];
+					for (List<PropertyInfo>::Element *EA = EV->get().arguments.front(); EA; EA = EA->next()) {
+						const PropertyInfo &arginfo = EA->get();
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -639,6 +661,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 					c.signals.push_back(signal);
 				}
+
+				c.signals.sort_custom<MethodCompare>();
 			}
 
 			List<String> constant_list;
@@ -649,6 +673,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				constant.name = E;
 				constant.value = itos(ClassDB::get_integer_constant(name, E));
 				constant.is_value_valid = true;
+				constant.type = "int";
 				constant.enumeration = ClassDB::get_integer_constant_enum(name, E);
 				constant.is_bitfield = ClassDB::is_enum_bitfield(name, constant.enumeration);
 				c.constants.push_back(constant);
@@ -819,10 +844,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			method.name = mi.name;
 
-			for (int j = 0; j < mi.arguments.size(); j++) {
-				PropertyInfo arginfo = mi.arguments[j];
+			int j = 0;
+			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
+				PropertyInfo arginfo = *itr;
 				DocData::ArgumentDoc ad;
-				DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+				DocData::argument_doc_from_arginfo(ad, arginfo);
 				ad.name = arginfo.name;
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
@@ -865,7 +891,9 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 		}
 
-		c.methods.sort();
+		c.constructors.sort_custom<ConstructorCompare>();
+		c.operators.sort_custom<OperatorCompare>();
+		c.methods.sort_custom<MethodCompare>();
 
 		List<PropertyInfo> properties;
 		v.get_property_list(&properties);
@@ -878,6 +906,26 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			c.properties.push_back(property);
 		}
 
+		c.properties.sort();
+
+		List<StringName> enums;
+		Variant::get_enums_for_type(Variant::Type(i), &enums);
+
+		for (const StringName &E : enums) {
+			List<StringName> enumerations;
+			Variant::get_enumerations_for_enum(Variant::Type(i), E, &enumerations);
+
+			for (const StringName &F : enumerations) {
+				DocData::ConstantDoc constant;
+				constant.name = F;
+				constant.value = itos(Variant::get_enum_value(Variant::Type(i), E, F));
+				constant.is_value_valid = true;
+				constant.type = "int";
+				constant.enumeration = E;
+				c.constants.push_back(constant);
+			}
+		}
+
 		List<StringName> constants;
 		Variant::get_constants_for_type(Variant::Type(i), &constants);
 
@@ -887,6 +935,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			Variant value = Variant::get_constant_value(Variant::Type(i), E);
 			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
 			constant.is_value_valid = true;
+			constant.type = Variant::get_type_name(value.get_type());
 			c.constants.push_back(constant);
 		}
 	}
@@ -904,6 +953,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			DocData::ConstantDoc cd;
 			cd.name = CoreConstants::get_global_constant_name(i);
+			cd.type = "int";
+			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			cd.is_bitfield = CoreConstants::is_global_constant_bitfield(i);
 			if (!CoreConstants::get_ignore_value_in_docs(i)) {
 				cd.value = itos(CoreConstants::get_global_constant_value(i));
@@ -911,7 +962,6 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			} else {
 				cd.is_value_valid = false;
 			}
-			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
 
@@ -933,10 +983,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			c.properties.push_back(pd);
 		}
 
+		c.properties.sort();
+
 		// Variant utility functions.
 		List<StringName> utility_functions;
 		Variant::get_utility_function_list(&utility_functions);
-		utility_functions.sort_custom<StringName::AlphCompare>();
 		for (const StringName &E : utility_functions) {
 			DocData::MethodDoc md;
 			md.name = E;
@@ -950,6 +1001,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				DocData::ArgumentDoc ad;
 				DocData::argument_doc_from_arginfo(ad, pi);
 				md.return_type = ad.type;
+			} else {
+				md.return_type = "void";
 			}
 
 			// Utility function's arguments.
@@ -971,6 +1024,8 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			c.methods.push_back(md);
 		}
+
+		c.methods.sort_custom<MethodCompare>();
 	}
 
 	// Add scripting language built-ins.
@@ -1002,9 +1057,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
-				for (int j = 0; j < mi.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
@@ -1026,6 +1082,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				cd.name = E.first;
 				cd.value = E.second;
 				cd.is_value_valid = true;
+				cd.type = Variant::get_type_name(E.second.get_type());
 				c.constants.push_back(cd);
 			}
 
@@ -1046,9 +1103,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
-				for (int j = 0; j < ai.arguments.size(); j++) {
+				int j = 0;
+				for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
+					DocData::argument_doc_from_arginfo(ad, *itr);
 
 					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {
@@ -1065,6 +1123,9 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			if (c.methods.is_empty() && c.constants.is_empty() && c.annotations.is_empty()) {
 				continue;
 			}
+
+			c.methods.sort_custom<MethodCompare>();
+			c.annotations.sort_custom<MethodCompare>();
 
 			class_list[cname] = c;
 		}
@@ -1388,6 +1449,14 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
 								prop2.data_type = parser->get_named_attribute_value("data_type");
+								if (parser->has_attribute("deprecated")) {
+									prop2.is_deprecated = true;
+									prop2.deprecated_message = parser->get_named_attribute_value("deprecated");
+								}
+								if (parser->has_attribute("experimental")) {
+									prop2.is_experimental = true;
+									prop2.experimental_message = parser->get_named_attribute_value("experimental");
+								}
 								if (parser->has_attribute("keywords")) {
 									prop2.keywords = parser->get_named_attribute_value("keywords");
 								}
@@ -1468,6 +1537,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 				break; // End of <class>.
 			}
 		}
+
+		// Sort loaded constants for merging.
+		c.constants.sort();
 	}
 
 	return OK;
@@ -1483,7 +1555,6 @@ static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_str
 
 static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<DocData::MethodDoc> &p_method_docs) {
 	if (!p_method_docs.is_empty()) {
-		p_method_docs.sort();
 		_write_string(f, 1, "<" + p_name + "s>");
 		for (int i = 0; i < p_method_docs.size(); i++) {
 			const DocData::MethodDoc &m = p_method_docs[i];
@@ -1549,7 +1620,7 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 	}
 }
 
-Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_include_xml_schema) {
+Error DocTools::save_classes(const String &p_default_path, const HashMap<String, String> &p_class_path, bool p_use_relative_schema) {
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		DocData::ClassDoc &c = E.value;
 
@@ -1581,15 +1652,17 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
 		}
-		if (p_include_xml_schema) {
-			// Reference the XML schema so editors can provide error checking.
+		// Reference the XML schema so editors can provide error checking.
+		String schema_path;
+		if (p_use_relative_schema) {
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
-			const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";
-			header += vformat(
-					R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s")",
-					schema_path);
+			schema_path = save_path.contains("modules/") ? "../../../doc/class.xsd" : "../class.xsd";
+		} else {
+			schema_path = "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd";
 		}
-		header += ">";
+		header += vformat(
+				R"( xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="%s">)",
+				schema_path);
 		_write_string(f, 0, header);
 
 		_write_string(f, 1, "<brief_description>");
@@ -1614,8 +1687,6 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 		if (!c.properties.is_empty()) {
 			_write_string(f, 1, "<members>");
-
-			c.properties.sort();
 
 			for (int i = 0; i < c.properties.size(); i++) {
 				String additional_attributes;
@@ -1696,8 +1767,6 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		_write_method_doc(f, "annotation", c.annotations);
 
 		if (!c.theme_properties.is_empty()) {
-			c.theme_properties.sort();
-
 			_write_string(f, 1, "<theme_items>");
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 				const DocData::ThemeItemDoc &ti = c.theme_properties[i];
@@ -1705,6 +1774,12 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!ti.default_value.is_empty()) {
 					additional_attributes += String(" default=\"") + ti.default_value.xml_escape(true) + "\"";
+				}
+				if (ti.is_deprecated) {
+					additional_attributes += " deprecated=\"" + ti.deprecated_message.xml_escape(true) + "\"";
+				}
+				if (ti.is_experimental) {
+					additional_attributes += " experimental=\"" + ti.experimental_message.xml_escape(true) + "\"";
 				}
 				if (!ti.keywords.is_empty()) {
 					additional_attributes += String(" keywords=\"") + ti.keywords.xml_escape(true) + "\"";

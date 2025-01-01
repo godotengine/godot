@@ -46,10 +46,31 @@
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
 #if defined(AS)
 #undef AS
+#endif
+
+#if (WINVER < _WIN32_WINNT_WIN8) && defined(_MSC_VER)
+#pragma push_macro("NTDDI_VERSION")
+#pragma push_macro("WINVER")
+#undef NTDDI_VERSION
+#undef WINVER
+#define NTDDI_VERSION NTDDI_WIN8
+#define WINVER _WIN32_WINNT_WIN8
+#include <dcomp.h>
+#pragma pop_macro("WINVER")
+#pragma pop_macro("NTDDI_VERSION")
+#else
+#include <dcomp.h>
 #endif
 
 #include "d3dx12.h"
@@ -59,6 +80,8 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 using Microsoft::WRL::ComPtr;
@@ -100,12 +123,19 @@ public:
 
 	// D3D12-only methods.
 	struct Surface {
-		HWND hwnd = NULL;
+		HWND hwnd = nullptr;
 		uint32_t width = 0;
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+		ComPtr<IDCompositionDevice> composition_device;
+		ComPtr<IDCompositionTarget> composition_target;
+		ComPtr<IDCompositionVisual> composition_visual;
 	};
+
+	HMODULE lib_d3d12 = nullptr;
+	HMODULE lib_dxgi = nullptr;
+	HMODULE lib_dcomp = nullptr;
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;

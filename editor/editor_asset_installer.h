@@ -96,7 +96,6 @@ class EditorAssetInstaller : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void open_asset(const String &p_path, bool p_autoskip_toplevel = false);

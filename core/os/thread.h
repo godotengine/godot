@@ -85,6 +85,20 @@ public:
 		void (*term)() = nullptr;
 	};
 
+#if defined(__cpp_lib_hardware_interference_size) && !defined(ANDROID_ENABLED) // This would be OK with NDK >= 26.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winterference-size"
+#endif
+	static constexpr size_t CACHE_LINE_BYTES = std::hardware_destructive_interference_size;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#else
+	// At a negligible memory cost, we use a conservatively high value.
+	static constexpr size_t CACHE_LINE_BYTES = 128;
+#endif
+
 private:
 	friend class Main;
 
@@ -134,6 +148,8 @@ public:
 	typedef void (*Callback)(void *p_userdata);
 
 	typedef uint64_t ID;
+
+	static constexpr size_t CACHE_LINE_BYTES = sizeof(void *);
 
 	enum : ID {
 		UNASSIGNED_ID = 0,

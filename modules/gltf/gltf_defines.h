@@ -43,6 +43,7 @@ class GLTFDocumentExtension;
 class GLTFLight;
 class GLTFMesh;
 class GLTFNode;
+class GLTFObjectModelProperty;
 class GLTFSkeleton;
 class GLTFSkin;
 class GLTFSpecGloss;
@@ -65,15 +66,5 @@ using GLTFSkeletonIndex = int;
 using GLTFSkinIndex = int;
 using GLTFTextureIndex = int;
 using GLTFTextureSamplerIndex = int;
-
-enum GLTFType {
-	TYPE_SCALAR,
-	TYPE_VEC2,
-	TYPE_VEC3,
-	TYPE_VEC4,
-	TYPE_MAT2,
-	TYPE_MAT3,
-	TYPE_MAT4,
-};
 
 #endif // GLTF_DEFINES_H

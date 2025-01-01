@@ -43,7 +43,7 @@ TEST_CASE("[InputEvent] Signal is emitted when device is changed") {
 	Ref<InputEventKey> input_event;
 	input_event.instantiate();
 
-	SIGNAL_WATCH(*input_event, SNAME("changed"));
+	SIGNAL_WATCH(*input_event, CoreStringName(changed));
 	Array args1;
 	Array empty_args;
 	empty_args.push_back(args1);
@@ -53,7 +53,7 @@ TEST_CASE("[InputEvent] Signal is emitted when device is changed") {
 	SIGNAL_CHECK("changed", empty_args);
 	CHECK(input_event->get_device() == 1);
 
-	SIGNAL_UNWATCH(*input_event, SNAME("changed"));
+	SIGNAL_UNWATCH(*input_event, CoreStringName(changed));
 }
 
 TEST_CASE("[InputEvent] Test accumulate") {

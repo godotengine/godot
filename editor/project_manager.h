@@ -38,9 +38,9 @@ class CheckBox;
 class EditorAbout;
 class EditorAssetLibrary;
 class EditorFileDialog;
+class EditorTitleBar;
 class HFlowContainer;
 class LineEdit;
-class LinkButton;
 class MarginContainer;
 class OptionButton;
 class PanelContainer;
@@ -71,12 +71,17 @@ class ProjectManager : public Control {
 
 	void _update_size_limits();
 	void _update_theme(bool p_skip_creation = false);
+	void _titlebar_resized();
 
 	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 
-	HBoxContainer *title_bar = nullptr;
+	EditorTitleBar *title_bar = nullptr;
+	Control *left_menu_spacer = nullptr;
+	Control *left_spacer = nullptr;
+	Control *right_menu_spacer = nullptr;
+	Control *right_spacer = nullptr;
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
@@ -118,12 +123,6 @@ class ProjectManager : public Control {
 	void _show_quick_settings();
 	void _restart_confirmed();
 
-	// Footer.
-
-	LinkButton *version_btn = nullptr;
-
-	void _version_button_pressed();
-
 	// Project list.
 
 	VBoxContainer *empty_list_placeholder = nullptr;
@@ -135,6 +134,7 @@ class ProjectManager : public Control {
 	void _update_list_placeholder();
 
 	ProjectList *project_list = nullptr;
+	bool initialized = false;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
@@ -169,6 +169,7 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
+	void _open_selected_projects_with_migration();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
@@ -180,7 +181,7 @@ class ProjectManager : public Control {
 	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
 
-	void _on_project_created(const String &dir);
+	void _on_project_created(const String &dir, bool edit);
 	void _on_projects_updated();
 
 	void _on_order_option_changed(int p_idx);
@@ -216,6 +217,11 @@ class ProjectManager : public Control {
 	ConfirmationDialog *ask_update_settings = nullptr;
 	Button *full_convert_button = nullptr;
 
+	String version_convert_feature;
+
+#ifndef DISABLE_DEPRECATED
+	void _minor_project_migrate();
+#endif
 	void _full_convert_button_pressed();
 	void _perform_full_project_conversion();
 
@@ -233,6 +239,7 @@ public:
 
 	// Project list.
 
+	bool is_initialized() const { return initialized; }
 	LineEdit *get_search_box();
 
 	// Project tag management.

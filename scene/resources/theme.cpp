@@ -30,14 +30,13 @@
 
 #include "theme.h"
 
-#include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
 
 // Dynamic properties.
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
-	if (sname.contains("/")) {
+	if (sname.contains_char('/')) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
 		String prop_name = sname.get_slicec('/', 2);
@@ -69,7 +68,7 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 	String sname = p_name;
 
-	if (sname.contains("/")) {
+	if (sname.contains_char('/')) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
 		String prop_name = sname.get_slicec('/', 2);
@@ -1250,14 +1249,12 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	}
 }
 
-void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, List<StringName> *p_list) {
-	ERR_FAIL_NULL(p_list);
-
+void Theme::get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variation, Vector<StringName> &r_result) {
 	// Build the dependency chain for type variations.
 	if (p_type_variation != StringName()) {
 		StringName variation_name = p_type_variation;
 		while (variation_name != StringName()) {
-			p_list->push_back(variation_name);
+			r_result.push_back(variation_name);
 			variation_name = get_type_variation_base(variation_name);
 
 			// If we have reached the base type dependency, it's safe to stop (assuming no funny business was done to the Theme).
@@ -1268,7 +1265,7 @@ void Theme::get_type_dependencies(const StringName &p_base_type, const StringNam
 	}
 
 	// Continue building the chain using native class hierarchy.
-	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, p_list);
+	ThemeDB::get_singleton()->get_native_type_dependencies(p_base_type, r_result);
 }
 
 // Internal methods for getting lists as a Vector of String (compatible with public API).

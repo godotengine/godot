@@ -101,7 +101,7 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 	}
 }
 
-void TTS_Linux::_load_voices() {
+void TTS_Linux::_load_voices() const {
 	if (!voices_loaded) {
 		SPDVoice **spd_voices = spd_list_synthesis_voices(synth);
 		if (spd_voices != nullptr) {
@@ -149,12 +149,18 @@ void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 		}
 
 		PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
+		int prev_end = -1;
 		for (int i = 0; i < breaks.size(); i += 2) {
 			const int start = breaks[i];
 			const int end = breaks[i + 1];
-			text += message.text.substr(start, end - start + 1);
+			if (prev_end != -1 && prev_end != start) {
+				text += message.text.substr(prev_end, start - prev_end);
+			}
+			text += message.text.substr(start, end - start);
 			text += "<mark name=\"" + String::num_int64(end, 10) + "\"/>";
+			prev_end = end;
 		}
+
 		spd_set_synthesis_voice(synth, message.voice.utf8().get_data());
 		spd_set_volume(synth, message.volume * 2 - 100);
 		spd_set_voice_pitch(synth, (message.pitch - 1) * 100);
@@ -187,7 +193,7 @@ Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL_V(synth, Array());
-	const_cast<TTS_Linux *>(this)->_load_voices();
+	_load_voices();
 
 	Array list;
 	for (const KeyValue<String, VoiceInfo> &E : voices) {

@@ -112,7 +112,7 @@ private:
 	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
 	void _free_remotes(const PeerInfo &p_info);
 
-	template <class T>
+	template <typename T>
 	static T *get_id_as(const ObjectID &p_id) {
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
 	}

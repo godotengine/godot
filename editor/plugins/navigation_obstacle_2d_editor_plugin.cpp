@@ -30,7 +30,6 @@
 
 #include "navigation_obstacle_2d_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
 Node2D *NavigationObstacle2DEditor::_get_node() const {
@@ -39,6 +38,14 @@ Node2D *NavigationObstacle2DEditor::_get_node() const {
 
 void NavigationObstacle2DEditor::_set_node(Node *p_polygon) {
 	node = Object::cast_to<NavigationObstacle2D>(p_polygon);
+}
+
+Variant NavigationObstacle2DEditor::_get_polygon(int p_idx) const {
+	return node->get_vertices();
+}
+
+void NavigationObstacle2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
+	node->set_vertices(p_polygon);
 }
 
 void NavigationObstacle2DEditor::_action_add_polygon(const Variant &p_polygon) {

@@ -9,8 +9,8 @@
 		[b]Note:[/b] [Line2D] is drawn using a 2D mesh.
 	</description>
 	<tutorials>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
 	</tutorials>
 	<methods>
 		<method name="add_point">
@@ -101,7 +101,7 @@
 			The polyline's width.
 		</member>
 		<member name="width_curve" type="Curve" setter="set_curve" getter="get_curve">
-			The polyline's width curve. The width of the polyline over its length will be equivalent to the value of the width curve over its domain.
+			The polyline's width curve. The width of the polyline over its length will be equivalent to the value of the width curve over its domain. The width curve should be a unit [Curve].
 		</member>
 	</members>
 	<constants>

@@ -34,7 +34,6 @@
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
@@ -382,16 +381,16 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
-		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
+		if ((dp_count || skin.is_valid()) && (missing_trails || no_materials)) {
 			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-			warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile rendering backends."));
+			warnings.push_back(RTR("Particle trails are only available when using the Forward+ or Mobile renderers."));
 		}
 	}
 
 	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-		warnings.push_back(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile rendering backends."));
+		warnings.push_back(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile renderers."));
 	}
 
 	return warnings;
@@ -415,6 +414,10 @@ AABB GPUParticles3D::capture_aabb() const {
 }
 
 void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "emitting") {
+		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+	}
+
 	if (p_property.name.begins_with("draw_pass_")) {
 		int index = p_property.name.get_slicec('_', 2).to_int() - 1;
 		if (index >= draw_passes.size()) {
@@ -460,14 +463,6 @@ void GPUParticles3D::_notification(int p_what) {
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			const Vector3 velocity = (get_global_position() - previous_position) / get_process_delta_time();
-
-			if (velocity != previous_velocity) {
-				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
-				previous_velocity = velocity;
-			}
-			previous_position = get_global_position();
-
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -478,7 +473,7 @@ void GPUParticles3D::_notification(int p_what) {
 				}
 				if (time > active_time) {
 					if (active && !signal_canceled) {
-						emit_signal(SceneStringNames::get_singleton()->finished);
+						emit_signal(SceneStringName(finished));
 					}
 					active = false;
 					if (!emitting) {
@@ -488,8 +483,21 @@ void GPUParticles3D::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			// Update velocity in physics process, so that velocity calculations remain correct
+			// if the physics tick rate is lower than the rendered framerate (especially without physics interpolation).
+			const Vector3 velocity = (get_global_position() - previous_position) / get_physics_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(false);
+			set_physics_process_internal(false);
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
@@ -500,12 +508,15 @@ void GPUParticles3D::_notification(int p_what) {
 			}
 			previous_position = get_global_transform().origin;
 			set_process_internal(true);
+			set_physics_process_internal(true);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
+		case NOTIFICATION_UNSUSPENDED:
 		case NOTIFICATION_PAUSED:
 		case NOTIFICATION_UNPAUSED: {
 			if (is_inside_tree()) {
@@ -737,16 +748,16 @@ void GPUParticles3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "amount_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_amount_ratio", "get_amount_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "sub_emitter", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GPUParticles3D"), "set_sub_emitter", "get_sub_emitter");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "interp_to_end", PROPERTY_HINT_RANGE, "0.00,1.0,0.01"), "set_interp_to_end", "get_interp_to_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,10.0,0.01,or_greater,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");

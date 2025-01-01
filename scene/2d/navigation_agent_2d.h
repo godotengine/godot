@@ -63,6 +63,8 @@ class NavigationAgent2D : public Node {
 	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 100.0;
 	real_t path_max_distance = 100.0;
+	bool simplify_path = false;
+	real_t simplify_epsilon = 0.0;
 
 	Vector2 target_position;
 
@@ -89,8 +91,6 @@ class NavigationAgent2D : public Node {
 	bool target_reached = false;
 	bool navigation_finished = true;
 	bool last_waypoint_reached = false;
-	// No initialized on purpose
-	uint32_t update_frame_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -178,6 +178,12 @@ public:
 
 	void set_target_position(Vector2 p_position);
 	Vector2 get_target_position() const;
+
+	void set_simplify_path(bool p_enabled);
+	bool get_simplify_path() const;
+
+	void set_simplify_epsilon(real_t p_epsilon);
+	real_t get_simplify_epsilon() const;
 
 	Vector2 get_next_path_position();
 

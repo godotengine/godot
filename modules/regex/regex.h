@@ -78,14 +78,22 @@ class RegEx : public RefCounted {
 
 	void _pattern_info(uint32_t what, void *where) const;
 
+	int _sub(const String &p_subject, const String &p_replacement, int p_offset, int p_end, uint32_t p_flags, String &r_output) const;
+
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static Ref<RegEx> _create_from_string_bind_compat_95212(const String &p_pattern);
+	Error _compile_bind_compat_95212(const String &p_pattern);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
-	static Ref<RegEx> create_from_string(const String &p_pattern);
+	static Ref<RegEx> create_from_string(const String &p_pattern, bool p_show_error = true);
 
 	void clear();
-	Error compile(const String &p_pattern);
+	Error compile(const String &p_pattern, bool p_show_error = true);
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	TypedArray<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;

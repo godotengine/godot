@@ -30,14 +30,10 @@
 
 #include "grid_map.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
-#include "scene/3d/light_3d.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/physics_material.h"
-#include "scene/resources/primitive_meshes.h"
 #include "scene/resources/surface_tool.h"
-#include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
@@ -72,7 +68,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 		for (int i = 0; i < meshes.size(); i++) {
 			BakedMesh bm;
 			bm.mesh = meshes[i];
-			ERR_CONTINUE(!bm.mesh.is_valid());
+			ERR_CONTINUE(bm.mesh.is_null());
 			bm.instance = RS::get_singleton()->instance_create();
 			RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 			RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
@@ -195,7 +191,7 @@ real_t GridMap::get_collision_priority() const {
 
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
-	_recreate_octant_data();
+	_update_physics_bodies_characteristics();
 }
 
 Ref<PhysicsMaterial> GridMap::get_physics_material() const {
@@ -257,16 +253,16 @@ RID GridMap::get_navigation_map() const {
 }
 
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
-	if (!mesh_library.is_null()) {
+	if (mesh_library.is_valid()) {
 		mesh_library->disconnect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
 	}
 	mesh_library = p_mesh_library;
-	if (!mesh_library.is_null()) {
+	if (mesh_library.is_valid()) {
 		mesh_library->connect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
 	}
 
 	_recreate_octant_data();
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_signal(CoreStringName(changed));
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -370,8 +366,8 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 		SceneTree *st = SceneTree::get_singleton();
 
@@ -598,7 +594,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		ERR_CONTINUE(!cell_map.has(E));
 		const Cell &c = cell_map[E];
 
-		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item)) {
+		if (mesh_library.is_null() || !mesh_library->has_item(c.item)) {
 			continue;
 		}
 
@@ -627,7 +623,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		// add the item's shape at given xform to octant's static_body
 		for (int i = 0; i < shapes.size(); i++) {
 			// add the item's shape
-			if (!shapes[i].shape.is_valid()) {
+			if (shapes[i].shape.is_null()) {
 				continue;
 			}
 			PhysicsServer3D::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
@@ -716,6 +712,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
+			RS::ShadowCastingSetting cast_shadows = (RS::ShadowCastingSetting)mesh_library->get_item_mesh_cast_shadow(E.key);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, cast_shadows);
+
 			mmi.multimesh = mm;
 			mmi.instance = instance;
 
@@ -745,6 +744,19 @@ void GridMap::_update_physics_bodies_collision_properties() {
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(E.value->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(E.value->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(E.value->static_body, collision_priority);
+	}
+}
+
+void GridMap::_update_physics_bodies_characteristics() {
+	real_t friction = 1.0;
+	real_t bounce = 0.0;
+	if (physics_material.is_valid()) {
+		friction = physics_material->computed_friction();
+		bounce = physics_material->computed_bounce();
+	}
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, friction);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
 	}
 }
 
@@ -790,8 +802,8 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 			if (!g.navigation_debug_edge_connections_instance.is_valid()) {
 				g.navigation_debug_edge_connections_instance = RenderingServer::get_singleton()->instance_create();
 			}
-			if (!g.navigation_debug_edge_connections_mesh.is_valid()) {
-				g.navigation_debug_edge_connections_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+			if (g.navigation_debug_edge_connections_mesh.is_null()) {
+				g.navigation_debug_edge_connections_mesh.instantiate();
 			}
 
 			_update_octant_navigation_debug_edge_connections_mesh(p_key);
@@ -836,7 +848,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_instance = RID();
 		}
 		if (g.navigation_debug_edge_connections_mesh.is_valid()) {
-			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_mesh->get_rid());
+			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -877,7 +889,7 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_instance = RID();
 		}
 		if (g.navigation_debug_edge_connections_mesh.is_valid()) {
-			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_mesh->get_rid());
+			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -1123,7 +1135,7 @@ void GridMap::_bind_methods() {
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
 	ADD_SIGNAL(MethodInfo("cell_size_changed", PropertyInfo(Variant::VECTOR3, "cell_size")));
-	ADD_SIGNAL(MethodInfo(CoreStringNames::get_singleton()->changed));
+	ADD_SIGNAL(MethodInfo(CoreStringName(changed)));
 }
 
 void GridMap::set_cell_scale(float p_scale) {
@@ -1213,7 +1225,7 @@ void GridMap::clear_baked_meshes() {
 }
 
 void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texel_size) {
-	if (!mesh_library.is_valid()) {
+	if (mesh_library.is_null()) {
 		return;
 	}
 
@@ -1229,7 +1241,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		}
 
 		Ref<Mesh> mesh = mesh_library->get_item_mesh(item);
-		if (!mesh.is_valid()) {
+		if (mesh.is_null()) {
 			continue;
 		}
 
@@ -1375,8 +1387,8 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		g.navigation_debug_edge_connections_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!g.navigation_debug_edge_connections_mesh.is_valid()) {
-		g.navigation_debug_edge_connections_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (g.navigation_debug_edge_connections_mesh.is_null()) {
+		g.navigation_debug_edge_connections_mesh.instantiate();
 	}
 
 	g.navigation_debug_edge_connections_mesh->clear_surfaces();

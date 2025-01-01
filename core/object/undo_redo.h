@@ -84,6 +84,7 @@ private:
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;
+	int merge_total = 0;
 
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E, bool p_execute);
@@ -128,6 +129,7 @@ public:
 	int get_current_action();
 	String get_action_name(int p_id);
 	void clear_history(bool p_increase_version = true);
+	void discard_redo();
 
 	bool has_undo() const;
 	bool has_redo() const;

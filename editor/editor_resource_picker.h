@@ -35,8 +35,6 @@
 
 class Button;
 class ConfirmationDialog;
-class EditorFileDialog;
-class EditorQuickOpen;
 class PopupMenu;
 class TextureRect;
 class Tree;
@@ -52,12 +50,13 @@ class EditorResourcePicker : public HBoxContainer {
 	bool dropping = false;
 
 	Vector<String> inheritors_array;
+	mutable HashSet<StringName> allowed_types_without_convert;
+	mutable HashSet<StringName> allowed_types_with_convert;
 
 	Button *assign_button = nullptr;
 	TextureRect *preview_rect = nullptr;
+	Button *load_button = nullptr;
 	Button *edit_button = nullptr;
-	EditorFileDialog *file_dialog = nullptr;
-	EditorQuickOpen *quick_open = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
 	Tree *duplicate_resources_tree = nullptr;
@@ -65,8 +64,6 @@ class EditorResourcePicker : public HBoxContainer {
 	Size2i assign_button_min_size = Size2i(1, 1);
 
 	enum MenuOption {
-		OBJ_MENU_LOAD,
-		OBJ_MENU_QUICKLOAD,
 		OBJ_MENU_INSPECT,
 		OBJ_MENU_CLEAR,
 		OBJ_MENU_MAKE_UNIQUE,
@@ -81,14 +78,19 @@ class EditorResourcePicker : public HBoxContainer {
 		CONVERT_BASE_ID = 1000,
 	};
 
+	Object *resource_owner = nullptr;
+
 	PopupMenu *edit_menu = nullptr;
 
 	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
-	void _file_quick_selected();
+	void _resource_changed();
 	void _file_selected(const String &p_path);
 
+	void _resource_saved(Object *p_resource);
+
+	void _load_button_pressed();
 	void _update_menu();
 	void _update_menu_items();
 	void _edit_menu_cbk(int p_which);
@@ -97,9 +99,10 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_input(const Ref<InputEvent> &p_event);
 
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
-	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
+	void _ensure_allowed_types() const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, const HashSet<StringName> &p_allowed_types) const;
+	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
+	bool _is_custom_type_script() const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -127,11 +130,15 @@ public:
 	Vector<String> get_allowed_types() const;
 
 	void set_edited_resource(Ref<Resource> p_resource);
+	void set_edited_resource_no_check(Ref<Resource> p_resource);
 	Ref<Resource> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;
 	void set_toggle_pressed(bool p_pressed);
+	bool is_toggle_pressed() const;
+
+	void set_resource_owner(Object *p_object);
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;

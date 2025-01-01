@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+
 import atexit
-import os
-import sys
-import methods
 import time
+from typing import TYPE_CHECKING
+
+import methods
+
+if TYPE_CHECKING:
+    from misc.utility.scons_hints import *
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -28,7 +32,7 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 opts.Update(env)
 
 if not env["verbose"]:
-    methods.no_verbose(sys, env)
+    methods.no_verbose(env)
 
 # ThorVG
 if env["thorvg_enabled"] and env["freetype_enabled"]:
@@ -38,8 +42,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
         # common
-        "src/common/tvgBezier.cpp",
         "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
         "src/common/tvgMath.cpp",
         "src/common/tvgStr.cpp",
         # SVG parser
@@ -50,6 +54,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
         "src/loaders/external_png/tvgPngLoader.cpp",
         "src/loaders/jpg/tvgJpgd.cpp",
         "src/loaders/jpg/tvgJpgLoader.cpp",
@@ -94,6 +99,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/external_png",
             "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
         ]
     )
 
@@ -128,8 +134,6 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
@@ -144,8 +148,10 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
@@ -309,9 +315,16 @@ Default(library)
 
 
 def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
+    elapsed_time_sec = round(time.time() - time_at_start, 2)
+    time_centiseconds = round((elapsed_time_sec % 1) * 100)
+    print(
+        "{}[Time elapsed: {}.{:02}]{}".format(
+            methods.Ansi.GRAY,
+            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
+            time_centiseconds,
+            methods.Ansi.RESET,
+        )
+    )
 
 
 atexit.register(print_elapsed_time)

@@ -122,6 +122,59 @@ TEST_CASE("[Expression] Floating-point arithmetic") {
 			"Float multiplication-addition-subtraction-division should return the expected result.");
 }
 
+TEST_CASE("[Expression] Floating-point notation") {
+	Expression expression;
+
+	CHECK_MESSAGE(
+			expression.parse("2.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("(2.)") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".3") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(0.3),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("2.+5.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(7.0),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".3-.8") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(-0.5),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse("2.+.2") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(2.2),
+			"The expression should return the expected result.");
+
+	CHECK_MESSAGE(
+			expression.parse(".0*0.") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			double(expression.execute()) == doctest::Approx(0.0),
+			"The expression should return the expected result.");
+}
+
 TEST_CASE("[Expression] Scientific notation") {
 	Expression expression;
 

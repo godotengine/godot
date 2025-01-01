@@ -11,9 +11,9 @@
 
 #ifdef XR_KHR_LOADER_INIT_SUPPORT
 
-#ifdef XR_USE_PLATFORM_ANDROID
 // Check and copy the Android-specific init data.
 XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
+#if defined(XR_USE_PLATFORM_ANDROID)
     if (info->type != XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR) {
         return XR_ERROR_VALIDATION_FAILURE;
     }
@@ -40,11 +40,13 @@ XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
     const auto applicationContext = context.call<jni::Object>("getApplicationContext()Landroid/content/Context;");
     const auto applicationInfo = context.call<jni::Object>("getApplicationInfo()Landroid/content/pm/ApplicationInfo;");
     _native_library_path = applicationInfo.get<std::string>("nativeLibraryDir");
+#else
+#error "Platform specific XR_KHR_loader_init structure is not defined for this platform."
+#endif  // XR_USE_PLATFORM_ANDROID
 
     _initialized = true;
     return XR_SUCCESS;
 }
-#endif  // XR_USE_PLATFORM_ANDROID
 
 XrResult InitializeLoaderInitData(const XrLoaderInitInfoBaseHeaderKHR* loaderInitInfo) {
     return LoaderInitData::instance().initialize(loaderInitInfo);

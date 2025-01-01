@@ -33,8 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/json.h"
+#include "core/io/marshalls.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/doc_tools.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -186,6 +186,8 @@ void DebugAdapterProtocol::reset_stack_info() {
 
 	stackframe_list.clear();
 	variable_list.clear();
+	object_list.clear();
+	object_pending_set.clear();
 }
 
 int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
@@ -607,7 +609,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 		}
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			int id = variable_id++;
-			PackedVector2Array array = p_var;
+			PackedVector3Array array = p_var;
 			DAP::Variable size;
 			size.name = "size";
 			size.type = Variant::get_type_name(Variant::INT);
@@ -649,10 +651,214 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 			variable_list.insert(id, arr);
 			return id;
 		}
+		case Variant::PACKED_VECTOR4_ARRAY: {
+			int id = variable_id++;
+			PackedVector4Array array = p_var;
+			DAP::Variable size;
+			size.name = "size";
+			size.type = Variant::get_type_name(Variant::INT);
+			size.value = itos(array.size());
+
+			Array arr;
+			arr.push_back(size.to_json());
+
+			for (int i = 0; i < array.size(); i++) {
+				DAP::Variable var;
+				var.name = itos(i);
+				var.type = Variant::get_type_name(Variant::VECTOR4);
+				var.value = array[i];
+				var.variablesReference = parse_variant(array[i]);
+				arr.push_back(var.to_json());
+			}
+			variable_list.insert(id, arr);
+			return id;
+		}
+		case Variant::OBJECT: {
+			// Objects have to be requested from the debuggee. This has do be done
+			// in a lazy way, as retrieving object properties takes time.
+			EncodedObjectAsID *encoded_obj = Object::cast_to<EncodedObjectAsID>(p_var);
+
+			// Object may be null; in that case, return early.
+			if (!encoded_obj) {
+				return 0;
+			}
+
+			// Object may have been already requested.
+			ObjectID object_id = encoded_obj->get_object_id();
+			if (object_list.has(object_id)) {
+				return object_list[object_id];
+			}
+
+			// Queue requesting the object.
+			int id = variable_id++;
+			object_list.insert(object_id, id);
+			return id;
+		}
 		default:
 			// Simple atomic stuff, or too complex to be manipulated
 			return 0;
 	}
+}
+
+void DebugAdapterProtocol::parse_object(SceneDebuggerObject &p_obj) {
+	// If the object is not on the pending list, we weren't expecting it. Ignore it.
+	ObjectID object_id = p_obj.id;
+	if (!object_pending_set.erase(object_id)) {
+		return;
+	}
+
+	// Populate DAP::Variable's with the object's properties. These properties will be divided by categories.
+	Array properties;
+	Array script_members;
+	Array script_constants;
+	Array script_node;
+	DAP::Variable node_type;
+	Array node_properties;
+
+	for (SceneDebuggerObject::SceneDebuggerProperty &property : p_obj.properties) {
+		PropertyInfo &info = property.first;
+
+		// Script members ("Members/" prefix)
+		if (info.name.begins_with("Members/")) {
+			info.name = info.name.trim_prefix("Members/");
+			script_members.push_back(parse_object_variable(property));
+		}
+
+		// Script constants ("Constants/" prefix)
+		else if (info.name.begins_with("Constants/")) {
+			info.name = info.name.trim_prefix("Constants/");
+			script_constants.push_back(parse_object_variable(property));
+		}
+
+		// Script node ("Node/" prefix)
+		else if (info.name.begins_with("Node/")) {
+			info.name = info.name.trim_prefix("Node/");
+			script_node.push_back(parse_object_variable(property));
+		}
+
+		// Regular categories (with type Variant::NIL)
+		else if (info.type == Variant::NIL) {
+			if (!node_properties.is_empty()) {
+				node_type.value = itos(node_properties.size());
+				variable_list.insert(node_type.variablesReference, node_properties.duplicate());
+				properties.push_back(node_type.to_json());
+			}
+
+			node_type.name = info.name;
+			node_type.type = "Category";
+			node_type.variablesReference = variable_id++;
+			node_properties.clear();
+		}
+
+		// Regular properties.
+		else {
+			node_properties.push_back(parse_object_variable(property));
+		}
+	}
+
+	// Add the last category.
+	if (!node_properties.is_empty()) {
+		node_type.value = itos(node_properties.size());
+		variable_list.insert(node_type.variablesReference, node_properties.duplicate());
+		properties.push_back(node_type.to_json());
+	}
+
+	// Add the script categories, in reverse order to be at the front of the array:
+	// ( [members; constants; node; category1; category2; ...] )
+	if (!script_node.is_empty()) {
+		DAP::Variable node;
+		node.name = "Node";
+		node.type = "Category";
+		node.value = itos(script_node.size());
+		node.variablesReference = variable_id++;
+		variable_list.insert(node.variablesReference, script_node);
+		properties.push_front(node.to_json());
+	}
+
+	if (!script_constants.is_empty()) {
+		DAP::Variable constants;
+		constants.name = "Constants";
+		constants.type = "Category";
+		constants.value = itos(script_constants.size());
+		constants.variablesReference = variable_id++;
+		variable_list.insert(constants.variablesReference, script_constants);
+		properties.push_front(constants.to_json());
+	}
+
+	if (!script_members.is_empty()) {
+		DAP::Variable members;
+		members.name = "Members";
+		members.type = "Category";
+		members.value = itos(script_members.size());
+		members.variablesReference = variable_id++;
+		variable_list.insert(members.variablesReference, script_members);
+		properties.push_front(members.to_json());
+	}
+
+	ERR_FAIL_COND(!object_list.has(object_id));
+	variable_list.insert(object_list[object_id], properties);
+}
+
+void DebugAdapterProtocol::parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var) {
+	// If the eval is not on the pending list, we weren't expecting it. Ignore it.
+	String eval = p_var.name;
+	if (!eval_pending_list.erase(eval)) {
+		return;
+	}
+
+	DAP::Variable variable;
+	variable.name = p_var.name;
+	variable.value = p_var.value;
+	variable.type = Variant::get_type_name(p_var.value.get_type());
+	variable.variablesReference = parse_variant(p_var.value);
+
+	eval_list.insert(variable.name, variable);
+}
+
+const Variant DebugAdapterProtocol::parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property) {
+	const PropertyInfo &info = p_property.first;
+	const Variant &value = p_property.second;
+
+	DAP::Variable var;
+	var.name = info.name;
+	var.type = Variant::get_type_name(info.type);
+	var.value = value;
+	var.variablesReference = parse_variant(value);
+
+	return var.to_json();
+}
+
+ObjectID DebugAdapterProtocol::search_object_id(DAPVarID p_var_id) {
+	for (const KeyValue<ObjectID, DAPVarID> &E : object_list) {
+		if (E.value == p_var_id) {
+			return E.key;
+		}
+	}
+	return ObjectID();
+}
+
+bool DebugAdapterProtocol::request_remote_object(const ObjectID &p_object_id) {
+	// If the object is already on the pending list, we don't need to request it again.
+	if (object_pending_set.has(p_object_id)) {
+		return false;
+	}
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_remote_object(p_object_id);
+	object_pending_set.insert(p_object_id);
+
+	return true;
+}
+
+bool DebugAdapterProtocol::request_remote_evaluate(const String &p_eval, int p_stack_frame) {
+	// If the eval is already on the pending list, we don't need to request it again
+	if (eval_pending_list.has(p_eval)) {
+		return false;
+	}
+
+	EditorDebuggerNode::get_singleton()->get_default_debugger()->request_remote_evaluate(p_eval, p_stack_frame);
+	eval_pending_list.insert(p_eval);
+
+	return true;
 }
 
 bool DebugAdapterProtocol::process_message(const String &p_text) {
@@ -763,8 +969,8 @@ void DebugAdapterProtocol::notify_continued() {
 	reset_stack_info();
 }
 
-void DebugAdapterProtocol::notify_output(const String &p_message) {
-	Dictionary event = parser->ev_output(p_message);
+void DebugAdapterProtocol::notify_output(const String &p_message, RemoteDebugger::MessageType p_type) {
+	Dictionary event = parser->ev_output(p_message, p_type);
 	for (List<Ref<DAPeer>>::Element *E = clients.front(); E; E = E->next()) {
 		E->get()->res_queue.push_back(event);
 	}
@@ -828,8 +1034,8 @@ void DebugAdapterProtocol::on_debug_stopped() {
 	notify_terminated();
 }
 
-void DebugAdapterProtocol::on_debug_output(const String &p_message) {
-	notify_output(p_message);
+void DebugAdapterProtocol::on_debug_output(const String &p_message, int p_type) {
+	notify_output(p_message, RemoteDebugger::MessageType(p_type));
 }
 
 void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump) {
@@ -944,8 +1150,8 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 
 	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
-	ERR_FAIL_INDEX(stack_var.type, 3);
-	int var_id = scope_ids[stack_var.type];
+	ERR_FAIL_INDEX(stack_var.type, 4);
+	int var_id = scope_ids.get(stack_var.type);
 
 	DAP::Variable variable;
 
@@ -962,6 +1168,20 @@ void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_dat
 	// Ignore data that is already handled by DAP
 	if (p_msg == "debug_enter" || p_msg == "debug_exit" || p_msg == "stack_dump" || p_msg == "stack_frame_vars" || p_msg == "stack_frame_var" || p_msg == "output" || p_msg == "request_quit") {
 		return;
+	}
+
+	if (p_msg == "scene:inspect_object") {
+		// An object was requested from the debuggee; parse it.
+		SceneDebuggerObject remote_obj;
+		remote_obj.deserialize(p_data);
+
+		parse_object(remote_obj);
+	} else if (p_msg == "evaluation_return") {
+		// An evaluation was requested from the debuggee; parse it.
+		DebuggerMarshalls::ScriptStackVariable remote_evaluation;
+		remote_evaluation.deserialize(p_data);
+
+		parse_evaluation(remote_evaluation);
 	}
 
 	notify_custom_data(p_msg, p_data);
@@ -1021,13 +1241,13 @@ DebugAdapterProtocol::DebugAdapterProtocol() {
 
 	reset_ids();
 
-	EditorRunBar::get_singleton()->get_pause_button()->connect("pressed", callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
+	EditorRunBar::get_singleton()->get_pause_button()->connect(SceneStringName(pressed), callable_mp(this, &DebugAdapterProtocol::on_debug_paused));
 
 	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
 	debugger_node->connect("breakpoint_toggled", callable_mp(this, &DebugAdapterProtocol::on_debug_breakpoint_toggled));
 
 	debugger_node->get_default_debugger()->connect("stopped", callable_mp(this, &DebugAdapterProtocol::on_debug_stopped));
-	debugger_node->get_default_debugger()->connect("output", callable_mp(this, &DebugAdapterProtocol::on_debug_output));
+	debugger_node->get_default_debugger()->connect(SceneStringName(output), callable_mp(this, &DebugAdapterProtocol::on_debug_output));
 	debugger_node->get_default_debugger()->connect("breaked", callable_mp(this, &DebugAdapterProtocol::on_debug_breaked));
 	debugger_node->get_default_debugger()->connect("stack_dump", callable_mp(this, &DebugAdapterProtocol::on_debug_stack_dump));
 	debugger_node->get_default_debugger()->connect("stack_frame_vars", callable_mp(this, &DebugAdapterProtocol::on_debug_stack_frame_vars));

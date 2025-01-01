@@ -1,5 +1,5 @@
 // smol-v - public domain - https://github.com/aras-p/smol-v
-// authored 2016-2020 by Aras Pranckevicius
+// authored 2016-2024 by Aras Pranckevicius
 // no warranty implied; use at your own risk
 // See end of file for license information.
 //
@@ -132,7 +132,7 @@ namespace smolv
 // This software is available under 2 licenses -- choose whichever you prefer.
 // ------------------------------------------------------------------------------
 // ALTERNATIVE A - MIT License
-// Copyright (c) 2016-2020 Aras Pranckevicius
+// Copyright (c) 2016-2024 Aras Pranckevicius
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
 // the Software without restriction, including without limitation the rights to

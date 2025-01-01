@@ -31,9 +31,7 @@
 #include "world_2d.h"
 
 #include "core/config/project_settings.h"
-#include "scene/2d/camera_2d.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
-#include "scene/main/window.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
@@ -66,6 +64,10 @@ RID World2D::get_navigation_map() const {
 	return navigation_map;
 }
 
+PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
+	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
+}
+
 void World2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &World2D::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_space"), &World2D::get_space);
@@ -77,10 +79,6 @@ void World2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState2D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
-}
-
-PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
-	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
 }
 
 void World2D::register_viewport(Viewport *p_viewport) {

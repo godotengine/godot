@@ -30,8 +30,6 @@
 
 #include "multimesh_instance_2d.h"
 
-#include "scene/scene_string_names.h"
-
 void MultiMeshInstance2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -79,14 +77,14 @@ void MultiMeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 	texture = p_texture;
 	queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 }
 
 Ref<Texture2D> MultiMeshInstance2D::get_texture() const {
 	return texture;
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 	if (multimesh.is_valid()) {
 		AABB aabb = multimesh->get_aabb();
@@ -95,7 +93,7 @@ Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 
 	return Node2D::_edit_get_rect();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 MultiMeshInstance2D::MultiMeshInstance2D() {
 }

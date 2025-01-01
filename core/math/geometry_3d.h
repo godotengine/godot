@@ -594,7 +594,7 @@ public:
 		max = x2;                        \
 	}
 
-	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
+	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		int q;
 		Vector3 vmin, vmax;
 		for (q = 0; q <= 2; q++) {
@@ -678,8 +678,7 @@ public:
 		return false;                              \
 	}
 
-	/*======================== Z-tests ========================*/
-
+/*======================== Z-tests ========================*/
 #define AXISTEST_Z12(a, b, fa, fb)                 \
 	p1 = a * v1.x - b * v1.y;                      \
 	p2 = a * v2.x - b * v2.y;                      \
@@ -718,21 +717,19 @@ public:
 		/*    2) normal of the triangle */
 		/*    3) crossproduct(edge from tri, {x,y,z}-directin) */
 		/*       this gives 3x3=9 more tests */
-		Vector3 v0, v1, v2;
-		float min, max, d, p0, p1, p2, rad, fex, fey, fez;
-		Vector3 normal, e0, e1, e2;
+		real_t min, max, p0, p1, p2, rad, fex, fey, fez;
 
 		/* This is the fastest branch on Sun */
 		/* move everything so that the boxcenter is in (0,0,0) */
 
-		v0 = triverts[0] - boxcenter;
-		v1 = triverts[1] - boxcenter;
-		v2 = triverts[2] - boxcenter;
+		const Vector3 v0 = triverts[0] - boxcenter;
+		const Vector3 v1 = triverts[1] - boxcenter;
+		const Vector3 v2 = triverts[2] - boxcenter;
 
 		/* compute triangle edges */
-		e0 = v1 - v0; /* tri edge 0 */
-		e1 = v2 - v1; /* tri edge 1 */
-		e2 = v0 - v2; /* tri edge 2 */
+		const Vector3 e0 = v1 - v0; /* tri edge 0 */
+		const Vector3 e1 = v2 - v1; /* tri edge 1 */
+		const Vector3 e2 = v0 - v2; /* tri edge 2 */
 
 		/* Bullet 3:  */
 		/*  test the 9 tests first (this was faster) */
@@ -784,8 +781,8 @@ public:
 		/* Bullet 2: */
 		/*  test if the box intersects the plane of the triangle */
 		/*  compute plane equation of triangle: normal*x+d=0 */
-		normal = e0.cross(e1);
-		d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
+		const Vector3 normal = e0.cross(e1);
+		const real_t d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
 		return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
 	}
 
@@ -793,51 +790,51 @@ public:
 	static Vector<int8_t> generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative);
 
 	static Vector3 triangle_get_barycentric_coords(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, const Vector3 &p_pos) {
-		Vector3 v0 = p_b - p_a;
-		Vector3 v1 = p_c - p_a;
-		Vector3 v2 = p_pos - p_a;
+		const Vector3 v0 = p_b - p_a;
+		const Vector3 v1 = p_c - p_a;
+		const Vector3 v2 = p_pos - p_a;
 
-		float d00 = v0.dot(v0);
-		float d01 = v0.dot(v1);
-		float d11 = v1.dot(v1);
-		float d20 = v2.dot(v0);
-		float d21 = v2.dot(v1);
-		float denom = (d00 * d11 - d01 * d01);
+		const real_t d00 = v0.dot(v0);
+		const real_t d01 = v0.dot(v1);
+		const real_t d11 = v1.dot(v1);
+		const real_t d20 = v2.dot(v0);
+		const real_t d21 = v2.dot(v1);
+		const real_t denom = (d00 * d11 - d01 * d01);
 		if (denom == 0) {
 			return Vector3(); //invalid triangle, return empty
 		}
-		float v = (d11 * d20 - d01 * d21) / denom;
-		float w = (d00 * d21 - d01 * d20) / denom;
-		float u = 1.0f - v - w;
+		const real_t v = (d11 * d20 - d01 * d21) / denom;
+		const real_t w = (d00 * d21 - d01 * d20) / denom;
+		const real_t u = 1.0f - v - w;
 		return Vector3(u, v, w);
 	}
 
 	static Color tetrahedron_get_barycentric_coords(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, const Vector3 &p_d, const Vector3 &p_pos) {
-		Vector3 vap = p_pos - p_a;
-		Vector3 vbp = p_pos - p_b;
+		const Vector3 vap = p_pos - p_a;
+		const Vector3 vbp = p_pos - p_b;
 
-		Vector3 vab = p_b - p_a;
-		Vector3 vac = p_c - p_a;
-		Vector3 vad = p_d - p_a;
+		const Vector3 vab = p_b - p_a;
+		const Vector3 vac = p_c - p_a;
+		const Vector3 vad = p_d - p_a;
 
-		Vector3 vbc = p_c - p_b;
-		Vector3 vbd = p_d - p_b;
+		const Vector3 vbc = p_c - p_b;
+		const Vector3 vbd = p_d - p_b;
 		// ScTP computes the scalar triple product
 #define STP(m_a, m_b, m_c) ((m_a).dot((m_b).cross((m_c))))
-		float va6 = STP(vbp, vbd, vbc);
-		float vb6 = STP(vap, vac, vad);
-		float vc6 = STP(vap, vad, vab);
-		float vd6 = STP(vap, vab, vac);
-		float v6 = 1 / STP(vab, vac, vad);
+		const real_t va6 = STP(vbp, vbd, vbc);
+		const real_t vb6 = STP(vap, vac, vad);
+		const real_t vc6 = STP(vap, vad, vab);
+		const real_t vd6 = STP(vap, vab, vac);
+		const real_t v6 = 1 / STP(vab, vac, vad);
 		return Color(va6 * v6, vb6 * v6, vc6 * v6, vd6 * v6);
 #undef STP
 	}
 
 	_FORCE_INLINE_ static Vector3 octahedron_map_decode(const Vector2 &p_uv) {
 		// https://twitter.com/Stubbesaurus/status/937994790553227264
-		Vector2 f = p_uv * 2.0f - Vector2(1.0f, 1.0f);
+		const Vector2 f = p_uv * 2.0f - Vector2(1.0f, 1.0f);
 		Vector3 n = Vector3(f.x, f.y, 1.0f - Math::abs(f.x) - Math::abs(f.y));
-		float t = CLAMP(-n.z, 0.0f, 1.0f);
+		const real_t t = CLAMP(-n.z, 0.0f, 1.0f);
 		n.x += n.x >= 0 ? -t : t;
 		n.y += n.y >= 0 ? -t : t;
 		return n.normalized();

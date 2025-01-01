@@ -92,7 +92,9 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_toggled(bool p_toggled_on);
 	void _refresh();
+	void _update_button_text();
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
 
 protected:
@@ -111,6 +113,10 @@ public:
 	void add_sync_frame_data(const SyncInfo &p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
+
+	void set_profiling(bool p_pressed);
+	void started();
+	void stopped();
 
 	EditorNetworkProfiler();
 };

@@ -34,6 +34,7 @@
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/pair.h"
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -50,9 +51,9 @@
  *
  * The assignment operator copy the pairs from one map to the other.
  */
-template <class TKey, class TValue,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey, typename TValue,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 private:
 	TValue *values = nullptr;
@@ -351,6 +352,13 @@ public:
 		}
 
 		return it;
+	}
+
+	OAHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			set(E.key, E.value);
+		}
 	}
 
 	OAHashMap(const OAHashMap &p_other) {

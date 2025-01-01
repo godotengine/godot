@@ -31,7 +31,6 @@
 #include "editor_translation_parser.h"
 
 #include "core/error/error_macros.h"
-#include "core/io/file_access.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_set.h"
 
@@ -65,6 +64,21 @@ Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Str
 	}
 }
 
+void EditorTranslationParserPlugin::get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) {
+	TypedArray<String> ids_comment;
+	TypedArray<String> ids_ctx_plural_comment;
+
+	if (GDVIRTUAL_CALL(_get_comments, ids_comment, ids_ctx_plural_comment)) {
+		for (int i = 0; i < ids_comment.size(); i++) {
+			r_ids_comment->append(ids_comment[i]);
+		}
+
+		for (int i = 0; i < ids_ctx_plural_comment.size(); i++) {
+			r_ids_ctx_plural_comment->append(ids_ctx_plural_comment[i]);
+		}
+	}
+}
+
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	Vector<String> extensions;
 	if (GDVIRTUAL_CALL(_get_recognized_extensions, extensions)) {
@@ -78,6 +92,7 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 
 void EditorTranslationParserPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
+	GDVIRTUAL_BIND(_get_comments, "msgids_comment", "msgids_context_plural_comment");
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 }
 
@@ -93,8 +108,8 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 		custom_parsers[i]->get_recognized_extensions(&temp);
 	}
 	// Remove duplicates.
-	for (int i = 0; i < temp.size(); i++) {
-		extensions.insert(temp[i]);
+	for (const String &E : temp) {
+		extensions.insert(E);
 	}
 	for (const String &E : extensions) {
 		r_extensions->push_back(E);
@@ -104,8 +119,8 @@ void EditorTranslationParser::get_recognized_extensions(List<String> *r_extensio
 bool EditorTranslationParser::can_parse(const String &p_extension) const {
 	List<String> extensions;
 	get_recognized_extensions(&extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		if (p_extension == extensions[i]) {
+	for (const String &extension : extensions) {
+		if (p_extension == extension) {
 			return true;
 		}
 	}
@@ -117,8 +132,8 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	for (int i = 0; i < custom_parsers.size(); i++) {
 		List<String> temp;
 		custom_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
-			if (temp[j] == p_extension) {
+		for (const String &E : temp) {
+			if (E == p_extension) {
 				return custom_parsers[i];
 			}
 		}
@@ -127,8 +142,8 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	for (int i = 0; i < standard_parsers.size(); i++) {
 		List<String> temp;
 		standard_parsers[i]->get_recognized_extensions(&temp);
-		for (int j = 0; j < temp.size(); j++) {
-			if (temp[j] == p_extension) {
+		for (const String &E : temp) {
+			if (E == p_extension) {
 				return standard_parsers[i];
 			}
 		}

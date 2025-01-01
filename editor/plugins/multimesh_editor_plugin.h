@@ -31,7 +31,7 @@
 #ifndef MULTIMESH_EDITOR_PLUGIN_H
 #define MULTIMESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
@@ -79,7 +79,6 @@ class MultiMeshEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 
 public:
 	void edit(MultiMeshInstance3D *p_multimesh);
@@ -92,7 +91,7 @@ class MultiMeshEditorPlugin : public EditorPlugin {
 	MultiMeshEditor *multimesh_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MultiMesh"; }
+	virtual String get_plugin_name() const override { return "MultiMesh"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

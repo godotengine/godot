@@ -73,7 +73,7 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 
 	// Run fbx2gltf.
 
-	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx2gltf/fbx2gltf_path");
+	String fbx2gltf_path = EDITOR_GET("filesystem/import/fbx/fbx2gltf_path");
 
 	List<String> args;
 	args.push_back("--pbr-metallic-roughness");
@@ -104,6 +104,9 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
 	print_verbose(vformat("glTF path: %s", sink));
 	Error err = gltf->append_from_file(sink, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {
@@ -115,19 +118,17 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
 #else
-	return gltf->create_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], false);
 #endif
 }
 
-Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, bool p_for_animation,
+Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
-	if (p_option == "fbx/embedded_image_handling") {
-		return false;
-	}
-	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF && p_option == "fbx/embedded_image_handling") {
+	// Remove all the FBX options except for 'fbx/importer' if the importer is fbx2gltf.
+	// These options are available only for ufbx.
+	if (p_option.begins_with("fbx/") && p_option != "fbx/importer" && p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF) {
 		return false;
 	}
 	return true;

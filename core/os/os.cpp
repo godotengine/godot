@@ -31,7 +31,6 @@
 #include "os.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
@@ -247,7 +246,10 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 	for (int i = 0; i < invalid_chars.size(); i++) {
 		safe_dir_name = safe_dir_name.replace(invalid_chars[i], "-");
 	}
-	return safe_dir_name;
+
+	// Trim trailing periods from the returned value as it's not valid for folder names on Windows.
+	// This check is still applied on non-Windows platforms so the returned value is consistent across platforms.
+	return safe_dir_name.rstrip(".");
 }
 
 // Path to data, config, cache, etc. OS-specific folders
@@ -270,6 +272,10 @@ String OS::get_config_path() const {
 
 // OS equivalent of XDG_CACHE_HOME
 String OS::get_cache_path() const {
+	return ".";
+}
+
+String OS::get_temp_path() const {
 	return ".";
 }
 
@@ -349,7 +355,7 @@ void OS::ensure_user_data_dir() {
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
+	ERR_FAIL_COND_MSG(err != OK, vformat("Error attempting to create data dir: %s.", dd));
 }
 
 String OS::get_model_name() const {
@@ -398,6 +404,13 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "editor") {
 		return true;
 	}
+	if (p_feature == "editor_hint") {
+		return _in_editor;
+	} else if (p_feature == "editor_runtime") {
+		return !_in_editor;
+	} else if (p_feature == "embedded_in_editor") {
+		return _embedded_in_editor;
+	}
 #else
 	if (p_feature == "template") {
 		return true;
@@ -431,6 +444,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "x86_64") {
 		return true;
 	}
@@ -444,6 +462,11 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 #if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(MACOS_ENABLED)
+	if (p_feature == "universal") {
+		return true;
+	}
+#endif
 	if (p_feature == "arm64") {
 		return true;
 	}
@@ -496,6 +519,10 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "wasm") {
 		return true;
 	}
+#elif defined(__loongarch64)
+	if (p_feature == "loongarch64") {
+		return true;
+	}
 #endif
 
 #if defined(IOS_SIMULATOR)
@@ -506,6 +533,10 @@ bool OS::has_feature(const String &p_feature) {
 
 #ifdef THREADS_ENABLED
 	if (p_feature == "threads") {
+		return true;
+	}
+#else
+	if (p_feature == "nothreads") {
 		return true;
 	}
 #endif

@@ -33,8 +33,6 @@
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 
@@ -257,13 +255,13 @@ bool TileProxiesManagerDialog::_set(const StringName &p_name, const Variant &p_v
 	if (p_name == "from_source") {
 		from.source_id = MAX(int(p_value), -1);
 	} else if (p_name == "from_coords") {
-		from.set_atlas_coords(Vector2i(p_value).max(Vector2i(-1, -1)));
+		from.set_atlas_coords(Vector2i(p_value).maxi(-1));
 	} else if (p_name == "from_alternative") {
 		from.alternative_tile = MAX(int(p_value), -1);
 	} else if (p_name == "to_source") {
 		to.source_id = MAX(int(p_value), 0);
 	} else if (p_name == "to_coords") {
-		to.set_atlas_coords(Vector2i(p_value).max(Vector2i(0, 0)));
+		to.set_atlas_coords(Vector2i(p_value).maxi(0));
 	} else if (p_name == "to_alternative") {
 		to.alternative_tile = MAX(int(p_value), 0);
 	} else {
@@ -320,7 +318,7 @@ void TileProxiesManagerDialog::_bind_methods() {
 }
 
 void TileProxiesManagerDialog::update_tile_set(Ref<TileSet> p_tile_set) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	tile_set = p_tile_set;
 	commited_actions_count = 0;
 	_update_lists();
@@ -378,7 +376,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 
 	popup_menu = memnew(PopupMenu);
 	popup_menu->add_shortcut(ED_GET_SHORTCUT("ui_text_delete"));
-	popup_menu->connect("id_pressed", callable_mp(this, &TileProxiesManagerDialog::_menu_id_pressed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TileProxiesManagerDialog::_menu_id_pressed));
 	add_child(popup_menu);
 
 	// Add proxy panel.
@@ -463,7 +461,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	Button *add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	add_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	add_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_add_button_pressed));
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_add_button_pressed));
 	vbox_container->add_child(add_button);
 
 	h_separator = memnew(HSeparator);
@@ -480,13 +478,13 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	Button *clear_invalid_button = memnew(Button);
 	clear_invalid_button->set_text(TTR("Clear Invalid"));
 	clear_invalid_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_invalid_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_clear_invalid_button_pressed));
+	clear_invalid_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_clear_invalid_button_pressed));
 	hboxcontainer->add_child(clear_invalid_button);
 
 	Button *clear_all_button = memnew(Button);
 	clear_all_button->set_text(TTR("Clear All"));
 	clear_all_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_all_button->connect("pressed", callable_mp(this, &TileProxiesManagerDialog::_clear_all_button_pressed));
+	clear_all_button->connect(SceneStringName(pressed), callable_mp(this, &TileProxiesManagerDialog::_clear_all_button_pressed));
 	hboxcontainer->add_child(clear_all_button);
 
 	h_separator = memnew(HSeparator);

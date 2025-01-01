@@ -35,8 +35,6 @@
 
 #include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 class ShaderWarning {
@@ -51,6 +49,7 @@ public:
 		UNUSED_LOCAL_VARIABLE,
 		FORMATTING_ERROR,
 		DEVICE_LIMIT_EXCEEDED,
+		MAGIC_POSITION_WRITE,
 		WARNING_MAX,
 	};
 
@@ -65,6 +64,7 @@ public:
 		UNUSED_LOCAL_VARIABLE_FLAG = 64U,
 		FORMATTING_ERROR_FLAG = 128U,
 		DEVICE_LIMIT_EXCEEDED_FLAG = 256U,
+		MAGIC_POSITION_WRITE_FLAG = 512U,
 	};
 
 private:

@@ -40,7 +40,7 @@
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
 
-	static HashMap<String, PopupMenu *> system_menus;
+	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
 	struct Item {
 		Ref<Texture2D> icon;
@@ -97,8 +97,14 @@ class PopupMenu : public Popup {
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
-	String global_menu_name;
-	String system_menu_name;
+	// To make Item available.
+	friend class OptionButton;
+	friend class MenuButton;
+
+	RID global_menu;
+	RID system_menu;
+	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
+	bool prefer_native = false;
 
 	bool close_allowed = false;
 	bool activated_by_keyboard = false;
@@ -106,7 +112,7 @@ class PopupMenu : public Popup {
 	Timer *minimum_lifetime_timer = nullptr;
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
-	Vector<Item> items;
+	mutable Vector<Item> items;
 	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
 	bool is_scrolling = false;
@@ -121,7 +127,7 @@ class PopupMenu : public Popup {
 	int _get_items_total_height() const;
 	Size2 _get_item_icon_size(int p_idx) const;
 
-	void _shape_item(int p_idx);
+	void _shape_item(int p_idx) const;
 
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
@@ -212,7 +218,7 @@ protected:
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
-	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list, items.size()); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
@@ -221,6 +227,10 @@ protected:
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
+
+	void _set_system_menu_root_compat_87452(const String &p_special);
+	String _get_system_menu_root_compat_87452() const;
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -231,11 +241,12 @@ public:
 
 	virtual void _parent_focused() override;
 
-	String bind_global_menu();
+	RID bind_global_menu();
 	void unbind_global_menu();
 	bool is_system_menu() const;
-	void set_system_menu_root(const String &p_special);
-	String get_system_menu_root() const;
+
+	void set_system_menu(NativeMenu::SystemMenus p_system_menu_id);
+	NativeMenu::SystemMenus get_system_menu() const;
 
 	void add_item(const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
 	void add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id = -1, Key p_accel = Key::NONE);
@@ -316,6 +327,11 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
+	void set_prefer_native_menu(bool p_enabled);
+	bool is_prefer_native_menu() const;
+
+	bool is_native_menu() const;
+
 	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
@@ -351,8 +367,7 @@ public:
 	bool get_allow_search() const;
 
 	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
-
-	void take_mouse_focus();
+	virtual void set_visible(bool p_visible) override;
 
 	PopupMenu();
 	~PopupMenu();

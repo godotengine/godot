@@ -38,6 +38,7 @@
 namespace TestWorkerThreadPool {
 
 static LocalVector<SafeNumeric<int>> counter;
+static SafeFlag exit;
 
 static void static_test(void *p_arg) {
 	counter[(uint64_t)p_arg].increment();
@@ -104,6 +105,72 @@ TEST_CASE("[WorkerThreadPool] Process elements using group tasks") {
 		}
 		CHECK(all_run_once);
 	}
+}
+
+static void static_test_daemon(void *p_arg) {
+	while (!exit.is_set()) {
+		counter[0].add(1);
+		WorkerThreadPool::get_singleton()->yield();
+	}
+}
+
+static void static_busy_task(void *p_arg) {
+	while (!exit.is_set()) {
+		OS::get_singleton()->delay_usec(1);
+	}
+}
+
+static void static_legit_task(void *p_arg) {
+	*((bool *)p_arg) = counter[0].get() > 0;
+	counter[1].add(1);
+}
+
+TEST_CASE("[WorkerThreadPool] Run a yielding daemon as the only hope for other tasks to run") {
+	exit.clear();
+	counter.clear();
+	counter.resize(2);
+
+	WorkerThreadPool::TaskID daemon_task_id = WorkerThreadPool::get_singleton()->add_native_task(static_test_daemon, nullptr, true);
+
+	int num_threads = WorkerThreadPool::get_singleton()->get_thread_count();
+
+	// Keep all the other threads busy.
+	LocalVector<WorkerThreadPool::TaskID> task_ids;
+	for (int i = 0; i < num_threads - 1; i++) {
+		task_ids.push_back(WorkerThreadPool::get_singleton()->add_native_task(static_busy_task, nullptr, true));
+	}
+
+	LocalVector<WorkerThreadPool::TaskID> legit_task_ids;
+	LocalVector<bool> legit_task_needed_yield;
+	int legit_tasks_count = num_threads * 4;
+	legit_task_needed_yield.resize(legit_tasks_count);
+	for (int i = 0; i < legit_tasks_count; i++) {
+		legit_task_needed_yield[i] = false;
+		task_ids.push_back(WorkerThreadPool::get_singleton()->add_native_task(static_legit_task, &legit_task_needed_yield[i], i >= legit_tasks_count / 2));
+	}
+
+	while (counter[1].get() != legit_tasks_count) {
+		OS::get_singleton()->delay_usec(1);
+	}
+
+	exit.set();
+	for (uint32_t i = 0; i < task_ids.size(); i++) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_ids[i]);
+	}
+	WorkerThreadPool::get_singleton()->notify_yield_over(daemon_task_id);
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(daemon_task_id);
+
+	CHECK_MESSAGE(counter[0].get() > 0, "Daemon task should have looped at least once.");
+	CHECK_MESSAGE(counter[1].get() == legit_tasks_count, "All legit tasks should have been able to run.");
+
+	bool all_needed_yield = true;
+	for (int i = 0; i < legit_tasks_count; i++) {
+		if (!legit_task_needed_yield[i]) {
+			all_needed_yield = false;
+			break;
+		}
+	}
+	CHECK_MESSAGE(all_needed_yield, "All legit tasks should have needed the daemon yielding to run.");
 }
 
 } // namespace TestWorkerThreadPool

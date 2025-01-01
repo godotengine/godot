@@ -31,11 +31,14 @@
 #ifndef NAV_MAP_H
 #define NAV_MAP_H
 
+#include "3d/nav_map_iteration_3d.h"
+#include "3d/nav_mesh_queries_3d.h"
 #include "nav_rid.h"
 #include "nav_utils.h"
 
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
+#include "servers/navigation/navigation_globals.h"
 
 #include <KdTree2d.h>
 #include <KdTree3d.h>
@@ -48,41 +51,34 @@ class NavAgent;
 class NavObstacle;
 
 class NavMap : public NavRid {
-	RWLock map_rwlock;
-
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size and cell_height.
-	real_t cell_size = 0.25; // Must match ProjectSettings default 3D cell_size and NavigationMesh cell_size.
-	real_t cell_height = 0.25; // Must match ProjectSettings default 3D cell_height and NavigationMesh cell_height.
+	real_t cell_size = NavigationDefaults3D::navmesh_cell_size;
+	real_t cell_height = NavigationDefaults3D::navmesh_cell_height;
 
 	// For the inter-region merging to work, internal rasterization is performed.
-	float merge_rasterizer_cell_size = 0.25;
-	float merge_rasterizer_cell_height = 0.25;
+	Vector3 merge_rasterizer_cell_size = Vector3(cell_size, cell_height, cell_size);
+
 	// This value is used to control sensitivity of internal rasterizer.
 	float merge_rasterizer_cell_scale = 1.0;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = 0.25;
+	real_t edge_connection_margin = NavigationDefaults3D::edge_connection_margin;
 
 	/// This value is used to limit how far links search to find polygons to connect to.
-	real_t link_connection_radius = 1.0;
+	real_t link_connection_radius = NavigationDefaults3D::link_connection_radius;
 
-	bool regenerate_polygons = true;
-	bool regenerate_links = true;
+	bool map_settings_dirty = true;
 
 	/// Map regions
 	LocalVector<NavRegion *> regions;
 
 	/// Map links
 	LocalVector<NavLink *> links;
-	LocalVector<gd::Polygon> link_polygons;
-
-	/// Map polygons
-	LocalVector<gd::Polygon> polygons;
 
 	/// RVO avoidance worlds
 	RVO2D::RVOSimulator2D rvo_simulation_2d;
@@ -115,14 +111,34 @@ class NavMap : public NavRid {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	int pm_region_count = 0;
-	int pm_agent_count = 0;
-	int pm_link_count = 0;
-	int pm_polygon_count = 0;
-	int pm_edge_count = 0;
-	int pm_edge_merge_count = 0;
-	int pm_edge_connection_count = 0;
-	int pm_edge_free_count = 0;
+	gd::PerformanceData performance_data;
+
+	struct {
+		SelfList<NavRegion>::List regions;
+		SelfList<NavLink>::List links;
+		SelfList<NavAgent>::List agents;
+		SelfList<NavObstacle>::List obstacles;
+	} sync_dirty_requests;
+
+	int path_query_slots_max = 4;
+
+	bool use_async_iterations = true;
+
+	uint32_t iteration_slot_index = 0;
+	LocalVector<NavMapIteration> iteration_slots;
+	mutable RWLock iteration_slot_rwlock;
+
+	NavMapIterationBuild iteration_build;
+	bool iteration_build_use_threads = false;
+	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	static void _build_iteration_threaded(void *p_arg);
+
+	bool iteration_dirty = true;
+	bool iteration_building = false;
+	bool iteration_ready = false;
+
+	void _build_iteration();
+	void _sync_iteration();
 
 public:
 	NavMap();
@@ -164,8 +180,10 @@ public:
 	}
 
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
+	const Vector3 &get_merge_rasterizer_cell_size() const;
 
-	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task);
+
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
 	Vector3 get_closest_point(const Vector3 &p_point) const;
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
@@ -208,22 +226,43 @@ public:
 	void dispatch_callbacks();
 
 	// Performance Monitor
-	int get_pm_region_count() const { return pm_region_count; }
-	int get_pm_agent_count() const { return pm_agent_count; }
-	int get_pm_link_count() const { return pm_link_count; }
-	int get_pm_polygon_count() const { return pm_polygon_count; }
-	int get_pm_edge_count() const { return pm_edge_count; }
-	int get_pm_edge_merge_count() const { return pm_edge_merge_count; }
-	int get_pm_edge_connection_count() const { return pm_edge_connection_count; }
-	int get_pm_edge_free_count() const { return pm_edge_free_count; }
+	int get_pm_region_count() const { return performance_data.pm_region_count; }
+	int get_pm_agent_count() const { return performance_data.pm_agent_count; }
+	int get_pm_link_count() const { return performance_data.pm_link_count; }
+	int get_pm_polygon_count() const { return performance_data.pm_polygon_count; }
+	int get_pm_edge_count() const { return performance_data.pm_edge_count; }
+	int get_pm_edge_merge_count() const { return performance_data.pm_edge_merge_count; }
+	int get_pm_edge_connection_count() const { return performance_data.pm_edge_connection_count; }
+	int get_pm_edge_free_count() const { return performance_data.pm_edge_free_count; }
+	int get_pm_obstacle_count() const { return performance_data.pm_obstacle_count; }
+
+	int get_region_connections_count(NavRegion *p_region) const;
+	Vector3 get_region_connection_pathway_start(NavRegion *p_region, int p_connection_id) const;
+	Vector3 get_region_connection_pathway_end(NavRegion *p_region, int p_connection_id) const;
+
+	void add_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request);
+	void add_link_sync_dirty_request(SelfList<NavLink> *p_sync_request);
+	void add_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request);
+	void add_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request);
+
+	void remove_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request);
+	void remove_link_sync_dirty_request(SelfList<NavLink> *p_sync_request);
+	void remove_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request);
+	void remove_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request);
+
+	void set_use_async_iterations(bool p_enabled);
+	bool get_use_async_iterations() const;
 
 private:
+	void _sync_dirty_map_update_requests();
+	void _sync_dirty_avoidance_update_requests();
+
 	void compute_single_step(uint32_t index, NavAgent **agent);
 
 	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
 	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
 
-	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void _sync_avoidance();
 	void _update_rvo_simulation();
 	void _update_rvo_obstacles_tree_2d();
 	void _update_rvo_agents_tree_2d();

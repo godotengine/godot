@@ -65,7 +65,7 @@ enum PropertyHint {
 	PROPERTY_HINT_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
+	PROPERTY_HINT_RESOURCE_TYPE, ///< a comma-separated resource object type, e.g. "NoiseTexture,GradientTexture2D". Subclasses can be excluded with a "-" prefix if placed *after* the base class, e.g. "Texture2D,-MeshTexture".
 	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
 	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
@@ -86,6 +86,10 @@ enum PropertyHint {
 	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
 	PROPERTY_HINT_PASSWORD,
 	PROPERTY_HINT_LAYERS_AVOIDANCE,
+	PROPERTY_HINT_DICTIONARY_TYPE,
+	PROPERTY_HINT_TOOL_BUTTON,
+	PROPERTY_HINT_ONESHOT, ///< the property will be changed by self after setting, such as AudioStreamPlayer.playing, Particles.emitting.
+	PROPERTY_HINT_NO_NODEPATH, /// < this property will not contain a NodePath, regardless of type (Array, Dictionary, List, etc.). Needed for SceneTreeDock.
 	PROPERTY_HINT_MAX,
 };
 
@@ -214,6 +218,7 @@ enum MethodFlags {
 	METHOD_FLAG_VARARG = 16,
 	METHOD_FLAG_STATIC = 32,
 	METHOD_FLAG_OBJECT_CORE = 64,
+	METHOD_FLAG_VIRTUAL_REQUIRED = 128,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 
@@ -324,12 +329,13 @@ struct ObjectGDExtension {
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;
-	GDExtensionClassFreePropertyList free_property_list;
+	GDExtensionClassFreePropertyList2 free_property_list2;
 	GDExtensionClassPropertyCanRevert property_can_revert;
 	GDExtensionClassPropertyGetRevert property_get_revert;
 	GDExtensionClassValidateProperty validate_property;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassNotification notification;
+	GDExtensionClassFreePropertyList free_property_list;
 #endif // DISABLE_DEPRECATED
 	GDExtensionClassNotification2 notification2;
 	GDExtensionClassToString to_string;
@@ -349,7 +355,10 @@ struct ObjectGDExtension {
 	}
 	void *class_userdata = nullptr;
 
+#ifndef DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance create_instance;
+#endif // DISABLE_DEPRECATED
+	GDExtensionClassCreateInstance2 create_instance2;
 	GDExtensionClassFreeInstance free_instance;
 	GDExtensionClassGetVirtual get_virtual;
 	GDExtensionClassGetVirtualCallData get_virtual_call_data;
@@ -363,11 +372,8 @@ struct ObjectGDExtension {
 #endif
 };
 
-#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call<false>(__VA_ARGS__)
-#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<false>(__VA_ARGS__)
-
-#define GDVIRTUAL_REQUIRED_CALL(m_name, ...) _gdvirtual_##m_name##_call<true>(__VA_ARGS__)
-#define GDVIRTUAL_REQUIRED_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call<true>(__VA_ARGS__)
+#define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
+#define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
 
 #ifdef DEBUG_METHODS_ENABLED
 #define GDVIRTUAL_BIND(m_name, ...) ::ClassDB::add_virtual_method(get_class_static(), _gdvirtual_##m_name##_get_method_info(), true, sarray(__VA_ARGS__));
@@ -382,18 +388,6 @@ struct ObjectGDExtension {
  * compensate for many of the fallacies in C++. As a plus, this macro pretty
  * much alone defines the object model.
  */
-
-#define REVERSE_GET_PROPERTY_LIST                                  \
-public:                                                            \
-	_FORCE_INLINE_ bool _is_gpl_reversed() const { return true; }; \
-                                                                   \
-private:
-
-#define UNREVERSE_GET_PROPERTY_LIST                                 \
-public:                                                             \
-	_FORCE_INLINE_ bool _is_gpl_reversed() const { return false; }; \
-                                                                    \
-private:
 
 #define GDCLASS(m_class, m_inherits)                                                                                                             \
 private:                                                                                                                                         \
@@ -506,14 +500,9 @@ protected:                                                                      
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
 		}                                                                                                                                        \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY));      \
-		if (!_is_gpl_reversed()) {                                                                                                               \
-			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
-		}                                                                                                                                        \
+		::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                              \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                         \
 			_get_property_list(p_list);                                                                                                          \
-		}                                                                                                                                        \
-		if (_is_gpl_reversed()) {                                                                                                                \
-			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                          \
 		}                                                                                                                                        \
 		if (p_reversed) {                                                                                                                        \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                                 \
@@ -619,6 +608,7 @@ private:
 
 		MethodInfo user;
 		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
+		bool removable = false;
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -630,6 +620,7 @@ private:
 	int _predelete_ok = 0;
 	ObjectID _instance_id;
 	bool _predelete();
+	void _initialize();
 	void _postinitialize();
 	bool _can_translate = true;
 	bool _emitting = false;
@@ -646,6 +637,7 @@ private:
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
+	void _remove_user_signal(const StringName &p_name);
 	Error _emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	TypedArray<Dictionary> _get_signal_list() const;
 	TypedArray<Dictionary> _get_signal_connection_list(const StringName &p_signal) const;
@@ -654,6 +646,7 @@ private:
 	Variant _get_bind(const StringName &p_name) const;
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
+	int _get_method_argument_count_bind(const StringName &p_name) const;
 
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
@@ -673,10 +666,12 @@ private:
 	Object(bool p_reference);
 
 protected:
+	StringName _translation_domain;
+
 	_FORCE_INLINE_ bool _instance_binding_reference(bool p_reference) {
 		bool can_die = true;
 		if (_instance_bindings) {
-			_instance_binding_mutex.lock();
+			MutexLock instance_binding_lock(_instance_binding_mutex);
 			for (uint32_t i = 0; i < _instance_binding_count; i++) {
 				if (_instance_bindings[i].reference_callback) {
 					if (!_instance_bindings[i].reference_callback(_instance_bindings[i].token, _instance_bindings[i].binding, p_reference)) {
@@ -684,7 +679,6 @@ protected:
 					}
 				}
 			}
-			_instance_binding_mutex.unlock();
 		}
 		return can_die;
 	}
@@ -693,26 +687,22 @@ protected:
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }
 	_ALWAYS_INLINE_ GDExtensionClassInstancePtr _get_extension_instance() const { return _extension_instance; }
 	virtual void _initialize_classv() { initialize_class(); }
-	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
-	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
-	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
-	virtual void _validate_propertyv(PropertyInfo &p_property) const {};
-	virtual bool _property_can_revertv(const StringName &p_name) const { return false; };
-	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; };
+	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; }
+	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; }
+	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {}
+	virtual void _validate_propertyv(PropertyInfo &p_property) const {}
+	virtual bool _property_can_revertv(const StringName &p_name) const { return false; }
+	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; }
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static void _bind_methods();
-#ifndef DISABLE_DEPRECATED
-	static void _bind_compatibility_methods();
-#else
 	static void _bind_compatibility_methods() {}
-#endif
-	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
-	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
-	void _get_property_list(List<PropertyInfo> *p_list) const {};
-	void _validate_property(PropertyInfo &p_property) const {};
-	bool _property_can_revert(const StringName &p_name) const { return false; };
-	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; };
+	bool _set(const StringName &p_name, const Variant &p_property) { return false; }
+	bool _get(const StringName &p_name, Variant &r_property) const { return false; }
+	void _get_property_list(List<PropertyInfo> *p_list) const {}
+	void _validate_property(PropertyInfo &p_property) const {}
+	bool _property_can_revert(const StringName &p_name) const { return false; }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
 	void _notification(int p_notification) {}
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
@@ -791,19 +781,17 @@ public:
 		return &ptr;
 	}
 
-	bool _is_gpl_reversed() const { return false; }
-
 	void detach_from_objectdb();
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
-	template <class T>
+	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return dynamic_cast<T *>(p_object);
+		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
 	}
 
-	template <class T>
+	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return dynamic_cast<const T *>(p_object);
+		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -865,6 +853,7 @@ public:
 	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -878,7 +867,8 @@ public:
 			argptrs[i] = &args[i];
 		}
 		Callable::CallError cerr;
-		return callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+		const Variant ret = callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
 	}
 
 	void notification(int p_notification, bool p_reversed = false);
@@ -905,6 +895,7 @@ public:
 	MTVIRTUAL void remove_meta(const StringName &p_name);
 	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
 	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
+	MTVIRTUAL void merge_meta_from(const Object *p_src);
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -942,6 +933,7 @@ public:
 	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
 	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
 	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	MTVIRTUAL bool has_connections(const StringName &p_signal) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
@@ -956,8 +948,6 @@ public:
 	Variant::Type get_static_property_type(const StringName &p_property, bool *r_valid = nullptr) const;
 	Variant::Type get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid = nullptr) const;
 
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
-
 	// Translate message (internationalization).
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
@@ -968,7 +958,11 @@ public:
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
 
+	virtual StringName get_translation_domain() const;
+	virtual void set_translation_domain(const StringName &p_domain);
+
 #ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }

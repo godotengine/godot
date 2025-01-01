@@ -210,7 +210,7 @@ namespace GodotTools.OpenVisualStudio
             return null;
         }
 
-        static string NormalizePath(string path)
+        private static string NormalizePath(string path)
         {
             return new Uri(Path.GetFullPath(path)).LocalPath
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)

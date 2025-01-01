@@ -32,7 +32,7 @@
 #define GRADIENT_TEXTURE_2D_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class Button;
 class EditorSpinSlider;

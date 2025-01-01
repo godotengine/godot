@@ -43,6 +43,7 @@
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-post-table.hh"
 #include "hb-ot-stat-table.hh" // Just so we compile it; unused otherwise.
+#include "hb-ot-var-varc-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "OT/Color/CBDT/CBDT.hh"
 #include "OT/Color/COLR/COLR.hh"
@@ -208,12 +209,12 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
   const OT::HVAR &HVAR = *hmtx.var_table;
-  const OT::VariationStore &varStore = &HVAR + HVAR.varStore;
-  OT::VariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
+  const OT::ItemVariationStore &varStore = &HVAR + HVAR.varStore;
+  OT::ItemVariationStore::cache_t *varStore_cache = font->num_coords * count >= 128 ? varStore.create_cache () : nullptr;
 
   bool use_cache = font->num_coords;
 #else
-  OT::VariationStore::cache_t *varStore_cache = nullptr;
+  OT::ItemVariationStore::cache_t *varStore_cache = nullptr;
   bool use_cache = false;
 #endif
 
@@ -277,7 +278,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   }
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
-  OT::VariationStore::destroy_cache (varStore_cache);
+  OT::ItemVariationStore::destroy_cache (varStore_cache);
 #endif
 
   if (font->x_strength && !font->embolden_in_place)
@@ -313,10 +314,10 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
   {
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
     const OT::VVAR &VVAR = *vmtx.var_table;
-    const OT::VariationStore &varStore = &VVAR + VVAR.varStore;
-    OT::VariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
+    const OT::ItemVariationStore &varStore = &VVAR + VVAR.varStore;
+    OT::ItemVariationStore::cache_t *varStore_cache = font->num_coords ? varStore.create_cache () : nullptr;
 #else
-    OT::VariationStore::cache_t *varStore_cache = nullptr;
+    OT::ItemVariationStore::cache_t *varStore_cache = nullptr;
 #endif
 
     for (unsigned int i = 0; i < count; i++)
@@ -327,7 +328,7 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
     }
 
 #if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_ADVANCE_CACHE)
-    OT::VariationStore::destroy_cache (varStore_cache);
+    OT::ItemVariationStore::destroy_cache (varStore_cache);
 #endif
   }
   else
@@ -523,6 +524,10 @@ hb_ot_draw_glyph (hb_font_t *font,
   { // Need draw_session to be destructed before emboldening.
     hb_draw_session_t draw_session (embolden ? hb_outline_recording_pen_get_funcs () : draw_funcs,
 				    embolden ? &outline : draw_data, font->slant_xy);
+#ifndef HB_NO_VAR_COMPOSITES
+    if (!font->face->table.VARC->get_path (font, glyph, draw_session))
+#endif
+    // Keep the following in synch with VARC::get_path_at()
     if (!font->face->table.glyf->get_path (font, glyph, draw_session))
 #ifndef HB_NO_CFF
     if (!font->face->table.cff2->get_path (font, glyph, draw_session))
@@ -562,6 +567,9 @@ hb_ot_paint_glyph (hb_font_t *font,
   if (font->face->table.CBDT->paint_glyph (font, glyph, paint_funcs, paint_data)) return;
   if (font->face->table.sbix->paint_glyph (font, glyph, paint_funcs, paint_data)) return;
 #endif
+#endif
+#ifndef HB_NO_VAR_COMPOSITES
+  if (font->face->table.VARC->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
 #endif
   if (font->face->table.glyf->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
 #ifndef HB_NO_CFF

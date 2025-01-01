@@ -164,6 +164,15 @@ const char *GDScriptTokenizer::Token::get_name() const {
 	return token_names[type];
 }
 
+String GDScriptTokenizer::Token::get_debug_name() const {
+	switch (type) {
+		case IDENTIFIER:
+			return vformat(R"(identifier "%s")", source);
+		default:
+			return vformat(R"("%s")", get_name());
+	}
+}
+
 bool GDScriptTokenizer::Token::can_precede_bin_op() const {
 	switch (type) {
 		case IDENTIFIER:
@@ -574,7 +583,9 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 
 	if (len == 1 && _peek(-1) == '_') {
 		// Lone underscore.
-		return make_token(Token::UNDERSCORE);
+		Token token = make_token(Token::UNDERSCORE);
+		token.literal = "_";
+		return token;
 	}
 
 	String name(_start, len);
@@ -1455,10 +1466,11 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		if (_peek() != '\n') {
 			return make_error("Expected new line after \"\\\".");
 		}
-		continuation_lines.push_back(line);
 		_advance();
 		newline(false);
 		line_continuation = true;
+		_skip_whitespace(); // Skip whitespace/comment lines after `\`. See GH-89403.
+		continuation_lines.push_back(line);
 		return scan(); // Recurse to get next token.
 	}
 

@@ -31,13 +31,14 @@
 #ifndef PATH_3D_EDITOR_PLUGIN_H
 #define PATH_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 
 class HBoxContainer;
 class MenuButton;
+class ConfirmationDialog;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
@@ -106,13 +107,25 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
+	friend class Path3DGizmo;
+	friend class Path3DGizmoPlugin;
+
+	Ref<Path3DGizmoPlugin> path_3d_gizmo_plugin;
+
 	HBoxContainer *topmenu_bar = nullptr;
+
+	HBoxContainer *toolbar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
-	Button *curve_close = nullptr;
+	Button *curve_closed = nullptr;
+	Button *curve_clear_points = nullptr;
 	MenuButton *handle_menu = nullptr;
+
+	Button *create_curve_button = nullptr;
+	ConfirmationDialog *clear_points_dialog = nullptr;
 
 	float disk_size = 0.8;
 
@@ -120,6 +133,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
+		MODE_EDIT_TILT,
 		MODE_DELETE,
 		ACTION_CLOSE
 	};
@@ -127,13 +141,20 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Path3D *path = nullptr;
 
 	void _update_theme();
+	void _update_toolbar();
 
 	void _mode_changed(int p_mode);
-	void _close_curve();
+	void _toggle_closed_curve();
 	void _handle_option_pressed(int p_option);
 	bool handle_clicked = false;
-	bool mirror_handle_angle;
-	bool mirror_handle_length;
+	bool mirror_handle_angle = true;
+	bool mirror_handle_length = true;
+
+	void _create_curve();
+	void _confirm_clear_points();
+	void _clear_points();
+	void _clear_curve_points();
+	void _restore_curve_points(const PackedVector3Array &p_points);
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -141,16 +162,15 @@ class Path3DEditorPlugin : public EditorPlugin {
 	};
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	Path3D *get_edited_path() { return path; }
 
-	static Path3DEditorPlugin *singleton;
+	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const override { return "Path3D"; }
+	virtual String get_plugin_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -162,7 +182,6 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
-	~Path3DEditorPlugin();
 };
 
 #endif // PATH_3D_EDITOR_PLUGIN_H

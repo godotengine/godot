@@ -93,7 +93,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
 		}
-		if (p_node->get_owner() != p_root && !p_root->is_editable_instance(p_node)) {
+		if (p_node->get_owner() != p_root && !p_root->is_editable_instance(p_node->get_owner())) {
 			return;
 		}
 	}
@@ -249,7 +249,7 @@ void EditorFolding::_do_object_unfolds(Object *p_object, HashSet<Ref<Resource>> 
 					}
 				}
 			} else { //path
-				int last = E.name.rfind("/");
+				int last = E.name.rfind_char('/');
 				if (last != -1) {
 					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E.name);
 					if (can_revert) {

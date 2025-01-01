@@ -33,7 +33,10 @@
 
 /**
  * @class Vector
- * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use Vector for large arrays.
+ * Vector container. Simple copy-on-write container.
+ *
+ * LocalVector is an alternative available for internal use when COW is not
+ * required.
  */
 
 #include "core/error/error_macros.h"
@@ -44,8 +47,9 @@
 
 #include <climits>
 #include <initializer_list>
+#include <utility>
 
-template <class T>
+template <typename T>
 class VectorWriteProxy {
 public:
 	_FORCE_INLINE_ T &operator[](typename CowData<T>::Size p_index) {
@@ -55,7 +59,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class Vector {
 	friend class VectorWriteProxy<T>;
 
@@ -108,7 +112,7 @@ public:
 		sort_custom<_DefaultComparator<T>>();
 	}
 
-	template <class Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, class... Args>
+	template <typename Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, typename... Args>
 	void sort_custom(Args &&...args) {
 		Size len = _cowdata.size();
 		if (len == 0) {
@@ -124,7 +128,7 @@ public:
 		return bsearch_custom<_DefaultComparator<T>>(p_value, p_before);
 	}
 
-	template <class Comparator, class Value, class... Args>
+	template <typename Comparator, typename Value, typename... Args>
 	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
 		SearchArray<T, Comparator> search{ args... };
 		return search.bisect(ptrw(), size(), p_value, p_before);
@@ -144,17 +148,19 @@ public:
 		insert(i, p_val);
 	}
 
-	inline void operator=(const Vector &p_from) {
-		_cowdata._ref(p_from._cowdata);
-	}
+	void operator=(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
 		if (is_empty()) {
 			return ret;
 		}
-		ret.resize(size() * sizeof(T));
-		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
+		size_t alloc_size = size() * sizeof(T);
+		ret.resize(alloc_size);
+		if (alloc_size) {
+			memcpy(ret.ptrw(), ptr(), alloc_size);
+		}
 		return ret;
 	}
 
@@ -277,21 +283,16 @@ public:
 	}
 
 	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) {
-		Error err = _cowdata.resize(p_init.size());
-		ERR_FAIL_COND(err);
-
-		Size i = 0;
-		for (const T &element : p_init) {
-			_cowdata.set(i++, element);
-		}
-	}
+	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
+			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector(Vector &&p_from) :
+			_cowdata(std::move(p_from._cowdata)) {}
 
 	_FORCE_INLINE_ ~Vector() {}
 };
 
-template <class T>
+template <typename T>
 void Vector<T>::reverse() {
 	for (Size i = 0; i < size() / 2; i++) {
 		T *p = ptrw();
@@ -299,7 +300,7 @@ void Vector<T>::reverse() {
 	}
 }
 
-template <class T>
+template <typename T>
 void Vector<T>::append_array(const Vector<T> &p_other) {
 	const Size ds = p_other.size();
 	if (ds == 0) {
@@ -312,7 +313,7 @@ void Vector<T>::append_array(const Vector<T> &p_other) {
 	}
 }
 
-template <class T>
+template <typename T>
 bool Vector<T>::push_back(T p_elem) {
 	Error err = resize(size() + 1);
 	ERR_FAIL_COND_V(err, true);
@@ -321,7 +322,7 @@ bool Vector<T>::push_back(T p_elem) {
 	return false;
 }
 
-template <class T>
+template <typename T>
 void Vector<T>::fill(T p_elem) {
 	T *p = ptrw();
 	for (Size i = 0; i < size(); i++) {

@@ -56,16 +56,40 @@ CubicSegment::CubicSegment(Point2 p0, Point2 p1, Point2 p2, Point2 p3, EdgeColor
     p[3] = p3;
 }
 
-LinearSegment * LinearSegment::clone() const {
+LinearSegment *LinearSegment::clone() const {
     return new LinearSegment(p[0], p[1], color);
 }
 
-QuadraticSegment * QuadraticSegment::clone() const {
+QuadraticSegment *QuadraticSegment::clone() const {
     return new QuadraticSegment(p[0], p[1], p[2], color);
 }
 
-CubicSegment * CubicSegment::clone() const {
+CubicSegment *CubicSegment::clone() const {
     return new CubicSegment(p[0], p[1], p[2], p[3], color);
+}
+
+int LinearSegment::type() const {
+    return (int) EDGE_TYPE;
+}
+
+int QuadraticSegment::type() const {
+    return (int) EDGE_TYPE;
+}
+
+int CubicSegment::type() const {
+    return (int) EDGE_TYPE;
+}
+
+const Point2 *LinearSegment::controlPoints() const {
+    return p;
+}
+
+const Point2 *QuadraticSegment::controlPoints() const {
+    return p;
+}
+
+const Point2 *CubicSegment::controlPoints() const {
+    return p;
 }
 
 Point2 LinearSegment::point(double param) const {
@@ -483,7 +507,7 @@ void CubicSegment::splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeS
     part3 = new CubicSegment(point(2/3.), mix(mix(p[1], p[2], 2/3.), mix(p[2], p[3], 2/3.), 2/3.), p[2] == p[3] ? p[3] : mix(p[2], p[3], 2/3.), p[3], color);
 }
 
-EdgeSegment * QuadraticSegment::convertToCubic() const {
+EdgeSegment *QuadraticSegment::convertToCubic() const {
     return new CubicSegment(p[0], mix(p[0], p[1], 2/3.), mix(p[1], p[2], 1/3.), p[2], color);
 }
 

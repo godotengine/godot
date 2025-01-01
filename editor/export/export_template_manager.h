@@ -46,7 +46,6 @@ class ExportTemplateManager : public AcceptDialog {
 	GDCLASS(ExportTemplateManager, AcceptDialog);
 
 	bool current_version_exists = false;
-	bool downloads_available = true;
 	bool mirrors_available = false;
 	bool is_refreshing_mirrors = false;
 	bool is_downloading_templates = false;
@@ -58,7 +57,6 @@ class ExportTemplateManager : public AcceptDialog {
 
 	HBoxContainer *current_installed_hb = nullptr;
 	LineEdit *current_installed_path = nullptr;
-	Button *current_open_button = nullptr;
 	Button *current_uninstall_button = nullptr;
 
 	VBoxContainer *install_options_vb = nullptr;
@@ -75,6 +73,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Label *download_progress_label = nullptr;
 	HTTPRequest *download_templates = nullptr;
 	Button *install_file_button = nullptr;
+	Button *download_current_button = nullptr;
 	HTTPRequest *request_mirrors = nullptr;
 
 	enum TemplatesAction {
@@ -119,7 +118,6 @@ class ExportTemplateManager : public AcceptDialog {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	static String get_android_build_directory(const Ref<EditorExportPreset> &p_preset);

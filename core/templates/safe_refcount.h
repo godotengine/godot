@@ -59,7 +59,7 @@
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <class T>
+template <typename T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -146,7 +146,7 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) {
+	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
 		set(p_value);
 	}
 };

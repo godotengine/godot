@@ -58,15 +58,22 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
-		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
 		//case FEATURE_ICON:
 		//case FEATURE_IME:
 		case FEATURE_MOUSE:
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG_INPUT:
+		case FEATURE_NATIVE_DIALOG_FILE:
+		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -170,6 +177,44 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
+Error DisplayServerAndroid::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, FAILED);
+	input_dialog_callback = p_callback;
+	return godot_java->show_input_dialog(p_title, p_description, p_partial);
+}
+
+void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
+	if (input_dialog_callback.is_valid()) {
+		input_dialog_callback.call_deferred(p_text);
+	}
+}
+
+Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, FAILED);
+	file_picker_callback = p_callback;
+	return godot_java->show_file_picker(p_current_directory, p_filename, p_mode, p_filters);
+}
+
+void DisplayServerAndroid::emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths) {
+	if (file_picker_callback.is_valid()) {
+		file_picker_callback.call_deferred(p_ok, p_selected_paths, 0);
+	}
+}
+
+Color DisplayServerAndroid::get_accent_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_accent_color();
+}
+
+Color DisplayServerAndroid::get_base_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_base_color();
+}
+
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
@@ -252,7 +297,6 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
 	}
 
-	print_line("Selected screen scale: ", screen_scale);
 	return screen_scale;
 }
 
@@ -299,6 +343,13 @@ int DisplayServerAndroid::virtual_keyboard_get_height() const {
 	return godot_io_java->get_vk_height();
 }
 
+bool DisplayServerAndroid::has_hardware_keyboard() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, false);
+
+	return godot_io_java->has_hardware_keyboard();
+}
+
 void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
 	window_event_callback = p_callable;
 }
@@ -320,7 +371,7 @@ void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_call
 }
 
 void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
-	if (!p_callable.is_null()) {
+	if (p_callable.is_valid()) {
 		if (p_deferred) {
 			p_callable.call_deferred(p_arg);
 		} else {
@@ -375,6 +426,14 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 			if (rendering_driver == "opengl3") {
 				return reinterpret_cast<int64_t>(eglGetCurrentContext());
 			}
+			return 0;
+		}
+		case EGL_DISPLAY: {
+			// @todo Find a way to get this from the Java side.
+			return 0;
+		}
+		case EGL_CONFIG: {
+			// @todo Find a way to get this from the Java side.
 			return 0;
 		}
 #endif
@@ -449,11 +508,15 @@ Size2i DisplayServerAndroid::window_get_size_with_decorations(DisplayServer::Win
 }
 
 void DisplayServerAndroid::window_set_mode(DisplayServer::WindowMode p_mode, DisplayServer::WindowID p_window) {
-	// Not supported on Android.
+	OS_Android::get_singleton()->get_godot_java()->enable_immersive_mode(p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 }
 
 DisplayServer::WindowMode DisplayServerAndroid::window_get_mode(DisplayServer::WindowID p_window) const {
-	return WINDOW_MODE_FULLSCREEN;
+	if (OS_Android::get_singleton()->get_godot_java()->is_in_immersive_mode()) {
+		return WINDOW_MODE_FULLSCREEN;
+	} else {
+		return WINDOW_MODE_MAXIMIZED;
+	}
 }
 
 bool DisplayServerAndroid::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
@@ -505,8 +568,8 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			OS::get_singleton()->alert(
@@ -573,16 +636,12 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	}
 }
 
-DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
 
-#if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
-		RasterizerGLES3::make_current(false);
-	}
-#endif
+	native_menu = memnew(NativeMenu);
 
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
@@ -596,12 +655,26 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			return;
+#if defined(GLES3_ENABLED)
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support Vulkan, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else
+#endif
+			{
+				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
 		}
+	}
 
+	if (rendering_context) {
 		union {
 #ifdef VULKAN_ENABLED
 			RenderingContextDriverVulkanAndroid::WindowPlatformData vulkan;
@@ -619,6 +692,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
 
@@ -627,20 +701,36 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
 	}
 #endif
 
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		RasterizerGLES3::make_current(false);
+	}
+#endif
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
-	Input::get_singleton()->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
 
 	r_error = OK;
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
+
 #if defined(RD_ENABLED)
 	if (rendering_device) {
 		memdelete(rendering_device);

@@ -63,7 +63,7 @@ TEST_CASE("[LocalVector] Push Back.") {
 	CHECK(vector[4] == 4);
 }
 
-TEST_CASE("[LocalVector] Find.") {
+TEST_CASE("[LocalVector] Find, has.") {
 	LocalVector<int> vector;
 	vector.push_back(3);
 	vector.push_back(1);
@@ -85,6 +85,15 @@ TEST_CASE("[LocalVector] Find.") {
 
 	CHECK(vector.find(-1) == -1);
 	CHECK(vector.find(5) == -1);
+
+	CHECK(vector.has(0));
+	CHECK(vector.has(1));
+	CHECK(vector.has(2));
+	CHECK(vector.has(3));
+	CHECK(vector.has(4));
+
+	CHECK(!vector.has(-1));
+	CHECK(!vector.has(5));
 }
 
 TEST_CASE("[LocalVector] Remove.") {

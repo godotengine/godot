@@ -31,7 +31,7 @@
 #ifndef SPRITE_2D_EDITOR_PLUGIN_H
 #define SPRITE_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/spin_box.h"
 
@@ -121,7 +121,7 @@ class Sprite2DEditorPlugin : public EditorPlugin {
 	Sprite2DEditor *sprite_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "Sprite2D"; }
+	virtual String get_plugin_name() const override { return "Sprite2D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

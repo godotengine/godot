@@ -90,6 +90,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	LineEdit *get_name_box() const;
 	void show_message(const String &p_message);
 
 	void remove_references(const StringName &p_name);

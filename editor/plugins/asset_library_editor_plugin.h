@@ -32,10 +32,8 @@
 #define ASSET_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_asset_installer.h"
-#include "editor/editor_plugin.h"
-#include "editor/editor_plugin_settings.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
@@ -45,9 +43,8 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/http_request.h"
 
 class EditorFileDialog;
@@ -62,6 +59,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *author = nullptr;
 	Label *price = nullptr;
 
+	String title_text;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
@@ -224,7 +222,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	enum Support {
-		SUPPORT_OFFICIAL,
+		SUPPORT_FEATURED,
 		SUPPORT_COMMUNITY,
 		SUPPORT_TESTING,
 		SUPPORT_MAX
@@ -341,7 +339,7 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 public:
 	static bool is_available();
 
-	virtual String get_name() const override { return "AssetLib"; }
+	virtual String get_plugin_name() const override { return "AssetLib"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }

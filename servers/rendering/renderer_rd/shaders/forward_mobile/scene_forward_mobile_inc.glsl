@@ -20,8 +20,189 @@ layout(push_constant, std430) uniform DrawCall {
 	vec2 uv_offset;
 	uint instance_index;
 	uint pad;
+#ifdef UBERSHADER
+	uint sc_packed_0;
+	uint sc_packed_1;
+	uint sc_packed_2;
+	float sc_packed_3;
+	uint uc_packed_0;
+	uint uc_padding_1;
+	uint uc_padding_2;
+	uint uc_padding_3;
+#endif
 }
 draw_call;
+
+/* Specialization Constants */
+
+#ifdef UBERSHADER
+
+#define POLYGON_CULL_DISABLED 0
+#define POLYGON_CULL_FRONT 1
+#define POLYGON_CULL_BACK 2
+
+// Pull the constants from the draw call's push constants.
+uint sc_packed_0() {
+	return draw_call.sc_packed_0;
+}
+
+uint sc_packed_1() {
+	return draw_call.sc_packed_1;
+}
+
+uint sc_packed_2() {
+	return draw_call.sc_packed_2;
+}
+
+float sc_packed_3() {
+	return draw_call.sc_packed_3;
+}
+
+uint uc_cull_mode() {
+	return (draw_call.uc_packed_0 >> 0) & 3U;
+}
+
+#else
+
+// Pull the constants from the pipeline's specialization constants.
+layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
+layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
+layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
+layout(constant_id = 3) const float pso_sc_packed_3 = 2.0;
+
+uint sc_packed_0() {
+	return pso_sc_packed_0;
+}
+
+uint sc_packed_1() {
+	return pso_sc_packed_1;
+}
+
+uint sc_packed_2() {
+	return pso_sc_packed_2;
+}
+
+float sc_packed_3() {
+	return pso_sc_packed_3;
+}
+
+#endif
+
+bool sc_use_light_projector() {
+	return ((sc_packed_0() >> 0) & 1U) != 0;
+}
+
+bool sc_use_light_soft_shadows() {
+	return ((sc_packed_0() >> 1) & 1U) != 0;
+}
+
+bool sc_use_directional_soft_shadows() {
+	return ((sc_packed_0() >> 2) & 1U) != 0;
+}
+
+bool sc_decal_use_mipmaps() {
+	return ((sc_packed_0() >> 3) & 1U) != 0;
+}
+
+bool sc_projector_use_mipmaps() {
+	return ((sc_packed_0() >> 4) & 1U) != 0;
+}
+
+bool sc_disable_fog() {
+	return ((sc_packed_0() >> 5) & 1U) != 0;
+}
+
+bool sc_use_depth_fog() {
+	return ((sc_packed_0() >> 6) & 1U) != 0;
+}
+
+bool sc_use_fog_aerial_perspective() {
+	return ((sc_packed_0() >> 7) & 1U) != 0;
+}
+
+bool sc_use_fog_sun_scatter() {
+	return ((sc_packed_0() >> 8) & 1U) != 0;
+}
+
+bool sc_use_fog_height_density() {
+	return ((sc_packed_0() >> 9) & 1U) != 0;
+}
+
+bool sc_use_lightmap_bicubic_filter() {
+	return ((sc_packed_0() >> 10) & 1U) != 0;
+}
+
+bool sc_multimesh() {
+	return ((sc_packed_0() >> 11) & 1U) != 0;
+}
+
+bool sc_multimesh_format_2d() {
+	return ((sc_packed_0() >> 12) & 1U) != 0;
+}
+
+bool sc_multimesh_has_color() {
+	return ((sc_packed_0() >> 13) & 1U) != 0;
+}
+
+bool sc_multimesh_has_custom_data() {
+	return ((sc_packed_0() >> 14) & 1U) != 0;
+}
+
+bool sc_scene_use_ambient_cubemap() {
+	return ((sc_packed_0() >> 15) & 1U) != 0;
+}
+
+bool sc_scene_use_reflection_cubemap() {
+	return ((sc_packed_0() >> 16) & 1U) != 0;
+}
+
+bool sc_scene_roughness_limiter_enabled() {
+	return ((sc_packed_0() >> 17) & 1U) != 0;
+}
+
+uint sc_soft_shadow_samples() {
+	return (sc_packed_0() >> 20) & 63U;
+}
+
+uint sc_penumbra_shadow_samples() {
+	return (sc_packed_0() >> 26) & 63U;
+}
+
+uint sc_directional_soft_shadow_samples() {
+	return (sc_packed_1() >> 0) & 63U;
+}
+
+uint sc_directional_penumbra_shadow_samples() {
+	return (sc_packed_1() >> 6) & 63U;
+}
+
+uint sc_omni_lights() {
+	return (sc_packed_1() >> 12) & 15U;
+}
+
+uint sc_spot_lights() {
+	return (sc_packed_1() >> 16) & 15U;
+}
+
+uint sc_reflection_probes() {
+	return (sc_packed_1() >> 20) & 15U;
+}
+
+uint sc_directional_lights() {
+	return (sc_packed_1() >> 24) & 15U;
+}
+
+uint sc_decals() {
+	return (sc_packed_1() >> 28) & 15U;
+}
+
+bool sc_directional_light_blend_split(uint i) {
+	return ((sc_packed_2() >> i) & 1U) != 0;
+}
+
+float sc_luminance_multiplier() {
+	return sc_packed_3();
+}
 
 /* Set 0: Base Pass (never changes) */
 
@@ -38,10 +219,6 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 9)
 #define INSTANCE_FLAGS_USE_VOXEL_GI (1 << 10)
 #define INSTANCE_FLAGS_PARTICLES (1 << 11)
-#define INSTANCE_FLAGS_MULTIMESH (1 << 12)
-#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
-#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA (1 << 15)
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT 16
 //3 bits of stride
 #define INSTANCE_FLAGS_PARTICLE_TRAIL_MASK 0xFF
@@ -69,10 +246,16 @@ directional_lights;
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
+#define LIGHTMAP_SHADOWMASK_MODE_NONE 0
+#define LIGHTMAP_SHADOWMASK_MODE_REPLACE 1
+#define LIGHTMAP_SHADOWMASK_MODE_OVERLAY 2
+#define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
+
 struct Lightmap {
 	mediump mat3 normal_xform;
-	vec3 pad;
+	vec2 light_texture_size;
 	float exposure_normalization;
+	uint flags;
 };
 
 layout(set = 0, binding = 7, std140) restrict readonly buffer Lightmaps {
@@ -152,7 +335,7 @@ layout(set = 1, binding = 4) uniform highp texture2D shadow_atlas;
 layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 
 // this needs to change to providing just the lightmap we're using..
-layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;

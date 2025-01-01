@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "Vector2.h"
-#include "SignedDistance.h"
+#include "Vector2.hpp"
+#include "SignedDistance.hpp"
 #include "EdgeColor.h"
 
 namespace msdfgen {
@@ -20,7 +20,11 @@ public:
     EdgeSegment(EdgeColor edgeColor = WHITE) : color(edgeColor) { }
     virtual ~EdgeSegment() { }
     /// Creates a copy of the edge segment.
-    virtual EdgeSegment * clone() const = 0;
+    virtual EdgeSegment *clone() const = 0;
+    /// Returns the numeric code of the edge segment's type.
+    virtual int type() const = 0;
+    /// Returns the array of control points.
+    virtual const Point2 *controlPoints() const = 0;
     /// Returns the point on the edge specified by the parameter (between 0 and 1).
     virtual Point2 point(double param) const = 0;
     /// Returns the direction the edge has at the point specified by the parameter.
@@ -51,10 +55,16 @@ public:
 class LinearSegment : public EdgeSegment {
 
 public:
+    enum EdgeType {
+        EDGE_TYPE = 1
+    };
+
     Point2 p[2];
 
     LinearSegment(Point2 p0, Point2 p1, EdgeColor edgeColor = WHITE);
-    LinearSegment * clone() const;
+    LinearSegment *clone() const;
+    int type() const;
+    const Point2 *controlPoints() const;
     Point2 point(double param) const;
     Vector2 direction(double param) const;
     Vector2 directionChange(double param) const;
@@ -74,10 +84,16 @@ public:
 class QuadraticSegment : public EdgeSegment {
 
 public:
+    enum EdgeType {
+        EDGE_TYPE = 2
+    };
+
     Point2 p[3];
 
     QuadraticSegment(Point2 p0, Point2 p1, Point2 p2, EdgeColor edgeColor = WHITE);
-    QuadraticSegment * clone() const;
+    QuadraticSegment *clone() const;
+    int type() const;
+    const Point2 *controlPoints() const;
     Point2 point(double param) const;
     Vector2 direction(double param) const;
     Vector2 directionChange(double param) const;
@@ -91,7 +107,7 @@ public:
     void moveEndPoint(Point2 to);
     void splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const;
 
-    EdgeSegment * convertToCubic() const;
+    EdgeSegment *convertToCubic() const;
 
 };
 
@@ -99,10 +115,16 @@ public:
 class CubicSegment : public EdgeSegment {
 
 public:
+    enum EdgeType {
+        EDGE_TYPE = 3
+    };
+
     Point2 p[4];
 
     CubicSegment(Point2 p0, Point2 p1, Point2 p2, Point2 p3, EdgeColor edgeColor = WHITE);
-    CubicSegment * clone() const;
+    CubicSegment *clone() const;
+    int type() const;
+    const Point2 *controlPoints() const;
     Point2 point(double param) const;
     Vector2 direction(double param) const;
     Vector2 directionChange(double param) const;

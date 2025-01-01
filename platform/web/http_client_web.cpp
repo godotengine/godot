@@ -266,11 +266,11 @@ Error HTTPClientWeb::poll() {
 	return OK;
 }
 
-HTTPClient *HTTPClientWeb::_create_func() {
-	return memnew(HTTPClientWeb);
+HTTPClient *HTTPClientWeb::_create_func(bool p_notify_postinitialize) {
+	return static_cast<HTTPClient *>(ClassDB::creator<HTTPClientWeb>(p_notify_postinitialize));
 }
 
-HTTPClient *(*HTTPClient::_create)() = HTTPClientWeb::_create_func;
+HTTPClient *(*HTTPClient::_create)(bool p_notify_postinitialize) = HTTPClientWeb::_create_func;
 
 HTTPClientWeb::HTTPClientWeb() {
 }

@@ -35,7 +35,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class EditorFileDialog;
 class EditorPropertyVector2i;
@@ -64,9 +64,9 @@ private:
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
-	void _generate_merged(Vector<Ref<TileSetAtlasSource>> p_atlas_sources, int p_max_columns);
+	void _generate_merged(const Vector<Ref<TileSetAtlasSource>> &p_atlas_sources, int p_max_columns);
 	void _update_texture();
-	void _merge_confirmed(String p_path);
+	void _merge_confirmed(const String &p_path);
 
 protected:
 	virtual void ok_pressed() override;

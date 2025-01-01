@@ -4,12 +4,18 @@
 		A countdown timer.
 	</brief_description>
 	<description>
-		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
-		[b]Note:[/b] Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
+		The [Timer] node is a countdown timer and is the simplest way to handle time-based logic in the engine. When a timer reaches the end of its [member wait_time], it will emit the [signal timeout] signal.
+		After a timer enters the tree, it can be manually started with [method start]. A timer node is also started automatically if [member autostart] is [code]true[/code].
+		Without requiring much code, a timer node can be added and configured in the editor. The [signal timeout] signal it emits can also be connected through the Node dock in the editor:
+		[codeblock]
+		func _on_timer_timeout():
+		    print("Time to attack!")
+		[/codeblock]
 		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
+		[b]Note:[/b] Timers are affected by [member Engine.time_scale]. The higher the time scale, the sooner timers will end. How often a timer processes may depend on the framerate or [member Engine.physics_ticks_per_second].
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
 	</tutorials>
 	<methods>
 		<method name="is_stopped" qualifiers="const">
@@ -22,7 +28,7 @@
 			<return type="void" />
 			<param index="0" name="time_sec" type="float" default="-1" />
 			<description>
-				Starts the timer, if it was not started already. Fails if the timer is not inside the tree. If [param time_sec] is greater than [code]0[/code], this value is used for the [member wait_time].
+				Starts the timer, or resets the timer if it was started already. Fails if the timer is not inside the tree. If [param time_sec] is greater than [code]0[/code], this value is used for the [member wait_time].
 				[b]Note:[/b] This method does not resume a paused timer. See [member paused].
 			</description>
 		</method>
@@ -37,6 +43,10 @@
 		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
 			If [code]true[/code], the timer will start immediately when it enters the scene tree.
 			[b]Note:[/b] After the timer enters the tree, this property is automatically set to [code]false[/code].
+			[b]Note:[/b] This property does nothing when the timer is running in the editor.
+		</member>
+		<member name="ignore_time_scale" type="bool" setter="set_ignore_time_scale" getter="is_ignoring_time_scale" default="false">
+			If [code]true[/code], the timer will ignore [member Engine.time_scale] and update with the real, elapsed time.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
 			If [code]true[/code], the timer will stop after reaching the end. Otherwise, as by default, the timer will automatically restart.

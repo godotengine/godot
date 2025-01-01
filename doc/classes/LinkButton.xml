@@ -32,7 +32,6 @@
 		</member>
 		<member name="uri" type="String" setter="set_uri" getter="get_uri" default="&quot;&quot;">
 			The [url=https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]URI[/url] for this [LinkButton]. If set to a valid URI, pressing the button opens the URI using the operating system's default program for the protocol (via [method OS.shell_open]). HTTP and HTTPS URLs open the default web browser.
-			[b]Examples:[/b]
 			[codeblocks]
 			[gdscript]
 			uri = "https://godotengine.org"  # Opens the URL in the default web browser.
@@ -74,7 +73,7 @@
 		<theme_item name="font_hover_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Text [Color] used when the [LinkButton] is being hovered and pressed.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [LinkButton].
 		</theme_item>
 		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">

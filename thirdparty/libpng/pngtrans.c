@@ -1,7 +1,7 @@
 
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -103,10 +103,10 @@ png_set_interlace_handling(png_structrp png_ptr)
    if (png_ptr != 0 && png_ptr->interlaced != 0)
    {
       png_ptr->transformations |= PNG_INTERLACE;
-      return (7);
+      return 7;
    }
 
-   return (1);
+   return 1;
 }
 #endif
 
@@ -498,6 +498,8 @@ png_do_strip_channel(png_row_infop row_info, png_bytep row, int at_start)
    png_bytep dp = row; /* destination pointer */
    png_bytep ep = row + row_info->rowbytes; /* One beyond end of row */
 
+   png_debug(1, "in png_do_strip_channel");
+
    /* At the start sp will point to the first byte to copy and dp to where
     * it is copied to.  ep always points just beyond the end of the row, so
     * the loop simply copies (channels-1) channels until sp reaches ep.
@@ -698,6 +700,8 @@ png_do_bgr(png_row_infop row_info, png_bytep row)
 void /* PRIVATE */
 png_do_check_palette_indexes(png_structrp png_ptr, png_row_infop row_info)
 {
+   png_debug(1, "in png_do_check_palette_indexes");
+
    if (png_ptr->num_palette < (1 << row_info->bit_depth) &&
       png_ptr->num_palette > 0) /* num_palette can be 0 in MNG files */
    {
@@ -708,7 +712,7 @@ png_do_check_palette_indexes(png_structrp png_ptr, png_row_infop row_info)
        * forms produced on either GCC or MSVC.
        */
       int padding = PNG_PADBITS(row_info->pixel_depth, row_info->width);
-      png_bytep rp = png_ptr->row_buf + row_info->rowbytes - 1;
+      png_bytep rp = png_ptr->row_buf + row_info->rowbytes;
 
       switch (row_info->bit_depth)
       {
@@ -833,7 +837,7 @@ png_voidp PNGAPI
 png_get_user_transform_ptr(png_const_structrp png_ptr)
 {
    if (png_ptr == NULL)
-      return (NULL);
+      return NULL;
 
    return png_ptr->user_transform_ptr;
 }

@@ -32,6 +32,7 @@
 #define AUDIO_STREAM_PLAYER_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "servers/audio_server.h"
 
 struct AudioFrame;
 class AudioStream;
@@ -63,6 +64,8 @@ private:
 
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
+
+	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -101,6 +104,9 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
@@ -136,6 +142,9 @@ public:
 
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
+
+	AudioServer::PlaybackType get_playback_type() const;
+	void set_playback_type(AudioServer::PlaybackType p_playback_type);
 
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();

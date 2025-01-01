@@ -63,9 +63,6 @@ class AnimationTrackEditAudio : public AnimationTrackEdit {
 
 	void _preview_changed(ObjectID p_which);
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual int get_key_height() const override;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec) override;
@@ -120,9 +117,6 @@ class AnimationTrackEditTypeAudio : public AnimationTrackEdit {
 	float len_resizing_from_px = 0.0f;
 	float len_resizing_rel = 0.0f;
 	bool over_drag_position = false;
-
-protected:
-	static void _bind_methods();
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

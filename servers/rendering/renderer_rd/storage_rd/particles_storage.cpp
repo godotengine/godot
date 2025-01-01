@@ -155,7 +155,7 @@ void process() {
 			uniforms.push_back(u);
 		}
 
-		uniforms.append_array(material_storage->samplers_rd_get_default().get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
+		material_storage->samplers_rd_get_default().append_uniforms(uniforms, SAMPLERS_BINDING_FIRST_INDEX);
 
 		particles_shader.base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, BASE_UNIFORM_SET);
 	}
@@ -257,7 +257,6 @@ void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) 
 }
 
 bool ParticlesStorage::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 
@@ -307,9 +306,14 @@ void ParticlesStorage::_particles_free_data(Particles *particles) {
 		particles->emission_storage_buffer = RID();
 	}
 
-	if (particles->unused_storage_buffer.is_valid()) {
-		RD::get_singleton()->free(particles->unused_storage_buffer);
-		particles->unused_storage_buffer = RID();
+	if (particles->unused_emission_storage_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->unused_emission_storage_buffer);
+		particles->unused_emission_storage_buffer = RID();
+	}
+
+	if (particles->unused_trail_storage_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->unused_trail_storage_buffer);
+		particles->unused_trail_storage_buffer = RID();
 	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
@@ -535,9 +539,17 @@ void ParticlesStorage::_particles_allocate_emission_buffer(Particles *particles)
 	}
 }
 
-void ParticlesStorage::_particles_ensure_unused_buffer(Particles *particles) {
-	if (particles->unused_storage_buffer.is_null()) {
-		particles->unused_storage_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4);
+void ParticlesStorage::_particles_ensure_unused_emission_buffer(Particles *particles) {
+	if (particles->unused_emission_storage_buffer.is_null()) {
+		// For rendering devices that do not support empty arrays (like C++),
+		// we need to size the buffer with at least 1 element.
+		particles->unused_emission_storage_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleEmissionBuffer));
+	}
+}
+
+void ParticlesStorage::_particles_ensure_unused_trail_buffer(Particles *particles) {
+	if (particles->unused_trail_storage_buffer.is_null()) {
+		particles->unused_trail_storage_buffer = RD::get_singleton()->storage_buffer_create(16 * sizeof(float)); // Size of mat4.
 	}
 }
 
@@ -608,10 +620,6 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 }
 
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
-	}
-
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
 
@@ -620,8 +628,9 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		total_amount *= particles->trail_bind_poses.size();
 	}
 
+	uint32_t particle_data_size = sizeof(ParticleData) + sizeof(float) * 4 * particles->userdata_count;
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
-	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * sizeof(ParticleData)), AABB());
+	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * particle_data_size), AABB());
 
 	Transform3D inv = particles->emission_transform.affine_inverse();
 
@@ -630,7 +639,6 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleData) + sizeof(float) * particles->userdata_count;
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleData &particle_data = *(const ParticleData *)&data_ptr[particle_data_size * i];
@@ -768,8 +776,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			if (p_particles->emission_storage_buffer.is_valid()) {
 				u.append_id(p_particles->emission_storage_buffer);
 			} else {
-				_particles_ensure_unused_buffer(p_particles);
-				u.append_id(p_particles->unused_storage_buffer);
+				_particles_ensure_unused_emission_buffer(p_particles);
+				u.append_id(p_particles->unused_emission_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -784,8 +792,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				}
 				u.append_id(sub_emitter->emission_storage_buffer);
 			} else {
-				_particles_ensure_unused_buffer(p_particles);
-				u.append_id(p_particles->unused_storage_buffer);
+				_particles_ensure_unused_emission_buffer(p_particles);
+				u.append_id(p_particles->unused_emission_storage_buffer);
 			}
 			uniforms.push_back(u);
 		}
@@ -1311,7 +1319,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		userdata_count = particle_shader_data->userdata_count;
 	}
 
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	bool index_draw_order = particles->draw_order == RS::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
 	bool only_instances_changed = false;
@@ -1388,8 +1396,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	}
 }
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	uint32_t frame = RSG::rasterizer->get_frame_number();
-	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	while (particle_update_list.first()) {
 		//use transform feedback to process particles
 
@@ -1452,6 +1465,11 @@ void ParticlesStorage::update_particles() {
 			if (uint32_t(history_size) != particles->frame_history.size()) {
 				particles->frame_history.resize(history_size);
 				memset(particles->frame_history.ptr(), 0, sizeof(ParticlesFrameParams) * history_size);
+				// Set the frame number so that we are able to distinguish an uninitialized
+				// frame from the true frame number zero. See issue #88712 for details.
+				for (int i = 0; i < history_size; i++) {
+					particles->frame_history[i].frame = UINT32_MAX;
+				}
 			}
 
 			if (uint32_t(trail_steps) != particles->trail_params.size() || particles->frame_params_buffer.is_null()) {
@@ -1476,8 +1494,8 @@ void ParticlesStorage::update_particles() {
 					if (particles->trail_bind_pose_buffer.is_valid()) {
 						u.append_id(particles->trail_bind_pose_buffer);
 					} else {
-						_particles_ensure_unused_buffer(particles);
-						u.append_id(particles->unused_storage_buffer);
+						_particles_ensure_unused_trail_buffer(particles);
+						u.append_id(particles->unused_trail_storage_buffer);
 					}
 					uniforms.push_back(u);
 				}
@@ -1632,7 +1650,6 @@ Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
 }
 
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;

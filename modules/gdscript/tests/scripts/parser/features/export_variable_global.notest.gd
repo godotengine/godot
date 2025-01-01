@@ -1,0 +1,2 @@
+class_name ExportVariableTestGlobalClass
+extends Node2D

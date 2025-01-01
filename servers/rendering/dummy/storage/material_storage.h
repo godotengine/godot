@@ -92,12 +92,12 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index) const override { return RID(); }
 	virtual Variant shader_get_parameter_default(RID p_material, const StringName &p_param) const override { return Variant(); }
 
-	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); };
+	virtual RS::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const override { return RS::ShaderNativeSourceCode(); }
 
 	/* MATERIAL API */
 	virtual RID material_allocate() override { return RID(); }
 	virtual void material_initialize(RID p_rid) override {}
-	virtual void material_free(RID p_rid) override{};
+	virtual void material_free(RID p_rid) override {}
 
 	virtual void material_set_render_priority(RID p_material, int priority) override {}
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) override {}
@@ -109,6 +109,8 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override { return false; }
 	virtual bool material_casts_shadows(RID p_material) override { return false; }
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const override { return RS::CULL_MODE_DISABLED; }
+
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override {}
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) override {}
 };

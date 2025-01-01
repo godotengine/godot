@@ -41,7 +41,7 @@
 
 // If tight, it grows strictly as much as needed.
 // Otherwise, it grows exponentially (the default and what you want in most cases).
-template <class T, class U = uint32_t, bool force_trivial = false, bool tight = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
 private:
 	U count = 0;
@@ -67,7 +67,7 @@ public:
 		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
 			memnew_placement(&data[count++], T(p_elem));
 		} else {
-			data[count++] = p_elem;
+			data[count++] = std::move(p_elem);
 		}
 	}
 
@@ -75,7 +75,7 @@ public:
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		for (U i = p_index; i < count; i++) {
-			data[i] = data[i + 1];
+			data[i] = std::move(data[i + 1]);
 		}
 		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 			data[count].~T();
@@ -88,7 +88,7 @@ public:
 		ERR_FAIL_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
-			data[p_index] = data[count];
+			data[p_index] = std::move(data[count]);
 		}
 		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
 			data[count].~T();
@@ -102,6 +102,22 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	U erase_multiple_unordered(const T &p_val) {
+		U from = 0;
+		U occurrences = 0;
+		while (true) {
+			int64_t idx = find(p_val, from);
+
+			if (idx == -1) {
+				break;
+			}
+			remove_at_unordered(idx);
+			from = idx;
+			occurrences++;
+		}
+		return occurrences;
 	}
 
 	void invert() {
@@ -229,13 +245,13 @@ public:
 	void insert(U p_pos, T p_val) {
 		ERR_FAIL_UNSIGNED_INDEX(p_pos, count + 1);
 		if (p_pos == count) {
-			push_back(p_val);
+			push_back(std::move(p_val));
 		} else {
 			resize(count + 1);
 			for (U i = count - 1; i > p_pos; i--) {
-				data[i] = data[i - 1];
+				data[i] = std::move(data[i - 1]);
 			}
-			data[p_pos] = p_val;
+			data[p_pos] = std::move(p_val);
 		}
 	}
 
@@ -248,7 +264,11 @@ public:
 		return -1;
 	}
 
-	template <class C>
+	bool has(const T &p_val) const {
+		return find(p_val) != -1;
+	}
+
+	template <typename C>
 	void sort_custom() {
 		U len = count;
 		if (len == 0) {
@@ -275,9 +295,17 @@ public:
 
 	operator Vector<T>() const {
 		Vector<T> ret;
-		ret.resize(size());
+		ret.resize(count);
 		T *w = ret.ptrw();
-		memcpy(w, data, sizeof(T) * count);
+		if (w) {
+			if constexpr (std::is_trivially_copyable_v<T>) {
+				memcpy(w, data, sizeof(T) * count);
+			} else {
+				for (U i = 0; i < count; i++) {
+					w[i] = data[i];
+				}
+			}
+		}
 		return ret;
 	}
 
@@ -285,7 +313,9 @@ public:
 		Vector<uint8_t> ret;
 		ret.resize(count * sizeof(T));
 		uint8_t *w = ret.ptrw();
-		memcpy(w, data, sizeof(T) * count);
+		if (w) {
+			memcpy(w, data, sizeof(T) * count);
+		}
 		return ret;
 	}
 
@@ -302,6 +332,16 @@ public:
 			data[i] = p_from.data[i];
 		}
 	}
+	_FORCE_INLINE_ LocalVector(LocalVector &&p_from) {
+		data = p_from.data;
+		count = p_from.count;
+		capacity = p_from.capacity;
+
+		p_from.data = nullptr;
+		p_from.count = 0;
+		p_from.capacity = 0;
+	}
+
 	inline void operator=(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
@@ -314,6 +354,26 @@ public:
 			data[i] = p_from[i];
 		}
 	}
+	inline void operator=(LocalVector &&p_from) {
+		if (unlikely(this == &p_from)) {
+			return;
+		}
+		reset();
+
+		data = p_from.data;
+		count = p_from.count;
+		capacity = p_from.capacity;
+
+		p_from.data = nullptr;
+		p_from.count = 0;
+		p_from.capacity = 0;
+	}
+	inline void operator=(Vector<T> &&p_from) {
+		resize(p_from.size());
+		for (U i = 0; i < count; i++) {
+			data[i] = std::move(p_from[i]);
+		}
+	}
 
 	_FORCE_INLINE_ ~LocalVector() {
 		if (data) {
@@ -322,7 +382,7 @@ public:
 	}
 };
 
-template <class T, class U = uint32_t, bool force_trivial = false>
+template <typename T, typename U = uint32_t, bool force_trivial = false>
 using TightLocalVector = LocalVector<T, U, force_trivial, true>;
 
 #endif // LOCAL_VECTOR_H

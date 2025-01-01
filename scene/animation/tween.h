@@ -39,16 +39,19 @@ class Node;
 class Tweener : public RefCounted {
 	GDCLASS(Tweener, RefCounted);
 
+	ObjectID tween_id;
+
 public:
 	virtual void set_tween(const Ref<Tween> &p_tween);
 	virtual void start() = 0;
 	virtual bool step(double &r_delta) = 0;
-	void clear_tween();
 
 protected:
 	static void _bind_methods();
 
-	Ref<Tween> tween;
+	Ref<Tween> _get_tween();
+	void _finish();
+
 	double elapsed_time = 0;
 	bool finished = false;
 };
@@ -112,6 +115,7 @@ private:
 	int loops = 1;
 	int loops_done = 0;
 	float speed_scale = 1;
+	bool ignore_time_scale = false;
 
 	bool is_bound = false;
 	bool started = false;
@@ -158,6 +162,8 @@ public:
 	TweenProcessMode get_process_mode();
 	Ref<Tween> set_pause_mode(TweenPauseMode p_mode);
 	TweenPauseMode get_pause_mode();
+	Ref<Tween> set_ignore_time_scale(bool p_ignore = true);
+	bool is_ignoring_time_scale() const;
 
 	Ref<Tween> set_parallel(bool p_parallel);
 	Ref<Tween> set_loops(int p_loops);
@@ -291,7 +297,6 @@ private:
 	Tween::TransitionType trans_type = Tween::TRANS_MAX;
 	Tween::EaseType ease_type = Tween::EASE_MAX;
 
-	Ref<Tween> tween;
 	Variant initial_val;
 	Variant delta_val;
 	Variant final_val;

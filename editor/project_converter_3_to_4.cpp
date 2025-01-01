@@ -41,21 +41,20 @@
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/os/time.h"
-#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "editor/renames_map_3_to_4.h"
 #include "modules/regex/regex.h"
 
 // Find "OS.set_property(x)", capturing x into $1.
-static String make_regex_gds_os_property_set(String name_set) {
+static String make_regex_gds_os_property_set(const String &name_set) {
 	return String("\\bOS\\.") + name_set + "\\s*\\((.*)\\)";
 }
 // Find "OS.property = x", capturing x into $1 or $2.
-static String make_regex_gds_os_property_assign(String name) {
+static String make_regex_gds_os_property_assign(const String &name) {
 	return String("\\bOS\\.") + name + "\\s*=\\s*([^#]+)";
 }
 // Find "OS.property" OR "OS.get_property()" / "OS.is_property()".
-static String make_regex_gds_os_property_get(String name, String get) {
+static String make_regex_gds_os_property_get(const String &name, const String &get) {
 	return String("\\bOS\\.(") + get + "_)?" + name + "(\\s*\\(\\s*\\))?";
 }
 
@@ -716,8 +715,9 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import")) {
 						proper_extension = true;
+					}
 
 					if (proper_extension) {
 						collected_files.append(current_dir.path_join(file_name));
@@ -746,7 +746,7 @@ Vector<SourceLine> ProjectConverter3To4::split_lines(const String &text) {
 }
 
 // Test expected results of gdscript
-bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
+bool ProjectConverter3To4::test_conversion_gdscript_builtin(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), const String &what, const RegExContainer &reg_container, bool builtin_script) {
 	Vector<SourceLine> got = split_lines(name);
 
 	(this->*func)(got, reg_container, builtin_script);
@@ -756,7 +756,7 @@ bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), String what, const RegExContainer &reg_container) {
+bool ProjectConverter3To4::test_conversion_with_regex(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), const String &what, const RegExContainer &reg_container) {
 	Vector<SourceLine> got = split_lines(name);
 
 	(this->*func)(got, reg_container);
@@ -766,7 +766,7 @@ bool ProjectConverter3To4::test_conversion_with_regex(String name, String expect
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what) {
+bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what) {
 	Vector<SourceLine> got = split_lines(name);
 
 	rename_common(array, regex_cache, got);
@@ -1270,7 +1270,7 @@ bool ProjectConverter3To4::test_single_array(const char *p_array[][2], bool p_ig
 		}
 	}
 	return valid;
-};
+}
 
 // Returns arguments from given function execution, this cannot be really done as regex.
 // `abc(d,e(f,g),h)` -> [d], [e(f,g)], [h]
@@ -1321,8 +1321,9 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 				break;
 			};
 			case '"': {
-				if (previous_character != '\\')
+				if (previous_character != '\\') {
 					is_inside_string = !is_inside_string;
+				}
 			}
 		}
 		previous_character = character;
@@ -1469,7 +1470,7 @@ void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const
 			}
 		}
 	}
-};
+}
 
 // Convert hexadecimal colors from ARGB to RGBA
 void ProjectConverter3To4::convert_hexadecimal_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
@@ -1566,7 +1567,7 @@ void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, cons
 			}
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
@@ -1618,7 +1619,7 @@ void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_
 			process_gdscript_line(line, reg_container, builtin);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
 	int current_line = 1;
@@ -1638,7 +1639,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 	return found_renames;
 }
 
-bool ProjectConverter3To4::contains_function_call(String &line, String function) const {
+bool ProjectConverter3To4::contains_function_call(const String &line, const String &function) const {
 	// We want to convert the function only if it is completely standalone.
 	// For example, when we search for "connect(", we don't want to accidentally convert "reconnect(".
 	if (!line.contains(function)) {
@@ -1675,7 +1676,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- \t.func() -> \tsuper.func()       Object
-	if (line.contains("(") && line.contains(".")) {
+	if (line.contains_char('(') && line.contains_char('.')) {
 		line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this broke String text e.g. "Chosen .gitignore" -> "Chosen super.gitignore"
 	}
 
@@ -1968,7 +1969,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	// -- func c(var a, var b) -> func c(a, b)
 	if (line.contains("func ") && line.contains("var ")) {
 		int start = line.find("func ");
-		start = line.substr(start).find("(") + start;
+		start = line.substr(start).find_char('(') + start;
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
 			Vector<String> parts = parse_arguments(line.substr(start, end));
@@ -2118,12 +2119,12 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- func _init(p_x:int).(p_x):  -> func _init(p_x:int):\n\tsuper(p_x)    Object # https://github.com/godotengine/godot/issues/70542
-	if (line.contains(" _init(") && line.rfind(":") > 0) {
+	if (line.contains(" _init(") && line.rfind_char(':') > 0) {
 		//     func _init(p_arg1).(super4, super5, super6)->void:
 		// ^--^indent            ^super_start   super_end^
 		int indent = line.count("\t", 0, line.find("func"));
 		int super_start = line.find(".(");
-		int super_end = line.rfind(")");
+		int super_end = line.rfind_char(')');
 		if (super_start > 0 && super_end > super_start) {
 			line = line.substr(0, super_start) + line.substr(super_end + 1) + "\n" + String("\t").repeat(indent + 1) + "super" + line.substr(super_start + 1, super_end - super_start);
 		}
@@ -2438,7 +2439,7 @@ void ProjectConverter3To4::rename_csharp_functions(Vector<SourceLine> &source_li
 			process_csharp_line(line, reg_container);
 		}
 	}
-};
+}
 
 Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
 	int current_line = 1;
@@ -2834,7 +2835,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	return found_renames;
 }
 
-void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, String from, String to) {
+void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to) {
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
 	for (SourceLine &source_line : source_lines) {
@@ -2847,9 +2848,9 @@ void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, Strin
 			line = reg.sub(line, to, true);
 		}
 	}
-};
+}
 
-Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, String from, String to) {
+Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to) {
 	Vector<String> found_renames;
 
 	RegEx reg = RegEx(String("\\b") + from + "\\b");

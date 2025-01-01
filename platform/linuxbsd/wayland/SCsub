@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
@@ -152,13 +153,43 @@ env.WAYLAND_API_CODE(
 )
 
 env.WAYLAND_API_HEADER(
-    target="protocol/xdg_foreign.gen.h",
+    target="protocol/text_input.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/text-input/text-input-unstable-v3.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/text_input.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/text-input/text-input-unstable-v3.xml",
+)
+
+env.WAYLAND_API_HEADER(
+    target="protocol/xdg_foreign_v1.gen.h",
     source="#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v1.xml",
 )
 
 env.WAYLAND_API_CODE(
-    target="protocol/xdg_foreign.gen.c",
+    target="protocol/xdg_foreign_v1.gen.c",
     source="#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v1.xml",
+)
+
+env.WAYLAND_API_HEADER(
+    target="protocol/xdg_foreign_v2.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/xdg_foreign_v2.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/xdg-foreign/xdg-foreign-unstable-v2.xml",
+)
+
+env.WAYLAND_API_HEADER(
+    target="protocol/xdg_system_bell.gen.h",
+    source="#thirdparty/wayland-protocols/staging/xdg-system-bell/xdg-system-bell-v1.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/xdg_system_bell.gen.c",
+    source="#thirdparty/wayland-protocols/staging/xdg-system-bell/xdg-system-bell-v1.xml",
 )
 
 source_files = [
@@ -166,7 +197,9 @@ source_files = [
     "protocol/viewporter.gen.c",
     "protocol/fractional_scale.gen.c",
     "protocol/xdg_shell.gen.c",
-    "protocol/xdg_foreign.gen.c",
+    "protocol/xdg_system_bell.gen.c",
+    "protocol/xdg_foreign_v1.gen.c",
+    "protocol/xdg_foreign_v2.gen.c",
     "protocol/xdg_decoration.gen.c",
     "protocol/xdg_activation.gen.c",
     "protocol/relative_pointer.gen.c",
@@ -175,6 +208,7 @@ source_files = [
     "protocol/primary_selection.gen.c",
     "protocol/idle_inhibit.gen.c",
     "protocol/tablet.gen.c",
+    "protocol/text_input.gen.c",
     "display_server_wayland.cpp",
     "wayland_thread.cpp",
     "key_mapping_xkb.cpp",
@@ -199,6 +233,7 @@ if env["vulkan"]:
 
 if env["opengl3"]:
     source_files.append("egl_manager_wayland.cpp")
+    source_files.append("egl_manager_wayland_gles.cpp")
 
 objects = []
 

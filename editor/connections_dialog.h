@@ -140,7 +140,6 @@ private:
 	void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
-	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
 	void _focus_currently_connected();
 
@@ -159,11 +158,12 @@ private:
 	void _update_warning_label();
 
 protected:
+	virtual void _post_popup() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
+	static StringName generate_method_callback_name(Node *p_source, const String &p_signal_name, Node *p_target);
 	Node *get_source() const;
 	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
@@ -184,14 +184,14 @@ public:
 
 	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
-	void popup_dialog(const String p_for_signal);
+	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };
 
 //////////////////////////////////////////
 
-// Custom `Tree` needed to use `EditorHelpTooltip` to display signal documentation.
+// Custom `Tree` needed to use `EditorHelpBit` to display signal documentation.
 class ConnectionsDockTree : public Tree {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };

@@ -68,7 +68,7 @@ private:
 	String selected_protocol;
 	String requested_url;
 
-	static WebSocketPeer *_create() { return memnew(EMWSPeer); }
+	static WebSocketPeer *_create(bool p_notify_postinitialize) { return static_cast<WebSocketPeer *>(ClassDB::creator<EMWSPeer>(p_notify_postinitialize)); }
 	static void _esws_on_connect(void *obj, char *proto);
 	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
 	static void _esws_on_error(void *obj);
@@ -84,7 +84,7 @@ public:
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override { return packet_buffer.size(); };
+	virtual int get_max_packet_size() const override { return packet_buffer.size(); }
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;

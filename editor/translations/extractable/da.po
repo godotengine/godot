@@ -1,0 +1,94 @@
+# Danish translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-10 09:01+0000\n"
+"Last-Translator: symegac <97731141+symegac@users.noreply.github.com>\n"
+"Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/godot/"
+"da/>\n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Open"
+msgstr "Åben"
+
+msgid "Select Current Folder"
+msgstr "Vælg nurværende mappe"
+
+msgid "Select This Folder"
+msgstr "Vælg denne mappe"
+
+msgid "All Recognized"
+msgstr "Alle Genkendte"
+
+msgid "Open a File"
+msgstr "Åben en Fil"
+
+msgid "Open File(s)"
+msgstr "Åben Fil(er)"
+
+msgid "Open a Directory"
+msgstr "Åbn en Mappe"
+
+msgid "Open a File or Directory"
+msgstr "Åben en Fil eller Mappe"
+
+msgid "Save"
+msgstr "Gem"
+
+msgid "Save a File"
+msgstr "Gem en Fil"
+
+msgid "Path:"
+msgstr "Sti:"
+
+msgid "Directories & Files:"
+msgstr "Mapper & Filer:"
+
+msgid "File:"
+msgstr "Fil:"
+
+msgid "Create Folder"
+msgstr "Opret Mappe"
+
+msgid "Name:"
+msgstr "Navn:"
+
+msgid "Could not create folder."
+msgstr "Kunne ikke oprette mappe."
+
+msgid "Zoom Out"
+msgstr "Zoom Ud"
+
+msgid "Zoom In"
+msgstr "Zoom Ind"
+
+msgid "Cut"
+msgstr "Klippe"
+
+msgid "Copy"
+msgstr "Kopier"
+
+msgid "Paste"
+msgstr "Indsæt"
+
+msgid "Select All"
+msgstr "Vælg alt"
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Undo"
+msgstr "Fortryd"
+
+msgid "Redo"
+msgstr "Annuller Fortyd"

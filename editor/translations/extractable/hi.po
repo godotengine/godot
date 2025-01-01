@@ -1,0 +1,103 @@
+# Hindi translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-09-19 21:46+0000\n"
+"Last-Translator: Priyanshu Dutt <priyanshudutt720@gmail.com>\n"
+"Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
+"hi/>\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Network"
+msgstr "संजाल"
+
+msgid "Open"
+msgstr "खोलो इसे"
+
+msgid "Select Current Folder"
+msgstr "वर्तमान फ़ोल्डर सिलेक्ट कीजिये"
+
+msgid "Select This Folder"
+msgstr "यह फ़ोल्डर सिलेक्ट कीजिये"
+
+msgid "All Recognized"
+msgstr "सभी स्वीकृत"
+
+msgid "Open a File"
+msgstr "फ़ाइल खोलिये"
+
+msgid "Open File(s)"
+msgstr "फ़ाइल(s) खोलिये"
+
+msgid "Open a Directory"
+msgstr "डायरेक्टरी खोलिये"
+
+msgid "Open a File or Directory"
+msgstr "फ़ाइल या डायरेक्टरी खोलिये"
+
+msgid "Save"
+msgstr "सेव कीजिये"
+
+msgid "Save a File"
+msgstr "फ़ाइल सेव कीजिये"
+
+msgid "Go to previous folder."
+msgstr "पिछले फ़ोल्डर पे जाय."
+
+msgid "Go to next folder."
+msgstr "अगले फ़ोल्डर पे जाय."
+
+msgid "Go to parent folder."
+msgstr "मूल फ़ोल्डर पे जाय."
+
+msgid "Path:"
+msgstr "पाथ:"
+
+msgid "Refresh files."
+msgstr "रिफ़्रेश फ़ाइल."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "छिपी फ़ाइलों की दृश्य टॉगल कीजिये."
+
+msgid "Directories & Files:"
+msgstr "डायरेक्टरिज & फ़ाइले:"
+
+msgid "File:"
+msgstr "फ़ाइल:"
+
+msgid "Create Folder"
+msgstr "फ़ोल्डर बनाइये"
+
+msgid "Name:"
+msgstr "नाम:"
+
+msgid "Could not create folder."
+msgstr "फ़ोल्डर नही बना सकते."
+
+msgid "Zoom Out"
+msgstr "छोटा करो"
+
+msgid "Zoom Reset"
+msgstr "ज़ूम रीसेट"
+
+msgid "Zoom In"
+msgstr "बड़ा करो"
+
+msgid "Clear"
+msgstr "साफ़"
+
+msgid "Undo"
+msgstr "पीछे जाएं"
+
+msgid "Redo"
+msgstr "दोहराएँ"

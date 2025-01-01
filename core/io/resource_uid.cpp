@@ -34,6 +34,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 
 // These constants are off by 1, causing the 'z' and '9' characters never to be used.
 // This cannot be fixed without breaking compatibility; see GH-83843.
@@ -44,23 +45,45 @@ String ResourceUID::get_cache_file() {
 	return ProjectSettings::get_singleton()->get_project_data_path().path_join("uid_cache.bin");
 }
 
+static constexpr uint8_t uuid_characters[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', '0', '1', '2', '3', '4', '5', '6', '7', '8' };
+static constexpr uint32_t uuid_characters_element_count = (sizeof(uuid_characters) / sizeof(*uuid_characters));
+static constexpr uint8_t max_uuid_number_length = 19; // Max 0x7FFFFFFFFFFFFFFF size is 19 digits.
+
 String ResourceUID::id_to_text(ID p_id) const {
 	if (p_id < 0) {
 		return "uid://<invalid>";
 	}
-	String txt;
 
+	char32_t tmp[max_uuid_number_length];
+	uint32_t tmp_size = 0;
 	while (p_id) {
-		uint32_t c = p_id % base;
-		if (c < char_count) {
-			txt = String::chr('a' + c) + txt;
-		} else {
-			txt = String::chr('0' + (c - char_count)) + txt;
-		}
-		p_id /= base;
+		uint32_t c = p_id % uuid_characters_element_count;
+		tmp[tmp_size] = uuid_characters[c];
+		p_id /= uuid_characters_element_count;
+		++tmp_size;
 	}
 
-	return "uid://" + txt;
+	// tmp_size + uid:// (6) + 1 for null.
+	String txt;
+	txt.resize(tmp_size + 7);
+
+	char32_t *p = txt.ptrw();
+	p[0] = 'u';
+	p[1] = 'i';
+	p[2] = 'd';
+	p[3] = ':';
+	p[4] = '/';
+	p[5] = '/';
+	uint32_t size = 6;
+
+	// The above loop give the number backward, recopy it in the string in the correct order.
+	for (uint32_t i = 0; i < tmp_size; ++i) {
+		p[size++] = tmp[tmp_size - i - 1];
+	}
+
+	p[size] = 0;
+
+	return txt;
 }
 
 ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
@@ -139,6 +162,26 @@ void ResourceUID::remove_id(ID p_id) {
 	unique_ids.erase(p_id);
 }
 
+String ResourceUID::uid_to_path(const String &p_uid) {
+	return singleton->get_id_path(singleton->text_to_id(p_uid));
+}
+
+String ResourceUID::path_to_uid(const String &p_path) {
+	const ID id = ResourceLoader::get_resource_uid(p_path);
+	if (id == INVALID_ID) {
+		return p_path;
+	} else {
+		return singleton->id_to_text(id);
+	}
+}
+
+String ResourceUID::ensure_path(const String &p_uid_or_path) {
+	if (p_uid_or_path.begins_with("uid://")) {
+		return uid_to_path(p_uid_or_path);
+	}
+	return p_uid_or_path;
+}
+
 Error ResourceUID::save_to_cache() {
 	String cache_file = get_cache_file();
 	if (!FileAccess::exists(cache_file)) {
@@ -157,7 +200,7 @@ Error ResourceUID::save_to_cache() {
 	cache_entries = 0;
 
 	for (KeyValue<ID, Cache> &E : unique_ids) {
-		f->store_64(E.key);
+		f->store_64(uint64_t(E.key));
 		uint32_t s = E.value.cs.length();
 		f->store_32(s);
 		f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
@@ -169,14 +212,16 @@ Error ResourceUID::save_to_cache() {
 	return OK;
 }
 
-Error ResourceUID::load_from_cache() {
+Error ResourceUID::load_from_cache(bool p_reset) {
 	Ref<FileAccess> f = FileAccess::open(get_cache_file(), FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
 	MutexLock l(mutex);
-	unique_ids.clear();
+	if (p_reset) {
+		unique_ids.clear();
+	}
 
 	uint32_t entry_count = f->get_32();
 	for (uint32_t i = 0; i < entry_count; i++) {
@@ -218,7 +263,7 @@ Error ResourceUID::update_cache() {
 				}
 				f->seek_end();
 			}
-			f->store_64(E.key);
+			f->store_64(uint64_t(E.key));
 			uint32_t s = E.value.cs.length();
 			f->store_32(s);
 			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);

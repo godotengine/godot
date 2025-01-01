@@ -33,7 +33,6 @@
 #include "core/math/plane.h"
 #include "core/math/projection.h"
 #include "rendering_server_globals.h"
-#include "scene/3d/camera_3d.h"
 
 #ifdef RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 const char *RenderingLightCuller::Data::string_planes[] = {
@@ -280,9 +279,11 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 	// Last to 0 edge.
@@ -296,9 +297,11 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 		// Create a third point from the light direction.
 		Vector3 pt2 = pt0 - p_light_source.dir;
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, pt2);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
@@ -428,15 +431,19 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	uint8_t *entry = &data.LUT_entries[lookup][0];
 	int n_edges = data.LUT_entry_sizes[lookup] - 1;
 
+	const Vector3 &pt2 = p_light_source.pos;
+
 	for (int e = 0; e < n_edges; e++) {
 		int i0 = entry[e];
 		int i1 = entry[e + 1];
 		const Vector3 &pt0 = data.frustum_points[i0];
 		const Vector3 &pt1 = data.frustum_points[i1];
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, p_light_source.pos);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 	// Last to 0 edge.
@@ -447,9 +454,11 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 		const Vector3 &pt0 = data.frustum_points[i0];
 		const Vector3 &pt1 = data.frustum_points[i1];
 
-		// Create plane from 3 points.
-		Plane p(pt0, pt1, p_light_source.pos);
-		r_cull_planes.add_cull_plane(p);
+		if (!_is_colinear_tri(pt0, pt1, pt2)) {
+			// Create plane from 3 points.
+			Plane p(pt0, pt1, pt2);
+			r_cull_planes.add_cull_plane(p);
+		}
 	}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING

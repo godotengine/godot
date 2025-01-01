@@ -56,11 +56,6 @@
 // feature off.
 // See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
 
-// On OpenGLES this is not defined in our standard headers..
-#ifndef GL_FRAMEBUFFER_SRGB
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
-#endif
-
 HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
@@ -68,6 +63,9 @@ HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
 	request_extensions[XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME] = nullptr;
 #else
 	request_extensions[XR_KHR_OPENGL_ENABLE_EXTENSION_NAME] = nullptr;
+#endif
+#if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
+	request_extensions[XR_MNDX_EGL_ENABLE_EXTENSION_NAME] = &egl_extension_enabled;
 #endif
 
 	return request_extensions;
@@ -133,8 +131,13 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 XrGraphicsBindingOpenGLWin32KHR OpenXROpenGLExtension::graphics_binding_gl;
 #elif defined(ANDROID_ENABLED)
 XrGraphicsBindingOpenGLESAndroidKHR OpenXROpenGLExtension::graphics_binding_gl;
-#elif defined(X11_ENABLED)
+#elif defined(LINUXBSD_ENABLED)
+#ifdef X11_ENABLED
 XrGraphicsBindingOpenGLXlibKHR OpenXROpenGLExtension::graphics_binding_gl;
+#endif
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
+XrGraphicsBindingEGLMNDX OpenXROpenGLExtension::graphics_binding_egl;
+#endif
 #endif
 
 void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
@@ -146,10 +149,6 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	}
 
 	DisplayServer *display_server = DisplayServer::get_singleton();
-
-#ifdef WAYLAND_ENABLED
-	ERR_FAIL_COND_V_MSG(display_server->get_name() == "Wayland", p_next_pointer, "OpenXR is not yet supported on OpenGL Wayland.");
-#endif
 
 #ifdef WIN32
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
@@ -164,7 +163,23 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.display = (void *)display_server->window_get_native_handle(DisplayServer::DISPLAY_HANDLE);
 	graphics_binding_gl.config = (EGLConfig)0; // https://github.com/KhronosGroup/OpenXR-SDK-Source/blob/master/src/tests/hello_xr/graphicsplugin_opengles.cpp#L122
 	graphics_binding_gl.context = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
-#elif defined(X11_ENABLED)
+#else
+#if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
+	if (display_server->get_name() == "Wayland") {
+		ERR_FAIL_COND_V_MSG(!egl_extension_enabled, p_next_pointer, "OpenXR cannot initialize on Wayland without the XR_MNDX_egl_enable extension.");
+
+		graphics_binding_egl.type = XR_TYPE_GRAPHICS_BINDING_EGL_MNDX;
+		graphics_binding_egl.next = p_next_pointer;
+
+		graphics_binding_egl.getProcAddress = eglGetProcAddress;
+		graphics_binding_egl.display = (void *)display_server->window_get_native_handle(DisplayServer::EGL_DISPLAY);
+		graphics_binding_egl.config = (void *)display_server->window_get_native_handle(DisplayServer::EGL_CONFIG);
+		graphics_binding_egl.context = (void *)display_server->window_get_native_handle(DisplayServer::OPENGL_CONTEXT);
+
+		return &graphics_binding_egl;
+	}
+#endif
+#if defined(X11_ENABLED)
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
 	graphics_binding_gl.next = p_next_pointer;
 
@@ -178,10 +193,15 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 
 	// spec says to use proper values but runtimes don't care
 	graphics_binding_gl.visualid = 0;
-	graphics_binding_gl.glxFBConfig = 0;
+	graphics_binding_gl.glxFBConfig = nullptr;
+#endif
 #endif
 
+#if defined(WIN32) || defined(ANDROID_ENABLED) || defined(X11_ENABLED)
 	return &graphics_binding_gl;
+#else
+	return p_next_pointer;
+#endif
 }
 
 void OpenXROpenGLExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) {
@@ -194,23 +214,6 @@ void OpenXROpenGLExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_d
 	p_usable_depth_formats.push_back(GL_DEPTH24_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH32F_STENCIL8);
 	p_usable_depth_formats.push_back(GL_DEPTH_COMPONENT24);
-}
-
-void OpenXROpenGLExtension::on_pre_draw_viewport(RID p_render_target) {
-	if (srgb_ext_is_available) {
-		hw_linear_to_srgb_is_enabled = glIsEnabled(GL_FRAMEBUFFER_SRGB);
-		if (hw_linear_to_srgb_is_enabled) {
-			// Disable this.
-			glDisable(GL_FRAMEBUFFER_SRGB);
-		}
-	}
-}
-
-void OpenXROpenGLExtension::on_post_draw_viewport(RID p_render_target) {
-	if (srgb_ext_is_available && hw_linear_to_srgb_is_enabled) {
-		// Re-enable this.
-		glEnable(GL_FRAMEBUFFER_SRGB);
-	}
 }
 
 bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
@@ -262,8 +265,8 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	Vector<RID> texture_rids;
 
 	for (uint64_t i = 0; i < swapchain_length; i++) {
-		RID texture_rid = texture_storage->texture_create_external(
-				p_array_size == 1 ? GLES3::Texture::TYPE_2D : GLES3::Texture::TYPE_LAYERED,
+		RID texture_rid = texture_storage->texture_create_from_native_handle(
+				p_array_size == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
 				format,
 				images[i].image,
 				p_width,
@@ -312,8 +315,8 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)*p_swapchain_graphics_data;
 
-	for (int i = 0; i < data->texture_rids.size(); i++) {
-		texture_storage->texture_free(data->texture_rids[i]);
+	for (const RID &texture_rid : data->texture_rids) {
+		texture_storage->texture_free(texture_rid);
 	}
 	data->texture_rids.clear();
 

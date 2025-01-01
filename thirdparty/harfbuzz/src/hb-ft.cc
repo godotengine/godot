@@ -224,8 +224,8 @@ _hb_ft_hb_font_check_changed (hb_font_t *font,
  *
  * Sets the FT_Load_Glyph load flags for the specified #hb_font_t.
  *
- * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * For more information, see
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().
@@ -252,8 +252,8 @@ hb_ft_font_set_load_flags (hb_font_t *font, int load_flags)
  *
  * Fetches the FT_Load_Glyph load flags of the specified #hb_font_t.
  *
- * For more information, see 
- * https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_load_xxx
+ * For more information, see
+ * <https://freetype.org/freetype2/docs/reference/ft2-glyph_retrieval.html#ft_load_xxx>
  *
  * This function works with #hb_font_t objects created by
  * hb_ft_font_create() or hb_ft_font_create_referenced().
@@ -1104,6 +1104,45 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
 			 buffer, hb_free);
 }
 
+static unsigned
+_hb_ft_get_table_tags (const hb_face_t *face HB_UNUSED,
+		       unsigned int start_offset,
+		       unsigned int *table_count,
+		       hb_tag_t *table_tags,
+		       void *user_data)
+{
+  FT_Face ft_face = (FT_Face) user_data;
+
+  FT_ULong population = 0;
+  FT_Sfnt_Table_Info (ft_face,
+		      0, // table_index; ignored
+		      nullptr,
+                      &population);
+
+  if (!table_count)
+    return population;
+  else
+    *table_count = 0;
+
+  if (unlikely (start_offset >= population))
+    return population;
+
+  unsigned end_offset = hb_min (start_offset + *table_count, (unsigned) population);
+  if (unlikely (end_offset < start_offset))
+    return population;
+
+  *table_count = end_offset - start_offset;
+  for (unsigned i = start_offset; i < end_offset; i++)
+  {
+    FT_ULong tag = 0, length;
+    FT_Sfnt_Table_Info (ft_face, i, &tag, &length);
+    table_tags[i - start_offset] = tag;
+  }
+
+  return population;
+}
+
+
 /**
  * hb_ft_face_create:
  * @ft_face: (destroy destroy) (scope notified): FT_Face to work upon
@@ -1118,10 +1157,10 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
  * This variant of the function does not provide any life-cycle management.
  *
  * Most client programs should use hb_ft_face_create_referenced()
- * (or, perhaps, hb_ft_face_create_cached()) instead. 
+ * (or, perhaps, hb_ft_face_create_cached()) instead.
  *
  * If you know you have valid reasons not to use hb_ft_face_create_referenced(),
- * then it is the client program's responsibility to destroy @ft_face 
+ * then it is the client program's responsibility to destroy @ft_face
  * after the #hb_face_t face object has been destroyed.
  *
  * Return value: (transfer full): the new #hb_face_t face object
@@ -1145,6 +1184,7 @@ hb_ft_face_create (FT_Face           ft_face,
     hb_blob_destroy (blob);
   } else {
     face = hb_face_create_for_tables (_hb_ft_reference_table, ft_face, destroy);
+    hb_face_set_get_table_tags_func (face, _hb_ft_get_table_tags, ft_face, nullptr);
   }
 
   hb_face_set_index (face, ft_face->face_index);
@@ -1215,7 +1255,7 @@ hb_ft_face_finalize (void *arg)
 hb_face_t *
 hb_ft_face_create_cached (FT_Face ft_face)
 {
-  if (unlikely (!ft_face->generic.data || ft_face->generic.finalizer != (FT_Generic_Finalizer) hb_ft_face_finalize))
+  if (unlikely (!ft_face->generic.data || ft_face->generic.finalizer != hb_ft_face_finalize))
   {
     if (ft_face->generic.finalizer)
       ft_face->generic.finalizer (ft_face);
@@ -1241,13 +1281,13 @@ hb_ft_face_create_cached (FT_Face ft_face)
  * This variant of the function does not provide any life-cycle management.
  *
  * Most client programs should use hb_ft_font_create_referenced()
- * instead. 
+ * instead.
  *
  * If you know you have valid reasons not to use hb_ft_font_create_referenced(),
- * then it is the client program's responsibility to destroy @ft_face 
+ * then it is the client program's responsibility to destroy @ft_face
  * after the #hb_font_t font object has been destroyed.
  *
- * HarfBuzz will use the @destroy callback on the #hb_font_t font object 
+ * HarfBuzz will use the @destroy callback on the #hb_font_t font object
  * if it is supplied when you use this function. However, even if @destroy
  * is provided, it is the client program's responsibility to destroy @ft_face,
  * and it is the client program's responsibility to ensure that @ft_face is

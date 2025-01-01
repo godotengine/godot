@@ -32,10 +32,10 @@
 
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
-#include "scene/scene_string_names.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -329,7 +329,7 @@ real_t CPUParticles2D::get_param_max(Parameter p_param) const {
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, real_t p_min, real_t p_max) {
 	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid()) {
+	if (curve.is_null()) {
 		return;
 	}
 
@@ -507,6 +507,10 @@ bool CPUParticles2D::get_split_scale() {
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "emitting") {
+		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
+	}
+
 	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -753,10 +757,10 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand);
-			p.custom[3] = 0.0;
+			p.custom[3] = (1.0 - Math::randf() * lifetime_randomness);
 			p.transform = Transform2D();
 			p.time = 0;
-			p.lifetime = lifetime * (1.0 - Math::randf() * lifetime_randomness);
+			p.lifetime = lifetime * p.custom[3];
 			p.base_color = Color(1, 1, 1, 1);
 
 			switch (emission_shape) {
@@ -997,7 +1001,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 	}
 	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
 		active = false;
-		emit_signal(SceneStringNames::get_singleton()->finished);
+		emit_signal(SceneStringName(finished));
 	}
 }
 
@@ -1286,12 +1290,12 @@ void CPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles2D::restart);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,suffix:s"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater,exp,suffix:s"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01,suffix:s"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "preprocess", PROPERTY_HINT_RANGE, "0.00,10.0,0.01,or_greater,exp,suffix:s"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");

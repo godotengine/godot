@@ -32,10 +32,6 @@
 #define PROJECT_SETTINGS_H
 
 #include "core/object/class_db.h"
-#include "core/os/thread_safe.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rb_set.h"
 
 template <typename T>
 class TypedArray;
@@ -51,10 +47,8 @@ public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
-	enum {
-		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
-		NO_BUILTIN_ORDER_BASE = 1 << 16
-	};
+	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
+	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
 
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
@@ -158,6 +152,7 @@ public:
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
 	TypedArray<Dictionary> get_global_class_list();
+	void refresh_global_class_list();
 	void store_global_class_list(const Array &p_classes);
 	String get_global_class_list_path() const;
 
@@ -222,7 +217,12 @@ public:
 	String get_scene_groups_cache_path() const;
 	void load_scene_groups_cache();
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
 	ProjectSettings();
+	ProjectSettings(const String &p_path);
 	~ProjectSettings();
 };
 

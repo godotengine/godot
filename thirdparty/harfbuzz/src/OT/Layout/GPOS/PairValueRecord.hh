@@ -29,7 +29,7 @@ struct PairValueRecord
 
   struct context_t
   {
-    const void          *base;
+    const ValueBase     *base;
     const ValueFormat   *valueFormats;
     const ValueFormat   *newFormats;
     unsigned            len1; /* valueFormats[0].get_len() */
@@ -62,7 +62,7 @@ struct PairValueRecord
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
                                   const ValueFormat *valueFormats,
-                                  const void *base) const
+                                  const ValueBase *base) const
   {
     unsigned record1_len = valueFormats[0].get_len ();
     unsigned record2_len = valueFormats[1].get_len ();

@@ -71,7 +71,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_browsing_parent = false;
 	String path_error;
 	String template_inactive_message;
-	String initial_bp;
 	bool is_new_script_created = true;
 	bool is_path_valid = false;
 	bool supports_built_in = false;
@@ -82,7 +81,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_using_templates = true;
 	bool built_in_enabled = true;
 	bool load_enabled = true;
-	int current_language;
 	int default_language;
 	bool re_check_path = false;
 
@@ -117,6 +115,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<ScriptLanguage::ScriptTemplate> _get_user_templates(const ScriptLanguage *p_language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const;
 	ScriptLanguage::ScriptTemplate _parse_template(const ScriptLanguage *p_language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const;
 	String _get_script_origin_label(const ScriptLanguage::TemplateLocation &p_origin) const;
+	String _adjust_file_path(const String &p_base_path) const;
 
 protected:
 	void _notification(int p_what);

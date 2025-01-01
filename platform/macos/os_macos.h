@@ -82,16 +82,18 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
-	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
+	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 
 	virtual MainLoop *get_main_loop() const override;
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
+	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
 	virtual String get_godot_dir_name() const override;
@@ -109,9 +111,12 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
+
+	virtual String get_model_name() const override;
 
 	virtual bool is_sandboxed() const override;
 	virtual Vector<String> get_granted_permissions() const override;

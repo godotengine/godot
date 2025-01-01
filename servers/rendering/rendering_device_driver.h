@@ -48,7 +48,6 @@
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
-#include "servers/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
@@ -56,7 +55,7 @@
 
 // This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
 // (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <class T>
+template <typename T>
 class VectorView {
 	const T *_ptr = nullptr;
 	const uint32_t _size = 0;
@@ -97,21 +96,21 @@ public:
 #define ENUM_MEMBERS_EQUAL(m_a, m_b) ((int64_t)m_a == (int64_t)m_b)
 
 // This helps using a single paged allocator for many resource types.
-template <class... RESOURCE_TYPES>
+template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
 	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
 	uint8_t data[MAX_RESOURCE_SIZE];
 
-	template <class T>
-	static T *allocate(PagedAllocator<VersatileResourceTemplate> &p_allocator) {
+	template <typename T>
+	static T *allocate(PagedAllocator<VersatileResourceTemplate, true> &p_allocator) {
 		T *obj = (T *)p_allocator.alloc();
-		*obj = T();
+		memnew_placement(obj, T);
 		return obj;
 	}
 
-	template <class T>
-	static void free(PagedAllocator<VersatileResourceTemplate> &p_allocator, T *p_object) {
+	template <typename T>
+	static void free(PagedAllocator<VersatileResourceTemplate, true> &p_allocator, T *p_object) {
 		p_object->~T();
 		p_allocator.free((VersatileResourceTemplate *)p_object);
 	}
@@ -120,15 +119,15 @@ struct VersatileResourceTemplate {
 class RenderingDeviceDriver : public RenderingDeviceCommons {
 public:
 	struct ID {
-		size_t id = 0;
+		uint64_t id = 0;
 		_ALWAYS_INLINE_ ID() = default;
-		_ALWAYS_INLINE_ ID(size_t p_id) :
+		_ALWAYS_INLINE_ ID(uint64_t p_id) :
 				id(p_id) {}
 	};
 
 #define DEFINE_ID(m_name)                                                                             \
 	struct m_name##ID : public ID {                                                                   \
-		_ALWAYS_INLINE_ operator bool() const { return id != 0; }                                     \
+		_ALWAYS_INLINE_ explicit operator bool() const { return id != 0; }                            \
 		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
 			id = p_other.id;                                                                          \
 			return *this;                                                                             \
@@ -138,11 +137,9 @@ public:
 		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { return id != p_other.id; } \
 		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                     \
 		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                            \
-		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((size_t)p_ptr) {}                       \
+		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {}                     \
 		_ALWAYS_INLINE_ m_name##ID() = default;                                                       \
-	};                                                                                                \
-	/* Ensure type-punnable to pointer. Makes some things easier.*/                                   \
-	static_assert(sizeof(m_name##ID) == sizeof(void *));
+	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
 	DEFINE_ID(Buffer);
@@ -221,14 +218,17 @@ public:
 	enum TextureLayout {
 		TEXTURE_LAYOUT_UNDEFINED,
 		TEXTURE_LAYOUT_GENERAL,
+		TEXTURE_LAYOUT_STORAGE_OPTIMAL,
 		TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
 		TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		TEXTURE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		TEXTURE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		TEXTURE_LAYOUT_PREINITIALIZED,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL = 1000164003,
+		TEXTURE_LAYOUT_COPY_SRC_OPTIMAL,
+		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
+		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
+		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
+		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_MAX
 	};
 
 	enum TextureAspect {
@@ -284,6 +284,7 @@ public:
 	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
 	virtual void texture_unmap(TextureID p_texture) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -317,10 +318,12 @@ public:
 		PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = (1 << 9),
 		PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT = (1 << 10),
 		PIPELINE_STAGE_COMPUTE_SHADER_BIT = (1 << 11),
-		PIPELINE_STAGE_TRANSFER_BIT = (1 << 12),
+		PIPELINE_STAGE_COPY_BIT = (1 << 12),
 		PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT = (1 << 13),
+		PIPELINE_STAGE_RESOLVE_BIT = (1 << 14),
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
+		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
 	};
 
 	enum BarrierAccessBits {
@@ -335,13 +338,16 @@ public:
 		BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = (1 << 8),
 		BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT = (1 << 9),
 		BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = (1 << 10),
-		BARRIER_ACCESS_TRANSFER_READ_BIT = (1 << 11),
-		BARRIER_ACCESS_TRANSFER_WRITE_BIT = (1 << 12),
+		BARRIER_ACCESS_COPY_READ_BIT = (1 << 11),
+		BARRIER_ACCESS_COPY_WRITE_BIT = (1 << 12),
 		BARRIER_ACCESS_HOST_READ_BIT = (1 << 13),
 		BARRIER_ACCESS_HOST_WRITE_BIT = (1 << 14),
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
 	struct MemoryBarrier {
@@ -419,6 +425,7 @@ public:
 	};
 
 	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) = 0;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) = 0;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) = 0;
 
 	// ----- BUFFER -----
@@ -445,8 +452,15 @@ public:
 	// Retrieve the render pass that can be used to draw on the swap chain's framebuffers.
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) = 0;
 
+	// Retrieve the rotation in degrees to apply as a pre-transform. Usually 0 on PC. May be 0, 90, 180 & 270 on Android.
+	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) { return 0; }
+
 	// Retrieve the format used by the swap chain's framebuffers.
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) = 0;
+
+	// Tells the swapchain the max_fps so it can use the proper frame pacing.
+	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
+	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {}
 
 	// Wait until all rendering associated to the swap chain is finished before deleting it.
 	virtual void swap_chain_free(SwapChainID p_swap_chain) = 0;
@@ -464,10 +478,25 @@ public:
 
 	virtual String shader_get_binary_cache_key() = 0;
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) = 0;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) = 0;
+
+	struct ImmutableSampler {
+		UniformType type = UNIFORM_TYPE_MAX;
+		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
+		LocalVector<ID> ids;
+	};
+	/** Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
+	@param p_shader_binary		Shader binary bytecode (e.g. SPIR-V).
+	@param r_shader_desc		TBD.
+	@param r_name				TBD.
+	@param p_immutable_samplers	Immutable samplers can be embedded when creating the pipeline layout on the condition they
+								remain valid and unchanged, so they don't need to be specified when creating uniform sets.
+	@return						PSO resource for binding.
+	*/
+	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
+	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
 
 protected:
 	// An optional service to implementations.
@@ -482,10 +511,15 @@ public:
 		UniformType type = UNIFORM_TYPE_MAX;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
+		// Flag to indicate  that this is an immutable sampler so it is skipped when creating uniform
+		// sets, as it would be set previously when creating the pipeline layout.
+		bool immutable_sampler = false;
 	};
 
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
+	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) {}
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
+	virtual bool uniform_sets_have_linear_pools() const { return false; }
 
 	// ----- COMMANDS -----
 
@@ -627,6 +661,7 @@ public:
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
@@ -669,6 +704,7 @@ public:
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) = 0;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
@@ -700,6 +736,11 @@ public:
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
+
+	/****************/
+	/**** DEBUG *****/
+	/****************/
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) = 0;
 
 	/********************/
 	/**** SUBMISSION ****/
@@ -735,7 +776,11 @@ public:
 		API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT,
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
+		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
+		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
 	};
+
 	enum ShaderChangeInvalidation {
 		SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS,
 		// What Vulkan does.
@@ -749,6 +794,7 @@ public:
 		DEVICE_OPENGL,
 		DEVICE_VULKAN,
 		DEVICE_DIRECTX,
+		DEVICE_METAL,
 	};
 
 	struct Capabilities {
@@ -760,6 +806,7 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) = 0;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) = 0;
 	virtual uint64_t get_total_memory_used() = 0;
+	virtual uint64_t get_lazily_memory_used() = 0;
 	virtual uint64_t limit_get(Limit p_limit) = 0;
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
@@ -768,6 +815,8 @@ public:
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 
 	/******************/
 

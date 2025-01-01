@@ -10,7 +10,7 @@
 		[b]Performance:[/b] [ConvexPolygonShape3D] is faster to check collisions against compared to [ConcavePolygonShape3D], but it is slower than primitive collision shapes such as [SphereShape3D] and [BoxShape3D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by primitive shapes.
 	</description>
 	<tutorials>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
 	</tutorials>
 	<members>
 		<member name="points" type="PackedVector3Array" setter="set_points" getter="get_points" default="PackedVector3Array()">

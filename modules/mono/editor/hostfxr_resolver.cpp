@@ -216,6 +216,7 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 #endif
 }
 
+#ifndef WINDOWS_ENABLED
 bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_root) {
 	Error err = OK;
 	Ref<FileAccess> f = FileAccess::open(p_file_path, FileAccess::READ, &err);
@@ -233,13 +234,14 @@ bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_
 	r_dotnet_root = line;
 	return true;
 }
+#endif
 
 bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 #if defined(WINDOWS_ENABLED)
 	String sub_key = "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + get_dotnet_arch();
 	Char16String value = String("InstallLocation").utf16();
 
-	HKEY hkey = NULL;
+	HKEY hkey = nullptr;
 	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(sub_key.utf16().get_data()), 0, KEY_READ | KEY_WOW64_32KEY, &hkey);
 	if (result != ERROR_SUCCESS) {
 		return false;
@@ -260,7 +262,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr());
+	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace("\\", "/");
 	RegCloseKey(hkey);
 	return true;
 #else

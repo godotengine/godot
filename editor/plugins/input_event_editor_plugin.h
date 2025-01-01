@@ -33,7 +33,7 @@
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class InputEventConfigContainer : public VBoxContainer {
 	GDCLASS(InputEventConfigContainer, VBoxContainer);
@@ -51,7 +51,6 @@ class InputEventConfigContainer : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	void set_event(const Ref<InputEvent> &p_event);
@@ -71,7 +70,7 @@ class InputEventEditorPlugin : public EditorPlugin {
 	GDCLASS(InputEventEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "InputEvent"; }
+	virtual String get_plugin_name() const override { return "InputEvent"; }
 
 	InputEventEditorPlugin();
 };

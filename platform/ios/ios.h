@@ -51,7 +51,7 @@ public:
 	static void alert(const char *p_alert, const char *p_title);
 
 	bool supports_haptic_engine();
-	void vibrate_haptic_engine(float p_duration_seconds);
+	void vibrate_haptic_engine(float p_duration_seconds, float p_amplitude);
 
 	String get_model() const;
 	String get_rate_url(int p_app_id) const;

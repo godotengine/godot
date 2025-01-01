@@ -101,8 +101,8 @@ class ProjectConverter3To4 {
 	void rename_joypad_buttons_and_axes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_joypad_buttons_and_axes(Vector<String> &lines, const RegExContainer &reg_container);
 
-	void custom_rename(Vector<SourceLine> &source_lines, String from, String to);
-	Vector<String> check_for_custom_rename(Vector<String> &lines, String from, String to);
+	void custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to);
+	Vector<String> check_for_custom_rename(Vector<String> &lines, const String &from, const String &to);
 
 	void rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceLine> &source_lines);
 	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
@@ -114,7 +114,7 @@ class ProjectConverter3To4 {
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
 	String get_starting_space(const String &line) const;
 	String get_object_of_execution(const String &line) const;
-	bool contains_function_call(String &line, String function) const;
+	bool contains_function_call(const String &line, const String &function) const;
 
 	String line_formatter(int current_line, String from, String to, String line);
 	String simple_line_formatter(int current_line, String old_line, String line);
@@ -122,9 +122,9 @@ class ProjectConverter3To4 {
 	Vector<SourceLine> split_lines(const String &text);
 
 	bool test_single_array(const char *array[][2], bool ignore_second_check = false);
-	bool test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin);
-	bool test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), String what, const RegExContainer &reg_container);
-	bool test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what);
+	bool test_conversion_gdscript_builtin(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &, bool), const String &what, const RegExContainer &reg_container, bool builtin);
+	bool test_conversion_with_regex(const String &name, const String &expected, void (ProjectConverter3To4::*func)(Vector<SourceLine> &, const RegExContainer &), const String &what, const RegExContainer &reg_container);
+	bool test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, const String &what);
 	bool test_array_names();
 	bool test_conversion(RegExContainer &reg_container);
 

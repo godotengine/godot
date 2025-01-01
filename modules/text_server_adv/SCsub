@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -9,27 +10,26 @@ env_text_server_adv = env_modules.Clone()
 def make_icu_data(target, source, env):
     dst = target[0].srcnode().abspath
 
-    g = open(dst, "w", encoding="utf-8")
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
+        g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
+        g.write("#ifndef _ICU_DATA_H\n")
+        g.write("#define _ICU_DATA_H\n")
+        g.write('#include "unicode/utypes.h"\n')
+        g.write('#include "unicode/udata.h"\n')
+        g.write('#include "unicode/uversion.h"\n')
 
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("/* (C) 2016 and later: Unicode, Inc. and others. */\n")
-    g.write("/* License & terms of use: https://www.unicode.org/copyright.html */\n")
-    g.write("#ifndef _ICU_DATA_H\n")
-    g.write("#define _ICU_DATA_H\n")
-    g.write('#include "unicode/utypes.h"\n')
-    g.write('#include "unicode/udata.h"\n')
-    g.write('#include "unicode/uversion.h"\n')
+        with open(source[0].srcnode().abspath, "rb") as f:
+            buf = f.read()
 
-    f = open(source[0].srcnode().abspath, "rb")
-    buf = f.read()
+        g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
 
-    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
-    g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
-    for i in range(len(buf)):
-        g.write("\t" + str(buf[i]) + ",\n")
-
-    g.write("};\n")
-    g.write("#endif")
+        g.write("};\n")
+        g.write("#endif")
 
 
 # Thirdparty source files
@@ -118,6 +118,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-subset-cff1.cc",
         "src/hb-subset-cff2.cc",
         "src/hb-subset-input.cc",
+        "src/hb-subset-instancer-iup.cc",
         "src/hb-subset-instancer-solver.cc",
         "src/hb-subset-plan.cc",
         "src/hb-subset-repacker.cc",
@@ -125,6 +126,7 @@ if env["builtin_harfbuzz"]:
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
         # "src/hb-uniscribe.cc",
+        "src/OT/Var/VARC/VARC.cc",
     ]
 
     if freetype_enabled:
@@ -142,7 +144,14 @@ if env["builtin_harfbuzz"]:
     env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
     if env["builtin_icu4c"]:
         env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
-        env_harfbuzz.Append(CCFLAGS=["-DU_HAVE_LIB_SUFFIX=1", "-DU_LIB_SUFFIX_C_NAME=_godot", "-DHAVE_ICU_BUILTIN"])
+        env_harfbuzz.Append(
+            CCFLAGS=[
+                "-DU_STATIC_IMPLEMENTATION",
+                "-DU_HAVE_LIB_SUFFIX=1",
+                "-DU_LIB_SUFFIX_C_NAME=_godot",
+                "-DHAVE_ICU_BUILTIN",
+            ]
+        )
 
     if freetype_enabled:
         env_harfbuzz.Append(
@@ -468,7 +477,7 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt74l.dat"
+    icu_data_name = "icudt76l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
@@ -499,6 +508,7 @@ if env["builtin_icu4c"]:
     )
     env_text_server_adv.Append(
         CXXFLAGS=[
+            "-DU_STATIC_IMPLEMENTATION",
             "-DU_HAVE_LIB_SUFFIX=1",
             "-DU_LIB_SUFFIX_C_NAME=_godot",
             "-DICU_DATA_NAME=" + icu_data_name,
@@ -532,6 +542,7 @@ module_obj = []
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
     # Treat msdfgen headers as system headers to avoid raising warnings. Not supported on MSVC.
+    env_text_server_adv.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     if not env.msvc:
         env_text_server_adv.Append(CPPFLAGS=["-isystem", Dir("#thirdparty/msdfgen").path])
     else:

@@ -106,12 +106,10 @@ struct BVHHandle {
 };
 
 // helper class to make iterative versions of recursive functions
-template <class T>
+template <typename T>
 class BVH_IterativeInfo {
 public:
-	enum {
-		ALLOCA_STACK_SIZE = 128
-	};
+	constexpr static const size_t ALLOCA_STACK_SIZE = 128;
 
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -152,7 +150,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyPairTestFunction {
 public:
 	static bool user_collision_check(T *p_a, T *p_b) {
@@ -161,7 +159,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyCullTestFunction {
 public:
 	static bool user_cull_check(T *p_a, T *p_b) {
@@ -170,7 +168,7 @@ public:
 	}
 };
 
-template <class T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, class BOUNDS = AABB, class POINT = Vector3>
+template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, typename BOUNDS = AABB, typename POINT = Vector3>
 class BVH_Tree {
 	friend class BVH;
 

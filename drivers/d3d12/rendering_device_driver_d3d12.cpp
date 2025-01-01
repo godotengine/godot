@@ -36,6 +36,7 @@
 #include "thirdparty/zlib/zlib.h"
 
 #include "d3d12_godot_nir_bridge.h"
+#include "dxil_hash.h"
 #include "rendering_context_driver_d3d12.h"
 
 // No point in fighting warnings in Mesa.
@@ -51,9 +52,14 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wswitch"
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-#include "dxil_validator.h"
 #include "nir_spirv.h"
 #include "nir_to_dxil.h"
 #include "spirv_to_dxil.h"
@@ -63,6 +69,8 @@ extern "C" {
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #if defined(_MSC_VER)
@@ -95,11 +103,6 @@ static const D3D12_RANGE VOID_RANGE = {};
 
 static const uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 1);
 static const uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 2);
-
-#ifdef DEV_ENABLED
-//#define DEBUG_COUNT_BARRIERS
-#define CUSTOM_INFO_QUEUE_ENABLED 0
-#endif
 
 /*****************/
 /**** GENERIC ****/
@@ -478,44 +481,6 @@ void RenderingDeviceDriverD3D12::_debug_message_func(D3D12_MESSAGE_CATEGORY p_ca
 	}
 }
 
-/****************/
-/**** MEMORY ****/
-/****************/
-
-static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
-
-#ifdef USE_SMALL_ALLOCS_POOL
-D3D12MA::Pool *RenderingDeviceDriverD3D12::_find_or_create_small_allocs_pool(D3D12_HEAP_TYPE p_heap_type, D3D12_HEAP_FLAGS p_heap_flags) {
-	D3D12_HEAP_FLAGS effective_heap_flags = p_heap_flags;
-	if (allocator->GetD3D12Options().ResourceHeapTier != D3D12_RESOURCE_HEAP_TIER_1) {
-		// Heap tier 2 allows mixing resource types liberally.
-		effective_heap_flags &= ~(D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS | D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES | D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES);
-	}
-
-	AllocPoolKey pool_key;
-	pool_key.heap_type = p_heap_type;
-	pool_key.heap_flags = effective_heap_flags;
-	if (small_allocs_pools.has(pool_key.key)) {
-		return small_allocs_pools[pool_key.key].Get();
-	}
-
-#ifdef DEV_ENABLED
-	print_verbose("Creating D3D12MA small objects pool for heap type " + itos(p_heap_type) + " and heap flags " + itos(p_heap_flags));
-#endif
-
-	D3D12MA::POOL_DESC poolDesc = {};
-	poolDesc.HeapProperties.Type = p_heap_type;
-	poolDesc.HeapFlags = effective_heap_flags;
-
-	ComPtr<D3D12MA::Pool> pool;
-	HRESULT res = allocator->CreatePool(&poolDesc, pool.GetAddressOf());
-	small_allocs_pools[pool_key.key] = pool; // Don't try to create it again if failed the first time.
-	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), nullptr, "CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
-
-	return pool.Get();
-}
-#endif
-
 /******************/
 /**** RESOURCE ****/
 /******************/
@@ -530,17 +495,11 @@ static const D3D12_RESOURCE_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_RESOURCE_DIMENSIO
 	D3D12_RESOURCE_DIMENSION_TEXTURE2D,
 };
 
-void RenderingDeviceDriverD3D12::_resource_transition_batch(ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state, ID3D12Resource *p_resource_override) {
+void RenderingDeviceDriverD3D12::_resource_transition_batch(CommandBufferInfo *p_command_buffer, ResourceInfo *p_resource, uint32_t p_subresource, uint32_t p_num_planes, D3D12_RESOURCE_STATES p_new_state) {
 	DEV_ASSERT(p_subresource != UINT32_MAX); // We don't support an "all-resources" command here.
-
-#ifdef DEBUG_COUNT_BARRIERS
-	uint64_t start = OS::get_singleton()->get_ticks_usec();
-#endif
 
 	ResourceInfo::States *res_states = p_resource->states_ptr;
 	D3D12_RESOURCE_STATES *curr_state = &res_states->subresource_states[p_subresource];
-
-	ID3D12Resource *res_to_transition = p_resource_override ? p_resource_override : p_resource->resource;
 
 	// Transitions can be considered redundant if the current state has all the bits of the new state.
 	// This check does not apply to the common state however, which must resort to checking if the state is the same (0).
@@ -548,22 +507,22 @@ void RenderingDeviceDriverD3D12::_resource_transition_batch(ResourceInfo *p_reso
 	bool redundant_transition = any_state_is_common ? *curr_state == p_new_state : ((*curr_state) & p_new_state) == p_new_state;
 	if (redundant_transition) {
 		bool just_written = *curr_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != res_barriers_batch;
+		bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != p_command_buffer->res_barriers_batch;
 		if (needs_uav_barrier) {
-			if (res_barriers.size() < res_barriers_count + 1) {
-				res_barriers.resize(res_barriers_count + 1);
+			if (p_command_buffer->res_barriers.size() < p_command_buffer->res_barriers_count + 1) {
+				p_command_buffer->res_barriers.resize(p_command_buffer->res_barriers_count + 1);
 			}
-			res_barriers[res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(res_to_transition);
-			res_barriers_count++;
-			res_states->last_batch_with_uav_barrier = res_barriers_batch;
+			p_command_buffer->res_barriers[p_command_buffer->res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(p_resource->resource);
+			p_command_buffer->res_barriers_count++;
+			res_states->last_batch_with_uav_barrier = p_command_buffer->res_barriers_batch;
 		}
 	} else {
 		uint64_t subres_mask_piece = ((uint64_t)1 << (p_subresource & 0b111111));
 		uint8_t subres_qword = p_subresource >> 6;
 
-		if (res_barriers_requests.has(res_states)) {
-			BarrierRequest &br = res_barriers_requests.get(res_states);
-			DEV_ASSERT(br.dx_resource == res_to_transition);
+		if (p_command_buffer->res_barriers_requests.has(res_states)) {
+			BarrierRequest &br = p_command_buffer->res_barriers_requests.get(res_states);
+			DEV_ASSERT(br.dx_resource == p_resource->resource);
 			DEV_ASSERT(br.subres_mask_qwords == STEPIFY(res_states->subresource_states.size(), 64) / 64);
 			DEV_ASSERT(br.planes == p_num_planes);
 
@@ -680,8 +639,8 @@ void RenderingDeviceDriverD3D12::_resource_transition_batch(ResourceInfo *p_reso
 				}
 			}
 		} else {
-			BarrierRequest &br = res_barriers_requests[res_states];
-			br.dx_resource = res_to_transition;
+			BarrierRequest &br = p_command_buffer->res_barriers_requests[res_states];
+			br.dx_resource = p_resource->resource;
 			br.subres_mask_qwords = STEPIFY(p_resource->states_ptr->subresource_states.size(), 64) / 64;
 			CRASH_COND(p_resource->states_ptr->subresource_states.size() > BarrierRequest::MAX_SUBRESOURCES);
 			br.planes = p_num_planes;
@@ -696,22 +655,10 @@ void RenderingDeviceDriverD3D12::_resource_transition_batch(ResourceInfo *p_reso
 			br.groups_count = 1;
 		}
 	}
-
-	if (p_new_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) {
-		res_states->last_batch_transitioned_to_uav = res_barriers_batch;
-	}
-
-#ifdef DEBUG_COUNT_BARRIERS
-	frame_barriers_cpu_time += OS::get_singleton()->get_ticks_usec() - start;
-#endif
 }
 
-void RenderingDeviceDriverD3D12::_resource_transitions_flush(ID3D12GraphicsCommandList *p_cmd_list) {
-#ifdef DEBUG_COUNT_BARRIERS
-	uint64_t start = OS::get_singleton()->get_ticks_usec();
-#endif
-
-	for (const KeyValue<ResourceInfo::States *, BarrierRequest> &E : res_barriers_requests) {
+void RenderingDeviceDriverD3D12::_resource_transitions_flush(CommandBufferInfo *p_command_buffer) {
+	for (const KeyValue<ResourceInfo::States *, BarrierRequest> &E : p_command_buffer->res_barriers_requests) {
 		ResourceInfo::States *res_states = E.key;
 		const BarrierRequest &br = E.value;
 
@@ -763,22 +710,22 @@ void RenderingDeviceDriverD3D12::_resource_transitions_flush(ID3D12GraphicsComma
 					// Hurray!, we can do a single barrier (plus maybe a UAV one, too).
 
 					bool just_written = res_states->subresource_states[0] == D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-					bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != res_barriers_batch;
+					bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != p_command_buffer->res_barriers_batch;
 
 					uint32_t needed_barriers = (needs_uav_barrier ? 1 : 0) + 1;
-					if (res_barriers.size() < res_barriers_count + needed_barriers) {
-						res_barriers.resize(res_barriers_count + needed_barriers);
+					if (p_command_buffer->res_barriers.size() < p_command_buffer->res_barriers_count + needed_barriers) {
+						p_command_buffer->res_barriers.resize(p_command_buffer->res_barriers_count + needed_barriers);
 					}
 
 					if (needs_uav_barrier) {
-						res_barriers[res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(br.dx_resource);
-						res_barriers_count++;
-						res_states->last_batch_with_uav_barrier = res_barriers_batch;
+						p_command_buffer->res_barriers[p_command_buffer->res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(br.dx_resource);
+						p_command_buffer->res_barriers_count++;
+						res_states->last_batch_with_uav_barrier = p_command_buffer->res_barriers_batch;
 					}
 
 					if (res_states->subresource_states[0] != br.groups[0].states) {
-						res_barriers[res_barriers_count] = CD3DX12_RESOURCE_BARRIER::Transition(br.dx_resource, res_states->subresource_states[0], br.groups[0].states, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-						res_barriers_count++;
+						p_command_buffer->res_barriers[p_command_buffer->res_barriers_count] = CD3DX12_RESOURCE_BARRIER::Transition(br.dx_resource, res_states->subresource_states[0], br.groups[0].states, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+						p_command_buffer->res_barriers_count++;
 					}
 
 					for (uint32_t i = 0; i < num_subresources; i++) {
@@ -814,23 +761,23 @@ void RenderingDeviceDriverD3D12::_resource_transitions_flush(ID3D12GraphicsComma
 					D3D12_RESOURCE_STATES *curr_state = &res_states->subresource_states[subresource];
 
 					bool just_written = *curr_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-					bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != res_barriers_batch;
+					bool needs_uav_barrier = just_written && res_states->last_batch_with_uav_barrier != p_command_buffer->res_barriers_batch;
 
 					uint32_t needed_barriers = (needs_uav_barrier ? 1 : 0) + br.planes;
-					if (res_barriers.size() < res_barriers_count + needed_barriers) {
-						res_barriers.resize(res_barriers_count + needed_barriers);
+					if (p_command_buffer->res_barriers.size() < p_command_buffer->res_barriers_count + needed_barriers) {
+						p_command_buffer->res_barriers.resize(p_command_buffer->res_barriers_count + needed_barriers);
 					}
 
 					if (needs_uav_barrier) {
-						res_barriers[res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(br.dx_resource);
-						res_barriers_count++;
-						res_states->last_batch_with_uav_barrier = res_barriers_batch;
+						p_command_buffer->res_barriers[p_command_buffer->res_barriers_count] = CD3DX12_RESOURCE_BARRIER::UAV(br.dx_resource);
+						p_command_buffer->res_barriers_count++;
+						res_states->last_batch_with_uav_barrier = p_command_buffer->res_barriers_batch;
 					}
 
 					if (*curr_state != g.states) {
 						for (uint8_t k = 0; k < br.planes; k++) {
-							res_barriers[res_barriers_count] = CD3DX12_RESOURCE_BARRIER::Transition(br.dx_resource, *curr_state, g.states, subresource + k * num_subresources);
-							res_barriers_count++;
+							p_command_buffer->res_barriers[p_command_buffer->res_barriers_count] = CD3DX12_RESOURCE_BARRIER::Transition(br.dx_resource, *curr_state, g.states, subresource + k * num_subresources);
+							p_command_buffer->res_barriers_count++;
 						}
 					}
 
@@ -842,19 +789,13 @@ void RenderingDeviceDriverD3D12::_resource_transitions_flush(ID3D12GraphicsComma
 		}
 	}
 
-	if (res_barriers_count) {
-		p_cmd_list->ResourceBarrier(res_barriers_count, res_barriers.ptr());
-		res_barriers_requests.clear();
+	if (p_command_buffer->res_barriers_count) {
+		p_command_buffer->cmd_list->ResourceBarrier(p_command_buffer->res_barriers_count, p_command_buffer->res_barriers.ptr());
+		p_command_buffer->res_barriers_requests.clear();
 	}
 
-#ifdef DEBUG_COUNT_BARRIERS
-	frame_barriers_count += res_barriers_count;
-	frame_barriers_batches_count++;
-	frame_barriers_cpu_time += OS::get_singleton()->get_ticks_usec() - start;
-#endif
-
-	res_barriers_count = 0;
-	res_barriers_batch++;
+	p_command_buffer->res_barriers_count = 0;
+	p_command_buffer->res_barriers_batch++;
 }
 
 /*****************/
@@ -866,7 +807,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	// but also if you give a rounded size at that point because it will extend beyond the
 	// memory of the resource. Therefore, it seems the only way is to create it with a
 	// rounded size.
-	CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(STEPIFY(p_size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
+	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(STEPIFY(p_size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
 	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	} else {
@@ -875,7 +816,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
 	allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
-	D3D12_RESOURCE_STATES initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
+	D3D12_RESOURCE_STATES initial_state = D3D12_RESOURCE_STATE_COMMON;
 	switch (p_allocation_type) {
 		case MEMORY_ALLOCATION_TYPE_CPU: {
 			bool is_src = p_usage.has_flag(BUFFER_USAGE_TRANSFER_FROM_BIT);
@@ -888,26 +829,37 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			if (is_dst && !is_src) {
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
 				allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
 			}
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
-#ifdef USE_SMALL_ALLOCS_POOL
-			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
-				allocation_desc.CustomPool = _find_or_create_small_allocs_pool(allocation_desc.HeapType, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS);
-			}
-#endif
+			// Use default parameters.
 		} break;
 	}
 
 	ComPtr<ID3D12Resource> buffer;
 	ComPtr<D3D12MA::Allocation> allocation;
-	HRESULT res = allocator->CreateResource(
-			&allocation_desc,
-			&resource_desc,
-			initial_state,
-			nullptr,
-			allocation.GetAddressOf(),
-			IID_PPV_ARGS(buffer.GetAddressOf()));
+	HRESULT res;
+	if (barrier_capabilities.enhanced_barriers_supported) {
+		res = allocator->CreateResource3(
+				&allocation_desc,
+				&resource_desc,
+				D3D12_BARRIER_LAYOUT_UNDEFINED,
+				nullptr,
+				0,
+				nullptr,
+				allocation.GetAddressOf(),
+				IID_PPV_ARGS(buffer.GetAddressOf()));
+	} else {
+		res = allocator->CreateResource(
+				&allocation_desc,
+				reinterpret_cast<const D3D12_RESOURCE_DESC *>(&resource_desc),
+				initial_state,
+				nullptr,
+				allocation.GetAddressOf(),
+				IID_PPV_ARGS(buffer.GetAddressOf()));
+	}
+
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// Bookkeep.
@@ -920,7 +872,6 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->size = p_size;
 	buf_info->flags.usable_as_uav = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-	buf_info->flags.is_for_upload = allocation_desc.HeapType == D3D12_HEAP_TYPE_UPLOAD;
 
 	return BufferID(buf_info);
 }
@@ -991,6 +942,7 @@ static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV
 uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(VectorView<DXGI_FORMAT> p_formats) {
 	uint32_t common = UINT32_MAX;
 
+	MutexLock lock(format_sample_counts_mask_cache_mutex);
 	for (uint32_t i = 0; i < p_formats.size(); i++) {
 		if (format_sample_counts_mask_cache.has(p_formats[i])) {
 			common &= format_sample_counts_mask_cache[p_formats[i]];
@@ -1049,8 +1001,7 @@ UINT RenderingDeviceDriverD3D12::_compute_plane_slice(DataFormat p_format, BitFi
 	if (p_aspect_bits.has_flag(TEXTURE_ASPECT_DEPTH_BIT)) {
 		DEV_ASSERT(aspect == TEXTURE_ASPECT_MAX);
 		aspect = TEXTURE_ASPECT_DEPTH;
-	}
-	if (p_aspect_bits.has_flag(TEXTURE_ASPECT_STENCIL_BIT)) {
+	} else if (p_aspect_bits.has_flag(TEXTURE_ASPECT_STENCIL_BIT)) {
 		DEV_ASSERT(aspect == TEXTURE_ASPECT_MAX);
 		aspect = TEXTURE_ASPECT_STENCIL;
 	}
@@ -1075,6 +1026,10 @@ UINT RenderingDeviceDriverD3D12::_compute_plane_slice(DataFormat p_format, Textu
 			DEV_ASSERT(false);
 			return 0;
 	}
+}
+
+UINT RenderingDeviceDriverD3D12::_compute_subresource_from_layers(TextureInfo *p_texture, const TextureSubresourceLayers &p_layers, uint32_t p_layer_offset) {
+	return D3D12CalcSubresource(p_layers.mipmap, p_layers.base_layer + p_layer_offset, _compute_plane_slice(p_texture->format, p_layers.aspect), p_texture->desc.MipLevels, p_texture->desc.ArraySize());
 }
 
 void RenderingDeviceDriverD3D12::_discard_texture_subresources(const TextureInfo *p_tex_info, const CommandBufferInfo *p_cmd_buf_info) {
@@ -1114,6 +1069,64 @@ void RenderingDeviceDriverD3D12::_discard_texture_subresources(const TextureInfo
 	}
 }
 
+bool RenderingDeviceDriverD3D12::_unordered_access_supported_by_format(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_R4G4_UNORM_PACK8:
+		case DATA_FORMAT_R4G4B4A4_UNORM_PACK16:
+		case DATA_FORMAT_B4G4R4A4_UNORM_PACK16:
+		case DATA_FORMAT_R5G6B5_UNORM_PACK16:
+		case DATA_FORMAT_B5G6R5_UNORM_PACK16:
+		case DATA_FORMAT_R5G5B5A1_UNORM_PACK16:
+		case DATA_FORMAT_B5G5R5A1_UNORM_PACK16:
+		case DATA_FORMAT_A1R5G5B5_UNORM_PACK16:
+		case DATA_FORMAT_A8B8G8R8_UNORM_PACK32:
+		case DATA_FORMAT_A8B8G8R8_SNORM_PACK32:
+		case DATA_FORMAT_A8B8G8R8_USCALED_PACK32:
+		case DATA_FORMAT_A8B8G8R8_SSCALED_PACK32:
+		case DATA_FORMAT_A8B8G8R8_UINT_PACK32:
+		case DATA_FORMAT_A8B8G8R8_SINT_PACK32:
+		case DATA_FORMAT_A8B8G8R8_SRGB_PACK32:
+		case DATA_FORMAT_A2R10G10B10_UNORM_PACK32:
+		case DATA_FORMAT_A2R10G10B10_SNORM_PACK32:
+		case DATA_FORMAT_A2R10G10B10_USCALED_PACK32:
+		case DATA_FORMAT_A2R10G10B10_SSCALED_PACK32:
+		case DATA_FORMAT_A2R10G10B10_UINT_PACK32:
+		case DATA_FORMAT_A2R10G10B10_SINT_PACK32:
+		case DATA_FORMAT_A2B10G10R10_UNORM_PACK32:
+		case DATA_FORMAT_A2B10G10R10_SNORM_PACK32:
+		case DATA_FORMAT_A2B10G10R10_USCALED_PACK32:
+		case DATA_FORMAT_A2B10G10R10_SSCALED_PACK32:
+		case DATA_FORMAT_A2B10G10R10_UINT_PACK32:
+		case DATA_FORMAT_A2B10G10R10_SINT_PACK32:
+		case DATA_FORMAT_B10G11R11_UFLOAT_PACK32:
+		case DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+		case DATA_FORMAT_X8_D24_UNORM_PACK32:
+		case DATA_FORMAT_R10X6_UNORM_PACK16:
+		case DATA_FORMAT_R10X6G10X6_UNORM_2PACK16:
+		case DATA_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:
+		case DATA_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case DATA_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case DATA_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
+		case DATA_FORMAT_R12X4_UNORM_PACK16:
+		case DATA_FORMAT_R12X4G12X4_UNORM_2PACK16:
+		case DATA_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16:
+		case DATA_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case DATA_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+			return false;
+		default:
+			return true;
+	}
+}
+
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
 	// Using D3D12_RESOURCE_DESC1. Thanks to the layout, it's sliceable down to D3D12_RESOURCE_DESC if needed.
 	CD3DX12_RESOURCE_DESC1 resource_desc = {};
@@ -1134,20 +1147,12 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 		resource_desc.Format = RD_TO_D3D12_FORMAT[p_format.format].family;
 
 		// If views of different families are wanted, special setup is needed for proper sharing among them.
-		// Two options here:
-		// 1. If ID3DDevice10 is present and driver reports relaxed casting is, leverage its new extended resource creation API (via D3D12MA).
-		// 2. Otherwise, fall back to an approach based on abusing aliasing, hoping for the best. [[CROSS_FAMILY_ALIASING]]
-		if (p_format.shareable_formats.size()) {
-			if (format_capabilities.relaxed_casting_supported) {
-				ComPtr<ID3D12Device10> device_10;
-				device->QueryInterface(device_10.GetAddressOf());
-				if (device_10) {
-					relaxed_casting_available = true;
-					relaxed_casting_formats = ALLOCA_ARRAY(DXGI_FORMAT, p_format.shareable_formats.size());
-					relaxed_casting_formats[0] = RD_TO_D3D12_FORMAT[p_format.format].general_format;
-					relaxed_casting_format_count++;
-				}
-			}
+		// If the driver reports relaxed casting is, leverage its new extended resource creation API (via D3D12MA).
+		if (p_format.shareable_formats.size() && format_capabilities.relaxed_casting_supported) {
+			relaxed_casting_available = true;
+			relaxed_casting_formats = ALLOCA_ARRAY(DXGI_FORMAT, p_format.shareable_formats.size() + 1);
+			relaxed_casting_formats[0] = RD_TO_D3D12_FORMAT[p_format.format].general_format;
+			relaxed_casting_format_count++;
 		}
 
 		HashMap<DataFormat, D3D12_RESOURCE_FLAGS> aliases_forbidden_flags;
@@ -1159,18 +1164,15 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 
 			if (RD_TO_D3D12_FORMAT[curr_format].family != RD_TO_D3D12_FORMAT[p_format.format].family) {
 				cross_family_sharing = true;
-				if (!relaxed_casting_available) {
-					break;
-				}
+			}
+
+			if (relaxed_casting_available) {
 				relaxed_casting_formats[relaxed_casting_format_count] = RD_TO_D3D12_FORMAT[curr_format].general_format;
 				relaxed_casting_format_count++;
 			}
 		}
 
 		if (cross_family_sharing && !relaxed_casting_available) {
-			// At least guarantee the same layout among aliases.
-			resource_desc.Layout = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE;
-
 			// Per https://docs.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_texture_layout.
 			if (p_format.texture_type == TEXTURE_TYPE_1D) {
 				ERR_FAIL_V_MSG(TextureID(), "This texture's views require aliasing, but that's not supported for a 1D texture.");
@@ -1191,7 +1193,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	if ((p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 	} else {
-		if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
+		if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT) && _unordered_access_supported_by_format(p_format.format)) {
 			resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; // For clearing via UAV.
 		}
 	}
@@ -1221,9 +1223,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	// Create.
 
 	D3D12MA::ALLOCATION_DESC allocation_desc = {};
-	if (cross_family_sharing && !relaxed_casting_available) {
-		allocation_desc.Flags = D3D12MA::ALLOCATION_FLAG_CAN_ALIAS;
-	}
 	allocation_desc.HeapType = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_DEFAULT;
 	if ((resource_desc.Flags & (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))) {
 		allocation_desc.ExtraHeapFlags = D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES;
@@ -1234,14 +1233,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 		allocation_desc.ExtraHeapFlags |= D3D12_HEAP_FLAG_ALLOW_SHADER_ATOMICS;
 	}
 
-#ifdef USE_SMALL_ALLOCS_POOL
-	uint32_t width = 0, height = 0;
-	uint32_t image_size = get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, p_format.mipmaps, &width, &height);
-	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
-		allocation_desc.CustomPool = _find_or_create_small_allocs_pool(allocation_desc.HeapType, allocation_desc.ExtraHeapFlags);
-	}
-#endif
-
 	D3D12_RESOURCE_STATES initial_state = {};
 	ID3D12Resource *texture = nullptr;
 	ComPtr<ID3D12Resource> main_texture;
@@ -1251,17 +1242,19 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	D3D12_CLEAR_VALUE *clear_value_ptr = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ? &clear_value : nullptr;
 	{
 		HRESULT res = E_FAIL;
-		if (cross_family_sharing && relaxed_casting_available) {
+		if (barrier_capabilities.enhanced_barriers_supported || (cross_family_sharing && relaxed_casting_available)) {
+			// Create with undefined layout if enhanced barriers are supported. Leave as common otherwise for interop with legacy barriers.
+			D3D12_BARRIER_LAYOUT initial_layout = barrier_capabilities.enhanced_barriers_supported ? D3D12_BARRIER_LAYOUT_UNDEFINED : D3D12_BARRIER_LAYOUT_COMMON;
 			res = allocator->CreateResource3(
 					&allocation_desc,
 					&resource_desc,
-					D3D12_BARRIER_LAYOUT_COMMON, // Needed for barrier interop.
+					initial_layout,
 					clear_value_ptr,
 					relaxed_casting_format_count,
 					relaxed_casting_formats,
 					allocation.GetAddressOf(),
 					IID_PPV_ARGS(main_texture.GetAddressOf()));
-			initial_state = D3D12_RESOURCE_STATE_COMMON; // Needed for barrier interop.
+			initial_state = D3D12_RESOURCE_STATE_COMMON;
 		} else {
 			res = allocator->CreateResource(
 					&allocation_desc,
@@ -1343,53 +1336,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = main_uav_desc;
 	uav_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
 
-	// Create aliases if needed. [[CROSS_FAMILY_ALIASING]]
-
-	using AliasEntry = Pair<DXGI_FORMAT, ID3D12Resource *>;
-	AliasEntry *aliases = nullptr;
-	uint32_t alias_count = 0;
-	if (cross_family_sharing && !relaxed_casting_available) {
-		aliases = ALLOCA_ARRAY(AliasEntry, p_format.shareable_formats.size());
-
-		for (int i = 0; i < p_format.shareable_formats.size(); i++) {
-			DataFormat curr_format = p_format.shareable_formats[i];
-
-			DXGI_FORMAT format_family = RD_TO_D3D12_FORMAT[curr_format].family;
-			if (format_family == RD_TO_D3D12_FORMAT[p_format.format].family) {
-				continue;
-			}
-
-			D3D12_RESOURCE_DESC alias_resource_desc = *(D3D12_RESOURCE_DESC *)&resource_desc;
-			alias_resource_desc.Format = format_family;
-			clear_value.Format = format_family;
-			if ((alias_resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)) {
-				if (!texture_get_usages_supported_by_format(curr_format, false).has_flag(TEXTURE_USAGE_STORAGE_BIT)) {
-					alias_resource_desc.Flags &= ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-				}
-			}
-			ID3D12Resource *alias = nullptr;
-			HRESULT res = allocator->CreateAliasingResource(
-					allocation.Get(),
-					0,
-					&alias_resource_desc,
-					initial_state,
-					(alias_resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) ? clear_value_ptr : nullptr,
-					IID_PPV_ARGS(&alias));
-			if (!SUCCEEDED(res)) {
-				for (uint32_t j = 0; j < alias_count; j++) {
-					aliases[j].second->Release();
-				}
-				ERR_FAIL_V_MSG(TextureID(), "CreateAliasingResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
-			}
-			aliases[alias_count] = AliasEntry(format_family, alias);
-			alias_count++;
-
-			if (curr_format == p_view.format) {
-				texture = alias;
-			}
-		}
-	}
-
 	// Bookkeep.
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
@@ -1402,19 +1348,25 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	}
 	tex_info->states_ptr = &tex_info->owner_info.states;
 	tex_info->format = p_format.format;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 	tex_info->desc = *(CD3DX12_RESOURCE_DESC *)&resource_desc;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 	tex_info->base_layer = 0;
 	tex_info->layers = resource_desc.ArraySize();
 	tex_info->base_mip = 0;
 	tex_info->mipmaps = resource_desc.MipLevels;
 	tex_info->view_descs.srv = srv_desc;
 	tex_info->view_descs.uav = uav_desc;
-	tex_info->main_texture = main_texture.Get();
-	tex_info->aliasing_hack.main_uav_desc = main_uav_desc;
-	if (alias_count) {
-		for (uint32_t i = 0; i < alias_count; i++) {
-			tex_info->aliasing_hack.owner_info.aliases.insert(aliases[i].first, aliases[i].second);
-		}
+
+	if (!barrier_capabilities.enhanced_barriers_supported && (p_format.usage_bits & (TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_COLOR_ATTACHMENT_BIT))) {
+		// Fallback to clear resources when they're first used in a uniform set. Not necessary if enhanced barriers
+		// are supported, as the discard flag will be used instead when transitioning from an undefined layout.
+		textures_pending_clear.add(&tex_info->pending_clear);
 	}
 
 	return TextureID(tex_info);
@@ -1425,76 +1377,23 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_from_extension(uint64_
 }
 
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
-	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!owner_tex_info->owner_info.allocation, TextureID());
-#endif
-
-	ID3D12Resource *texture = nullptr;
-	if (owner_tex_info->aliasing_hack.owner_info.aliases.is_empty()) {
-		texture = owner_tex_info->resource;
-	} else {
-		texture = owner_tex_info->main_texture;
-		for (const KeyValue<DXGI_FORMAT, ComPtr<ID3D12Resource>> &E : owner_tex_info->aliasing_hack.owner_info.aliases) {
-			if (E.key == RD_TO_D3D12_FORMAT[p_view.format].family) {
-				texture = E.value.Get();
-				break;
-			}
-		}
-	}
-
-	// Describe views.
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = owner_tex_info->view_descs.srv;
-	{
-		srv_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
-		srv_desc.Shader4ComponentMapping = _compute_component_mapping(p_view);
-	}
-
-	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = owner_tex_info->view_descs.uav;
-	{
-		uav_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
-	}
-
-	// Bookkeep.
-
-	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
-	tex_info->resource = texture;
-	tex_info->states_ptr = owner_tex_info->states_ptr;
-	tex_info->format = p_view.format;
-	tex_info->desc = owner_tex_info->desc;
-	tex_info->base_layer = owner_tex_info->base_layer;
-	tex_info->layers = owner_tex_info->layers;
-	tex_info->base_mip = owner_tex_info->base_mip;
-	tex_info->mipmaps = owner_tex_info->mipmaps;
-	tex_info->view_descs.srv = srv_desc;
-	tex_info->view_descs.uav = uav_desc;
-	tex_info->main_texture = owner_tex_info->main_texture;
-	tex_info->aliasing_hack.main_uav_desc = owner_tex_info->aliasing_hack.main_uav_desc;
-
-	return TextureID(tex_info);
+	return _texture_create_shared_from_slice(p_original_texture, p_view, (TextureSliceType)-1, 0, 0, 0, 0);
 }
 
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
-	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
+	return _texture_create_shared_from_slice(p_original_texture, p_view, p_slice_type, p_layer, p_layers, p_mipmap, p_mipmaps);
+}
+
+RDD::TextureID RenderingDeviceDriverD3D12::_texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
+	TextureInfo *owner_tex_info = (TextureInfo *)p_original_texture.id;
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(!owner_tex_info->owner_info.allocation, TextureID());
 #endif
 
-	// Find appropriate resource instance.
-
-	ID3D12Resource *texture = nullptr;
-	if (owner_tex_info->aliasing_hack.owner_info.aliases.is_empty()) {
-		texture = owner_tex_info->resource;
-	} else {
-		texture = owner_tex_info->main_texture;
-		for (const KeyValue<DXGI_FORMAT, ComPtr<ID3D12Resource>> &E : owner_tex_info->aliasing_hack.owner_info.aliases) {
-			if (E.key == RD_TO_D3D12_FORMAT[p_view.format].family) {
-				texture = E.value.Get();
-				break;
-			}
-		}
-	}
+	ComPtr<ID3D12Resource> new_texture;
+	ComPtr<D3D12MA::Allocation> new_allocation;
+	ID3D12Resource *resource = owner_tex_info->resource;
+	CD3DX12_RESOURCE_DESC new_tex_resource_desc = owner_tex_info->desc;
 
 	// Describe views.
 
@@ -1509,103 +1408,118 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create_shared_from_slice(Text
 		uav_desc.Format = RD_TO_D3D12_FORMAT[p_view.format].general_format;
 	}
 
-	// Complete description with slicing.
-	// (Leveraging aliasing in members of the union as much as possible.)
+	if (p_slice_type != (TextureSliceType)-1) {
+		// Complete description with slicing.
 
-	srv_desc.Texture1D.MostDetailedMip = p_mipmap;
-	srv_desc.Texture1D.MipLevels = 1;
+		switch (p_slice_type) {
+			case TEXTURE_SLICE_2D: {
+				if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer == 0) {
+					srv_desc.Texture2D.MostDetailedMip = p_mipmap;
+					srv_desc.Texture2D.MipLevels = p_mipmaps;
 
-	uav_desc.Texture1D.MipSlice = p_mipmap;
+					DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2D);
+					uav_desc.Texture1D.MipSlice = p_mipmap;
+				} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer == 0) {
+					DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_UNKNOWN);
+				} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer)) || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY) {
+					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					srv_desc.Texture2DArray.MostDetailedMip = p_mipmap;
+					srv_desc.Texture2DArray.MipLevels = p_mipmaps;
+					srv_desc.Texture2DArray.FirstArraySlice = p_layer;
+					srv_desc.Texture2DArray.ArraySize = 1;
+					srv_desc.Texture2DArray.PlaneSlice = 0;
+					srv_desc.Texture2DArray.ResourceMinLODClamp = 0.0f;
 
-	switch (p_slice_type) {
-		case TEXTURE_SLICE_2D: {
-			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer == 0) {
-				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2D);
-			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer == 0) {
-				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_UNKNOWN);
-			} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D && p_layer)) || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY) {
-				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+					uav_desc.Texture2DArray.MipSlice = p_mipmap;
+					uav_desc.Texture2DArray.FirstArraySlice = p_layer;
+					uav_desc.Texture2DArray.ArraySize = 1;
+					uav_desc.Texture2DArray.PlaneSlice = 0;
+				} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer))) {
+					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+					srv_desc.Texture2DMSArray.FirstArraySlice = p_layer;
+					srv_desc.Texture2DMSArray.ArraySize = 1;
+
+					uav_desc.ViewDimension = D3D12_UAV_DIMENSION_UNKNOWN;
+				} else {
+					DEV_ASSERT(false);
+				}
+			} break;
+			case TEXTURE_SLICE_CUBEMAP: {
+				if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || p_layer == 0) {
+					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+					srv_desc.TextureCube.MostDetailedMip = p_mipmap;
+					srv_desc.TextureCube.MipLevels = p_mipmaps;
+
+					DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
+					uav_desc.Texture2DArray.MipSlice = p_mipmap;
+					uav_desc.Texture2DArray.FirstArraySlice = p_layer;
+					uav_desc.Texture2DArray.ArraySize = 6;
+					uav_desc.Texture2DArray.PlaneSlice = 0;
+				} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY || p_layer != 0) {
+					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
+					srv_desc.TextureCubeArray.MostDetailedMip = p_mipmap;
+					srv_desc.TextureCubeArray.MipLevels = p_mipmaps;
+					srv_desc.TextureCubeArray.First2DArrayFace = p_layer;
+					srv_desc.TextureCubeArray.NumCubes = 1;
+					srv_desc.TextureCubeArray.ResourceMinLODClamp = 0.0f;
+
+					DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
+					uav_desc.Texture2DArray.MipSlice = p_mipmap;
+					uav_desc.Texture2DArray.FirstArraySlice = p_layer;
+					uav_desc.Texture2DArray.ArraySize = 6;
+					uav_desc.Texture2DArray.PlaneSlice = 0;
+				} else {
+					DEV_ASSERT(false);
+				}
+			} break;
+			case TEXTURE_SLICE_3D: {
+				DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE3D);
+				srv_desc.Texture3D.MostDetailedMip = p_mipmap;
+				srv_desc.Texture3D.MipLevels = p_mipmaps;
+
+				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE3D);
+				uav_desc.Texture3D.MipSlice = p_mipmap;
+				uav_desc.Texture3D.WSize = -1;
+			} break;
+			case TEXTURE_SLICE_2D_ARRAY: {
+				DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY);
+				srv_desc.Texture2DArray.MostDetailedMip = p_mipmap;
+				srv_desc.Texture2DArray.MipLevels = p_mipmaps;
 				srv_desc.Texture2DArray.FirstArraySlice = p_layer;
-				srv_desc.Texture2DArray.ArraySize = 1;
-				srv_desc.Texture2DArray.PlaneSlice = 0;
-				srv_desc.Texture2DArray.ResourceMinLODClamp = 0.0f;
-
-				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
-				uav_desc.Texture2DArray.FirstArraySlice = p_layer;
-				uav_desc.Texture2DArray.ArraySize = 1;
-				uav_desc.Texture2DArray.PlaneSlice = 0;
-			} else if ((srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY || (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DMS && p_layer))) {
-				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-				srv_desc.Texture2DMSArray.FirstArraySlice = p_layer;
-				srv_desc.Texture2DMSArray.ArraySize = 1;
-
-				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_UNKNOWN;
-			} else {
-				DEV_ASSERT(false);
-			}
-		} break;
-		case TEXTURE_SLICE_CUBEMAP: {
-			if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE || p_layer == 0) {
-				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-				srv_desc.TextureCube.MostDetailedMip = p_mipmap;
-				srv_desc.TextureCube.MipLevels = 1;
-
-				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
-				uav_desc.Texture2DArray.MipSlice = p_mipmap;
-				uav_desc.Texture2DArray.FirstArraySlice = 0;
-				uav_desc.Texture2DArray.ArraySize = 6;
-				uav_desc.Texture2DArray.PlaneSlice = 0;
-			} else if (srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBEARRAY || p_layer != 0) {
-				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBEARRAY;
-				srv_desc.TextureCubeArray.MostDetailedMip = p_mipmap;
-				srv_desc.TextureCubeArray.MipLevels = 1;
-				srv_desc.TextureCubeArray.First2DArrayFace = p_layer;
-				srv_desc.TextureCubeArray.NumCubes = 1;
-				srv_desc.TextureCubeArray.ResourceMinLODClamp = 0.0f;
+				srv_desc.Texture2DArray.ArraySize = p_layers;
 
 				DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
 				uav_desc.Texture2DArray.MipSlice = p_mipmap;
 				uav_desc.Texture2DArray.FirstArraySlice = p_layer;
-				uav_desc.Texture2DArray.ArraySize = 6;
-				uav_desc.Texture2DArray.PlaneSlice = 0;
-			} else {
-				DEV_ASSERT(false);
-			}
-		} break;
-		case TEXTURE_SLICE_3D: {
-			DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE3D);
-
-			DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE3D);
-			uav_desc.Texture3D.WSize = -1;
-		} break;
-		case TEXTURE_SLICE_2D_ARRAY: {
-			DEV_ASSERT(srv_desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY);
-			srv_desc.Texture2DArray.FirstArraySlice = p_layer;
-			srv_desc.Texture2DArray.ArraySize = p_layers;
-
-			DEV_ASSERT(uav_desc.ViewDimension == D3D12_UAV_DIMENSION_TEXTURE2DARRAY);
-			uav_desc.Texture2DArray.FirstArraySlice = p_layer;
-			uav_desc.Texture2DArray.ArraySize = p_layers;
-		} break;
-		default:
-			break;
+				uav_desc.Texture2DArray.ArraySize = p_layers;
+			} break;
+			default:
+				break;
+		}
 	}
 
 	// Bookkeep.
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
-	tex_info->resource = texture;
+	tex_info->resource = resource;
 	tex_info->states_ptr = owner_tex_info->states_ptr;
 	tex_info->format = p_view.format;
-	tex_info->desc = owner_tex_info->desc;
-	tex_info->base_layer = p_layer;
-	tex_info->layers = p_layers;
-	tex_info->base_mip = p_mipmap;
-	tex_info->mipmaps = p_mipmaps;
+	tex_info->desc = new_tex_resource_desc;
+	if (p_slice_type == (TextureSliceType)-1) {
+		tex_info->base_layer = owner_tex_info->base_layer;
+		tex_info->layers = owner_tex_info->layers;
+		tex_info->base_mip = owner_tex_info->base_mip;
+		tex_info->mipmaps = owner_tex_info->mipmaps;
+	} else {
+		tex_info->base_layer = p_layer;
+		tex_info->layers = p_layers;
+		tex_info->base_mip = p_mipmap;
+		tex_info->mipmaps = p_mipmaps;
+	}
 	tex_info->view_descs.srv = srv_desc;
 	tex_info->view_descs.uav = uav_desc;
-	tex_info->main_texture = owner_tex_info->main_texture;
-	tex_info->aliasing_hack.main_uav_desc = owner_tex_info->aliasing_hack.main_uav_desc;
+	tex_info->main_texture = owner_tex_info;
 
 	return TextureID(tex_info);
 }
@@ -1720,6 +1634,28 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverD3D12::texture_get_usages_s
 	return supported;
 }
 
+bool RenderingDeviceDriverD3D12::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+	r_raw_reinterpretation = false;
+
+	if (format_capabilities.relaxed_casting_supported) {
+		// Relaxed casting is supported, there should be no need to check for format family compatibility.
+		return true;
+	} else {
+		TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+		if (tex_info->format == DATA_FORMAT_R16_UINT && p_format == DATA_FORMAT_R4G4B4A4_UNORM_PACK16) {
+			// Specific cases that require buffer reinterpretation.
+			r_raw_reinterpretation = true;
+			return false;
+		} else if (RD_TO_D3D12_FORMAT[tex_info->format].family != RD_TO_D3D12_FORMAT[p_format].family) {
+			// Format family is different but copying resources directly is possible.
+			return false;
+		} else {
+			// Format family is the same and the view can just cast the format.
+			return true;
+		}
+	}
+}
+
 /*****************/
 /**** SAMPLER ****/
 /*****************/
@@ -1751,7 +1687,7 @@ RDD::SamplerID RenderingDeviceDriverD3D12::sampler_create(const SamplerState &p_
 		slot = 1;
 	} else {
 		for (uint32_t i = 1; i < samplers.size(); i++) {
-			if (samplers[i].Filter == INT_MAX) {
+			if ((int)samplers[i].Filter == INT_MAX) {
 				slot = i;
 				break;
 			}
@@ -1852,20 +1788,356 @@ void RenderingDeviceDriverD3D12::vertex_format_free(VertexFormatID p_vertex_form
 /**** BARRIERS ****/
 /******************/
 
-void RenderingDeviceDriverD3D12::command_pipeline_barrier(
-		CommandBufferID p_cmd_buffer,
-		BitField<RDD::PipelineStageBits> p_src_stages,
-		BitField<RDD::PipelineStageBits> p_dst_stages,
+static D3D12_BARRIER_ACCESS _rd_texture_layout_access_mask(RDD::TextureLayout p_texture_layout) {
+	switch (p_texture_layout) {
+		case RDD::TEXTURE_LAYOUT_STORAGE_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+		case RDD::TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_RENDER_TARGET;
+		case RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ | D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+		case RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+		case RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+		case RDD::TEXTURE_LAYOUT_COPY_SRC_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_COPY_SOURCE;
+		case RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_COPY_DEST;
+		case RDD::TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_RESOLVE_SOURCE;
+		case RDD::TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_RESOLVE_DEST;
+		case RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
+		default:
+			return D3D12_BARRIER_ACCESS_NO_ACCESS;
+	}
+}
+
+static void _rd_access_to_d3d12_and_mask(BitField<RDD::BarrierAccessBits> p_access, RDD::TextureLayout p_texture_layout, D3D12_BARRIER_ACCESS &r_access, D3D12_BARRIER_SYNC &r_sync_mask) {
+	r_access = D3D12_BARRIER_ACCESS_COMMON;
+	r_sync_mask = D3D12_BARRIER_SYNC_NONE;
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_INDIRECT_ARGUMENT;
+		r_sync_mask |= D3D12_BARRIER_SYNC_EXECUTE_INDIRECT;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_INDEX_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_INDEX_BUFFER;
+		r_sync_mask |= D3D12_BARRIER_SYNC_INDEX_INPUT | D3D12_BARRIER_SYNC_DRAW;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_VERTEX_BUFFER;
+		r_sync_mask |= D3D12_BARRIER_SYNC_VERTEX_SHADING | D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_ALL_SHADING;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_UNIFORM_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_CONSTANT_BUFFER;
+		r_sync_mask |= D3D12_BARRIER_SYNC_VERTEX_SHADING | D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_COMPUTE_SHADING |
+				D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_ALL_SHADING;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_INPUT_ATTACHMENT_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_RENDER_TARGET;
+		r_sync_mask |= D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_RENDER_TARGET;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_COPY_SOURCE;
+		r_sync_mask |= D3D12_BARRIER_SYNC_COPY;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COPY_WRITE_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_COPY_DEST;
+		r_sync_mask |= D3D12_BARRIER_SYNC_COPY;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_RESOLVE_SOURCE;
+		r_sync_mask |= D3D12_BARRIER_SYNC_RESOLVE;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_RESOLVE_WRITE_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_RESOLVE_DEST;
+		r_sync_mask |= D3D12_BARRIER_SYNC_RESOLVE;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
+		r_sync_mask |= D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_ALL_SHADING;
+	}
+
+	const D3D12_BARRIER_SYNC unordered_access_mask = D3D12_BARRIER_SYNC_VERTEX_SHADING | D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_COMPUTE_SHADING |
+			D3D12_BARRIER_SYNC_VERTEX_SHADING | D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_ALL_SHADING | D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_STORAGE_CLEAR_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+		r_sync_mask |= unordered_access_mask;
+	}
+
+	// These access bits only have compatibility with certain layouts unlike in Vulkan where they imply specific operations in the same layout.
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_SHADER_WRITE_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+		r_sync_mask |= unordered_access_mask;
+	} else if (p_access.has_flag(RDD::BARRIER_ACCESS_SHADER_READ_BIT)) {
+		if (p_texture_layout == RDD::TEXTURE_LAYOUT_STORAGE_OPTIMAL) {
+			// Unordered access must be enforced if the texture is using the storage layout.
+			r_access |= D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
+			r_sync_mask |= unordered_access_mask;
+		} else {
+			r_access |= D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
+			r_sync_mask |= D3D12_BARRIER_SYNC_VERTEX_SHADING | D3D12_BARRIER_SYNC_PIXEL_SHADING | D3D12_BARRIER_SYNC_COMPUTE_SHADING | D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_ALL_SHADING;
+		}
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT) || p_access.has_flag(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_RENDER_TARGET;
+		r_sync_mask |= D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_RENDER_TARGET;
+	}
+
+	if (p_access.has_flag(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+		r_sync_mask |= D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+	} else if (p_access.has_flag(RDD::BARRIER_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT)) {
+		r_access |= D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+		r_sync_mask |= D3D12_BARRIER_SYNC_DRAW | D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+	}
+}
+
+static void _rd_stages_to_d3d12(BitField<RDD::PipelineStageBits> p_stages, D3D12_BARRIER_SYNC &r_sync) {
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
+		r_sync = D3D12_BARRIER_SYNC_ALL;
+	} else {
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_EXECUTE_INDIRECT;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_INDEX_INPUT;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_GEOMETRY_SHADER_BIT)) {
+			// There's no granularity for tessellation or geometry stages. The specification defines it as part of vertex shading.
+			r_sync |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_PIXEL_SHADING;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT)) {
+			// Covers both read and write operations for depth stencil.
+			r_sync |= D3D12_BARRIER_SYNC_DEPTH_STENCIL;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_RENDER_TARGET;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_COMPUTE_SHADING;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_COPY_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_COPY;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_RESOLVE_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_RESOLVE;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_CLEAR_UNORDERED_ACCESS_VIEW;
+		}
+
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT)) {
+			r_sync |= D3D12_BARRIER_SYNC_DRAW;
+		}
+	}
+}
+
+static void _rd_stages_and_access_to_d3d12(BitField<RDD::PipelineStageBits> p_stages, RDD::TextureLayout p_texture_layout, BitField<RDD::BarrierAccessBits> p_access, D3D12_BARRIER_SYNC &r_sync, D3D12_BARRIER_ACCESS &r_access) {
+	D3D12_BARRIER_SYNC sync_mask;
+	r_sync = D3D12_BARRIER_SYNC_NONE;
+
+	if (p_texture_layout == RDD::TEXTURE_LAYOUT_UNDEFINED) {
+		// Undefined texture layouts are a special case where no access bits or synchronization scopes are allowed.
+		r_access = D3D12_BARRIER_ACCESS_NO_ACCESS;
+		return;
+	}
+
+	// Convert access bits to the D3D12 barrier access bits.
+	_rd_access_to_d3d12_and_mask(p_access, p_texture_layout, r_access, sync_mask);
+
+	if (p_texture_layout != RDD::TEXTURE_LAYOUT_MAX) {
+		// Only allow the access bits compatible with the texture layout.
+		r_access &= _rd_texture_layout_access_mask(p_texture_layout);
+	}
+
+	// Convert stage bits to the D3D12 synchronization scope bits.
+	_rd_stages_to_d3d12(p_stages, r_sync);
+
+	// Only enable synchronization stages compatible with the access bits that were used.
+	r_sync &= sync_mask;
+
+	if (r_sync == D3D12_BARRIER_SYNC_NONE) {
+		if (p_access.is_empty()) {
+			// No valid synchronization scope was defined and no access in particular is required.
+			r_access = D3D12_BARRIER_ACCESS_NO_ACCESS;
+		} else {
+			// Access is required but the synchronization scope wasn't compatible. We fall back to the global synchronization scope and access.
+			r_sync = D3D12_BARRIER_SYNC_ALL;
+			r_access = D3D12_BARRIER_ACCESS_COMMON;
+		}
+	}
+}
+
+static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::TextureLayout p_texture_layout) {
+	switch (p_texture_layout) {
+		case RDD::TEXTURE_LAYOUT_UNDEFINED:
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
+		case RDD::TEXTURE_LAYOUT_GENERAL:
+			return D3D12_BARRIER_LAYOUT_COMMON;
+		case RDD::TEXTURE_LAYOUT_STORAGE_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_UNORDERED_ACCESS;
+		case RDD::TEXTURE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_RENDER_TARGET;
+		case RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+		case RDD::TEXTURE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_READ;
+		case RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_SHADER_RESOURCE;
+		case RDD::TEXTURE_LAYOUT_COPY_SRC_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_COPY_SOURCE;
+		case RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_COPY_DEST;
+		case RDD::TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_RESOLVE_SOURCE;
+		case RDD::TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_RESOLVE_DEST;
+		case RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL:
+			return D3D12_BARRIER_LAYOUT_SHADING_RATE_SOURCE;
+		default:
+			DEV_ASSERT(false && "Unknown texture layout.");
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
+	}
+}
+
+void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_buffer,
+		BitField<PipelineStageBits> p_src_stages,
+		BitField<PipelineStageBits> p_dst_stages,
 		VectorView<RDD::MemoryBarrier> p_memory_barriers,
 		VectorView<RDD::BufferBarrier> p_buffer_barriers,
 		VectorView<RDD::TextureBarrier> p_texture_barriers) {
-	if (p_src_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT) && p_dst_stages.has_flag(PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
-		// Looks like the intent is a full barrier.
-		// In the resource barriers world, we can force a full barrier by discarding some resource, as per
-		// https://microsoft.github.io/DirectX-Specs/d3d/D3D12EnhancedBarriers.html#synchronous-copy-discard-and-resolve.
-		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
-		cmd_buf_info->cmd_list->DiscardResource(frames[frame_idx].aux_resource->GetResource(), nullptr);
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		// Enhanced barriers are a requirement for this function.
+		return;
 	}
+
+	if (p_memory_barriers.size() == 0 && p_buffer_barriers.size() == 0 && p_texture_barriers.size() == 0) {
+		// At least one barrier must be present in the arguments.
+		return;
+	}
+
+	// The command list must support the required interface.
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
+	ID3D12GraphicsCommandList7 *cmd_list_7 = nullptr;
+	HRESULT res = cmd_buf_info->cmd_list->QueryInterface(IID_PPV_ARGS(&cmd_list_7));
+	ERR_FAIL_COND(FAILED(res));
+
+	// Convert the RDD barriers to D3D12 enhanced barriers.
+	thread_local LocalVector<D3D12_GLOBAL_BARRIER> global_barriers;
+	thread_local LocalVector<D3D12_BUFFER_BARRIER> buffer_barriers;
+	thread_local LocalVector<D3D12_TEXTURE_BARRIER> texture_barriers;
+	global_barriers.clear();
+	buffer_barriers.clear();
+	texture_barriers.clear();
+
+	D3D12_GLOBAL_BARRIER global_barrier = {};
+	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
+		const MemoryBarrier &memory_barrier = p_memory_barriers[i];
+		_rd_stages_and_access_to_d3d12(p_src_stages, RDD::TEXTURE_LAYOUT_MAX, memory_barrier.src_access, global_barrier.SyncBefore, global_barrier.AccessBefore);
+		_rd_stages_and_access_to_d3d12(p_dst_stages, RDD::TEXTURE_LAYOUT_MAX, memory_barrier.dst_access, global_barrier.SyncAfter, global_barrier.AccessAfter);
+		global_barriers.push_back(global_barrier);
+	}
+
+	D3D12_BUFFER_BARRIER buffer_barrier_d3d12 = {};
+	buffer_barrier_d3d12.Offset = 0;
+	buffer_barrier_d3d12.Size = UINT64_MAX; // The specification says this must be the size of the buffer barrier.
+	for (uint32_t i = 0; i < p_buffer_barriers.size(); i++) {
+		const BufferBarrier &buffer_barrier_rd = p_buffer_barriers[i];
+		const BufferInfo *buffer_info = (const BufferInfo *)(buffer_barrier_rd.buffer.id);
+		_rd_stages_and_access_to_d3d12(p_src_stages, RDD::TEXTURE_LAYOUT_MAX, buffer_barrier_rd.src_access, buffer_barrier_d3d12.SyncBefore, buffer_barrier_d3d12.AccessBefore);
+		_rd_stages_and_access_to_d3d12(p_dst_stages, RDD::TEXTURE_LAYOUT_MAX, buffer_barrier_rd.dst_access, buffer_barrier_d3d12.SyncAfter, buffer_barrier_d3d12.AccessAfter);
+		buffer_barrier_d3d12.pResource = buffer_info->resource;
+		buffer_barriers.push_back(buffer_barrier_d3d12);
+	}
+
+	D3D12_TEXTURE_BARRIER texture_barrier_d3d12 = {};
+	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
+		const TextureBarrier &texture_barrier_rd = p_texture_barriers[i];
+		const TextureInfo *texture_info = (const TextureInfo *)(texture_barrier_rd.texture.id);
+		if (texture_info->main_texture) {
+			texture_info = texture_info->main_texture;
+		}
+		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
+		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
+		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
+		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout);
+		texture_barrier_d3d12.pResource = texture_info->resource;
+		if (texture_barrier_rd.subresources.mipmap_count == texture_info->mipmaps && texture_barrier_rd.subresources.layer_count == texture_info->layers) {
+			// So, all resources. Then, let's be explicit about it so D3D12 doesn't think
+			// we are dealing with a subset of subresources.
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = 0xffffffff;
+			texture_barrier_d3d12.Subresources.NumMipLevels = 0;
+			// Because NumMipLevels == 0, all the other fields are ignored by D3D12.
+		} else {
+			texture_barrier_d3d12.Subresources.IndexOrFirstMipLevel = texture_barrier_rd.subresources.base_mipmap;
+			texture_barrier_d3d12.Subresources.NumMipLevels = texture_barrier_rd.subresources.mipmap_count;
+			texture_barrier_d3d12.Subresources.FirstArraySlice = texture_barrier_rd.subresources.base_layer;
+			texture_barrier_d3d12.Subresources.NumArraySlices = texture_barrier_rd.subresources.layer_count;
+			texture_barrier_d3d12.Subresources.FirstPlane = _compute_plane_slice(texture_info->format, texture_barrier_rd.subresources.aspect);
+			texture_barrier_d3d12.Subresources.NumPlanes = format_get_plane_count(texture_info->format);
+		}
+		texture_barrier_d3d12.Flags = (texture_barrier_rd.prev_layout == RDD::TEXTURE_LAYOUT_UNDEFINED) ? D3D12_TEXTURE_BARRIER_FLAG_DISCARD : D3D12_TEXTURE_BARRIER_FLAG_NONE;
+		texture_barriers.push_back(texture_barrier_d3d12);
+	}
+
+	// Define the barrier groups and execute.
+
+	D3D12_BARRIER_GROUP barrier_groups[3] = {};
+	uint32_t barrier_groups_count = 0;
+
+	if (!global_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_GLOBAL;
+		barrier_group.NumBarriers = global_barriers.size();
+		barrier_group.pGlobalBarriers = global_barriers.ptr();
+	}
+
+	if (!buffer_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_BUFFER;
+		barrier_group.NumBarriers = buffer_barriers.size();
+		barrier_group.pBufferBarriers = buffer_barriers.ptr();
+	}
+
+	if (!texture_barriers.is_empty()) {
+		D3D12_BARRIER_GROUP &barrier_group = barrier_groups[barrier_groups_count++];
+		barrier_group.Type = D3D12_BARRIER_TYPE_TEXTURE;
+		barrier_group.NumBarriers = texture_barriers.size();
+		barrier_group.pTextureBarriers = texture_barriers.ptr();
+	}
+
+	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
 }
 
 /****************/
@@ -1888,6 +2160,7 @@ RDD::FenceID RenderingDeviceDriverD3D12::fence_create() {
 
 Error RenderingDeviceDriverD3D12::fence_wait(FenceID p_fence) {
 	FenceInfo *fence = (FenceInfo *)(p_fence.id);
+	fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
 	DWORD res = WaitForSingleObjectEx(fence->event_handle, INFINITE, FALSE);
 #ifdef PIX_ENABLED
 	PIXNotifyWakeFromFenceSignal(fence->event_handle);
@@ -1982,7 +2255,6 @@ Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueue
 			FenceInfo *fence = (FenceInfo *)(p_cmd_fence.id);
 			fence->fence_value++;
 			command_queue->d3d_queue->Signal(fence->d3d_fence.Get(), fence->fence_value);
-			fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
 		}
 	}
 
@@ -2014,8 +2286,25 @@ RDD::CommandPoolID RenderingDeviceDriverD3D12::command_pool_create(CommandQueueF
 	return CommandPoolID(command_pool);
 }
 
+bool RenderingDeviceDriverD3D12::command_pool_reset(CommandPoolID p_cmd_pool) {
+	return true;
+}
+
 void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
 	CommandPoolInfo *command_pool = (CommandPoolInfo *)(p_cmd_pool.id);
+
+	// Destroy all command buffers associated with this command pool, mirroring Vulkan's behavior.
+	SelfList<CommandBufferInfo> *cmd_buf_elem = command_pool->command_buffers.first();
+	while (cmd_buf_elem != nullptr) {
+		CommandBufferInfo *cmd_buf_info = cmd_buf_elem->self();
+		cmd_buf_elem = cmd_buf_elem->next();
+
+		cmd_buf_info->cmd_list.Reset();
+		cmd_buf_info->cmd_allocator.Reset();
+
+		VersatileResource::free(resources_allocator, cmd_buf_info);
+	}
+
 	memdelete(command_pool);
 }
 
@@ -2024,7 +2313,7 @@ void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
 RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
-	const CommandPoolInfo *command_pool = (CommandPoolInfo *)(p_cmd_pool.id);
+	CommandPoolInfo *command_pool = (CommandPoolInfo *)(p_cmd_pool.id);
 	D3D12_COMMAND_LIST_TYPE list_type;
 	if (command_pool->buffer_type == COMMAND_BUFFER_TYPE_SECONDARY) {
 		list_type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
@@ -2059,6 +2348,9 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 	CommandBufferInfo *cmd_buf_info = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
 	cmd_buf_info->cmd_allocator = cmd_allocator;
 	cmd_buf_info->cmd_list = cmd_list;
+
+	// Add this command buffer to the command pool's list of command buffers.
+	command_pool->command_buffers.add(&cmd_buf_info->command_buffer_info_elem);
 
 	return CommandBufferID(cmd_buf_info);
 }
@@ -2189,8 +2481,6 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 			break;
 	}
 
-	print_verbose("Using swap chain flags: " + itos(creation_flags) + ", sync interval: " + itos(sync_interval) + ", present flags: " + itos(present_flags));
-
 	if (swap_chain->d3d_swap_chain != nullptr && creation_flags != swap_chain->creation_flags) {
 		// The swap chain must be recreated if the creation flags are different.
 		_swap_chain_release(swap_chain);
@@ -2199,7 +2489,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
 	if (swap_chain->d3d_swap_chain != nullptr) {
 		_swap_chain_release_buffers(swap_chain);
-		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, 0, 0, DXGI_FORMAT_UNKNOWN, creation_flags);
+		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, surface->width, surface->height, DXGI_FORMAT_UNKNOWN, creation_flags);
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
 	} else {
 		swap_chain_desc.BufferCount = p_desired_framebuffer_count;
@@ -2208,16 +2498,55 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swap_chain_desc.SampleDesc.Count = 1;
 		swap_chain_desc.Flags = creation_flags;
-		swap_chain_desc.Scaling = DXGI_SCALING_NONE;
+		swap_chain_desc.Scaling = DXGI_SCALING_STRETCH;
+		if (OS::get_singleton()->is_layered_allowed()) {
+			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = true;
+		} else {
+			swap_chain_desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+			has_comp_alpha[(uint64_t)p_cmd_queue.id] = false;
+		}
+		swap_chain_desc.Width = surface->width;
+		swap_chain_desc.Height = surface->height;
 
 		ComPtr<IDXGISwapChain1> swap_chain_1;
-		res = context_driver->dxgi_factory_get()->CreateSwapChainForHwnd(command_queue->d3d_queue.Get(), surface->hwnd, &swap_chain_desc, nullptr, nullptr, swap_chain_1.GetAddressOf());
+		res = context_driver->dxgi_factory_get()->CreateSwapChainForComposition(command_queue->d3d_queue.Get(), &swap_chain_desc, nullptr, swap_chain_1.GetAddressOf());
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 
 		swap_chain_1.As(&swap_chain->d3d_swap_chain);
 		ERR_FAIL_NULL_V(swap_chain->d3d_swap_chain, ERR_CANT_CREATE);
 
 		res = context_driver->dxgi_factory_get()->MakeWindowAssociation(surface->hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	}
+
+	if (surface->composition_device.Get() == nullptr) {
+		using PFN_DCompositionCreateDevice = HRESULT(WINAPI *)(IDXGIDevice *, REFIID, void **);
+		PFN_DCompositionCreateDevice pfn_DCompositionCreateDevice = (PFN_DCompositionCreateDevice)(void *)GetProcAddress(context_driver->lib_dcomp, "DCompositionCreateDevice");
+		ERR_FAIL_NULL_V(pfn_DCompositionCreateDevice, ERR_CANT_CREATE);
+
+		res = pfn_DCompositionCreateDevice(nullptr, IID_PPV_ARGS(surface->composition_device.GetAddressOf()));
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->CreateTargetForHwnd(surface->hwnd, TRUE, surface->composition_target.GetAddressOf());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->CreateVisual(surface->composition_visual.GetAddressOf());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_visual->SetContent(swap_chain->d3d_swap_chain.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_target->SetRoot(surface->composition_visual.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->Commit();
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+	} else {
+		res = surface->composition_visual->SetContent(swap_chain->d3d_swap_chain.Get());
+		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
+
+		res = surface->composition_device->Commit();
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 	}
 
@@ -2352,12 +2681,52 @@ D3D12_RENDER_TARGET_VIEW_DESC RenderingDeviceDriverD3D12::_make_rtv_for_texture(
 			rtv_desc.Texture3D.FirstWSlice = 0;
 			rtv_desc.Texture3D.WSize = -1;
 		} break;
+		case D3D12_SRV_DIMENSION_TEXTURECUBE:
+		case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY: {
+			rtv_desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+			rtv_desc.Texture2DArray.MipSlice = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+			rtv_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			rtv_desc.Texture2DArray.ArraySize = p_layers == UINT32_MAX ? p_texture_info->layers : p_layers;
+			rtv_desc.Texture2DArray.PlaneSlice = 0;
+		} break;
 		default: {
 			DEV_ASSERT(false);
 		}
 	}
 
 	return rtv_desc;
+}
+
+D3D12_UNORDERED_ACCESS_VIEW_DESC RenderingDeviceDriverD3D12::_make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases) {
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = p_texture_info->view_descs.uav;
+
+	uint32_t mip = (p_add_bases ? p_texture_info->base_mip : 0) + p_mipmap_offset;
+	switch (p_texture_info->view_descs.uav.ViewDimension) {
+		case D3D12_UAV_DIMENSION_TEXTURE1D: {
+			uav_desc.Texture1DArray.MipSlice = mip;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE1DARRAY: {
+			uav_desc.Texture1DArray.MipSlice = mip;
+			uav_desc.Texture1DArray.FirstArraySlice = mip;
+			uav_desc.Texture1DArray.ArraySize = p_layers;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE2D: {
+			uav_desc.Texture2D.MipSlice = mip;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE2DARRAY: {
+			uav_desc.Texture2DArray.MipSlice = mip;
+			uav_desc.Texture2DArray.FirstArraySlice = (p_add_bases ? p_texture_info->base_layer : 0) + p_layer_offset;
+			uav_desc.Texture2DArray.ArraySize = p_layers;
+		} break;
+		case D3D12_UAV_DIMENSION_TEXTURE3D: {
+			uav_desc.Texture3D.MipSlice = mip;
+			uav_desc.Texture3D.WSize >>= p_mipmap_offset;
+		} break;
+		default:
+			break;
+	}
+
+	return uav_desc;
 }
 
 D3D12_DEPTH_STENCIL_VIEW_DESC RenderingDeviceDriverD3D12::_make_dsv_for_texture(const TextureInfo *p_texture_info) {
@@ -2511,23 +2880,6 @@ static uint32_t SHADER_STAGES_BIT_OFFSET_INDICES[RenderingDevice::SHADER_STAGE_M
 	/* SHADER_STAGE_COMPUTE */ 2,
 };
 
-dxil_validator *RenderingDeviceDriverD3D12::_get_dxil_validator_for_current_thread() {
-	MutexLock lock(dxil_mutex);
-
-	int thread_idx = WorkerThreadPool::get_singleton()->get_thread_index();
-	if (dxil_validators.has(thread_idx)) {
-		return dxil_validators[thread_idx];
-	}
-
-#ifdef DEV_ENABLED
-	print_verbose("Creating DXIL validator for worker thread index " + itos(thread_idx));
-#endif
-
-	dxil_validator *dxil_validator = dxil_create_validator(nullptr);
-	dxil_validators.insert(thread_idx, dxil_validator);
-	return dxil_validator;
-}
-
 uint32_t RenderingDeviceDriverD3D12::_shader_patch_dxil_specialization_constant(
 		PipelineSpecializationConstantType p_type,
 		const void *p_value,
@@ -2650,40 +3002,20 @@ bool RenderingDeviceDriverD3D12::_shader_apply_specialization_constants(
 		ShaderStage stage = E.key;
 		if ((stages_re_sign_mask & (1 << stage))) {
 			Vector<uint8_t> &bytecode = E.value;
-			bool sign_ok = _shader_sign_dxil_bytecode(stage, bytecode);
-			ERR_FAIL_COND_V(!sign_ok, false);
+			_shader_sign_dxil_bytecode(stage, bytecode);
 		}
 	}
 
 	return true;
 }
 
-bool RenderingDeviceDriverD3D12::_shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob) {
-	dxil_validator *validator = _get_dxil_validator_for_current_thread();
-	if (!validator) {
-		if (is_in_developer_mode()) {
-			return true;
-		} else {
-			OS::get_singleton()->alert("Shader validation failed: DXIL.dll was not found, and developer mode is disabled.\n\nClick OK to exit.");
-			CRASH_NOW();
-		}
-	}
-
-	char *err = nullptr;
-	bool res = dxil_validate_module(validator, r_dxil_blob.ptrw(), r_dxil_blob.size(), &err);
-	if (!res) {
-		if (err) {
-			ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed:\n" + String(err));
-		} else {
-			ERR_FAIL_COND_V_MSG(!res, false, "Shader signing invocation at stage " + String(SHADER_STAGE_NAMES[p_stage]) + " failed.");
-		}
-	}
-
-	return true;
+void RenderingDeviceDriverD3D12::_shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob) {
+	uint8_t *w = r_dxil_blob.ptrw();
+	compute_dxil_hash(w + 20, r_dxil_blob.size() - 20, w + 4);
 }
 
 String RenderingDeviceDriverD3D12::shader_get_binary_cache_key() {
-	return "D3D12-SV" + uitos(ShaderBinary::VERSION) + "-" + itos(shader_capabilities.shader_model) + (is_in_developer_mode() ? "dev" : "");
+	return "D3D12-SV" + uitos(ShaderBinary::VERSION) + "-" + itos(shader_capabilities.shader_model);
 }
 
 Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
@@ -2899,7 +3231,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 							DEV_ASSERT(binding_info.res_class == (uint32_t)RES_CLASS_INVALID || binding_info.res_class == (uint32_t)res_class);
 							binding_info.res_class = res_class;
 						} else if (p_dxil_type == DXIL_RES_SAMPLER) {
-							binding_info.has_sampler = (uint32_t) true;
+							binding_info.has_sampler = (uint32_t)true;
 						} else {
 							CRASH_NOW();
 						}
@@ -2951,10 +3283,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			nir_to_dxil_options nir_to_dxil_options = {};
 			nir_to_dxil_options.environment = DXIL_ENVIRONMENT_VULKAN;
 			nir_to_dxil_options.shader_model_max = shader_model_d3d_to_dxil(shader_capabilities.shader_model);
-			dxil_validator *validator = _get_dxil_validator_for_current_thread();
-			if (validator) {
-				nir_to_dxil_options.validator_version_max = dxil_get_validator_version(validator);
-			}
+			nir_to_dxil_options.validator_version_max = NO_DXIL_VALIDATION;
 			nir_to_dxil_options.godot_nir_callbacks = &godot_nir_callbacks;
 
 			dxil_logger logger = {};
@@ -3005,8 +3334,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 	for (KeyValue<ShaderStage, Vector<uint8_t>> &E : dxil_blobs) {
 		ShaderStage stage = E.key;
 		Vector<uint8_t> &dxil_blob = E.value;
-		bool sign_ok = _shader_sign_dxil_bytecode(stage, dxil_blob);
-		ERR_FAIL_COND_V(!sign_ok, Vector<uint8_t>());
+		_shader_sign_dxil_bytecode(stage, dxil_blob);
 	}
 
 	// Build the root signature.
@@ -3194,7 +3522,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		root_sig_desc.Init_1_1(root_params.size(), root_params.ptr(), 0, nullptr, root_sig_flags);
 
 		ComPtr<ID3DBlob> error_blob;
-		HRESULT res = D3DX12SerializeVersionedRootSignature(&root_sig_desc, D3D_ROOT_SIGNATURE_VERSION_1_1, root_sig_blob.GetAddressOf(), error_blob.GetAddressOf());
+		HRESULT res = D3DX12SerializeVersionedRootSignature(context_driver->lib_d3d12, &root_sig_desc, D3D_ROOT_SIGNATURE_VERSION_1_1, root_sig_blob.GetAddressOf(), error_blob.GetAddressOf());
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), Vector<uint8_t>(),
 				"Serialization of root signature failed with error " + vformat("0x%08ux", (uint64_t)res) + " and the following message:\n" + String((char *)error_blob->GetBufferPointer(), error_blob->GetBufferSize()));
 
@@ -3218,10 +3546,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		compressed_stages.push_back(zstd);
 
 		uint32_t s = compressed_stages[i].size();
-		if (s % 4 != 0) {
-			s += 4 - (s % 4);
-		}
-		stages_binary_size += s;
+		stages_binary_size += STEPIFY(s, 4);
 	}
 
 	CharString shader_name_utf = p_shader_name.utf8();
@@ -3231,10 +3556,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 	uint32_t total_size = sizeof(uint32_t) * 3; // Header + version + main datasize;.
 	total_size += sizeof(ShaderBinary::Data);
 
-	total_size += binary_data.shader_name_len;
-	if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-		total_size += 4 - (binary_data.shader_name_len % 4);
-	}
+	total_size += STEPIFY(binary_data.shader_name_len, 4);
 
 	for (int i = 0; i < sets_bindings.size(); i++) {
 		total_size += sizeof(uint32_t);
@@ -3266,13 +3588,17 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
 		offset += sizeof(ShaderBinary::Data);
 
+#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
+	{                                                                  \
+		offset += m_bytes;                                             \
+		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
+		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
+		offset += padding;                                             \
+	}
+
 		if (binary_data.shader_name_len > 0) {
 			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-			offset += binary_data.shader_name_len;
-
-			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-				offset += 4 - (binary_data.shader_name_len % 4);
-			}
+			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
 		}
 
 		for (int i = 0; i < sets_bindings.size(); i++) {
@@ -3298,14 +3624,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			encode_uint32(zstd_size[i], binptr + offset);
 			offset += sizeof(uint32_t);
 			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
-
-			uint32_t s = compressed_stages[i].size();
-
-			if (s % 4 != 0) {
-				s += 4 - (s % 4);
-			}
-
-			offset += s;
+			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
 		}
 
 		memcpy(binptr + offset, root_sig_blob->GetBufferPointer(), root_sig_blob->GetBufferSize());
@@ -3317,7 +3636,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 	return ret;
 }
 
-RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
+RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	r_shader_desc = {}; // Driver-agnostic.
 	ShaderInfo shader_info_in; // Driver-specific.
 
@@ -3354,10 +3673,7 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 
 	if (binary_data.shader_name_len) {
 		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
-		read_offset += binary_data.shader_name_len;
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			read_offset += 4 - (binary_data.shader_name_len % 4);
-		}
+		read_offset += STEPIFY(binary_data.shader_name_len, 4);
 	}
 
 	r_shader_desc.uniform_sets.resize(binary_data.set_count);
@@ -3430,6 +3746,7 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 
 	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
 		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
+
 		uint32_t stage = decode_uint32(binptr + read_offset);
 		read_offset += sizeof(uint32_t);
 		uint32_t dxil_size = decode_uint32(binptr + read_offset);
@@ -3444,18 +3761,19 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 		ERR_FAIL_COND_V(dec_dxil_size != (int32_t)dxil_size, ShaderID());
 		shader_info_in.stages_bytecode[ShaderStage(stage)] = dxil;
 
-		if (zstd_size % 4 != 0) {
-			zstd_size += 4 - (zstd_size % 4);
-		}
-
-		ERR_FAIL_COND_V(read_offset + zstd_size > binsize, ShaderID());
-
+		zstd_size = STEPIFY(zstd_size, 4);
 		read_offset += zstd_size;
+		ERR_FAIL_COND_V(read_offset > binsize, ShaderID());
+
+		r_shader_desc.stages.push_back(ShaderStage(stage));
 	}
 
 	const uint8_t *root_sig_data_ptr = binptr + read_offset;
 
-	HRESULT res = D3D12CreateRootSignatureDeserializer(root_sig_data_ptr, binary_data.root_signature_len, IID_PPV_ARGS(shader_info_in.root_signature_deserializer.GetAddressOf()));
+	PFN_D3D12_CREATE_ROOT_SIGNATURE_DESERIALIZER d3d_D3D12CreateRootSignatureDeserializer = (PFN_D3D12_CREATE_ROOT_SIGNATURE_DESERIALIZER)(void *)GetProcAddress(context_driver->lib_d3d12, "D3D12CreateRootSignatureDeserializer");
+	ERR_FAIL_NULL_V(d3d_D3D12CreateRootSignatureDeserializer, ShaderID());
+
+	HRESULT res = d3d_D3D12CreateRootSignatureDeserializer(root_sig_data_ptr, binary_data.root_signature_len, IID_PPV_ARGS(shader_info_in.root_signature_deserializer.GetAddressOf()));
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ShaderID(), "D3D12CreateRootSignatureDeserializer failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	read_offset += binary_data.root_signature_len;
 
@@ -3482,6 +3800,11 @@ uint32_t RenderingDeviceDriverD3D12::shader_get_layout_hash(ShaderID p_shader) {
 void RenderingDeviceDriverD3D12::shader_free(ShaderID p_shader) {
 	ShaderInfo *shader_info_in = (ShaderInfo *)p_shader.id;
 	VersatileResource::free(resources_allocator, shader_info_in);
+}
+
+void RenderingDeviceDriverD3D12::shader_destroy_modules(ShaderID p_shader) {
+	ShaderInfo *shader_info_in = (ShaderInfo *)p_shader.id;
+	shader_info_in->stages_bytecode.clear();
 }
 
 /*********************/
@@ -3522,7 +3845,9 @@ static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_typ
 	}
 }
 
-RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) {
+RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
+
 	// Pre-bookkeep.
 	UniformSetInfo *uniform_set_info = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 
@@ -3756,7 +4081,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	{
 		uniform_set_info->resource_states.reserve(resource_states.size());
-		uint32_t i = 0;
 		for (const KeyValue<ResourceInfo *, NeededState> &E : resource_states) {
 			UniformSetInfo::StateRequirement sr;
 			sr.resource = E.key;
@@ -3764,7 +4088,6 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			sr.states = E.value.states;
 			sr.shader_uniform_idx_mask = E.value.shader_uniform_idx_mask;
 			uniform_set_info->resource_states.push_back(sr);
-			i++;
 		}
 	}
 
@@ -3779,6 +4102,26 @@ void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+	if (barrier_capabilities.enhanced_barriers_supported) {
+		return;
+	}
+
+	// Perform pending blackouts.
+	{
+		SelfList<TextureInfo> *E = textures_pending_clear.first();
+		while (E) {
+			TextureSubresourceRange subresources;
+			subresources.layer_count = E->self()->layers;
+			subresources.mipmap_count = E->self()->mipmaps;
+			command_clear_color_texture(p_cmd_buffer, TextureID(E->self()), TEXTURE_LAYOUT_UNDEFINED, Color(), subresources);
+
+			SelfList<TextureInfo> *next = E->next();
+			E->remove_from_list();
+			E = next;
+		}
+	}
+
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	const UniformSetInfo *uniform_set_info = (const UniformSetInfo *)p_uniform_set.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 	const ShaderInfo::UniformSet &shader_set = shader_info_in->sets[p_set_index];
@@ -3825,13 +4168,6 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 				}
 
 				DEV_ASSERT((wanted_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) == (bool)(wanted_state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
-
-				if (wanted_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS || wanted_state == D3D12_RESOURCE_STATE_RENDER_TARGET) {
-					if (!sr.is_buffer) {
-						TextureInfo *tex_info = (TextureInfo *)sr.resource;
-						CRASH_COND_MSG(tex_info->resource != tex_info->main_texture, "The texture format used for UAV or RTV must be the main one.");
-					}
-				}
 			}
 		}
 #endif
@@ -3901,7 +4237,7 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 
 			if (likely(wanted_state)) {
 				if (sr.is_buffer) {
-					_resource_transition_batch(sr.resource, 0, 1, wanted_state);
+					_resource_transition_batch(cmd_buf_info, sr.resource, 0, 1, wanted_state);
 				} else {
 					TextureInfo *tex_info = (TextureInfo *)sr.resource;
 					uint32_t planes = 1;
@@ -3911,7 +4247,7 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 					for (uint32_t i = 0; i < tex_info->layers; i++) {
 						for (uint32_t j = 0; j < tex_info->mipmaps; j++) {
 							uint32_t subresource = D3D12CalcSubresource(tex_info->base_mip + j, tex_info->base_layer + i, 0, tex_info->desc.MipLevels, tex_info->desc.ArraySize());
-							_resource_transition_batch(tex_info, subresource, planes, wanted_state, tex_info->main_texture);
+							_resource_transition_batch(cmd_buf_info, tex_info, subresource, planes, wanted_state);
 						}
 					}
 				}
@@ -3920,8 +4256,7 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 	}
 
 	if (p_set_index == shader_info_in->sets.size() - 1) {
-		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+		_resource_transitions_flush(cmd_buf_info);
 	}
 }
 
@@ -4174,7 +4509,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) {
 	_command_check_descriptor_sets(p_cmd_buffer);
 
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 
 	if (frames[frame_idx].desc_heap_walkers.resources.is_at_eof()) {
@@ -4198,8 +4533,10 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 		}
 	}
 
-	_resource_transition_batch(buf_info, 0, 1, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, buf_info, 0, 1, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		_resource_transitions_flush(cmd_buf_info);
+	}
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
 	uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -4234,90 +4571,103 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 	frames[frame_idx].desc_heap_walkers.aux.advance();
 }
 
-void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_buf_locfer, VectorView<BufferCopyRegion> p_regions) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *src_buf_info = (BufferInfo *)p_src_buffer.id;
-	BufferInfo *dst_buf_info = (BufferInfo *)p_dst_buffer.id;
+	BufferInfo *buf_loc_info = (BufferInfo *)p_buf_locfer.id;
 
-	_resource_transition_batch(src_buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	_resource_transition_batch(dst_buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_DEST);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, src_buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		_resource_transition_batch(cmd_buf_info, buf_loc_info, 0, 1, D3D12_RESOURCE_STATE_COPY_DEST);
+		_resource_transitions_flush(cmd_buf_info);
+	}
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		cmd_buf_info->cmd_list->CopyBufferRegion(dst_buf_info->resource, p_regions[i].dst_offset, src_buf_info->resource, p_regions[i].src_offset, p_regions[i].size);
+		cmd_buf_info->cmd_list->CopyBufferRegion(buf_loc_info->resource, p_regions[i].dst_offset, src_buf_info->resource, p_regions[i].src_offset, p_regions[i].size);
 	}
 }
 
 void RenderingDeviceDriverD3D12::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *src_tex_info = (TextureInfo *)p_src_texture.id;
 	TextureInfo *dst_tex_info = (TextureInfo *)p_dst_texture.id;
 
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		// Batch all barrier transitions for the textures before performing the copies.
+		for (uint32_t i = 0; i < p_regions.size(); i++) {
+			uint32_t layer_count = MIN(p_regions[i].src_subresources.layer_count, p_regions[i].dst_subresources.layer_count);
+			for (uint32_t j = 0; j < layer_count; j++) {
+				UINT src_subresource = _compute_subresource_from_layers(src_tex_info, p_regions[i].src_subresources, j);
+				UINT dst_subresource = _compute_subresource_from_layers(dst_tex_info, p_regions[i].dst_subresources, j);
+				_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
+				_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST);
+			}
+		}
+
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
+	CD3DX12_BOX src_box;
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		UINT src_subresource = D3D12CalcSubresource(
-				p_regions[i].src_subresources.mipmap,
-				p_regions[i].src_subresources.base_layer,
-				_compute_plane_slice(src_tex_info->format, p_regions[i].src_subresources.aspect),
-				src_tex_info->desc.MipLevels,
-				src_tex_info->desc.ArraySize());
-		_resource_transition_batch(src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
-
-		UINT dst_subresource = D3D12CalcSubresource(
-				p_regions[i].dst_subresources.mipmap,
-				p_regions[i].dst_subresources.base_layer,
-				_compute_plane_slice(dst_tex_info->format, p_regions[i].dst_subresources.aspect),
-				dst_tex_info->desc.MipLevels,
-				dst_tex_info->desc.ArraySize());
-		_resource_transition_batch(dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST);
-
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
-
-		CD3DX12_TEXTURE_COPY_LOCATION src_location(src_tex_info->resource, src_subresource);
-		CD3DX12_TEXTURE_COPY_LOCATION dst_location(dst_tex_info->resource, dst_subresource);
-
-		CD3DX12_BOX src_box(
-				p_regions[i].src_offset.x,
-				p_regions[i].src_offset.y,
-				p_regions[i].src_offset.z,
-				p_regions[i].src_offset.x + p_regions[i].size.x,
-				p_regions[i].src_offset.y + p_regions[i].size.y,
-				p_regions[i].src_offset.z + p_regions[i].size.z);
-
-		cmd_buf_info->cmd_list->CopyTextureRegion(
-				&dst_location,
-				p_regions[i].dst_offset.x,
-				p_regions[i].dst_offset.y,
-				p_regions[i].dst_offset.z,
-				&src_location,
-				&src_box);
+		uint32_t layer_count = MIN(p_regions[i].src_subresources.layer_count, p_regions[i].dst_subresources.layer_count);
+		for (uint32_t j = 0; j < layer_count; j++) {
+			UINT src_subresource = _compute_subresource_from_layers(src_tex_info, p_regions[i].src_subresources, j);
+			UINT dst_subresource = _compute_subresource_from_layers(dst_tex_info, p_regions[i].dst_subresources, j);
+			CD3DX12_TEXTURE_COPY_LOCATION src_location(src_tex_info->resource, src_subresource);
+			CD3DX12_TEXTURE_COPY_LOCATION dst_location(dst_tex_info->resource, dst_subresource);
+			src_box.left = p_regions[i].src_offset.x;
+			src_box.top = p_regions[i].src_offset.y;
+			src_box.front = p_regions[i].src_offset.z;
+			src_box.right = p_regions[i].src_offset.x + p_regions[i].size.x;
+			src_box.bottom = p_regions[i].src_offset.y + p_regions[i].size.y;
+			src_box.back = p_regions[i].src_offset.z + p_regions[i].size.z;
+			cmd_buf_info->cmd_list->CopyTextureRegion(&dst_location, p_regions[i].dst_offset.x, p_regions[i].dst_offset.y, p_regions[i].dst_offset.z, &src_location, &src_box);
+		}
 	}
 }
 
 void RenderingDeviceDriverD3D12::command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *src_tex_info = (TextureInfo *)p_src_texture.id;
 	TextureInfo *dst_tex_info = (TextureInfo *)p_dst_texture.id;
 
 	UINT src_subresource = D3D12CalcSubresource(p_src_mipmap, p_src_layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
-	_resource_transition_batch(src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-
 	UINT dst_subresource = D3D12CalcSubresource(p_dst_mipmap, p_dst_layer, 0, dst_tex_info->desc.MipLevels, dst_tex_info->desc.ArraySize());
-	_resource_transition_batch(dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
-
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+		_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+		_resource_transitions_flush(cmd_buf_info);
+	}
 
 	cmd_buf_info->cmd_list->ResolveSubresource(dst_tex_info->resource, dst_subresource, src_tex_info->resource, src_subresource, RD_TO_D3D12_FORMAT[src_tex_info->format].general_format);
 }
 
 void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	if (tex_info->main_texture) {
+		tex_info = tex_info->main_texture;
+	}
 
-	ID3D12Resource *res_to_clear = tex_info->main_texture ? tex_info->main_texture : tex_info->resource;
+	auto _transition_subresources = [&](D3D12_RESOURCE_STATES p_new_state) {
+		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
+			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
+				UINT subresource = D3D12CalcSubresource(
+						p_subresources.base_mipmap + j,
+						p_subresources.base_layer + i,
+						0,
+						tex_info->desc.MipLevels,
+						tex_info->desc.ArraySize());
+				_resource_transition_batch(cmd_buf_info, tex_info, subresource, 1, p_new_state);
+			}
+		}
+		_resource_transitions_flush(cmd_buf_info);
+	};
+
 	if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)) {
 		// Clear via RTV.
 
-		if (frames[frame_idx].desc_heap_walkers.rtv.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.rtv.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.rtv) {
 				frames[frame_idx].desc_heaps_exhausted_reported.rtv = true;
 				ERR_FAIL_MSG(
@@ -4328,37 +4678,31 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			}
 		}
 
-		D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = _make_rtv_for_texture(tex_info, p_subresources.base_mipmap, p_subresources.base_layer, p_subresources.layer_count, false);
-		rtv_desc.Format = tex_info->aliasing_hack.main_uav_desc.Format;
-
-		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
-			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
-				UINT subresource = D3D12CalcSubresource(
-						p_subresources.base_mipmap + j,
-						p_subresources.base_layer + i,
-						0,
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-				_resource_transition_batch(tex_info, subresource, 1, D3D12_RESOURCE_STATE_RENDER_TARGET, tex_info->main_texture);
-			}
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			_transition_subresources(D3D12_RESOURCE_STATE_RENDER_TARGET);
 		}
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
 
-		device->CreateRenderTargetView(
-				res_to_clear,
-				&rtv_desc,
-				frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle());
-		cmd_buf_info->cmd_list->ClearRenderTargetView(
-				frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle(),
-				p_color.components,
-				0,
-				nullptr);
-		frames[frame_idx].desc_heap_walkers.rtv.advance();
-	} else {
+		for (uint32_t i = 0; i < p_subresources.mipmap_count; i++) {
+			D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = _make_rtv_for_texture(tex_info, p_subresources.base_mipmap + i, p_subresources.base_layer, p_subresources.layer_count, false);
+			rtv_desc.Format = tex_info->view_descs.uav.Format;
+			device->CreateRenderTargetView(
+					tex_info->resource,
+					&rtv_desc,
+					frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle());
+
+			cmd_buf_info->cmd_list->ClearRenderTargetView(
+					frames[frame_idx].desc_heap_walkers.rtv.get_curr_cpu_handle(),
+					p_color.components,
+					0,
+					nullptr);
+
+			frames[frame_idx].desc_heap_walkers.rtv.advance();
+		}
+	} else if (tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) {
 		// Clear via UAV.
 		_command_check_descriptor_sets(p_cmd_buffer);
 
-		if (frames[frame_idx].desc_heap_walkers.resources.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.resources.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.resources) {
 				frames[frame_idx].desc_heaps_exhausted_reported.resources = true;
 				ERR_FAIL_MSG(
@@ -4368,7 +4712,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 				return;
 			}
 		}
-		if (frames[frame_idx].desc_heap_walkers.aux.is_at_eof()) {
+		if (frames[frame_idx].desc_heap_walkers.aux.get_free_handles() < p_subresources.mipmap_count) {
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.aux) {
 				frames[frame_idx].desc_heaps_exhausted_reported.aux = true;
 				ERR_FAIL_MSG(
@@ -4379,57 +4723,52 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			}
 		}
 
-		for (uint32_t i = 0; i < p_subresources.layer_count; i++) {
-			for (uint32_t j = 0; j < p_subresources.mipmap_count; j++) {
-				UINT subresource = D3D12CalcSubresource(
-						p_subresources.base_mipmap + j,
-						p_subresources.base_layer + i,
-						0,
-						tex_info->desc.MipLevels,
-						tex_info->desc.ArraySize());
-				_resource_transition_batch(tex_info, subresource, 1, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, tex_info->main_texture);
-			}
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			_transition_subresources(D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		}
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
 
-		device->CreateUnorderedAccessView(
-				res_to_clear,
-				nullptr,
-				&tex_info->aliasing_hack.main_uav_desc,
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle());
+		for (uint32_t i = 0; i < p_subresources.mipmap_count; i++) {
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = _make_ranged_uav_for_texture(tex_info, p_subresources.base_mipmap + i, p_subresources.base_layer, p_subresources.layer_count, false);
+			device->CreateUnorderedAccessView(
+					tex_info->resource,
+					nullptr,
+					&uav_desc,
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle());
+			device->CopyDescriptorsSimple(
+					1,
+					frames[frame_idx].desc_heap_walkers.resources.get_curr_cpu_handle(),
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
+					D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		device->CopyDescriptorsSimple(
-				1,
-				frames[frame_idx].desc_heap_walkers.resources.get_curr_cpu_handle(),
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
-				D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			UINT values[4] = {
+				(UINT)p_color.get_r8(),
+				(UINT)p_color.get_g8(),
+				(UINT)p_color.get_b8(),
+				(UINT)p_color.get_a8(),
+			};
 
-		UINT values[4] = {
-			(UINT)p_color.get_r8(),
-			(UINT)p_color.get_g8(),
-			(UINT)p_color.get_b8(),
-			(UINT)p_color.get_a8(),
-		};
-		cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
-				frames[frame_idx].desc_heap_walkers.resources.get_curr_gpu_handle(),
-				frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
-				res_to_clear,
-				values,
-				0,
-				nullptr);
+			cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
+					frames[frame_idx].desc_heap_walkers.resources.get_curr_gpu_handle(),
+					frames[frame_idx].desc_heap_walkers.aux.get_curr_cpu_handle(),
+					tex_info->resource,
+					values,
+					0,
+					nullptr);
 
-		frames[frame_idx].desc_heap_walkers.resources.advance();
-		frames[frame_idx].desc_heap_walkers.aux.advance();
+			frames[frame_idx].desc_heap_walkers.resources.advance();
+			frames[frame_idx].desc_heap_walkers.aux.advance();
+		}
+	} else {
+		ERR_FAIL_MSG("Cannot clear texture because its format does not support UAV writes. You'll need to update its contents through another method.");
 	}
 }
 
 void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buf_info = (BufferInfo *)p_src_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_dst_texture.id;
-
-	if (buf_info->flags.is_for_upload) {
-		_resource_transition_batch(buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr);
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	}
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_info->format);
@@ -4456,19 +4795,21 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 				STEPIFY(p_regions[i].texture_region_size.y, block_h),
 				p_regions[i].texture_region_size.z);
 
-		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-			UINT dst_subresource = D3D12CalcSubresource(
-					p_regions[i].texture_subresources.mipmap,
-					p_regions[i].texture_subresources.base_layer + j,
-					_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-					tex_info->desc.MipLevels,
-					tex_info->desc.ArraySize());
-			CD3DX12_TEXTURE_COPY_LOCATION copy_dst(tex_info->resource, dst_subresource);
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
+				UINT dst_subresource = D3D12CalcSubresource(
+						p_regions[i].texture_subresources.mipmap,
+						p_regions[i].texture_subresources.base_layer + j,
+						_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
+						tex_info->desc.MipLevels,
+						tex_info->desc.ArraySize());
+				CD3DX12_TEXTURE_COPY_LOCATION copy_dst(tex_info->resource, dst_subresource);
 
-			_resource_transition_batch(tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST, tex_info->main_texture);
+				_resource_transition_batch(cmd_buf_info, tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_COPY_DEST);
+			}
+
+			_resource_transitions_flush(cmd_buf_info);
 		}
-
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
 
 		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
 			UINT dst_subresource = D3D12CalcSubresource(
@@ -4490,29 +4831,33 @@ void RenderingDeviceDriverD3D12::command_copy_buffer_to_texture(CommandBufferID 
 	}
 }
 
-void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_buf_locfer, VectorView<BufferTextureCopyRegion> p_regions) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	TextureInfo *tex_info = (TextureInfo *)p_src_texture.id;
-	BufferInfo *buf_info = (BufferInfo *)p_dst_buffer.id;
+	BufferInfo *buf_info = (BufferInfo *)p_buf_locfer.id;
 
-	_resource_transition_batch(buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_DEST, nullptr);
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, buf_info, 0, 1, D3D12_RESOURCE_STATE_COPY_DEST);
+	}
 
 	uint32_t block_w = 0, block_h = 0;
 	get_compressed_image_format_block_dimensions(tex_info->format, block_w, block_h);
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
-			UINT src_subresource = D3D12CalcSubresource(
-					p_regions[i].texture_subresources.mipmap,
-					p_regions[i].texture_subresources.base_layer + j,
-					_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
-					tex_info->desc.MipLevels,
-					tex_info->desc.ArraySize());
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
+				UINT src_subresource = D3D12CalcSubresource(
+						p_regions[i].texture_subresources.mipmap,
+						p_regions[i].texture_subresources.base_layer + j,
+						_compute_plane_slice(tex_info->format, p_regions[i].texture_subresources.aspect),
+						tex_info->desc.MipLevels,
+						tex_info->desc.ArraySize());
 
-			_resource_transition_batch(tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE, tex_info->main_texture);
+				_resource_transition_batch(cmd_buf_info, tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			}
+
+			_resource_transitions_flush(cmd_buf_info);
 		}
-
-		_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
 
 		for (uint32_t j = 0; j < p_regions[i].texture_subresources.layer_count; j++) {
 			UINT src_subresource = D3D12CalcSubresource(
@@ -4554,10 +4899,9 @@ void RenderingDeviceDriverD3D12::command_copy_texture_to_buffer(CommandBufferID 
 /******************/
 
 void RenderingDeviceDriverD3D12::pipeline_free(PipelineID p_pipeline) {
-	ID3D12PipelineState *pso = (ID3D12PipelineState *)p_pipeline.id;
-	pso->Release();
-	pipelines_shaders.erase(pso);
-	render_psos_extra_info.erase(pso);
+	PipelineInfo *pipeline_info = (PipelineInfo *)(p_pipeline.id);
+	pipeline_info->pso->Release();
+	memdelete(pipeline_info);
 }
 
 // ----- BINDING -----
@@ -4657,27 +5001,31 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 						0,
 						p_texture_info->desc.MipLevels,
 						p_texture_info->desc.ArraySize());
-				_resource_transition_batch(p_texture_info, subresource, planes, p_states, nullptr);
+
+				_resource_transition_batch(cmd_buf_info, p_texture_info, subresource, planes, p_states);
 			}
 		}
 	};
 
-	for (uint32_t i = 0; i < fb_info->attachments.size(); i++) {
-		TextureInfo *tex_info = (TextureInfo *)fb_info->attachments[i].id;
-		if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)) {
-			_transition_subresources(tex_info, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
-			_transition_subresources(tex_info, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		} else {
-			DEV_ASSERT(false);
+	if (fb_info->is_screen || !barrier_capabilities.enhanced_barriers_supported) {
+		// Screen framebuffers must perform this transition even if enhanced barriers are supported.
+		for (uint32_t i = 0; i < fb_info->attachments.size(); i++) {
+			TextureInfo *tex_info = (TextureInfo *)fb_info->attachments[i].id;
+			if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)) {
+				_transition_subresources(tex_info, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
+				_transition_subresources(tex_info, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			} else {
+				DEV_ASSERT(false);
+			}
 		}
-	}
-	if (fb_info->vrs_attachment) {
-		TextureInfo *tex_info = (TextureInfo *)fb_info->vrs_attachment.id;
-		_transition_subresources(tex_info, D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE);
-	}
+		if (fb_info->vrs_attachment) {
+			TextureInfo *tex_info = (TextureInfo *)fb_info->vrs_attachment.id;
+			_transition_subresources(tex_info, D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE);
+		}
 
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+		_resource_transitions_flush(cmd_buf_info);
+	}
 
 	cmd_buf_info->render_pass_state.region_rect = CD3DX12_RECT(
 			p_rect.position.x,
@@ -4729,6 +5077,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 			if (pass_info->attachments[i].load_op == ATTACHMENT_LOAD_OP_CLEAR) {
 				clear.aspect.set_flag(TEXTURE_ASPECT_COLOR_BIT);
 				clear.color_attachment = i;
+				tex_info->pending_clear.remove_from_list();
 			}
 		} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
 			if (pass_info->attachments[i].stencil_load_op == ATTACHMENT_LOAD_OP_CLEAR) {
@@ -4749,7 +5098,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 }
 
 void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
 	DEV_ASSERT(cmd_buf_info->render_pass_state.current_subpass != UINT32_MAX);
 
@@ -4762,7 +5111,7 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 		for (uint32_t i = 0; i < fb_info->attachments.size(); i++) {
 			TextureInfo *src_tex_info = (TextureInfo *)(fb_info->attachments[i].id);
 			uint32_t src_subresource = D3D12CalcSubresource(src_tex_info->base_mip, src_tex_info->base_layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
-			_resource_transition_batch(src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_PRESENT);
+			_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_PRESENT);
 		}
 	}
 
@@ -4786,11 +5135,11 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 
 		TextureInfo *src_tex_info = (TextureInfo *)fb_info->attachments[color_index].id;
 		uint32_t src_subresource = D3D12CalcSubresource(src_tex_info->base_mip, src_tex_info->base_layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
-		_resource_transition_batch(src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+		_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
 
 		TextureInfo *dst_tex_info = (TextureInfo *)fb_info->attachments[resolve_index].id;
 		uint32_t dst_subresource = D3D12CalcSubresource(dst_tex_info->base_mip, dst_tex_info->base_layer, 0, dst_tex_info->desc.MipLevels, dst_tex_info->desc.ArraySize());
-		_resource_transition_batch(dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+		_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
 
 		resolves[num_resolves].src_res = src_tex_info->resource;
 		resolves[num_resolves].src_subres = src_subresource;
@@ -4800,7 +5149,7 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 		num_resolves++;
 	}
 
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	_resource_transitions_flush(cmd_buf_info);
 
 	for (uint32_t i = 0; i < num_resolves; i++) {
 		cmd_buf_info->cmd_list->ResolveSubresource(resolves[i].dst_res, resolves[i].dst_subres, resolves[i].src_res, resolves[i].src_subres, resolves[i].format);
@@ -4988,39 +5337,48 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 
 void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	ID3D12PipelineState *pso = (ID3D12PipelineState *)p_pipeline.id;
+	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
 
-	if (cmd_buf_info->graphics_pso == pso) {
+	if (cmd_buf_info->graphics_pso == pipeline_info->pso) {
 		return;
 	}
 
-	const ShaderInfo *shader_info_in = pipelines_shaders[pso];
-	const RenderPipelineExtraInfo &pso_extra_info = render_psos_extra_info[pso];
+	const ShaderInfo *shader_info_in = pipeline_info->shader_info;
+	const RenderPipelineInfo &render_info = pipeline_info->render_info;
 
-	cmd_buf_info->cmd_list->SetPipelineState(pso);
+	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso);
 	if (cmd_buf_info->graphics_root_signature_crc != shader_info_in->root_signature_crc) {
 		cmd_buf_info->cmd_list->SetGraphicsRootSignature(shader_info_in->root_signature.Get());
 		cmd_buf_info->graphics_root_signature_crc = shader_info_in->root_signature_crc;
 	}
 
-	cmd_buf_info->cmd_list->IASetPrimitiveTopology(pso_extra_info.dyn_params.primitive_topology);
-	cmd_buf_info->cmd_list->OMSetBlendFactor(pso_extra_info.dyn_params.blend_constant.components);
-	cmd_buf_info->cmd_list->OMSetStencilRef(pso_extra_info.dyn_params.stencil_reference);
+	cmd_buf_info->cmd_list->IASetPrimitiveTopology(render_info.dyn_params.primitive_topology);
+	cmd_buf_info->cmd_list->OMSetBlendFactor(render_info.dyn_params.blend_constant.components);
+	cmd_buf_info->cmd_list->OMSetStencilRef(render_info.dyn_params.stencil_reference);
 
-	ComPtr<ID3D12GraphicsCommandList1> command_list_1;
-	cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
-	if (command_list_1) {
-		command_list_1->OMSetDepthBounds(pso_extra_info.dyn_params.depth_bounds_min, pso_extra_info.dyn_params.depth_bounds_max);
+	if (misc_features_support.depth_bounds_supported) {
+		ComPtr<ID3D12GraphicsCommandList1> command_list_1;
+		cmd_buf_info->cmd_list->QueryInterface(command_list_1.GetAddressOf());
+		if (command_list_1) {
+			command_list_1->OMSetDepthBounds(render_info.dyn_params.depth_bounds_min, render_info.dyn_params.depth_bounds_max);
+		}
 	}
 
-	cmd_buf_info->render_pass_state.vf_info = pso_extra_info.vf_info;
+	cmd_buf_info->render_pass_state.vf_info = render_info.vf_info;
 
-	cmd_buf_info->graphics_pso = pso;
+	cmd_buf_info->graphics_pso = pipeline_info->pso;
 	cmd_buf_info->compute_pso = nullptr;
 }
 
 void RenderingDeviceDriverD3D12::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
 	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, false);
+}
+
+void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	for (uint32_t i = 0u; i < p_set_count; ++i) {
+		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
+		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, false);
+	}
 }
 
 void RenderingDeviceDriverD3D12::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
@@ -5039,8 +5397,11 @@ void RenderingDeviceDriverD3D12::command_render_draw_indexed_indirect(CommandBuf
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	_bind_vertex_buffers(cmd_buf_info);
 	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
-	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.draw_indexed.Get(), p_draw_count, indirect_buf_info->resource, p_offset, nullptr, 0);
 }
 
@@ -5049,9 +5410,12 @@ void RenderingDeviceDriverD3D12::command_render_draw_indexed_indirect_count(Comm
 	_bind_vertex_buffers(cmd_buf_info);
 	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
 	BufferInfo *count_buf_info = (BufferInfo *)p_count_buffer.id;
-	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transition_batch(count_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transition_batch(cmd_buf_info, count_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.draw_indexed.Get(), p_max_draw_count, indirect_buf_info->resource, p_offset, count_buf_info->resource, p_count_buffer_offset);
 }
 
@@ -5059,8 +5423,11 @@ void RenderingDeviceDriverD3D12::command_render_draw_indirect(CommandBufferID p_
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	_bind_vertex_buffers(cmd_buf_info);
 	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
-	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.draw.Get(), p_draw_count, indirect_buf_info->resource, p_offset, nullptr, 0);
 }
 
@@ -5069,9 +5436,12 @@ void RenderingDeviceDriverD3D12::command_render_draw_indirect_count(CommandBuffe
 	_bind_vertex_buffers(cmd_buf_info);
 	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
 	BufferInfo *count_buf_info = (BufferInfo *)p_count_buffer.id;
-	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transition_batch(count_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transition_batch(cmd_buf_info, count_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.draw.Get(), p_max_draw_count, indirect_buf_info->resource, p_offset, count_buf_info->resource, p_count_buffer_offset);
 }
 
@@ -5090,15 +5460,20 @@ void RenderingDeviceDriverD3D12::command_render_bind_vertex_buffers(CommandBuffe
 		cmd_buf_info->render_pass_state.vertex_buffer_views[i] = {};
 		cmd_buf_info->render_pass_state.vertex_buffer_views[i].BufferLocation = buffer_info->resource->GetGPUVirtualAddress() + p_offsets[i];
 		cmd_buf_info->render_pass_state.vertex_buffer_views[i].SizeInBytes = buffer_info->size - p_offsets[i];
-
-		_resource_transition_batch(buffer_info, 0, 1, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		if (!barrier_capabilities.enhanced_barriers_supported) {
+			_resource_transition_batch(cmd_buf_info, buffer_info, 0, 1, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		}
 	}
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->render_pass_state.vertex_buffer_count = p_binding_count;
 }
 
 void RenderingDeviceDriverD3D12::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
 
 	D3D12_INDEX_BUFFER_VIEW d3d12_ib_view = {};
@@ -5106,8 +5481,10 @@ void RenderingDeviceDriverD3D12::command_render_bind_index_buffer(CommandBufferI
 	d3d12_ib_view.SizeInBytes = buffer_info->size - p_offset;
 	d3d12_ib_view.Format = p_format == INDEX_BUFFER_FORMAT_UINT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
-	_resource_transition_batch(buffer_info, 0, 1, D3D12_RESOURCE_STATE_INDEX_BUFFER);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, buffer_info, 0, 1, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		_resource_transitions_flush(cmd_buf_info);
+	}
 
 	cmd_buf_info->cmd_list->IASetIndexBuffer(&d3d12_ib_view);
 }
@@ -5247,9 +5624,9 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
 	CD3DX12_PIPELINE_STATE_STREAM pipeline_desc = {};
-	RenderPipelineExtraInfo pso_extra_info;
 
 	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
+	RenderPipelineInfo render_info;
 
 	// Attachments.
 	LocalVector<uint32_t> color_attachments;
@@ -5283,7 +5660,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		const VertexFormatInfo *vf_info = (const VertexFormatInfo *)p_vertex_format.id;
 		(&pipeline_desc.InputLayout)->pInputElementDescs = vf_info->input_elem_descs.ptr();
 		(&pipeline_desc.InputLayout)->NumElements = vf_info->input_elem_descs.size();
-		pso_extra_info.vf_info = vf_info;
+		render_info.vf_info = vf_info;
 	}
 
 	// Input assembly & tessellation.
@@ -5292,9 +5669,9 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	if (p_render_primitive == RENDER_PRIMITIVE_TESSELATION_PATCH) {
 		// Is there any way to get the true point count limit?
 		ERR_FAIL_COND_V(p_rasterization_state.patch_control_points < 1 || p_rasterization_state.patch_control_points > 32, PipelineID());
-		pso_extra_info.dyn_params.primitive_topology = (D3D12_PRIMITIVE_TOPOLOGY)((int)D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST + p_rasterization_state.patch_control_points);
+		render_info.dyn_params.primitive_topology = (D3D12_PRIMITIVE_TOPOLOGY)((int)D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST + p_rasterization_state.patch_control_points);
 	} else {
-		pso_extra_info.dyn_params.primitive_topology = RD_PRIMITIVE_TO_D3D12_TOPOLOGY[p_render_primitive];
+		render_info.dyn_params.primitive_topology = RD_PRIMITIVE_TO_D3D12_TOPOLOGY[p_render_primitive];
 	}
 	if (p_render_primitive == RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX) {
 		// TODO: This is right for 16-bit indices; for 32-bit there's a different enum value to set, but we don't know at this point.
@@ -5381,9 +5758,16 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilDepthFailOp = RD_TO_D3D12_STENCIL_OP[p_depth_stencil_state.back_op.depth_fail];
 		(&pipeline_desc.DepthStencilState)->BackFace.StencilFunc = RD_TO_D3D12_COMPARE_OP[p_depth_stencil_state.back_op.compare];
 
-		pso_extra_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
-		pso_extra_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
-		pso_extra_info.dyn_params.stencil_reference = p_depth_stencil_state.front_op.reference;
+		if (misc_features_support.depth_bounds_supported) {
+			render_info.dyn_params.depth_bounds_min = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_min : 0.0f;
+			render_info.dyn_params.depth_bounds_max = p_depth_stencil_state.enable_depth_range ? p_depth_stencil_state.depth_range_max : 1.0f;
+		} else {
+			if (p_depth_stencil_state.enable_depth_range) {
+				WARN_PRINT_ONCE("Depth bounds test is not supported by the GPU driver.");
+			}
+		}
+
+		render_info.dyn_params.stencil_reference = p_depth_stencil_state.front_op.reference;
 	}
 
 	// Blend states.
@@ -5430,7 +5814,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.BlendState)->IndependentBlendEnable = !all_attachments_same_blend;
 	}
 
-	pso_extra_info.dyn_params.blend_constant = p_blend_state.blend_constant;
+	render_info.dyn_params.blend_constant = p_blend_state.blend_constant;
 
 	// Stages bytecodes + specialization constants.
 
@@ -5464,12 +5848,12 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Graphics)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
-	// Bookkeep ancillary info.
+	PipelineInfo *pipeline_info = memnew(PipelineInfo);
+	pipeline_info->pso = pso;
+	pipeline_info->shader_info = shader_info_in;
+	pipeline_info->render_info = render_info;
 
-	pipelines_shaders[pso] = shader_info_in;
-	render_psos_extra_info[pso] = pso_extra_info;
-
-	return PipelineID(pso);
+	return PipelineID(pipeline_info);
 }
 
 /*****************/
@@ -5480,20 +5864,20 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 
 void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
-	ID3D12PipelineState *pso = (ID3D12PipelineState *)p_pipeline.id;
-	const ShaderInfo *shader_info_in = pipelines_shaders[pso];
+	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
 
-	if (cmd_buf_info->compute_pso == pso) {
+	if (cmd_buf_info->compute_pso == pipeline_info->pso) {
 		return;
 	}
 
-	cmd_buf_info->cmd_list->SetPipelineState(pso);
+	const ShaderInfo *shader_info_in = pipeline_info->shader_info;
+	cmd_buf_info->cmd_list->SetPipelineState(pipeline_info->pso);
 	if (cmd_buf_info->compute_root_signature_crc != shader_info_in->root_signature_crc) {
 		cmd_buf_info->cmd_list->SetComputeRootSignature(shader_info_in->root_signature.Get());
 		cmd_buf_info->compute_root_signature_crc = shader_info_in->root_signature_crc;
 	}
 
-	cmd_buf_info->compute_pso = pso;
+	cmd_buf_info->compute_pso = pipeline_info->pso;
 	cmd_buf_info->graphics_pso = nullptr;
 }
 
@@ -5501,17 +5885,30 @@ void RenderingDeviceDriverD3D12::command_bind_compute_uniform_set(CommandBufferI
 	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, true);
 }
 
+void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	for (uint32_t i = 0u; i < p_set_count; ++i) {
+		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
+		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, true);
+	}
+}
+
 void RenderingDeviceDriverD3D12::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->Dispatch(p_x_groups, p_y_groups, p_z_groups);
 }
 
 void RenderingDeviceDriverD3D12::command_compute_dispatch_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	BufferInfo *indirect_buf_info = (BufferInfo *)p_indirect_buffer.id;
-	_resource_transition_batch(indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-	_resource_transitions_flush(cmd_buf_info->cmd_list.Get());
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		_resource_transition_batch(cmd_buf_info, indirect_buf_info, 0, 1, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	cmd_buf_info->cmd_list->ExecuteIndirect(indirect_cmd_signatures.dispatch.Get(), 1, indirect_buf_info->resource, p_offset, nullptr, 0);
 }
 
@@ -5550,11 +5947,11 @@ RDD::PipelineID RenderingDeviceDriverD3D12::compute_pipeline_create(ShaderID p_s
 	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), PipelineID(), "Create(Compute)PipelineState failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
-	// Bookkeep ancillary info.
+	PipelineInfo *pipeline_info = memnew(PipelineInfo);
+	pipeline_info->pso = pso;
+	pipeline_info->shader_info = shader_info_in;
 
-	pipelines_shaders[pso] = shader_info_in;
-
-	return PipelineID(pso);
+	return PipelineID(pipeline_info);
 }
 
 /*****************/
@@ -5647,6 +6044,10 @@ void RenderingDeviceDriverD3D12::command_end_label(CommandBufferID p_cmd_buffer)
 #endif
 }
 
+void RenderingDeviceDriverD3D12::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
+	// TODO: Implement via DRED.
+}
+
 /********************/
 /**** SUBMISSION ****/
 /********************/
@@ -5713,8 +6114,8 @@ void RenderingDeviceDriverD3D12::set_object_name(ObjectType p_type, ID p_driver_
 			}
 		} break;
 		case OBJECT_TYPE_PIPELINE: {
-			ID3D12PipelineState *pso = (ID3D12PipelineState *)p_driver_id.id;
-			_set_object_name(pso, p_name);
+			const PipelineInfo *pipeline_info = (const PipelineInfo *)p_driver_id.id;
+			_set_object_name(pipeline_info->pso, p_name);
 		} break;
 		default: {
 			DEV_ASSERT(false);
@@ -5774,11 +6175,25 @@ uint64_t RenderingDeviceDriverD3D12::get_total_memory_used() {
 	return stats.Total.Stats.BlockBytes;
 }
 
+uint64_t RenderingDeviceDriverD3D12::get_lazily_memory_used() {
+	return 0;
+}
+
 uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return safe_unbounded;
+		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS:
+			return D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_1D:
+			return D3D12_REQ_TEXTURE1D_U_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_2D:
+			return D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_3D:
+			return D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
+		case LIMIT_MAX_TEXTURE_SIZE_CUBE:
+			return D3D12_REQ_TEXTURECUBE_DIMENSION;
 		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
 			return device_limits.max_srvs_per_shader_stage;
 		case LIMIT_MAX_UNIFORM_BUFFER_SIZE:
@@ -5811,6 +6226,9 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 		case LIMIT_VRS_TEXEL_WIDTH:
 		case LIMIT_VRS_TEXEL_HEIGHT:
 			return vrs_capabilities.ss_image_tile_size;
+		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
+		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
+			return vrs_capabilities.ss_max_fragment_size;
 		default: {
 #ifdef DEV_ENABLED
 			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
@@ -5823,11 +6241,7 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 	switch (p_trait) {
 		case API_TRAIT_HONORS_PIPELINE_BARRIERS:
-			// TODO:
-			// 1. Map fine/Vulkan/enhanced barriers to legacy barriers as closely as possible
-			//    so there's still some advantage even without enhanced barriers available.
-			// 2. Implement enhanced barriers and return true where available.
-			return 0;
+			return barrier_capabilities.enhanced_barriers_supported;
 		case API_TRAIT_SHADER_CHANGE_INVALIDATION:
 			return (uint64_t)SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH;
 		case API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT:
@@ -5836,6 +6250,12 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return D3D12_TEXTURE_DATA_PITCH_ALIGNMENT;
 		case API_TRAIT_SECONDARY_VIEWPORT_SCISSOR:
 			return false;
+		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+			return false;
+		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
+			return true;
+		case API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS:
+			return !barrier_capabilities.enhanced_barriers_supported;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
@@ -5876,6 +6296,13 @@ const RDD::Capabilities &RenderingDeviceDriverD3D12::get_capabilities() const {
 	return device_capabilities;
 }
 
+bool RenderingDeviceDriverD3D12::is_composite_alpha_supported(CommandQueueID p_queue) const {
+	if (has_comp_alpha.has((uint64_t)p_queue.id)) {
+		return has_comp_alpha[(uint64_t)p_queue.id];
+	}
+	return false;
+}
+
 /******************/
 
 RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D12 *p_context_driver) {
@@ -5885,20 +6312,11 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 }
 
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
-	{
-		MutexLock lock(dxil_mutex);
-		for (const KeyValue<int, dxil_validator *> &E : dxil_validators) {
-			if (E.value) {
-				dxil_destroy_validator(E.value);
-			}
-		}
-	}
-
 	glsl_type_singleton_decref();
 }
 
 bool RenderingDeviceDriverD3D12::is_in_developer_mode() {
-	HKEY hkey = NULL;
+	HKEY hkey = nullptr;
 	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, KEY_READ, &hkey);
 	if (result != ERROR_SUCCESS) {
 		return false;
@@ -5920,17 +6338,23 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 	HRESULT res;
 
 	if (is_in_developer_mode()) {
+		typedef HRESULT(WINAPI * PFN_D3D12_ENABLE_EXPERIMENTAL_FEATURES)(_In_ UINT, _In_count_(NumFeatures) const IID *, _In_opt_count_(NumFeatures) void *, _In_opt_count_(NumFeatures) UINT *);
+		PFN_D3D12_ENABLE_EXPERIMENTAL_FEATURES d3d_D3D12EnableExperimentalFeatures = (PFN_D3D12_ENABLE_EXPERIMENTAL_FEATURES)(void *)GetProcAddress(context_driver->lib_d3d12, "D3D12EnableExperimentalFeatures");
+		ERR_FAIL_NULL_V(d3d_D3D12EnableExperimentalFeatures, ERR_CANT_CREATE);
+
 		UUID experimental_features[] = { D3D12ExperimentalShaderModels };
-		D3D12EnableExperimentalFeatures(1, experimental_features, nullptr, nullptr);
+		d3d_D3D12EnableExperimentalFeatures(1, experimental_features, nullptr, nullptr);
 	}
 
 	ID3D12DeviceFactory *device_factory = context_driver->device_factory_get();
 	if (device_factory != nullptr) {
 		res = device_factory->CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
 	} else {
-		res = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
-	}
+		PFN_D3D12_CREATE_DEVICE d3d_D3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)(void *)GetProcAddress(context_driver->lib_d3d12, "D3D12CreateDevice");
+		ERR_FAIL_NULL_V(d3d_D3D12CreateDevice, ERR_CANT_CREATE);
 
+		res = d3d_D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(device.GetAddressOf()));
+	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12CreateDevice failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	if (context_driver->use_validation_layers()) {
@@ -5972,6 +6396,8 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 			// These happen due to how D3D12MA manages buffers; seems benign.
 			D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_HAS_NO_RESOURCE,
 			D3D12_MESSAGE_ID_HEAP_ADDRESS_RANGE_INTERSECTS_MULTIPLE_BUFFERS,
+			// Seemingly a false positive.
+			D3D12_MESSAGE_ID_DATA_STATIC_WHILE_SET_AT_EXECUTE_DESCRIPTOR_INVALID_DATA_CHANGE,
 		};
 
 		D3D12_INFO_QUEUE_FILTER filter = {};
@@ -6029,20 +6455,44 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	multiview_capabilities.is_supported = false;
 	subgroup_capabilities.size = 0;
 	subgroup_capabilities.wave_ops_supported = false;
-	shader_capabilities.shader_model = D3D_SHADER_MODEL_6_0;
+	shader_capabilities.shader_model = (D3D_SHADER_MODEL)0;
 	shader_capabilities.native_16bit_ops = false;
 	storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported = false;
 	format_capabilities.relaxed_casting_supported = false;
 
-	// Check shader model.
-	D3D12_FEATURE_DATA_SHADER_MODEL shader_model = {};
-	shader_model.HighestShaderModel = MIN(D3D_HIGHEST_SHADER_MODEL, D3D_SHADER_MODEL_6_6);
-	res = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model, sizeof(shader_model));
-	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+	{
+		static const D3D_SHADER_MODEL SMS_TO_CHECK[] = {
+			D3D_SHADER_MODEL_6_6,
+			D3D_SHADER_MODEL_6_5,
+			D3D_SHADER_MODEL_6_4,
+			D3D_SHADER_MODEL_6_3,
+			D3D_SHADER_MODEL_6_2,
+			D3D_SHADER_MODEL_6_1,
+			D3D_SHADER_MODEL_6_0, // Determined by NIR (dxil_min_shader_model).
+		};
 
-	shader_capabilities.shader_model = shader_model.HighestShaderModel;
-	print_verbose("- Shader:");
-	print_verbose("  model: " + itos(shader_capabilities.shader_model >> 4) + "." + itos(shader_capabilities.shader_model & 0xf));
+		D3D12_FEATURE_DATA_SHADER_MODEL shader_model = {};
+		for (uint32_t i = 0; i < ARRAY_SIZE(SMS_TO_CHECK); i++) {
+			shader_model.HighestShaderModel = SMS_TO_CHECK[i];
+			res = device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model, sizeof(shader_model));
+			if (SUCCEEDED(res)) {
+				shader_capabilities.shader_model = shader_model.HighestShaderModel;
+				break;
+			}
+			if (res == E_INVALIDARG) {
+				continue; // Must assume the device doesn't know about the SM just checked.
+			}
+			ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "CheckFeatureSupport failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+		}
+
+#define D3D_SHADER_MODEL_TO_STRING(m_sm) vformat("%d.%d", (m_sm >> 4), (m_sm & 0xf))
+
+		ERR_FAIL_COND_V_MSG(!shader_capabilities.shader_model, ERR_UNAVAILABLE,
+				vformat("No support for any of the suitable shader models (%s-%s) has been found.", D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1]), D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[0])));
+
+		print_verbose("- Shader:");
+		print_verbose("  model: " + D3D_SHADER_MODEL_TO_STRING(shader_capabilities.shader_model));
+	}
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
@@ -6055,6 +6505,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	if (SUCCEEDED(res)) {
 		subgroup_capabilities.size = options1.WaveLaneCountMin;
 		subgroup_capabilities.wave_ops_supported = options1.WaveOps;
+	}
+
+	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2 = {};
+	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options2, sizeof(options2));
+	if (SUCCEEDED(res)) {
+		misc_features_support.depth_bounds_supported = options2.DepthBoundsTestSupported;
 	}
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
@@ -6087,6 +6543,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 				vrs_capabilities.primitive_in_multiviewport = options6.PerPrimitiveShadingRateSupportedWithViewportIndexing;
 				vrs_capabilities.ss_image_supported = true;
 				vrs_capabilities.ss_image_tile_size = options6.ShadingRateImageTileSize;
+				vrs_capabilities.ss_max_fragment_size = 8; // TODO figure out if this is supplied and/or needed
 				vrs_capabilities.additional_rates_supported = options6.AdditionalShadingRatesSupported;
 			}
 		}
@@ -6096,6 +6553,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options12, sizeof(options12));
 	if (SUCCEEDED(res)) {
 		format_capabilities.relaxed_casting_supported = options12.RelaxedFormatCastingSupported;
+		barrier_capabilities.enhanced_barriers_supported = options12.EnhancedBarriersSupported;
 	}
 
 	if (vrs_capabilities.draw_call_supported || vrs_capabilities.primitive_supported || vrs_capabilities.ss_image_supported) {
@@ -6125,12 +6583,26 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	}
 
 	if (format_capabilities.relaxed_casting_supported) {
+#if 0
 		print_verbose("- Relaxed casting supported");
+#else
+		// Certain configurations (Windows 11 with an updated NVIDIA driver) crash when using relaxed casting.
+		// Therefore, we disable it temporarily until we can assure that it's reliable.
+		// There are fallbacks in place that work in every case, if less efficient.
+		format_capabilities.relaxed_casting_supported = false;
+		print_verbose("- Relaxed casting supported (but disabled for now)");
+#endif
 	} else {
 		print_verbose("- Relaxed casting not supported");
 	}
 
 	print_verbose(String("- D3D12 16-bit ops supported: ") + (shader_capabilities.native_16bit_ops ? "yes" : "no"));
+
+	if (misc_features_support.depth_bounds_supported) {
+		print_verbose("- Depth bounds test supported");
+	} else {
+		print_verbose("- Depth bounds test not supported");
+	}
 
 	return OK;
 }
@@ -6171,6 +6643,7 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 	D3D12MA::ALLOCATOR_DESC allocator_desc = {};
 	allocator_desc.pDevice = device.Get();
 	allocator_desc.pAdapter = adapter.Get();
+	allocator_desc.Flags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
 
 	HRESULT res = D3D12MA::CreateAllocator(&allocator_desc, &allocator);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateAllocator failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
@@ -6189,14 +6662,12 @@ static Error create_command_signature(ID3D12Device *device, D3D12_INDIRECT_ARGUM
 	HRESULT res = device->CreateCommandSignature(&cs_desc, nullptr, IID_PPV_ARGS(r_cmd_sig->GetAddressOf()));
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "CreateCommandSignature failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	return OK;
-};
+}
 
 Error RenderingDeviceDriverD3D12::_initialize_frames(uint32_t p_frame_count) {
 	Error err;
-	D3D12MA::ALLOCATION_DESC allocation_desc = {};
-	allocation_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
 
-	CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+	//CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
 	uint32_t resource_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame");
 	uint32_t sampler_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame");
 	uint32_t misc_descriptors_per_frame = GLOBAL_GET("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame");
@@ -6219,10 +6690,6 @@ Error RenderingDeviceDriverD3D12::_initialize_frames(uint32_t p_frame_count) {
 		frames[i].desc_heap_walkers.samplers = frames[i].desc_heaps.samplers.make_walker();
 		frames[i].desc_heap_walkers.aux = frames[i].desc_heaps.aux.make_walker();
 		frames[i].desc_heap_walkers.rtv = frames[i].desc_heaps.rtv.make_walker();
-
-		ID3D12Resource *resource = nullptr;
-		HRESULT res = allocator->CreateResource(&allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COMMON, nullptr, &frames[frame_idx].aux_resource, IID_PPV_ARGS(&resource));
-		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
 	return OK;

@@ -245,6 +245,10 @@ extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrApplyHapticFeedback(
 extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
     XrSession                                   session,
     const XrHapticActionInfo*                   hapticActionInfo);
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpaces(
+    XrSession                                   session,
+    const XrSpacesLocateInfo*                   locateInfo,
+    XrSpaceLocations*                           spaceLocations);
 #ifdef __cplusplus
 } // extern "C"
 #endif

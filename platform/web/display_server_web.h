@@ -104,6 +104,7 @@ private:
 
 	bool swap_cancel_ok = false;
 	bool tts = false;
+	NativeMenu *native_menu = nullptr;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);
@@ -144,9 +145,10 @@ private:
 	static void _drop_files_js_callback(const Vector<String> &p_files);
 
 	void process_joypads();
+	void process_keys();
 
 	static Vector<String> get_rendering_drivers_func();
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 
 	static void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
@@ -207,6 +209,7 @@ public:
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual void screen_set_keep_on(bool p_enable) override {}
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;
@@ -263,6 +266,7 @@ public:
 
 	virtual bool can_any_window_draw() const override;
 
+	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
 	// events
@@ -276,7 +280,7 @@ public:
 	virtual void swap_buffers() override;
 
 	static void register_web_driver();
-	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerWeb();
 };
 

@@ -67,7 +67,8 @@ const GodotWebXR = {
 				GodotWebXR.orig_requestAnimationFrame = Browser.requestAnimationFrame;
 			}
 			Browser.requestAnimationFrame = enable
-				? GodotWebXR.requestAnimationFrame : GodotWebXR.orig_requestAnimationFrame;
+				? GodotWebXR.requestAnimationFrame
+				: GodotWebXR.orig_requestAnimationFrame;
 		},
 		pauseResumeMainLoop: () => {
 			// Once both GodotWebXR.session and GodotWebXR.space are set or
@@ -76,9 +77,9 @@ const GodotWebXR = {
 			// gets picked up automatically, however, in the Oculus Browser
 			// on the Quest, we need to pause and resume the main loop.
 			Browser.mainLoop.pause();
-			runtimeKeepalivePush(); // eslint-disable-line no-undef
+			runtimeKeepalivePush();
 			window.setTimeout(function () {
-				runtimeKeepalivePop(); // eslint-disable-line no-undef
+				runtimeKeepalivePop();
 				Browser.mainLoop.resume();
 			}, 0);
 		},
@@ -287,12 +288,12 @@ const GodotWebXR = {
 			// Store onsimpleevent so we can use it later.
 			GodotWebXR.onsimpleevent = onsimpleevent;
 
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl_context_handle = _emscripten_webgl_get_current_context();
 			const gl = GL.getContext(gl_context_handle).GLctx;
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
-				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl); // eslint-disable-line no-undef
+				GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
 
 				// This will trigger the layer to get created.
 				GodotWebXR.getLayer();
@@ -319,10 +320,14 @@ const GodotWebXR = {
 					// next reference space.
 					window.setTimeout(function () {
 						const reference_space_c_str = GodotRuntime.allocString(reference_space_type);
-						const enabled_features_c_str = GodotRuntime.allocString(Array.from(session.enabledFeatures).join(','));
-						onstarted(reference_space_c_str, enabled_features_c_str);
+						const enabled_features = 'enabledFeatures' in session ? Array.from(session.enabledFeatures) : [];
+						const enabled_features_c_str = GodotRuntime.allocString(enabled_features.join(','));
+						const environment_blend_mode = 'environmentBlendMode' in session ? session.environmentBlendMode : '';
+						const environment_blend_mode_c_str = GodotRuntime.allocString(environment_blend_mode);
+						onstarted(reference_space_c_str, enabled_features_c_str, environment_blend_mode_c_str);
 						GodotRuntime.free(reference_space_c_str);
 						GodotRuntime.free(enabled_features_c_str);
+						GodotRuntime.free(environment_blend_mode_c_str);
 					}, 0);
 				}
 

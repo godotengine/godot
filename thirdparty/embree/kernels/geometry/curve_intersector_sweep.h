@@ -14,7 +14,9 @@ namespace embree
   namespace isa
   {
     static const size_t numJacobianIterations = 5;
-#if defined(__AVX__)
+#if defined(EMBREE_SYCL_SUPPORT) && defined(__SYCL_DEVICE_ONLY__)
+    static const size_t numBezierSubdivisions = 2;
+#elif defined(__AVX__)
     static const size_t numBezierSubdivisions = 2;
 #else
     static const size_t numBezierSubdivisions = 3;
@@ -132,10 +134,15 @@ namespace embree
       return false;
     }
 
+#if !defined(__SYCL_DEVICE_ONLY__)
+    
     template<typename NativeCurve3ff, typename Ray, typename Epilog>
-    bool intersect_bezier_recursive_jacobian(const Ray& ray, const float dt, const NativeCurve3ff& curve,
-                                             float u0, float u1, unsigned int depth, const Epilog& epilog)
+    __forceinline bool intersect_bezier_recursive_jacobian(const Ray& ray, const float dt, const NativeCurve3ff& curve, const Epilog& epilog)
     {
+      float u0 = 0.0f;
+      float u1 = 1.0f;
+      unsigned int depth = 1;
+        
 #if defined(__AVX__)
       enum { VSIZEX_ = 8 };
       typedef vbool8 vboolx; // maximally 8-wide to work around KNL issues
@@ -147,8 +154,6 @@ namespace embree
       typedef vint4 vintx; 
       typedef vfloat4 vfloatx;
 #endif
-      typedef Vec3<vfloatx> Vec3vfx;
-      typedef Vec4<vfloatx> Vec4vfx;
     
       unsigned int maxDepth = numBezierSubdivisions;
       bool found = false;
@@ -295,14 +300,156 @@ namespace embree
       return found;
     }
 
+#else
+    
+     template<typename NativeCurve3ff, typename Ray, typename Epilog>
+     __forceinline bool intersect_bezier_recursive_jacobian(const Ray& ray, const float dt, const NativeCurve3ff& curve, const Epilog& epilog)
+    {
+      const Vec3fa org = zero;
+      const Vec3fa dir = ray.dir;
+      const unsigned int max_depth = 7;
+      
+      bool found = false;
+
+      struct ShortStack
+      {
+        /* pushes both children */
+        __forceinline void push() {
+          depth++;
+        }
+
+        /* pops next node */
+        __forceinline void pop() {
+          short_stack += (1<<(31-depth));
+          depth = 31-bsf(short_stack);
+        }
+        
+        unsigned int depth = 0;
+        unsigned int short_stack = 0;
+      };
+
+      ShortStack stack;
+
+      do
+      {
+        const float u0 = (stack.short_stack+0*(1<<(31-stack.depth)))/float(0x80000000);
+        const float u1 = (stack.short_stack+1*(1<<(31-stack.depth)))/float(0x80000000);
+      
+        /* subdivide bezier curve */
+        Vec3ff P0, dP0du; curve.eval(u0,P0,dP0du); dP0du = dP0du * (u1-u0);
+        Vec3ff P3, dP3du; curve.eval(u1,P3,dP3du); dP3du = dP3du * (u1-u0);
+        const Vec3ff P1 = P0 + dP0du*(1.0f/3.0f); 
+        const Vec3ff P2 = P3 - dP3du*(1.0f/3.0f);
+
+        /* check if curve is well behaved, by checking deviation of tangents from straight line */
+        const Vec3ff W = Vec3ff(P3-P0,0.0f);
+        const Vec3ff dQ0 = abs(3.0f*(P1-P0) - W);
+        const Vec3ff dQ1 = abs(3.0f*(P2-P1) - W);
+        const Vec3ff dQ2 = abs(3.0f*(P3-P2) - W);
+        const Vec3ff max_dQ = max(dQ0,dQ1,dQ2);
+        const float m = max(max_dQ.x,max_dQ.y,max_dQ.z); //,max_dQ.w);
+        const float l = length(Vec3f(W));
+        const bool well_behaved = m < 0.2f*l;
+
+        if (!well_behaved && stack.depth < max_depth) {
+          stack.push();
+          continue;
+        }
+        
+        /* calculate bounding cylinders */
+        const float rr1 = sqr_point_to_line_distance(Vec3f(dP0du),Vec3f(P3-P0));
+        const float rr2 = sqr_point_to_line_distance(Vec3f(dP3du),Vec3f(P3-P0));
+        const float maxr12 = sqrt(max(rr1,rr2));
+        const float one_plus_ulp  = 1.0f+2.0f*float(ulp);
+        const float one_minus_ulp = 1.0f-2.0f*float(ulp);
+        float r_outer = max(P0.w,P1.w,P2.w,P3.w)+maxr12;
+        float r_inner = min(P0.w,P1.w,P2.w,P3.w)-maxr12;
+        r_outer = one_plus_ulp*r_outer;
+        r_inner = max(0.0f,one_minus_ulp*r_inner);
+        const Cylinder cylinder_outer(Vec3f(P0),Vec3f(P3),r_outer);
+        const Cylinder cylinder_inner(Vec3f(P0),Vec3f(P3),r_inner);
+        
+        /* intersect with outer cylinder */
+        BBox<float> tc_outer; float u_outer0; Vec3fa Ng_outer0; float u_outer1; Vec3fa Ng_outer1;
+        if (!cylinder_outer.intersect(org,dir,tc_outer,u_outer0,Ng_outer0,u_outer1,Ng_outer1))
+        {
+          stack.pop();
+          continue;
+        }
+                
+        /* intersect with cap-planes */
+        BBox<float> tp(ray.tnear()-dt,ray.tfar-dt);
+        tp = embree::intersect(tp,tc_outer);
+        BBox<float> h0 = HalfPlane(Vec3f(P0),+Vec3f(dP0du)).intersect(org,dir);
+        tp = embree::intersect(tp,h0);
+        BBox<float> h1 = HalfPlane(Vec3f(P3),-Vec3f(dP3du)).intersect(org,dir);
+        tp = embree::intersect(tp,h1);
+        if (tp.lower > tp.upper)
+        {
+          stack.pop();
+          continue;
+        }
+        
+        bool valid = true;
+        
+        /* clamp and correct u parameter */
+        u_outer0 = clamp(u_outer0,float(0.0f),float(1.0f));
+        u_outer1 = clamp(u_outer1,float(0.0f),float(1.0f));
+        u_outer0 = lerp(u0,u1,u_outer0);
+        u_outer1 = lerp(u0,u1,u_outer1);
+        
+        /* intersect with inner cylinder */
+        BBox<float> tc_inner;
+        float u_inner0 = zero; Vec3fa Ng_inner0 = zero; float u_inner1 = zero; Vec3fa Ng_inner1 = zero;
+        const bool valid_inner =  cylinder_inner.intersect(org,dir,tc_inner,u_inner0,Ng_inner0,u_inner1,Ng_inner1);
+
+        /* subtract the inner interval from the current hit interval */
+        BBox<float> tp0, tp1;
+        subtract(tp,tc_inner,tp0,tp1);
+        bool valid0 = valid & (tp0.lower <= tp0.upper);
+        bool valid1 = valid & (tp1.lower <= tp1.upper);
+        if (!(valid0 | valid1))
+        {
+          stack.pop();
+          continue;
+        }
+
+        /* at the unstable area we subdivide deeper */
+        const bool unstable0 = valid0 && ((!valid_inner) | (abs(dot(Vec3fa(ray.dir),Ng_inner0)) < 0.3f));
+        const bool unstable1 = valid1 && ((!valid_inner) | (abs(dot(Vec3fa(ray.dir),Ng_inner1)) < 0.3f));
+    
+        if ((unstable0 | unstable1) && (stack.depth < max_depth)) {
+           stack.push();
+           continue;
+         }
+
+        if (valid0)
+          found |= intersect_bezier_iterative_jacobian(ray,dt,curve,u_outer0,tp0.lower,epilog);
+          
+        /* the far hit cannot be closer, thus skip if we hit entry already */
+        valid1 &= tp1.lower+dt <= ray.tfar;
+        
+        /* iterate over second hit */
+        if (valid1)
+          found |= intersect_bezier_iterative_jacobian(ray,dt,curve,u_outer1,tp1.upper,epilog);
+
+        stack.pop();
+        
+      } while (stack.short_stack != 0x80000000);
+
+      return found;
+    }
+
+#endif
+    
     template<template<typename Ty> class NativeCurve>
     struct SweepCurve1Intersector1
     {
       typedef NativeCurve<Vec3ff> NativeCurve3ff;
       
-      template<typename Epilog>
-      __noinline bool intersect(const CurvePrecalculations1& pre, Ray& ray,
-                                IntersectContext* context,
+      template<typename Ray, typename Epilog>
+      __forceinline bool intersect(const CurvePrecalculations1& pre, Ray& ray,
+                                RayQueryContext* context,
                                 const CurveGeometry* geom, const unsigned int primID,
                                 const Vec3ff& v0, const Vec3ff& v1, const Vec3ff& v2, const Vec3ff& v3,
                                 const Epilog& epilog)
@@ -315,7 +462,7 @@ namespace embree
         const float dt = dot(curve0.center()-ray.org,ray.dir)*rcp(dot(ray.dir,ray.dir));
         const Vec3ff ref(madd(Vec3fa(dt),ray.dir,ray.org),0.0f);
         const NativeCurve3ff curve1 = curve0-ref;
-        return intersect_bezier_recursive_jacobian(ray,dt,curve1,0.0f,1.0f,1,epilog);
+        return intersect_bezier_recursive_jacobian(ray,dt,curve1,epilog);
       }
     };
 
@@ -343,7 +490,7 @@ namespace embree
 
       template<typename Epilog>
       __forceinline bool intersect(const CurvePrecalculationsK<K>& pre, RayK<K>& vray, size_t k,
-                                   IntersectContext* context,
+                                   RayQueryContext* context,
                                    const CurveGeometry* geom, const unsigned int primID,
                                    const Vec3ff& v0, const Vec3ff& v1, const Vec3ff& v2, const Vec3ff& v3,
                                    const Epilog& epilog)
@@ -357,7 +504,7 @@ namespace embree
         const float dt = dot(curve0.center()-ray.org,ray.dir)*rcp(dot(ray.dir,ray.dir));
         const Vec3ff ref(madd(Vec3fa(dt),ray.dir,ray.org),0.0f);
         const NativeCurve3ff curve1 = curve0-ref;
-        return intersect_bezier_recursive_jacobian(ray,dt,curve1,0.0f,1.0f,1,epilog);
+        return intersect_bezier_recursive_jacobian(ray,dt,curve1,epilog);
       }
     };
   }

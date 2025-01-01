@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -12,7 +13,6 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/thorvg/"
 thirdparty_sources = [
     # common
-    "src/common/tvgBezier.cpp",
     "src/common/tvgCompressor.cpp",
     "src/common/tvgMath.cpp",
     "src/common/tvgStr.cpp",
@@ -24,6 +24,7 @@ thirdparty_sources = [
     "src/loaders/svg/tvgSvgUtil.cpp",
     "src/loaders/svg/tvgXmlParser.cpp",
     "src/loaders/raw/tvgRawLoader.cpp",
+    # image loaders
     "src/loaders/external_png/tvgPngLoader.cpp",
     "src/loaders/jpg/tvgJpgd.cpp",
     "src/loaders/jpg/tvgJpgLoader.cpp",
@@ -50,12 +51,17 @@ thirdparty_sources = [
     "src/renderer/sw_engine/tvgSwImage.cpp",
     "src/renderer/sw_engine/tvgSwMath.cpp",
     "src/renderer/sw_engine/tvgSwMemPool.cpp",
+    "src/renderer/sw_engine/tvgSwPostEffect.cpp",
     "src/renderer/sw_engine/tvgSwRaster.cpp",
     "src/renderer/sw_engine/tvgSwRenderer.cpp",
     "src/renderer/sw_engine/tvgSwRle.cpp",
     "src/renderer/sw_engine/tvgSwShape.cpp",
     "src/renderer/sw_engine/tvgSwStroke.cpp",
 ]
+
+if env["module_webp_enabled"]:
+    thirdparty_sources += ["src/loaders/external_webp/tvgWebpLoader.cpp"]
+    env_svg.Append(CPPDEFINES=["THORVG_WEBP_LOADER_SUPPORT"])
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
@@ -77,6 +83,12 @@ env_thirdparty.Prepend(
         thirdparty_dir + "src/loaders/jpg",
     ]
 )
+if env["builtin_libpng"]:
+    env_thirdparty.Prepend(CPPPATH=["#thirdparty/libpng"])
+if env["module_webp_enabled"]:
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "src/loaders/external_webp"])
+    if env["builtin_libwebp"]:
+        env_thirdparty.Prepend(CPPPATH=["#thirdparty/libwebp/src"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj

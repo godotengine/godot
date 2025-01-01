@@ -30,7 +30,7 @@
 
 #include "api/java_class_wrapper.h"
 
-#include "string_android.h"
+#include "jni_utils.h"
 #include "thread_jandroid.h"
 
 bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
@@ -44,7 +44,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 	MethodInfo *method = nullptr;
 	for (MethodInfo &E : M->value) {
-		if (!p_instance && !E._static) {
+		if (!p_instance && !E._static && !E._constructor) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			continue;
 		}
@@ -96,21 +96,31 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						arg_expected = Variant::FLOAT;
 					}
 				} break;
-				case ARG_TYPE_STRING: {
-					if (p_args[i]->get_type() != Variant::STRING) {
+				case ARG_TYPE_STRING:
+				case ARG_TYPE_CHARSEQUENCE: {
+					if (!p_args[i]->is_string()) {
 						arg_expected = Variant::STRING;
 					}
 				} break;
+				case ARG_TYPE_CALLABLE: {
+					if (p_args[i]->get_type() != Variant::CALLABLE) {
+						arg_expected = Variant::CALLABLE;
+					}
+				} break;
 				case ARG_TYPE_CLASS: {
-					if (p_args[i]->get_type() != Variant::OBJECT) {
+					if (p_args[i]->get_type() != Variant::OBJECT && p_args[i]->get_type() != Variant::NIL) {
 						arg_expected = Variant::OBJECT;
 					} else {
 						Ref<RefCounted> ref = *p_args[i];
-						if (!ref.is_null()) {
+						if (ref.is_valid()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 								Ref<JavaObject> jo = ref;
 								//could be faster
-								jclass c = env->FindClass(E.param_sigs[i].operator String().utf8().get_data());
+								String cn = E.param_sigs[i].operator String();
+								if (cn.begins_with("L") && cn.ends_with(";")) {
+									cn = cn.substr(1, cn.length() - 2);
+								}
+								jclass c = env->FindClass(cn.utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 									arg_expected = Variant::OBJECT;
 								} else {
@@ -261,11 +271,17 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].l = obj;
 				to_free.push_back(obj);
 			} break;
-			case ARG_TYPE_STRING: {
+			case ARG_TYPE_STRING:
+			case ARG_TYPE_CHARSEQUENCE: {
 				String s = *p_args[i];
 				jstring jStr = env->NewStringUTF(s.utf8().get_data());
 				argv[i].l = jStr;
 				to_free.push_back(jStr);
+			} break;
+			case ARG_TYPE_CALLABLE: {
+				jobject jcallable = callable_to_jcallable(env, *p_args[i]);
+				argv[i].l = jcallable;
+				to_free.push_back(jcallable);
 			} break;
 			case ARG_TYPE_CLASS: {
 				Ref<JavaObject> jo = *p_args[i];
@@ -363,7 +379,8 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(a);
 
 			} break;
-			case ARG_ARRAY_BIT | ARG_TYPE_STRING: {
+			case ARG_ARRAY_BIT | ARG_TYPE_STRING:
+			case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
 				Array arr = *p_args[i];
 				jobjectArray a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), nullptr);
 				for (int j = 0; j < arr.size(); j++) {
@@ -375,6 +392,19 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 				argv[i].l = a;
 				to_free.push_back(a);
+			} break;
+			case ARG_ARRAY_BIT | ARG_TYPE_CALLABLE: {
+				Array arr = *p_args[i];
+				jobjectArray jarr = env->NewObjectArray(arr.size(), env->FindClass("org/godotengine/godot/variant/Callable"), nullptr);
+				for (int j = 0; j < arr.size(); j++) {
+					Variant callable = arr[j];
+					jobject jcallable = callable_to_jcallable(env, callable);
+					env->SetObjectArrayElement(jarr, j, jcallable);
+					to_free.push_back(jcallable);
+				}
+
+				argv[i].l = jarr;
+				to_free.push_back(jarr);
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
 				argv[i].l = nullptr;
@@ -458,7 +488,9 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		} break;
 		default: {
 			jobject obj;
-			if (method->_static) {
+			if (method->_constructor) {
+				obj = env->NewObjectA(_class, method->method, argv);
+			} else if (method->_static) {
 				obj = env->CallStaticObjectMethodA(_class, method->method, argv);
 			} else {
 				obj = env->CallObjectMethodA(p_instance->instance, method->method, argv);
@@ -485,9 +517,20 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	return success;
 }
 
+bool JavaClass::_get(const StringName &p_name, Variant &r_ret) const {
+	if (constant_map.has(p_name)) {
+		r_ret = constant_map[p_name];
+		return true;
+	}
+
+	return false;
+}
+
 Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	Variant ret;
-	bool found = _call_method(nullptr, p_method, p_args, p_argcount, r_error, ret);
+
+	String method = (p_method == java_constructor_name) ? "<init>" : p_method;
+	bool found = _call_method(nullptr, method, p_args, p_argcount, r_error, ret);
 	if (found) {
 		return ret;
 	}
@@ -495,19 +538,156 @@ Variant JavaClass::callp(const StringName &p_method, const Variant **p_args, int
 	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
 }
 
+String JavaClass::get_java_class_name() const {
+	return java_class_name;
+}
+
+TypedArray<Dictionary> JavaClass::get_java_method_list() const {
+	TypedArray<Dictionary> method_list;
+
+	for (const KeyValue<StringName, List<MethodInfo>> &item : methods) {
+		for (const MethodInfo &mi : item.value) {
+			Dictionary method;
+
+			method["name"] = mi._constructor ? java_constructor_name : String(item.key);
+			method["id"] = (uint64_t)mi.method;
+			method["default_args"] = Array();
+			method["flags"] = METHOD_FLAGS_DEFAULT & (mi._static || mi._constructor ? METHOD_FLAG_STATIC : METHOD_FLAG_NORMAL);
+
+			{
+				Array a;
+
+				for (uint32_t argtype : mi.param_types) {
+					Dictionary d;
+
+					Variant::Type t = Variant::NIL;
+					float likelihood = 0.0;
+					_convert_to_variant_type(argtype, t, likelihood);
+					d["type"] = t;
+					if (t == Variant::OBJECT) {
+						d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
+						d["hint_string"] = "JavaObject";
+					} else {
+						d["hint"] = 0;
+						d["hint_string"] = "";
+					}
+
+					a.push_back(d);
+				}
+
+				method["args"] = a;
+			}
+
+			{
+				Dictionary d;
+
+				if (mi._constructor) {
+					d["type"] = Variant::OBJECT;
+					d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
+					d["hint_string"] = "JavaObject";
+				} else {
+					Variant::Type t = Variant::NIL;
+					float likelihood = 0.0;
+					_convert_to_variant_type(mi.return_type, t, likelihood);
+					d["type"] = t;
+					if (t == Variant::OBJECT) {
+						d["hint"] = PROPERTY_HINT_RESOURCE_TYPE;
+						d["hint_string"] = "JavaObject";
+					} else {
+						d["hint"] = 0;
+						d["hint_string"] = "";
+					}
+				}
+
+				method["return_type"] = d;
+			}
+
+			method_list.push_back(method);
+		}
+	}
+
+	return method_list;
+}
+
+Ref<JavaClass> JavaClass::get_java_parent_class() const {
+	ERR_FAIL_NULL_V(_class, Ref<JavaClass>());
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
+
+	jclass superclass = (jclass)env->CallObjectMethod(_class, JavaClassWrapper::singleton->Class_getSuperclass);
+	if (!superclass) {
+		return Ref<JavaClass>();
+	}
+
+	Ref<JavaClass> ret = JavaClassWrapper::singleton->wrap_jclass(superclass);
+	env->DeleteLocalRef(superclass);
+	return ret;
+}
+
+String JavaClass::to_string() {
+	return "<JavaClass:" + java_class_name + ">";
+}
+
 JavaClass::JavaClass() {
+}
+
+JavaClass::~JavaClass() {
+	if (_class) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->DeleteGlobalRef(_class);
+	}
 }
 
 /////////////////////
 
 Variant JavaObject::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	return Variant();
+	if (instance) {
+		Ref<JavaClass> c = base_class;
+		while (c.is_valid()) {
+			Variant ret;
+			bool found = c->_call_method(this, p_method, p_args, p_argcount, r_error, ret);
+			if (found) {
+				return ret;
+			}
+			c = c->get_java_parent_class();
+		}
+	}
+
+	return RefCounted::callp(p_method, p_args, p_argcount, r_error);
 }
 
-JavaObject::JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance) {
+Ref<JavaClass> JavaObject::get_java_class() const {
+	return base_class;
+}
+
+String JavaObject::to_string() {
+	if (base_class.is_valid() && instance) {
+		return "<JavaObject:" + base_class->java_class_name + " \"" + (String)call("toString") + "\">";
+	}
+	return RefCounted::to_string();
+}
+
+JavaObject::JavaObject() {
+}
+
+JavaObject::JavaObject(const Ref<JavaClass> &p_base, jobject p_instance) {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	base_class = p_base;
+	instance = env->NewGlobalRef(p_instance);
 }
 
 JavaObject::~JavaObject() {
+	if (instance) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->DeleteGlobalRef(instance);
+	}
 }
 
 ////////////////////
@@ -561,6 +741,12 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 	} else if (str_type == "java.lang.String") {
 		t |= JavaClass::ARG_TYPE_STRING;
 		strsig += "Ljava/lang/String;";
+	} else if (str_type == "java.lang.CharSequence") {
+		t |= JavaClass::ARG_TYPE_CHARSEQUENCE;
+		strsig += "Ljava/lang/CharSequence;";
+	} else if (str_type == "org.godotengine.godot.variant.Callable") {
+		t |= JavaClass::ARG_TYPE_CALLABLE;
+		strsig += "Lorg/godotengine/godot/variant/Callable;";
 	} else if (str_type == "java.lang.Boolean") {
 		t |= JavaClass::ARG_TYPE_BOOLEAN | JavaClass::ARG_NUMBER_CLASS_BIT;
 		strsig += "Ljava/lang/Boolean;";
@@ -648,7 +834,25 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			var = jstring_to_string((jstring)obj, env);
 			return true;
 		} break;
+		case ARG_TYPE_CHARSEQUENCE: {
+			var = charsequence_to_string(env, obj);
+			return true;
+		} break;
+		case ARG_TYPE_CALLABLE: {
+			var = jcallable_to_callable(env, obj);
+			return true;
+		} break;
 		case ARG_TYPE_CLASS: {
+			jclass java_class = env->GetObjectClass(obj);
+			Ref<JavaClass> java_class_wrapped = JavaClassWrapper::singleton->wrap_jclass(java_class);
+			env->DeleteLocalRef(java_class);
+
+			if (java_class_wrapped.is_valid()) {
+				Ref<JavaObject> ret = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
+				var = ret;
+				return true;
+			}
+
 			return false;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_VOID: {
@@ -958,6 +1162,44 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			var = ret;
 			return true;
 		} break;
+		case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
+			Array ret;
+			jobjectArray arr = (jobjectArray)obj;
+
+			int count = env->GetArrayLength(arr);
+
+			for (int i = 0; i < count; i++) {
+				jobject o = env->GetObjectArrayElement(arr, i);
+				if (!o) {
+					ret.push_back(Variant());
+				} else {
+					String val = charsequence_to_string(env, o);
+					ret.push_back(val);
+				}
+				env->DeleteLocalRef(o);
+			}
+
+			var = ret;
+			return true;
+		} break;
+		case ARG_ARRAY_BIT | ARG_TYPE_CALLABLE: {
+			Array ret;
+			jobjectArray jarr = (jobjectArray)obj;
+			int count = env->GetArrayLength(jarr);
+			for (int i = 0; i < count; i++) {
+				jobject o = env->GetObjectArrayElement(jarr, i);
+				if (!o) {
+					ret.push_back(Variant());
+				} else {
+					Callable callable = jcallable_to_callable(env, o);
+					ret.push_back(callable);
+				}
+				env->DeleteLocalRef(o);
+			}
+
+			var = ret;
+			return true;
+		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
 		} break;
 	}
@@ -965,44 +1207,68 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 	return false;
 }
 
-Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
-	if (class_cache.has(p_class)) {
-		return class_cache[p_class];
+Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_private_methods_access) {
+	String class_name_dots = p_class.replace("/", ".");
+	if (class_cache.has(class_name_dots)) {
+		return class_cache[class_name_dots];
 	}
 
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
-	jclass bclass = env->FindClass(p_class.utf8().get_data());
+	jclass bclass = env->FindClass(class_name_dots.replace(".", "/").utf8().get_data());
 	ERR_FAIL_NULL_V(bclass, Ref<JavaClass>());
 
-	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, getDeclaredMethods);
+	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
+	ERR_FAIL_NULL_V(constructors, Ref<JavaClass>());
 
+	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredMethods);
 	ERR_FAIL_NULL_V(methods, Ref<JavaClass>());
 
 	Ref<JavaClass> java_class = memnew(JavaClass);
+	java_class->java_class_name = class_name_dots;
+	Vector<String> class_name_parts = class_name_dots.split(".");
+	java_class->java_constructor_name = class_name_parts[class_name_parts.size() - 1];
+	java_class->_class = (jclass)env->NewGlobalRef(bclass);
+	class_cache[class_name_dots] = java_class;
 
-	int count = env->GetArrayLength(methods);
+	LocalVector<jobject> methods_and_constructors;
+	int constructor_count = env->GetArrayLength(constructors);
+	int method_count = env->GetArrayLength(methods);
+	methods_and_constructors.resize(method_count + constructor_count);
+	for (int i = 0; i < constructor_count; i++) {
+		methods_and_constructors[i] = env->GetObjectArrayElement(constructors, i);
+	}
+	for (int i = 0; i < method_count; i++) {
+		methods_and_constructors[constructor_count + i] = env->GetObjectArrayElement(methods, i);
+	}
 
-	for (int i = 0; i < count; i++) {
-		jobject obj = env->GetObjectArrayElement(methods, i);
+	for (int i = 0; i < (int)methods_and_constructors.size(); i++) {
+		jobject obj = methods_and_constructors[i];
 		ERR_CONTINUE(!obj);
 
-		jstring name = (jstring)env->CallObjectMethod(obj, getName);
-		String str_method = jstring_to_string(name, env);
-		env->DeleteLocalRef(name);
+		bool is_constructor = i < constructor_count;
+
+		String str_method;
+		if (is_constructor) {
+			str_method = "<init>";
+		} else {
+			jstring name = (jstring)env->CallObjectMethod(obj, Method_getName);
+			str_method = jstring_to_string(name, env);
+			env->DeleteLocalRef(name);
+		}
 
 		Vector<String> params;
 
-		jint mods = env->CallIntMethod(obj, getModifiers);
+		jint mods = env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
 
-		if (!(mods & 0x0001)) {
+		if (!(mods & 0x0001) && (is_constructor || !p_allow_private_methods_access)) {
 			env->DeleteLocalRef(obj);
 			continue; //not public bye
 		}
 
-		jobjectArray param_types = (jobjectArray)env->CallObjectMethod(obj, getParameterTypes);
-		int count2 = env->GetArrayLength(param_types);
+		jobjectArray param_types = (jobjectArray)env->CallObjectMethod(obj, is_constructor ? Constructor_getParameterTypes : Method_getParameterTypes);
+		int count = env->GetArrayLength(param_types);
 
 		if (!java_class->methods.has(str_method)) {
 			java_class->methods[str_method] = List<JavaClass::MethodInfo>();
@@ -1010,10 +1276,11 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		JavaClass::MethodInfo mi;
 		mi._static = (mods & 0x8) != 0;
+		mi._constructor = is_constructor;
 		bool valid = true;
 		String signature = "(";
 
-		for (int j = 0; j < count2; j++) {
+		for (int j = 0; j < count; j++) {
 			jobject obj2 = env->GetObjectArrayElement(param_types, j);
 			String strsig;
 			uint32_t sig = 0;
@@ -1029,7 +1296,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		}
 
 		if (!valid) {
-			print_line("Method can't be bound (unsupported arguments): " + p_class + "::" + str_method);
+			print_line("Method can't be bound (unsupported arguments): " + class_name_dots + "::" + str_method);
 			env->DeleteLocalRef(obj);
 			env->DeleteLocalRef(param_types);
 			continue;
@@ -1037,20 +1304,27 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		signature += ")";
 
-		jobject return_type = (jobject)env->CallObjectMethod(obj, getReturnType);
+		if (is_constructor) {
+			signature += "V";
+			mi.return_type = JavaClass::ARG_TYPE_CLASS;
+		} else {
+			jobject return_type = (jobject)env->CallObjectMethod(obj, Method_getReturnType);
 
-		String strsig;
-		uint32_t sig = 0;
-		if (!_get_type_sig(env, return_type, sig, strsig)) {
-			print_line("Method can't be bound (unsupported return type): " + p_class + "::" + str_method);
-			env->DeleteLocalRef(obj);
-			env->DeleteLocalRef(param_types);
+			String strsig;
+			uint32_t sig = 0;
+			if (!_get_type_sig(env, return_type, sig, strsig)) {
+				print_line("Method can't be bound (unsupported return type): " + class_name_dots + "::" + str_method);
+				env->DeleteLocalRef(obj);
+				env->DeleteLocalRef(param_types);
+				env->DeleteLocalRef(return_type);
+				continue;
+			}
+
+			signature += strsig;
+			mi.return_type = sig;
+
 			env->DeleteLocalRef(return_type);
-			continue;
 		}
-
-		signature += strsig;
-		mi.return_type = sig;
 
 		bool discard = false;
 
@@ -1103,14 +1377,14 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		env->DeleteLocalRef(obj);
 		env->DeleteLocalRef(param_types);
-		env->DeleteLocalRef(return_type);
 	}
 
+	env->DeleteLocalRef(constructors);
 	env->DeleteLocalRef(methods);
 
-	jobjectArray fields = (jobjectArray)env->CallObjectMethod(bclass, getFields);
+	jobjectArray fields = (jobjectArray)env->CallObjectMethod(bclass, Class_getFields);
 
-	count = env->GetArrayLength(fields);
+	int count = env->GetArrayLength(fields);
 
 	for (int i = 0; i < count; i++) {
 		jobject obj = env->GetObjectArrayElement(fields, i);
@@ -1146,61 +1420,83 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 	env->DeleteLocalRef(fields);
 
-	return Ref<JavaClass>();
+	return java_class;
+}
+
+Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_private_methods_access) {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
+
+	jstring class_name = (jstring)env->CallObjectMethod(p_class, Class_getName);
+	String class_name_string = jstring_to_string(class_name, env);
+	env->DeleteLocalRef(class_name);
+
+	return _wrap(class_name_string, p_allow_private_methods_access);
 }
 
 JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
-JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
+JavaClassWrapper::JavaClassWrapper() {
 	singleton = this;
 
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 
-	jclass activity = env->FindClass("android/app/Activity");
-	jmethodID getClassLoader = env->GetMethodID(activity, "getClassLoader", "()Ljava/lang/ClassLoader;");
-	classLoader = env->CallObjectMethod(p_activity, getClassLoader);
-	classLoader = (jclass)env->NewGlobalRef(classLoader);
-	jclass classLoaderClass = env->FindClass("java/lang/ClassLoader");
-	findClass = env->GetMethodID(classLoaderClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-
 	jclass bclass = env->FindClass("java/lang/Class");
-	getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
-	getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
+	Class_getDeclaredConstructors = env->GetMethodID(bclass, "getDeclaredConstructors", "()[Ljava/lang/reflect/Constructor;");
+	Class_getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
+	Class_getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
+	Class_getSuperclass = env->GetMethodID(bclass, "getSuperclass", "()Ljava/lang/Class;");
+	env->DeleteLocalRef(bclass);
+
+	bclass = env->FindClass("java/lang/reflect/Constructor");
+	Constructor_getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
+	Constructor_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/reflect/Method");
-	getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
-	getReturnType = env->GetMethodID(bclass, "getReturnType", "()Ljava/lang/Class;");
-	getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
-	getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
+	Method_getParameterTypes = env->GetMethodID(bclass, "getParameterTypes", "()[Ljava/lang/Class;");
+	Method_getReturnType = env->GetMethodID(bclass, "getReturnType", "()Ljava/lang/Class;");
+	Method_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
+	Method_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/reflect/Field");
 	Field_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Field_getModifiers = env->GetMethodID(bclass, "getModifiers", "()I");
 	Field_get = env->GetMethodID(bclass, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Boolean");
 	Boolean_booleanValue = env->GetMethodID(bclass, "booleanValue", "()Z");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Byte");
 	Byte_byteValue = env->GetMethodID(bclass, "byteValue", "()B");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Character");
 	Character_characterValue = env->GetMethodID(bclass, "charValue", "()C");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Short");
 	Short_shortValue = env->GetMethodID(bclass, "shortValue", "()S");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Integer");
 	Integer_integerValue = env->GetMethodID(bclass, "intValue", "()I");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Long");
 	Long_longValue = env->GetMethodID(bclass, "longValue", "()J");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Float");
 	Float_floatValue = env->GetMethodID(bclass, "floatValue", "()F");
+	env->DeleteLocalRef(bclass);
 
 	bclass = env->FindClass("java/lang/Double");
 	Double_doubleValue = env->GetMethodID(bclass, "doubleValue", "()D");
+	env->DeleteLocalRef(bclass);
 }

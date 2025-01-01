@@ -166,29 +166,29 @@ enum {
 /* These are the bidi class values. */
 
 enum {
-  ucp_bidiAL,   /* Arabic letter */
-  ucp_bidiAN,   /* Arabic number */
-  ucp_bidiB,    /* Paragraph separator */
-  ucp_bidiBN,   /* Boundary neutral */
-  ucp_bidiCS,   /* Common separator */
-  ucp_bidiEN,   /* European number */
-  ucp_bidiES,   /* European separator */
-  ucp_bidiET,   /* European terminator */
-  ucp_bidiFSI,  /* First strong isolate */
-  ucp_bidiL,    /* Left to right */
-  ucp_bidiLRE,  /* Left to right embedding */
-  ucp_bidiLRI,  /* Left to right isolate */
-  ucp_bidiLRO,  /* Left to right override */
-  ucp_bidiNSM,  /* Non-spacing mark */
-  ucp_bidiON,   /* Other neutral */
-  ucp_bidiPDF,  /* Pop directional format */
-  ucp_bidiPDI,  /* Pop directional isolate */
-  ucp_bidiR,    /* Right to left */
-  ucp_bidiRLE,  /* Right to left embedding */
-  ucp_bidiRLI,  /* Right to left isolate */
-  ucp_bidiRLO,  /* Right to left override */
-  ucp_bidiS,    /* Segment separator */
-  ucp_bidiWS,   /* White space */
+  ucp_bidiAL,   /* Arabic_Letter */
+  ucp_bidiAN,   /* Arabic_Number */
+  ucp_bidiB,    /* Paragraph_Separator */
+  ucp_bidiBN,   /* Boundary_Neutral */
+  ucp_bidiCS,   /* Common_Separator */
+  ucp_bidiEN,   /* European_Number */
+  ucp_bidiES,   /* European_Separator */
+  ucp_bidiET,   /* European_Terminator */
+  ucp_bidiFSI,  /* First_Strong_Isolate */
+  ucp_bidiL,    /* Left_To_Right */
+  ucp_bidiLRE,  /* Left_To_Right_Embedding */
+  ucp_bidiLRI,  /* Left_To_Right_Isolate */
+  ucp_bidiLRO,  /* Left_To_Right_Override */
+  ucp_bidiNSM,  /* Nonspacing_Mark */
+  ucp_bidiON,   /* Other_Neutral */
+  ucp_bidiPDF,  /* Pop_Directional_Format */
+  ucp_bidiPDI,  /* Pop_Directional_Isolate */
+  ucp_bidiR,    /* Right_To_Left */
+  ucp_bidiRLE,  /* Right_To_Left_Embedding */
+  ucp_bidiRLI,  /* Right_To_Left_Isolate */
+  ucp_bidiRLO,  /* Right_To_Left_Override */
+  ucp_bidiS,    /* Segment_Separator */
+  ucp_bidiWS,   /* White_Space */
 };
 
 /* These are grapheme break properties. The Extended Pictographic property
@@ -380,6 +380,8 @@ enum {
   ucp_Tangsa,
   ucp_Toto,
   ucp_Vithkuqi,
+  ucp_Kawi,
+  ucp_Nag_Mundari,
 
   /* This must be last */
   ucp_Script_Count

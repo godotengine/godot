@@ -31,9 +31,8 @@
 #ifndef SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
 #define SUB_VIEWPORT_PREVIEW_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
-#include "scene/main/viewport.h"
 
 class EditorInspectorPluginSubViewportPreview : public EditorInspectorPluginTexture {
 	GDCLASS(EditorInspectorPluginSubViewportPreview, EditorInspectorPluginTexture);
@@ -47,7 +46,7 @@ class SubViewportPreviewEditorPlugin : public EditorPlugin {
 	GDCLASS(SubViewportPreviewEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "SubViewportPreview"; }
+	virtual String get_plugin_name() const override { return "SubViewportPreview"; }
 
 	SubViewportPreviewEditorPlugin();
 };

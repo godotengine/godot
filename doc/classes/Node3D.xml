@@ -46,10 +46,19 @@
 				Returns all the gizmos attached to this [Node3D].
 			</description>
 		</method>
+		<method name="get_global_transform_interpolated">
+			<return type="Transform3D" />
+			<description>
+				When using physics interpolation, there will be circumstances in which you want to know the interpolated (displayed) transform of a node rather than the standard transform (which may only be accurate to the most recent physics tick).
+				This is particularly important for frame-based operations that take place in [method Node._process], rather than [method Node._physics_process]. Examples include [Camera3D]s focusing on a node, or finding where to fire lasers from on a frame rather than physics tick.
+				[b]Note:[/b] This function creates an interpolation pump on the [Node3D] the first time it is called, which can respond to physics interpolation resets. If you get problems with "streaking" when initially following a [Node3D], be sure to call [method get_global_transform_interpolated] at least once [i]before[/i] resetting the [Node3D] physics interpolation.
+			</description>
+		</method>
 		<method name="get_parent_node_3d" qualifiers="const">
 			<return type="Node3D" />
 			<description>
-				Returns the parent [Node3D], or an empty [Object] if no parent exists or parent is not of type [Node3D].
+				Returns the parent [Node3D], or [code]null[/code] if no parent exists, the parent is not of type [Node3D], or [member top_level] is [code]true[/code].
+				[b]Note:[/b] Calling this method is not equivalent to [code]get_parent() as Node3D[/code], which does not take [member top_level] into account.
 			</description>
 		</method>
 		<method name="get_world_3d" qualifiers="const">
@@ -271,7 +280,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
-			Direct access to the 3x3 basis of the [member transform] property.
+			Basis of the [member transform] property. Represents the rotation, scale, and shear of this node.
 		</member>
 		<member name="global_basis" type="Basis" setter="set_global_basis" getter="get_global_basis">
 			Global basis of this node. This is equivalent to [code]global_transform.basis[/code].

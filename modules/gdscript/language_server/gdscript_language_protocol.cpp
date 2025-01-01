@@ -105,7 +105,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 Error GDScriptLanguageProtocol::LSPeer::send_data() {
 	int sent = 0;
-	if (!res_queue.is_empty()) {
+	while (!res_queue.is_empty()) {
 		CharString c_res = res_queue[0];
 		if (res_sent < c_res.size()) {
 			Error err = connection->put_partial_data((const uint8_t *)c_res.get_data() + res_sent, c_res.size() - res_sent - 1, sent);
@@ -196,7 +196,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != nullptr) {
+		if (peer.is_valid()) {
 			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
@@ -229,7 +229,9 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 	notify_client("gdscript/capabilities", capabilities.to_json());
 }
 
-void GDScriptLanguageProtocol::poll() {
+void GDScriptLanguageProtocol::poll(int p_limit_usec) {
+	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec() + p_limit_usec;
+
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
@@ -244,16 +246,22 @@ void GDScriptLanguageProtocol::poll() {
 			E = clients.begin();
 			continue;
 		} else {
-			if (peer->connection->get_available_bytes() > 0) {
+			Error err = OK;
+			while (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = E->key;
-				Error err = peer->handle_data();
-				if (err != OK && err != ERR_BUSY) {
-					on_client_disconnected(E->key);
-					E = clients.begin();
-					continue;
+				err = peer->handle_data();
+				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+					break;
 				}
 			}
-			Error err = peer->send_data();
+
+			if (err != OK && err != ERR_BUSY) {
+				on_client_disconnected(E->key);
+				E = clients.begin();
+				continue;
+			}
+
+			err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
 				on_client_disconnected(E->key);
 				E = clients.begin();
@@ -290,7 +298,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = Variant(message).to_json_string();
@@ -311,7 +319,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
 	next_server_id++;

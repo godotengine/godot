@@ -39,10 +39,10 @@ struct hb_bit_set_invertible_t
 
   hb_bit_set_invertible_t () = default;
   hb_bit_set_invertible_t (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other) : hb_bit_set_invertible_t () { hb_swap (*this, other); }
+  hb_bit_set_invertible_t (hb_bit_set_invertible_t&& other)  noexcept : hb_bit_set_invertible_t () { hb_swap (*this, other); }
   hb_bit_set_invertible_t& operator= (const hb_bit_set_invertible_t& o) = default;
-  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other) { hb_swap (*this, other); return *this; }
-  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b)
+  hb_bit_set_invertible_t& operator= (hb_bit_set_invertible_t&& other)  noexcept { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_invertible_t &a, hb_bit_set_invertible_t &b) noexcept
   {
     if (likely (!a.s.successful || !b.s.successful))
       return;
@@ -359,8 +359,8 @@ struct hb_bit_set_invertible_t
     typedef hb_codepoint_t __item_t__;
     hb_codepoint_t __item__ () const { return v; }
     bool __more__ () const { return v != INVALID; }
-    void __next__ () { s->next (&v); if (l) l--; }
-    void __prev__ () { s->previous (&v); }
+    void __next__ () { s->next (&v); if (likely (l)) l--; }
+    void __prev__ () { s->previous (&v); l++; }
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const

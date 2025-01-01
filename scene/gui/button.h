@@ -56,8 +56,6 @@ private:
 	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
 	float _internal_margin[4] = {};
 
-	bool h_separation_is_valid_when_no_text = false;
-
 	struct ThemeCache {
 		Ref<StyleBox> normal;
 		Ref<StyleBox> normal_mirrored;
@@ -70,6 +68,14 @@ private:
 		Ref<StyleBox> disabled;
 		Ref<StyleBox> disabled_mirrored;
 		Ref<StyleBox> focus;
+
+		Size2 max_style_size;
+		float style_margin_left = 0;
+		float style_margin_right = 0;
+		float style_margin_top = 0;
+		float style_margin_bottom = 0;
+
+		bool align_to_largest_stylebox = false;
 
 		Color font_color;
 		Color font_focus_color;
@@ -94,19 +100,21 @@ private:
 
 		int h_separation = 0;
 		int icon_max_width = 0;
+		int line_spacing = 0;
 	} theme_cache;
 
-	Size2 _fit_icon_size(const Size2 &p_size) const;
-
-	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
+	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
 	void _texture_changed();
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _queue_update_size_cache();
 
-	void _set_h_separation_is_valid_when_no_text(bool p_h_separation_is_valid_when_no_text);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	Ref<StyleBox> _get_current_stylebox() const;
+	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -130,8 +138,8 @@ public:
 	void set_language(const String &p_language);
 	String get_language() const;
 
-	void set_icon(const Ref<Texture2D> &p_icon);
-	Ref<Texture2D> get_icon() const;
+	void set_button_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_button_icon() const;
 
 	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;

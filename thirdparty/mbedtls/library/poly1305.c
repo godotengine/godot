@@ -20,12 +20,6 @@
 
 #if !defined(MBEDTLS_POLY1305_ALT)
 
-/* Parameter validation macros */
-#define POLY1305_VALIDATE_RET(cond)                                       \
-    MBEDTLS_INTERNAL_VALIDATE_RET(cond, MBEDTLS_ERR_POLY1305_BAD_INPUT_DATA)
-#define POLY1305_VALIDATE(cond)                                           \
-    MBEDTLS_INTERNAL_VALIDATE(cond)
-
 #define POLY1305_BLOCK_SIZE_BYTES (16U)
 
 /*
@@ -233,8 +227,6 @@ static void poly1305_compute_mac(const mbedtls_poly1305_context *ctx,
 
 void mbedtls_poly1305_init(mbedtls_poly1305_context *ctx)
 {
-    POLY1305_VALIDATE(ctx != NULL);
-
     mbedtls_platform_zeroize(ctx, sizeof(mbedtls_poly1305_context));
 }
 
@@ -250,9 +242,6 @@ void mbedtls_poly1305_free(mbedtls_poly1305_context *ctx)
 int mbedtls_poly1305_starts(mbedtls_poly1305_context *ctx,
                             const unsigned char key[32])
 {
-    POLY1305_VALIDATE_RET(ctx != NULL);
-    POLY1305_VALIDATE_RET(key != NULL);
-
     /* r &= 0x0ffffffc0ffffffc0ffffffc0fffffff */
     ctx->r[0] = MBEDTLS_GET_UINT32_LE(key, 0)  & 0x0FFFFFFFU;
     ctx->r[1] = MBEDTLS_GET_UINT32_LE(key, 4)  & 0x0FFFFFFCU;
@@ -286,8 +275,6 @@ int mbedtls_poly1305_update(mbedtls_poly1305_context *ctx,
     size_t remaining = ilen;
     size_t queue_free_len;
     size_t nblocks;
-    POLY1305_VALIDATE_RET(ctx != NULL);
-    POLY1305_VALIDATE_RET(ilen == 0 || input != NULL);
 
     if ((remaining > 0U) && (ctx->queue_len > 0U)) {
         queue_free_len = (POLY1305_BLOCK_SIZE_BYTES - ctx->queue_len);
@@ -339,9 +326,6 @@ int mbedtls_poly1305_update(mbedtls_poly1305_context *ctx,
 int mbedtls_poly1305_finish(mbedtls_poly1305_context *ctx,
                             unsigned char mac[16])
 {
-    POLY1305_VALIDATE_RET(ctx != NULL);
-    POLY1305_VALIDATE_RET(mac != NULL);
-
     /* Process any leftover data */
     if (ctx->queue_len > 0U) {
         /* Add padding bit */
@@ -369,9 +353,6 @@ int mbedtls_poly1305_mac(const unsigned char key[32],
 {
     mbedtls_poly1305_context ctx;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    POLY1305_VALIDATE_RET(key != NULL);
-    POLY1305_VALIDATE_RET(mac != NULL);
-    POLY1305_VALIDATE_RET(ilen == 0 || input != NULL);
 
     mbedtls_poly1305_init(&ctx);
 
