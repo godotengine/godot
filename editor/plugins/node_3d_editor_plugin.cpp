@@ -6894,10 +6894,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
-					continue;
-				}
-
 				undo_redo->add_do_method(spatial, "set_meta", "_edit_lock_", true);
 				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_lock_");
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
@@ -6916,10 +6912,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
-					continue;
-				}
-
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
 					continue;
 				}
 
@@ -6944,10 +6936,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
-					continue;
-				}
-
 				undo_redo->add_do_method(spatial, "set_meta", "_edit_group_", true);
 				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_group_");
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
@@ -6965,10 +6953,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
-					continue;
-				}
-
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
 					continue;
 				}
 
