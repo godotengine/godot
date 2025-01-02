@@ -3707,8 +3707,7 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 			return 0;
 		}
 		if (p_from == 0 && p_to == len) {
-			str = String();
-			str.copy_from_unchecked(&get_data()[0], len);
+			str = *this;
 		} else {
 			str = substr(p_from, p_to - p_from);
 		}
@@ -3744,8 +3743,7 @@ int String::_count(const char *p_string, int p_from, int p_to, bool p_case_insen
 			return 0;
 		}
 		if (p_from == 0 && search_limit == source_length) {
-			str = String();
-			str.copy_from_unchecked(&get_data()[0], source_length);
+			str = *this;
 		} else {
 			str = substr(p_from, search_limit - p_from);
 		}
