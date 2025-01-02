@@ -140,6 +140,8 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
+		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
+			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
 		default:
 			return false;
 	}
@@ -3431,6 +3433,27 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 		}
 	}
 	return p_keycode;
+}
+
+void DisplayServerWindows::show_emoji_and_symbol_picker() const {
+	// Send Win + Period shortcut, there's no non-WinRT public API.
+
+	INPUT input[4] = {};
+	input[0].type = INPUT_KEYBOARD; // Win down.
+	input[0].ki.wVk = VK_LWIN;
+
+	input[1].type = INPUT_KEYBOARD; // Period down.
+	input[1].ki.wVk = VK_OEM_PERIOD;
+
+	input[2].type = INPUT_KEYBOARD; // Win up.
+	input[2].ki.wVk = VK_LWIN;
+	input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	input[3].type = INPUT_KEYBOARD; // Period up.
+	input[3].ki.wVk = VK_OEM_PERIOD;
+	input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	SendInput(4, input, sizeof(INPUT));
 }
 
 String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_klid) const {
