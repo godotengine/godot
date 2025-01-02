@@ -67,6 +67,7 @@
 #include "editor/plugins/gizmos/navigation_link_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/navigation_region_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
 #include "editor/plugins/gizmos/physics_bone_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/ray_cast_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/reflection_probe_gizmo_plugin.h"
@@ -8558,6 +8559,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VisibleOnScreenNotifier3DGizmoPlugin>(memnew(VisibleOnScreenNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticlesCollision3DGizmoPlugin>(memnew(GPUParticlesCollision3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Particles3DEmissionShapeGizmoPlugin>(memnew(Particles3DEmissionShapeGizmoPlugin)));
 	add_gizmo_plugin(Ref<CPUParticles3DGizmoPlugin>(memnew(CPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<DecalGizmoPlugin>(memnew(DecalGizmoPlugin)));

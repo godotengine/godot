@@ -409,14 +409,17 @@ bool CPUParticles3D::get_particle_flag(ParticleFlags p_particle_flag) const {
 void CPUParticles3D::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_box_extents(Vector3 p_extents) {
 	emission_box_extents = p_extents;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_points(const Vector<Vector3> &p_points) {
@@ -433,22 +436,27 @@ void CPUParticles3D::set_emission_colors(const Vector<Color> &p_colors) {
 
 void CPUParticles3D::set_emission_ring_axis(Vector3 p_axis) {
 	emission_ring_axis = p_axis;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_ring_height(real_t p_height) {
 	emission_ring_height = p_height;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_ring_radius(real_t p_radius) {
 	emission_ring_radius = p_radius;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_ring_inner_radius(real_t p_radius) {
 	emission_ring_inner_radius = p_radius;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_emission_ring_cone_angle(real_t p_angle) {
 	emission_ring_cone_angle = p_angle;
+	update_gizmos();
 }
 
 void CPUParticles3D::set_scale_curve_x(Ref<Curve> p_scale_curve) {
