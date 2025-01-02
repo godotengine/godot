@@ -34,10 +34,9 @@
 #include "../jolt_project_settings.h"
 #include "jolt_space_3d.h"
 
-#include "core/templates/local_vector.h"
-
 #include "Jolt/Jolt.h"
 
+#include "Jolt/Core/STLLocalAllocator.h"
 #include "Jolt/Physics/Collision/InternalEdgeRemovingCollector.h"
 #include "Jolt/Physics/Collision/Shape/Shape.h"
 
@@ -45,11 +44,16 @@ template <typename TBase, int TDefaultCapacity>
 class JoltQueryCollectorAll final : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
+	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity>> HitArray;
 
 private:
-	JPH::Array<Hit> hits;
+	HitArray hits;
 
 public:
+	JoltQueryCollectorAll() {
+		hits.reserve(TDefaultCapacity);
+	}
+
 	bool had_hit() const {
 		return !hits.is_empty();
 	}
@@ -109,14 +113,17 @@ template <typename TBase, int TDefaultCapacity>
 class JoltQueryCollectorAnyMulti final : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
+	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity>> HitArray;
 
 private:
-	JPH::Array<Hit> hits;
+	HitArray hits;
 	int max_hits = 0;
 
 public:
 	explicit JoltQueryCollectorAnyMulti(int p_max_hits = TDefaultCapacity) :
-			max_hits(p_max_hits) {}
+			max_hits(p_max_hits) {
+		hits.reserve(TDefaultCapacity);
+	}
 
 	bool had_hit() const {
 		return hits.size() > 0;
@@ -189,14 +196,17 @@ template <typename TBase, int TDefaultCapacity>
 class JoltQueryCollectorClosestMulti final : public TBase {
 public:
 	typedef typename TBase::ResultType Hit;
+	typedef JPH::Array<Hit, JPH::STLLocalAllocator<Hit, TDefaultCapacity + 1>> HitArray;
 
 private:
-	JPH::Array<Hit> hits;
+	HitArray hits;
 	int max_hits = 0;
 
 public:
 	explicit JoltQueryCollectorClosestMulti(int p_max_hits = TDefaultCapacity) :
-			max_hits(p_max_hits) {}
+			max_hits(p_max_hits) {
+		hits.reserve(TDefaultCapacity + 1);
+	}
 
 	bool had_hit() const {
 		return hits.size() > 0;
@@ -220,7 +230,7 @@ public:
 	}
 
 	virtual void AddHit(const Hit &p_hit) override {
-		typename JPH::Array<Hit>::const_iterator E = hits.cbegin();
+		typename HitArray::const_iterator E = hits.cbegin();
 		for (; E != hits.cend(); ++E) {
 			if (p_hit.GetEarlyOutFraction() < E->GetEarlyOutFraction()) {
 				break;
