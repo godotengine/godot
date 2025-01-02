@@ -76,7 +76,7 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 	aabb_translated.Translate(motion);
 	aabb.Encapsulate(aabb_translated);
 
-	JoltQueryCollectorAnyMulti<JPH::CollideShapeBodyCollector, 2048> aabb_collector;
+	JoltQueryCollectorAnyMulti<JPH::CollideShapeBodyCollector, 1024> aabb_collector;
 	space->get_broad_phase_query().CollideAABox(aabb, aabb_collector, p_broad_phase_layer_filter, p_object_layer_filter);
 
 	if (!aabb_collector.had_hit()) {
