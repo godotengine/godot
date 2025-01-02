@@ -556,7 +556,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			flags |= FOS_FORCESHOWHIDDEN;
 		}
 		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
-		pfd->SetTitle((LPCWSTR)fd->title.utf16().ptr());
+		pfd->SetTitle((LPCWSTR)fd->title.utf16().get_data());
 
 		String dir = ProjectSettings::get_singleton()->globalize_path(fd->current_directory);
 		if (dir == ".") {
@@ -583,7 +583,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			pfd->SetFolder(shellitem);
 		}
 
-		pfd->SetFileName((LPCWSTR)fd->filename.utf16().ptr());
+		pfd->SetFileName((LPCWSTR)fd->filename.utf16().get_data());
 		pfd->SetFileTypes(filters.size(), filters.ptr());
 		pfd->SetFileTypeIndex(0);
 
@@ -3808,7 +3808,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
 	ndat.hIcon = hicon;
-	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_ADD, &ndat);
@@ -3891,7 +3891,7 @@ void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const 
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_TIP;
-	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
