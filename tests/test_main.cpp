@@ -38,6 +38,7 @@
 #endif // TOOLS_ENABLED
 
 #include "tests/core/config/test_project_settings.h"
+#include "tests/core/input/test_input.h"
 #include "tests/core/input/test_input_event.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_input_event_mouse.h"
@@ -144,7 +145,6 @@
 #include "tests/servers/rendering/test_shader_preprocessor.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
-
 #ifndef ADVANCED_GUI_DISABLED
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_color_picker.h"

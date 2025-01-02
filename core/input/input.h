@@ -141,6 +141,7 @@ private:
 	bool use_accumulated_input = true;
 
 	int mouse_from_touch_index = -1;
+	void remove_modifiers(Ref<InputEventKey> k);
 
 	struct VibrationInfo {
 		float weak_magnitude;
