@@ -72,8 +72,6 @@ abstract class BaseGodotEditor : GodotActivity() {
 		private const val WAIT_FOR_DEBUGGER = false
 
 		@JvmStatic
-		protected val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
-		@JvmStatic
 		protected val EXTRA_PIP_AVAILABLE = "pip_available"
 		@JvmStatic
 		protected val EXTRA_LAUNCH_IN_PIP = "launch_in_pip_requested"
@@ -130,7 +128,6 @@ abstract class BaseGodotEditor : GodotActivity() {
 	}
 
 	private val editorMessageDispatcher = EditorMessageDispatcher(this)
-	private val commandLineParams = ArrayList<String>()
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
@@ -183,10 +180,6 @@ abstract class BaseGodotEditor : GodotActivity() {
 		// requested on demand based on use cases.
 		PermissionsUtil.requestManifestPermissions(this, getExcludedPermissions())
 
-		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
-		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
-		updateCommandLineParams(params?.asList() ?: emptyList())
-
 		editorMessageDispatcher.parseStartIntent(packageManager, intent)
 
 		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
@@ -219,20 +212,16 @@ abstract class BaseGodotEditor : GodotActivity() {
 	}
 
 	@CallSuper
-	protected open fun updateCommandLineParams(args: List<String>) {
-		// Update the list of command line params with the new args
-		commandLineParams.clear()
-		if (args.isNotEmpty()) {
-			commandLineParams.addAll(args)
+	protected override fun updateCommandLineParams(args: Array<String>) {
+		val args = if (BuildConfig.BUILD_TYPE == "dev") {
+			args + "--benchmark"
+		} else {
+			args
 		}
-		if (BuildConfig.BUILD_TYPE == "dev") {
-			commandLineParams.add("--benchmark")
-		}
+		super.updateCommandLineParams(args);
 	}
 
-	final override fun getCommandLine() = commandLineParams
-
-	protected fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
+	protected open fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
 		var hasEditor = false
 		var xrMode = XR_MODE_DEFAULT
 
@@ -335,14 +324,7 @@ abstract class BaseGodotEditor : GodotActivity() {
 		val newInstance = getNewGodotInstanceIntent(editorWindowInfo, args)
 		if (editorWindowInfo.windowClassName == javaClass.name) {
 			Log.d(TAG, "Restarting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
-			val godot = godot
-			if (godot != null) {
-				godot.destroyAndKillProcess {
-					ProcessPhoenix.triggerRebirth(this, activityOptions?.toBundle(), newInstance)
-				}
-			} else {
-				ProcessPhoenix.triggerRebirth(this, activityOptions?.toBundle(), newInstance)
-			}
+			triggerRebirth(activityOptions?.toBundle(), newInstance)
 		} else {
 			Log.d(TAG, "Starting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			newInstance.putExtra(EXTRA_NEW_LAUNCH, true)
