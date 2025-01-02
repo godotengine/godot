@@ -103,6 +103,15 @@ public:
 		return false;
 	}
 
+	bool erase_unordered(const T &p_val) {
+		int64_t idx = find(p_val);
+		if (idx >= 0) {
+			remove_at_unordered(idx);
+			return true;
+		}
+		return false;
+	}
+
 	U erase_multiple_unordered(const T &p_val) {
 		U from = 0;
 		U occurrences = 0;
