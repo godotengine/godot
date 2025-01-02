@@ -14,7 +14,6 @@ namespace HumanAnim
 		HashMap<StringName, Vector3> bone_global_lookat;
 		HashMap<StringName, float> bone_global_roll;
 
-		HashMap<StringName, Node3D*> bones;
 
 		HashMap<StringName, Quaternion> bone_global_rotation;
 		HashMap<StringName, Vector3> root_position;
@@ -49,15 +48,30 @@ namespace HumanAnim
 			real_local_pose.clear();
 			real_global_pose.clear();
 			bone_global_lookat.clear();
-			for (auto& it : bones) {
-				memdelete(it.value);
-			}
-			bones.clear();
 		}
 
 		void set_human_lookat(StringName p_bone, const Vector3& p_lookat) {
-			String name = p_bone.substr(5);
+			StringName name;
+			HumanAnimationBoneNameMapping* mapping = HumanAnimationBoneNameMapping::get_singleton();
+			if (mapping != nullptr) {
+				name = mapping->get_bone_name(p_bone);
+			}
+			else {
+				name = p_bone.substr(5);
+			}
 			bone_global_lookat[name] = p_lookat;
+		}
+
+		void set_human_roll(StringName p_bone, float p_roll) {
+			StringName name;
+			HumanAnimationBoneNameMapping* mapping = HumanAnimationBoneNameMapping::get_singleton();
+			if (mapping != nullptr) {
+				name = mapping->get_bone_name(p_bone);
+			}
+			else {
+				name = p_bone.substr(5);
+			}
+			bone_global_roll[name] = p_roll;
 		}
 		static Basis retarget_root_direction(const Vector3& p_start_direction, const Vector3& p_end_direction) {
 			Basis basis;
@@ -410,11 +424,13 @@ namespace HumanAnim
 			Quaternion rot;
 			HumanSkeleton skeleton_config;
 			Vector<HashMap<StringName, Vector3>> animation_lookat;
+			Vector<HashMap<StringName, float>> animation_roll;
 
 			//  根节点的位置
 			Vector<HashMap<StringName, Vector3>> animation_root_position;
 			Vector<HashMap<StringName, Vector3>> animation_root_lookat;
 			animation_lookat.resize(key_count);
+			animation_roll.resize(key_count);
 			animation_root_position.resize(key_count);
 			animation_root_lookat.resize(key_count);
 			Vector<Animation::Track*> tracks = p_animation->get_tracks();
@@ -517,6 +533,7 @@ namespace HumanAnim
 				build_skeleton_pose(p_skeleton, p_config, skeleton_config);
 				// 存储动画
 				animation_lookat.set(i, skeleton_config.bone_global_lookat);
+				animation_roll.set(i, skeleton_config.bone_global_roll);
 				animation_root_position.set(i, skeleton_config.root_position);
 				animation_root_lookat.set(i, skeleton_config.root_lookat);
 
@@ -531,10 +548,18 @@ namespace HumanAnim
 
 				for (auto& it : keys) {
 					int track_index = out_anim->add_track(Animation::TYPE_POSITION_3D);
+                    int value_track_index = out_anim->add_track(Animation::TYPE_VALUE);
 					Animation::PositionTrack* track = static_cast<Animation::PositionTrack*>(out_anim->get_track(track_index));
 					track->path = String("hm.a.") + it.key;
 					track->interpolation = Animation::INTERPOLATION_LINEAR;
 					track->positions.resize(animation_lookat.size());
+
+
+                    Animation::ValueTrack* value_track = static_cast<Animation::ValueTrack*>(out_anim->get_track(value_track_index));
+                    value_track->path = String("hm.r.") + it.key;
+                    value_track->interpolation = Animation::INTERPOLATION_LINEAR;
+                    value_track->values.resize(animation_lookat.size());
+
 					for (int i = 0; i < animation_lookat.size(); i++) {
 						double time = double(i) / 100.0;
 						Animation::TKey<Vector3> key;
@@ -542,6 +567,12 @@ namespace HumanAnim
 						key.value = animation_lookat[i][it.key];
 						track->positions.set(i, key);
 
+
+
+                        Animation::TKey<Variant> value_key;
+                        value_key.time = time;
+						value_key.value = animation_roll[i][it.key];
+                        value_track->values.set(i, value_key);
 					}
 				}
 
@@ -787,6 +818,7 @@ namespace HumanAnim
 			for (auto& it : parent_pose.child_bones) {
 				BonePose& pose = p_config.virtual_pose[it];
 				Transform3D& trans = p_skeleton_config.real_global_pose[it];
+				
 				trans.basis = Basis(p_skeleton->get_bone_pose_rotation(pose.bone_index));
 				trans.origin = pose.position;
 				trans = parent_trans * trans;
@@ -795,7 +827,7 @@ namespace HumanAnim
 
 			}
 		}
-		static float compute_self_roll(HumanBoneConfig& p_config, Transform3D& parent_pose, BonePose& bone_pose, const Vector3& lookat, const Vector3& curr_forward) {
+		static float compute_self_roll(HumanBoneConfig& p_config, Transform3D& parent_pose, BonePose& bone_pose,const Transform3D& curr_global_pose, const Vector3& lookat, const Vector3& curr_forward) {
 
 			Transform3D rest_trans = parent_pose * bone_pose.local_pose;
 
@@ -809,10 +841,9 @@ namespace HumanAnim
 			}
 			rest_trans.basis.rotate_to_align(rest_forward, curr_forward);
 
-			Vector3 rest_right = rest_trans.basis.xform(bone_pose.right);
+			Vector3 rest_right = rest_trans.xform(bone_pose.right) - rest_trans.origin;
 
-			Basis curr_trans = parent_pose.basis * bone_pose.local_pose.basis;
-			Vector3 curr_right = curr_trans.xform(bone_pose.right);
+			Vector3 curr_right = curr_global_pose.xform(bone_pose.right) - rest_trans.origin;
 
 
 			if (curr_right.dot(rest_right) > 0.999) {
@@ -823,12 +854,20 @@ namespace HumanAnim
 			plane.intersects_ray(curr_right + curr_forward, -curr_forward, &intersect);
 
 
+			plane.intersects_ray(rest_right + curr_forward, -curr_forward, &rest_right);
+
 			if (intersect.x + intersect.y + intersect.z == 0)
 			{
 				return 0;
 			}
+			intersect.normalize();
+			float rd = curr_forward.dot(rest_right);
+			float cd = curr_forward.dot(curr_right);
+			float id = curr_forward.dot(intersect);
 
-			return rest_right.signed_angle_to(intersect.normalized(), curr_forward);
+
+
+			return rest_right.signed_angle_to(intersect, curr_forward);
 		}
 		static void build_skeleton_global_lookat(HumanBoneConfig& p_config, BonePose& bone_pose, Transform3D& parent_pose, HumanSkeleton& p_skeleton_config) {
 
@@ -845,10 +884,8 @@ namespace HumanAnim
 				}
 				p_skeleton_config.bone_global_lookat[it] = real_global_pose.origin + forward.normalized();
 				p_skeleton_config.bone_global_rotation[it] = real_global_pose.basis.get_rotation_quaternion();
-				float roll = compute_self_roll(p_config, parent_pose, child_pose, p_skeleton_config.bone_global_lookat[it], forward);
-				if (ABS(roll) > 0.001) {
-					p_skeleton_config.bone_global_roll[it] = roll;
-				}
+				float roll = compute_self_roll(p_config, parent_pose, child_pose, real_global_pose, p_skeleton_config.bone_global_lookat[it], forward);
+				p_skeleton_config.bone_global_roll[it] = roll;
 				build_skeleton_global_lookat(p_config, child_pose, real_global_pose, p_skeleton_config);
 			}
 
@@ -856,8 +893,10 @@ namespace HumanAnim
 		struct RetargetTemp
 		{
 			Vector3 forward;
+            Vector3 curr_forward;
 			Transform3D  child_trans;
 			Basis local_trans;
+			Basis roll_trans;
 
 		};
 		static void retarget(HumanBoneConfig& p_config, BonePose& pose, Transform3D& parent_trans, HumanSkeleton& p_skeleton_config, RetargetTemp & temp) {
@@ -868,20 +907,28 @@ namespace HumanAnim
 				Transform3D& real_global_pose = p_skeleton_config.real_global_pose[it];
 				real_global_pose = parent_trans * real_global_pose;
 				if (pose.child_bones.size() > 0) {
-					temp.child_trans = p_skeleton_config.real_global_pose[pose.child_bones[0]];
-					temp.child_trans = real_global_pose * temp.child_trans;
+					temp.child_trans = real_global_pose * p_skeleton_config.real_global_pose[pose.child_bones[0]];
 					temp.forward = temp.child_trans.origin - real_global_pose.origin;
 				}
 				else {
 					temp.forward = real_global_pose.origin - parent_trans.origin;
 				}
-				if (p_skeleton_config.bone_global_lookat.has(it)) {
-					float length = (p_skeleton_config.bone_global_lookat[it] - real_global_pose.origin).length();
-					real_global_pose.basis.rotate_to_align(temp.forward, p_skeleton_config.bone_global_lookat[it] - real_global_pose.origin);
+				Vector3* lookat = p_skeleton_config.bone_global_lookat.getptr(it);
+				if (lookat != nullptr) {
+                    temp.curr_forward = (*lookat) - real_global_pose.origin;
+					real_global_pose.basis.rotate_to_align(temp.forward, temp.curr_forward);
+					float roll = p_skeleton_config.bone_global_roll.get(it,0.0);
+					if (roll != 0) {
+						temp.curr_forward.normalize();
+						temp.roll_trans.set_axis_angle(temp.curr_forward, roll);
+						temp.roll_trans.xform(real_global_pose.basis, real_global_pose.basis);
+					}
+					temp.local_trans = parent_trans.basis.inverse() * real_global_pose.basis;
+					p_skeleton_config.real_local_pose[it] = temp.local_trans.get_rotation_quaternion();
 				}
-
-				temp.local_trans = parent_trans.basis.inverse() * real_global_pose.basis;
-				p_skeleton_config.real_local_pose[it] = temp.local_trans.get_rotation_quaternion();
+				else {
+					p_skeleton_config.real_local_pose[it] = pose.rotation;
+				}
 				retarget(p_config, pose, real_global_pose, p_skeleton_config, temp);
 			}
 

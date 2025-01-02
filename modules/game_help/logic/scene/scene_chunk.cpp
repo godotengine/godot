@@ -93,17 +93,13 @@ void SceneChunk::MeshInstance::update_mesh_instance() {
         
     }
     dirty = false;
-    MultiMeshInstance3D* multimesh_instance = nullptr;
-    if (mult_mesh_instances_id.is_valid()) {
-        multimesh_instance = Object::cast_to<MultiMeshInstance3D>(ObjectDB::get_instance(node_id));
-    } 
-    if(multimesh_instance == nullptr) {
-        multimesh_instance = memnew(MultiMeshInstance3D);
+    if(instance.is_null()) {
+        instance = RenderingServer::get_singleton()->instance_create();
+        RenderingServer::get_singleton()->instance_set_base(instance, multimesh->get_rid());
+        set_gi_mode(gi_mode);
+        set_shadow_setting(shadow_setting);
+        RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, false);
     }
-	if (multimesh == nullptr) {
-		multimesh = memnew(MultiMesh);
-		multimesh_instance->set_multimesh(multimesh);
-	}
 
     multimesh->set_instance_count(mesh_transforms.size());
     int i = 0;
@@ -184,10 +180,24 @@ void SceneChunkGroupInstance::set_lod(int p_lod) {
         if(resource.is_null()) {
             return;
         }
-        Transform3D trans = get_global_transform();
-        resource->show(curr_lod,p_lod,trans,this);
+        resource->show(curr_lod,p_lod,global_transform,this);
     }
     
+}
+void SceneChunkGroupInstance::init(Node* p_node) {
+    Node* parent = p_node;
+    SceneChunk* chunk = Object::cast_to<SceneChunk>(parent);
+    if(parent == nullptr){
+        return;
+    }
+    while(chunk == nullptr) {
+        parent = parent->get_parent();
+        if(parent == nullptr){
+            break;
+        }
+        chunk = Object::cast_to<SceneChunk>(parent);
+    }
+    init_chunk(chunk->get_instance_id());
 }
 SceneChunk* SceneChunkGroupInstance::get_chunk() {
     return Object::cast_to<SceneChunk>(ObjectDB::get_instance(chunk_id));

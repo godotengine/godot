@@ -193,17 +193,10 @@ public:
     LocalVector<Pair<Ref<SceneBlock>,int>>  scene_lods;
 };
 
-class SceneChunkGroupInstance : public Node3D {
-    GDCLASS(SceneChunkGroupInstance, Node3D);
+class SceneChunkGroupInstance : public RefCounted {
+    GDCLASS(SceneChunkGroupInstance, RefCounted);
     static void _bind_methods() {}
 public:
-    void _notification(int p_what) {
-        if (p_what == NOTIFICATION_ENTER_TREE) {
-        }
-        else if (p_what == NOTIFICATION_EXIT_TREE) {
-            clear_show_instance_ids();
-        }
-    }
 	struct LodInfo {
 		HashMap<ObjectID, Ref<SceneDataCompoent>> data_compoents;
 	};
@@ -211,17 +204,67 @@ public:
     int _add_collision_instance(const Transform3D& t,SceneDataCompoent::CollisionShapeType type,const Vector3& box_size,float height,float radius);
     int _add_mesh_collision_instance(const String& p_path,const Transform3D& t);
 
+    void set_transform(const Transform3D& p_transform) { global_transform = p_transform; }
+    void set_next_lod(int p_lod) { next_lod = p_lod; }
+    void update_lod() {
+        if(curr_lod != next_lod) {
+            if(next_lod != curr_lod) {
+                set_lod(next_lod);
+            }
+            else {
+                clear_show_instance_ids();
+                curr_lod = next_lod;
+            }
+        }
+    }
     void set_lod(int p_lod) ;
     void clear_show_instance_ids();
     SceneChunk* get_chunk();
+    
+    void init(Node* p_node);
+	void init_chunk(ObjectID p_chunk_id) {
+		chunk_id = p_chunk_id;
+	}
 protected:
-    ObjectID chunk_id;
+
+	ObjectID chunk_id;
     int curr_lod = 0;
+    int next_lod = 0;
+    Transform3D global_transform;
+    AABB local_bound;
     Ref<SceneResource> resource;
     HashMap<int32_t,String> curr_show_meshinstance_ids;
     HashMap<int32_t,String> curr_show_mesh_collision_ids;
     HashSet<int32_t> curr_show_collision_ids;
 };
+
+class SceneChunkGroupInstanceNode : public Node3D {
+    GDCLASS(SceneChunkGroupInstanceNode, Node3D);
+    static void _bind_methods() {}
+
+public:
+
+
+
+    void _notification(int p_what) {
+        if (p_what == NOTIFICATION_ENTER_TREE) {
+            if(instance.is_valid()){
+                instance->clear_show_instance_ids();
+            }
+        }
+        else if (p_what == NOTIFICATION_EXIT_TREE) {
+            
+            if(instance.is_valid()){
+                instance->clear_show_instance_ids();
+            }
+        }
+    }
+    void init() {
+
+    }
+    Ref<SceneChunkGroupInstance> instance;
+};
+
 
 class SceneChunk : public Node3D {
     GDCLASS(SceneChunk, Node3D);
@@ -271,10 +314,41 @@ public:
             mesh_transforms.erase(mesh_id);
             dirty = true;
         }
+        void set_gi_mode(GeometryInstance3D::GIMode p_mode){
+            switch (p_mode) {
+                case GeometryInstance3D::GI_MODE_DISABLED: {
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+                } break;
+                case GeometryInstance3D::GI_MODE_STATIC: {
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+
+                } break;
+                case GeometryInstance3D::GI_MODE_DYNAMIC: {
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+                    RenderingServer::get_singleton()->instance_geometry_set_flag(instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
+                } 
+            }
+        }
+        void set_shadow_setting(RenderingServer::ShadowCastingSetting setting){
+            
+            RenderingServer::get_singleton()->instance_geometry_set_cast_shadows_setting(instance,setting);
+     
+        }
+        void clear() {
+            if(instance.is_valid())
+            {
+                RenderingServer::get_singleton()->free(instance);   
+                instance = RID();             
+            }
+        }
+        GeometryInstance3D::GIMode gi_mode = GeometryInstance3D::GI_MODE_STATIC;
+        RenderingServer::ShadowCastingSetting shadow_setting = RenderingServer::SHADOW_CASTING_SETTING_ON;
         ObjectID mult_mesh_instances_id;
         HashMap<int32_t,MeshInstanceInfo> mesh_transforms;
         HashMap<int32_t,int32_t> mesh_id_maps;
-        ObjectID node_id;
+        RID instance;
         Ref<MultiMesh> multimesh;
         Ref<ResourceLoader::LoadToken> load_token;
         bool dirty = false;
@@ -299,4 +373,23 @@ public:
     HashMap<String,Ref<MeshCollisionInstance>> mesh_collision_instances;  
     int curr_id = 0;
     List<int> unuse_id_list;
+};
+class SceneChunkResource : public Resource {
+    GDCLASS(SceneChunkResource, Resource);
+    static void _bind_methods() {}
+
+
+public:
+protected:
+    AABB aabb;
+    LocalVector<Ref<SceneChunkGroupInstance>> instances;
+    bool is_show = false;
+};
+class SceneChunkManager : public Node3D {
+    GDCLASS(SceneChunkManager, Node3D);
+    static void _bind_methods() {}
+public:
+    SceneChunkManager() {}
+
+    LocalVector<Ref<SceneChunkResource>> chunk;
 };
