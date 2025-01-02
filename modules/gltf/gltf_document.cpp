@@ -4822,12 +4822,12 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			} else if (am == "MASK") {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
-				if (material_dict.has("alphaCutoff")) {
-					material->set_alpha_scissor_threshold(material_dict["alphaCutoff"]);
-				} else {
-					material->set_alpha_scissor_threshold(0.5f);
-				}
 			}
+		}
+		if (material_dict.has("alphaCutoff")) {
+			material->set_alpha_scissor_threshold(material_dict["alphaCutoff"]);
+		} else {
+			material->set_alpha_scissor_threshold(0.5f);
 		}
 
 		if (material_dict.has("extras")) {
