@@ -196,7 +196,7 @@ constexpr bool _contains(const Variant::Type (&p_types)[N], Variant::Type p_type
 	return false;
 }
 
-bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
+bool Variant::can_convert(Type p_type_from, Type p_type_to, bool p_strict) {
 	if (p_type_from == p_type_to) {
 		return true;
 	}
@@ -211,6 +211,12 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	// clang-format off
 	switch (p_type_to) {
 		case BOOL: {
+			if (p_strict) {
+				return _contains({
+					INT,
+					FLOAT,
+				}, p_type_from);
+			}
 			return _contains({
 				INT,
 				FLOAT,
@@ -218,6 +224,12 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			}, p_type_from);
 		}
 		case INT: {
+			if (p_strict) {
+				return _contains({
+					BOOL,
+					FLOAT,
+				}, p_type_from);
+			}
 			return _contains({
 				BOOL,
 				FLOAT,
@@ -225,6 +237,12 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			}, p_type_from);
 		}
 		case FLOAT: {
+			if (p_strict) {
+				return _contains({
+					BOOL,
+					INT,
+				}, p_type_from);
+			}
 			return _contains({
 				BOOL,
 				INT,
@@ -232,216 +250,14 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			}, p_type_from);
 		}
 		case STRING: {
+			if (p_strict) {
+				return _contains({
+					NODE_PATH,
+					STRING_NAME,
+				}, p_type_from);
+			}
 			return !_contains({
 				OBJECT,
-			}, p_type_from);
-		}
-		case VECTOR2: {
-			return _contains({
-				VECTOR2I,
-			}, p_type_from);
-		}
-		case VECTOR2I: {
-			return _contains({
-				VECTOR2,
-			}, p_type_from);
-		}
-		case RECT2: {
-			return _contains({
-				RECT2I,
-			}, p_type_from);
-		}
-		case RECT2I: {
-			return _contains({
-				RECT2,
-			}, p_type_from);
-		}
-		case TRANSFORM2D: {
-			return _contains({
-				TRANSFORM3D,
-			}, p_type_from);
-		}
-		case VECTOR3: {
-			return _contains({
-				VECTOR3I,
-			}, p_type_from);
-		}
-		case VECTOR3I: {
-			return _contains({
-				VECTOR3,
-			}, p_type_from);
-		}
-		case VECTOR4: {
-			return _contains({
-				VECTOR4I,
-			}, p_type_from);
-		}
-		case VECTOR4I: {
-			return _contains({
-				VECTOR4,
-			}, p_type_from);
-		}
-
-		case QUATERNION: {
-			return _contains({
-				BASIS,
-			}, p_type_from);
-		}
-		case BASIS: {
-			return _contains({
-				QUATERNION,
-			}, p_type_from);
-		}
-		case TRANSFORM3D: {
-			return _contains({
-				TRANSFORM2D,
-				QUATERNION,
-				BASIS,
-				PROJECTION,
-			}, p_type_from);
-		}
-		case PROJECTION: {
-			return _contains({
-				TRANSFORM3D,
-			}, p_type_from);
-		}
-
-		case COLOR: {
-			return _contains({
-				STRING,
-				INT,
-			}, p_type_from);
-		}
-
-		case RID: {
-			return _contains({
-				OBJECT,
-			}, p_type_from);
-		}
-		case OBJECT: {
-			return false;
-		}
-		case STRING_NAME: {
-			return _contains({
-				STRING,
-			}, p_type_from);
-		}
-		case NODE_PATH: {
-			return _contains({
-				STRING,
-			}, p_type_from);
-		}
-		case ARRAY: {
-			return _contains({
-				PACKED_BYTE_ARRAY,
-				PACKED_INT32_ARRAY,
-				PACKED_INT64_ARRAY,
-				PACKED_FLOAT32_ARRAY,
-				PACKED_FLOAT64_ARRAY,
-				PACKED_STRING_ARRAY,
-				PACKED_COLOR_ARRAY,
-				PACKED_VECTOR2_ARRAY,
-				PACKED_VECTOR3_ARRAY,
-				PACKED_VECTOR4_ARRAY,
-			}, p_type_from);
-		}
-		// arrays
-		case PACKED_BYTE_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_INT32_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_INT64_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_FLOAT32_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_FLOAT64_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_STRING_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_VECTOR2_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_VECTOR3_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_COLOR_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		case PACKED_VECTOR4_ARRAY: {
-			return _contains({
-				ARRAY,
-			}, p_type_from);
-		}
-		default: {
-			return false;
-		}
-	}
-	// clang-format on
-}
-
-bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type_to) {
-	if (p_type_from == p_type_to) {
-		return true;
-	}
-	if (p_type_to == NIL) { // Anything can convert to NIL.
-		return true;
-	}
-
-	if (p_type_from == NIL) {
-		return (p_type_to == OBJECT);
-	}
-
-	// clang-format off
-	switch (p_type_to) {
-		case BOOL: {
-			return _contains({
-				INT,
-				FLOAT,
-				//STRING,
-			}, p_type_from);
-		}
-		case INT: {
-			return _contains({
-				BOOL,
-				FLOAT,
-				//STRING,
-			}, p_type_from);
-		}
-		case FLOAT: {
-			return _contains({
-				BOOL,
-				INT,
-				//STRING,
-			}, p_type_from);
-		}
-		case STRING: {
-			return _contains({
-				NODE_PATH,
-				STRING_NAME,
 			}, p_type_from);
 		}
 		case VECTOR2: {
