@@ -842,6 +842,7 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
+	virtual void show_emoji_and_symbol_picker() const override;
 
 	virtual int tablet_get_driver_count() const override;
 	virtual String tablet_get_driver_name(int p_driver) const override;

@@ -789,6 +789,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_HELP:
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return true;
 		default: {
 		}
@@ -3132,6 +3133,10 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
 	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
+}
+
+void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
+	[[NSApplication sharedApplication] orderFrontCharacterPalette:nil];
 }
 
 void DisplayServerMacOS::process_events() {

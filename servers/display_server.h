@@ -157,6 +157,7 @@ public:
 		FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE,
 		FEATURE_WINDOW_EMBEDDING,
 		FEATURE_NATIVE_DIALOG_FILE_MIME,
+		FEATURE_EMOJI_AND_SYMBOL_PICKER,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -593,6 +594,7 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
+	virtual void show_emoji_and_symbol_picker() const;
 
 	virtual int tablet_get_driver_count() const { return 1; }
 	virtual String tablet_get_driver_name(int p_driver) const { return "default"; }

@@ -69,6 +69,7 @@ public:
 		MENU_INSERT_ZWNJ,
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
+		MENU_EMOJI_AND_SYMBOL,
 		MENU_MAX
 	};
 
@@ -112,6 +113,7 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
+	bool emoji_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
@@ -288,6 +290,11 @@ public:
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
 	bool is_menu_visible() const;
+
+	void show_emoji_and_symbol_picker();
+
+	void set_emoji_menu_enabled(bool p_enabled);
+	bool is_emoji_menu_enabled() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();

@@ -276,6 +276,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
+		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
+			If [code]false[/code], "Emoji and Symbols" menu is enabled.
+		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
@@ -478,7 +481,10 @@
 		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
 			Inserts soft hyphen (SHY) character.
 		</constant>
-		<constant name="MENU_MAX" value="30" enum="MenuItems">
+		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
+			Opens system emoji and symbol picker.
+		</constant>
+		<constant name="MENU_MAX" value="31" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
