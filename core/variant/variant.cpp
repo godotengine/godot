@@ -1486,147 +1486,35 @@ void Variant::_clear_internal() {
 }
 
 Variant::operator int64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return int64_t(_data._int);
-		case FLOAT:
-			return int64_t(_data._float);
-		case STRING:
-			return int64_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int64_t>();
 }
 
 Variant::operator int32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return int32_t(_data._int);
-		case FLOAT:
-			return int32_t(_data._float);
-		case STRING:
-			return int32_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int32_t>();
 }
 
 Variant::operator int16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return int16_t(_data._int);
-		case FLOAT:
-			return int16_t(_data._float);
-		case STRING:
-			return int16_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int16_t>();
 }
 
 Variant::operator int8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return int8_t(_data._int);
-		case FLOAT:
-			return int8_t(_data._float);
-		case STRING:
-			return int8_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int8_t>();
 }
 
 Variant::operator uint64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return uint64_t(_data._int);
-		case FLOAT:
-			return uint64_t(_data._float);
-		case STRING:
-			return uint64_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint64_t>();
 }
 
 Variant::operator uint32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return uint32_t(_data._int);
-		case FLOAT:
-			return uint32_t(_data._float);
-		case STRING:
-			return uint32_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint32_t>();
 }
 
 Variant::operator uint16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return uint16_t(_data._int);
-		case FLOAT:
-			return uint16_t(_data._float);
-		case STRING:
-			return uint16_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint16_t>();
 }
 
 Variant::operator uint8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return uint8_t(_data._int);
-		case FLOAT:
-			return uint8_t(_data._float);
-		case STRING:
-			return uint8_t(operator String().to_int());
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint8_t>();
 }
 
 Variant::operator ObjectID() const {
@@ -1644,39 +1532,11 @@ Variant::operator char32_t() const {
 }
 
 Variant::operator float() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (float)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<float>();
 }
 
 Variant::operator double() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (double)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<double>();
 }
 
 Variant::operator StringName() const {
