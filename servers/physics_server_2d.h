@@ -34,6 +34,8 @@
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 
+constexpr int MAX_CONTACTS_REPORTED_2D_MAX = 4096;
+
 class PhysicsDirectSpaceState2D;
 template <typename T>
 class TypedArray;
