@@ -640,6 +640,10 @@ void GPUParticles3D::convert_from_particles(Node *p_particles) {
 	proc_mat->set_emission_shape(ParticleProcessMaterial::EmissionShape(cpu_particles->get_emission_shape()));
 	proc_mat->set_emission_sphere_radius(cpu_particles->get_emission_sphere_radius());
 	proc_mat->set_emission_box_extents(cpu_particles->get_emission_box_extents());
+	proc_mat->set_emission_ring_height(cpu_particles->get_emission_ring_height());
+	proc_mat->set_emission_ring_radius(cpu_particles->get_emission_ring_radius());
+	proc_mat->set_emission_ring_inner_radius(cpu_particles->get_emission_ring_inner_radius());
+	proc_mat->set_emission_ring_cone_angle(cpu_particles->get_emission_ring_cone_angle());
 
 	if (cpu_particles->get_split_scale()) {
 		Ref<CurveXYZTexture> scale3D = memnew(CurveXYZTexture);
