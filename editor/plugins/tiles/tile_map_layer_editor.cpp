@@ -3345,7 +3345,9 @@ void TileMapLayerEditorTerrainsPlugin::_update_terrains_tree() {
 	terrains_tree->create_item();
 
 	const TileMapLayer *edited_layer = _get_edited_layer();
-	ERR_FAIL_NULL(edited_layer);
+	if (!edited_layer) {
+		return;
+	}
 
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
 	if (tile_set.is_null()) {
