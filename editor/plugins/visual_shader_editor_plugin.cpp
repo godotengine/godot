@@ -315,8 +315,8 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 			Vector3 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3));
 		} break;
-		case Variant::QUATERNION: {
-			Quaternion v = p_value;
+		case Variant::VECTOR4: {
+			Vector4 v = p_value;
 			button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3) + "," + String::num(v.w, 3));
 		} break;
 		default: {
@@ -3295,7 +3295,6 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 			popup_pref_size.width = 320;
 			break;
 		case Variant::VECTOR4:
-		case Variant::QUATERNION:
 		case Variant::PLANE:
 		case Variant::TRANSFORM2D:
 		case Variant::TRANSFORM3D:
@@ -7965,7 +7964,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 		} else if (Object::cast_to<EditorPropertyTransform3D>(prop) || Object::cast_to<EditorPropertyVector3>(prop)) {
 			prop->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
-		} else if (Object::cast_to<EditorPropertyQuaternion>(prop)) {
+		} else if (Object::cast_to<EditorPropertyVector4>(prop)) {
 			prop->set_custom_minimum_size(Size2(320 * EDSCALE, 0));
 		} else if (Object::cast_to<EditorPropertyFloat>(prop)) {
 			prop->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
