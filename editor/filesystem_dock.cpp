@@ -367,7 +367,7 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 	return uncollapsed_paths;
 }
 
-void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites, bool p_unfold_path) {
+void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_scroll_to_selected) {
 	// Recreate the tree.
 	tree->clear();
 	tree_update_id++;
@@ -436,10 +436,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		ti->set_tooltip_text(0, favorite);
 		ti->set_selectable(0, true);
 		ti->set_metadata(0, favorite);
-		if (p_select_in_favorites && favorite == current_path) {
-			ti->select(0);
-			ti->set_as_cursor(0);
-		}
+
 		if (!favorite.ends_with("/")) {
 			Array udata;
 			udata.push_back(tree_update_id);
@@ -454,12 +451,15 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	// Create the remaining of the tree.
-	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites, p_unfold_path);
+	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, false);
 	if (!searched_tokens.is_empty()) {
 		_update_filtered_items();
 	}
 
-	tree->ensure_cursor_is_visible();
+	if (p_scroll_to_selected) {
+		tree->ensure_cursor_is_visible();
+	}
+
 	updating_tree = false;
 }
 
@@ -1375,7 +1375,6 @@ void FileSystemDock::_update_history() {
 	if (tree->is_visible()) {
 		_update_tree(get_uncollapsed_paths());
 		tree->grab_focus();
-		tree->ensure_cursor_is_visible();
 	}
 
 	if (file_list_vb->is_visible()) {
@@ -2717,7 +2716,7 @@ void FileSystemDock::fix_dependencies(const String &p_for_file) {
 
 void FileSystemDock::update_all() {
 	if (tree->is_visible()) {
-		_update_tree(get_uncollapsed_paths());
+		_update_tree(get_uncollapsed_paths(), false, false);
 	}
 
 	if (file_list_vb->is_visible()) {
