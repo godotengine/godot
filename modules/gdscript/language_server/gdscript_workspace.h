@@ -30,19 +30,13 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
 #include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
 
 #include "core/variant/variant.h"
-#include "editor/editor_file_system.h"
 
 class GDScriptWorkspace : public RefCounted {
 	GDCLASS(GDScriptWorkspace, RefCounted);
-
-private:
-	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
-	Node *_get_owner_scene_node(String p_path);
 
 protected:
 	static void _bind_methods();

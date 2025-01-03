@@ -31,11 +31,16 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/memory.h"
+#include "core/string/print_string.h"
+#include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/packed_scene.h"
 
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
@@ -134,6 +139,9 @@ Error GDScriptLanguageProtocol::on_client_connected() {
 
 void GDScriptLanguageProtocol::on_client_disconnected(const int &p_client_id) {
 	clients.erase(p_client_id);
+	if (clients.size() == 0) {
+		scene_cache.clear();
+	}
 	EditorNode::get_log()->add_message("[LSP] Disconnected", EditorLog::MSG_TYPE_EDITOR);
 }
 
@@ -234,6 +242,8 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 		on_client_connected();
 	}
 
+	scene_cache._check_thread_for_cache_update();
+
 	HashMap<int, Ref<LSPeer>>::Iterator E = clients.begin();
 	while (E != clients.end()) {
 		Ref<LSPeer> peer = E->value;
@@ -279,7 +289,7 @@ void GDScriptLanguageProtocol::stop() {
 		Ref<LSPeer> peer = clients.get(E.key);
 		peer->connection->disconnect_from_host();
 	}
-
+	scene_cache.clear();
 	server->stop();
 }
 
@@ -381,3 +391,204 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 #undef SET_DOCUMENT_METHOD
 #undef SET_COMPLETION_METHOD
 #undef SET_WORKSPACE_METHOD
+
+//-------------------
+
+LocalVector<String> SceneCache::_get_owners(EditorFileSystemDirectory *p_dir, const String &p_path) {
+	LocalVector<String> owners;
+	if (!p_dir) {
+		return owners;
+	}
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		for (const String &owner : _get_owners(p_dir->get_subdir(i), p_path)) {
+			owners.push_back(owner);
+		}
+	}
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		for (const String &dependency : p_dir->get_file_deps(i)) {
+			if (dependency == p_path) {
+				owners.push_back(p_dir->get_file_path(i));
+				break;
+			}
+		}
+	}
+	return owners;
+}
+
+/**
+ * Does only one threaded request to the ResourceLoader at a time.
+ * Because loading the same subresources in parallel can bring up errors in the editor.
+ * */
+void SceneCache::_request_owner_scene_load_from_queue() {
+	if (is_loading || resource_request_queue.size() == 0) {
+		return;
+	}
+
+	String path_to_check = resource_request_queue[0];
+	if (cache.has(path_to_check)) {
+		resource_request_queue.remove_at(0);
+		return;
+	}
+
+	if (!owners_path_cache.has(path_to_check)) {
+		owners_path_cache[path_to_check] = _get_owners(EditorFileSystem::get_singleton()->get_filesystem(), path_to_check);
+		DEBUG_LSP("Owners added for", path_to_check);
+#ifdef DEV_ENABLED
+		for (const String &owner : owners_path_cache[path_to_check]) {
+			DEBUG_LSP("Owner added:", owner);
+		}
+#endif
+	}
+
+	Error r_error = Error::FAILED;
+	while (r_error != Error::OK && owners_path_cache[path_to_check].size() > 0) {
+		String owner_path = owners_path_cache[path_to_check][0];
+		r_error = ResourceLoader::load_threaded_request(owner_path);
+		if (r_error != Error::OK) {
+			owners_path_cache[path_to_check].remove_at(0);
+		}
+	}
+
+	if (owners_path_cache[path_to_check].size() > 0) {
+		is_loading = true;
+		DEBUG_LSP("Load started for:", path_to_check, owners_path_cache[path_to_check][0]);
+	} else {
+		cache[path_to_check] = nullptr;
+		owners_path_cache.erase(path_to_check);
+		DEBUG_LSP("No Scene to load for:", path_to_check);
+		DEBUG_LSP("resource_request_queue length:", resource_request_queue.size());
+		_request_owner_scene_load_from_queue();
+	}
+}
+
+void SceneCache::_add_owner_scene_request_queue(String p_path) {
+	if (!cache.has(p_path) && !resource_request_queue.has(p_path)) {
+		resource_request_queue.push_back(p_path);
+		DEBUG_LSP("Load request added for:", p_path);
+		DEBUG_LSP("resource_request_queue length:", resource_request_queue.size());
+		_request_owner_scene_load_from_queue();
+	}
+}
+
+void SceneCache::_check_thread_for_cache_update() {
+	if (!is_loading || resource_request_queue.size() == 0) {
+		return;
+	}
+
+	String check_path = resource_request_queue[0];
+	String owner_path = owners_path_cache[check_path][0];
+
+	ResourceLoader::ThreadLoadStatus current_load_status = ResourceLoader::load_threaded_get_status(owner_path);
+	is_loading = current_load_status == ResourceLoader::ThreadLoadStatus::THREAD_LOAD_IN_PROGRESS;
+	if (is_loading) {
+		return;
+	}
+
+	if (current_load_status == ResourceLoader::ThreadLoadStatus::THREAD_LOAD_LOADED) {
+		_cache_current_requested_resource();
+	} else {
+		owners_path_cache[check_path].remove_at(0);
+		if (owners_path_cache[check_path].size() == 0) {
+			cache[check_path] = nullptr;
+			owners_path_cache.erase(check_path);
+			resource_request_queue.remove_at(0);
+		}
+		DEBUG_LSP("Load failure for:", owner_path);
+		DEBUG_LSP("owners_path_cache_size for path:", (owners_path_cache.has(check_path) ? itos(owners_path_cache.size()) : "NONE"));
+	}
+	_request_owner_scene_load_from_queue();
+}
+
+void SceneCache::_cache_current_requested_resource() {
+	if (resource_request_queue.size() == 0) {
+		return;
+	}
+	String check_path = resource_request_queue[0];
+	String owner_path = owners_path_cache[check_path][0];
+	DEBUG_LSP("Cache resource for:", owner_path);
+	Ref<PackedScene> owner_res = ResourceLoader::load_threaded_get(owner_path);
+
+	if (owner_res.is_valid()) {
+		cache[check_path] = owner_res->instantiate();
+	}
+
+	owners_path_cache[check_path].remove_at(0);
+	if (not cache.has(check_path) && owners_path_cache[check_path].size() == 0) {
+		cache[check_path] = nullptr;
+	}
+
+	if (cache.has(check_path)) {
+		owners_path_cache.erase(check_path);
+		resource_request_queue.remove_at(0);
+		DEBUG_LSP("Cache written for:", check_path);
+		DEBUG_LSP("resource_request_queue length:", resource_request_queue.size());
+	}
+	is_loading = false;
+}
+
+bool SceneCache::has(const String &p_path) {
+	return cache.has(p_path);
+}
+
+Node *SceneCache::get(const String &p_path) {
+	if (not cache.has(p_path)) {
+		DEBUG_LSP("Non loaded cache requested for:", p_path);
+		if (resource_request_queue[0] != p_path) {
+			resource_request_queue.insert(0, p_path);
+			_request_owner_scene_load_from_queue();
+		}
+		while (not cache.has(p_path)) {
+			_cache_current_requested_resource();
+			_request_owner_scene_load_from_queue();
+		}
+	}
+	return cache[p_path];
+}
+
+Node *SceneCache::get_for_uri(const String &p_uri) {
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
+	return get(path);
+}
+
+void SceneCache::queue_set(const String &p_path) {
+	_check_thread_for_cache_update();
+	_add_owner_scene_request_queue(p_path);
+}
+
+void SceneCache::queue_set_for_uri(const String &p_uri) {
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
+	queue_set(path);
+}
+
+void SceneCache::erase(const String &p_path) {
+	if (is_loading && resource_request_queue.has(p_path) && resource_request_queue[0] == p_path) {
+		_cache_current_requested_resource();
+	}
+	resource_request_queue.erase(p_path);
+	owners_path_cache.erase(p_path);
+	if (!cache.has(p_path)) {
+		return;
+	}
+	memdelete_notnull(cache[p_path]);
+	cache.erase(p_path);
+	DEBUG_LSP("Cache cleared for path:", p_path);
+}
+
+void SceneCache::erase_for_uri(const String &p_uri) {
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
+	erase(path);
+}
+
+void SceneCache::clear() {
+	_cache_current_requested_resource();
+	resource_request_queue.clear();
+	for (const KeyValue<String, Node *> &E : cache) {
+		memdelete_notnull(E.value)
+	}
+	cache.clear();
+	owners_path_cache.clear();
+	is_loading = false;
+	DEBUG_LSP("Cache cleared");
+}
