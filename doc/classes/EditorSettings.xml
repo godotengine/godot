@@ -435,6 +435,9 @@
 		<member name="editors/3d_gizmos/gizmo_colors/fog_volume" type="Color" setter="" getter="">
 			The 3D editor gizmo color for [FogVolume] nodes.
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/gridmap_grid" type="Color" setter="" getter="">
+			The 3D editor gizmo color for the [GridMap] grid.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/instantiated" type="Color" setter="" getter="">
 			The color override to use for 3D editor gizmos if the [Node3D] in question is part of an instantiated scene file (from the perspective of the current scene).
 		</member>
