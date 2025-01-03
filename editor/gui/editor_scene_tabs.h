@@ -70,7 +70,6 @@ class EditorSceneTabs : public MarginContainer {
 	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
 	void _update_context_menu();
-	void _disable_menu_option_if(int p_option, bool p_condition);
 	void _custom_menu_option(int p_option);
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
