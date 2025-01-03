@@ -35,11 +35,41 @@
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
+#include "editor/editor_file_system.h"
 
 #include "modules/jsonrpc/jsonrpc.h"
 
 #define LSP_MAX_BUFFER_SIZE 4194304
 #define LSP_MAX_CLIENTS 8
+
+/**
+ * Used to load and cache scenes for autocompletion.
+ * */
+class SceneCache {
+private:
+	friend class GDScriptLanguageProtocol;
+
+	HashMap<String, Node *> cache;
+	bool is_loading = false;
+	HashMap<String, LocalVector<String>> owners_path_cache; // Shortterm cache to keep track of owners to be loaded and currently loading in the ResourceLoader
+	LocalVector<String> resource_request_queue;
+
+	LocalVector<String> _get_owners(EditorFileSystemDirectory *p_dir, const String &p_path);
+	void _request_owner_scene_load_from_queue();
+	void _add_owner_scene_request_queue(String p_path);
+	void _check_thread_for_cache_update();
+	void _cache_current_requested_resource();
+
+public:
+	bool has(const String &p_path);
+	Node *get(const String &p_path);
+	Node *get_for_uri(const String &p_uri);
+	void queue_set(const String &p_path);
+	void queue_set_for_uri(const String &p_uri);
+	void erase(const String &p_path);
+	void erase_for_uri(const String &p_uri);
+	void clear();
+};
 
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
@@ -68,6 +98,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
+	SceneCache scene_cache;
 	Ref<TCPServer> server;
 	int latest_client_id = 0;
 	int next_client_id = 0;
@@ -95,6 +126,8 @@ public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
 	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
 	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ SceneCache *get_scene_cache() { return &scene_cache; }
+
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll(int p_limit_usec);
