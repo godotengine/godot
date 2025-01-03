@@ -27,8 +27,10 @@ def get_opts():
 def get_flags():
 
 	return [
-	('builtin_zlib', 'no'),
-	('theora','no'), #use builtin openssl
+	('builtin_zlib', 'yes'),
+	('openssl', 'builtin'),
+	("freetype", "builtin"),
+	('theora','no'),
 	]
 			
 
@@ -68,8 +70,22 @@ def configure(env):
 
 		env.Append(CCFLAGS=['-g2', '-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
+
+	if (env["openssl"]=="yes"):
+		env.ParseConfig('pkg-config openssl --cflags --libs')
+
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		if (env["freetype"]=="builtin"):
+			env.Append(CPPPATH=['#tools/freetype'])
+			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+		else:
+			env.ParseConfig('pkg-config freetype2 --cflags --libs')
+
 	env.Append(CPPFLAGS=['-DSERVER_ENABLED','-DUNIX_ENABLED'])
-	env.Append(LIBS=['pthread','z']) #TODO detect linux/BSD!
+	env.Append(LIBS=['pthread']) #TODO detect linux/BSD!
+	if (env["builtin_zlib"]=="no"):
+		env.Append(LIBS=['z'])
 
 	if (env["CXX"]=="clang++"):
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
