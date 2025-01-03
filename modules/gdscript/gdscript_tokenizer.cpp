@@ -294,7 +294,11 @@ void GDScriptTokenizerText::push_expression_indented_block() {
 
 void GDScriptTokenizerText::pop_expression_indented_block() {
 	ERR_FAIL_COND(indent_stack_stack.is_empty());
-	indent_stack = indent_stack_stack.back()->get();
+
+	if (!_is_at_end()) {
+		indent_stack = indent_stack_stack.back()->get();
+	}
+
 	indent_stack_stack.pop_back();
 }
 
