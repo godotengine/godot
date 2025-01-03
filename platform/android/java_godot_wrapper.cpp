@@ -69,6 +69,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_clipboard = p_env->GetMethodID(godot_class, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(godot_class, "setClipboard", "(Ljava/lang/String;)V");
 	_has_clipboard = p_env->GetMethodID(godot_class, "hasClipboard", "()Z");
+	_show_dialog = p_env->GetMethodID(godot_class, "showDialog", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
 	_show_input_dialog = p_env->GetMethodID(godot_class, "showInputDialog", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	_show_file_picker = p_env->GetMethodID(godot_class, "showFilePicker", "(Ljava/lang/String;Ljava/lang/String;I[Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
@@ -300,6 +301,28 @@ bool GodotJavaWrapper::has_clipboard() {
 		return env->CallBooleanMethod(godot_instance, _has_clipboard);
 	} else {
 		return false;
+	}
+}
+
+Error GodotJavaWrapper::show_dialog(const String &p_title, const String &p_description, const Vector<String> &p_buttons) {
+	if (_show_input_dialog) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
+		jstring j_title = env->NewStringUTF(p_title.utf8().get_data());
+		jstring j_description = env->NewStringUTF(p_description.utf8().get_data());
+		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < p_buttons.size(); ++i) {
+			jstring j_button = env->NewStringUTF(p_buttons[i].utf8().get_data());
+			env->SetObjectArrayElement(j_buttons, i, j_button);
+			env->DeleteLocalRef(j_button);
+		}
+		env->CallVoidMethod(godot_instance, _show_dialog, j_title, j_description, j_buttons);
+		env->DeleteLocalRef(j_title);
+		env->DeleteLocalRef(j_description);
+		env->DeleteLocalRef(j_buttons);
+		return OK;
+	} else {
+		return ERR_UNCONFIGURED;
 	}
 }
 
