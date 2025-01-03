@@ -51,7 +51,7 @@ def configure(env):
 
 	elif (env["target"]=="debug"):
 
-		env.Append(CCFLAGS=['-g3', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+		env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 
 	if (env["freetype"]!="no"):

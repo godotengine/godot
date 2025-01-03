@@ -66,7 +66,7 @@ def configure(env):
 
 	elif (env["target"]=="debug"):
 
-		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+		env.Append(CCFLAGS=['-g2', '-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	env.Append(CPPFLAGS=['-DSERVER_ENABLED','-DUNIX_ENABLED'])
 	env.Append(LIBS=['pthread','z']) #TODO detect linux/BSD!
