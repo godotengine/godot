@@ -31,6 +31,7 @@
 #include "error_macros.h"
 
 #include "core/io/logger.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
@@ -151,6 +152,67 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 
 void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify, bool p_fatal) {
 	_err_print_index_error(p_function, p_file, p_line, p_index, p_size, p_index_str, p_size_str, p_message.utf8().get_data(), p_editor_notify, p_fatal);
+}
+
+void _err_print_callstack(const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+	// Print detailed call stack information from everywhere available. It is recommended to only
+	// use this for debugging, as it has a fairly high overhead.
+	String callstack;
+
+	// Print script stack frames, if available.
+	Vector<ScriptLanguage::StackInfo> si;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
+		if (si.size()) {
+			callstack += "Callstack from " + ScriptServer::get_language(i)->get_name() + ":\n";
+			for (int j = 0; j < si.size(); ++j) {
+				callstack += si[i].file + ':' + itos(si[i].line) + " @ " + si[i].func + '\n';
+			}
+			callstack += '\n';
+		}
+	}
+
+	// Print C++ call stack.
+	Vector<OS::StackInfo> cpp_stack = OS::get_singleton()->get_cpp_stack_info();
+	callstack += "C++ call stack:\n";
+	for (int i = 0; i < cpp_stack.size(); ++i) {
+		String descriptor = OS::get_singleton()->get_debug_descriptor(cpp_stack[i]);
+		callstack += descriptor + " (" + cpp_stack[i].file + ":0x" + String::num_uint64(cpp_stack[i].offset, 16) + " @ " + cpp_stack[i].function + ")\n";
+	}
+
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, p_error + '\n' + callstack, p_editor_notify, p_type);
+}
+
+void _err_print_error_backtrace(const char *p_filter, const String &p_error, bool p_editor_notify, ErrorHandlerType p_type) {
+	// Print script stack frame, if available.
+	Vector<ScriptLanguage::StackInfo> si;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
+		if (si.size()) {
+			_err_print_error(si[0].func.utf8(), si[0].file.utf8(), si[0].line, p_error, p_editor_notify, p_type);
+			return;
+		}
+	}
+
+	// If there is not a script stack frame, use the C++ stack frame.
+	Vector<OS::StackInfo> cpp_stack = OS::get_singleton()->get_cpp_stack_info();
+
+	for (int i = 1; i < cpp_stack.size(); ++i) {
+		if (!cpp_stack[i].function.contains(p_filter)) {
+			String descriptor = OS::get_singleton()->get_debug_descriptor(cpp_stack[i]);
+			if (descriptor.is_empty()) {
+				// If we can't get debug info, just print binary file name and address.
+				_err_print_error(cpp_stack[i].function.utf8(), cpp_stack[i].file.utf8(), cpp_stack[i].offset, p_error, p_editor_notify, p_type);
+			} else {
+				// Expect debug descriptor to replace file and line info.
+				_err_print_error(cpp_stack[i].function.utf8(), cpp_stack[i].file.utf8(), cpp_stack[i].offset, "", descriptor + ": " + p_error, p_editor_notify, p_type);
+			}
+			return;
+		}
+	}
+
+	// If there is no usable stack frame (this should basically never happen), fall back to using the current stack frame.
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, p_error, p_editor_notify, p_type);
 }
 
 void _err_flush_stdout() {

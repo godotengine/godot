@@ -776,6 +776,12 @@ public:
 		p_list._data = nullptr;
 	}
 
+	List(std::initializer_list<T> p_init) {
+		for (const T &i : p_init) {
+			push_back(i);
+		}
+	}
+
 	List() {}
 
 	List(std::initializer_list<T> p_init) {
