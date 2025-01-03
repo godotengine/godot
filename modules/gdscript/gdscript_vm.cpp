@@ -673,7 +673,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define GD_ERR_BREAK(m_cond) \
 	{ \
 		if (unlikely(m_cond)) { \
-			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Breaking..:"); \
+			_err_print_error(__FUNCTION__, __FILE__, __LINE__, "Condition ' " _STR(m_cond) " ' is true. Breaking..:"); \
 			OPCODE_BREAK; \
 		} \
 	}
