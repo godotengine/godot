@@ -142,6 +142,7 @@ manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$", env.android_manifest_c
 manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$", env.android_permission_chunk)
 manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$", env.android_appattributes_chunk)
 pp_baseout.write(manifest)
+pp_baseout.close()
 
 
 lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
