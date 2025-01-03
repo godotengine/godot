@@ -1272,7 +1272,9 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 		return;
 	}
 
-	p_playback->stop();
+	if (!p_playback->is_playing()) {
+		p_playback->stop();
+	}
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
 	if (!playback_node) {
