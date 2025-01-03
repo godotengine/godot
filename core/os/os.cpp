@@ -110,6 +110,33 @@ void OS::print(const char *p_format, ...) {
 	va_end(argp);
 }
 
+void OS::notify_scale_changed() {
+    static int last_scale_update_time = 0;
+    const int debounce_time = 500; 
+
+    int current_time = get_ticks_msec();
+
+    if (current_time - last_scale_update_time > debounce_time) {
+        _apply_scale_change();
+
+        last_scale_update_time = current_time;
+    }
+}
+
+void OS::_apply_scale_change() {
+    float scale_factor = get_scale_factor();
+
+    for (int i = 0; i < windows.size(); i++) {
+        DisplayServer::get_singleton()->window_set_scale(windows[i].id, scale_factor);
+    }
+
+    SceneTree::get_singleton()->notify_scale_change(scale_factor);
+
+    Performance::start_measure("scale_update");
+    Performance::stop_measure("scale_update");
+}
+
+
 void OS::print_rich(const char *p_format, ...) {
 	if (!_stdout_enabled) {
 		return;

@@ -750,12 +750,10 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
     Callable::CallError ce;
     const Variant ret = callp(p_method, argptrs, p_args.size(), ce);
 
-    // Hata durumunu ele al
     if (ce.error != Callable::CallError::CALL_OK) {
         String error_message = Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce);
         ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'callv': %s.", error_message));
-    }
-
+    }aaa
     return ret;
 }
 
@@ -766,7 +764,7 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 	if (p_method == CoreStringName(free_)) {
 //free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
-		if (p_argcount != 0) {
+		if (p_argcount != 0) {	
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.expected = 0;
 			return Variant();

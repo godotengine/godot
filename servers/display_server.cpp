@@ -1200,6 +1200,12 @@ void DisplayServer::register_create_function(const char *p_name, CreateFunction 
 	server_create_functions[server_create_count - 1].get_rendering_drivers_function = p_get_drivers;
 	server_create_count++;
 }
+void DisplayServer::window_set_scale(int window_id, float scale_factor) {
+    if (windows.has(window_id)) {
+        windows[window_id]->set_scale_factor(scale_factor);
+    }
+}
+
 
 int DisplayServer::get_create_function_count() {
 	return server_create_count;
@@ -1223,6 +1229,7 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
+
 
 Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());

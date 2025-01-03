@@ -98,6 +98,15 @@ void ViewportTexture::reset_local_to_scene() {
 		RS::get_singleton()->texture_proxy_update(proxy, proxy_ph);
 	}
 }
+void Viewport::update_world_size() {
+    float scale_factor = OS::get_singleton()->get_scale_factor();
+
+    world_size.x = original_world_size.x * scale_factor;
+    world_size.y = original_world_size.y * scale_factor;
+
+    update_global_canvas_transform(scale_factor);
+}
+
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 	if (path == p_path) {
