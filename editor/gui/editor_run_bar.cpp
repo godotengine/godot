@@ -321,7 +321,7 @@ void EditorRunBar::recovery_mode_show_dialog() {
 }
 
 void EditorRunBar::recovery_mode_reload_project() {
-	EditorNode::get_singleton()->trigger_menu_option(EditorNode::RELOAD_CURRENT_PROJECT, false);
+	EditorNode::get_singleton()->trigger_menu_option(EditorNode::PROJECT_RELOAD_CURRENT_PROJECT, false);
 }
 
 void EditorRunBar::play_main_scene(bool p_from_native) {
