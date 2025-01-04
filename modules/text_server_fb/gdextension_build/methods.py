@@ -66,11 +66,7 @@ def make_icu_data(target, source, env):
             buf = f.read()
 
         g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
-        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
-        for i in range(len(buf)):
-            g.write("\t" + str(buf[i]) + ",\n")
-
-        g.write("};\n")
+        g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = R"~~~~({})~~~~";\n\n'.format(buf))
         g.write("#endif")
 
 

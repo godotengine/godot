@@ -28,10 +28,9 @@ def run(target, source, env):
 
         g.write("static const int _gdextension_interface_data_compressed_size = " + str(len(buf)) + ";\n")
         g.write("static const int _gdextension_interface_data_uncompressed_size = " + str(decomp_size) + ";\n")
-        g.write("static const unsigned char _gdextension_interface_data_compressed[] = {\n")
-        for i in range(len(buf)):
-            g.write("\t" + str(buf[i]) + ",\n")
-        g.write("};\n")
+        g.write(
+            'static const unsigned char _gdextension_interface_data_compressed[] = R"~~~~({})~~~~";\n\n'.format(buf)
+        )
 
         g.write(
             """

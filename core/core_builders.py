@@ -46,10 +46,7 @@ def make_certs_header(target, source, env):
             g.write("#define BUILTIN_CERTS_ENABLED\n")
             g.write("static const int _certs_compressed_size = " + str(len(buf)) + ";\n")
             g.write("static const int _certs_uncompressed_size = " + str(decomp_size) + ";\n")
-            g.write("static const unsigned char _certs_compressed[] = {\n")
-            for i in range(len(buf)):
-                g.write("\t" + str(buf[i]) + ",\n")
-            g.write("};\n")
+            g.write('static const unsigned char _certs_compressed[] = R"~~~~({})~~~~";\n\n'.format(buf))
         g.write("#endif // CERTS_COMPRESSED_GEN_H")
 
 

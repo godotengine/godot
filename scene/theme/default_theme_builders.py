@@ -21,10 +21,6 @@ def make_fonts_header(target, source, env):
             name = os.path.splitext(os.path.basename(file))[0]
 
             g.write("static const int _font_" + name + "_size = " + str(len(buf)) + ";\n")
-            g.write("static const unsigned char _font_" + name + "[] = {\n")
-            for j in range(len(buf)):
-                g.write("\t" + str(buf[j]) + ",\n")
-
-            g.write("};\n")
+            g.write('static const unsigned char _font_{}[] = R"~~~~({})~~~~";\n\n'.format(name, buf))
 
         g.write("#endif")

@@ -38,10 +38,7 @@ def make_doc_header(target, source, env):
         g.write('static const char *_doc_data_hash = "' + str(hash(buf)) + '";\n')
         g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
         g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
-        g.write("static const unsigned char _doc_data_compressed[] = {\n")
-        for i in range(len(buf)):
-            g.write("\t" + str(buf[i]) + ",\n")
-        g.write("};\n")
+        g.write('static const unsigned char _doc_data_compressed[] = R"~~~~({})~~~~";\n\n'.format(buf))
 
         g.write("#endif")
 
@@ -99,11 +96,11 @@ def make_translations_header(target, source, env, category):
             # (at the cost of initial build times).
             buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
 
-            g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))
-            for j in range(len(buf)):
-                g.write("\t" + str(buf[j]) + ",\n")
-
-            g.write("};\n")
+            g.write(
+                'static const unsigned char _{}_translation_{}_compressed[] = R"~~~~({})~~~~";\n\n'.format(
+                    category, name, buf
+                )
+            )
 
             xl_names.append([name, len(buf), str(decomp_size)])
 
