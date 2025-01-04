@@ -79,6 +79,9 @@ void GraphEditArranger::arrange_nodes() {
 
 			for (const Ref<GraphEdit::Connection> &connection : connection_list) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[connection->from_node]);
+				if (!p_from) {
+					continue;
+				}
 				if (connection->to_node == graph_element->get_name() && (p_from->is_selected() || arrange_entire_graph) && connection->to_node != connection->from_node) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());

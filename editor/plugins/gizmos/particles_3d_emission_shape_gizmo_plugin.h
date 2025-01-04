@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_map_iteration_3d.h                                                */
+/*  particles_3d_emission_shape_gizmo_plugin.h                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,87 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_MAP_ITERATION_3D_H
-#define NAV_MAP_ITERATION_3D_H
+#ifndef PARTICLES_3D_EMISSION_SHAPE_GIZMO_PLUGIN_H
+#define PARTICLES_3D_EMISSION_SHAPE_GIZMO_PLUGIN_H
 
-#include "../nav_rid.h"
-#include "../nav_utils.h"
-#include "nav_mesh_queries_3d.h"
+#include "editor/plugins/gizmos/gizmo_3d_helper.h"
+#include "editor/plugins/node_3d_editor_gizmos.h"
 
-#include "core/math/math_defs.h"
-#include "core/os/semaphore.h"
+class Particles3DEmissionShapeGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Particles3DEmissionShapeGizmoPlugin, EditorNode3DGizmoPlugin);
 
-struct NavLinkIteration;
-class NavRegion;
-struct NavRegionIteration;
-struct NavMapIteration;
-
-struct NavMapIterationBuild {
-	Vector3 merge_rasterizer_cell_size;
-	bool use_edge_connections = true;
-	real_t edge_connection_margin;
-	real_t link_connection_radius;
-	gd::PerformanceData performance_data;
-	int polygon_count = 0;
-	int free_edge_count = 0;
-
-	HashMap<gd::EdgeKey, gd::EdgeConnectionPair, gd::EdgeKey> iter_connection_pairs_map;
-	LocalVector<gd::Edge::Connection> iter_free_edges;
-
-	NavMapIteration *map_iteration = nullptr;
-
-	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
-
-	void reset() {
-		performance_data.reset();
-
-		iter_connection_pairs_map.clear();
-		iter_free_edges.clear();
-		polygon_count = 0;
-		free_edge_count = 0;
-
-		navmesh_polygon_count = 0;
-		link_polygon_count = 0;
-	}
-};
-
-struct NavMapIteration {
-	mutable SafeNumeric<uint32_t> users;
-	RWLock rwlock;
-
-	Vector3 map_up;
-	LocalVector<gd::Polygon> link_polygons;
-
-	LocalVector<NavRegionIteration> region_iterations;
-	LocalVector<NavLinkIteration> link_iterations;
-
-	int navmesh_polygon_count = 0;
-	int link_polygon_count = 0;
-
-	// The edge connections that the map builds on top with the edge connection margin.
-	HashMap<uint32_t, LocalVector<gd::Edge::Connection>> external_region_connections;
-
-	HashMap<NavRegion *, uint32_t> region_ptr_to_region_id;
-
-	LocalVector<NavMeshQueries3D::PathQuerySlot> path_query_slots;
-	Mutex path_query_slots_mutex;
-	Semaphore path_query_slots_semaphore;
-};
-
-class NavMapIterationRead {
-	const NavMapIteration &map_iteration;
+	Ref<Gizmo3DHelper> helper;
 
 public:
-	_ALWAYS_INLINE_ NavMapIterationRead(const NavMapIteration &p_iteration) :
-			map_iteration(p_iteration) {
-		map_iteration.rwlock.read_lock();
-		map_iteration.users.increment();
-	}
-	_ALWAYS_INLINE_ ~NavMapIterationRead() {
-		map_iteration.users.decrement();
-		map_iteration.rwlock.read_unlock();
-	}
+	bool has_gizmo(Node3D *p_spatial) override;
+	String get_gizmo_name() const override;
+	int get_priority() const override;
+	bool is_selectable_when_hidden() const override;
+	void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+	void set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) override;
+	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
+
+	Particles3DEmissionShapeGizmoPlugin();
 };
 
-#endif // NAV_MAP_ITERATION_3D_H
+#endif // PARTICLES_3D_EMISSION_SHAPE_GIZMO_PLUGIN_H

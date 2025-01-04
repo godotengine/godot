@@ -228,6 +228,18 @@ void OS_Web::file_access_close_callback(const String &p_file, int p_flags) {
 	}
 }
 
+void OS_Web::dir_access_remove_callback(const String &p_file) {
+	OS_Web *os = OS_Web::get_singleton();
+	bool is_file_persistent = p_file.begins_with("/userfs");
+#ifdef TOOLS_ENABLED
+	// Hack for editor persistence (can we track).
+	is_file_persistent = is_file_persistent || p_file.begins_with("/home/web_user/");
+#endif
+	if (is_file_persistent) {
+		os->idb_needs_sync = true;
+	}
+}
+
 void OS_Web::update_pwa_state_callback() {
 	if (OS_Web::get_singleton()) {
 		OS_Web::get_singleton()->pwa_is_waiting = true;
@@ -292,4 +304,5 @@ OS_Web::OS_Web() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	FileAccessUnix::close_notification_func = file_access_close_callback;
+	DirAccessUnix::remove_notification_func = dir_access_remove_callback;
 }

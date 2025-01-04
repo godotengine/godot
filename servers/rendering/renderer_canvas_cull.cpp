@@ -2754,8 +2754,8 @@ RendererCanvasCull::RendererCanvasCull() {
 
 	disable_scale = false;
 
-	debug_redraw_time = GLOBAL_DEF("debug/canvas_items/debug_redraw_time", 1.0);
-	debug_redraw_color = GLOBAL_DEF("debug/canvas_items/debug_redraw_color", Color(1.0, 0.2, 0.2, 0.5));
+	debug_redraw_time = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/canvas_items/debug_redraw_time", PROPERTY_HINT_RANGE, "0.1,2,0.001,or_greater"), 1.0);
+	debug_redraw_color = GLOBAL_DEF(PropertyInfo(Variant::COLOR, "debug/canvas_items/debug_redraw_color"), Color(1.0, 0.2, 0.2, 0.5));
 }
 
 RendererCanvasCull::~RendererCanvasCull() {

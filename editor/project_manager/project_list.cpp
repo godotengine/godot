@@ -489,8 +489,19 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 
 	const String description = cf->get_value("application", "config/description", "");
 	const PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
-	const String icon = cf->get_value("application", "config/icon", "");
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
+
+	String icon = cf->get_value("application", "config/icon", "");
+	if (icon.begins_with("uid://")) {
+		Error err;
+		Ref<FileAccess> file = FileAccess::open(p_path.path_join(".godot/uid_cache.bin"), FileAccess::READ, &err);
+		if (err == OK) {
+			icon = ResourceUID::get_path_from_cache(file, icon);
+			if (icon.is_empty()) {
+				WARN_PRINT(vformat("Could not load icon from UID for project at path \"%s\". Make sure UID cache exists.", p_path));
+			}
+		}
+	}
 
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
