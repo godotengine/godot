@@ -492,7 +492,6 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
 
-		uint hits = 0;
 		float aa_power = 0.0;
 		for (uint i = 0; i < ray_count; i++) {
 			// Create a random sample within the texel.
@@ -566,8 +565,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					power_accm++;
 				}
 
-				hits += soft_shadow_hits;
-			} else { // No soft shadows.
+			} else { // No soft shadows (size == 0).
 				float sample_penumbra = 0.0;
 				bool sample_did_hit = false;
 				for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
@@ -579,7 +577,6 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 						if (!sample_did_hit) {
 							sample_penumbra = 1.0;
 						}
-						hits++;
 						break;
 					} else if (ret == RAY_FRONT || ret == RAY_BACK) {
 						bool contribute = ret == RAY_FRONT || !sample_did_hit;
@@ -587,8 +584,6 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							sample_penumbra = 1.0;
 							sample_did_hit = true;
 						}
-
-						hits++;
 
 						if (contribute) {
 							sample_penumbra = max(sample_penumbra - hit_albedo.a - EPSILON, 0.0);
@@ -600,13 +595,13 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 						}
 					}
 				}
-				power += sample_penumbra;
+				power = sample_penumbra;
 				power_accm = 1;
 			}
-			aa_power = power / float(power_accm);
+			aa_power += power / float(power_accm);
 		}
-		penumbra = aa_power;
-	} else { // No soft shadows.
+		penumbra = aa_power / ray_count;
+	} else { // No soft shadows and anti-aliasing (disabled via parameter).
 		bool did_hit = false;
 		penumbra = 0.0;
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {

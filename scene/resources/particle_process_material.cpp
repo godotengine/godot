@@ -1572,18 +1572,25 @@ void ParticleProcessMaterial::set_emission_shape(EmissionShape p_shape) {
 	emit_signal("emission_shape_changed");
 	notify_property_list_changed();
 	_queue_shader_change();
+#ifdef TOOLS_ENABLED
+	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_sphere_radius, p_radius);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_box_extents(Vector3 p_extents) {
 	emission_box_extents = p_extents;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_point_texture(const Ref<Texture2D> &p_points) {
@@ -1613,30 +1620,41 @@ void ParticleProcessMaterial::set_emission_point_count(int p_count) {
 void ParticleProcessMaterial::set_emission_ring_axis(Vector3 p_axis) {
 	emission_ring_axis = p_axis;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_ring_height(real_t p_height) {
 	emission_ring_height = p_height;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_ring_radius(real_t p_radius) {
 	emission_ring_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_ring_inner_radius(real_t p_radius) {
 	emission_ring_inner_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_emission_ring_cone_angle(real_t p_angle) {
 	emission_ring_cone_angle = p_angle;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_cone_angle, p_angle);
+#ifdef TOOLS_ENABLED
+	emit_signal("emission_shape_changed");
+#endif
 }
 
 void ParticleProcessMaterial::set_inherit_velocity_ratio(double p_ratio) {
@@ -1695,7 +1713,9 @@ real_t ParticleProcessMaterial::get_emission_ring_cone_angle() const {
 void ParticleProcessMaterial::set_emission_shape_offset(const Vector3 &p_emission_shape_offset) {
 	emission_shape_offset = p_emission_shape_offset;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_shape_offset, p_emission_shape_offset);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 Vector3 ParticleProcessMaterial::get_emission_shape_offset() const {
@@ -1705,7 +1725,9 @@ Vector3 ParticleProcessMaterial::get_emission_shape_offset() const {
 void ParticleProcessMaterial::set_emission_shape_scale(const Vector3 &p_emission_shape_scale) {
 	emission_shape_scale = p_emission_shape_scale;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_shape_scale, p_emission_shape_scale);
+#ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
+#endif
 }
 
 Vector3 ParticleProcessMaterial::get_emission_shape_scale() const {

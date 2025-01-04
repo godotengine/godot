@@ -872,12 +872,12 @@ def show_progress(env):
                     self.max = int(f.readline())
             except OSError:
                 pass
-            if self.max == 0:
-                print("NOTE: Performing initial build, progress percentage unavailable!")
 
             # Progress reporting is not available in non-TTY environments since it
             # messes with the output (for example, when writing to a file).
             self.display = cast(bool, self.max and env["progress"] and IS_TTY)
+            if self.display and not self.max:
+                print_info("Performing initial build, progress percentage unavailable!")
 
         def __call__(self, node, *args, **kw):
             self.count += 1
@@ -893,7 +893,7 @@ def show_progress(env):
     Progress(progressor)
 
     def progress_finish():
-        if len(GetBuildFailures()):
+        if GetBuildFailures() or not progressor.count:
             return
         try:
             with open(NODE_COUNT_FILENAME, "w", encoding="utf-8", newline="\n") as f:

@@ -1377,8 +1377,14 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 		int x;
 		int y;
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
-			x = center.x + (center.x * Math::cos((actual_shape == SHAPE_OKHSL_CIRCLE ? ok_hsl_h : h) * Math_TAU) * s) - (theme_cache.picker_cursor->get_width() / 2);
-			y = center.y + (center.y * Math::sin((actual_shape == SHAPE_OKHSL_CIRCLE ? ok_hsl_h : h) * Math_TAU) * s) - (theme_cache.picker_cursor->get_height() / 2);
+			Vector2 hue_offset;
+			if (actual_shape == SHAPE_OKHSL_CIRCLE) {
+				hue_offset = center * Vector2(Math::cos(ok_hsl_h * Math_TAU), Math::sin(ok_hsl_h * Math_TAU)) * ok_hsl_s;
+			} else {
+				hue_offset = center * Vector2(Math::cos(h * Math_TAU), Math::sin(h * Math_TAU)) * s;
+			}
+			x = center.x + hue_offset.x - (theme_cache.picker_cursor->get_width() / 2);
+			y = center.y + hue_offset.y - (theme_cache.picker_cursor->get_height() / 2);
 		} else {
 			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
 			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;

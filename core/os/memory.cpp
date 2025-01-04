@@ -1131,7 +1131,9 @@ static _FORCE_INLINE_ SmallMemoryManager& get_small_memory_manager()
 // }
 
 
-inline bool is_power_of_2(size_t x) { return x && ((x & (x - 1U)) == 0U); }
+inline bool is_power_of_2(size_t x) {
+	return x && ((x & (x - 1U)) == 0U);
+}
 
 void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 	DEV_ASSERT(is_power_of_2(p_alignment));
