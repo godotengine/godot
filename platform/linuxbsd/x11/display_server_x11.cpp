@@ -5718,7 +5718,7 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 			}
 		}
 
-		if (desired_rect.size.x < 100 || desired_rect.size.y < 100) {
+		if (desired_rect.size.x <= 100 || desired_rect.size.y <= 100) {
 			p_visible = false;
 		}
 
