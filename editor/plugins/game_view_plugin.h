@@ -143,6 +143,7 @@ class GameView : public VBoxContainer {
 	void _embedding_completed();
 	void _embedding_failed();
 	void _embedded_process_updated();
+	void _embedded_process_focused();
 	void _project_settings_changed();
 
 	void _update_ui();

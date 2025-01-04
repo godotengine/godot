@@ -216,7 +216,7 @@ NodePath MeshInstance3D::get_skeleton_path() {
 }
 
 AABB MeshInstance3D::get_aabb() const {
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		return mesh->get_aabb();
 	}
 
@@ -413,7 +413,7 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 	Vector<Color> colors;
 
 	Ref<Mesh> m = get_mesh();
-	if (!m.is_valid()) {
+	if (m.is_null()) {
 		return nullptr;
 	}
 
