@@ -62,7 +62,7 @@ void NavigationMeshEditor::_bake_pressed() {
 
 	ERR_FAIL_NULL(node);
 	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
-	if (!navmesh.is_valid()) {
+	if (navmesh.is_null()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;

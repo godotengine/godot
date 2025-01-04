@@ -275,53 +275,53 @@ private:
 
 	void _clear_internal();
 
+	static constexpr bool needs_deinit[Variant::VARIANT_MAX] = {
+		false, //NIL,
+		false, //BOOL,
+		false, //INT,
+		false, //FLOAT,
+		true, //STRING,
+		false, //VECTOR2,
+		false, //VECTOR2I,
+		false, //RECT2,
+		false, //RECT2I,
+		false, //VECTOR3,
+		false, //VECTOR3I,
+		true, //TRANSFORM2D,
+		false, //VECTOR4,
+		false, //VECTOR4I,
+		false, //PLANE,
+		false, //QUATERNION,
+		true, //AABB,
+		true, //BASIS,
+		true, //TRANSFORM,
+		true, //PROJECTION,
+
+		// misc types
+		false, //COLOR,
+		true, //STRING_NAME,
+		true, //NODE_PATH,
+		false, //RID,
+		true, //OBJECT,
+		true, //CALLABLE,
+		true, //SIGNAL,
+		true, //DICTIONARY,
+		true, //ARRAY,
+
+		// typed arrays
+		true, //PACKED_BYTE_ARRAY,
+		true, //PACKED_INT32_ARRAY,
+		true, //PACKED_INT64_ARRAY,
+		true, //PACKED_FLOAT32_ARRAY,
+		true, //PACKED_FLOAT64_ARRAY,
+		true, //PACKED_STRING_ARRAY,
+		true, //PACKED_VECTOR2_ARRAY,
+		true, //PACKED_VECTOR3_ARRAY,
+		true, //PACKED_COLOR_ARRAY,
+		true, //PACKED_VECTOR4_ARRAY,
+	};
+
 	_FORCE_INLINE_ void clear() {
-		static const bool needs_deinit[Variant::VARIANT_MAX] = {
-			false, //NIL,
-			false, //BOOL,
-			false, //INT,
-			false, //FLOAT,
-			true, //STRING,
-			false, //VECTOR2,
-			false, //VECTOR2I,
-			false, //RECT2,
-			false, //RECT2I,
-			false, //VECTOR3,
-			false, //VECTOR3I,
-			true, //TRANSFORM2D,
-			false, //VECTOR4,
-			false, //VECTOR4I,
-			false, //PLANE,
-			false, //QUATERNION,
-			true, //AABB,
-			true, //BASIS,
-			true, //TRANSFORM,
-			true, //PROJECTION,
-
-			// misc types
-			false, //COLOR,
-			true, //STRING_NAME,
-			true, //NODE_PATH,
-			false, //RID,
-			true, //OBJECT,
-			true, //CALLABLE,
-			true, //SIGNAL,
-			true, //DICTIONARY,
-			true, //ARRAY,
-
-			// typed arrays
-			true, //PACKED_BYTE_ARRAY,
-			true, //PACKED_INT32_ARRAY,
-			true, //PACKED_INT64_ARRAY,
-			true, //PACKED_FLOAT32_ARRAY,
-			true, //PACKED_FLOAT64_ARRAY,
-			true, //PACKED_STRING_ARRAY,
-			true, //PACKED_VECTOR2_ARRAY,
-			true, //PACKED_VECTOR3_ARRAY,
-			true, //PACKED_COLOR_ARRAY,
-			true, //PACKED_VECTOR4_ARRAY,
-		};
-
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
@@ -832,7 +832,9 @@ public:
 	}
 	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		clear();
+		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
+			_clear_internal();
+		}
 	}
 };
 

@@ -127,6 +127,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	RID material_rid;
 	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+		process_material->connect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
@@ -381,7 +382,7 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("Only one Trail mesh is supported. If you want to use more than a single mesh, a Skin is needed (see documentation)."));
 		}
 
-		if ((dp_count || !skin.is_null()) && (missing_trails || no_materials)) {
+		if ((dp_count || skin.is_valid()) && (missing_trails || no_materials)) {
 			warnings.push_back(RTR("Trails enabled, but one or more mesh materials are either missing or not set for trails rendering."));
 		}
 		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
@@ -463,6 +464,14 @@ void GPUParticles3D::_notification(int p_what) {
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			const Vector3 velocity = (get_global_position() - previous_position) / get_process_delta_time();
+
+			if (velocity != previous_velocity) {
+				RS::get_singleton()->particles_set_emitter_velocity(particles, velocity);
+				previous_velocity = velocity;
+			}
+			previous_position = get_global_position();
+
 			if (one_shot) {
 				time += get_process_delta_time();
 				if (time > emission_time) {
@@ -513,6 +522,10 @@ void GPUParticles3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
+
+			Ref<ParticleProcessMaterial> material = get_process_material();
+			ERR_FAIL_COND(material.is_null());
+			material->disconnect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		} break;
 
 		case NOTIFICATION_SUSPENDED:

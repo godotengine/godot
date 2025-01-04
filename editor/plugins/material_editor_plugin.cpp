@@ -128,7 +128,7 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	camera->set_environment(p_env);
 
 	is_unsupported_shader_mode = false;
-	if (!material.is_null()) {
+	if (material.is_valid()) {
 		Shader::Mode mode = p_material->get_shader_mode();
 		switch (mode) {
 			case Shader::MODE_CANVAS_ITEM:
@@ -449,7 +449,7 @@ bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<StandardMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -495,7 +495,7 @@ bool ORMMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) con
 
 Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ORMMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -541,7 +541,7 @@ bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_res
 
 Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ParticleProcessMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -580,7 +580,7 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<CanvasItemMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -619,7 +619,7 @@ bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resou
 
 Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ProceduralSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -658,7 +658,7 @@ bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PanoramaSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -697,7 +697,7 @@ bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PhysicalSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -736,7 +736,7 @@ bool FogMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const
 
 Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<FogMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();

@@ -12,10 +12,6 @@ env:
   TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
   UBSAN_OPTIONS: suppressions=misc/error_suppressions/ubsan.txt
 
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-linux
-  cancel-in-progress: true
-
 jobs:
   build-linux:
     # Stay one LTS before latest to increase portability of Linux artifacts.
@@ -129,7 +125,7 @@ jobs:
         continue-on-error: true
 
       - name: Setup Python and SCons
-        if: '!matrix.legacy-scons'
+        if: "!matrix.legacy-scons"
         uses: ./.github/actions/godot-deps
 
       - name: Setup Python and SCons (legacy versions)
@@ -150,7 +146,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           # Targeting the oldest version we want to support to ensure it still builds.
-          dotnet-version: '8.0.100'
+          dotnet-version: 8.0.100
 
       - name: Compilation
         uses: ./.github/actions/godot-build

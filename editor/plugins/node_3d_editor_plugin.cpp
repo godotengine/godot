@@ -67,6 +67,7 @@
 #include "editor/plugins/gizmos/navigation_link_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/navigation_region_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/occluder_instance_3d_gizmo_plugin.h"
+#include "editor/plugins/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
 #include "editor/plugins/gizmos/physics_bone_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/ray_cast_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/reflection_probe_gizmo_plugin.h"
@@ -823,7 +824,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 		for (int j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
 
-			if ((!seg.is_valid()) || found_gizmos.has(seg)) {
+			if (seg.is_null() || found_gizmos.has(seg)) {
 				continue;
 			}
 
@@ -887,7 +888,7 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 		for (int j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
 
-			if (!seg.is_valid()) {
+			if (seg.is_null()) {
 				continue;
 			}
 
@@ -1004,7 +1005,7 @@ void Node3DEditorViewport::_select_region() {
 			Vector<Ref<Node3DGizmo>> gizmos = single_selected->get_gizmos();
 			for (int j = 0; j < gizmos.size(); j++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[j];
-				if (!seg.is_valid()) {
+				if (seg.is_null()) {
 					continue;
 				}
 
@@ -1104,7 +1105,7 @@ void Node3DEditorViewport::_select_region() {
 		Vector<Ref<Node3DGizmo>> gizmos = sp->get_gizmos();
 		for (int j = 0; j < gizmos.size(); j++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[j];
-			if (!seg.is_valid()) {
+			if (seg.is_null()) {
 				continue;
 			}
 
@@ -1851,7 +1852,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						for (int i = 0; i < gizmos.size(); i++) {
 							Ref<EditorNode3DGizmo> seg = gizmos[i];
 
-							if ((!seg.is_valid())) {
+							if (seg.is_null()) {
 								continue;
 							}
 
@@ -1888,7 +1889,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						for (int i = 0; i < gizmos.size(); i++) {
 							Ref<EditorNode3DGizmo> seg = gizmos[i];
 
-							if ((!seg.is_valid())) {
+							if (seg.is_null()) {
 								continue;
 							}
 
@@ -2054,7 +2055,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 			for (int i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
-				if (!seg.is_valid()) {
+				if (seg.is_null()) {
 					continue;
 				}
 
@@ -2079,7 +2080,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && !_edit.gizmo.is_valid()) {
+		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && _edit.gizmo.is_null()) {
 			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
@@ -4715,7 +4716,7 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 
 			instantiated_scene = mesh_instance;
 		} else {
-			if (!scene.is_valid()) { // invalid scene
+			if (scene.is_null()) { // invalid scene
 				return false;
 			} else {
 				instantiated_scene = scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
@@ -6600,7 +6601,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
 			for (int i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
-				if (!seg.is_valid()) {
+				if (seg.is_null()) {
 					continue;
 				}
 				seg->set_selected(false);
@@ -6624,7 +6625,7 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 			Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
 			for (int i = 0; i < gizmos.size(); i++) {
 				Ref<EditorNode3DGizmo> seg = gizmos[i];
-				if (!seg.is_valid()) {
+				if (seg.is_null()) {
 					continue;
 				}
 				seg->set_selected(true);
@@ -6894,10 +6895,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
-					continue;
-				}
-
 				undo_redo->add_do_method(spatial, "set_meta", "_edit_lock_", true);
 				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_lock_");
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
@@ -6916,10 +6913,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
-					continue;
-				}
-
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
 					continue;
 				}
 
@@ -6944,10 +6937,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
-					continue;
-				}
-
 				undo_redo->add_do_method(spatial, "set_meta", "_edit_group_", true);
 				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_group_");
 				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
@@ -6965,10 +6954,6 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			for (Node *E : selection) {
 				Node3D *spatial = Object::cast_to<Node3D>(E);
 				if (!spatial || !spatial->is_inside_tree()) {
-					continue;
-				}
-
-				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root()) {
 					continue;
 				}
 
@@ -7831,7 +7816,7 @@ void Node3DEditor::_selection_changed() {
 		Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
 		for (int i = 0; i < gizmos.size(); i++) {
 			Ref<EditorNode3DGizmo> seg = gizmos[i];
-			if (!seg.is_valid()) {
+			if (seg.is_null()) {
 				continue;
 			}
 			seg->set_selected(false);
@@ -8574,6 +8559,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VisibleOnScreenNotifier3DGizmoPlugin>(memnew(VisibleOnScreenNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticlesCollision3DGizmoPlugin>(memnew(GPUParticlesCollision3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<Particles3DEmissionShapeGizmoPlugin>(memnew(Particles3DEmissionShapeGizmoPlugin)));
 	add_gizmo_plugin(Ref<CPUParticles3DGizmoPlugin>(memnew(CPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<DecalGizmoPlugin>(memnew(DecalGizmoPlugin)));
