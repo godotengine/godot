@@ -32,6 +32,7 @@
 #define COWDATA_H
 
 #include "core/error/error_macros.h"
+#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
 
@@ -100,7 +101,8 @@ private:
 
 	static constexpr size_t REF_COUNT_OFFSET = 0;
 	static constexpr size_t SIZE_OFFSET = ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize) == 0) ? (REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) : ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) + alignof(USize) - ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize)));
-	static constexpr size_t DATA_OFFSET = ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (SIZE_OFFSET + sizeof(USize)) : ((SIZE_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t)));
+	static constexpr size_t CAPACITY_OFFSET = SIZE_OFFSET + sizeof(USize);
+	static constexpr size_t DATA_OFFSET = ((CAPACITY_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (CAPACITY_OFFSET + sizeof(USize)) : ((CAPACITY_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((CAPACITY_OFFSET + sizeof(USize)) % alignof(max_align_t)));
 
 	mutable T *_ptr = nullptr;
 
@@ -134,8 +136,32 @@ private:
 		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
 	}
 
+	_FORCE_INLINE_ USize get_capacity() const {
+		if (unlikely(!_ptr)) {
+			return 0;
+		}
+
+		return *(USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
+	}
+
+	_FORCE_INLINE_ void set_capacity(USize p_capacity) const {
+		if (unlikely(!_ptr)) {
+			return;
+		}
+
+		*(USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET) = p_capacity;
+	}
+
 	_FORCE_INLINE_ USize _get_alloc_size(USize p_elements) const {
-		return next_po2(p_elements * sizeof(T));
+		USize capacity = get_capacity();
+		if (p_elements > capacity) {
+			capacity = Math::ceil(capacity * 1.5f);
+			if (p_elements > capacity) {
+				capacity = p_elements;
+			}
+			set_capacity(capacity);
+		}
+		return capacity * sizeof(T);
 	}
 
 	_FORCE_INLINE_ bool _get_alloc_size_checked(USize p_elements, USize *out) const {
@@ -309,6 +335,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 	if (unlikely(rc > 1)) {
 		/* in use by more than me */
 		USize current_size = *_get_size();
+		USize capacity = get_capacity();
 
 		uint8_t *mem_new = (uint8_t *)Memory::alloc_static(_get_alloc_size(current_size) + DATA_OFFSET, false);
 		ERR_FAIL_NULL_V(mem_new, 0);
@@ -331,6 +358,7 @@ typename CowData<T>::USize CowData<T>::_copy_on_write() {
 
 		_unref();
 		_ptr = _data_ptr;
+		set_capacity(capacity);
 
 		rc = 1;
 	}
@@ -376,7 +404,7 @@ Error CowData<T>::resize(Size p_size) {
 				*(_size_ptr) = 0; //size, currently none
 
 				_ptr = _data_ptr;
-
+				set_capacity(alloc_size / sizeof(T));
 			} else {
 				const Error error = _realloc(alloc_size);
 				if (error) {
