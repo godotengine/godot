@@ -13,6 +13,14 @@ public:
         // 設置成一秒為120個frame
         return (int64_t)(a_time * 120);
     }
+    enum Type {
+        TYPE_NONE,
+        TYPE_AUDIO,
+        TYPE_SCENE,
+        TYPE_ANIMATION,
+    };
+    String file_path;
+    int type = TYPE_NONE;
     int duration = 0;
     int start_frame = 0;
     int begin = 0;
@@ -160,8 +168,8 @@ public:
 
         Array ids;
         ObjectID id = get_instance_id();
-        ids.push_back(id);
-        d["type"] = "timeline_clip";
+        ids.push_back((uint64_t)id);
+        d["type"] = "timeline_move_clip";
         d["ids"] = ids;
 
         Array ignore;
@@ -369,6 +377,9 @@ public:
 
         update_rect();
     }
+	const Ref<TimeLineClipData>& get_clip_data() {
+		return clip_data;
+	}
 protected:
     UndoRedo* undo_redo = nullptr;
     Ref<Timeline> timeline;

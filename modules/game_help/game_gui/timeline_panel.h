@@ -92,7 +92,7 @@ public:
             };
             duration = TimelineFileManager::get_instance().get_file_info(p_paths[0]).duration;
         }
-        else if(d["type"] == "timeline_clip") {
+        else if(d["type"] == "timeline_move_clip") {
             // 拖动timeline节点
             duration = d["duration"];
         }
@@ -140,9 +140,51 @@ public:
 
     void drop_data(const Point2 &p_point, const Variant &p_data) {
 
-    }
+        int64_t l_start_frame = get_frame_nr(private_position.x);
+        int64_t l_track_id = TimelineButton::get_track_id(private_position.y);
 
+        Dictionary l_data = p_data;
+
+        if(l_data["type"] == "files") {
+            Vector<String> p_paths = l_data["files"];
+            
+            Ref<TimeLineClipData> l_clip_data = Ref<TimeLineClipData>(memnew(TimeLineClipData));
+            l_clip_data->file_path = p_paths[0];
+            l_clip_data->duration = TimelineFileManager::get_instance().get_file_info(p_paths[0]).duration;
+            l_clip_data->type = TimelineFileManager::get_instance().get_file_info(p_paths[0]).type;
+            l_clip_data->start_frame = l_start_frame;
+
+
+            undo_redo->create_action(TTR("Add Clip"));
+            undo_redo->add_do_method(callable_mp(this,&TimelineClipPanel::_add_new_clips).bind(l_clip_data,l_track_id));
+            undo_redo->add_undo_method(callable_mp(this,&TimelineClipPanel::_remove_new_clips).bind(l_clip_data,l_track_id));
+            undo_redo->commit_action();
+        }
+        else if(l_data["type"] == "timeline_move_clip") {
+            TypedArray<int64_t> l_clip_ids = l_data["clip_ids"];
+            if(l_clip_ids.size() == 0) {
+                return;
+            }
+			int64_t l_clip_id = (int64_t)l_clip_ids[0];
+			ObjectID id;
+			id = l_clip_id;
+            TimelineButton* l_clip_button = Object::cast_to<TimelineButton>(ObjectDB::get_instance(id));
+            if(!l_clip_button) {
+                return;
+            }
+            undo_redo->create_action(TTR("Move Clip"));
+            undo_redo->add_do_method(callable_mp(this,&TimelineClipPanel::_move_clip).bind(l_clip_button,private_position));
+            undo_redo->add_undo_method(callable_mp(this,&TimelineClipPanel::_move_clip).bind(l_clip_button,l_clip_button->get_position()));
+            undo_redo->commit_action();
+        }
+
+    }
+    mutable Point2 private_position;
+	mutable Size2 private_size;
     void show_priview(int64_t a_track_id,int64_t a_frame,int64_t a_duration) const{
+        private_position.y = a_track_id * (TRACK_HEIGHT + LINE_HEIGHT);
+        private_position.x = timeline->timeline_scale * a_frame;
+	    private_size.x = timeline->timeline_scale * a_duration;
 
     }
     void hide_priview() const{
@@ -193,8 +235,22 @@ public:
         }
         return -1;
     }
-    void _add_new_clips(Dictionary a_clip_data,int a_track_id) {
+    void _move_clip(TimelineButton* node,const Vector2& a_new_pos) {
+
+        int64_t l_old_track_id = TimelineButton::get_track_id(node->get_position().y);
+        int64_t l_new_track_id = TimelineButton::get_track_id(a_new_pos.y);
+
+        int64_t l_old_frame = get_frame_nr(node->get_position().x);
+        int64_t l_new_frame = get_frame_nr(a_new_pos.x);
         
+        timeline->delete_clip(l_old_track_id,l_old_frame);
+        timeline->_add_clip(node->get_clip_data(),l_new_track_id);
+    }
+    void _add_new_clips(Ref<TimeLineClipData> l_clip_data,int a_track_id) {
+        timeline->_add_clip(l_clip_data,a_track_id);
+    }
+    void _remove_new_clips(Ref<TimeLineClipData> l_clip_data,int a_track_id) {
+        timeline->delete_clip(a_track_id,l_clip_data->start_frame);
     }
 public:
     void reload_clips() {
