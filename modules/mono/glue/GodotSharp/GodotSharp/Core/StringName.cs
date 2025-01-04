@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
-using ZiggyCreatures.Caching.Fusion;
+using Microsoft.Extensions.Caching.Memory;
 
 #nullable enable
 
@@ -20,7 +20,7 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly FusionCache _stringNameCache = new(new FusionCacheOptions());
+        private static readonly MemoryCache _stringNameCache = new(new MemoryCacheOptions());
 
         ~StringName()
         {
@@ -82,14 +82,25 @@ namespace Godot
         /// The resulting <see cref="StringName"/> is temporarily cached for future casts.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator StringName(string from) => _stringNameCache.GetOrSet(from, _ => new StringName(from));
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator StringName?(string? from)
+        {
+            if (from is null)
+            {
+                return null;
+            }
+            return _stringNameCache.GetOrCreate(from, static (ICacheEntry entry) => new StringName((string)entry.Key))!;
+        }
 
         /// <summary>
         /// Converts a <see cref="StringName"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="from">The <see cref="StringName"/> to convert.</param>
         [return: NotNullIfNotNull(nameof(from))]
-        public static implicit operator string?(StringName? from) => from?.ToString();
+        public static implicit operator string?(StringName? from)
+        {
+            return from?.ToString();
+        }
 
         /// <summary>
         /// Converts this <see cref="StringName"/> to a string.

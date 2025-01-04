@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
-using ZiggyCreatures.Caching.Fusion;
+using Microsoft.Extensions.Caching.Memory;
 
 #nullable enable
 
@@ -49,7 +49,7 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly FusionCache _nodePathCache = new(new FusionCacheOptions());
+        private static readonly MemoryCache _nodePathCache = new(new MemoryCacheOptions());
 
         ~NodePath()
         {
@@ -136,14 +136,25 @@ namespace Godot
         /// The resulting <see cref="NodePath"/> is temporarily cached for future casts.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator NodePath(string from) => _nodePathCache.GetOrSet(from, _ => new NodePath(from));
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator NodePath?(string? from)
+        {
+            if (from is null)
+            {
+                return null;
+            }
+            return _nodePathCache.GetOrCreate(from, static (ICacheEntry entry) => new NodePath((string)entry.Key))!;
+        }
 
         /// <summary>
         /// Converts a <see cref="NodePath"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="from">The <see cref="NodePath"/> to convert.</param>
         [return: NotNullIfNotNull(nameof(from))]
-        public static implicit operator string?(NodePath? from) => from?.ToString();
+        public static implicit operator string?(NodePath? from)
+        {
+            return from?.ToString();
+        }
 
         /// <summary>
         /// Converts this <see cref="NodePath"/> to a string.
