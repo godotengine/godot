@@ -136,10 +136,12 @@ env.module_version_string = ""
 env.msvc = False
 env.scons_version = env._get_major_minor_revision(scons_raw_version)
 
+
 def get_current_intermediate_path(self):
     return type(self).current_intermediate_path
 
-def add_subdirectory(self, module, intermediate_folder = None):
+
+def add_subdirectory(self, module, intermediate_folder=None):
     if not self["intermediate_folder"]:
         return SConscript(module)
 
@@ -157,6 +159,7 @@ def add_subdirectory(self, module, intermediate_folder = None):
     self.__class__.current_intermediate_path = previous_intermediate_path
 
     return result
+
 
 env.__class__.current_intermediate_path = ""
 env.__class__.get_current_intermediate_path = get_current_intermediate_path
@@ -334,7 +337,7 @@ opts.Update(env)
 
 if env["intermediate_folder"]:
     intermediate_dir = env["intermediate_folder"]
-    scons_path = str(Dir('.').srcnode().path)
+    scons_path = str(Dir(".").srcnode().path)
     if not os.path.isabs(intermediate_dir):
         intermediate_dir = os.path.join(os.getcwd(), intermediate_dir)
 
