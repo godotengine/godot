@@ -30,12 +30,14 @@
 
 #include "editor_quick_open_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/string/fuzzy_search.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/filesystem_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
@@ -226,6 +228,13 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			grid->add_theme_constant_override("h_separation", 4);
 			grid->hide();
 			scroll_container->add_child(grid);
+
+			file_context_menu = memnew(PopupMenu);
+			file_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
+			file_context_menu->add_item(TTR("Show in File Manager"), FILE_SHOW_IN_FILE_MANAGER);
+			file_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &QuickOpenResultContainer::_menu_option));
+			file_context_menu->hide();
+			scroll_container->add_child(file_context_menu);
 		}
 	}
 
@@ -269,6 +278,18 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		style_button(display_mode_toggle);
 		display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 		bottom_bar->add_child(display_mode_toggle);
+	}
+}
+
+void QuickOpenResultContainer::_menu_option(int p_option) {
+	switch (p_option) {
+		case FILE_SHOW_IN_FILESYSTEM: {
+			FileSystemDock::get_singleton()->navigate_to_path(get_selected());
+		} break;
+		case FILE_SHOW_IN_FILE_MANAGER: {
+			String dir = ProjectSettings::get_singleton()->globalize_path(get_selected());
+			OS::get_singleton()->shell_show_in_file_manager(dir, true);
+		} break;
 	}
 }
 
@@ -572,9 +593,16 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_index) {
 	Ref<InputEventMouseButton> mb = p_ev;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		_select_item(p_index);
-		emit_signal(SNAME("result_clicked"));
+	if (mb.is_valid() && mb->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			_select_item(p_index);
+			emit_signal(SNAME("result_clicked"));
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			_select_item(p_index);
+			file_context_menu->set_position(result_items[p_index]->get_screen_position() + mb->get_position());
+			file_context_menu->reset_size();
+			file_context_menu->popup();
+		}
 	}
 }
 

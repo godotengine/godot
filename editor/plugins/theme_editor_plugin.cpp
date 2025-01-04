@@ -30,7 +30,6 @@
 
 #include "theme_editor_plugin.h"
 
-#include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"

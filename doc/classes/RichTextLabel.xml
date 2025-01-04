@@ -712,6 +712,7 @@
 		<signal name="finished">
 			<description>
 				Triggered when the document is fully loaded.
+				[b]Note:[/b] This can happen before the text is processed for drawing. Scrolling values may not be valid until the document is drawn for the first time after this signal.
 			</description>
 		</signal>
 		<signal name="meta_clicked">

@@ -43,6 +43,15 @@ struct NavBaseIteration {
 	ObjectID owner_object_id;
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
+
+	bool get_enabled() const { return enabled; }
+	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
+	RID get_self() const { return owner_rid; }
+	ObjectID get_owner_id() const { return owner_object_id; }
+	uint32_t get_navigation_layers() const { return navigation_layers; }
+	real_t get_enter_cost() const { return enter_cost; }
+	real_t get_travel_cost() const { return travel_cost; }
+	bool get_use_edge_connections() const { return owner_use_edge_connections; }
 };
 
 #endif // NAV_BASE_ITERATION_3D_H

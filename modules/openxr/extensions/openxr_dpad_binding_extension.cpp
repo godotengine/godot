@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "openxr_dpad_binding_extension.h"
-#include "../action_map/openxr_interaction_profile_metadata.h"
 #include "../openxr_api.h"
 #include "core/math/math_funcs.h"
 
@@ -246,7 +245,7 @@ PackedByteArray OpenXRDpadBindingModifier::get_ip_modification() {
 	ERR_FAIL_COND_V(dpad_bindings->binding == XR_NULL_PATH, PackedByteArray());
 
 	// Get our action set
-	ERR_FAIL_COND_V(!action_set.is_valid(), PackedByteArray());
+	ERR_FAIL_COND_V(action_set.is_null(), PackedByteArray());
 	RID action_set_rid = openxr_api->find_action_set(action_set->get_name());
 	ERR_FAIL_COND_V(!action_set_rid.is_valid(), PackedByteArray());
 	dpad_bindings->actionSet = openxr_api->action_set_get_handle(action_set_rid);
