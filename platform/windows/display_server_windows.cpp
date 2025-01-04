@@ -2877,10 +2877,7 @@ static BOOL CALLBACK _enum_proc_find_window_from_process_id_callback(HWND hWnd, 
 	GetWindowThreadProcessId(hWnd, &process_id);
 	if (ed.process_id == process_id) {
 		if (GetParent(hWnd) != ed.parent_hWnd) {
-			const DWORD style = GetWindowLongPtr(hWnd, GWL_STYLE);
-			if ((style & WS_VISIBLE) != WS_VISIBLE) {
-				return TRUE;
-			}
+			return TRUE;
 		}
 
 		// Found it.
@@ -2936,24 +2933,9 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 		ep->is_visible = (style & WS_VISIBLE) == WS_VISIBLE;
 
 		embedded_processes.insert(p_pid, ep);
-
-		HWND old_parent = GetParent(ep->window_handle);
-		if (old_parent != wd.hWnd) {
-			// It's important that the window does not have the WS_CHILD flag
-			// to prevent the current process from interfering with the embedded process.
-			// I observed lags and issues with mouse capture when WS_CHILD is set.
-			// Additionally, WS_POPUP must be set to ensure that the coordinates of the embedded
-			// window remain screen coordinates and not local coordinates of the parent window.
-			if ((style & WS_CHILD) == WS_CHILD || (style & WS_POPUP) != WS_POPUP) {
-				const DWORD new_style = (style & ~WS_CHILD) | WS_POPUP;
-				SetWindowLong(ep->window_handle, GWL_STYLE, new_style);
-			}
-			// Set the parent to current window.
-			SetParent(ep->window_handle, wd.hWnd);
-		}
 	}
 
-	if (p_rect.size.x < 100 || p_rect.size.y < 100) {
+	if (p_rect.size.x <= 100 || p_rect.size.y <= 100) {
 		p_visible = false;
 	}
 
@@ -2962,7 +2944,7 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	// (e.g., a screen to the left of the main screen).
 	const Rect2i adjusted_rect = Rect2i(p_rect.position + _get_screens_origin(), p_rect.size);
 
-	SetWindowPos(ep->window_handle, HWND_BOTTOM, adjusted_rect.position.x, adjusted_rect.position.y, adjusted_rect.size.x, adjusted_rect.size.y, SWP_NOZORDER | SWP_NOACTIVATE);
+	SetWindowPos(ep->window_handle, nullptr, adjusted_rect.position.x, adjusted_rect.position.y, adjusted_rect.size.x, adjusted_rect.size.y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
 	if (ep->is_visible != p_visible) {
 		if (p_visible) {
