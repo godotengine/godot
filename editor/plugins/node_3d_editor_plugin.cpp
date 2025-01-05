@@ -1298,7 +1298,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	Transform3D gt = spatial_editor->get_gizmo_transform();
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		int col_axis = -1;
 		real_t col_d = 1e20;
 
@@ -1364,7 +1364,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 	}
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 		int col_axis = -1;
 
 		Vector3 hit_position;
@@ -1959,7 +1959,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							break;
 						}
 
-						if (clicked.is_null()) {
+						if (clicked.is_null() || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) {
 							// Default to region select.
 							cursor.region_select = true;
 							cursor.region_begin = b->get_position();
@@ -2004,15 +2004,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						selection_in_progress = false;
 
-						if (clicked.is_valid()) {
+						if (clicked.is_valid() && !movement_threshold_passed) {
 							_select_clicked(false);
-						}
-
-						if (cursor.region_select) {
+						} else if (cursor.region_select) {
 							_select_region();
-							cursor.region_select = false;
 							surface->queue_redraw();
 						}
+
+						movement_threshold_passed = false;
+						cursor.region_select = false;
 					}
 
 					if (!_edit.instant && _edit.mode != TRANSFORM_NONE) {
@@ -2121,7 +2121,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
 			} else {
-				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
 				if ((selection_in_progress || clicked_wants_append) && movement_threshold_passed && clicked.is_valid()) {
 					cursor.region_select = true;
@@ -2135,7 +2135,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
+				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
 					_compute_edit(_edit.original_mouse_pos);
 					clicked = ObjectID();
 					_edit.mode = TRANSFORM_TRANSLATE;
@@ -3358,7 +3358,7 @@ void Node3DEditorViewport::_draw() {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
 	}
 
-	if (cursor.region_select) {
+	if (cursor.region_select && movement_threshold_passed) {
 		const Rect2 selection_rect = Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin);
 
 		surface->draw_rect(
@@ -4125,11 +4125,11 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
@@ -4147,7 +4147,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	xform.orthonormalize();
 	xform.basis.scale(scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
@@ -6847,6 +6847,7 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case MENU_TOOL_SELECT:
+		case MENU_TOOL_TRANSFORM:
 		case MENU_TOOL_MOVE:
 		case MENU_TOOL_ROTATE:
 		case MENU_TOOL_SCALE:
@@ -8257,6 +8258,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 
 void Node3DEditor::_update_theme() {
 	tool_button[TOOL_MODE_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+	tool_button[TOOL_MODE_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("ToolTransform")));
 	tool_button[TOOL_MODE_MOVE]->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
 	tool_button[TOOL_MODE_ROTATE]->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
 	tool_button[TOOL_MODE_SCALE]->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
@@ -9111,11 +9113,21 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
-	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q, true));
+	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::V, true));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
+	tool_button[TOOL_MODE_SELECT]->set_tooltip_text(TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
 	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
 	main_menu_hbox->add_child(memnew(VSeparator));
+
+	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
+	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);
+	tool_button[TOOL_MODE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_MODE_TRANSFORM]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_TRANSFORM));
+	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_transform", TTRC("Transform Mode"), Key::Q, true));
+	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut_context(this);
+	tool_button[TOOL_MODE_TRANSFORM]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
+	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Transform Mode"));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
