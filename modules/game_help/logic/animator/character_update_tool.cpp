@@ -557,7 +557,7 @@ void CharacterAnimationUpdateTool::process_anim(const AnimationMixer::AnimationI
     }
 	if( is_human && human_config.ptr()) {
 		HumanAnim::HumanAnimmation::retarget(*human_config.ptr(), temp_anim_skeleton);
-        //human_skeleton.blend(temp_anim_skeleton, blend);
+        human_skeleton.blend(temp_anim_skeleton, blend);
     }
 }
 
