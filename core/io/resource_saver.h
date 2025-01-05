@@ -41,7 +41,11 @@ class ResourceFormatSaver : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3R(Error, _save, Ref<Resource>, String, uint32_t)
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL3R_COMPAT(_save_compat_100447, Error, _save, Ref<Resource>, String, uint32_t)
+#endif
+
+	GDVIRTUAL4R(Error, _save, Ref<Resource>, String, uint32_t, FileAccess::SaveIntegrityLevel)
 	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)
