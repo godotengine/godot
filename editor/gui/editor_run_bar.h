@@ -39,6 +39,7 @@ class Button;
 class EditorRunNative;
 class PanelContainer;
 class HBoxContainer;
+class AcceptDialog;
 
 class EditorRunBar : public MarginContainer {
 	GDCLASS(EditorRunBar, MarginContainer);
@@ -57,6 +58,11 @@ class EditorRunBar : public MarginContainer {
 	HBoxContainer *outer_hbox = nullptr;
 
 	Button *profiler_autostart_indicator = nullptr;
+
+	PanelContainer *recovery_mode_panel = nullptr;
+	Button *recovery_mode_button = nullptr;
+	Button *recovery_mode_reload_button = nullptr;
+	AcceptDialog *recovery_mode_popup = nullptr;
 
 	Button *play_button = nullptr;
 	Button *pause_button = nullptr;
@@ -94,6 +100,9 @@ protected:
 
 public:
 	static EditorRunBar *get_singleton() { return singleton; }
+
+	void recovery_mode_show_dialog();
+	void recovery_mode_reload_project();
 
 	void play_main_scene(bool p_from_native = false);
 	void play_current_scene(bool p_reload = false);
