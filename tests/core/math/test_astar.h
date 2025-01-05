@@ -32,7 +32,6 @@
 #define TEST_ASTAR_H
 
 #include "core/math/a_star.h"
-
 #include "tests/test_macros.h"
 
 namespace TestAStar {

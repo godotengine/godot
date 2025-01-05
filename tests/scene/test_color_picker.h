@@ -32,7 +32,6 @@
 #define TEST_COLOR_PICKER_H
 
 #include "scene/gui/color_picker.h"
-
 #include "tests/test_macros.h"
 
 namespace TestColorPicker {

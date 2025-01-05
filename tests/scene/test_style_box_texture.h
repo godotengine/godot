@@ -32,7 +32,6 @@
 #define TEST_STYLE_BOX_TEXTURE_H
 
 #include "scene/resources/style_box_texture.h"
-
 #include "tests/test_macros.h"
 
 namespace TestStyleBoxTexture {

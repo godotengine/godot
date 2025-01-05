@@ -32,7 +32,6 @@
 #define TEST_CODE_EDIT_H
 
 #include "scene/gui/code_edit.h"
-
 #include "tests/test_macros.h"
 
 namespace TestCodeEdit {

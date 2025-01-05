@@ -32,7 +32,6 @@
 #define TEST_PRIMITIVES_H
 
 #include "scene/resources/3d/primitive_meshes.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPrimitives {

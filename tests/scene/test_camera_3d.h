@@ -34,7 +34,6 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 // Constants.

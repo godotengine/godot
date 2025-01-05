@@ -32,7 +32,6 @@
 #define TEST_WORKER_THREAD_POOL_H
 
 #include "core/object/worker_thread_pool.h"
-
 #include "tests/test_macros.h"
 
 namespace TestWorkerThreadPool {

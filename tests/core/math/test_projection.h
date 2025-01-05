@@ -36,8 +36,7 @@
 #include "core/math/projection.h"
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestProjection {
 

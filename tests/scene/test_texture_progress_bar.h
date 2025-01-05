@@ -32,7 +32,6 @@
 #define TEST_TEXTURE_PROGRESS_BAR_H
 
 #include "scene/gui/texture_progress_bar.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTextureProgressBar {

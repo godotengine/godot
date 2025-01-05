@@ -32,7 +32,6 @@
 #define TEST_MARSHALLS_H
 
 #include "core/io/marshalls.h"
-
 #include "tests/test_macros.h"
 
 namespace TestMarshalls {

@@ -33,7 +33,6 @@
 
 #include "core/object/class_db.h"
 #include "core/object/object.h"
-
 #include "tests/test_macros.h"
 
 namespace TestCallable {

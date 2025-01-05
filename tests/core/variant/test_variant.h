@@ -33,7 +33,6 @@
 
 #include "core/variant/variant.h"
 #include "core/variant/variant_parser.h"
-
 #include "tests/test_macros.h"
 
 namespace TestVariant {

@@ -31,9 +31,7 @@
 #ifndef TEST_CRYPTO_MBEDTLS_H
 #define TEST_CRYPTO_MBEDTLS_H
 
-#include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
-
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 

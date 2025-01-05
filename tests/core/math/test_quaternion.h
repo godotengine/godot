@@ -35,7 +35,6 @@
 #include "core/math/math_funcs.h"
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
-
 #include "tests/test_macros.h"
 
 namespace TestQuaternion {

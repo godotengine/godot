@@ -32,7 +32,6 @@
 #define TEST_LIST_H
 
 #include "core/templates/list.h"
-
 #include "tests/test_macros.h"
 
 namespace TestList {

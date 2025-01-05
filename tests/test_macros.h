@@ -31,12 +31,11 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
-#include "display_server_mock.h"
-
 #include "core/core_globals.h"
 #include "core/input/input_map.h"
 #include "core/object/message_queue.h"
 #include "core/variant/variant.h"
+#include "tests/display_server_mock.h"
 
 // See documentation for doctest at:
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/readme.md#reference
@@ -451,7 +450,7 @@ public:
 	}
 
 #define MULTICHECK_SPLIT(m_obj, m_func, m_param1, m_param2, m_param3, m_slices, m_expected_size) \
-	do {                                                                                         \
+	if constexpr (true) {                                                                        \
 		Vector<String> string_list;                                                              \
                                                                                                  \
 		string_list = m_obj.m_func(m_param1, m_param2, m_param3);                                \
@@ -477,6 +476,7 @@ public:
 		for (int i = 0; i < string_list.size(); ++i) {                                           \
 			CHECK(string_list[i] == m_slices[i]);                                                \
 		}                                                                                        \
-	} while (false)
+	} else                                                                                       \
+		((void)0)
 
 #endif // TEST_MACROS_H

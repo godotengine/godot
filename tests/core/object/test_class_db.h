@@ -34,7 +34,6 @@
 #include "core/core_bind.h"
 #include "core/core_constants.h"
 #include "core/object/class_db.h"
-
 #include "tests/test_macros.h"
 
 namespace TestClassDB {

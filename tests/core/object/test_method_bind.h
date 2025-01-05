@@ -32,7 +32,6 @@
 #define TEST_METHOD_BIND_H
 
 #include "core/object/class_db.h"
-
 #include "tests/test_macros.h"
 
 namespace TestMethodBind {

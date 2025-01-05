@@ -32,7 +32,6 @@
 #define TEST_SKY_H
 
 #include "scene/resources/sky.h"
-
 #include "tests/test_macros.h"
 
 namespace TestSky {

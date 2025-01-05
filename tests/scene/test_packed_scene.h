@@ -32,7 +32,6 @@
 #define TEST_PACKED_SCENE_H
 
 #include "scene/resources/packed_scene.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPackedScene {

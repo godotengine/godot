@@ -32,7 +32,6 @@
 #define TEST_HASH_MAP_H
 
 #include "core/templates/hash_map.h"
-
 #include "tests/test_macros.h"
 
 namespace TestHashMap {

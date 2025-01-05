@@ -32,7 +32,6 @@
 #define TEST_ANIMATION_H
 
 #include "scene/resources/animation.h"
-
 #include "tests/test_macros.h"
 
 namespace TestAnimation {

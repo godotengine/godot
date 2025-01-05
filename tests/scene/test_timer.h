@@ -32,7 +32,6 @@
 #define TEST_TIMER_H
 
 #include "scene/main/timer.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTimer {

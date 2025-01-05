@@ -32,8 +32,7 @@
 #define TEST_GEOMETRY_2D_H
 
 #include "core/math/geometry_2d.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestGeometry2D {
 

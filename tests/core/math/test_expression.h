@@ -32,7 +32,6 @@
 #define TEST_EXPRESSION_H
 
 #include "core/math/expression.h"
-
 #include "tests/test_macros.h"
 
 namespace TestExpression {

@@ -39,7 +39,6 @@
 #include "scene/main/window.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "servers/physics_server_2d_dummy.h"
-
 #include "tests/test_macros.h"
 
 namespace TestViewport {

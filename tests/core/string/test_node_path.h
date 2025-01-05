@@ -32,7 +32,6 @@
 #define TEST_NODE_PATH_H
 
 #include "core/string/node_path.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNodePath {

@@ -32,7 +32,6 @@
 #define TEST_PATH_3D_H
 
 #include "scene/3d/path_3d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPath3D {

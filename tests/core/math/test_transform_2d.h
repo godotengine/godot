@@ -32,7 +32,6 @@
 #define TEST_TRANSFORM_2D_H
 
 #include "core/math/transform_2d.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTransform2D {

@@ -32,7 +32,6 @@
 #define TEST_LOCAL_VECTOR_H
 
 #include "core/templates/local_vector.h"
-
 #include "tests/test_macros.h"
 
 namespace TestLocalVector {

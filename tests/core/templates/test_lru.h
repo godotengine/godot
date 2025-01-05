@@ -32,7 +32,6 @@
 #define TEST_LRU_H
 
 #include "core/templates/lru.h"
-
 #include "tests/test_macros.h"
 
 namespace TestLRU {

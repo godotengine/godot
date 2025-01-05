@@ -32,7 +32,6 @@
 #define TEST_VARIANT_UTILITY_H
 
 #include "core/variant/variant_utility.h"
-
 #include "tests/test_macros.h"
 
 namespace TestVariantUtility {

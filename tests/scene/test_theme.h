@@ -34,9 +34,8 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/theme.h"
+#include "tests/test_macros.h"
 #include "tests/test_tools.h"
-
-#include "thirdparty/doctest/doctest.h"
 
 namespace TestTheme {
 

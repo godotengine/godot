@@ -32,7 +32,6 @@
 #define TEST_AABB_H
 
 #include "core/math/aabb.h"
-
 #include "tests/test_macros.h"
 
 namespace TestAABB {

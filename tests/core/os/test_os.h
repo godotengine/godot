@@ -32,8 +32,7 @@
 #define TEST_OS_H
 
 #include "core/os/os.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestOS {
 

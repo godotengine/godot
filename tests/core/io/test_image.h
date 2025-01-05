@@ -33,9 +33,8 @@
 
 #include "core/io/image.h"
 #include "core/os/os.h"
-
+#include "tests/test_macros.h"
 #include "tests/test_utils.h"
-#include "thirdparty/doctest/doctest.h"
 
 #include "modules/modules_enabled.gen.h"
 

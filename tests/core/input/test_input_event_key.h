@@ -33,7 +33,6 @@
 
 #include "core/input/input_event.h"
 #include "core/os/keyboard.h"
-
 #include "tests/test_macros.h"
 
 namespace TestInputEventKey {

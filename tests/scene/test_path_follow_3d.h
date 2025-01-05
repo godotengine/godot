@@ -33,7 +33,6 @@
 
 #include "scene/3d/path_3d.h"
 #include "scene/main/window.h"
-
 #include "tests/test_macros.h"
 
 namespace TestPathFollow3D {

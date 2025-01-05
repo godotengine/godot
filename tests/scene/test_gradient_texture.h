@@ -32,7 +32,6 @@
 #define TEST_GRADIENT_TEXTURE_H
 
 #include "scene/resources/gradient_texture.h"
-
 #include "tests/test_macros.h"
 
 namespace TestGradientTexture {

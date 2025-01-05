@@ -33,7 +33,6 @@
 
 #include "core/io/config_file.h"
 #include "core/os/os.h"
-
 #include "tests/test_macros.h"
 
 namespace TestConfigFile {

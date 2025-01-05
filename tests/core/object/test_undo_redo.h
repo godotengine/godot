@@ -34,17 +34,16 @@
 #include "core/object/undo_redo.h"
 #include "tests/test_macros.h"
 
-// Declared in global namespace because of GDCLASS macro warning (Windows):
-// "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
-// is a Microsoft extension; add a nested name specifier".
-class _TestUndoRedoObject : public Object {
-	GDCLASS(_TestUndoRedoObject, Object);
+namespace TestUndoRedo {
+
+class TestUndoRedoObject : public Object {
+	GDCLASS(TestUndoRedoObject, Object);
 	int property_value = 0;
 
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_property", "property"), &_TestUndoRedoObject::set_property);
-		ClassDB::bind_method(D_METHOD("get_property"), &_TestUndoRedoObject::get_property);
+		ClassDB::bind_method(D_METHOD("set_property", "property"), &TestUndoRedoObject::set_property);
+		ClassDB::bind_method(D_METHOD("get_property"), &TestUndoRedoObject::get_property);
 		ADD_PROPERTY(PropertyInfo(Variant::INT, "property"), "set_property", "get_property");
 	}
 
@@ -55,27 +54,25 @@ public:
 	void subtract_from_property(int value) { property_value -= value; }
 };
 
-namespace TestUndoRedo {
-
-void set_property_action(UndoRedo *undo_redo, const String &name, _TestUndoRedoObject *test_object, int value, UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE) {
+void set_property_action(UndoRedo *undo_redo, const String &name, TestUndoRedoObject *test_object, int value, UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE) {
 	undo_redo->create_action(name, merge_mode);
 	undo_redo->add_do_property(test_object, "property", value);
 	undo_redo->add_undo_property(test_object, "property", test_object->get_property());
 	undo_redo->commit_action();
 }
 
-void increment_property_action(UndoRedo *undo_redo, const String &name, _TestUndoRedoObject *test_object, int value, UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE) {
+void increment_property_action(UndoRedo *undo_redo, const String &name, TestUndoRedoObject *test_object, int value, UndoRedo::MergeMode merge_mode = UndoRedo::MERGE_DISABLE) {
 	undo_redo->create_action(name, merge_mode);
-	undo_redo->add_do_method(callable_mp(test_object, &_TestUndoRedoObject::add_to_property).bind(value));
-	undo_redo->add_undo_method(callable_mp(test_object, &_TestUndoRedoObject::subtract_from_property).bind(value));
+	undo_redo->add_do_method(callable_mp(test_object, &TestUndoRedoObject::add_to_property).bind(value));
+	undo_redo->add_undo_method(callable_mp(test_object, &TestUndoRedoObject::subtract_from_property).bind(value));
 	undo_redo->commit_action();
 }
 
 TEST_CASE("[UndoRedo] Simple Property UndoRedo") {
-	GDREGISTER_CLASS(_TestUndoRedoObject);
+	GDREGISTER_CLASS(TestUndoRedoObject);
 	UndoRedo *undo_redo = memnew(UndoRedo());
 
-	_TestUndoRedoObject *test_object = memnew(_TestUndoRedoObject());
+	TestUndoRedoObject *test_object = memnew(TestUndoRedoObject());
 
 	CHECK(test_object->get_property() == 0);
 	CHECK(undo_redo->get_version() == 1);
@@ -122,10 +119,10 @@ TEST_CASE("[UndoRedo] Simple Property UndoRedo") {
 }
 
 TEST_CASE("[UndoRedo] Merge Property UndoRedo") {
-	GDREGISTER_CLASS(_TestUndoRedoObject);
+	GDREGISTER_CLASS(TestUndoRedoObject);
 	UndoRedo *undo_redo = memnew(UndoRedo());
 
-	_TestUndoRedoObject *test_object = memnew(_TestUndoRedoObject());
+	TestUndoRedoObject *test_object = memnew(TestUndoRedoObject());
 
 	CHECK(test_object->get_property() == 0);
 	CHECK(undo_redo->get_version() == 1);
@@ -154,10 +151,10 @@ TEST_CASE("[UndoRedo] Merge Property UndoRedo") {
 }
 
 TEST_CASE("[UndoRedo] Merge Method UndoRedo") {
-	GDREGISTER_CLASS(_TestUndoRedoObject);
+	GDREGISTER_CLASS(TestUndoRedoObject);
 	UndoRedo *undo_redo = memnew(UndoRedo());
 
-	_TestUndoRedoObject *test_object = memnew(_TestUndoRedoObject());
+	TestUndoRedoObject *test_object = memnew(TestUndoRedoObject());
 
 	CHECK(test_object->get_property() == 0);
 	CHECK(undo_redo->get_version() == 1);

@@ -32,8 +32,7 @@
 #define TEST_PLANE_H
 
 #include "core/math/plane.h"
-
-#include "thirdparty/doctest/doctest.h"
+#include "tests/test_macros.h"
 
 namespace TestPlane {
 

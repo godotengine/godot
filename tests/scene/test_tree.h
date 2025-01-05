@@ -32,7 +32,6 @@
 #define TEST_TREE_H
 
 #include "scene/gui/tree.h"
-
 #include "tests/test_macros.h"
 
 namespace TestTree {

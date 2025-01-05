@@ -35,7 +35,6 @@
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
-
 #include "tests/test_macros.h"
 
 namespace TestNavigationRegion3D {

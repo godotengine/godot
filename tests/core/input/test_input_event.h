@@ -33,9 +33,7 @@
 
 #include "core/input/input_event.h"
 #include "core/math/rect2.h"
-#include "core/os/memory.h"
 #include "core/variant/array.h"
-
 #include "tests/test_macros.h"
 
 namespace TestInputEvent {
