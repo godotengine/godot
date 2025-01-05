@@ -66,8 +66,8 @@ void EmbeddedProcess::_notification(int p_what) {
 			focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
 			Ref<StyleBoxFlat> focus_style_box_flat = focus_style_box;
 			if (focus_style_box_flat.is_valid()) {
-				margin_top_left = Point2i(focus_style_box_flat->get_corner_radius(CORNER_TOP_LEFT), focus_style_box_flat->get_corner_radius(CORNER_TOP_LEFT));
-				margin_bottom_right = Point2i(focus_style_box_flat->get_corner_radius(CORNER_BOTTOM_RIGHT), focus_style_box_flat->get_corner_radius(CORNER_BOTTOM_RIGHT));
+				margin_top_left = Point2i(focus_style_box_flat->get_border_width(SIDE_LEFT), focus_style_box_flat->get_border_width(SIDE_TOP));
+				margin_bottom_right = Point2i(focus_style_box_flat->get_border_width(SIDE_RIGHT), focus_style_box_flat->get_border_width(SIDE_BOTTOM));
 			} else if (focus_style_box.is_valid()) {
 				margin_top_left = Point2i(focus_style_box->get_margin(SIDE_LEFT), focus_style_box->get_margin(SIDE_TOP));
 				margin_bottom_right = Point2i(focus_style_box->get_margin(SIDE_RIGHT), focus_style_box->get_margin(SIDE_BOTTOM));
