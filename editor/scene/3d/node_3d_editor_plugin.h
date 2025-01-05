@@ -334,6 +334,7 @@ private:
 	Vector<Node3D *> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
+	bool movement_threshold_passed = false;
 
 	PopupMenu *selection_menu = nullptr;
 
@@ -662,6 +663,7 @@ public:
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
+		TOOL_MODE_TRANSFORM,
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
@@ -762,6 +764,7 @@ private:
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
+		MENU_TOOL_TRANSFORM,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,
