@@ -3451,7 +3451,8 @@ void Tree::_go_up() {
 			return;
 		}
 
-		select_single_item(prev, get_root(), col);
+		selected_item = prev;
+		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
 		while (prev && !prev->cells[col].selectable) {
@@ -3484,7 +3485,8 @@ void Tree::_go_down() {
 			return;
 		}
 
-		select_single_item(next, get_root(), col);
+		selected_item = next;
+		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
 		while (next && !next->cells[col].selectable) {
