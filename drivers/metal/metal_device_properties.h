@@ -84,6 +84,8 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) MetalFeatures {
 	bool tessellationShader = false; /**< If true, tessellation shaders are supported. */
 	bool imageCubeArray = false; /**< If true, image cube arrays are supported. */
 	MTLArgumentBuffersTier argument_buffers_tier = MTLArgumentBuffersTier1;
+	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
+	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
 };
 
 struct MetalLimits {
@@ -114,6 +116,9 @@ struct MetalLimits {
 	uint32_t maxVertexInputBindings;
 	uint32_t maxVertexInputBindingStride;
 	uint32_t maxDrawIndexedIndexValue;
+
+	double temporalScalerInputContentMinScale;
+	double temporalScalerInputContentMaxScale;
 
 	uint32_t minSubgroupSize; /**< The minimum number of threads in a SIMD-group. */
 	uint32_t maxSubgroupSize; /**< The maximum number of threads in a SIMD-group. */

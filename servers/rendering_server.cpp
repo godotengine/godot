@@ -2867,6 +2867,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
@@ -3662,7 +3664,23 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"), 0.25);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.18);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow)"), 0);
+	{
+		String mode_hints;
+		String mode_hints_metal;
+		{
+			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.0 (Fast)", "FSR 2.2 (Slow)" };
+			mode_hints = String(",").join(mode_hints_arr);
+#ifdef METAL_ENABLED
+			mode_hints_arr.push_back("MetalFX (Spatial)");
+			mode_hints_arr.push_back("MetalFX (Temporal)");
+#endif
+			mode_hints_metal = String(",").join(mode_hints_arr);
+		}
+
+		GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, mode_hints), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.ios", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.macos", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
+	}
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);

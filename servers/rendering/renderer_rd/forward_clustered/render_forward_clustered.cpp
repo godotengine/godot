@@ -88,6 +88,25 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_fsr2(Rende
 	}
 }
 
+#ifdef METAL_ENABLED
+bool RenderForwardClustered::RenderBufferDataForwardClustered::ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect) {
+	if (mfx_temporal_context == nullptr) {
+		RendererRD::MFXTemporalEffect::CreateParams params;
+		params.input_size = render_buffers->get_internal_size();
+		params.output_size = render_buffers->get_target_size();
+		params.input_format = render_buffers->get_base_data_format();
+		params.depth_format = render_buffers->get_depth_format(false, false, render_buffers->get_can_be_storage());
+		params.motion_format = render_buffers->get_velocity_format();
+		params.reactive_format = render_buffers->get_base_data_format(); // Reactive is derived from input.
+		params.output_format = render_buffers->get_base_data_format();
+		params.motion_vector_scale = render_buffers->get_internal_size();
+		mfx_temporal_context = p_effect->create_context(params);
+		return true;
+	}
+	return false;
+}
+#endif
+
 void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 	// JIC, should already have been cleared
 	if (render_buffers) {
@@ -107,6 +126,13 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		memdelete(fsr2_context);
 		fsr2_context = nullptr;
 	}
+
+#ifdef METAL_ENABLED
+	if (mfx_temporal_context) {
+		memdelete(mfx_temporal_context);
+		mfx_temporal_context = nullptr;
+	}
+#endif
 
 	if (!render_sdfgi_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_sdfgi_uniform_set)) {
 		RD::get_singleton()->free(render_sdfgi_uniform_set);
@@ -1706,7 +1732,29 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	bool using_debug_mvs = get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS;
 	bool using_taa = rb->get_use_taa();
-	bool using_fsr2 = rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+
+	enum {
+		SCALE_NONE,
+		SCALE_FSR2,
+		SCALE_MFX,
+	} scale_type = SCALE_NONE;
+
+	switch (rb->get_scaling_3d_mode()) {
+		case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
+			scale_type = SCALE_FSR2;
+			break;
+		case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
+#ifdef METAL_ENABLED
+			scale_type = SCALE_MFX;
+#else
+			scale_type = SCALE_NONE;
+#endif
+			break;
+		default:
+			break;
+	}
+
+	bool using_upscaling = scale_type != SCALE_NONE;
 
 	// check if we need motion vectors
 	bool motion_vectors_required;
@@ -1716,7 +1764,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		motion_vectors_required = true;
 	} else if (!is_reflection_probe && using_taa) {
 		motion_vectors_required = true;
-	} else if (!is_reflection_probe && using_fsr2) {
+	} else if (!is_reflection_probe && using_upscaling) {
 		motion_vectors_required = true;
 	} else {
 		motion_vectors_required = false;
@@ -1742,7 +1790,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
-	bool using_motion_pass = rb_data.is_valid() && using_fsr2;
+	bool using_motion_pass = rb_data.is_valid() && using_upscaling;
 
 	if (is_reflection_probe) {
 		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
@@ -2111,10 +2159,16 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RD::get_singleton()->draw_command_end_label();
 
 		if (using_motion_pass) {
-			Vector<Color> motion_vector_clear_colors;
-			motion_vector_clear_colors.push_back(Color(-1, -1, 0, 0));
-			RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::DRAW_CLEAR_ALL, motion_vector_clear_colors);
-			RD::get_singleton()->draw_list_end();
+			if (scale_type == SCALE_MFX) {
+				motion_vectors_store->process(rb,
+						p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform,
+						p_render_data->scene_data->prev_cam_projection, p_render_data->scene_data->prev_cam_transform);
+			} else {
+				Vector<Color> motion_vector_clear_colors;
+				motion_vector_clear_colors.push_back(Color(-1, -1, 0, 0));
+				RD::get_singleton()->draw_list_begin(rb_data->get_velocity_only_fb(), RD::DRAW_CLEAR_ALL, motion_vector_clear_colors);
+				RD::get_singleton()->draw_list_end();
+			}
 		}
 
 		if (render_motion_pass) {
@@ -2244,7 +2298,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RD::get_singleton()->draw_list_end();
 	}
 
-	if (rb_data.is_valid() && using_fsr2) {
+	if (rb_data.is_valid() && using_upscaling) {
 		// Make sure the upscaled texture is initialized, but not necessarily filled, before running screen copies
 		// so it properly detect if a dedicated copy texture should be used.
 		rb->ensure_upscaled();
@@ -2314,7 +2368,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
 	if (rb_data.is_valid() && use_msaa) {
-		bool resolve_velocity_buffer = (using_taa || using_fsr2 || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
+		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
 			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
@@ -2339,8 +2393,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 	RD::get_singleton()->draw_command_end_label();
 
-	if (rb_data.is_valid() && (using_fsr2 || using_taa)) {
-		if (using_fsr2) {
+	if (rb_data.is_valid() && (using_upscaling || using_taa)) {
+		if (scale_type == SCALE_FSR2) {
 			rb_data->ensure_fsr2(fsr2_effect);
 
 			RID exposure;
@@ -2386,6 +2440,35 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 
 			RD::get_singleton()->draw_command_end_label();
+		} else if (scale_type == SCALE_MFX) {
+#ifdef METAL_ENABLED
+			bool reset = rb_data->ensure_mfx_temporal(mfx_temporal_effect);
+
+			RID exposure;
+			if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
+				exposure = luminance->get_current_luminance_buffer(rb);
+			}
+
+			RD::get_singleton()->draw_command_begin_label("MetalFX Temporal");
+			// Scale to ±0.5.
+			Vector2 jitter = p_render_data->scene_data->taa_jitter * 0.5f;
+			jitter *= Vector2(1.0, -1.0); // Flip y-axis as bottom left is origin.
+
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RendererRD::MFXTemporalEffect::Params params;
+				params.src = rb->get_internal_texture(v);
+				params.depth = rb->get_depth_texture(v);
+				params.motion = rb->get_velocity_buffer(false, v);
+				params.exposure = exposure;
+				params.dst = rb->get_upscaled_texture(v);
+				params.jitter_offset = jitter;
+				params.reset = reset;
+
+				mfx_temporal_effect->process(rb_data->get_mfx_temporal_context(), params);
+			}
+
+			RD::get_singleton()->draw_command_end_label();
+#endif
 		} else if (using_taa) {
 			RD::get_singleton()->draw_command_begin_label("TAA");
 			RENDER_TIMESTAMP("TAA");
@@ -4846,6 +4929,10 @@ RenderForwardClustered::RenderForwardClustered() {
 	taa = memnew(RendererRD::TAA);
 	fsr2_effect = memnew(RendererRD::FSR2Effect);
 	ss_effects = memnew(RendererRD::SSEffects);
+#ifdef METAL_ENABLED
+	motion_vectors_store = memnew(RendererRD::MotionVectorsStore);
+	mfx_temporal_effect = memnew(RendererRD::MFXTemporalEffect);
+#endif
 }
 
 RenderForwardClustered::~RenderForwardClustered() {
@@ -4863,6 +4950,18 @@ RenderForwardClustered::~RenderForwardClustered() {
 		memdelete(fsr2_effect);
 		fsr2_effect = nullptr;
 	}
+
+#ifdef METAL_ENABLED
+	if (mfx_temporal_effect) {
+		memdelete(mfx_temporal_effect);
+		mfx_temporal_effect = nullptr;
+	}
+
+	if (motion_vectors_store) {
+		memdelete(motion_vectors_store);
+		motion_vectors_store = nullptr;
+	}
+#endif
 
 	if (resolve_effects != nullptr) {
 		memdelete(resolve_effects);
