@@ -957,47 +957,60 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		return false;
 	}
 
+	// Now find other reasons to keep this Node, too.
+	PackedStringArray terms = filter.to_lower().split_spaces();
+	bool keep = _item_matches_all_terms(p_parent, terms);
+
+	bool selectable = keep;
+	bool is_root = p_parent == tree->get_root();
+
+	if (keep) {
+		Node *n = get_node(p_parent->get_metadata(0));
+		if (!p_parent->is_visible() || (is_root && tree->is_root_hidden())) {
+			// Place back moved out children from when this item has hidden.
+			HashMap<Node *, CachedNode>::Iterator I = node_cache.get(n, false);
+			if (I && I->value.has_moved_children) {
+				_update_node_subtree(I->value.node, nullptr, true);
+			}
+		}
+
+		if (!valid_types.is_empty()) {
+			selectable = false;
+			for (const StringName &E : valid_types) {
+				if (n->is_class(E) ||
+						EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
+					selectable = true;
+					break;
+				} else {
+					Ref<Script> node_script = n->get_script();
+					while (node_script.is_valid()) {
+						if (node_script->get_path() == E) {
+							selectable = true;
+							break;
+						}
+						node_script = node_script->get_base_script();
+					}
+					if (selectable) {
+						break;
+					}
+				}
+			}
+		}
+	}
+
 	bool keep_for_children = false;
 	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
 		// Always keep if at least one of the children are kept.
 		keep_for_children = _update_filter(child, p_scroll_to_selected) || keep_for_children;
 	}
 
-	// Now find other reasons to keep this Node, too.
-	PackedStringArray terms = filter.to_lower().split_spaces();
-	bool keep = _item_matches_all_terms(p_parent, terms);
-
-	bool selectable = keep;
-	if (keep && !valid_types.is_empty()) {
-		selectable = false;
-		Node *n = get_node(p_parent->get_metadata(0));
-
-		for (const StringName &E : valid_types) {
-			if (n->is_class(E) ||
-					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
-				selectable = true;
-				break;
-			} else {
-				Ref<Script> node_script = n->get_script();
-				while (node_script.is_valid()) {
-					if (node_script->get_path() == E) {
-						selectable = true;
-						break;
-					}
-					node_script = node_script->get_base_script();
-				}
-				if (selectable) {
-					break;
-				}
-			}
+	if (!is_root) {
+		if (show_all_nodes) {
+			p_parent->set_visible(keep_for_children || keep);
+		} else {
+			// Show only selectable nodes, or parents of selectable.
+			p_parent->set_visible(keep_for_children || selectable);
 		}
-	}
-
-	if (show_all_nodes) {
-		p_parent->set_visible(keep_for_children || keep);
-	} else {
-		// Show only selectable nodes, or parents of selectable.
-		p_parent->set_visible(keep_for_children || selectable);
 	}
 
 	if (selectable) {
@@ -1007,24 +1020,67 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		} else {
 			p_parent->set_custom_color(0, custom_color);
 		}
+
 		p_parent->set_selectable(0, true);
 	} else if (keep_for_children) {
-		p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
-		p_parent->set_selectable(0, false);
-		p_parent->deselect(0);
+		p_parent->set_visible(!hide_filtered_out_parents || is_root);
+
+		if (!p_parent->is_visible()) {
+			TreeItem *filtered_parent = p_parent->get_parent();
+			while (filtered_parent) {
+				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
+					break;
+				}
+				filtered_parent = filtered_parent->get_parent();
+			}
+
+			if (filtered_parent) {
+				for (Variant &item : p_parent->get_children()) {
+					TreeItem *ti = Object::cast_to<TreeItem>(item);
+					bool is_selected = ti->is_selected(0);
+
+					p_parent->remove_child(ti);
+					filtered_parent->add_child(ti);
+					TreeItem *prev = p_parent->get_prev();
+					if (prev) {
+						ti->move_after(prev);
+					}
+
+					if (is_selected) {
+						ti->select(0);
+					}
+
+					HashMap<Node *, CachedNode>::Iterator I = node_cache.get(get_node(p_parent->get_metadata(0)), false);
+					if (I) {
+						I->value.has_moved_children = true;
+					}
+				}
+
+				return false;
+			}
+		} else {
+			p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+			p_parent->set_selectable(0, false);
+			p_parent->deselect(0);
+		}
+	}
+	if (is_root) {
+		tree->set_hide_root(hide_filtered_out_parents && !selectable);
+		if (tree->is_root_hidden()) {
+			p_parent->set_collapsed(false);
+		}
 	}
 
 	if (editor_selection) {
 		Node *n = get_node(p_parent->get_metadata(0));
 		if (selectable) {
 			if (p_scroll_to_selected && n && editor_selection->is_selected(n)) {
-				tree->scroll_to_item(p_parent);
+				// Needs to be deferred to account for possible root visibility change.
+				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
 			}
-		} else {
-			if (n && p_parent->is_selected(0)) {
-				editor_selection->remove_node(n);
-				p_parent->deselect(0);
-			}
+		} else if (n && p_parent->is_selected(0)) {
+			editor_selection->remove_node(n);
+			p_parent->deselect(0);
 		}
 	}
 
@@ -1894,19 +1950,37 @@ void SceneTreeEditor::set_auto_expand_selected(bool p_auto, bool p_update_settin
 	auto_expand_selected = p_auto;
 }
 
+void SceneTreeEditor::set_hide_filtered_out_parents(bool p_hide, bool p_update_settings) {
+	if (p_hide == hide_filtered_out_parents) {
+		return;
+	}
+
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/hide_filtered_out_parents", p_hide);
+	}
+	hide_filtered_out_parents = p_hide;
+
+	if (hide_filtered_out_parents) {
+		_update_filter();
+	} else {
+		node_cache.force_update = true;
+		_update_tree();
+	}
+}
+
 void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {
 	connect_to_script_mode = p_enable;
-	update_tree();
+	_update_tree();
 }
 
 void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 	connecting_signal = p_enable;
-	update_tree();
+	_update_tree();
 }
 
 void SceneTreeEditor::set_update_when_invisible(bool p_enable) {
 	update_when_invisible = p_enable;
-	update_tree();
+	_update_tree();
 }
 
 void SceneTreeEditor::_bind_methods() {

@@ -633,6 +633,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
 	_initial_set("docks/scene_tree/auto_expand_to_selected", true);
 	_initial_set("docks/scene_tree/center_node_on_reparent", false);
+	_initial_set("docks/scene_tree/hide_filtered_out_parents", true);
 
 	// FileSystem
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
