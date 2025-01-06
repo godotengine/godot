@@ -3548,7 +3548,8 @@ void WaylandThread::window_try_set_mode(DisplayServer::WindowID p_window_id, Dis
 #endif // LIBDECOR_ENABLED
 		} break;
 
-		case DisplayServer::WINDOW_MODE_FULLSCREEN: {
+		case DisplayServer::WINDOW_MODE_FULLSCREEN:
+		case DisplayServer::WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
 			if (ws.xdg_toplevel) {
 				xdg_toplevel_set_fullscreen(ws.xdg_toplevel, nullptr);
 			}
