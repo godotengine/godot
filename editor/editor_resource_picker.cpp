@@ -37,6 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -182,12 +183,29 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 }
 
 void EditorResourcePicker::_load_button_pressed() {
-	Vector<StringName> base_types;
-	for (const String &type : base_type.split(",")) {
-		base_types.push_back(type);
+	List<String> extensions;
+	for (int i = 0; i < base_type.get_slice_count(","); i++) {
+		String base = base_type.get_slice(",", i);
+		ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
+		if (ScriptServer::is_global_class(base)) {
+			ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
+		}
 	}
-
-	EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+	HashSet<String> valid_extensions;
+	for (const String &E : extensions) {
+		valid_extensions.insert(E);
+	}
+	if (!file_dialog) {
+		file_dialog = memnew(EditorFileDialog);
+		file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		add_child(file_dialog);
+		file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+	}
+	file_dialog->clear_filters();
+	for (const String &E : valid_extensions) {
+		file_dialog->add_filter("*." + E, E.to_upper());
+	}
+	file_dialog->popup_file_dialog();
 }
 
 void EditorResourcePicker::_update_menu() {

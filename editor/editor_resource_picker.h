@@ -35,6 +35,7 @@
 
 class Button;
 class ConfirmationDialog;
+class EditorFileDialog;
 class PopupMenu;
 class TextureRect;
 class Tree;
@@ -57,6 +58,7 @@ class EditorResourcePicker : public HBoxContainer {
 	TextureRect *preview_rect = nullptr;
 	Button *load_button = nullptr;
 	Button *edit_button = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
 
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
 	Tree *duplicate_resources_tree = nullptr;
