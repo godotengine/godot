@@ -94,7 +94,7 @@ void SceneTreeTimer::set_ignore_time_scale(bool p_ignore) {
 	ignore_time_scale = p_ignore;
 }
 
-bool SceneTreeTimer::is_ignore_time_scale() {
+bool SceneTreeTimer::is_ignoring_time_scale() {
 	return ignore_time_scale;
 }
 
@@ -657,7 +657,7 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 		}
 
 		double time_left = E->get()->get_time_left();
-		if (E->get()->is_ignore_time_scale()) {
+		if (E->get()->is_ignoring_time_scale()) {
 			time_left -= Engine::get_singleton()->get_process_step();
 		} else {
 			time_left -= p_delta;
@@ -691,7 +691,8 @@ void SceneTree::process_tweens(double p_delta, bool p_physics) {
 			continue;
 		}
 
-		if (!E->get()->step(p_delta)) {
+		double time_step = E->get()->is_ignoring_time_scale() ? Engine::get_singleton()->get_process_step() : p_delta;
+		if (!E->get()->step(time_step)) {
 			E->get()->clear();
 			tweens.erase(E);
 		}
@@ -1633,7 +1634,7 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_root_path.is_empty()) {
-		ERR_FAIL_COND(!p_multiplayer.is_valid());
+		ERR_FAIL_COND(p_multiplayer.is_null());
 		if (multiplayer.is_valid()) {
 			multiplayer->object_configuration_remove(nullptr, NodePath("/" + root->get_name()));
 		}
@@ -1827,7 +1828,7 @@ SceneTree::SceneTree() {
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
+	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
@@ -1849,7 +1850,7 @@ SceneTree::SceneTree() {
 	}
 
 #ifndef _3D_DISABLED
-	if (!root->get_world_3d().is_valid()) {
+	if (root->get_world_3d().is_null()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 	}
 	root->set_as_audio_listener_3d(true);

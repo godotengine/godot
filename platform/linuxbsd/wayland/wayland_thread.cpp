@@ -2734,7 +2734,7 @@ void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 
 		msg.instantiate();
 		msg->text = ss->ime_text_commit;
 		ss->wayland_thread->push_message(msg);
-	} else if (!ss->ime_text.is_empty()) {
+	} else {
 		Ref<IMEUpdateEventMessage> msg;
 		msg.instantiate();
 		msg->text = ss->ime_text;
@@ -3880,7 +3880,7 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 }
 
 void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot) {
-	ERR_FAIL_COND(!p_image.is_valid());
+	ERR_FAIL_COND(p_image.is_null());
 
 	Size2i image_size = p_image->get_size();
 

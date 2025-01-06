@@ -221,7 +221,7 @@ void TileMapLayerEditorTilesPlugin::_update_tile_set_sources_list() {
 		if (item_text.is_empty()) {
 			item_text = vformat(TTR("Unknown Type Source (ID: %d)"), source_id);
 		}
-		if (!texture.is_valid()) {
+		if (texture.is_null()) {
 			texture = missing_atlas_texture_icon;
 		}
 

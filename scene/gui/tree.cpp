@@ -1272,7 +1272,7 @@ void TreeItem::clear_buttons() {
 
 void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_COND(!p_button.is_valid());
+	ERR_FAIL_COND(p_button.is_null());
 	TreeItem::Cell::Button button;
 	button.texture = p_button;
 	if (p_id < 0) {
@@ -1947,7 +1947,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 
 	int w = 0;
 	Size2i bmsize;
-	if (!p_cell.icon.is_null()) {
+	if (p_cell.icon.is_valid()) {
 		bmsize = _get_cell_icon_size(p_cell);
 		w += bmsize.width + theme_cache.h_separation;
 		if (rect.size.width > 0 && (w + ts.width) > rect.size.width) {
@@ -1986,7 +1986,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		rect.size.x -= ts.width + theme_cache.h_separation;
 	}
 
-	if (!p_cell.icon.is_null()) {
+	if (p_cell.icon.is_valid()) {
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
 		rect.position.x += bmsize.x + theme_cache.h_separation;
 		rect.size.x -= bmsize.x + theme_cache.h_separation;
