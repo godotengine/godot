@@ -5788,7 +5788,12 @@ void DisplayServerWindows::_process_key_events() {
 					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 						String keysym = String::utf16((char16_t *)chars, 255);
 						if (!keysym.is_empty()) {
-							key_label = fix_key_label(keysym[0], keycode);
+							char32_t unicode_value = keysym[0];
+							// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
+							if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+								keycode = fix_keycode(unicode_value, (Key)unicode_value);
+							}
+							key_label = fix_key_label(unicode_value, keycode);
 						}
 					}
 
@@ -5844,7 +5849,12 @@ void DisplayServerWindows::_process_key_events() {
 				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 					String keysym = String::utf16((char16_t *)chars, 255);
 					if (!keysym.is_empty()) {
-						key_label = fix_key_label(keysym[0], keycode);
+						char32_t unicode_value = keysym[0];
+						// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
+						if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+							keycode = fix_keycode(unicode_value, (Key)unicode_value);
+						}
+						key_label = fix_key_label(unicode_value, keycode);
 					}
 				}
 
