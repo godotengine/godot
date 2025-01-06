@@ -428,6 +428,10 @@ void Polygon2DEditor::_cancel_editing() {
 		} else if (uv_edit_mode[1]->is_pressed()) { // Edit polygon.
 			node->set_polygon(points_prev);
 		}
+		if (uv_move_current == UV_MODE_MOVE_PIVOT) {
+			uv_move_current = UV_MODE_EDIT_POINT;
+			node->set_offset(offset_prev);
+		}
 	}
 
 	polygon_create.clear();
@@ -631,6 +635,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					undo_redo->commit_action();
 				}
 
+				const real_t grab_radius = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
 				if (uv_move_current == UV_MODE_REMOVE_INTERNAL) {
 					uv_create_uv_prev = node->get_uv();
 					uv_create_poly_prev = node->get_polygon();
@@ -648,7 +654,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = points_prev.size() - internal_vertices; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(uv_create_poly_prev[i]);
 						real_t dist = tuv.distance_to(mb->get_position());
-						if (dist < 8 && dist < closest_dist) {
+						if (dist < grab_radius && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
 						}
@@ -700,14 +706,21 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					point_drag_index = -1;
 					for (int i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						if (tuv.distance_to(mb->get_position()) < grab_radius) {
 							uv_drag_from = tuv;
 							point_drag_index = i;
 						}
 					}
 
 					if (point_drag_index == -1) {
-						uv_drag = false;
+						Vector2 offset_transformed = mtx.xform(-node->get_offset());
+						if (uv_edit_mode[1]->is_pressed() && offset_transformed.distance_to(mb->get_position()) < grab_radius) {
+							uv_drag_from = offset_transformed;
+							offset_prev = node->get_offset();
+							uv_move_current = UV_MODE_MOVE_PIVOT;
+						} else {
+							uv_drag = false;
+						}
 					}
 				}
 
@@ -718,7 +731,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = 0; i < points_prev.size(); i++) {
 						Vector2 tuv = mtx.xform(points_prev[i]);
 						real_t dist = tuv.distance_to(mb->get_position());
-						if (dist < 8 && dist < closest_dist) {
+						if (dist < grab_radius && dist < closest_dist) {
 							closest = i;
 							closest_dist = dist;
 						}
@@ -824,6 +837,15 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 								undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
 								undo_redo->commit_action();
 							} break;
+							case UV_MODE_MOVE_PIVOT: {
+								undo_redo->create_action(TTR("Set Offset"));
+								undo_redo->add_do_method(node, "set_offset", node->get_offset());
+								undo_redo->add_undo_method(node, "set_offset", offset_prev);
+								undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
+								undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
+								undo_redo->commit_action();
+								uv_move_current = UV_MODE_EDIT_POINT;
+							} break;
 							default: {
 							} break;
 						}
@@ -876,6 +898,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
 						node->set_polygon(uv_new);
 					}
+				} break;
+				case UV_MODE_MOVE_PIVOT: {
+					node->set_offset(offset_prev - drag);
 				} break;
 				case UV_MODE_MOVE: {
 					Vector<Vector2> uv_new = points_prev;
@@ -1261,6 +1286,11 @@ void Polygon2DEditor::_uv_draw() {
 			Vector2 to = (i + 1) < polygon_create.size() ? uvs[polygon_create[i + 1]] : uv_create_to;
 			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, Math::round(EDSCALE));
 		}
+	}
+
+	if (uv_edit_mode[1]->is_pressed()) {
+		Ref<Texture2D> pivot_icon = get_editor_theme_icon(SNAME("EditorPivot"));
+		uv_edit_draw->draw_texture(pivot_icon, mtx.xform(-node->get_offset()) - pivot_icon->get_size() * 0.5);
 	}
 
 	if (uv_mode == UV_MODE_PAINT_WEIGHT || uv_mode == UV_MODE_CLEAR_WEIGHT) {

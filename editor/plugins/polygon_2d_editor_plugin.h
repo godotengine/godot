@@ -71,6 +71,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_REMOVE_POLYGON,
 		UV_MODE_PAINT_WEIGHT,
 		UV_MODE_CLEAR_WEIGHT,
+		UV_MODE_MOVE_PIVOT,
 		UV_MODE_MAX
 	};
 
@@ -121,6 +122,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int uv_create_prev_internal_vertices = 0;
 	Array uv_create_bones_prev;
 	Array polygons_prev;
+	Vector2 offset_prev;
 
 	Vector2 uv_create_to;
 	int point_drag_index;
