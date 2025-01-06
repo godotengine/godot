@@ -1251,6 +1251,10 @@ void GridMapEditor::_notification(int p_what) {
 				forward_spatial_input_event(nullptr, release);
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+		} break;
 	}
 }
 
@@ -1713,7 +1717,7 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
+	indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
 }
 
 GridMapEditor::~GridMapEditor() {
