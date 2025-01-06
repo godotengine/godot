@@ -38,9 +38,9 @@
 #include "drivers/egl/egl_manager.h"
 #include "servers/display_server.h"
 
-#include <AppKit/AppKit.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreVideo/CoreVideo.h>
+#import <AppKit/AppKit.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <CoreVideo/CoreVideo.h>
 
 class GLManagerANGLE_MacOS : public EGLManager {
 private:
