@@ -8256,11 +8256,10 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	const int32_t header_size = 12;
 	const int32_t chunk_header_size = 8;
 
-	int32_t padding = (chunk_header_size + json.utf8().length()) % 4;
-	json += String(" ").repeat(padding);
-
 	CharString cs = json.utf8();
-	const uint32_t text_chunk_length = cs.length();
+	int32_t padding = (chunk_header_size + cs.length()) % 4;
+
+	const uint32_t text_chunk_length = cs.length() + padding;
 
 	const uint32_t text_chunk_type = 0x4E4F534A; //JSON
 	int32_t binary_data_length = 0;
@@ -8278,6 +8277,9 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 	buffer->put_32(text_chunk_length);
 	buffer->put_32(text_chunk_type);
 	buffer->put_data((uint8_t *)&cs[0], cs.length());
+	for (int i = 0; i < padding; i++) {
+		buffer->put_8(' ');
+	}
 	if (binary_chunk_length) {
 		buffer->put_32(binary_chunk_length);
 		buffer->put_32(binary_chunk_type);
