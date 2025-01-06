@@ -897,6 +897,15 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
+	Node *scene_node = get_scene_node();
+
+	if (node_cache.current_scene_node != scene_node) {
+		_reset();
+		marked.clear();
+		node_cache.current_scene_node = scene_node;
+		node_cache.force_update = true;
+	}
+
 	if (!update_when_invisible && !is_visible_in_tree()) {
 		return;
 	}
@@ -908,13 +917,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = true;
 
 	last_hash = hash_djb2_one_64(0);
-	Node *scene_node = get_scene_node();
-
-	if (node_cache.current_scene_node != scene_node) {
-		_reset();
-		node_cache.current_scene_node = scene_node;
-		node_cache.force_update = true;
-	}
 
 	if (node_cache.current_scene_node) {
 		// Handle pinning/unpinning the animation player only do this once per iteration.
