@@ -1054,7 +1054,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 						Array arguments;
 						int i = 0;
-						for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
+						for (LocalVector<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
 							const PropertyInfo &pinfo = *itr;
 							Dictionary d3;
 
@@ -1181,7 +1181,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Array arguments;
 
 					int i = 0;
-					for (List<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
+					for (LocalVector<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
 						Dictionary d3;
 						d3["name"] = itr->name;
 						d3["type"] = get_property_info_type_name(*itr);

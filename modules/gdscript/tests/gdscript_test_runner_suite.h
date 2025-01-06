@@ -81,7 +81,7 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	SUBCASE("[Modules][GDScript] Validate built-in methods") {
 		for (const MethodInfo &mi : builtin_methods) {
 			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
 				TEST_COND((itr->name.is_empty() || itr->name.begins_with("_unnamed_arg")),
 						vformat("Unnamed argument in position %d of built-in method '%s'.", i, mi.name));
 			}
@@ -95,7 +95,7 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	SUBCASE("[Modules][GDScript] Validate built-in annotations") {
 		for (const MethodInfo &ai : builtin_annotations) {
 			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++i) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++i) {
 				TEST_COND((itr->name.is_empty() || itr->name.begins_with("_unnamed_arg")),
 						vformat("Unnamed argument in position %d of built-in annotation '%s'.", i, ai.name));
 			}

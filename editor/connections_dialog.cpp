@@ -284,8 +284,8 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 
 	List<Pair<Variant::Type, StringName>> effective_args;
 	int unbind = get_unbinds();
-	for (int i = 0; i < p_signal.arguments.size() - unbind; i++) {
-		PropertyInfo pi = p_signal.arguments.get(i);
+	for (int i = 0; i < (int)p_signal.arguments.size() - unbind; i++) {
+		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
 	}
 	if (unbind == 0) {
@@ -307,22 +307,22 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 		}
 
 		if (check_signal) {
-			if (mi.arguments.size() != effective_args.size()) {
+			if ((int)mi.arguments.size() != effective_args.size()) {
 				continue;
 			}
 
 			bool type_mismatch = false;
 			const List<Pair<Variant::Type, StringName>>::Element *E = effective_args.front();
-			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
+			for (uint32_t i = 0; i < mi.arguments.size(); i++, E = E->next()) {
 				Variant::Type stype = E->get().first;
-				Variant::Type mtype = F->get().type;
+				Variant::Type mtype = mi.arguments[i].type;
 
 				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
 					type_mismatch = true;
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().second, F->get().class_name)) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().second, mi.arguments[i].class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -547,7 +547,7 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 	signature.append("(");
 
 	int i = 0;
-	for (List<PropertyInfo>::ConstIterator itr = p_method.arguments.begin(); itr != p_method.arguments.end(); ++itr, ++i) {
+	for (LocalVector<PropertyInfo>::ConstIterator itr = p_method.arguments.begin(); itr != p_method.arguments.end(); ++itr, ++i) {
 		if (itr != p_method.arguments.begin()) {
 			signature.append(", ");
 		}

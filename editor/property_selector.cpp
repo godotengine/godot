@@ -269,7 +269,7 @@ void PropertySelector::_update_search() {
 
 			desc += vformat(" %s(", mi.name);
 
-			for (List<PropertyInfo>::Iterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
+			for (LocalVector<PropertyInfo>::Iterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
 				if (arg_itr != mi.arguments.begin()) {
 					desc += ", ";
 				}

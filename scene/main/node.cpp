@@ -3744,7 +3744,7 @@ void Node::_bind_methods() {
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
 
-		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
+		mi.arguments.insert(0, PropertyInfo(Variant::INT, "peer_id"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);

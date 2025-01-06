@@ -5631,7 +5631,7 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			int first_defarg = E.arguments.size() - E.default_arguments.size();
 
 			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = E.arguments.begin(); itr != E.arguments.end(); ++itr, ++i) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = E.arguments.begin(); itr != E.arguments.end(); ++itr, ++i) {
 				if (i >= first_defarg) {
 					Variant arg = E.default_arguments[i - first_defarg];
 					params.push_back(arg);

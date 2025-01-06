@@ -226,13 +226,13 @@ struct MethodInfo {
 	PropertyInfo return_val;
 	uint32_t flags = METHOD_FLAGS_DEFAULT;
 	int id = 0;
-	List<PropertyInfo> arguments;
+	LocalVector<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
 	int return_val_metadata = 0;
 	Vector<int> arguments_metadata;
 
 	int get_argument_meta(int p_arg) const {
-		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
+		ERR_FAIL_COND_V(p_arg < -1 || p_arg > (int)arguments.size(), 0);
 		if (p_arg == -1) {
 			return return_val_metadata;
 		}

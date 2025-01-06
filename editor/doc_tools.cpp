@@ -651,8 +651,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				for (List<MethodInfo>::Element *EV = signal_list.front(); EV; EV = EV->next()) {
 					DocData::MethodDoc signal;
 					signal.name = EV->get().name;
-					for (List<PropertyInfo>::Element *EA = EV->get().arguments.front(); EA; EA = EA->next()) {
-						const PropertyInfo &arginfo = EA->get();
+					for (const PropertyInfo &arginfo : EV->get().arguments) {
 						DocData::ArgumentDoc argument;
 						DocData::argument_doc_from_arginfo(argument, arginfo);
 
@@ -845,7 +844,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			method.name = mi.name;
 
 			int j = 0;
-			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
 				PropertyInfo arginfo = *itr;
 				DocData::ArgumentDoc ad;
 				DocData::argument_doc_from_arginfo(ad, arginfo);
@@ -1058,7 +1057,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				DocData::return_doc_from_retinfo(md, mi.return_val);
 
 				int j = 0;
-				for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
+				for (LocalVector<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, *itr);
 
@@ -1104,7 +1103,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
 
 				int j = 0;
-				for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++j) {
+				for (LocalVector<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++j) {
 					DocData::ArgumentDoc ad;
 					DocData::argument_doc_from_arginfo(ad, *itr);
 

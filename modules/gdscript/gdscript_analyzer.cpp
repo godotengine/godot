@@ -1640,13 +1640,13 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
 
-	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
+	uint32_t argument_info_idx = 0;
 	for (int i = 0; i < p_annotation->arguments.size(); i++) {
 		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
-		const PropertyInfo &argument_info = E->get();
+		const PropertyInfo &argument_info = annotation_info.arguments[argument_info_idx];
 
-		if (E->next() != nullptr) {
-			E = E->next();
+		if (argument_info_idx + 1 < annotation_info.arguments.size()) {
+			argument_info_idx++;
 		}
 
 		reduce_expression(argument);
@@ -3324,7 +3324,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					bool types_match = true;
 
 					{
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						LocalVector<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
 						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
 							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
 							GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
@@ -3342,7 +3342,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					}
 
 					if (types_match) {
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
+						LocalVector<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
 						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
 							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
 							if (p_call->arguments[i]->is_constant) {

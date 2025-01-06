@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -118,7 +119,11 @@ TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
-	d["args"] = convert_property_list(&arguments);
+	TypedArray<Dictionary> args;
+	for (const PropertyInfo &arg : arguments) {
+		args.push_back(Dictionary(arg));
+	}
+	d["args"] = args;
 	Array da;
 	for (int i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);

@@ -150,8 +150,8 @@ public:
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
 			return _gen_return_type_info();
-		} else if (p_arg < method_info.arguments.size()) {
-			return method_info.arguments.get(p_arg);
+		} else if (p_arg < (int)method_info.arguments.size()) {
+			return method_info.arguments[p_arg];
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
@@ -193,7 +193,7 @@ public:
 			names.resize(method_info.arguments.size());
 #endif
 			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
+			for (LocalVector<PropertyInfo>::Iterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
 				at[i + 1] = itr->type;
 #ifdef DEBUG_METHODS_ENABLED
 				names.write[i] = itr->name;

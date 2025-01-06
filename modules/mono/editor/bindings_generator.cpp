@@ -4112,7 +4112,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
 				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
@@ -4244,7 +4244,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.cname = method_info.name;
 
 			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
+			for (LocalVector<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
 				const PropertyInfo &arginfo = *itr;
 
 				String orig_arg_name = arginfo.name;
