@@ -37,9 +37,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 
-// TODO: Thread safety
-// - Roll back thread safe attribute for RID_Owner members after the read-only/atomic update scheme is implemented.
-
 #define FORCE_SEPARATE_PRESENT_QUEUE 0
 #define PRINT_FRAMEBUFFER_FORMAT 0
 
