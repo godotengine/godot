@@ -33,27 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "line_builder.h"
 
-Line2D::Line2D() {
-}
-
 #ifdef DEBUG_ENABLED
-Rect2 Line2D::_edit_get_rect() const {
-	if (_points.size() == 0) {
-		return Rect2(0, 0, 0, 0);
-	}
-	Vector2 d = Vector2(_width, _width);
-	Rect2 bounding_rect = Rect2(_points[0] - d, 2 * d);
-	for (int i = 1; i < _points.size(); i++) {
-		bounding_rect.expand_to(_points[i] - d);
-		bounding_rect.expand_to(_points[i] + d);
-	}
-	return bounding_rect;
-}
-
-bool Line2D::_edit_use_rect() const {
-	return true;
-}
-
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
