@@ -432,7 +432,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					tsize *= cl->scale;
 
 					Vector2 offset = tsize / 2.0;
-					cl->rect_cache = Rect2(-offset + cl->texture_offset, tsize);
+					Rect2 local_rect = Rect2(-offset + cl->texture_offset, tsize);
 
 					if (!RSG::canvas->_interpolation_data.interpolation_enabled || !cl->interpolated) {
 						cl->xform_cache = xf * cl->xform_curr;
@@ -442,25 +442,24 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 						cl->xform_cache = xf * cl->xform_cache;
 					}
 
-					Rect2 temp_rect = cl->xform_cache.xform(cl->rect_cache);
+					cl->rect_cache = cl->xform_cache.xform(local_rect);
 
-					if (clip_rect.intersects(temp_rect)) {
+					if (clip_rect.intersects(cl->rect_cache)) {
 						cl->filter_next_ptr = lights;
 						lights = cl;
 						Transform2D scale;
-						scale.scale(cl->rect_cache.size);
-						scale.columns[2] = cl->rect_cache.position;
+						scale.scale(local_rect.size);
+						scale.columns[2] = local_rect.position;
 						cl->light_shader_xform = cl->xform_cache * scale;
 						if (cl->use_shadow) {
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == nullptr) {
-								shadow_rect = temp_rect;
+								shadow_rect = cl->rect_cache;
 							} else {
-								shadow_rect = shadow_rect.merge(temp_rect);
+								shadow_rect = shadow_rect.merge(cl->rect_cache);
 							}
 							lights_with_shadow = cl;
-							cl->radius_cache = cl->rect_cache.size.length();
-							cl->rect_cache = temp_rect;
+							cl->radius_cache = local_rect.size.length();
 						}
 					}
 				}
