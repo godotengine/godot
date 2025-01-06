@@ -1081,33 +1081,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 		theme->set_icon("color_hue", "ColorPicker", hue_texture);
 	}
 
-	{
-		const int precision = 7;
-
-		Ref<Gradient> hue_gradient;
-		hue_gradient.instantiate();
-		PackedFloat32Array offsets;
-		offsets.resize(precision);
-		PackedColorArray colors;
-		colors.resize(precision);
-
-		for (int i = 0; i < precision; i++) {
-			float h = i / float(precision - 1);
-			offsets.write[i] = h;
-			colors.write[i] = Color::from_ok_hsl(h, 1, 0.5);
-		}
-		hue_gradient->set_offsets(offsets);
-		hue_gradient->set_colors(colors);
-
-		Ref<GradientTexture2D> hue_texture;
-		hue_texture.instantiate();
-		hue_texture->set_width(800);
-		hue_texture->set_height(6);
-		hue_texture->set_gradient(hue_gradient);
-
-		theme->set_icon("color_okhsl_hue", "ColorPicker", hue_texture);
-	}
-
 	// ColorPickerButton
 
 	theme->set_icon("bg", "ColorPickerButton", icons["mini_checkerboard"]);
