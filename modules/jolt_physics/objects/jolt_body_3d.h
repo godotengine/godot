@@ -139,7 +139,7 @@ private:
 	void _exit_all_areas();
 
 	void _mode_changed();
-	virtual void _shapes_built() override;
+	virtual void _shapes_committed() override;
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
 	void _areas_changed();

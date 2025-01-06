@@ -33,6 +33,8 @@
 
 #include "jolt_object_3d.h"
 
+#include "core/templates/self_list.h"
+
 #include "Jolt/Jolt.h"
 
 #include "Jolt/Physics/Body/Body.h"
@@ -42,6 +44,8 @@ class JoltShapedObject3D : public JoltObject3D {
 	friend class JoltShape3D;
 
 protected:
+	SelfList<JoltShapedObject3D> needs_optimization_element;
+
 	Vector3 scale = Vector3(1, 1, 1);
 
 	JPH::ShapeRefC jolt_shape;
@@ -53,15 +57,16 @@ protected:
 
 	bool _is_big() const;
 
-	JPH::ShapeRefC _try_build_shape();
+	JPH::ShapeRefC _try_build_shape(bool p_optimize_compound);
 	JPH::ShapeRefC _try_build_single_shape();
-	JPH::ShapeRefC _try_build_compound_shape();
+	JPH::ShapeRefC _try_build_compound_shape(bool p_optimize);
+
+	void _enqueue_needs_optimization();
+	void _dequeue_needs_optimization();
 
 	virtual void _shapes_changed();
-	virtual void _shapes_built() {}
+	virtual void _shapes_committed() {}
 	virtual void _space_changing() override;
-
-	void _update_shape();
 
 public:
 	explicit JoltShapedObject3D(ObjectType p_object_type);
@@ -86,7 +91,9 @@ public:
 	virtual bool has_custom_center_of_mass() const = 0;
 	virtual Vector3 get_center_of_mass_custom() const = 0;
 
-	JPH::ShapeRefC build_shape();
+	JPH::ShapeRefC build_shapes(bool p_optimize_compound);
+
+	void commit_shapes(bool p_optimize_compound);
 
 	const JPH::Shape *get_jolt_shape() const { return jolt_shape; }
 	const JPH::Shape *get_previous_jolt_shape() const { return previous_jolt_shape; }

@@ -114,7 +114,7 @@ JPH::EMotionType JoltBody3D::_get_motion_type() const {
 }
 
 void JoltBody3D::_add_to_space() {
-	jolt_shape = build_shape();
+	jolt_shape = build_shapes(true);
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -477,8 +477,8 @@ void JoltBody3D::_mode_changed() {
 	wake_up();
 }
 
-void JoltBody3D::_shapes_built() {
-	JoltShapedObject3D::_shapes_built();
+void JoltBody3D::_shapes_committed() {
+	JoltShapedObject3D::_shapes_committed();
 
 	_update_mass_properties();
 	_update_joint_constraints();

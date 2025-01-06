@@ -63,6 +63,12 @@ constexpr double DEFAULT_SOLVER_ITERATIONS = 8;
 } // namespace
 
 void JoltSpace3D::_pre_step(float p_step) {
+	while (needs_optimization_list.first()) {
+		JoltShapedObject3D *object = needs_optimization_list.first()->self();
+		needs_optimization_list.remove(needs_optimization_list.first());
+		object->commit_shapes(true);
+	}
+
 	contact_listener->pre_step();
 
 	const JPH::BodyLockInterface &lock_iface = get_lock_iface();
@@ -424,6 +430,18 @@ void JoltSpace3D::dequeue_call_queries(SelfList<JoltBody3D> *p_body) {
 void JoltSpace3D::dequeue_call_queries(SelfList<JoltArea3D> *p_area) {
 	if (p_area->in_list()) {
 		area_call_queries_list.remove(p_area);
+	}
+}
+
+void JoltSpace3D::enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_object) {
+	if (!p_object->in_list()) {
+		needs_optimization_list.add(p_object);
+	}
+}
+
+void JoltSpace3D::dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object) {
+	if (p_object->in_list()) {
+		needs_optimization_list.remove(p_object);
 	}
 }
 
