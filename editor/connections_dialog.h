@@ -199,6 +199,8 @@ class ConnectionsDockTree : public Tree {
 class ConnectionsDock : public VBoxContainer {
 	GDCLASS(ConnectionsDock, VBoxContainer);
 
+	static ConnectionsDock *singleton;
+
 	enum TreeItemType {
 		TREE_ITEM_TYPE_ROOT,
 		TREE_ITEM_TYPE_CLASS,
@@ -237,8 +239,8 @@ class ConnectionsDock : public VBoxContainer {
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(const ConnectDialog::ConnectionData &p_cd);
-	void _disconnect(const ConnectDialog::ConnectionData &p_cd);
+	void _connect(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action = true);
+	void _disconnect(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action = true);
 	void _disconnect_all();
 
 	void _tree_item_selected();
@@ -265,6 +267,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	static ConnectionsDock *get_singleton() { return singleton; }
+	void connect_connection(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action = true) {
+		_connect(p_cd, commit_action);
+	}
+	void disconnect_connection(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action = true) {
+		_disconnect(p_cd, commit_action);
+	}
 	void set_node(Node *p_node);
 	void update_tree();
 

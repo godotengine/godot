@@ -34,19 +34,72 @@
 #include "core/io/json.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
+#include "editor/connections_dialog.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
+#include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
+static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
+	Vector<Node *> nodes;
+
+	if (p_current->get_owner() != p_base && p_base != p_current) {
+		return nodes;
+	}
+
+	Ref<Script> c = p_current->get_script();
+	if (c == p_script) {
+		nodes.push_back(p_current);
+	}
+
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		Vector<Node *> found = _find_all_node_for_script(p_base, p_current->get_child(i), p_script);
+		nodes.append_array(found);
+	}
+
+	return nodes;
+}
+
+static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
+	if (p_current->get_owner() != p_base && p_base != p_current) {
+		return nullptr;
+	}
+	Ref<Script> c = p_current->get_script();
+	if (c == p_script) {
+		return p_current;
+	}
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		Node *found = _find_node_for_script(p_base, p_current->get_child(i), p_script);
+		if (found) {
+			return found;
+		}
+	}
+
+	return nullptr;
+}
+
 void ConnectionInfoDialog::ok_pressed() {
+}
+
+void ConnectionInfoDialog::update_popup(const String &p_method) {
+	Node *base = get_tree()->get_edited_scene_root();
+	if (!base) {
+		return;
+	}
+
+	ScriptTextEditor *script_text_editor = Object::cast_to<ScriptTextEditor>(_script_text_editor_update_connected.get_object());
+	Vector<Node *> nodes = _find_all_node_for_script(base, base, *script_text_editor->get_current_script());
+
+	popup_connections(p_method, nodes);
 }
 
 void ConnectionInfoDialog::popup_connections(const String &p_method, const Vector<Node *> &p_nodes) {
@@ -68,23 +121,251 @@ void ConnectionInfoDialog::popup_connections(const String &p_method, const Vecto
 
 			node_item->set_text(0, Object::cast_to<Node>(connection.signal.get_object())->get_name());
 			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.signal.get_object(), "Node"));
-			node_item->set_selectable(0, false);
+			node_item->set_selectable(0, true);
 			node_item->set_editable(0, false);
 
 			node_item->set_text(1, connection.signal.get_name());
 			Control *p = Object::cast_to<Control>(get_parent());
 			node_item->set_icon(1, p->get_editor_theme_icon(SNAME("Slot")));
-			node_item->set_selectable(1, false);
+			node_item->set_selectable(1, true);
 			node_item->set_editable(1, false);
 
 			node_item->set_text(2, Object::cast_to<Node>(connection.callable.get_object())->get_name());
 			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.callable.get_object(), "Node"));
-			node_item->set_selectable(2, false);
+			node_item->set_selectable(2, true);
 			node_item->set_editable(2, false);
+
+			node_item->set_metadata(0, connection);
+
+			slot_menu = memnew(PopupMenu);
+			slot_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionInfoDialog::_handle_slot_menu_option));
+			slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionInfoDialog::_slot_menu_about_to_popup));
+			slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
+			slot_menu->add_item(vformat(TTR("Show %s Node in Tree"), TTR("Source")), SLOT_MENU_SHOW_SOURCE_NODE);
+			slot_menu->add_item(vformat(TTR("Show %s Node in Tree"), TTR("Target")), SLOT_MENU_SHOW_TARGET_NODE);
+			slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTR("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
+			slot_menu->set_item_icon(0, get_editor_theme_icon(SNAME("Edit")));
+			slot_menu->set_item_icon(1, get_editor_theme_icon(SNAME("ArrowRight")));
+			slot_menu->set_item_icon(2, get_editor_theme_icon(SNAME("ArrowRight")));
+			slot_menu->set_item_icon(3, get_editor_theme_icon(SNAME("Unlinked")));
+			add_child(slot_menu);
 		}
 	}
 
+	//if not connected to any functions, close
+	if (root->get_child_count() == 0) {
+		hide();
+		return;
+	}
+
 	popup_centered(Size2(600, 300) * EDSCALE);
+}
+
+void ConnectionInfoDialog::_disconnect(const ConnectDialog::ConnectionData &connection) {
+	ConnectionsDock *connections_dock = ConnectionsDock::get_singleton();
+	connections_dock->set_node(connection.source);
+	connections_dock->disconnect_connection(connection, false);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(this, "update_popup", connection.method);
+	undo_redo->add_do_method(_script_text_editor_update_connected.get_object(), _script_text_editor_update_connected.get_method());
+	undo_redo->add_undo_method(_script_text_editor_update_connected.get_object(), _script_text_editor_update_connected.get_method());
+	undo_redo->commit_action();
+}
+
+void ConnectionInfoDialog::_connect(const ConnectDialog::ConnectionData &connection) {
+	ConnectionsDock *connections_dock = ConnectionsDock::get_singleton();
+	connections_dock->set_node(connection.source);
+	connections_dock->connect_connection(connection, false);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(this, "update_popup", connection.method);
+	undo_redo->add_undo_method(this, "update_popup", connection.method);
+	undo_redo->add_do_method(_script_text_editor_update_connected.get_object(), _script_text_editor_update_connected.get_method());
+	undo_redo->add_undo_method(_script_text_editor_update_connected.get_object(), _script_text_editor_update_connected.get_method());
+	undo_redo->commit_action();
+}
+
+void ConnectionInfoDialog::_show_node(Node &_node_to_show) {
+	SceneTreeDock::get_singleton()->set_selected(&_node_to_show, true);
+}
+
+void ConnectionInfoDialog::_open_edit_connection_dialog(const ConnectDialog::ConnectionData &cd, const TreeItem &parent_tree_item) {
+	Node *src = Object::cast_to<Node>(cd.source);
+	Node *dst = Object::cast_to<Node>(cd.target);
+
+	if (src && dst) {
+		const String &signal_name_ref = cd.signal;
+		PackedStringArray signal_args = parent_tree_item.get_metadata(0).operator Dictionary()["args"];
+
+		selected_node = dst;
+
+		connect_dialog->set_title(vformat(TTR("Edit Connection: '%s'"), cd.signal));
+		connect_dialog->popup_dialog(signal_name_ref);
+		connect_dialog->init(cd, signal_args, true);
+	}
+}
+
+void ConnectionInfoDialog::_slot_menu_about_to_popup() {
+	TreeItem *item = tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	bool connection_is_inherited = item->has_meta("_inherited_connection");
+
+	slot_menu->set_item_disabled(slot_menu->get_item_index(SLOT_MENU_EDIT), connection_is_inherited);
+	slot_menu->set_item_disabled(slot_menu->get_item_index(SLOT_MENU_DISCONNECT), connection_is_inherited);
+	slot_menu->set_item_disabled(slot_menu->get_item_index(SLOT_MENU_SHOW_SOURCE_NODE), connection_is_inherited);
+	slot_menu->set_item_disabled(slot_menu->get_item_index(SLOT_MENU_SHOW_TARGET_NODE), connection_is_inherited);
+}
+
+void ConnectionInfoDialog::_handle_slot_menu_option(const int &p_option) {
+	TreeItem *item = tree->get_selected();
+	if (!item) {
+		return;
+	}
+
+	Connection connection = item->get_metadata(0);
+	ConnectDialog::ConnectionData cd = connection;
+
+	switch (p_option) {
+		case SLOT_MENU_EDIT: {
+			_open_edit_connection_dialog(cd, *item->get_parent());
+		} break;
+		case SLOT_MENU_DISCONNECT: {
+			_disconnect(cd);
+		} break;
+		case SLOT_MENU_SHOW_SOURCE_NODE: {
+			_show_node(*cd.source);
+		} break;
+		case SLOT_MENU_SHOW_TARGET_NODE: {
+			_show_node(*cd.target);
+		} break;
+	}
+}
+
+void ConnectionInfoDialog::_tree_item_activated() {
+	TreeItem *item = tree->get_selected();
+	int selected_column = tree->get_selected_column();
+
+	if (!item || selected_column == 1) {
+		return;
+	}
+
+	Connection connection = item->get_metadata(0);
+	ConnectDialog::ConnectionData cd = connection;
+
+	if (selected_column == 0) {
+		_show_node(*cd.source);
+	} else if (selected_column == 2) {
+		_show_node(*cd.target);
+	}
+}
+
+void ConnectionInfoDialog::_tree_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> &key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
+			TreeItem *item = tree->get_selected();
+			if (item) {
+				Connection connection = item->get_metadata(0);
+				_disconnect(connection);
+				return;
+			}
+		}
+	}
+
+	// Handle RMB press.
+	const Ref<InputEventMouseButton> &mb_event = p_event;
+
+	if (mb_event.is_valid() && mb_event->is_pressed() && mb_event->get_button_index() == MouseButton::RIGHT) {
+		TreeItem *item = tree->get_item_at_position(mb_event->get_position());
+		if (!item) {
+			return;
+		}
+
+		if (item->is_selectable(0)) {
+			// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
+			tree->set_selected(item);
+		}
+
+		Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
+
+		slot_menu->set_position(screen_position);
+		slot_menu->reset_size();
+		slot_menu->popup();
+	}
+}
+
+void ConnectionInfoDialog::_bind_methods() {
+	ClassDB::bind_method("update_popup", &ConnectionInfoDialog::update_popup);
+}
+
+void ConnectionInfoDialog::_edit_connection() {
+	ERR_FAIL_NULL(selected_node);
+
+	ConnectDialog::ConnectionData cd;
+	cd.source = connect_dialog->get_source();
+	cd.target = selected_node;
+	cd.signal = connect_dialog->get_signal_name();
+	cd.method = connect_dialog->get_dst_method_name();
+	cd.unbinds = connect_dialog->get_unbinds();
+	if (cd.unbinds == 0) {
+		cd.binds = connect_dialog->get_binds();
+	}
+	bool b_deferred = connect_dialog->get_deferred();
+	bool b_oneshot = connect_dialog->get_one_shot();
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
+
+	// If the function is found in target's own script, check the editor setting
+	// to determine if the script should be opened.
+	// If the function is found in an inherited class or script no need to do anything
+	// except making a connection.
+	bool add_script_function_request = false;
+	Ref<Script> scr = selected_node->get_script();
+
+	if (scr.is_valid() && !ClassDB::has_method(selected_node->get_class(), cd.method)) {
+		// Check in target's own script.
+		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
+		if (line != -1) {
+			add_script_function_request = EDITOR_GET("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method");
+		} else {
+			// There is a chance that the method is inherited from another script.
+			bool found_inherited_function = false;
+			Ref<Script> inherited_scr = scr->get_base_script();
+			while (inherited_scr.is_valid()) {
+				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
+				if (inherited_line != -1) {
+					found_inherited_function = true;
+					break;
+				}
+
+				inherited_scr = inherited_scr->get_base_script();
+			}
+
+			add_script_function_request = !found_inherited_function;
+		}
+	}
+
+	if (connect_dialog->is_editing()) {
+		_disconnect(connect_dialog->get_source_connection_data());
+		_connect(cd);
+	}
+
+	if (add_script_function_request) {
+		PackedStringArray script_function_args = connect_dialog->get_signal_args();
+		script_function_args.resize(script_function_args.size() - cd.unbinds);
+		for (int i = 0; i < cd.binds.size(); i++) {
+			script_function_args.push_back("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cd.binds[i].get_type()));
+		}
+
+		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), selected_node, cd.method, script_function_args);
+	}
+
+	//show initial dialog
+	update_popup(connect_dialog->get_source_connection_data().method);
 }
 
 ConnectionInfoDialog::ConnectionInfoDialog() {
@@ -112,6 +393,15 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	vbc->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
+
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionInfoDialog::_tree_gui_input));
+	tree->connect("item_activated", callable_mp(this, &ConnectionInfoDialog::_tree_item_activated));
+
+	connect_dialog = memnew(ConnectDialog);
+	connect_dialog->set_process_shortcut_input(true);
+	connect_dialog->connect("connected", callable_mp(this, &ConnectionInfoDialog::_edit_connection));
+
+	add_child(connect_dialog);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -521,6 +811,10 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 	return Ref<Texture2D>();
 }
 
+Ref<Script> *ScriptTextEditor::get_current_script() {
+	return &script;
+}
+
 void ScriptTextEditor::_validate_script() {
 	CodeEdit *te = code_editor->get_text_editor();
 
@@ -767,44 +1061,6 @@ void ScriptTextEditor::_bookmark_item_pressed(int p_idx) {
 	} else {
 		code_editor->goto_line_centered(bookmarks_menu->get_item_metadata(p_idx));
 	}
-}
-
-static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
-	Vector<Node *> nodes;
-
-	if (p_current->get_owner() != p_base && p_base != p_current) {
-		return nodes;
-	}
-
-	Ref<Script> c = p_current->get_script();
-	if (c == p_script) {
-		nodes.push_back(p_current);
-	}
-
-	for (int i = 0; i < p_current->get_child_count(); i++) {
-		Vector<Node *> found = _find_all_node_for_script(p_base, p_current->get_child(i), p_script);
-		nodes.append_array(found);
-	}
-
-	return nodes;
-}
-
-static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
-	if (p_current->get_owner() != p_base && p_base != p_current) {
-		return nullptr;
-	}
-	Ref<Script> c = p_current->get_script();
-	if (c == p_script) {
-		return p_current;
-	}
-	for (int i = 0; i < p_current->get_child_count(); i++) {
-		Node *found = _find_node_for_script(p_base, p_current->get_child(i), p_script);
-		if (found) {
-			return found;
-		}
-	}
-
-	return nullptr;
 }
 
 static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_scripts) {
@@ -2472,6 +2728,10 @@ void ScriptTextEditor::_enable_code_editor() {
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptTextEditor::_edit_option));
 }
 
+void ScriptTextEditor::_bind_methods() {
+	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
+}
+
 ScriptTextEditor::ScriptTextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->set_toggle_list_control(ScriptEditor::get_singleton()->get_left_list_split());
@@ -2553,6 +2813,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	breakpoints_menu = memnew(PopupMenu);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
+	connection_info_dialog->_script_text_editor_update_connected = Callable(this, "_update_connected_methods");
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }

@@ -1000,7 +1000,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 /*
  * Creates single connection w/ undo-redo functionality.
  */
-void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
+void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action) {
 	Node *source = Object::cast_to<Node>(p_cd.source);
 	Node *target = Object::cast_to<Node>(p_cd.target);
 
@@ -1018,13 +1018,15 @@ void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
 	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
-	undo_redo->commit_action();
+	if (commit_action) {
+		undo_redo->commit_action();
+	}
 }
 
 /*
  * Break single connection w/ undo-redo functionality.
  */
-void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
+void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd, const bool &commit_action) {
 	ERR_FAIL_COND(p_cd.source != selected_node); // Shouldn't happen but... Bugcheck.
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1038,7 +1040,9 @@ void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
 	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
 	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
 
-	undo_redo->commit_action();
+	if (commit_action) {
+		undo_redo->commit_action();
+	}
 }
 
 /*
@@ -1589,6 +1593,8 @@ void ConnectionsDock::update_tree() {
 	connect_button->set_disabled(true);
 }
 
+ConnectionsDock *ConnectionsDock::singleton = nullptr;
+
 ConnectionsDock::ConnectionsDock() {
 	set_name(TTR("Signals"));
 
@@ -1657,6 +1663,8 @@ ConnectionsDock::ConnectionsDock() {
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
+
+	singleton = this;
 }
 
 ConnectionsDock::~ConnectionsDock() {
