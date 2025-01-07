@@ -41,7 +41,8 @@ class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
 
 	SpinBox *layer = nullptr;
-	Label *info = nullptr;
+	Label *filename_label = nullptr;
+	Label *metadata_label = nullptr;
 	Ref<Texture3D> texture;
 
 	Ref<Shader> shader;
@@ -66,6 +67,7 @@ class Texture3DEditor : public Control {
 
 	void _update_material(bool p_texture_changed);
 	void _update_gui();
+	void _update_filename_label_text();
 
 protected:
 	void _notification(int p_what);

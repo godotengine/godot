@@ -56,6 +56,12 @@ void TexturePreview::_notification(int p_what) {
 				break;
 			}
 
+			// Filename label.
+			{
+				Ref<Font> filename_label_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				filename_label->add_theme_font_override(SceneStringName(font), filename_label_font);
+			}
+
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
@@ -64,6 +70,21 @@ void TexturePreview::_notification(int p_what) {
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 		} break;
 	}
+}
+
+void TexturePreview::_update_filename_label_text() {
+	const Ref<Texture2D> texture = texture_display->get_texture();
+
+	if (texture.is_null()) {
+		filename_label->set_tooltip_text("");
+		filename_label->set_text("");
+		filename_label->set_visible(false);
+		return;
+	}
+
+	filename_label->set_tooltip_text(texture->get_path());
+	filename_label->set_text(texture->get_path().get_file());
+	filename_label->set_visible(true);
 }
 
 void TexturePreview::_update_metadata_label_text() {
@@ -124,21 +145,54 @@ void TexturePreview::_update_metadata_label_text() {
 }
 
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
-	checkerboard = memnew(TextureRect);
-	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
-	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
-	checkerboard->set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
-	add_child(checkerboard);
+	{
+		// Checkerboard.
+		checkerboard = memnew(TextureRect);
+		checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
+		checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
+		checkerboard->set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
+		add_child(checkerboard);
+	}
 
-	texture_display = memnew(TextureRect);
-	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
-	texture_display->set_texture(p_texture);
-	texture_display->set_anchors_preset(TextureRect::PRESET_FULL_RECT);
-	texture_display->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	texture_display->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
-	add_child(texture_display);
+	{
+		// Texture display.
+		texture_display = memnew(TextureRect);
+		texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		texture_display->set_texture(p_texture);
+		texture_display->set_anchors_preset(TextureRect::PRESET_FULL_RECT);
+		texture_display->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		texture_display->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		add_child(texture_display);
+	}
+
+	{
+		// Filename label.
+		filename_label = memnew(Label);
+
+		_update_filename_label_text();
+
+		filename_label->set_mouse_filter(MouseFilter::MOUSE_FILTER_PASS);
+
+		// It's okay that these colors are static since the grid color is static too.
+		filename_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		filename_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+
+		filename_label->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
+		filename_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+		filename_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+
+		filename_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+		filename_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		filename_label->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+
+		filename_label->set_clip_text(true);
+		filename_label->set_text_overrun_behavior(TextServer::OverrunBehavior::OVERRUN_TRIM_ELLIPSIS);
+
+		add_child(filename_label);
+	}
 
 	if (p_show_metadata) {
+		// Metadata label.
 		metadata_label = memnew(Label);
 
 		_update_metadata_label_text();

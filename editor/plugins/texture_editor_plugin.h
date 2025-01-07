@@ -45,8 +45,10 @@ private:
 	TextureRect *texture_display = nullptr;
 
 	TextureRect *checkerboard = nullptr;
+	Label *filename_label = nullptr;
 	Label *metadata_label = nullptr;
 
+	void _update_filename_label_text();
 	void _update_metadata_label_text();
 
 protected:
