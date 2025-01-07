@@ -52,10 +52,8 @@
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 #ifdef ANDROID_ENABLED
 #include "../os_android.h"
@@ -3830,7 +3828,6 @@ void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -3839,7 +3836,6 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 
 		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		devices_changed.set();
 #ifndef DISABLE_DEPRECATED
