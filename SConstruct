@@ -199,6 +199,7 @@ opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated an
 opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompresson and WOFF2 fonts support", True))
+opts.Add(BoolVariable("lz4", "Enable LZ4 (de)compression support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
@@ -272,6 +273,7 @@ opts.Add(BoolVariable("builtin_libpng", "Use the built-in libpng library", True)
 opts.Add(BoolVariable("builtin_libtheora", "Use the built-in libtheora library", True))
 opts.Add(BoolVariable("builtin_libvorbis", "Use the built-in libvorbis library", True))
 opts.Add(BoolVariable("builtin_libwebp", "Use the built-in libwebp library", True))
+opts.Add(BoolVariable("builtin_lz4", "Use the built-in LZ4 library", True))
 opts.Add(BoolVariable("builtin_wslay", "Use the built-in wslay library", True))
 opts.Add(BoolVariable("builtin_mbedtls", "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library", True))
@@ -1008,6 +1010,8 @@ if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+if env["lz4"]:
+    env.Append(CPPDEFINES=["LZ4_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)

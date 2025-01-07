@@ -109,6 +109,11 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
+# LZ4 library
+if env["lz4"]:
+    env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/lz4/lz4.c")
+    env.Prepend(CPPPATH=["#thirdparty/lz4"])
+
 # Zstd library, can be unbundled in theory
 # though we currently use some private symbols
 # https://github.com/godotengine/godot/issues/17374
