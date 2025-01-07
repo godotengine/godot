@@ -5,12 +5,10 @@ EnsureSConsVersion(4, 0)
 EnsurePythonVersion(3, 8)
 
 # System
-import atexit
 import glob
 import os
 import pickle
 import sys
-import time
 from collections import OrderedDict
 from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
@@ -52,13 +50,14 @@ _helper_module("platform_methods", "platform_methods.py")
 _helper_module("version", "version.py")
 _helper_module("core.core_builders", "core/core_builders.py")
 _helper_module("main.main_builders", "main/main_builders.py")
+_helper_module("misc.utility.color", "misc/utility/color.py")
 
 # Local
 import gles3_builders
 import glsl_builders
 import methods
 import scu_builders
-from methods import Ansi, print_error, print_info, print_warning
+from misc.utility.color import STDERR_COLOR, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -73,8 +72,6 @@ platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
 platform_exporters = []
 platform_apis = []
-
-time_at_start = time.time()
 
 for x in sorted(glob.glob("platform/*")):
     if not os.path.isdir(x) or not os.path.exists(x + "/detect.py"):
@@ -702,6 +699,14 @@ if env["arch"] == "x86_32":
     else:
         env.Append(CCFLAGS=["-msse2"])
 
+# Explicitly specify colored output.
+if methods.using_gcc(env):
+    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if STDERR_COLOR else "-fno-diagnostics-color"])
+elif methods.using_clang(env) or methods.using_emcc(env):
+    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if STDERR_COLOR else "-fno-color-diagnostics"])
+    if sys.platform == "win32":
+        env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
+
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
 # Needs to happen after configure to have `env.msvc` defined.
@@ -1086,30 +1091,5 @@ methods.show_progress(env)
 # TODO: replace this with `env.Dump(format="json")`
 # once we start requiring SCons 4.0 as min version.
 methods.dump(env)
-
-
-def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 2)
-    time_centiseconds = round((elapsed_time_sec % 1) * 100)
-    print(
-        "{}[Time elapsed: {}.{:02}]{}".format(
-            Ansi.GRAY,
-            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
-            time_centiseconds,
-            Ansi.RESET,
-        )
-    )
-
-
-atexit.register(print_elapsed_time)
-
-
-def purge_flaky_files():
-    paths_to_keep = [env["ninja_file"]]
-    for build_failure in GetBuildFailures():
-        path = build_failure.node.path
-        if os.path.isfile(path) and path not in paths_to_keep:
-            os.remove(path)
-
-
-atexit.register(purge_flaky_files)
+methods.prepare_purge(env)
+methods.prepare_timer()
