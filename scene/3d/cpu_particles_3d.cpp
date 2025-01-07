@@ -1417,6 +1417,11 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
 	set_emission_box_extents(material->get_emission_box_extents());
+	set_emission_ring_height(material->get_emission_ring_height());
+	set_emission_ring_radius(material->get_emission_ring_radius());
+	set_emission_ring_inner_radius(material->get_emission_ring_inner_radius());
+	set_emission_ring_cone_angle(material->get_emission_ring_cone_angle());
+
 	Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticleProcessMaterial::PARAM_SCALE);
 	if (scale3D.is_valid()) {
 		split_scale = true;

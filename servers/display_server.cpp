@@ -631,7 +631,8 @@ void DisplayServer::virtual_keyboard_hide() {
 
 // returns height of the currently shown keyboard (0 if keyboard is hidden)
 int DisplayServer::virtual_keyboard_get_height() const {
-	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
+	WARN_PRINT("Virtual keyboard not supported by this display server.");
+	return 0;
 }
 
 bool DisplayServer::has_hardware_keyboard() const {
@@ -1083,6 +1084,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_DRAG);
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_EMBEDDING);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_MIME);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

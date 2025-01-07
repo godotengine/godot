@@ -156,6 +156,7 @@ public:
 		FEATURE_WINDOW_DRAG,
 		FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE,
 		FEATURE_WINDOW_EMBEDDING,
+		FEATURE_NATIVE_DIALOG_FILE_MIME,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
