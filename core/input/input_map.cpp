@@ -39,7 +39,7 @@
 
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
-	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
+	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::get_actions);
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(DEFAULT_DEADZONE));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
@@ -61,16 +61,15 @@ void InputMap::_bind_methods() {
  * matching action name (if possible).
  */
 String InputMap::suggest_actions(const StringName &p_action) const {
-	List<StringName> actions = get_actions();
 	StringName closest_action;
 	float closest_similarity = 0.0;
 
 	// Find the most action with the most similar name.
-	for (const StringName &action : actions) {
-		const float similarity = String(action).similarity(p_action);
+	for (const KeyValue<StringName, Action> &kv : input_map) {
+		const float similarity = String(kv.key).similarity(p_action);
 
 		if (similarity > closest_similarity) {
-			closest_action = action;
+			closest_action = kv.key;
 			closest_similarity = similarity;
 		}
 	}
@@ -128,31 +127,18 @@ void InputMap::erase_action(const StringName &p_action) {
 	input_map.erase(p_action);
 }
 
-TypedArray<StringName> InputMap::_get_actions() {
+TypedArray<StringName> InputMap::get_actions() {
 	TypedArray<StringName> ret;
-	List<StringName> actions = get_actions();
-	if (actions.is_empty()) {
-		return ret;
-	}
 
-	for (const StringName &E : actions) {
-		ret.push_back(E);
+	ret.resize(input_map.size());
+
+	uint32_t i = 0;
+	for (const KeyValue<StringName, Action> &kv : input_map) {
+		ret[i] = kv.key;
+		i++;
 	}
 
 	return ret;
-}
-
-List<StringName> InputMap::get_actions() const {
-	List<StringName> actions = List<StringName>();
-	if (input_map.is_empty()) {
-		return actions;
-	}
-
-	for (const KeyValue<StringName, Action> &E : input_map) {
-		actions.push_back(E.key);
-	}
-
-	return actions;
 }
 
 List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
