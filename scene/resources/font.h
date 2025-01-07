@@ -84,6 +84,7 @@ class Font : public Resource {
 	// Shaped string cache.
 	mutable LRUCache<ShapedTextKey, Ref<TextLine>, ShapedTextKeyHasher> cache;
 	mutable LRUCache<ShapedTextKey, Ref<TextParagraph>, ShapedTextKeyHasher> cache_wrap;
+	mutable LRUCache<int, real_t, HashHasher> cache_height;
 
 protected:
 	// Output.

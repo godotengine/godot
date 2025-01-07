@@ -127,6 +127,7 @@ void Font::_invalidate_rids() {
 
 	cache.clear();
 	cache_wrap.clear();
+	cache_height.clear();
 
 	emit_changed();
 }
@@ -207,14 +208,16 @@ TypedArray<RID> Font::get_rids() const {
 
 // Drawing string.
 real_t Font::get_height(int p_font_size) const {
-	if (dirty_rids) {
-		_update_rids();
+	if (cache_height.has(p_font_size)) {
+		return cache_height.get(p_font_size);
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
 		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
 	}
-	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
+	ret += get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
+	cache_height.insert(p_font_size, ret);
+	return ret;
 }
 
 real_t Font::get_ascent(int p_font_size) const {
@@ -564,6 +567,7 @@ int64_t Font::get_face_count() const {
 Font::Font() {
 	cache.set_capacity(64);
 	cache_wrap.set_capacity(16);
+	cache_height.set_capacity(16);
 }
 
 Font::~Font() {
