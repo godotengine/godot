@@ -2464,6 +2464,7 @@
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/bounce_velocity_threshold" type="float" setter="" getter="" default="1.0">
 			The minimum velocity needed before a collision can be bouncy, in meters per second.
+			[b]Note:[/b] This setting will only be read once during the lifetime of the application.
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/continuous_cd_max_penetration" type="float" setter="" getter="" default="0.25">
 			Fraction of a body's inner radius that may penetrate another body while using continuous collision detection.
