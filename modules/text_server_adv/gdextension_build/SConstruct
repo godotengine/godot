@@ -1,13 +1,7 @@
 #!/usr/bin/env python
-
-import atexit
-import time
-from typing import TYPE_CHECKING
+# ruff: noqa: F821
 
 import methods
-
-if TYPE_CHECKING:
-    from misc.utility.scons_hints import *
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -16,8 +10,6 @@ if TYPE_CHECKING:
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-
-time_at_start = time.time()
 
 env = SConscript("./godot-cpp/SConstruct")
 env.__class__.disable_warnings = methods.disable_warnings
@@ -32,9 +24,6 @@ opts.Add(BoolVariable("static_icu_data", "Use built-in ICU data", True))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 
 opts.Update(env)
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 if env["platform"] == "windows" and not env["use_mingw"]:
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
@@ -767,18 +756,4 @@ else:
 
 Default(library)
 
-
-def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 2)
-    time_centiseconds = round((elapsed_time_sec % 1) * 100)
-    print(
-        "{}[Time elapsed: {}.{:02}]{}".format(
-            methods.Ansi.GRAY,
-            time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)),
-            time_centiseconds,
-            methods.Ansi.RESET,
-        )
-    )
-
-
-atexit.register(print_elapsed_time)
+methods.prepare_timer()
