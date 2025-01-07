@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/input/input_event.h"
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/templates/hash_map.h"
 
@@ -67,13 +66,13 @@ private:
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match = false, bool *r_pressed = nullptr, float *r_strength = nullptr, float *r_raw_strength = nullptr, int *r_event_index = nullptr) const;
 
 	TypedArray<InputEvent> _action_get_events(const StringName &p_action);
-	TypedArray<StringName> _get_actions();
 
 protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
 	void _add_action_bind_compat_97281(const StringName &p_action, float p_deadzone = 0.5);
+	TypedArray<StringName> _get_actions_bind_compat_106209();
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -81,7 +80,7 @@ public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
 	bool has_action(const StringName &p_action) const;
-	List<StringName> get_actions() const;
+	TypedArray<StringName> get_actions() const;
 	void add_action(const StringName &p_action, float p_deadzone = DEFAULT_DEADZONE);
 	void erase_action(const StringName &p_action);
 
