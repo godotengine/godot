@@ -4886,11 +4886,29 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
 	Ref<Script> scr = p_object->get_script();
+
+	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+		String class_name;
+		if (scr.is_valid()) {
+			class_name = scr->get_global_name();
+
+			if (class_name.is_empty()) {
+				// If there is no class_name in this script we just take the script path.
+				class_name = scr->get_path();
+			}
+		}
+		return get_class_icon(class_name.is_empty() ? Object::cast_to<EditorDebuggerRemoteObject>(p_object)->type_name : class_name, p_fallback);
+	}
+
 	if (scr.is_null() && p_object->is_class("Script")) {
 		scr = p_object;
 	}
 
-	return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+	if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		return get_class_icon(Object::cast_to<MultiNodeEdit>(p_object)->get_edited_class_name(), p_fallback);
+	} else {
+		return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+	}
 }
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
