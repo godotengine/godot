@@ -93,7 +93,7 @@ void JoltArea3D::_add_to_space() {
 	jolt_settings->mIsSensor = true;
 	jolt_settings->mUseManifoldReduction = false;
 
-	if (JoltProjectSettings::areas_detect_static_bodies()) {
+	if (JoltProjectSettings::areas_detect_static_bodies) {
 		jolt_settings->mCollideKinematicVsNonDynamic = true;
 	}
 
