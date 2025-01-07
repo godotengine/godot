@@ -92,6 +92,7 @@ public:
 		Vector<Vector2> mpath;
 
 		Point2i mouse_pos;
+		WindowResizeEdge edge = WINDOW_EDGE_MAX;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -409,6 +410,7 @@ public:
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
