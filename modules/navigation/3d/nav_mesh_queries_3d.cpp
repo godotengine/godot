@@ -314,7 +314,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 								owner->get_travel_cost();
 						neighbor_poly.entry = new_entry;
 
-						if (neighbor_poly.poly != nullptr) {
+						if (neighbor_poly.traversable_poly_index != traversable_polys.INVALID_INDEX) {
 							traversable_polys.shift(neighbor_poly.traversable_poly_index);
 						} else {
 							neighbor_poly.poly = connection.polygon;
