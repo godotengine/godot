@@ -1685,8 +1685,8 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
 					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 
-			String target = da->read_link(f);
-			zipWriteInFileInZip(p_zip, target.utf8().get_data(), target.utf8().size());
+			const CharString target_utf8 = da->read_link(f).utf8();
+			zipWriteInFileInZip(p_zip, target_utf8.get_data(), target_utf8.size());
 			zipCloseFileInZip(p_zip);
 		} else if (da->current_is_dir()) {
 			zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);
