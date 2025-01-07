@@ -109,6 +109,8 @@ class ProjectConverter3To4 {
 
 	Vector<String> check_for_files();
 
+	void update_translations_path();
+
 	Vector<String> parse_arguments(const String &line);
 	int get_end_parenthesis(const String &line) const;
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
