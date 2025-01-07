@@ -184,8 +184,6 @@ FileSystemList::FileSystemList() {
 	popup_editor->connect("popup_hide", callable_mp(this, &FileSystemList::_text_editor_popup_modal_close));
 }
 
-FileSystemDock *FileSystemDock::singleton = nullptr;
-
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path) {
 	if (!p_icon_path.is_empty()) {
 		Ref<Texture2D> icon = ResourceLoader::load(p_icon_path);
@@ -3950,6 +3948,9 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_dock_horizontal", "enable"), &FileSystemDock::_set_dock_horizontal);
 	ClassDB::bind_method(D_METHOD("_can_dock_horizontal"), &FileSystemDock::_can_dock_horizontal);
 
+	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &FileSystemDock::_save_layout_to_config);
+	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &FileSystemDock::_load_layout_from_config);
+
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
@@ -3963,7 +3964,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
 
-void FileSystemDock::save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+void FileSystemDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
 	p_layout->set_value(p_section, "dock_filesystem_h_split_offset", get_h_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_v_split_offset", get_v_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_display_mode", get_display_mode());
@@ -3975,7 +3976,7 @@ void FileSystemDock::save_layout_to_config(Ref<ConfigFile> p_layout, const Strin
 	p_layout->set_value(p_section, "dock_filesystem_uncollapsed_paths", searched_tokens.is_empty() ? uncollapsed_paths : uncollapsed_paths_before_search);
 }
 
-void FileSystemDock::load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+void FileSystemDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
 	if (p_layout->has_section_key(p_section, "dock_filesystem_h_split_offset")) {
 		int fs_h_split_ofs = p_layout->get_value(p_section, "dock_filesystem_h_split_offset");
 		set_h_split_offset(fs_h_split_ofs);

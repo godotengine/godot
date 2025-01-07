@@ -357,8 +357,11 @@ private:
 	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 private:
-	static FileSystemDock *singleton;
+	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
@@ -413,9 +416,6 @@ public:
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
-
-	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 	FileSystemDock();
 	~FileSystemDock();
