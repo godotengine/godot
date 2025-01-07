@@ -2947,6 +2947,47 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	return true;
 }
 
+void Viewport::_window_start_drag(Window *p_window) {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	SubWindow sw = gui.sub_windows.write[index];
+
+	if (gui.subwindow_focused != sw.window) {
+		// Refocus.
+		_sub_window_grab_focus(sw.window);
+	}
+
+	gui.subwindow_drag = SUB_WINDOW_DRAG_MOVE;
+	gui.subwindow_drag_from = get_mouse_position();
+	gui.subwindow_drag_pos = sw.window->get_position();
+	gui.currently_dragged_subwindow = sw.window;
+
+	_sub_window_update(sw.window);
+}
+
+void Viewport::_window_start_resize(SubWindowResize p_edge, Window *p_window) {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	SubWindow sw = gui.sub_windows.write[index];
+	Rect2i r = Rect2i(sw.window->get_position(), sw.window->get_size());
+
+	if (gui.subwindow_focused != sw.window) {
+		// Refocus.
+		_sub_window_grab_focus(sw.window);
+	}
+
+	gui.subwindow_drag = SUB_WINDOW_DRAG_RESIZE;
+	gui.subwindow_resize_mode = p_edge;
+	gui.subwindow_resize_from_rect = r;
+	gui.subwindow_drag_from = get_mouse_position();
+	gui.subwindow_drag_pos = sw.window->get_position();
+	gui.currently_dragged_subwindow = sw.window;
+
+	_sub_window_update(sw.window);
+}
+
 void Viewport::_update_mouse_over() {
 	// Update gui.mouse_over and gui.subwindow_over in all Viewports.
 	// Send necessary mouse_enter/mouse_exit signals and the MOUSE_ENTER/MOUSE_EXIT notifications for every Viewport in the SceneTree.

@@ -401,6 +401,9 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	void start_drag();
+	void start_resize(DisplayServer::WindowResizeEdge p_edge);
+
 	Rect2i get_usable_parent_rect() const;
 
 	// Internationalization.

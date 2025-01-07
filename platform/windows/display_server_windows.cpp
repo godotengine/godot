@@ -3991,6 +3991,10 @@ void DisplayServerWindows::window_start_drag(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (wd.parent_hwnd) {
+		return; // Embedded window.
+	}
+
 	ReleaseCapture();
 
 	POINT coords;
@@ -4006,6 +4010,10 @@ void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID
 	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	if (wd.parent_hwnd) {
+		return; // Embedded window.
+	}
 
 	ReleaseCapture();
 
