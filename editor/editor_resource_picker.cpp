@@ -37,6 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -317,6 +318,10 @@ void EditorResourcePicker::_update_menu_items() {
 			relative_id++;
 		}
 	}
+
+	// Add an option to load a resource from a file using the regular file dialog.
+	edit_menu->add_separator();
+	edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
 }
 
 void EditorResourcePicker::_edit_menu_cbk(int p_which) {
@@ -411,6 +416,36 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
 			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
+		} break;
+
+		case OBJ_MENU_LOAD: {
+			List<String> extensions;
+			for (int i = 0; i < base_type.get_slice_count(","); i++) {
+				String base = base_type.get_slice(",", i);
+				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
+				if (ScriptServer::is_global_class(base)) {
+					ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
+				}
+			}
+
+			HashSet<String> valid_extensions;
+			for (const String &E : extensions) {
+				valid_extensions.insert(E);
+			}
+
+			if (!file_dialog) {
+				file_dialog = memnew(EditorFileDialog);
+				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				add_child(file_dialog);
+				file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
+			file_dialog->clear_filters();
+			for (const String &E : valid_extensions) {
+				file_dialog->add_filter("*." + E, E.to_upper());
+			}
+
+			file_dialog->popup_file_dialog();
 		} break;
 
 		default: {

@@ -35,6 +35,7 @@
 
 class Button;
 class ConfirmationDialog;
+class EditorFileDialog;
 class PopupMenu;
 class TextureRect;
 class Tree;
@@ -58,6 +59,8 @@ class EditorResourcePicker : public HBoxContainer {
 	Button *load_button = nullptr;
 	Button *edit_button = nullptr;
 
+	EditorFileDialog *file_dialog = nullptr;
+
 	ConfirmationDialog *duplicate_resources_dialog = nullptr;
 	Tree *duplicate_resources_tree = nullptr;
 
@@ -73,6 +76,7 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
+		OBJ_MENU_LOAD,
 
 		TYPE_BASE_ID = 100,
 		CONVERT_BASE_ID = 1000,
