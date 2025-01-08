@@ -7594,7 +7594,9 @@ void TextEdit::_push_current_op() {
 			a.chain_backward = b.chain_backward;
 			a.end_carets = b.end_carets;
 		};
-		if (current_op.type == TextOperation::TYPE_INSERT && last->end_carets[0].column + 1 == current_op.start_carets[0].column) {
+		if ((current_op.type == TextOperation::TYPE_INSERT && last->end_carets[0].column + 1 == current_op.start_carets[0].column)
+				// for delete key inputs, the cursor doesn't move between the end of the first and the start of the second input; also, the 'deleted text' is on the right instead of the left
+				|| (current_op.type == TextOperation::TYPE_REMOVE && last->end_carets[0].column == current_op.start_carets[0].column)) {
 			merge_info(undo_stack.back()->get(), current_op);
 			last->text += current_op.text;
 		} else if (current_op.type == TextOperation::TYPE_REMOVE && last->end_carets[0].column - 1 == current_op.start_carets[0].column) {
