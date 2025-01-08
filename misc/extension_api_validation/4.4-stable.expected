@@ -7,3 +7,10 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
+
+GH-101292
+--------
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial" to "SkyMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "SkyMaterial,ShaderMaterial".
+
+SkyMaterial is now the base class of PanoramaSkyMaterial, ProceduralSkyMaterial and PhysicalSkyMaterial.
