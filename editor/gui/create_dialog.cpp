@@ -81,9 +81,9 @@ void CreateDialog::for_inherit() {
 }
 
 void CreateDialog::_fill_type_list() {
-	List<StringName> complete_type_list;
-	ClassDB::get_class_list(&complete_type_list);
-	ScriptServer::get_global_class_list(&complete_type_list);
+	LocalVector<StringName> complete_type_list;
+	ClassDB::get_class_list(complete_type_list);
+	ScriptServer::get_global_class_list(complete_type_list);
 
 	EditorData &ed = EditorNode::get_editor_data();
 	HashMap<String, DocData::ClassDoc> &class_docs_list = EditorHelp::get_doc_data()->class_list;

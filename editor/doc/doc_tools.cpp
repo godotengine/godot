@@ -405,23 +405,23 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 	// Add ClassDB-exposed classes.
 	{
-		List<StringName> classes;
+		LocalVector<StringName> classes;
 		if (p_flags.has_flag(GENERATE_FLAG_EXTENSION_CLASSES_ONLY)) {
-			ClassDB::get_extensions_class_list(&classes);
+			ClassDB::get_extensions_class_list(classes);
 		} else {
-			ClassDB::get_class_list(&classes);
+			ClassDB::get_class_list(classes);
 			// Move ProjectSettings, so that other classes can register properties there.
-			classes.move_to_back(classes.find("ProjectSettings"));
+			classes.erase("ProjectSettings");
+			classes.push_back("ProjectSettings");
 		}
 
 		bool skip_setter_getter_methods = true;
 
 		// Populate documentation data for each exposed class.
-		while (classes.size()) {
-			const String &name = classes.front()->get();
+		for (uint32_t classes_idx = 0; classes_idx < classes.size(); classes_idx++) {
+			const String &name = classes[classes_idx];
 			if (!ClassDB::is_class_exposed(name)) {
 				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
-				classes.pop_front();
 				continue;
 			}
 
@@ -726,8 +726,6 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				c.theme_properties.sort();
 			}
-
-			classes.pop_front();
 		}
 	}
 
