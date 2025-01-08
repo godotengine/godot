@@ -2365,6 +2365,7 @@ void EditorInspectorArray::_setup() {
 
 	Ref<Font> numbers_font;
 	int numbers_min_w = 0;
+	bool is_static = !movable || read_only;
 
 	if (numbered) {
 		numbers_font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
@@ -2415,7 +2416,7 @@ void EditorInspectorArray::_setup() {
 		ae.margin->add_child(ae.hbox);
 
 		// Move button.
-		if (movable) {
+		if (!is_static) {
 			VBoxContainer *move_vbox = memnew(VBoxContainer);
 			move_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 			move_vbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -2461,15 +2462,17 @@ void EditorInspectorArray::_setup() {
 		ae.vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 		ae.hbox->add_child(ae.vbox);
 
-		ae.erase = memnew(Button);
-		ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
-		ae.erase->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
-		ae.hbox->add_child(ae.erase);
+		if (!is_static) {
+			ae.erase = memnew(Button);
+			ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
+			ae.erase->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
+			ae.hbox->add_child(ae.erase);
+		}
 	}
 
 	// Hide/show the add button.
-	add_button->set_visible(page == max_page);
+	add_button->set_visible(page == max_page && !is_static);
 
 	// Add paginator if there's more than 1 page.
 	if (max_page > 0) {
