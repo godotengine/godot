@@ -326,3 +326,11 @@ GH-102796
 Validate extension JSON: Error: Field 'classes/GraphEdit/signals/frame_rect_changed/arguments/1': type changed value in new API, from "Vector2" to "Rect2".
 
 Previous type was incorrect. No compatibility system for signal arguments.
+
+
+GH-101300
+---------
+
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2DExtension/methods/_intersect_point/arguments': size changed value in new API, from 7 to 8.
+
+Added argument to disable checking the canvas instance ID on point intersection queries.
