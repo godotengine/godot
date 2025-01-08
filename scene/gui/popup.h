@@ -101,6 +101,10 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 
 public:
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
+
 	PopupPanel();
 };
 
