@@ -192,54 +192,6 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		}
 	}
 
-	int export_angle = p_preset->get("application/export_angle");
-	bool include_angle_libs = false;
-	if (export_angle == 0) {
-		include_angle_libs = (String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) == "gl_compatibility");
-	} else if (export_angle == 1) {
-		include_angle_libs = true;
-	}
-	if (include_angle_libs) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (da->file_exists(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"))) {
-			da->copy(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"), p_path.get_base_dir().path_join("libEGL.dll"), get_chmod_flags());
-		}
-		if (da->file_exists(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"))) {
-			da->copy(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"), p_path.get_base_dir().path_join("libGLESv2.dll"), get_chmod_flags());
-		}
-	}
-
-	int export_d3d12 = p_preset->get("application/export_d3d12");
-	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
-	bool include_d3d12_extra_libs = false;
-	if (export_d3d12 == 0) {
-		include_d3d12_extra_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
-	} else if (export_d3d12 == 1) {
-		include_d3d12_extra_libs = true;
-	}
-	if (include_d3d12_extra_libs) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (da->file_exists(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"))) {
-			if (agility_sdk_multiarch) {
-				da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
-				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("D3D12Core.dll"), get_chmod_flags());
-			} else {
-				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), p_path.get_base_dir().path_join("D3D12Core.dll"), get_chmod_flags());
-			}
-		}
-		if (da->file_exists(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"))) {
-			if (agility_sdk_multiarch) {
-				da->make_dir_recursive(p_path.get_base_dir().path_join(arch));
-				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), p_path.get_base_dir().path_join(arch).path_join("d3d12SDKLayers.dll"), get_chmod_flags());
-			} else {
-				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), p_path.get_base_dir().path_join("d3d12SDKLayers.dll"), get_chmod_flags());
-			}
-		}
-		if (da->file_exists(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"))) {
-			da->copy(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"), p_path.get_base_dir().path_join("WinPixEventRuntime.dll"), get_chmod_flags());
-		}
-	}
-
 	bool export_as_zip = p_path.ends_with("zip");
 	bool embedded = p_preset->get("binary_format/embed_pck");
 
@@ -268,6 +220,54 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		}
 		tmp_app_dir->make_dir_recursive(tmp_dir_path);
 		path = tmp_dir_path.path_join(p_path.get_file().get_basename() + ".exe");
+	}
+
+	int export_angle = p_preset->get("application/export_angle");
+	bool include_angle_libs = false;
+	if (export_angle == 0) {
+		include_angle_libs = (String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) == "gl_compatibility");
+	} else if (export_angle == 1) {
+		include_angle_libs = true;
+	}
+	if (include_angle_libs) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (da->file_exists(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"))) {
+			da->copy(template_path.get_base_dir().path_join("libEGL." + arch + ".dll"), path.get_base_dir().path_join("libEGL.dll"), get_chmod_flags());
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"))) {
+			da->copy(template_path.get_base_dir().path_join("libGLESv2." + arch + ".dll"), path.get_base_dir().path_join("libGLESv2.dll"), get_chmod_flags());
+		}
+	}
+
+	int export_d3d12 = p_preset->get("application/export_d3d12");
+	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
+	bool include_d3d12_extra_libs = false;
+	if (export_d3d12 == 0) {
+		include_d3d12_extra_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
+	} else if (export_d3d12 == 1) {
+		include_d3d12_extra_libs = true;
+	}
+	if (include_d3d12_extra_libs) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (da->file_exists(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"))) {
+			if (agility_sdk_multiarch) {
+				da->make_dir_recursive(path.get_base_dir().path_join(arch));
+				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), path.get_base_dir().path_join(arch).path_join("D3D12Core.dll"), get_chmod_flags());
+			} else {
+				da->copy(template_path.get_base_dir().path_join("D3D12Core." + arch + ".dll"), path.get_base_dir().path_join("D3D12Core.dll"), get_chmod_flags());
+			}
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"))) {
+			if (agility_sdk_multiarch) {
+				da->make_dir_recursive(path.get_base_dir().path_join(arch));
+				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), path.get_base_dir().path_join(arch).path_join("d3d12SDKLayers.dll"), get_chmod_flags());
+			} else {
+				da->copy(template_path.get_base_dir().path_join("d3d12SDKLayers." + arch + ".dll"), path.get_base_dir().path_join("d3d12SDKLayers.dll"), get_chmod_flags());
+			}
+		}
+		if (da->file_exists(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"))) {
+			da->copy(template_path.get_base_dir().path_join("WinPixEventRuntime." + arch + ".dll"), path.get_base_dir().path_join("WinPixEventRuntime.dll"), get_chmod_flags());
+		}
 	}
 
 	// Export project.
