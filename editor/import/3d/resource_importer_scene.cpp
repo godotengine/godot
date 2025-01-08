@@ -2363,12 +2363,12 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 
-	List<String> script_extentions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extentions);
+	List<String> script_extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extensions);
 
 	String script_ext_hint;
 
-	for (const String &E : script_extentions) {
+	for (const String &E : script_extensions) {
 		if (!script_ext_hint.is_empty()) {
 			script_ext_hint += ",";
 		}
