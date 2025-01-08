@@ -383,33 +383,23 @@ void EditorFileSystem::_scan_filesystem() {
 					name = cpath.path_join(name);
 
 					FileCache fc;
-					fc.type = split[1];
-					if (fc.type.contains_char('/')) {
-						fc.type = split[1].get_slice("/", 0);
-						fc.resource_script_class = split[1].get_slice("/", 1);
-					}
+					fc.type = split[1].get_slice("/", 0);
+					fc.resource_script_class = split[1].get_slice("/", 1);
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
 					fc.import_modification_time = split[4].to_int();
 					fc.import_valid = split[5].to_int() != 0;
 					fc.import_group_file = split[6].strip_edges();
-					fc.script_class_name = split[7].get_slice("<>", 0);
-					fc.script_class_extends = split[7].get_slice("<>", 1);
-					fc.script_class_icon_path = split[7].get_slice("<>", 2);
-					fc.import_md5 = split[7].get_slice("<>", 3);
-					String dest_paths = split[7].get_slice("<>", 4);
-					if (!dest_paths.is_empty()) {
-						fc.import_dest_paths = dest_paths.split("<*>");
+					{
+						const Vector<String> &slices = split[7].split("<>");
+						ERR_CONTINUE(slices.size() < 5);
+						fc.script_class_name = slices[0];
+						fc.script_class_extends = slices[1];
+						fc.script_class_icon_path = slices[2];
+						fc.import_md5 = slices[3];
+						fc.import_dest_paths = slices[4].split("<*>");
 					}
-
-					String deps = split[8].strip_edges();
-					if (deps.length()) {
-						Vector<String> dp = deps.split("<>");
-						for (int i = 0; i < dp.size(); i++) {
-							const String &path = dp[i];
-							fc.deps.push_back(path);
-						}
-					}
+					fc.deps = split[8].strip_edges().split("<>");
 
 					file_cache[name] = fc;
 				}
