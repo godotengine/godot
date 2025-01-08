@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FontFile" inherits="Font" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds font source data and prerendered glyph cache, imported from a dynamic or a bitmap font.
+	</brief_description>
+	<description>
+		[FontFile] contains a set of glyphs to represent Unicode characters imported from a font file, as well as a cache of rasterized glyphs, and a set of fallback [Font]s to use.
+		Use [FontVariation] to access specific OpenType variation of the font, create simulated bold / slanted version, and draw lines of text.
+		For more complex text processing, use [FontVariation] in conjunction with [TextLine] or [TextParagraph].
+		Supported font formats:
+		- Dynamic font importer: TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
+		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
+		- Monospace image font importer: All supported image formats.
+		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
+		[b]Note:[/b] A glyph is a bitmap or a shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] If none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[codeblocks]
+		[gdscript]
+		var f = load("res://BarlowCondensed-Bold.ttf")
+		$Label.add_theme_font_override("font", f)
+		$Label.add_theme_font_size_override("font_size", 64)
+		[/gdscript]
+		[csharp]
+		var f = ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Bold.ttf");
+		GetNode("Label").AddThemeFontOverride("font", f);
+		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="clear_cache">
+			<return type="void" />
+			<description>
+				Removes all font cache entries.
+			</description>
+		</method>
+		<method name="clear_glyphs">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="clear_kerning_map">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Removes all kerning overrides.
+			</description>
+		</method>
+		<method name="clear_size_cache">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Removes all font sizes from the cache entry.
+			</description>
+		</method>
+		<method name="clear_textures">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all textures from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
+			</description>
+		</method>
+		<method name="get_cache_ascent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_cache_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of the font cache entries.
+			</description>
+		</method>
+		<method name="get_cache_descent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="get_cache_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="get_cache_underline_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="get_cache_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method get_glyph_index].
+			</description>
+		</method>
+		<method name="get_embolden" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="get_extra_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="get_extra_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="get_face_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns an active face index in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="get_glyph_advance" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="get_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="char" type="int" />
+			<param index="2" name="variation_selector" type="int" />
+			<description>
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].
+			</description>
+		</method>
+		<method name="get_glyph_list" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Returns list of rendered glyphs in the cache entry.
+			</description>
+		</method>
+		<method name="get_glyph_offset" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="get_glyph_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph size.
+			</description>
+		</method>
+		<method name="get_glyph_texture_idx" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="get_glyph_uv_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="get_kerning" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Returns kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="get_kerning_list" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns list of the kerning overrides.
+			</description>
+		</method>
+		<method name="get_language_support_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [param language].
+			</description>
+		</method>
+		<method name="get_language_support_overrides" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of language support overrides.
+			</description>
+		</method>
+		<method name="get_script_support_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="script" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [param script].
+			</description>
+		</method>
+		<method name="get_script_support_overrides" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns list of script support overrides.
+			</description>
+		</method>
+		<method name="get_size_cache_list" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
+			</description>
+		</method>
+		<method name="get_texture_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Returns number of textures used by font cache entry.
+			</description>
+		</method>
+		<method name="get_texture_image" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Returns a copy of the font cache texture image.
+			</description>
+		</method>
+		<method name="get_texture_offsets" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Returns a copy of the array containing glyph packing data.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+			</description>
+		</method>
+		<method name="get_variation_coordinates" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
+			</description>
+		</method>
+		<method name="load_bitmap_font">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [param path].
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+			</description>
+		</method>
+		<method name="load_dynamic_font">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [param path].
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+			</description>
+		</method>
+		<method name="remove_cache">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Removes specified font cache entry.
+			</description>
+		</method>
+		<method name="remove_glyph">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="remove_kerning">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Removes kerning override for the pair of glyphs.
+			</description>
+		</method>
+		<method name="remove_language_support_override">
+			<return type="void" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Remove language support override.
+			</description>
+		</method>
+		<method name="remove_script_support_override">
+			<return type="void" />
+			<param index="0" name="script" type="String" />
+			<description>
+				Removes script support override.
+			</description>
+		</method>
+		<method name="remove_size_cache">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes specified font size from the cache entry.
+			</description>
+		</method>
+		<method name="remove_texture">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Removes specified texture from the cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture. Remove them manually using [method remove_glyph].
+			</description>
+		</method>
+		<method name="render_glyph">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="index" type="int" />
+			<description>
+				Renders specified glyph to the font cache texture.
+			</description>
+		</method>
+		<method name="render_range">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="end" type="int" />
+			<description>
+				Renders the range of characters to the font cache texture.
+			</description>
+		</method>
+		<method name="set_cache_ascent">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="ascent" type="float" />
+			<description>
+				Sets the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="set_cache_descent">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="descent" type="float" />
+			<description>
+				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="set_cache_scale">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="scale" type="float" />
+			<description>
+				Sets scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="set_cache_underline_position">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_position" type="float" />
+			<description>
+				Sets pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="set_cache_underline_thickness">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_thickness" type="float" />
+			<description>
+				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="set_embolden">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="strength" type="float" />
+			<description>
+				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="set_extra_baseline_offset">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="set_extra_spacing">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="set_face_index">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="face_index" type="int" />
+			<description>
+				Sets an active face index in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="set_glyph_advance">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="advance" type="Vector2" />
+			<description>
+				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="set_glyph_offset">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="offset" type="Vector2" />
+			<description>
+				Sets glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="set_glyph_size">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="gl_size" type="Vector2" />
+			<description>
+				Sets glyph size.
+			</description>
+		</method>
+		<method name="set_glyph_texture_idx">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="texture_idx" type="int" />
+			<description>
+				Sets index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="set_glyph_uv_rect">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="uv_rect" type="Rect2" />
+			<description>
+				Sets rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="set_kerning">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<param index="3" name="kerning" type="Vector2" />
+			<description>
+				Sets kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="set_language_support_override">
+			<return type="void" />
+			<param index="0" name="language" type="String" />
+			<param index="1" name="supported" type="bool" />
+			<description>
+				Adds override for [method Font.is_language_supported].
+			</description>
+		</method>
+		<method name="set_script_support_override">
+			<return type="void" />
+			<param index="0" name="script" type="String" />
+			<param index="1" name="supported" type="bool" />
+			<description>
+				Adds override for [method Font.is_script_supported].
+			</description>
+		</method>
+		<method name="set_texture_image">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="image" type="Image" />
+			<description>
+				Sets font cache texture image.
+			</description>
+		</method>
+		<method name="set_texture_offsets">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="offset" type="PackedInt32Array" />
+			<description>
+				Sets array containing glyph packing data.
+			</description>
+		</method>
+		<method name="set_transform">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
+			</description>
+		</method>
+		<method name="set_variation_coordinates">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="variation_coordinates" type="Dictionary" />
+			<description>
+				Sets variation coordinates for the specified font cache entry. See [method Font.get_supported_variation_list] for more info.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_system_fallback" type="bool" setter="set_allow_system_fallback" getter="is_allow_system_fallback" default="true">
+			If set to [code]true[/code], system fonts can be automatically used as fallbacks.
+		</member>
+		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
+			Font anti-aliasing mode.
+		</member>
+		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
+			Contents of the dynamic font source file.
+		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
+		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
+			Font size, used only for the bitmap fonts.
+		</member>
+		<member name="fixed_size_scale_mode" type="int" setter="set_fixed_size_scale_mode" getter="get_fixed_size_scale_mode" enum="TextServer.FixedSizeScaleMode" default="0">
+			Scaling mode, used only for the bitmap fonts with [member fixed_size] greater than zero.
+		</member>
+		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
+			Font family name.
+		</member>
+		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
+			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+		</member>
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" is_bitfield="true" default="0">
+			Font style flags, see [enum TextServer.FontStyle].
+		</member>
+		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
+			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+		</member>
+		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
+			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only (MSDF fonts don't support hinting).
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="get_generate_mipmaps" default="false">
+			If set to [code]true[/code], generate mipmaps for the font textures.
+		</member>
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
+			Font hinting mode. Used by dynamic fonts only.
+		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="set_keep_rounding_remainders" getter="get_keep_rounding_remainders" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+		</member>
+		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
+			The width of the range around the shape between the minimum and maximum representable signed distance. If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline. The default [member msdf_pixel_range] value of [code]16[/code] allows outline sizes up to [code]8[/code] to look correct.
+		</member>
+		<member name="msdf_size" type="int" setter="set_msdf_size" getter="get_msdf_size" default="48">
+			Source font size used to generate MSDF textures. Higher values allow for more precision, but are slower to render and require more memory. Only increase this value if you notice a visible lack of precision in glyph rendering.
+		</member>
+		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
+			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field (MSDF) generated from the dynamic font vector data. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
+			[b]Note:[/b] If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline.
+			[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
+		</member>
+		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
+			Font OpenType feature set override.
+		</member>
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
+			Font oversampling factor. If set to [code]0.0[/code], the global oversampling factor is used instead. Used by dynamic fonts only (MSDF fonts ignore oversampling).
+		</member>
+		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
+			Font style name.
+		</member>
+		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
+			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of higher memory usage and lower font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+		</member>
+	</members>
+</class>

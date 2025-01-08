@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextParagraph" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds a paragraph of text.
+	</brief_description>
+	<description>
+		Abstraction over [TextServer] for handling a single paragraph of text.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_object">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="size" type="Vector2" />
+			<param index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="length" type="int" default="1" />
+			<param index="4" name="baseline" type="float" default="0.0" />
+			<description>
+				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
+			</description>
+		</method>
+		<method name="add_string">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="font_size" type="int" />
+			<param index="3" name="language" type="String" default="&quot;&quot;" />
+			<param index="4" name="meta" type="Variant" default="null" />
+			<description>
+				Adds text span and font to draw it.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears text paragraph (removes text and inline objects).
+			</description>
+		</method>
+		<method name="clear_dropcap">
+			<return type="void" />
+			<description>
+				Removes dropcap.
+			</description>
+		</method>
+		<method name="draw" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="3" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_dropcap" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_dropcap_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="outline_size" type="int" default="1" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw drop cap outline into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_line" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="line" type="int" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_line_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="line" type="int" />
+			<param index="3" name="outline_size" type="int" default="1" />
+			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw outline of the single line of text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="outline_size" type="int" default="1" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="dc_color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="get_dropcap_lines" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of lines used by dropcap.
+			</description>
+		</method>
+		<method name="get_dropcap_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns drop cap text buffer RID.
+			</description>
+		</method>
+		<method name="get_dropcap_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns drop cap bounding box size.
+			</description>
+		</method>
+		<method name="get_line_ascent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns the text line ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
+			</description>
+		</method>
+		<method name="get_line_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of lines in the paragraph.
+			</description>
+		</method>
+		<method name="get_line_descent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns the text line descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
+			</description>
+		</method>
+		<method name="get_line_object_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns bounding rectangle of the inline object.
+			</description>
+		</method>
+		<method name="get_line_objects" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns array of inline objects in the line.
+			</description>
+		</method>
+		<method name="get_line_range" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns character range of the line.
+			</description>
+		</method>
+		<method name="get_line_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns TextServer line buffer RID.
+			</description>
+		</method>
+		<method name="get_line_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns size of the bounding box of the line of text. Returned size is rounded up.
+			</description>
+		</method>
+		<method name="get_line_underline_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="get_line_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns thickness of the underline.
+			</description>
+		</method>
+		<method name="get_line_width" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns width (for horizontal layout) or height (for vertical) of the line of text.
+			</description>
+		</method>
+		<method name="get_non_wrapped_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the size of the bounding box of the paragraph, without line breaks.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns TextServer full string buffer RID.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the size of the bounding box of the paragraph.
+			</description>
+		</method>
+		<method name="hit_test" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="Vector2" />
+			<description>
+				Returns caret character offset at the specified coordinates. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="resize_object">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="size" type="Vector2" />
+			<param index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="baseline" type="float" default="0.0" />
+			<description>
+				Sets new size and alignment of embedded object.
+			</description>
+		</method>
+		<method name="set_bidi_override">
+			<return type="void" />
+			<param index="0" name="override" type="Array" />
+			<description>
+				Overrides BiDi for the structured text.
+				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="set_dropcap">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="font_size" type="int" />
+			<param index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)" />
+			<param index="4" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Sets drop cap, overrides previously set drop cap. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
+			</description>
+		</method>
+		<method name="tab_align">
+			<return type="void" />
+			<param index="0" name="tab_stops" type="PackedFloat32Array" />
+			<description>
+				Aligns paragraph to the given tab-stops.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="HorizontalAlignment" default="0">
+			Paragraph horizontal alignment.
+		</member>
+		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3">
+			Line breaking rules. For more info see [TextServer].
+		</member>
+		<member name="custom_punctuation" type="String" setter="set_custom_punctuation" getter="get_custom_punctuation" default="&quot;&quot;">
+			Custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
+		</member>
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
+			Text writing direction.
+		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
+			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+		</member>
+		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
+		</member>
+		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
+			Limits the lines of text shown.
+		</member>
+		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
+			Text orientation.
+		</member>
+		<member name="preserve_control" type="bool" setter="set_preserve_control" getter="get_preserve_control" default="false">
+			If set to [code]true[/code] text will display control characters.
+		</member>
+		<member name="preserve_invalid" type="bool" setter="set_preserve_invalid" getter="get_preserve_invalid" default="true">
+			If set to [code]true[/code] text will display invalid characters.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the paragraph's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
+			Paragraph width.
+		</member>
+	</members>
+</class>

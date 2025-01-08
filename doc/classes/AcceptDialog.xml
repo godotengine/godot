@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AcceptDialog" inherits="Window" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base dialog used for user notification.
+	</brief_description>
+	<description>
+		The default use of [AcceptDialog] is to allow it to only be accepted or closed, with the same result. However, the [signal confirmed] and [signal canceled] signals allow to make the two actions different, and the [method add_button] method allows to add custom buttons and actions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_button">
+			<return type="Button" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="right" type="bool" default="false" />
+			<param index="2" name="action" type="String" default="&quot;&quot;" />
+			<description>
+				Adds a button with label [param text] and a custom [param action] to the dialog and returns the created button. [param action] will be passed to the [signal custom_action] signal when pressed.
+				If [code]true[/code], [param right] will place the button to the right of any sibling buttons.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
+			</description>
+		</method>
+		<method name="add_cancel_button">
+			<return type="Button" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Adds a button with label [param name] and a cancel action to the dialog and returns the created button.
+				You can use [method remove_button] method to remove a button created with this method from the dialog.
+			</description>
+		</method>
+		<method name="get_label">
+			<return type="Label" />
+			<description>
+				Returns the label used for built-in text.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_ok_button">
+			<return type="Button" />
+			<description>
+				Returns the OK [Button] instance.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="register_text_enter">
+			<return type="void" />
+			<param index="0" name="line_edit" type="LineEdit" />
+			<description>
+				Registers a [LineEdit] in the dialog. When the enter key is pressed, the dialog will be accepted.
+			</description>
+		</method>
+		<method name="remove_button">
+			<return type="void" />
+			<param index="0" name="button" type="Button" />
+			<description>
+				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal canceled] signals.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="dialog_autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
+			Sets autowrapping for the text in the dialog.
+		</member>
+		<member name="dialog_close_on_escape" type="bool" setter="set_close_on_escape" getter="get_close_on_escape" default="true">
+			If [code]true[/code], the dialog will be hidden when the escape key ([constant KEY_ESCAPE]) is pressed.
+		</member>
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" default="true">
+			If [code]true[/code], the dialog is hidden when the OK button is pressed. You can set it to [code]false[/code] if you want to do e.g. input validation when receiving the [signal confirmed] signal, and handle hiding the dialog in your own logic.
+			[b]Note:[/b] Some nodes derived from this class can have a different default value, and potentially their own built-in logic overriding this setting. For example [FileDialog] defaults to [code]false[/code], and has its own input validation code that is called when you press OK, which eventually hides the dialog if the input is valid. As such, this property can't be used in [FileDialog] to disable hiding the dialog when pressing OK.
+		</member>
+		<member name="dialog_text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
+			The text displayed by the dialog.
+		</member>
+		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" overrides="Window" default="true" />
+		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" overrides="Window" default="true" />
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" default="&quot;OK&quot;">
+			The text displayed by the OK button (see [method get_ok_button]).
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Alert!&quot;" />
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" overrides="Window" default="true" />
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" overrides="Window" default="false" />
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" overrides="Window" default="true" />
+	</members>
+	<signals>
+		<signal name="canceled">
+			<description>
+				Emitted when the dialog is closed or the button created with [method add_cancel_button] is pressed.
+			</description>
+		</signal>
+		<signal name="confirmed">
+			<description>
+				Emitted when the dialog is accepted, i.e. the OK button is pressed.
+			</description>
+		</signal>
+		<signal name="custom_action">
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Emitted when a custom button is pressed. See [method add_button].
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="buttons_min_height" data_type="constant" type="int" default="0">
+			The minimum height of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
+		<theme_item name="buttons_min_width" data_type="constant" type="int" default="0">
+			The minimum width of each button in the bottom row (such as OK/Cancel) in pixels. This can be increased to make buttons with short texts easier to click/tap.
+		</theme_item>
+		<theme_item name="buttons_separation" data_type="constant" type="int" default="10">
+			The size of the vertical space between the dialog's content and the button row.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The panel that fills the background of the window.
+		</theme_item>
+	</theme_items>
+</class>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureLayered" inherits="Texture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for texture types which contain the data of multiple [Image]s. Each image is of the same size and format.
+	</brief_description>
+	<description>
+		Base class for [ImageTextureLayered] and [CompressedTextureLayered]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. See also [Texture3D].
+		Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
+		All images need to have the same width, height and number of mipmap levels.
+		A [TextureLayered] can be loaded with [method ResourceLoader.load].
+		Internally, Godot maps these files to their respective counterparts in the target rendering driver (Vulkan, OpenGL3).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_format" qualifiers="virtual const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Called when the [TextureLayered]'s format is queried.
+			</description>
+		</method>
+		<method name="_get_height" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the [TextureLayered]'s height is queried.
+			</description>
+		</method>
+		<method name="_get_layer_data" qualifiers="virtual const">
+			<return type="Image" />
+			<param index="0" name="layer_index" type="int" />
+			<description>
+				Called when the data for a layer in the [TextureLayered] is queried.
+			</description>
+		</method>
+		<method name="_get_layered_type" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the layers' type in the [TextureLayered] is queried.
+			</description>
+		</method>
+		<method name="_get_layers" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the number of layers in the [TextureLayered] is queried.
+			</description>
+		</method>
+		<method name="_get_width" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the [TextureLayered]'s width queried.
+			</description>
+		</method>
+		<method name="_has_mipmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Called when the presence of mipmaps in the [TextureLayered] is queried.
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Returns the current format being used by this texture. See [enum Image.Format] for details.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the height of the texture in pixels. Height is typically represented by the Y axis.
+			</description>
+		</method>
+		<method name="get_layer_data" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns an [Image] resource with the data from specified [param layer].
+			</description>
+		</method>
+		<method name="get_layered_type" qualifiers="const">
+			<return type="int" enum="TextureLayered.LayeredType" />
+			<description>
+				Returns the [TextureLayered]'s type. The type determines how the data is accessed, with cubemaps having special types.
+			</description>
+		</method>
+		<method name="get_layers" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of referenced [Image]s.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the width of the texture in pixels. Width is typically represented by the X axis.
+			</description>
+		</method>
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the layers have generated mipmaps.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="LAYERED_TYPE_2D_ARRAY" value="0" enum="LayeredType">
+			Texture is a generic [Texture2DArray].
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP" value="1" enum="LayeredType">
+			Texture is a [Cubemap], with each side in its own layer (6 in total).
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP_ARRAY" value="2" enum="LayeredType">
+			Texture is a [CubemapArray], with each cubemap being made of 6 layers.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,75 @@
+[*.{sln,csproj}]
+end_of_line = crlf
+charset = utf-8-bom
+
+[*.sln]
+indent_style = tab
+
+[*.{csproj,props,targets,nuspec,resx}]
+indent_style = space
+indent_size = 2
+
+[*.cs]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 120
+csharp_indent_case_contents_when_block = false
+
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+
+dotnet_style_require_accessibility_modifiers = always
+
+# Diagnostics to prevent defensive copies of `in` struct parameters
+resharper_possibly_impure_method_call_on_readonly_variable_highlighting = error
+
+# IDE0040: Add accessibility modifiers
+dotnet_diagnostic.IDE0040.severity = warning
+
+# IDE1006: Naming rule violation
+dotnet_diagnostic.IDE1006.severity = suggestion
+
+# Severity levels for dotnet_naming_rule only affect IDE environments.
+# To have them extra visible to people, we can set them as 'warning' here without affecting compilation.
+
+# Everything should be PascalCase by default
+dotnet_naming_rule.all_should_be_camel_case.severity = warning
+dotnet_naming_rule.all_should_be_camel_case.symbols = all
+dotnet_naming_rule.all_should_be_camel_case.style = pascal_case_style
+# Non-public fields should be _camelCase
+dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.severity = warning
+dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.symbols = non_public_fields
+dotnet_naming_rule.non_public_fields_should_be_underscore_camel_case.style = underscore_camel_case_style
+# Constant fields (and local vars) should be PascalCase
+dotnet_naming_rule.constants_should_be_pascal_case.severity = warning
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case_style
+# Locals variables should be camelCase
+dotnet_naming_rule.local_vars_should_be_camel_case.severity = warning
+dotnet_naming_rule.local_vars_should_be_camel_case.symbols = local_vars
+dotnet_naming_rule.local_vars_should_be_camel_case.style = camel_case_style
+# Parameters should be camelCase
+dotnet_naming_rule.parameters_should_be_camel_case.severity = warning
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case_style
+
+dotnet_naming_symbols.all.applicable_kinds = *
+dotnet_naming_symbols.local_vars.applicable_kinds = local
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_symbols.non_public_fields.applicable_kinds = field
+dotnet_naming_symbols.non_public_fields.applicable_accessibilities = private, protected, private_protected
+
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+dotnet_naming_style.camel_case_style.required_prefix =
+dotnet_naming_style.underscore_camel_case_style.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case_style.required_prefix = _
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.pascal_case_style.required_prefix =

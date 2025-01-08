@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 4D vector using floating-point coordinates.
+	</brief_description>
+	<description>
+		A 4-element structure that can be used to represent 4D coordinates or any other quadruplet of numeric values.
+		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
+		See [Vector4i] for its integer counterpart.
+		[b]Note:[/b] In a boolean context, a Vector4 will evaluate to [code]false[/code] if it's equal to [code]Vector4(0, 0, 0, 0)[/code]. Otherwise, a Vector4 will always evaluate to [code]true[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Vector4">
+			<return type="Vector4" />
+			<description>
+				Constructs a default-initialized [Vector4] with all components set to [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="Vector4">
+			<return type="Vector4" />
+			<param index="0" name="from" type="Vector4" />
+			<description>
+				Constructs a [Vector4] as a copy of the given [Vector4].
+			</description>
+		</constructor>
+		<constructor name="Vector4">
+			<return type="Vector4" />
+			<param index="0" name="from" type="Vector4i" />
+			<description>
+				Constructs a new [Vector4] from the given [Vector4i].
+			</description>
+		</constructor>
+		<constructor name="Vector4">
+			<return type="Vector4" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<param index="2" name="z" type="float" />
+			<param index="3" name="w" type="float" />
+			<description>
+				Returns a [Vector4] with the given components.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="ceil" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a new vector with all components rounded up (towards positive infinity).
+			</description>
+		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="min" type="Vector4" />
+			<param index="1" name="max" type="Vector4" />
+			<description>
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="cubic_interpolate" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="b" type="Vector4" />
+			<param index="1" name="pre_a" type="Vector4" />
+			<param index="2" name="post_b" type="Vector4" />
+			<param index="3" name="weight" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="cubic_interpolate_in_time" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="b" type="Vector4" />
+			<param index="1" name="pre_a" type="Vector4" />
+			<param index="2" name="post_b" type="Vector4" />
+			<param index="3" name="weight" type="float" />
+			<param index="4" name="b_t" type="float" />
+			<param index="5" name="pre_a_t" type="float" />
+			<param index="6" name="post_b_t" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
+			</description>
+		</method>
+		<method name="direction_to" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="dot" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the dot product of this vector and [param with].
+			</description>
+		</method>
+		<method name="floor" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a new vector with all components rounded down (towards negative infinity).
+			</description>
+		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns the inverse of the vector. This is the same as [code]Vector4(1.0 / v.x, 1.0 / v.y, 1.0 / v.z, 1.0 / v.w)[/code].
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="to" type="Vector4" />
+			<description>
+				Returns [code]true[/code] if this vector and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this vector is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
+		<method name="is_normalized" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the vector is normalized, i.e. its length is approximately equal to 1.
+			</description>
+		</method>
+		<method name="is_zero_approx" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this vector's values are approximately zero, by running [method @GlobalScope.is_zero_approx] on each component.
+				This method is faster than using [method is_equal_approx] with one value as a zero vector.
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
+			<return type="float" />
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="lerp" qualifiers="const" keywords="interpolate">
+			<return type="Vector4" />
+			<param index="0" name="to" type="Vector4" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z), maxf(w, with.w))[/code].
+			</description>
+		</method>
+		<method name="max_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
+			</description>
+		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector4(maxf(x, with), maxf(y, with), maxf(z, with), maxf(w, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="Vector4" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with.x), minf(y, with.y), minf(z, with.z), minf(w, with.w))[/code].
+			</description>
+		</method>
+		<method name="min_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_W].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector4(minf(x, with), minf(y, with), minf(z, with), minf(w, with))[/code].
+			</description>
+		</method>
+		<method name="normalized" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
+			</description>
+		</method>
+		<method name="posmod" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="mod" type="float" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
+			</description>
+		</method>
+		<method name="posmodv" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="modv" type="Vector4" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
+			</description>
+		</method>
+		<method name="round" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+			</description>
+		</method>
+		<method name="sign" qualifiers="const">
+			<return type="Vector4" />
+			<description>
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="step" type="Vector4" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="w" type="float" setter="" getter="" default="0.0">
+			The vector's W component. Also accessible by using the index position [code][3][/code].
+		</member>
+		<member name="x" type="float" setter="" getter="" default="0.0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
+		</member>
+		<member name="y" type="float" setter="" getter="" default="0.0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
+		</member>
+		<member name="z" type="float" setter="" getter="" default="0.0">
+			The vector's Z component. Also accessible by using the index position [code][2][/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0" enum="Axis">
+			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_Y" value="1" enum="Axis">
+			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_Z" value="2" enum="Axis">
+			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_W" value="3" enum="Axis">
+			Enumerated value for the W axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="ZERO" value="Vector4(0, 0, 0, 0)">
+			Zero vector, a vector with all components set to [code]0[/code].
+		</constant>
+		<constant name="ONE" value="Vector4(1, 1, 1, 1)">
+			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="INF" value="Vector4(inf, inf, inf, inf)">
+			Infinity vector, a vector with all components set to [constant @GDScript.INF].
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Projection" />
+			<description>
+				Transforms (multiplies) the [Vector4] by the transpose of the given [Projection] matrix.
+				For transforming by inverse of a projection [code]projection.inverse() * vector[/code] can be used instead. See [method Projection.inverse].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Multiplies each component of the [Vector4] by the components of the given [Vector4].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) * Vector4(3, 4, 5, 6)) # Prints (30.0, 80.0, 150.0, 240.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies each component of the [Vector4] by the given [float].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) * 2) # Prints (20.0, 40.0, 60.0, 80.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies each component of the [Vector4] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Adds each component of the [Vector4] by the components of the given [Vector4].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) + Vector4(3, 4, 5, 6)) # Prints (13.0, 24.0, 35.0, 46.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Subtracts each component of the [Vector4] by the components of the given [Vector4].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) - Vector4(3, 4, 5, 6)) # Prints (7.0, 16.0, 25.0, 34.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Divides each component of the [Vector4] by the components of the given [Vector4].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) / Vector4(2, 5, 3, 4)) # Prints (5.0, 4.0, 10.0, 10.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides each component of the [Vector4] by the given [float].
+				[codeblock]
+				print(Vector4(10, 20, 30, 40) / 2) # Prints (5.0, 10.0, 15.0, 20.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides each component of the [Vector4] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Returns [code]true[/code] if the vectors are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Compares two [Vector4] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, Z values of the two vectors, and then with the W values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], [code]v[1][/code] is equivalent to [code]v.y[/code], [code]v[2][/code] is equivalent to [code]v.z[/code], and [code]v[3][/code] is equivalent to [code]v.w[/code].
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector4" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector4" />
+			<description>
+				Returns the negative value of the [Vector4]. This is the same as writing [code]Vector4(-v.x, -v.y, -v.z, -v.w)[/code]. This operation flips the direction of the vector while keeping the same magnitude. With floats, the number zero can be either positive or negative.
+			</description>
+		</operator>
+	</operators>
+</class>

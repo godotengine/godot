@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeDerivativeFunc" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Calculates a derivative within the visual shader graph.
+	</brief_description>
+	<description>
+		This node is only available in [code]Fragment[/code] and [code]Light[/code] visual shaders.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeDerivativeFunc.Function" default="0">
+			A derivative function type. See [enum Function] for options.
+		</member>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeDerivativeFunc.OpType" default="0">
+			A type of operands and returned value. See [enum OpType] for options.
+		</member>
+		<member name="precision" type="int" setter="set_precision" getter="get_precision" enum="VisualShaderNodeDerivativeFunc.Precision" default="0">
+			Sets the level of precision to use for the derivative function. See [enum Precision] for options. When using the Compatibility renderer, this setting has no effect.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+			A floating-point scalar.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D" value="2" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D" value="3" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="4" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+		<constant name="FUNC_SUM" value="0" enum="Function">
+			Sum of absolute derivative in [code]x[/code] and [code]y[/code].
+		</constant>
+		<constant name="FUNC_X" value="1" enum="Function">
+			Derivative in [code]x[/code] using local differencing.
+		</constant>
+		<constant name="FUNC_Y" value="2" enum="Function">
+			Derivative in [code]y[/code] using local differencing.
+		</constant>
+		<constant name="FUNC_MAX" value="3" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+		<constant name="PRECISION_NONE" value="0" enum="Precision">
+			No precision is specified, the GPU driver is allowed to use whatever level of precision it chooses. This is the default option and is equivalent to using [code]dFdx()[/code] or [code]dFdy()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_COARSE" value="1" enum="Precision">
+			The derivative will be calculated using the current fragment's neighbors (which may not include the current fragment). This tends to be faster than using [constant PRECISION_FINE], but may not be suitable when more precision is needed. This is equivalent to using [code]dFdxCoarse()[/code] or [code]dFdyCoarse()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_FINE" value="2" enum="Precision">
+			The derivative will be calculated using the current fragment and its immediate neighbors. This tends to be slower than using [constant PRECISION_COARSE], but may be necessary when more precision is needed. This is equivalent to using [code]dFdxFine()[/code] or [code]dFdyFine()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_MAX" value="3" enum="Precision">
+			Represents the size of the [enum Precision] enum.
+		</constant>
+	</constants>
+</class>

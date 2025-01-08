@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetSource" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes a set of tiles for a [TileSet] resource.
+	</brief_description>
+	<description>
+		Exposes a set of tiles for a [TileSet] resource.
+		Tiles in a source are indexed with two IDs, coordinates ID (of type Vector2i) and an alternative ID (of type int), named according to their use in the [TileSetAtlasSource] class.
+		Depending on the TileSet source type, those IDs might have restrictions on their values, this is why the base [TileSetSource] class only exposes getters for them.
+		You can iterate over all tiles exposed by a TileSetSource by first iterating over coordinates IDs using [method get_tiles_count] and [method get_tile_id], then over alternative IDs using [method get_alternative_tiles_count] and [method get_alternative_tile_id].
+		[b]Warning:[/b] [TileSetSource] can only be added to one TileSet at the same time. Calling [method TileSet.add_source] on a second [TileSet] will remove the source from the first one.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_alternative_tile_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the alternative ID for the tile with coordinates ID [param atlas_coords] at index [param index].
+			</description>
+		</method>
+		<method name="get_alternative_tiles_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the number of alternatives tiles for the coordinates ID [param atlas_coords].
+				For [TileSetAtlasSource], this always return at least 1, as the base tile with ID 0 is always part of the alternatives list.
+				Returns -1 if there is not tile at the given coords.
+			</description>
+		</method>
+		<method name="get_tile_id" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tile coordinates ID of the tile with index [param index].
+			</description>
+		</method>
+		<method name="get_tiles_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many tiles this atlas source defines (not including alternative tiles).
+			</description>
+		</method>
+		<method name="has_alternative_tile" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_tile" type="int" />
+			<description>
+				Returns if the base tile at coordinates [param atlas_coords] has an alternative with ID [param alternative_tile].
+			</description>
+		</method>
+		<method name="has_tile" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns if this atlas has a tile with coordinates ID [param atlas_coords].
+			</description>
+		</method>
+	</methods>
+</class>

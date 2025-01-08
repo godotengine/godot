@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderInclude" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A snippet of shader code to be included in a [Shader] with [code]#include[/code].
+	</brief_description>
+	<description>
+		A shader include file, saved with the [code].gdshaderinc[/code] extension. This class allows you to define a custom shader snippet that can be included in a [Shader] by using the preprocessor directive [code]#include[/code], followed by the file path (e.g. [code]#include "res://shader_lib.gdshaderinc"[/code]). The snippet doesn't have to be a valid shader on its own.
+	</description>
+	<tutorials>
+		<link title="Shader preprocessor">$DOCS_URL/tutorials/shaders/shader_reference/shader_preprocessor.html</link>
+	</tutorials>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
+			Returns the code of the shader include file. The returned text is what the user has written, not the full generated code used internally.
+		</member>
+	</members>
+</class>

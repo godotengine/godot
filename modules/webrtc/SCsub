@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_webrtc = env_modules.Clone()
+
+if env["platform"] == "web":
+    # Our JavaScript/C++ interface.
+    env.AddJSLibraries(["library_godot_webrtc.js"])
+
+env_webrtc.add_source_files(env.modules_sources, "*.cpp")

@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_vorbis = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_libvorbis"]:
+    thirdparty_dir = "#thirdparty/libvorbis/"
+    thirdparty_sources = [
+        # "analysis.c",
+        # "barkmel.c",
+        "bitrate.c",
+        "block.c",
+        "codebook.c",
+        "envelope.c",
+        "floor0.c",
+        "floor1.c",
+        "info.c",
+        "lookup.c",
+        "lpc.c",
+        "lsp.c",
+        "mapping0.c",
+        "mdct.c",
+        "psy.c",
+        # "psytune.c",
+        "registry.c",
+        "res0.c",
+        "sharedbook.c",
+        "smallft.c",
+        "synthesis.c",
+        # "tone.c",
+        # "vorbisenc.c",
+        "vorbisfile.c",
+        "window.c",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_vorbis.Prepend(CPPPATH=[thirdparty_dir])
+
+    # also requires libogg
+    if env["builtin_libogg"]:
+        env_vorbis.Prepend(CPPPATH=["#thirdparty/libogg"])
+
+    env_thirdparty = env_vorbis.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_vorbis.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

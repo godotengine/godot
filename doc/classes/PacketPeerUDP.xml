@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeerUDP" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		UDP packet peer.
+	</brief_description>
+	<description>
+		UDP packet peer. Can be used to send and receive raw UDP packets as well as [Variant]s.
+		[b]Example:[/b] Send a packet:
+		[codeblock]
+		var peer = PacketPeerUDP.new()
+
+		# Optionally, you can select the local port used to send the packet.
+		peer.bind(4444)
+
+		peer.set_dest_address("1.1.1.1", 4433)
+		peer.put_packet("hello".to_utf8_buffer())
+		[/codeblock]
+		[b]Example:[/b] Listen for packets:
+		[codeblock]
+		var peer
+
+		func _ready():
+		    peer = PacketPeerUDP.new()
+		    peer.bind(4433)
+
+
+		func _process(_delta):
+		    if peer.get_available_packet_count() &gt; 0:
+		        var array_bytes = peer.get_packet()
+		        var packet_string = array_bytes.get_string_from_ascii()
+		        print("Received message: ", packet_string)
+		[/codeblock]
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bind">
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="bind_address" type="String" default="&quot;*&quot;" />
+			<param index="2" name="recv_buf_size" type="int" default="65536" />
+			<description>
+				Binds this [PacketPeerUDP] to the specified [param port] and [param bind_address] with a buffer size [param recv_buf_size], allowing it to receive incoming packets.
+				If [param bind_address] is set to [code]"*"[/code] (default), the peer will be bound on all available addresses (both IPv4 and IPv6).
+				If [param bind_address] is set to [code]"0.0.0.0"[/code] (for IPv4) or [code]"::"[/code] (for IPv6), the peer will be bound to all available addresses matching that IP type.
+				If [param bind_address] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc.), the peer will only be bound to the interface with that address (or fail if no interface with the given address exists).
+			</description>
+		</method>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes the [PacketPeerUDP]'s underlying UDP socket.
+			</description>
+		</method>
+		<method name="connect_to_host">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Calling this method connects this UDP peer to the given [param host]/[param port] pair. UDP is in reality connectionless, so this option only means that incoming packets from different addresses are automatically discarded, and that outgoing packets are always sent to the connected address (future calls to [method set_dest_address] are not allowed). This method does not send any data to the remote peer, to do that, use [method PacketPeer.put_var] or [method PacketPeer.put_packet] as usual. See also [UDPServer].
+				[b]Note:[/b] Connecting to the remote peer does not help to protect from malicious attacks like IP spoofing, etc. Think about using an encryption technique like TLS or DTLS if you feel like your application is transferring sensitive information.
+			</description>
+		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the local port to which this peer is bound.
+			</description>
+		</method>
+		<method name="get_packet_ip" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the IP of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
+			</description>
+		</method>
+		<method name="get_packet_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
+			</description>
+		</method>
+		<method name="is_bound" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether this [PacketPeerUDP] is bound to an address and can receive packets.
+			</description>
+		</method>
+		<method name="is_socket_connected" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the UDP socket is open and has been connected to a remote address. See [method connect_to_host].
+			</description>
+		</method>
+		<method name="join_multicast_group">
+			<return type="int" enum="Error" />
+			<param index="0" name="multicast_address" type="String" />
+			<param index="1" name="interface_name" type="String" />
+			<description>
+				Joins the multicast group specified by [param multicast_address] using the interface identified by [param interface_name].
+				You can join the same multicast group with multiple interfaces. Use [method IP.get_local_interfaces] to know which are available.
+				[b]Note:[/b] Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission for multicast to work.
+			</description>
+		</method>
+		<method name="leave_multicast_group">
+			<return type="int" enum="Error" />
+			<param index="0" name="multicast_address" type="String" />
+			<param index="1" name="interface_name" type="String" />
+			<description>
+				Removes the interface identified by [param interface_name] from the multicast group specified by [param multicast_address].
+			</description>
+		</method>
+		<method name="set_broadcast_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enable or disable sending of broadcast packets (e.g. [code]set_dest_address("255.255.255.255", 4343)[/code]. This option is disabled by default.
+				[b]Note:[/b] Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission and this option to be enabled to receive broadcast packets too.
+			</description>
+		</method>
+		<method name="set_dest_address">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Sets the destination address and port for sending packets and variables. A hostname will be resolved using DNS if needed.
+				[b]Note:[/b] [method set_broadcast_enabled] must be enabled before sending packets to a broadcast address (e.g. [code]255.255.255.255[/code]).
+			</description>
+		</method>
+		<method name="wait">
+			<return type="int" enum="Error" />
+			<description>
+				Waits for a packet to arrive on the bound address. See [method bind].
+				[b]Note:[/b] [method wait] can't be interrupted once it has been called. This can be worked around by allowing the other party to send a specific "death pill" packet like this:
+				[codeblocks]
+				[gdscript]
+				socket = PacketPeerUDP.new()
+				# Server
+				socket.set_dest_address("127.0.0.1", 789)
+				socket.put_packet("Time to stop".to_ascii_buffer())
+
+				# Client
+				while socket.wait() == OK:
+				    var data = socket.get_packet().get_string_from_ascii()
+				    if data == "Time to stop":
+				        return
+				[/gdscript]
+				[csharp]
+				var socket = new PacketPeerUdp();
+				// Server
+				socket.SetDestAddress("127.0.0.1", 789);
+				socket.PutPacket("Time to stop".ToAsciiBuffer());
+
+				// Client
+				while (socket.Wait() == OK)
+				{
+				    string data = socket.GetPacket().GetStringFromASCII();
+				    if (data == "Time to stop")
+				    {
+				        return;
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+	</methods>
+</class>

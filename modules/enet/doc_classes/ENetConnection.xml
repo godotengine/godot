@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ENetConnection" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A wrapper class for an [url=http://enet.bespin.org/group__host.html]ENetHost[/url].
+	</brief_description>
+	<description>
+		ENet's purpose is to provide a relatively thin, simple and robust network communication layer on top of UDP (User Datagram Protocol).
+	</description>
+	<tutorials>
+		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
+	</tutorials>
+	<methods>
+		<method name="bandwidth_limit">
+			<return type="void" />
+			<param index="0" name="in_bandwidth" type="int" default="0" />
+			<param index="1" name="out_bandwidth" type="int" default="0" />
+			<description>
+				Adjusts the bandwidth limits of a host.
+			</description>
+		</method>
+		<method name="broadcast">
+			<return type="void" />
+			<param index="0" name="channel" type="int" />
+			<param index="1" name="packet" type="PackedByteArray" />
+			<param index="2" name="flags" type="int" />
+			<description>
+				Queues a [param packet] to be sent to all peers associated with the host over the specified [param channel]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
+			</description>
+		</method>
+		<method name="channel_limit">
+			<return type="void" />
+			<param index="0" name="limit" type="int" />
+			<description>
+				Limits the maximum allowed channels of future incoming connections.
+			</description>
+		</method>
+		<method name="compress">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="ENetConnection.CompressionMode" />
+			<description>
+				Sets the compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
+				[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
+				[b]Note:[/b] The compression mode must be set to the same value on both the server and all its clients. Clients will fail to connect if the compression mode set on the client differs from the one set on the server.
+			</description>
+		</method>
+		<method name="connect_to_host">
+			<return type="ENetPacketPeer" />
+			<param index="0" name="address" type="String" />
+			<param index="1" name="port" type="int" />
+			<param index="2" name="channels" type="int" default="0" />
+			<param index="3" name="data" type="int" default="0" />
+			<description>
+				Initiates a connection to a foreign [param address] using the specified [param port] and allocating the requested [param channels]. Optional [param data] can be passed during connection in the form of a 32 bit integer.
+				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] on both ends before calling this method.
+			</description>
+		</method>
+		<method name="create_host">
+			<return type="int" enum="Error" />
+			<param index="0" name="max_peers" type="int" default="32" />
+			<param index="1" name="max_channels" type="int" default="0" />
+			<param index="2" name="in_bandwidth" type="int" default="0" />
+			<param index="3" name="out_bandwidth" type="int" default="0" />
+			<description>
+				Creates an ENetHost that allows up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth] (if greater than zero).
+				This method binds a random available dynamic UDP port on the host machine at the [i]unspecified[/i] address. Use [method create_host_bound] to specify the address and port.
+				[b]Note:[/b] It is necessary to create a host in both client and server in order to establish a connection.
+			</description>
+		</method>
+		<method name="create_host_bound">
+			<return type="int" enum="Error" />
+			<param index="0" name="bind_address" type="String" />
+			<param index="1" name="bind_port" type="int" />
+			<param index="2" name="max_peers" type="int" default="32" />
+			<param index="3" name="max_channels" type="int" default="0" />
+			<param index="4" name="in_bandwidth" type="int" default="0" />
+			<param index="5" name="out_bandwidth" type="int" default="0" />
+			<description>
+				Creates an ENetHost bound to the given [param bind_address] and [param bind_port] that allows up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth] (if greater than zero).
+				[b]Note:[/b] It is necessary to create a host in both client and server in order to establish a connection.
+			</description>
+		</method>
+		<method name="destroy">
+			<return type="void" />
+			<description>
+				Destroys the host and all resources associated with it.
+			</description>
+		</method>
+		<method name="dtls_client_setup">
+			<return type="int" enum="Error" />
+			<param index="0" name="hostname" type="String" />
+			<param index="1" name="client_options" type="TLSOptions" default="null" />
+			<description>
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [param hostname]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+			</description>
+		</method>
+		<method name="dtls_server_setup">
+			<return type="int" enum="Error" />
+			<param index="0" name="server_options" type="TLSOptions" />
+			<description>
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet servers. Call this right after [method create_host_bound] to have ENet expect peers to connect using DTLS. See [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="flush">
+			<return type="void" />
+			<description>
+				Sends any queued packets on the host specified to its designated peers.
+			</description>
+		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the local port to which this peer is bound.
+			</description>
+		</method>
+		<method name="get_max_channels" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the maximum number of channels allowed for connected peers.
+			</description>
+		</method>
+		<method name="get_peers">
+			<return type="ENetPacketPeer[]" />
+			<description>
+				Returns the list of peers associated with this host.
+				[b]Note:[/b] This list might include some peers that are not fully connected or are still being disconnected.
+			</description>
+		</method>
+		<method name="pop_statistic">
+			<return type="float" />
+			<param index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
+			<description>
+				Returns and resets host statistics. See [enum HostStatistic] for more info.
+			</description>
+		</method>
+		<method name="refuse_new_connections">
+			<return type="void" />
+			<param index="0" name="refuse" type="bool" />
+			<description>
+				Configures the DTLS server to automatically drop new connections.
+				[b]Note:[/b] This method is only relevant after calling [method dtls_server_setup].
+			</description>
+		</method>
+		<method name="service">
+			<return type="Array" />
+			<param index="0" name="timeout" type="int" default="0" />
+			<description>
+				Waits for events on this connection and shuttles packets between the host and its peers, with the given [param timeout] (in milliseconds). The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
+				Call this function regularly to handle connections, disconnections, and to receive new packets.
+				[b]Note:[/b] This method must be called on both ends involved in the event (sending and receiving hosts).
+			</description>
+		</method>
+		<method name="socket_send">
+			<return type="void" />
+			<param index="0" name="destination_address" type="String" />
+			<param index="1" name="destination_port" type="int" />
+			<param index="2" name="packet" type="PackedByteArray" />
+			<description>
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance.
+				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
+				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">
+			No compression. This uses the most bandwidth, but has the upside of requiring the fewest CPU resources. This option may also be used to make network debugging using tools like Wireshark easier.
+		</constant>
+		<constant name="COMPRESS_RANGE_CODER" value="1" enum="CompressionMode">
+			ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
+		</constant>
+		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
+			[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
+		</constant>
+		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
+			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
+		</constant>
+		<constant name="COMPRESS_ZSTD" value="4" enum="CompressionMode">
+			[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
+		</constant>
+		<constant name="EVENT_ERROR" value="-1" enum="EventType">
+			An error occurred during [method service]. You will likely need to [method destroy] the host and recreate it.
+		</constant>
+		<constant name="EVENT_NONE" value="0" enum="EventType">
+			No event occurred within the specified time limit.
+		</constant>
+		<constant name="EVENT_CONNECT" value="1" enum="EventType">
+			A connection request initiated by enet_host_connect has completed. The array will contain the peer which successfully connected.
+		</constant>
+		<constant name="EVENT_DISCONNECT" value="2" enum="EventType">
+			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
+		</constant>
+		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
+			A packet has been received from a peer. The array will contain the peer which sent the packet and the channel number upon which the packet was received. The received packet will be queued to the associated [ENetPacketPeer].
+		</constant>
+		<constant name="HOST_TOTAL_SENT_DATA" value="0" enum="HostStatistic">
+			Total data sent.
+		</constant>
+		<constant name="HOST_TOTAL_SENT_PACKETS" value="1" enum="HostStatistic">
+			Total UDP packets sent.
+		</constant>
+		<constant name="HOST_TOTAL_RECEIVED_DATA" value="2" enum="HostStatistic">
+			Total data received.
+		</constant>
+		<constant name="HOST_TOTAL_RECEIVED_PACKETS" value="3" enum="HostStatistic">
+			Total UDP packets received.
+		</constant>
+	</constants>
+</class>

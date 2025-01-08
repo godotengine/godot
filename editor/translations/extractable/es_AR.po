@@ -1,0 +1,121 @@
+# Spanish (Argentina) translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-03-03 20:01+0000\n"
+"Last-Translator: Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>\n"
+"Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
+"engine/godot/es_AR/>\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "Add current color as a preset."
+msgstr "Agregar color actual como preset."
+
+msgid "Network"
+msgstr "Red"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Select Current Folder"
+msgstr "Seleccionar Carpeta Actual"
+
+msgid "Select This Folder"
+msgstr "Seleccionar Esta Carpeta"
+
+msgid "All Recognized"
+msgstr "Todos Reconocidos"
+
+msgid "Open a File"
+msgstr "Abrir un Archivo"
+
+msgid "Open File(s)"
+msgstr "Abrir Archivo(s)"
+
+msgid "Open a Directory"
+msgstr "Abrir un Directorio"
+
+msgid "Open a File or Directory"
+msgstr "Abrir un Archivo o Directorio"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Save a File"
+msgstr "Guardar un Archivo"
+
+msgid "Go to previous folder."
+msgstr "Ir a la carpeta anterior."
+
+msgid "Go to next folder."
+msgstr "Ir a la carpeta siguiente."
+
+msgid "Go to parent folder."
+msgstr "Ir a la carpeta padre."
+
+msgid "Path:"
+msgstr "Ruta:"
+
+msgid "Refresh files."
+msgstr "Refrescar archivos."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Mostrar/Ocultar archivos ocultos."
+
+msgid "Directories & Files:"
+msgstr "Directorios y Archivos:"
+
+msgid "File:"
+msgstr "Archivo:"
+
+msgid "Create Folder"
+msgstr "Crear Carpeta"
+
+msgid "Name:"
+msgstr "Nombre:"
+
+msgid "Could not create folder."
+msgstr "No se pudo crear la carpeta."
+
+msgid "Zoom Out"
+msgstr "Alejar Zoom"
+
+msgid "Zoom Reset"
+msgstr "Reset de Zoom"
+
+msgid "Zoom In"
+msgstr "Zoom In"
+
+msgid "Cut"
+msgstr "Cortar"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Paste"
+msgstr "Pegar"
+
+msgid "Select All"
+msgstr "Seleccionar Todo"
+
+msgid "Clear"
+msgstr "Limpiar"
+
+msgid "Undo"
+msgstr "Deshacer"
+
+msgid "Redo"
+msgstr "Rehacer"
+
+msgid "(Other)"
+msgstr "(Otro)"

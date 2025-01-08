@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaneMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class representing a planar [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a planar [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Z axes; this default rotation isn't suited for use with billboarded materials. For billboarded materials, change [member orientation] to [constant FACE_Z].
+		[b]Note:[/b] When using a large textured [PlaneMesh] (e.g. as a floor), you may stumble upon UV jittering issues depending on the camera angle. To solve this, increase [member subdivide_depth] and [member subdivide_width] until you no longer notice UV jittering.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="center_offset" type="Vector3" setter="set_center_offset" getter="get_center_offset" default="Vector3(0, 0, 0)">
+			Offset of the generated plane. Useful for particles.
+		</member>
+		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="PlaneMesh.Orientation" default="1">
+			Direction that the [PlaneMesh] is facing. See [enum Orientation] for options.
+		</member>
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(2, 2)">
+			Size of the generated plane.
+		</member>
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" default="0">
+			Number of subdivision along the Z axis.
+		</member>
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" default="0">
+			Number of subdivision along the X axis.
+		</member>
+	</members>
+	<constants>
+		<constant name="FACE_X" value="0" enum="Orientation">
+			[PlaneMesh] will face the positive X-axis.
+		</constant>
+		<constant name="FACE_Y" value="1" enum="Orientation">
+			[PlaneMesh] will face the positive Y-axis. This matches the behavior of the [PlaneMesh] in Godot 3.x.
+		</constant>
+		<constant name="FACE_Z" value="2" enum="Orientation">
+			[PlaneMesh] will face the positive Z-axis. This matches the behavior of the QuadMesh in Godot 3.x.
+		</constant>
+	</constants>
+</class>

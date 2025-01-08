@@ -1,0 +1,1304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsServer3DExtension" inherits="PhysicsServer3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsServer3D] implementations.
+	</brief_description>
+	<description>
+		This class extends [PhysicsServer3D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsServer3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_area_add_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape" type="RID" />
+			<param index="2" name="transform" type="Transform3D" />
+			<param index="3" name="disabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_attach_object_instance_id" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_clear_shapes" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_collision_layer" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_collision_mask" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_object_instance_id" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_param" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_shape" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_shape_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_shape_transform" qualifiers="virtual const">
+			<return type="Transform3D" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_space" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_transform" qualifiers="virtual const">
+			<return type="Transform3D" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_remove_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_area_monitor_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_collision_layer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_collision_mask" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_monitor_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_monitorable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="monitorable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.AreaParameter" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_ray_pickable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_shape_disabled" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="disabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_shape_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_space" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_set_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_add_collision_exception" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="excepted_body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_add_constant_central_force" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_add_constant_force" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_add_constant_torque" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_add_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape" type="RID" />
+			<param index="2" name="transform" type="Transform3D" />
+			<param index="3" name="disabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_central_force" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_central_impulse" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_force" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_impulse" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_torque" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_apply_torque_impulse" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_attach_object_instance_id" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="id" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_clear_shapes" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_collision_exceptions" qualifiers="virtual const">
+			<return type="RID[]" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_collision_layer" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_collision_mask" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_collision_priority" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_constant_force" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_constant_torque" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_contacts_reported_depth_threshold" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_direct_state" qualifiers="virtual">
+			<return type="PhysicsDirectBodyState3D" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_max_contacts_reported" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_mode" qualifiers="virtual const">
+			<return type="int" enum="PhysicsServer3D.BodyMode" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_object_instance_id" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_param" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_shape" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_shape_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_shape_transform" qualifiers="virtual const">
+			<return type="Transform3D" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_space" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_state" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_get_user_flags" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_is_axis_locked" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_is_continuous_collision_detection_enabled" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_is_omitting_force_integration" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_remove_collision_exception" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="excepted_body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_remove_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_reset_mass_properties" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_axis_lock" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<param index="2" name="lock" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_axis_velocity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="axis_velocity" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_collision_layer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_collision_mask" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_collision_priority" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="priority" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_constant_force" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_constant_torque" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="torque" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_contacts_reported_depth_threshold" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="threshold" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_enable_continuous_collision_detection" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_force_integration_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<param index="2" name="userdata" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_max_contacts_reported" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="amount" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_mode" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mode" type="int" enum="PhysicsServer3D.BodyMode" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_omit_force_integration" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.BodyParameter" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_ray_pickable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_shape" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_shape_disabled" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="disabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_shape_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_space" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_state" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_state_sync_callback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_set_user_flags" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="flags" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_body_test_motion" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="from" type="Transform3D" />
+			<param index="2" name="motion" type="Vector3" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="max_collisions" type="int" />
+			<param index="5" name="collide_separation_ray" type="bool" />
+			<param index="6" name="recovery_as_collision" type="bool" />
+			<param index="7" name="result" type="PhysicsServer3DExtensionMotionResult*" />
+			<description>
+			</description>
+		</method>
+		<method name="_box_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_capsule_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_concave_polygon_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_cone_twist_joint_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_cone_twist_joint_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_convex_polygon_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_custom_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_cylinder_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_end_sync" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_finish" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_flush_queries" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_free_rid" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_get_flag" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_set_flag" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
+			<param index="3" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
+			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
+			<param index="3" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_process_info" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
+			<description>
+			</description>
+		</method>
+		<method name="_heightmap_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_get_flag" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_set_flag" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_init" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_flushing_queries" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_clear" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_disable_collisions_between_bodies" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_get_solver_priority" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_get_type" qualifiers="virtual const">
+			<return type="int" enum="PhysicsServer3D.JointType" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_is_disabled_collisions_between_bodies" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_cone_twist" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_generic_6dof" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_hinge" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="hinge_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="hinge_B" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_hinge_simple" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="pivot_A" type="Vector3" />
+			<param index="3" name="axis_A" type="Vector3" />
+			<param index="4" name="body_B" type="RID" />
+			<param index="5" name="pivot_B" type="Vector3" />
+			<param index="6" name="axis_B" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_pin" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_A" type="Vector3" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_B" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_make_slider" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="body_A" type="RID" />
+			<param index="2" name="local_ref_A" type="Transform3D" />
+			<param index="3" name="body_B" type="RID" />
+			<param index="4" name="local_ref_B" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_set_solver_priority" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="priority" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_get_local_a" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_get_local_b" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_set_local_a" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="local_A" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_set_local_b" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="local_B" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_pin_joint_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_separation_ray_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_active" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="active" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_get_custom_solver_bias" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_get_data" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_get_margin" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_get_type" qualifiers="virtual const">
+			<return type="int" enum="PhysicsServer3D.ShapeType" />
+			<param index="0" name="shape" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_set_custom_solver_bias" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="bias" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_set_data" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="data" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_shape_set_margin" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shape" type="RID" />
+			<param index="1" name="margin" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_slider_joint_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_slider_joint_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_add_collision_exception" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="body_b" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_bounds" qualifiers="virtual const">
+			<return type="AABB" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_collision_exceptions" qualifiers="virtual const">
+			<return type="RID[]" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_collision_layer" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_collision_mask" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_damping_coefficient" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_drag_coefficient" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_linear_stiffness" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_point_global_position" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_pressure_coefficient" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_simulation_precision" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_space" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_state" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_get_total_mass" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_is_point_pinned" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_move_point" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="global_position" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_pin_point" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="pin" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_remove_all_pinned_points" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_remove_collision_exception" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="body_b" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_collision_layer" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_collision_mask" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_damping_coefficient" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="damping_coefficient" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_drag_coefficient" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="drag_coefficient" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_linear_stiffness" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="linear_stiffness" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_mesh" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mesh" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_pressure_coefficient" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="pressure_coefficient" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_ray_pickable" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_simulation_precision" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="simulation_precision" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_space" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_state" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
+			<param index="2" name="variant" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_total_mass" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="total_mass" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_update_rendering_server" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="rendering_server_handler" type="PhysicsServer3DRenderingServerHandler" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_contact_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_contacts" qualifiers="virtual const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_direct_state" qualifiers="virtual">
+			<return type="PhysicsDirectSpaceState3D" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_param" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_is_active" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_set_active" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="active" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_set_debug_contacts" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="max_contacts" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_set_param" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
+			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_sphere_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_step" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="step" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_sync" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_world_boundary_shape_create" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="body_test_motion_is_excluding_body" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="body_test_motion_is_excluding_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="object" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

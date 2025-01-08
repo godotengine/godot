@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionShape3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that provides a [Shape3D] to a [CollisionObject3D] parent.
+	</brief_description>
+	<description>
+		A node that provides a [Shape3D] to a [CollisionObject3D] parent and allows to edit it. This can give a detection shape to an [Area3D] or turn a [PhysicsBody3D] into a solid object.
+		[b]Warning:[/b] A non-uniformly scaled [CollisionShape3D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its [member shape] resource instead.
+	</description>
+	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="make_convex_from_siblings">
+			<return type="void" />
+			<description>
+				Sets the collision shape's shape to the addition of all its convexed [MeshInstance3D] siblings geometry.
+			</description>
+		</method>
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
+			<return type="void" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				This method does nothing.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
+			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.
+			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 0)[/code] value documented here is a placeholder, and not the actual default debug color.
+		</member>
+		<member name="debug_fill" type="bool" setter="set_enable_debug_fill" getter="get_enable_debug_fill" default="true">
+			If [code]true[/code], when the shape is displayed, it will show a solid fill color in addition to its wireframe.
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
+			A disabled collision shape has no effect in the world.
+		</member>
+		<member name="shape" type="Shape3D" setter="set_shape" getter="get_shape">
+			The actual shape owned by this collision shape.
+		</member>
+	</members>
+</class>

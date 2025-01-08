@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFLight" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a glTF light.
+	</brief_description>
+	<description>
+		Represents a light as defined by the [code]KHR_lights_punctual[/code] glTF extension.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="KHR_lights_punctual glTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
+	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFLight" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFLight instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="from_node" qualifiers="static">
+			<return type="GLTFLight" />
+			<param index="0" name="light_node" type="Light3D" />
+			<description>
+				Create a new GLTFLight instance from the given Godot [Light3D] node.
+			</description>
+		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFLight instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="Light3D" />
+			<description>
+				Converts this GLTFLight instance into a Godot [Light3D] node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.
+		</member>
+		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">
+			The inner angle of the cone in a spotlight. Must be less than or equal to the outer cone angle.
+			Within this angle, the light is at full brightness. Between the inner and outer cone angles, there is a transition from full brightness to zero brightness. When creating a Godot [SpotLight3D], the ratio between the inner and outer cone angles is used to calculate the attenuation of the light.
+		</member>
+		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
+			The intensity of the light. This is expressed in candelas (lumens per steradian) for point and spot lights, and lux (lumens per m²) for directional lights. When creating a Godot light, this value is converted to a unitless multiplier.
+		</member>
+		<member name="light_type" type="String" setter="set_light_type" getter="get_light_type" default="&quot;&quot;">
+			The type of the light. The values accepted by Godot are "point", "spot", and "directional", which correspond to Godot's [OmniLight3D], [SpotLight3D], and [DirectionalLight3D] respectively.
+		</member>
+		<member name="outer_cone_angle" type="float" setter="set_outer_cone_angle" getter="get_outer_cone_angle" default="0.785398">
+			The outer angle of the cone in a spotlight. Must be greater than or equal to the inner angle.
+			At this angle, the light drops off to zero brightness. Between the inner and outer cone angles, there is a transition from full brightness to zero brightness. If this angle is a half turn, then the spotlight emits in all directions. When creating a Godot [SpotLight3D], the outer cone angle is used as the angle of the spotlight.
+		</member>
+		<member name="range" type="float" setter="set_range" getter="get_range" default="inf">
+			The range of the light, beyond which the light has no effect. glTF lights with no range defined behave like physical lights (which have infinite range). When creating a Godot light, the range is clamped to 4096.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CharacterBody3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D physics body specialized for characters moved by script.
+	</brief_description>
+	<description>
+		[CharacterBody3D] is a specialized class for physics bodies that are meant to be user-controlled. They are not affected by physics at all, but they affect other physics bodies in their path. They are mainly used to provide high-level API to move objects with wall and slope detection ([method move_and_slide] method) in addition to the general collision detection provided by [method PhysicsBody3D.move_and_collide]. This makes it useful for highly configurable physics bodies that must move in specific ways and collide with the world, as is often the case with user-controlled characters.
+		For game objects that don't require complex movement or collision detection, such as moving platforms, [AnimatableBody3D] is simpler to configure.
+	</description>
+	<tutorials>
+		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="apply_floor_snap">
+			<return type="void" />
+			<description>
+				Allows to manually apply a snap to the floor regardless of the body's velocity. This function does nothing when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_floor_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="up_direction" type="Vector3" default="Vector3(0, 1, 0)" />
+			<description>
+				Returns the floor's collision angle at the last collision point according to [param up_direction], which is [constant Vector3.UP] by default. This value is always positive and only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the collision normal of the floor at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_floor] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
+			</description>
+		</method>
+		<method name="get_last_motion" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the last motion applied to the [CharacterBody3D] during the last call to [method move_and_slide]. The movement can be split into multiple motions when sliding occurs, and this method return the last one, which is useful to retrieve the current direction of the movement.
+			</description>
+		</method>
+		<method name="get_last_slide_collision">
+			<return type="KinematicCollision3D" />
+			<description>
+				Returns a [KinematicCollision3D], which contains information about the latest collision that occurred during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_platform_angular_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the angular velocity of the platform at the last collision point. Only valid after calling [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_platform_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the linear velocity of the platform at the last collision point. Only valid after calling [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_position_delta" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the travel (position delta) that occurred during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_real_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the current real velocity since the last call to [method move_and_slide]. For example, when you climb a slope, you will move diagonally even though the velocity is horizontal. This method returns the diagonal movement, as opposed to [member velocity] which returns the requested velocity.
+			</description>
+		</method>
+		<method name="get_slide_collision">
+			<return type="KinematicCollision3D" />
+			<param index="0" name="slide_idx" type="int" />
+			<description>
+				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last call to [method move_and_slide]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_collision_count] - 1).
+			</description>
+		</method>
+		<method name="get_slide_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="get_wall_normal" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the collision normal of the wall at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_wall] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
+			</description>
+		</method>
+		<method name="is_on_ceiling" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "ceiling" or not.
+			</description>
+		</method>
+		<method name="is_on_ceiling_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the ceiling on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "ceiling" or not.
+			</description>
+		</method>
+		<method name="is_on_floor" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "floor" or not.
+			</description>
+		</method>
+		<method name="is_on_floor_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with the floor on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "floor" or not.
+			</description>
+		</method>
+		<method name="is_on_wall" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+			</description>
+		</method>
+		<method name="is_on_wall_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="bool" />
+			<description>
+				Moves the body based on [member velocity]. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [CharacterBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
+				Modifies [member velocity] if a slide collision occurred. To get the latest collision call [method get_last_slide_collision], for more detailed information about collisions that occurred, use [method get_slide_collision].
+				When the body touches a moving platform, the platform's velocity is automatically added to the body motion. If a collision occurs due to the platform's motion, it will always be first in the slide collisions.
+				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
+			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
+		</member>
+		<member name="floor_constant_speed" type="bool" setter="set_floor_constant_speed_enabled" getter="is_floor_constant_speed_enabled" default="false">
+			If [code]false[/code] (by default), the body will move faster on downward slopes and slower on upward slopes.
+			If [code]true[/code], the body will always move at the same speed on the ground no matter the slope. Note that you need to use [member floor_snap_length] to stick along a downward slope at constant speed.
+		</member>
+		<member name="floor_max_angle" type="float" setter="set_floor_max_angle" getter="get_floor_max_angle" default="0.785398">
+			Maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. The default value equals 45 degrees.
+		</member>
+		<member name="floor_snap_length" type="float" setter="set_floor_snap_length" getter="get_floor_snap_length" default="0.1">
+			Sets a snapping distance. When set to a value different from [code]0.0[/code], the body is kept attached to slopes when calling [method move_and_slide]. The snapping vector is determined by the given distance along the opposite direction of the [member up_direction].
+			As long as the snapping vector is in contact with the ground and the body moves against [member up_direction], the body will remain attached to the surface. Snapping is not applied if the body moves along [member up_direction], meaning it contains vertical rising velocity, so it will be able to detach from the ground when jumping or when the body is pushed up by something. If you want to apply a snap without taking into account the velocity, use [method apply_floor_snap].
+		</member>
+		<member name="floor_stop_on_slope" type="bool" setter="set_floor_stop_on_slope_enabled" getter="is_floor_stop_on_slope_enabled" default="true">
+			If [code]true[/code], the body will not slide on slopes when calling [method move_and_slide] when the body is standing still.
+			If [code]false[/code], the body will slide on floor's slopes when [member velocity] applies a downward force.
+		</member>
+		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="6">
+			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
+		</member>
+		<member name="motion_mode" type="int" setter="set_motion_mode" getter="get_motion_mode" enum="CharacterBody3D.MotionMode" default="0">
+			Sets the motion mode which defines the behavior of [method move_and_slide]. See [enum MotionMode] constants for available modes.
+		</member>
+		<member name="platform_floor_layers" type="int" setter="set_platform_floor_layers" getter="get_platform_floor_layers" default="4294967295">
+			Collision layers that will be included for detecting floor bodies that will act as moving platforms to be followed by the [CharacterBody3D]. By default, all floor bodies are detected and propagate their velocity.
+		</member>
+		<member name="platform_on_leave" type="int" setter="set_platform_on_leave" getter="get_platform_on_leave" enum="CharacterBody3D.PlatformOnLeave" default="0">
+			Sets the behavior to apply when you leave a moving platform. By default, to be physically accurate, when you leave the last platform velocity is applied. See [enum PlatformOnLeave] constants for available behavior.
+		</member>
+		<member name="platform_wall_layers" type="int" setter="set_platform_wall_layers" getter="get_platform_wall_layers" default="0">
+			Collision layers that will be included for detecting wall bodies that will act as moving platforms to be followed by the [CharacterBody3D]. By default, all wall bodies are ignored.
+		</member>
+		<member name="safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
+			Extra margin used for collision recovery when calling [method move_and_slide].
+			If the body is at least this close to another body, it will consider them to be colliding and will be pushed away before performing the actual motion.
+			A higher value means it's more flexible for detecting collision, which helps with consistently detecting walls and floors.
+			A lower value forces the collision algorithm to use more exact detection, so it can be used in cases that specifically require precision, e.g at very low scale to avoid visible jittering, or for stability with a stack of character bodies.
+		</member>
+		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
+			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
+		</member>
+		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3(0, 1, 0)">
+			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [constant Vector3.UP]. As the vector will be normalized it can't be equal to [constant Vector3.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
+		</member>
+		<member name="velocity" type="Vector3" setter="set_velocity" getter="get_velocity" default="Vector3(0, 0, 0)">
+			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
+		</member>
+		<member name="wall_min_slide_angle" type="float" setter="set_wall_min_slide_angle" getter="get_wall_min_slide_angle" default="0.261799">
+			Minimum angle (in radians) where the body is allowed to slide when it encounters a slope. The default value equals 15 degrees. When [member motion_mode] is [constant MOTION_MODE_GROUNDED], it only affects movement if [member floor_block_on_wall] is [code]true[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="MOTION_MODE_GROUNDED" value="0" enum="MotionMode">
+			Apply when notions of walls, ceiling and floor are relevant. In this mode the body motion will react to slopes (acceleration/slowdown). This mode is suitable for grounded games like platformers.
+		</constant>
+		<constant name="MOTION_MODE_FLOATING" value="1" enum="MotionMode">
+			Apply when there is no notion of floor or ceiling. All collisions will be reported as [code]on_wall[/code]. In this mode, when you slide, the speed will always be constant. This mode is suitable for games without ground like space games.
+		</constant>
+		<constant name="PLATFORM_ON_LEAVE_ADD_VELOCITY" value="0" enum="PlatformOnLeave">
+			Add the last platform velocity to the [member velocity] when you leave a moving platform.
+		</constant>
+		<constant name="PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY" value="1" enum="PlatformOnLeave">
+			Add the last platform velocity to the [member velocity] when you leave a moving platform, but any downward motion is ignored. It's useful to keep full jump height even when the platform is moving down.
+		</constant>
+		<constant name="PLATFORM_ON_LEAVE_DO_NOTHING" value="2" enum="PlatformOnLeave">
+			Do nothing when leaving a platform.
+		</constant>
+	</constants>
+</class>

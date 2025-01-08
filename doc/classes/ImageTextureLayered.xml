@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImageTextureLayered" inherits="TextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for texture types which contain the data of multiple [ImageTexture]s. Each image is of the same size and format.
+	</brief_description>
+	<description>
+		Base class for [Texture2DArray], [Cubemap] and [CubemapArray]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. See also [Texture3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_from_images">
+			<return type="int" enum="Error" />
+			<param index="0" name="images" type="Image[]" />
+			<description>
+				Creates an [ImageTextureLayered] from an array of [Image]s. See [method Image.create] for the expected data format. The first image decides the width, height, image format and mipmapping setting. The other images [i]must[/i] have the same width, height, image format and mipmapping setting.
+				Each [Image] represents one [code]layer[/code].
+			</description>
+		</method>
+		<method name="update_layer">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="layer" type="int" />
+			<description>
+				Replaces the existing [Image] data at the given [param layer] with this new image.
+				The given [Image] must have the same width, height, image format, and mipmapping flag as the rest of the referenced images.
+				If the image format is unsupported, it will be decompressed and converted to a similar and supported [enum Image.Format].
+				The update is immediate: it's synchronized with drawing.
+			</description>
+		</method>
+	</methods>
+</class>

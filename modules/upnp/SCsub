@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_upnp = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_miniupnpc"] and env["platform"] != "web":
+    thirdparty_dir = "#thirdparty/miniupnpc/"
+    thirdparty_sources = [
+        "igd_desc_parse.c",
+        "miniupnpc.c",
+        "minixml.c",
+        "minisoap.c",
+        "minissdpc.c",
+        "miniwget.c",
+        "upnpcommands.c",
+        "upnpdev.c",
+        "upnpreplyparse.c",
+        "connecthostport.c",
+        "portlistingparse.c",
+        "receivedata.c",
+        "addr_is_reserved.c",
+    ]
+    thirdparty_sources = [thirdparty_dir + "src/" + file for file in thirdparty_sources]
+
+    env_upnp.Prepend(CPPPATH=[thirdparty_dir + "include"])
+    env_upnp.Append(CPPDEFINES=["MINIUPNP_STATICLIB"])
+    if env["platform"] != "windows":
+        env_upnp.Append(CPPDEFINES=["MINIUPNPC_SET_SOCKET_TIMEOUT"])
+
+    env_thirdparty = env_upnp.Clone()
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "include/miniupnpc"])
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_upnp.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

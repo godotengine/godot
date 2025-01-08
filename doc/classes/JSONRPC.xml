@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JSONRPC" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A helper to handle dictionaries which look like JSONRPC documents.
+	</brief_description>
+	<description>
+		[url=https://www.jsonrpc.org/]JSON-RPC[/url] is a standard which wraps a method call in a [JSON] object. The object has a particular structure and identifies which method is called, the parameters to that function, and carries an ID to keep track of responses. This class implements that standard on top of [Dictionary]; you will have to convert between a [Dictionary] and [JSON] with other functions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="make_notification">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" />
+			<description>
+				Returns a dictionary in the form of a JSON-RPC notification. Notifications are one-shot messages which do not expect a response.
+				- [param method]: Name of the method being called.
+				- [param params]: An array or dictionary of parameters being passed to the method.
+			</description>
+		</method>
+		<method name="make_request">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" />
+			<param index="2" name="id" type="Variant" />
+			<description>
+				Returns a dictionary in the form of a JSON-RPC request. Requests are sent to a server with the expectation of a response. The ID field is used for the server to specify which exact request it is responding to.
+				- [param method]: Name of the method being called.
+				- [param params]: An array or dictionary of parameters being passed to the method.
+				- [param id]: Uniquely identifies this request. The server is expected to send a response with the same ID.
+			</description>
+		</method>
+		<method name="make_response">
+			<return type="Dictionary" />
+			<param index="0" name="result" type="Variant" />
+			<param index="1" name="id" type="Variant" />
+			<description>
+				When a server has received and processed a request, it is expected to send a response. If you did not want a response then you need to have sent a Notification instead.
+				- [param result]: The return value of the function which was called.
+				- [param id]: The ID of the request this response is targeted to.
+			</description>
+		</method>
+		<method name="make_response_error" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="code" type="int" />
+			<param index="1" name="message" type="String" />
+			<param index="2" name="id" type="Variant" default="null" />
+			<description>
+				Creates a response which indicates a previous reply has failed in some way.
+				- [param code]: The error code corresponding to what kind of error this is. See the [enum ErrorCode] constants.
+				- [param message]: A custom message about this error.
+				- [param id]: The request this error is a response to.
+			</description>
+		</method>
+		<method name="process_action">
+			<return type="Variant" />
+			<param index="0" name="action" type="Variant" />
+			<param index="1" name="recurse" type="bool" default="false" />
+			<description>
+				Given a Dictionary which takes the form of a JSON-RPC request: unpack the request and run it. Methods are resolved by looking at the field called "method" and looking for an equivalently named function in the JSONRPC object. If one is found that method is called.
+				To add new supported methods extend the JSONRPC class and call [method process_action] on your subclass.
+				[param action]: The action to be run, as a Dictionary in the form of a JSON-RPC request or notification.
+			</description>
+		</method>
+		<method name="process_string">
+			<return type="String" />
+			<param index="0" name="action" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="set_scope">
+			<return type="void" />
+			<param index="0" name="scope" type="String" />
+			<param index="1" name="target" type="Object" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PARSE_ERROR" value="-32700" enum="ErrorCode">
+			The request could not be parsed as it was not valid by JSON standard ([method JSON.parse] failed).
+		</constant>
+		<constant name="INVALID_REQUEST" value="-32600" enum="ErrorCode">
+			A method call was requested but the request's format is not valid.
+		</constant>
+		<constant name="METHOD_NOT_FOUND" value="-32601" enum="ErrorCode">
+			A method call was requested but no function of that name existed in the JSONRPC subclass.
+		</constant>
+		<constant name="INVALID_PARAMS" value="-32602" enum="ErrorCode">
+			A method call was requested but the given method parameters are not valid. Not used by the built-in JSONRPC.
+		</constant>
+		<constant name="INTERNAL_ERROR" value="-32603" enum="ErrorCode">
+			An internal error occurred while processing the request. Not used by the built-in JSONRPC.
+		</constant>
+	</constants>
+</class>

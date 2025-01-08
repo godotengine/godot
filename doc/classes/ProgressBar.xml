@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ProgressBar" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control used for visual representation of a percentage.
+	</brief_description>
+	<description>
+		A control used for visual representation of a percentage. Shows fill percentage from right to left.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="editor_preview_indeterminate" type="bool" setter="set_editor_preview_indeterminate" getter="is_editor_preview_indeterminate_enabled">
+			If [code]false[/code], the [member indeterminate] animation will be paused in the editor.
+		</member>
+		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" default="0">
+			The fill direction. See [enum FillMode] for possible values.
+		</member>
+		<member name="indeterminate" type="bool" setter="set_indeterminate" getter="is_indeterminate" default="false">
+			When set to [code]true[/code], the progress bar indicates that something is happening with an animation, but does not show the fill percentage or value.
+		</member>
+		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true">
+			If [code]true[/code], the fill percentage is displayed on the bar.
+		</member>
+	</members>
+	<constants>
+		<constant name="FILL_BEGIN_TO_END" value="0" enum="FillMode">
+			The progress bar fills from begin to end horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from left to right, and if it returns [code]true[/code], it fills from right to left.
+		</constant>
+		<constant name="FILL_END_TO_BEGIN" value="1" enum="FillMode">
+			The progress bar fills from end to begin horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from right to left, and if it returns [code]true[/code], it fills from left to right.
+		</constant>
+		<constant name="FILL_TOP_TO_BOTTOM" value="2" enum="FillMode">
+			The progress fills from top to bottom.
+		</constant>
+		<constant name="FILL_BOTTOM_TO_TOP" value="3" enum="FillMode">
+			The progress fills from bottom to top.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			The color of the text.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The tint of text outline of the [ProgressBar].
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			Font used to draw the fill percentage if [member show_percentage] is [code]true[/code].
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size used to draw the fill percentage if [member show_percentage] is [code]true[/code].
+		</theme_item>
+		<theme_item name="background" data_type="style" type="StyleBox">
+			The style of the background.
+		</theme_item>
+		<theme_item name="fill" data_type="style" type="StyleBox">
+			The style of the progress (i.e. the part that fills the bar).
+		</theme_item>
+	</theme_items>
+</class>

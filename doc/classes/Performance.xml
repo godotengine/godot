@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Performance" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes performance-related data.
+	</brief_description>
+	<description>
+		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
+		You can add custom monitors using the [method add_custom_monitor] method. Custom monitors are available in [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel together with built-in monitors.
+		[b]Note:[/b] Some of the built-in monitors are only available in debug mode and will always return [code]0[/code] when used in a project exported in release mode.
+		[b]Note:[/b] Some of the built-in monitors are not updated in real-time for performance reasons, so there may be a delay of up to 1 second between changes.
+		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_custom_monitor">
+			<return type="void" />
+			<param index="0" name="id" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
+			<param index="2" name="arguments" type="Array" default="[]" />
+			<description>
+				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var monitor_value = Callable(self, "get_monitor_value")
+
+				    # Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different IDs, so the code is valid.
+				    Performance.add_custom_monitor("MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different IDs, so the code is valid.
+				    Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
+
+				func get_monitor_value():
+				    return randi() % 25
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var monitorValue = new Callable(this, MethodName.GetMonitorValue);
+
+				    // Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+				    Performance.AddCustomMonitor("MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+				    Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
+				}
+
+				public int GetMonitorValue()
+				{
+				    return GD.Randi() % 25;
+				}
+				[/csharp]
+				[/codeblocks]
+				The debugger calls the callable to get the value of custom monitor. The callable must return a zero or positive integer or floating-point number.
+				Callables are called with arguments supplied in argument array.
+			</description>
+		</method>
+		<method name="get_custom_monitor">
+			<return type="Variant" />
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Returns the value of custom monitor with given [param id]. The callable is called to get the value of custom monitor. See also [method has_custom_monitor]. Prints an error if the given [param id] is absent.
+			</description>
+		</method>
+		<method name="get_custom_monitor_names">
+			<return type="StringName[]" />
+			<description>
+				Returns the names of active custom monitors in an [Array].
+			</description>
+		</method>
+		<method name="get_monitor" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="monitor" type="int" enum="Performance.Monitor" />
+			<description>
+				Returns the value of one of the available built-in monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
+				[codeblocks]
+				[gdscript]
+				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console.
+				[/gdscript]
+				[csharp]
+				GD.Print(Performance.GetMonitor(Performance.Monitor.TimeFps)); // Prints the FPS to the console.
+				[/csharp]
+				[/codeblocks]
+				See [method get_custom_monitor] to query custom performance monitors' values.
+			</description>
+		</method>
+		<method name="get_monitor_modification_time">
+			<return type="int" />
+			<description>
+				Returns the last tick in which custom monitor was added/removed (in microseconds since the engine started). This is set to [method Time.get_ticks_usec] when the monitor is updated.
+			</description>
+		</method>
+		<method name="has_custom_monitor">
+			<return type="bool" />
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Returns [code]true[/code] if custom monitor with the given [param id] is present, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="remove_custom_monitor">
+			<return type="void" />
+			<param index="0" name="id" type="StringName" />
+			<description>
+				Removes the custom monitor with given [param id]. Prints an error if the given [param id] is already absent.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TIME_FPS" value="0" enum="Monitor">
+			The number of frames rendered in the last second. This metric is only updated once per second, even if queried more often. [i]Higher is better.[/i]
+		</constant>
+		<constant name="TIME_PROCESS" value="1" enum="Monitor">
+			Time it took to complete one frame, in seconds. [i]Lower is better.[/i]
+		</constant>
+		<constant name="TIME_PHYSICS_PROCESS" value="2" enum="Monitor">
+			Time it took to complete one physics frame, in seconds. [i]Lower is better.[/i]
+		</constant>
+		<constant name="TIME_NAVIGATION_PROCESS" value="3" enum="Monitor">
+			Time it took to complete one navigation step, in seconds. This includes navigation map updates as well as agent avoidance calculations. [i]Lower is better.[/i]
+		</constant>
+		<constant name="MEMORY_STATIC" value="4" enum="Monitor">
+			Static memory currently used, in bytes. Not available in release builds. [i]Lower is better.[/i]
+		</constant>
+		<constant name="MEMORY_STATIC_MAX" value="5" enum="Monitor">
+			Available static memory. Not available in release builds. [i]Lower is better.[/i]
+		</constant>
+		<constant name="MEMORY_MESSAGE_BUFFER_MAX" value="6" enum="Monitor">
+			Largest amount of memory the message queue buffer has used, in bytes. The message queue is used for deferred functions calls and notifications. [i]Lower is better.[/i]
+		</constant>
+		<constant name="OBJECT_COUNT" value="7" enum="Monitor">
+			Number of objects currently instantiated (including nodes). [i]Lower is better.[/i]
+		</constant>
+		<constant name="OBJECT_RESOURCE_COUNT" value="8" enum="Monitor">
+			Number of resources currently used. [i]Lower is better.[/i]
+		</constant>
+		<constant name="OBJECT_NODE_COUNT" value="9" enum="Monitor">
+			Number of nodes currently instantiated in the scene tree. This also includes the root node. [i]Lower is better.[/i]
+		</constant>
+		<constant name="OBJECT_ORPHAN_NODE_COUNT" value="10" enum="Monitor">
+			Number of orphan nodes, i.e. nodes which are not parented to a node of the scene tree. [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_TOTAL_OBJECTS_IN_FRAME" value="11" enum="Monitor">
+			The total number of objects in the last rendered frame. This metric doesn't include culled objects (either via hiding nodes, frustum culling or occlusion culling). [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_TOTAL_PRIMITIVES_IN_FRAME" value="12" enum="Monitor">
+			The total number of vertices or indices rendered in the last rendered frame. This metric doesn't include primitives from culled objects (either via hiding nodes, frustum culling or occlusion culling). Due to the depth prepass and shadow passes, the number of primitives is always higher than the actual number of vertices in the scene (typically double or triple the original vertex count). [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_TOTAL_DRAW_CALLS_IN_FRAME" value="13" enum="Monitor">
+			The total number of draw calls performed in the last rendered frame. This metric doesn't include culled objects (either via hiding nodes, frustum culling or occlusion culling), since they do not result in draw calls. [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_VIDEO_MEM_USED" value="14" enum="Monitor">
+			The amount of video memory used (texture and vertex memory combined, in bytes). Since this metric also includes miscellaneous allocations, this value is always greater than the sum of [constant RENDER_TEXTURE_MEM_USED] and [constant RENDER_BUFFER_MEM_USED]. [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_TEXTURE_MEM_USED" value="15" enum="Monitor">
+			The amount of texture memory used (in bytes). [i]Lower is better.[/i]
+		</constant>
+		<constant name="RENDER_BUFFER_MEM_USED" value="16" enum="Monitor">
+			The amount of render buffer memory used (in bytes). [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="17" enum="Monitor">
+			Number of active [RigidBody2D] nodes in the game. [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="18" enum="Monitor">
+			Number of collision pairs in the 2D physics engine. [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_2D_ISLAND_COUNT" value="19" enum="Monitor">
+			Number of islands in the 2D physics engine. [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="20" enum="Monitor">
+			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game. [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="21" enum="Monitor">
+			Number of collision pairs in the 3D physics engine. [i]Lower is better.[/i]
+		</constant>
+		<constant name="PHYSICS_3D_ISLAND_COUNT" value="22" enum="Monitor">
+			Number of islands in the 3D physics engine. [i]Lower is better.[/i]
+		</constant>
+		<constant name="AUDIO_OUTPUT_LATENCY" value="23" enum="Monitor">
+			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.
+		</constant>
+		<constant name="NAVIGATION_ACTIVE_MAPS" value="24" enum="Monitor">
+			Number of active navigation maps in the [NavigationServer3D]. This also includes the two empty default navigation maps created by World2D and World3D.
+		</constant>
+		<constant name="NAVIGATION_REGION_COUNT" value="25" enum="Monitor">
+			Number of active navigation regions in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_AGENT_COUNT" value="26" enum="Monitor">
+			Number of active navigation agents processing avoidance in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_LINK_COUNT" value="27" enum="Monitor">
+			Number of active navigation links in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_POLYGON_COUNT" value="28" enum="Monitor">
+			Number of navigation mesh polygons in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_EDGE_COUNT" value="29" enum="Monitor">
+			Number of navigation mesh polygon edges in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_EDGE_MERGE_COUNT" value="30" enum="Monitor">
+			Number of navigation mesh polygon edges that were merged due to edge key overlap in the [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_EDGE_CONNECTION_COUNT" value="31" enum="Monitor">
+			Number of polygon edges that are considered connected by edge proximity [NavigationServer3D].
+		</constant>
+		<constant name="NAVIGATION_EDGE_FREE_COUNT" value="32" enum="Monitor">
+			Number of navigation mesh polygon edges that could not be merged in the [NavigationServer3D]. The edges still may be connected by edge proximity or with links.
+		</constant>
+		<constant name="NAVIGATION_OBSTACLE_COUNT" value="33" enum="Monitor">
+			Number of active navigation obstacles in the [NavigationServer3D].
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_CANVAS" value="34" enum="Monitor">
+			Number of pipeline compilations that were triggered by the 2D canvas renderer.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_MESH" value="35" enum="Monitor">
+			Number of pipeline compilations that were triggered by loading meshes. These compilations will show up as longer loading times the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_SURFACE" value="36" enum="Monitor">
+			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading an scene the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_DRAW" value="37" enum="Monitor">
+			Number of pipeline compilations that were triggered while drawing the scene. These compilations will show up as stutters during gameplay the first time a user runs the game and the pipeline is required.
+		</constant>
+		<constant name="PIPELINE_COMPILATIONS_SPECIALIZATION" value="38" enum="Monitor">
+			Number of pipeline compilations that were triggered to optimize the current scene. These compilations are done in the background and should not cause any stutters whatsoever.
+		</constant>
+		<constant name="MONITOR_MAX" value="39" enum="Monitor">
+			Represents the size of the [enum Monitor] enum.
+		</constant>
+	</constants>
+</class>

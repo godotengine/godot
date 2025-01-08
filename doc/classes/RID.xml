@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RID" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A handle for a [Resource]'s unique identifier.
+	</brief_description>
+	<description>
+		The RID [Variant] type is used to access a low-level resource by its unique ID. RIDs are opaque, which means they do not grant access to the resource by themselves. They are used by the low-level server classes, such as [DisplayServer], [RenderingServer], [TextServer], etc.
+		A low-level resource may correspond to a high-level [Resource], such as [Texture] or [Mesh].
+		[b]Note:[/b] RIDs are only useful during the current session. It won't correspond to a similar resource if sent over a network, or loaded from a file at a later time.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="RID">
+			<return type="RID" />
+			<description>
+				Constructs an empty [RID] with the invalid ID [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="RID">
+			<return type="RID" />
+			<param index="0" name="from" type="RID" />
+			<description>
+				Constructs a [RID] as a copy of the given [RID].
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="get_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the referenced low-level resource.
+			</description>
+		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [RID] is not [code]0[/code].
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [RID]s are not equal.
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [RID]'s ID is less than [param right]'s ID.
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [RID]'s ID is less than or equal to [param right]'s ID.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if both [RID]s are equal, which means they both refer to the same low-level resource.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [RID]'s ID is greater than [param right]'s ID.
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [RID]'s ID is greater than or equal to [param right]'s ID.
+			</description>
+		</operator>
+	</operators>
+</class>

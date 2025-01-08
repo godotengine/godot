@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsBody2D" inherits="CollisionObject2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for 2D game objects affected by physics.
+	</brief_description>
+	<description>
+		[PhysicsBody2D] is an abstract base class for 2D game objects affected by physics. All 2D physics bodies inherit from it.
+	</description>
+	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_collision_exception_with">
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Adds a body to the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="get_collision_exceptions">
+			<return type="PhysicsBody2D[]" />
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area2D] nodes and the global world gravity.
+			</description>
+		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision2D" />
+			<param index="0" name="motion" type="Vector2" />
+			<param index="1" name="test_only" type="bool" default="false" />
+			<param index="2" name="safe_margin" type="float" default="0.08" />
+			<param index="3" name="recovery_as_collision" type="bool" default="false" />
+			<description>
+				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				Returns a [KinematicCollision2D], which contains information about the collision when stopped, or when touching another body along the motion.
+				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody2D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is used e.g. by [CharacterBody2D] for improving floor detection during floor snapping.
+			</description>
+		</method>
+		<method name="remove_collision_exception_with">
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Removes a body from the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="test_move" keywords="check, collision, sweep">
+			<return type="bool" />
+			<param index="0" name="from" type="Transform2D" />
+			<param index="1" name="motion" type="Vector2" />
+			<param index="2" name="collision" type="KinematicCollision2D" default="null" />
+			<param index="3" name="safe_margin" type="float" default="0.08" />
+			<param index="4" name="recovery_as_collision" type="bool" default="false" />
+			<description>
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform2D], then tries to move the body along the vector [param motion]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				[param collision] is an optional object of type [KinematicCollision2D], which contains additional information about the collision when stopped, or when touching another body along the motion.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody2D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is useful for checking whether the body would [i]touch[/i] any other bodies.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable" overrides="CollisionObject2D" default="false" />
+	</members>
+</class>

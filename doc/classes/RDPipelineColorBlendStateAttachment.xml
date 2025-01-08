@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineColorBlendStateAttachment" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline color blend state attachment (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		Controls how blending between source and destination fragments is performed when using [RenderingDevice].
+		For reference, this is how common user-facing blend modes are implemented in Godot's 2D renderer:
+		[b]Mix:[/b]
+		[codeblock]
+		var attachment = RDPipelineColorBlendStateAttachment.new()
+		attachment.enable_blend = true
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+		[/codeblock]
+		[b]Add:[/b]
+		[codeblock]
+		var attachment = RDPipelineColorBlendStateAttachment.new()
+		attachment.enable_blend = true
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		[/codeblock]
+		[b]Subtract:[/b]
+		[codeblock]
+		var attachment = RDPipelineColorBlendStateAttachment.new()
+		attachment.enable_blend = true
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_REVERSE_SUBTRACT
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_REVERSE_SUBTRACT
+		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
+		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		[/codeblock]
+		[b]Multiply:[/b]
+		[codeblock]
+		var attachment = RDPipelineColorBlendStateAttachment.new()
+		attachment.enable_blend = true
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_DST_COLOR
+		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ZERO
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_DST_ALPHA
+		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ZERO
+		[/codeblock]
+		[b]Pre-multiplied alpha:[/b]
+		[codeblock]
+		var attachment = RDPipelineColorBlendStateAttachment.new()
+		attachment.enable_blend = true
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_ADD
+		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
+		attachment.dst_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_as_mix">
+			<return type="void" />
+			<description>
+				Convenience method to perform standard mix blending with straight (non-premultiplied) alpha. This sets [member enable_blend] to [code]true[/code], [member src_color_blend_factor] to [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA], [member dst_color_blend_factor] to [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA], [member src_alpha_blend_factor] to [constant RenderingDevice.BLEND_FACTOR_SRC_ALPHA] and [member dst_alpha_blend_factor] to [constant RenderingDevice.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_blend_op" type="int" setter="set_alpha_blend_op" getter="get_alpha_blend_op" enum="RenderingDevice.BlendOperation" default="0">
+			The blend mode to use for the alpha channel.
+		</member>
+		<member name="color_blend_op" type="int" setter="set_color_blend_op" getter="get_color_blend_op" enum="RenderingDevice.BlendOperation" default="0">
+			The blend mode to use for the red/green/blue color channels.
+		</member>
+		<member name="dst_alpha_blend_factor" type="int" setter="set_dst_alpha_blend_factor" getter="get_dst_alpha_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+			Controls how the blend factor for the alpha channel is determined based on the destination's fragments.
+		</member>
+		<member name="dst_color_blend_factor" type="int" setter="set_dst_color_blend_factor" getter="get_dst_color_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+			Controls how the blend factor for the color channels is determined based on the destination's fragments.
+		</member>
+		<member name="enable_blend" type="bool" setter="set_enable_blend" getter="get_enable_blend" default="false">
+			If [code]true[/code], performs blending between the source and destination according to the factors defined in [member src_color_blend_factor], [member dst_color_blend_factor], [member src_alpha_blend_factor] and [member dst_alpha_blend_factor]. The blend modes [member color_blend_op] and [member alpha_blend_op] are also taken into account, with [member write_r], [member write_g], [member write_b] and [member write_a] controlling the output.
+		</member>
+		<member name="src_alpha_blend_factor" type="int" setter="set_src_alpha_blend_factor" getter="get_src_alpha_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+			Controls how the blend factor for the alpha channel is determined based on the source's fragments.
+		</member>
+		<member name="src_color_blend_factor" type="int" setter="set_src_color_blend_factor" getter="get_src_color_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
+			Controls how the blend factor for the color channels is determined based on the source's fragments.
+		</member>
+		<member name="write_a" type="bool" setter="set_write_a" getter="get_write_a" default="true">
+			If [code]true[/code], writes the new alpha channel to the final result.
+		</member>
+		<member name="write_b" type="bool" setter="set_write_b" getter="get_write_b" default="true">
+			If [code]true[/code], writes the new blue color channel to the final result.
+		</member>
+		<member name="write_g" type="bool" setter="set_write_g" getter="get_write_g" default="true">
+			If [code]true[/code], writes the new green color channel to the final result.
+		</member>
+		<member name="write_r" type="bool" setter="set_write_r" getter="get_write_r" default="true">
+			If [code]true[/code], writes the new red color channel to the final result.
+		</member>
+	</members>
+</class>

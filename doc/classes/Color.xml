@@ -1,0 +1,1069 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Color" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A color represented in RGBA format.
+	</brief_description>
+	<description>
+		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 32-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
+		Colors can be created in various ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
+		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
+		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
+	</description>
+	<tutorials>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/2767</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Color">
+			<return type="Color" />
+			<description>
+				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
+				[b]Note:[/b] In C#, this constructs a [Color] with all of its components set to [code]0.0[/code] (transparent black).
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="from" type="Color" />
+			<param index="1" name="alpha" type="float" />
+			<description>
+				Constructs a [Color] from the existing color, with [member a] set to the given [param alpha] value.
+				[codeblocks]
+				[gdscript]
+				var red = Color(Color.RED, 0.2) # 20% opaque red.
+				[/gdscript]
+				[csharp]
+				var red = new Color(Colors.Red, 0.2f); // 20% opaque red.
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="from" type="Color" />
+			<description>
+				Constructs a [Color] as a copy of the given [Color].
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="code" type="String" />
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name. The supported color names are the same as the constants.
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="code" type="String" />
+			<param index="1" name="alpha" type="float" />
+			<description>
+				Constructs a [Color] either from an HTML color code or from a standardized color name, with [param alpha] on the range of 0.0 to 1.0. The supported color names are the same as the constants.
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="r" type="float" />
+			<param index="1" name="g" type="float" />
+			<param index="2" name="b" type="float" />
+			<description>
+				Constructs a [Color] from RGB values, typically between 0.0 and 1.0. [member a] is set to 1.0.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</constructor>
+		<constructor name="Color">
+			<return type="Color" />
+			<param index="0" name="r" type="float" />
+			<param index="1" name="g" type="float" />
+			<param index="2" name="b" type="float" />
+			<param index="3" name="a" type="float" />
+			<description>
+				Constructs a [Color] from RGBA values, typically between 0.0 and 1.0.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="blend" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="over" type="Color" />
+			<description>
+				Returns a new color resulting from overlaying this color over the given color. In a painting program, you can imagine it as the [param over] color painted over this color (including alpha).
+				[codeblocks]
+				[gdscript]
+				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%
+				var fg = Color(1.0, 0.0, 0.0, 0.5) # Red with alpha of 50%
+				var blended_color = bg.blend(fg) # Brown with alpha of 75%
+				[/gdscript]
+				[csharp]
+				var bg = new Color(0.0f, 1.0f, 0.0f, 0.5f); // Green with alpha of 50%
+				var fg = new Color(1.0f, 0.0f, 0.0f, 0.5f); // Red with alpha of 50%
+				Color blendedColor = bg.Blend(fg); // Brown with alpha of 75%
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="min" type="Color" default="Color(0, 0, 0, 0)" />
+			<param index="1" name="max" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Returns a new color with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="darkened" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="amount" type="float" />
+			<description>
+				Returns a new color resulting from making this color darker by the specified [param amount] (ratio from 0.0 to 1.0). See also [method lightened].
+				[codeblocks]
+				[gdscript]
+				var green = Color(0.0, 1.0, 0.0)
+				var darkgreen = green.darkened(0.2) # 20% darker than regular green
+				[/gdscript]
+				[csharp]
+				var green = new Color(0.0f, 1.0f, 0.0f);
+				Color darkgreen = green.Darkened(0.2f); // 20% darker than regular green
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="from_hsv" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="h" type="float" />
+			<param index="1" name="s" type="float" />
+			<param index="2" name="v" type="float" />
+			<param index="3" name="alpha" type="float" default="1.0" />
+			<description>
+				Constructs a color from an [url=https://en.wikipedia.org/wiki/HSL_and_HSV]HSV profile[/url]. The hue ([param h]), saturation ([param s]), and value ([param v]) are typically between 0.0 and 1.0.
+				[codeblocks]
+				[gdscript]
+				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8)
+				[/gdscript]
+				[csharp]
+				var color = Color.FromHsv(0.58f, 0.5f, 0.79f, 0.8f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="from_ok_hsl" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="h" type="float" />
+			<param index="1" name="s" type="float" />
+			<param index="2" name="l" type="float" />
+			<param index="3" name="alpha" type="float" default="1.0" />
+			<description>
+				Constructs a color from an [url=https://bottosson.github.io/posts/colorpicker/]OK HSL profile[/url]. The hue ([param h]), saturation ([param s]), and lightness ([param l]) are typically between 0.0 and 1.0.
+				[codeblocks]
+				[gdscript]
+				var color = Color.from_ok_hsl(0.58, 0.5, 0.79, 0.8)
+				[/gdscript]
+				[csharp]
+				var color = Color.FromOkHsl(0.58f, 0.5f, 0.79f, 0.8f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="from_rgba8" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="r8" type="int" />
+			<param index="1" name="g8" type="int" />
+			<param index="2" name="b8" type="int" />
+			<param index="3" name="a8" type="int" default="255" />
+			<description>
+				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
+				[codeblock]
+				var red = Color.from_rgba8(255, 0, 0)             # Same as Color(1, 0, 0).
+				var dark_blue = Color.from_rgba8(0, 0, 51)        # Same as Color(0, 0, 0.2).
+				var my_color = Color.from_rgba8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
+				[/codeblock]
+				[b]Note:[/b] Due to the lower precision of [method from_rgba8] compared to the standard [Color] constructor, a color created with [method from_rgba8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method is_equal_approx] for comparisons to avoid issues with floating-point precision error.
+			</description>
+		</method>
+		<method name="from_rgbe9995" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="rgbe" type="int" />
+			<description>
+				Decodes a [Color] from an RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
+			</description>
+		</method>
+		<method name="from_string" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="str" type="String" />
+			<param index="1" name="default" type="Color" />
+			<description>
+				Creates a [Color] from the given string, which can be either an HTML color code or a named color (case-insensitive). Returns [param default] if the color cannot be inferred from the string.
+				If you want to create a color from String in a constant expression, use the equivalent constructor instead (i.e. [code]Color("color string")[/code]).
+			</description>
+		</method>
+		<method name="get_luminance" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the light intensity of the color, as a value between 0.0 and 1.0 (inclusive). This is useful when determining light or dark color. Colors with a luminance smaller than 0.5 can be generally considered dark.
+				[b]Note:[/b] [method get_luminance] relies on the color being in the linear color space to return an accurate relative luminance value. If the color is in the sRGB color space, use [method srgb_to_linear] to convert it to the linear color space first.
+			</description>
+		</method>
+		<method name="hex" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="hex" type="int" />
+			<description>
+				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel). This method is the inverse of [method to_rgba32].
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRGGBBAA"[/code]).
+				[codeblocks]
+				[gdscript]
+				var red = Color.hex(0xff0000ff)
+				var dark_cyan = Color.hex(0x008b8bff)
+				var my_color = Color.hex(0xbbefd2a4)
+				[/gdscript]
+				[csharp]
+				var red = new Color(0xff0000ff);
+				var dark_cyan = new Color(0x008b8bff);
+				var my_color = new Color(0xbbefd2a4);
+				[/csharp]
+				[/codeblocks]
+				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
+			</description>
+		</method>
+		<method name="hex64" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="hex" type="int" />
+			<description>
+				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel). This method is the inverse of [method to_rgba64].
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRRRGGGGBBBBAAAA"[/code]).
+			</description>
+		</method>
+		<method name="html" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="rgba" type="String" />
+			<description>
+				Returns a new color from [param rgba], an HTML hexadecimal color string. [param rgba] is not case-sensitive, and may be prefixed by a hash sign ([code]#[/code]).
+				[param rgba] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [param rgba] does not contain an alpha channel value, an alpha channel value of 1.0 is applied. If [param rgba] is invalid, returns an empty color.
+				[codeblocks]
+				[gdscript]
+				var blue = Color.html("#0000ff") # blue is Color(0.0, 0.0, 1.0, 1.0)
+				var green = Color.html("#0F0")   # green is Color(0.0, 1.0, 0.0, 1.0)
+				var col = Color.html("663399cc") # col is Color(0.4, 0.2, 0.6, 0.8)
+				[/gdscript]
+				[csharp]
+				var blue = Color.FromHtml("#0000ff"); // blue is Color(0.0, 0.0, 1.0, 1.0)
+				var green = Color.FromHtml("#0F0");   // green is Color(0.0, 1.0, 0.0, 1.0)
+				var col = Color.FromHtml("663399cc"); // col is Color(0.4, 0.2, 0.6, 0.8)
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="html_is_valid" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="color" type="String" />
+			<description>
+				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. The string must be a hexadecimal value (case-insensitive) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). This method is identical to [method String.is_valid_html_color].
+				[codeblocks]
+				[gdscript]
+				Color.html_is_valid("#55aaFF")   # Returns true
+				Color.html_is_valid("#55AAFF20") # Returns true
+				Color.html_is_valid("55AAFF")    # Returns true
+				Color.html_is_valid("#F2C")      # Returns true
+
+				Color.html_is_valid("#AABBC")    # Returns false
+				Color.html_is_valid("#55aaFF5")  # Returns false
+				[/gdscript]
+				[csharp]
+				Color.HtmlIsValid("#55AAFF");   // Returns true
+				Color.HtmlIsValid("#55AAFF20"); // Returns true
+				Color.HtmlIsValid("55AAFF");    // Returns true
+				Color.HtmlIsValid("#F2C");      // Returns true
+
+				Color.HtmlIsValid("#AABBC");    // Returns false
+				Color.HtmlIsValid("#55aaFF5");  // Returns false
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="inverted" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the color with its [member r], [member g], and [member b] components inverted ([code](1 - r, 1 - g, 1 - b, a)[/code]).
+				[codeblocks]
+				[gdscript]
+				var black = Color.WHITE.inverted()
+				var color = Color(0.3, 0.4, 0.9)
+				var inverted_color = color.inverted() # Equivalent to `Color(0.7, 0.6, 0.1)`
+				[/gdscript]
+				[csharp]
+				var black = Colors.White.Inverted();
+				var color = new Color(0.3f, 0.4f, 0.9f);
+				Color invertedColor = color.Inverted(); // Equivalent to `new Color(0.7f, 0.6f, 0.1f)`
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="to" type="Color" />
+			<description>
+				Returns [code]true[/code] if this color and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="lerp" qualifiers="const" keywords="interpolate">
+			<return type="Color" />
+			<param index="0" name="to" type="Color" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns the linear interpolation between this color's components and [param to]'s components. The interpolation factor [param weight] should be between 0.0 and 1.0 (inclusive). See also [method @GlobalScope.lerp].
+				[codeblocks]
+				[gdscript]
+				var red = Color(1.0, 0.0, 0.0)
+				var aqua = Color(0.0, 1.0, 0.8)
+
+				red.lerp(aqua, 0.2) # Returns Color(0.8, 0.2, 0.16)
+				red.lerp(aqua, 0.5) # Returns Color(0.5, 0.5, 0.4)
+				red.lerp(aqua, 1.0) # Returns Color(0.0, 1.0, 0.8)
+				[/gdscript]
+				[csharp]
+				var red = new Color(1.0f, 0.0f, 0.0f);
+				var aqua = new Color(0.0f, 1.0f, 0.8f);
+
+				red.Lerp(aqua, 0.2f); // Returns Color(0.8f, 0.2f, 0.16f)
+				red.Lerp(aqua, 0.5f); // Returns Color(0.5f, 0.5f, 0.4f)
+				red.Lerp(aqua, 1.0f); // Returns Color(0.0f, 1.0f, 0.8f)
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="lightened" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="amount" type="float" />
+			<description>
+				Returns a new color resulting from making this color lighter by the specified [param amount], which should be a ratio from 0.0 to 1.0. See also [method darkened].
+				[codeblocks]
+				[gdscript]
+				var green = Color(0.0, 1.0, 0.0)
+				var light_green = green.lightened(0.2) # 20% lighter than regular green
+				[/gdscript]
+				[csharp]
+				var green = new Color(0.0f, 1.0f, 0.0f);
+				Color lightGreen = green.Lightened(0.2f); // 20% lighter than regular green
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="linear_to_srgb" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the color converted to the [url=https://en.wikipedia.org/wiki/SRGB]sRGB[/url] color space. This method assumes the original color is in the linear color space. See also [method srgb_to_linear] which performs the opposite operation.
+			</description>
+		</method>
+		<method name="srgb_to_linear" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the color converted to the linear color space. This method assumes the original color already is in the sRGB color space. See also [method linear_to_srgb] which performs the opposite operation.
+			</description>
+		</method>
+		<method name="to_abgr32" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 32-bit integer in ABGR format (each component is 8 bits). ABGR is the reversed version of the default RGBA format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr32()) # Prints 4281565439
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToAbgr32()); // Prints 4281565439
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_abgr64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 64-bit integer in ABGR format (each component is 16 bits). ABGR is the reversed version of the default RGBA format.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr64()) # Prints -225178692812801
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToAbgr64()); // Prints -225178692812801
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_argb32" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 32-bit integer in ARGB format (each component is 8 bits). ARGB is more compatible with DirectX.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb32()) # Prints 4294934323
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToArgb32()); // Prints 4294934323
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_argb64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 64-bit integer in ARGB format (each component is 16 bits). ARGB is more compatible with DirectX.
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb64()) # Prints -2147470541
+				[/gdscript]
+				[csharp]
+				var color = new Color(1.0f, 0.5f, 0.2f);
+				GD.Print(color.ToArgb64()); // Prints -2147470541
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_html" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="with_alpha" type="bool" default="true" />
+			<description>
+				Returns the color converted to an HTML hexadecimal color [String] in RGBA format, without the hash ([code]#[/code]) prefix.
+				Setting [param with_alpha] to [code]false[/code], excludes alpha from the hexadecimal string, using RGB format instead of RGBA format.
+				[codeblocks]
+				[gdscript]
+				var white = Color(1, 1, 1, 0.5)
+				var with_alpha = white.to_html() # Returns "ffffff7f"
+				var without_alpha = white.to_html(false) # Returns "ffffff"
+				[/gdscript]
+				[csharp]
+				var white = new Color(1, 1, 1, 0.5f);
+				string withAlpha = white.ToHtml(); // Returns "ffffff7f"
+				string withoutAlpha = white.ToHtml(false); // Returns "ffffff"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_rgba32" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format. This method is the inverse of [method hex].
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba32()) # Prints 4286526463
+				[/gdscript]
+				[csharp]
+				var color = new Color(1, 0.5f, 0.2f);
+				GD.Print(color.ToRgba32()); // Prints 4286526463
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="to_rgba64" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format. This method is the inverse of [method hex64].
+				[codeblocks]
+				[gdscript]
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba64()) # Prints -140736629309441
+				[/gdscript]
+				[csharp]
+				var color = new Color(1, 0.5f, 0.2f);
+				GD.Print(color.ToRgba64()); // Prints -140736629309441
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="a" type="float" setter="" getter="" default="1.0">
+			The color's alpha component, typically on the range of 0 to 1. A value of 0 means that the color is fully transparent. A value of 1 means that the color is fully opaque.
+		</member>
+		<member name="a8" type="int" setter="" getter="" default="255">
+			Wrapper for [member a] that uses the range 0 to 255, instead of 0 to 1.
+		</member>
+		<member name="b" type="float" setter="" getter="" default="0.0">
+			The color's blue component, typically on the range of 0 to 1.
+		</member>
+		<member name="b8" type="int" setter="" getter="" default="0">
+			Wrapper for [member b] that uses the range 0 to 255, instead of 0 to 1.
+		</member>
+		<member name="g" type="float" setter="" getter="" default="0.0">
+			The color's green component, typically on the range of 0 to 1.
+		</member>
+		<member name="g8" type="int" setter="" getter="" default="0">
+			Wrapper for [member g] that uses the range 0 to 255, instead of 0 to 1.
+		</member>
+		<member name="h" type="float" setter="" getter="" default="0.0">
+			The HSV hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+			The OKHSL hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
+			The OKHSL lightness of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_s" type="float" setter="" getter="" default="0.0">
+			The OKHSL saturation of this color, on the range 0 to 1.
+		</member>
+		<member name="r" type="float" setter="" getter="" default="0.0">
+			The color's red component, typically on the range of 0 to 1.
+		</member>
+		<member name="r8" type="int" setter="" getter="" default="0">
+			Wrapper for [member r] that uses the range 0 to 255, instead of 0 to 1.
+		</member>
+		<member name="s" type="float" setter="" getter="" default="0.0">
+			The HSV saturation of this color, on the range 0 to 1.
+		</member>
+		<member name="v" type="float" setter="" getter="" default="0.0">
+			The HSV value (brightness) of this color, on the range 0 to 1.
+		</member>
+	</members>
+	<constants>
+		<constant name="ALICE_BLUE" value="Color(0.941176, 0.972549, 1, 1)">
+			Alice blue color.
+		</constant>
+		<constant name="ANTIQUE_WHITE" value="Color(0.980392, 0.921569, 0.843137, 1)">
+			Antique white color.
+		</constant>
+		<constant name="AQUA" value="Color(0, 1, 1, 1)">
+			Aqua color.
+		</constant>
+		<constant name="AQUAMARINE" value="Color(0.498039, 1, 0.831373, 1)">
+			Aquamarine color.
+		</constant>
+		<constant name="AZURE" value="Color(0.941176, 1, 1, 1)">
+			Azure color.
+		</constant>
+		<constant name="BEIGE" value="Color(0.960784, 0.960784, 0.862745, 1)">
+			Beige color.
+		</constant>
+		<constant name="BISQUE" value="Color(1, 0.894118, 0.768627, 1)">
+			Bisque color.
+		</constant>
+		<constant name="BLACK" value="Color(0, 0, 0, 1)">
+			Black color. In GDScript, this is the default value of any color.
+		</constant>
+		<constant name="BLANCHED_ALMOND" value="Color(1, 0.921569, 0.803922, 1)">
+			Blanched almond color.
+		</constant>
+		<constant name="BLUE" value="Color(0, 0, 1, 1)">
+			Blue color.
+		</constant>
+		<constant name="BLUE_VIOLET" value="Color(0.541176, 0.168627, 0.886275, 1)">
+			Blue violet color.
+		</constant>
+		<constant name="BROWN" value="Color(0.647059, 0.164706, 0.164706, 1)">
+			Brown color.
+		</constant>
+		<constant name="BURLYWOOD" value="Color(0.870588, 0.721569, 0.529412, 1)">
+			Burlywood color.
+		</constant>
+		<constant name="CADET_BLUE" value="Color(0.372549, 0.619608, 0.627451, 1)">
+			Cadet blue color.
+		</constant>
+		<constant name="CHARTREUSE" value="Color(0.498039, 1, 0, 1)">
+			Chartreuse color.
+		</constant>
+		<constant name="CHOCOLATE" value="Color(0.823529, 0.411765, 0.117647, 1)">
+			Chocolate color.
+		</constant>
+		<constant name="CORAL" value="Color(1, 0.498039, 0.313726, 1)">
+			Coral color.
+		</constant>
+		<constant name="CORNFLOWER_BLUE" value="Color(0.392157, 0.584314, 0.929412, 1)">
+			Cornflower blue color.
+		</constant>
+		<constant name="CORNSILK" value="Color(1, 0.972549, 0.862745, 1)">
+			Cornsilk color.
+		</constant>
+		<constant name="CRIMSON" value="Color(0.862745, 0.0784314, 0.235294, 1)">
+			Crimson color.
+		</constant>
+		<constant name="CYAN" value="Color(0, 1, 1, 1)">
+			Cyan color.
+		</constant>
+		<constant name="DARK_BLUE" value="Color(0, 0, 0.545098, 1)">
+			Dark blue color.
+		</constant>
+		<constant name="DARK_CYAN" value="Color(0, 0.545098, 0.545098, 1)">
+			Dark cyan color.
+		</constant>
+		<constant name="DARK_GOLDENROD" value="Color(0.721569, 0.52549, 0.0431373, 1)">
+			Dark goldenrod color.
+		</constant>
+		<constant name="DARK_GRAY" value="Color(0.662745, 0.662745, 0.662745, 1)">
+			Dark gray color.
+		</constant>
+		<constant name="DARK_GREEN" value="Color(0, 0.392157, 0, 1)">
+			Dark green color.
+		</constant>
+		<constant name="DARK_KHAKI" value="Color(0.741176, 0.717647, 0.419608, 1)">
+			Dark khaki color.
+		</constant>
+		<constant name="DARK_MAGENTA" value="Color(0.545098, 0, 0.545098, 1)">
+			Dark magenta color.
+		</constant>
+		<constant name="DARK_OLIVE_GREEN" value="Color(0.333333, 0.419608, 0.184314, 1)">
+			Dark olive green color.
+		</constant>
+		<constant name="DARK_ORANGE" value="Color(1, 0.54902, 0, 1)">
+			Dark orange color.
+		</constant>
+		<constant name="DARK_ORCHID" value="Color(0.6, 0.196078, 0.8, 1)">
+			Dark orchid color.
+		</constant>
+		<constant name="DARK_RED" value="Color(0.545098, 0, 0, 1)">
+			Dark red color.
+		</constant>
+		<constant name="DARK_SALMON" value="Color(0.913725, 0.588235, 0.478431, 1)">
+			Dark salmon color.
+		</constant>
+		<constant name="DARK_SEA_GREEN" value="Color(0.560784, 0.737255, 0.560784, 1)">
+			Dark sea green color.
+		</constant>
+		<constant name="DARK_SLATE_BLUE" value="Color(0.282353, 0.239216, 0.545098, 1)">
+			Dark slate blue color.
+		</constant>
+		<constant name="DARK_SLATE_GRAY" value="Color(0.184314, 0.309804, 0.309804, 1)">
+			Dark slate gray color.
+		</constant>
+		<constant name="DARK_TURQUOISE" value="Color(0, 0.807843, 0.819608, 1)">
+			Dark turquoise color.
+		</constant>
+		<constant name="DARK_VIOLET" value="Color(0.580392, 0, 0.827451, 1)">
+			Dark violet color.
+		</constant>
+		<constant name="DEEP_PINK" value="Color(1, 0.0784314, 0.576471, 1)">
+			Deep pink color.
+		</constant>
+		<constant name="DEEP_SKY_BLUE" value="Color(0, 0.74902, 1, 1)">
+			Deep sky blue color.
+		</constant>
+		<constant name="DIM_GRAY" value="Color(0.411765, 0.411765, 0.411765, 1)">
+			Dim gray color.
+		</constant>
+		<constant name="DODGER_BLUE" value="Color(0.117647, 0.564706, 1, 1)">
+			Dodger blue color.
+		</constant>
+		<constant name="FIREBRICK" value="Color(0.698039, 0.133333, 0.133333, 1)">
+			Firebrick color.
+		</constant>
+		<constant name="FLORAL_WHITE" value="Color(1, 0.980392, 0.941176, 1)">
+			Floral white color.
+		</constant>
+		<constant name="FOREST_GREEN" value="Color(0.133333, 0.545098, 0.133333, 1)">
+			Forest green color.
+		</constant>
+		<constant name="FUCHSIA" value="Color(1, 0, 1, 1)">
+			Fuchsia color.
+		</constant>
+		<constant name="GAINSBORO" value="Color(0.862745, 0.862745, 0.862745, 1)">
+			Gainsboro color.
+		</constant>
+		<constant name="GHOST_WHITE" value="Color(0.972549, 0.972549, 1, 1)">
+			Ghost white color.
+		</constant>
+		<constant name="GOLD" value="Color(1, 0.843137, 0, 1)">
+			Gold color.
+		</constant>
+		<constant name="GOLDENROD" value="Color(0.854902, 0.647059, 0.12549, 1)">
+			Goldenrod color.
+		</constant>
+		<constant name="GRAY" value="Color(0.745098, 0.745098, 0.745098, 1)">
+			Gray color.
+		</constant>
+		<constant name="GREEN" value="Color(0, 1, 0, 1)">
+			Green color.
+		</constant>
+		<constant name="GREEN_YELLOW" value="Color(0.678431, 1, 0.184314, 1)">
+			Green yellow color.
+		</constant>
+		<constant name="HONEYDEW" value="Color(0.941176, 1, 0.941176, 1)">
+			Honeydew color.
+		</constant>
+		<constant name="HOT_PINK" value="Color(1, 0.411765, 0.705882, 1)">
+			Hot pink color.
+		</constant>
+		<constant name="INDIAN_RED" value="Color(0.803922, 0.360784, 0.360784, 1)">
+			Indian red color.
+		</constant>
+		<constant name="INDIGO" value="Color(0.294118, 0, 0.509804, 1)">
+			Indigo color.
+		</constant>
+		<constant name="IVORY" value="Color(1, 1, 0.941176, 1)">
+			Ivory color.
+		</constant>
+		<constant name="KHAKI" value="Color(0.941176, 0.901961, 0.54902, 1)">
+			Khaki color.
+		</constant>
+		<constant name="LAVENDER" value="Color(0.901961, 0.901961, 0.980392, 1)">
+			Lavender color.
+		</constant>
+		<constant name="LAVENDER_BLUSH" value="Color(1, 0.941176, 0.960784, 1)">
+			Lavender blush color.
+		</constant>
+		<constant name="LAWN_GREEN" value="Color(0.486275, 0.988235, 0, 1)">
+			Lawn green color.
+		</constant>
+		<constant name="LEMON_CHIFFON" value="Color(1, 0.980392, 0.803922, 1)">
+			Lemon chiffon color.
+		</constant>
+		<constant name="LIGHT_BLUE" value="Color(0.678431, 0.847059, 0.901961, 1)">
+			Light blue color.
+		</constant>
+		<constant name="LIGHT_CORAL" value="Color(0.941176, 0.501961, 0.501961, 1)">
+			Light coral color.
+		</constant>
+		<constant name="LIGHT_CYAN" value="Color(0.878431, 1, 1, 1)">
+			Light cyan color.
+		</constant>
+		<constant name="LIGHT_GOLDENROD" value="Color(0.980392, 0.980392, 0.823529, 1)">
+			Light goldenrod color.
+		</constant>
+		<constant name="LIGHT_GRAY" value="Color(0.827451, 0.827451, 0.827451, 1)">
+			Light gray color.
+		</constant>
+		<constant name="LIGHT_GREEN" value="Color(0.564706, 0.933333, 0.564706, 1)">
+			Light green color.
+		</constant>
+		<constant name="LIGHT_PINK" value="Color(1, 0.713726, 0.756863, 1)">
+			Light pink color.
+		</constant>
+		<constant name="LIGHT_SALMON" value="Color(1, 0.627451, 0.478431, 1)">
+			Light salmon color.
+		</constant>
+		<constant name="LIGHT_SEA_GREEN" value="Color(0.12549, 0.698039, 0.666667, 1)">
+			Light sea green color.
+		</constant>
+		<constant name="LIGHT_SKY_BLUE" value="Color(0.529412, 0.807843, 0.980392, 1)">
+			Light sky blue color.
+		</constant>
+		<constant name="LIGHT_SLATE_GRAY" value="Color(0.466667, 0.533333, 0.6, 1)">
+			Light slate gray color.
+		</constant>
+		<constant name="LIGHT_STEEL_BLUE" value="Color(0.690196, 0.768627, 0.870588, 1)">
+			Light steel blue color.
+		</constant>
+		<constant name="LIGHT_YELLOW" value="Color(1, 1, 0.878431, 1)">
+			Light yellow color.
+		</constant>
+		<constant name="LIME" value="Color(0, 1, 0, 1)">
+			Lime color.
+		</constant>
+		<constant name="LIME_GREEN" value="Color(0.196078, 0.803922, 0.196078, 1)">
+			Lime green color.
+		</constant>
+		<constant name="LINEN" value="Color(0.980392, 0.941176, 0.901961, 1)">
+			Linen color.
+		</constant>
+		<constant name="MAGENTA" value="Color(1, 0, 1, 1)">
+			Magenta color.
+		</constant>
+		<constant name="MAROON" value="Color(0.690196, 0.188235, 0.376471, 1)">
+			Maroon color.
+		</constant>
+		<constant name="MEDIUM_AQUAMARINE" value="Color(0.4, 0.803922, 0.666667, 1)">
+			Medium aquamarine color.
+		</constant>
+		<constant name="MEDIUM_BLUE" value="Color(0, 0, 0.803922, 1)">
+			Medium blue color.
+		</constant>
+		<constant name="MEDIUM_ORCHID" value="Color(0.729412, 0.333333, 0.827451, 1)">
+			Medium orchid color.
+		</constant>
+		<constant name="MEDIUM_PURPLE" value="Color(0.576471, 0.439216, 0.858824, 1)">
+			Medium purple color.
+		</constant>
+		<constant name="MEDIUM_SEA_GREEN" value="Color(0.235294, 0.701961, 0.443137, 1)">
+			Medium sea green color.
+		</constant>
+		<constant name="MEDIUM_SLATE_BLUE" value="Color(0.482353, 0.407843, 0.933333, 1)">
+			Medium slate blue color.
+		</constant>
+		<constant name="MEDIUM_SPRING_GREEN" value="Color(0, 0.980392, 0.603922, 1)">
+			Medium spring green color.
+		</constant>
+		<constant name="MEDIUM_TURQUOISE" value="Color(0.282353, 0.819608, 0.8, 1)">
+			Medium turquoise color.
+		</constant>
+		<constant name="MEDIUM_VIOLET_RED" value="Color(0.780392, 0.0823529, 0.521569, 1)">
+			Medium violet red color.
+		</constant>
+		<constant name="MIDNIGHT_BLUE" value="Color(0.0980392, 0.0980392, 0.439216, 1)">
+			Midnight blue color.
+		</constant>
+		<constant name="MINT_CREAM" value="Color(0.960784, 1, 0.980392, 1)">
+			Mint cream color.
+		</constant>
+		<constant name="MISTY_ROSE" value="Color(1, 0.894118, 0.882353, 1)">
+			Misty rose color.
+		</constant>
+		<constant name="MOCCASIN" value="Color(1, 0.894118, 0.709804, 1)">
+			Moccasin color.
+		</constant>
+		<constant name="NAVAJO_WHITE" value="Color(1, 0.870588, 0.678431, 1)">
+			Navajo white color.
+		</constant>
+		<constant name="NAVY_BLUE" value="Color(0, 0, 0.501961, 1)">
+			Navy blue color.
+		</constant>
+		<constant name="OLD_LACE" value="Color(0.992157, 0.960784, 0.901961, 1)">
+			Old lace color.
+		</constant>
+		<constant name="OLIVE" value="Color(0.501961, 0.501961, 0, 1)">
+			Olive color.
+		</constant>
+		<constant name="OLIVE_DRAB" value="Color(0.419608, 0.556863, 0.137255, 1)">
+			Olive drab color.
+		</constant>
+		<constant name="ORANGE" value="Color(1, 0.647059, 0, 1)">
+			Orange color.
+		</constant>
+		<constant name="ORANGE_RED" value="Color(1, 0.270588, 0, 1)">
+			Orange red color.
+		</constant>
+		<constant name="ORCHID" value="Color(0.854902, 0.439216, 0.839216, 1)">
+			Orchid color.
+		</constant>
+		<constant name="PALE_GOLDENROD" value="Color(0.933333, 0.909804, 0.666667, 1)">
+			Pale goldenrod color.
+		</constant>
+		<constant name="PALE_GREEN" value="Color(0.596078, 0.984314, 0.596078, 1)">
+			Pale green color.
+		</constant>
+		<constant name="PALE_TURQUOISE" value="Color(0.686275, 0.933333, 0.933333, 1)">
+			Pale turquoise color.
+		</constant>
+		<constant name="PALE_VIOLET_RED" value="Color(0.858824, 0.439216, 0.576471, 1)">
+			Pale violet red color.
+		</constant>
+		<constant name="PAPAYA_WHIP" value="Color(1, 0.937255, 0.835294, 1)">
+			Papaya whip color.
+		</constant>
+		<constant name="PEACH_PUFF" value="Color(1, 0.854902, 0.72549, 1)">
+			Peach puff color.
+		</constant>
+		<constant name="PERU" value="Color(0.803922, 0.521569, 0.247059, 1)">
+			Peru color.
+		</constant>
+		<constant name="PINK" value="Color(1, 0.752941, 0.796078, 1)">
+			Pink color.
+		</constant>
+		<constant name="PLUM" value="Color(0.866667, 0.627451, 0.866667, 1)">
+			Plum color.
+		</constant>
+		<constant name="POWDER_BLUE" value="Color(0.690196, 0.878431, 0.901961, 1)">
+			Powder blue color.
+		</constant>
+		<constant name="PURPLE" value="Color(0.627451, 0.12549, 0.941176, 1)">
+			Purple color.
+		</constant>
+		<constant name="REBECCA_PURPLE" value="Color(0.4, 0.2, 0.6, 1)">
+			Rebecca purple color.
+		</constant>
+		<constant name="RED" value="Color(1, 0, 0, 1)">
+			Red color.
+		</constant>
+		<constant name="ROSY_BROWN" value="Color(0.737255, 0.560784, 0.560784, 1)">
+			Rosy brown color.
+		</constant>
+		<constant name="ROYAL_BLUE" value="Color(0.254902, 0.411765, 0.882353, 1)">
+			Royal blue color.
+		</constant>
+		<constant name="SADDLE_BROWN" value="Color(0.545098, 0.270588, 0.0745098, 1)">
+			Saddle brown color.
+		</constant>
+		<constant name="SALMON" value="Color(0.980392, 0.501961, 0.447059, 1)">
+			Salmon color.
+		</constant>
+		<constant name="SANDY_BROWN" value="Color(0.956863, 0.643137, 0.376471, 1)">
+			Sandy brown color.
+		</constant>
+		<constant name="SEA_GREEN" value="Color(0.180392, 0.545098, 0.341176, 1)">
+			Sea green color.
+		</constant>
+		<constant name="SEASHELL" value="Color(1, 0.960784, 0.933333, 1)">
+			Seashell color.
+		</constant>
+		<constant name="SIENNA" value="Color(0.627451, 0.321569, 0.176471, 1)">
+			Sienna color.
+		</constant>
+		<constant name="SILVER" value="Color(0.752941, 0.752941, 0.752941, 1)">
+			Silver color.
+		</constant>
+		<constant name="SKY_BLUE" value="Color(0.529412, 0.807843, 0.921569, 1)">
+			Sky blue color.
+		</constant>
+		<constant name="SLATE_BLUE" value="Color(0.415686, 0.352941, 0.803922, 1)">
+			Slate blue color.
+		</constant>
+		<constant name="SLATE_GRAY" value="Color(0.439216, 0.501961, 0.564706, 1)">
+			Slate gray color.
+		</constant>
+		<constant name="SNOW" value="Color(1, 0.980392, 0.980392, 1)">
+			Snow color.
+		</constant>
+		<constant name="SPRING_GREEN" value="Color(0, 1, 0.498039, 1)">
+			Spring green color.
+		</constant>
+		<constant name="STEEL_BLUE" value="Color(0.27451, 0.509804, 0.705882, 1)">
+			Steel blue color.
+		</constant>
+		<constant name="TAN" value="Color(0.823529, 0.705882, 0.54902, 1)">
+			Tan color.
+		</constant>
+		<constant name="TEAL" value="Color(0, 0.501961, 0.501961, 1)">
+			Teal color.
+		</constant>
+		<constant name="THISTLE" value="Color(0.847059, 0.74902, 0.847059, 1)">
+			Thistle color.
+		</constant>
+		<constant name="TOMATO" value="Color(1, 0.388235, 0.278431, 1)">
+			Tomato color.
+		</constant>
+		<constant name="TRANSPARENT" value="Color(1, 1, 1, 0)">
+			Transparent color (white with zero alpha).
+		</constant>
+		<constant name="TURQUOISE" value="Color(0.25098, 0.878431, 0.815686, 1)">
+			Turquoise color.
+		</constant>
+		<constant name="VIOLET" value="Color(0.933333, 0.509804, 0.933333, 1)">
+			Violet color.
+		</constant>
+		<constant name="WEB_GRAY" value="Color(0.501961, 0.501961, 0.501961, 1)">
+			Web gray color.
+		</constant>
+		<constant name="WEB_GREEN" value="Color(0, 0.501961, 0, 1)">
+			Web green color.
+		</constant>
+		<constant name="WEB_MAROON" value="Color(0.501961, 0, 0, 1)">
+			Web maroon color.
+		</constant>
+		<constant name="WEB_PURPLE" value="Color(0.501961, 0, 0.501961, 1)">
+			Web purple color.
+		</constant>
+		<constant name="WHEAT" value="Color(0.960784, 0.870588, 0.701961, 1)">
+			Wheat color.
+		</constant>
+		<constant name="WHITE" value="Color(1, 1, 1, 1)">
+			White color.
+		</constant>
+		<constant name="WHITE_SMOKE" value="Color(0.960784, 0.960784, 0.960784, 1)">
+			White smoke color.
+		</constant>
+		<constant name="YELLOW" value="Color(1, 1, 0, 1)">
+			Yellow color.
+		</constant>
+		<constant name="YELLOW_GREEN" value="Color(0.603922, 0.803922, 0.196078, 1)">
+			Yellow green color.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Returns [code]true[/code] if the colors are not exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Multiplies each component of the [Color] by the components of the given [Color].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies each component of the [Color] by the given [float].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies each component of the [Color] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Color" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Adds each component of the [Color] with the components of the given [Color].
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Color" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Subtracts each component of the [Color] by the components of the given [Color].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Divides each component of the [Color] by the components of the given [Color].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides each component of the [Color] by the given [float].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Color" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides each component of the [Color] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Returns [code]true[/code] if the colors are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Access color components using their index. [code][0][/code] is equivalent to [member r], [code][1][/code] is equivalent to [member g], [code][2][/code] is equivalent to [member b], and [code][3][/code] is equivalent to [member a].
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Color" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Color" />
+			<description>
+				Inverts the given color. This is equivalent to [code]Color.WHITE - c[/code] or [code]Color(1 - c.r, 1 - c.g, 1 - c.b, 1 - c.a)[/code]. Unlike with [method inverted], the [member a] component is inverted, too.
+			</description>
+		</operator>
+	</operators>
+</class>

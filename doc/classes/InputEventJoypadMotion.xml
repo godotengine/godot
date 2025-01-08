@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventJoypadMotion" inherits="InputEvent" keywords="gamepad, controller" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents axis motions (such as joystick or analog triggers) from a gamepad.
+	</brief_description>
+	<description>
+		Stores information about joystick motions. One [InputEventJoypadMotion] represents one axis at a time. For gamepad buttons, see [InputEventJoypadButton].
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="JoyAxis" default="0">
+			Axis identifier. Use one of the [enum JoyAxis] axis constants.
+		</member>
+		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="0.0">
+			Current position of the joystick on the given axis. The value ranges from [code]-1.0[/code] to [code]1.0[/code]. A value of [code]0[/code] means the axis is in its resting position.
+		</member>
+	</members>
+</class>

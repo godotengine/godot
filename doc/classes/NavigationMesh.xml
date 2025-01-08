@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMesh" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A navigation mesh that defines traversable areas and obstacles.
+	</brief_description>
+	<description>
+		A navigation mesh is a collection of polygons that define which areas of an environment are traversable to aid agents in pathfinding through complicated spaces.
+	</description>
+	<tutorials>
+		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
+		<link title="3D Navigation Demo">https://godotengine.org/asset-library/asset/2743</link>
+	</tutorials>
+	<methods>
+		<method name="add_polygon">
+			<return type="void" />
+			<param index="0" name="polygon" type="PackedInt32Array" />
+			<description>
+				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the internal arrays for vertices and polygon indices.
+			</description>
+		</method>
+		<method name="clear_polygons">
+			<return type="void" />
+			<description>
+				Clears the array of polygons, but it doesn't clear the array of vertices.
+			</description>
+		</method>
+		<method name="create_from_mesh">
+			<return type="void" />
+			<param index="0" name="mesh" type="Mesh" />
+			<description>
+				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
+				[b]Note:[/b] The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member geometry_collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_polygon">
+			<return type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
+			</description>
+		</method>
+		<method name="get_polygon_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of polygons in the navigation mesh.
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns a [PackedVector3Array] containing all the vertices being used to create the polygons.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member geometry_collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_vertices">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<description>
+				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="agent_height" type="float" setter="set_agent_height" getter="get_agent_height" default="1.5">
+			The minimum floor to ceiling height that will still allow the floor area to be considered walkable.
+			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_height].
+		</member>
+		<member name="agent_max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.25">
+			The minimum ledge height that is considered to still be traversable.
+			[b]Note:[/b] While baking, this value will be rounded down to the nearest multiple of [member cell_height].
+		</member>
+		<member name="agent_max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope" default="45.0">
+			The maximum slope that is considered walkable, in degrees.
+		</member>
+		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
+			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
+			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+		</member>
+		<member name="border_size" type="float" setter="set_border_size" getter="get_border_size" default="0.0">
+			The size of the non-navigable border around the bake bounding area.
+			In conjunction with the [member filter_baking_aabb] and a [member edge_max_error] value at [code]1.0[/code] or below the border size can be used to bake tile aligned navigation meshes without the tile edges being shrunk by [member agent_radius].
+			[b]Note:[/b] While baking and not zero, this value will be rounded up to the nearest multiple of [member cell_size].
+		</member>
+		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
+			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
+		</member>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.25">
+			The cell size used to rasterize the navigation mesh vertices on the XZ plane. Must match with the cell size on the navigation map.
+		</member>
+		<member name="detail_sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
+			The sampling distance to use when generating the detail mesh, in cell unit.
+		</member>
+		<member name="detail_sample_max_error" type="float" setter="set_detail_sample_max_error" getter="get_detail_sample_max_error" default="1.0">
+			The maximum distance the detail mesh surface should deviate from heightfield, in cell unit.
+		</member>
+		<member name="edge_max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">
+			The maximum distance a simplified contour's border edges should deviate the original raw contour.
+		</member>
+		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="0.0">
+			The maximum allowed length for contour edges along the border of the mesh. A value of [code]0.0[/code] disables this feature.
+			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+		</member>
+		<member name="filter_baking_aabb" type="AABB" setter="set_filter_baking_aabb" getter="get_filter_baking_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			If the baking [AABB] has a volume the navigation mesh baking will be restricted to its enclosing area.
+		</member>
+		<member name="filter_baking_aabb_offset" type="Vector3" setter="set_filter_baking_aabb_offset" getter="get_filter_baking_aabb_offset" default="Vector3(0, 0, 0)">
+			The position offset applied to the [member filter_baking_aabb] [AABB].
+		</member>
+		<member name="filter_ledge_spans" type="bool" setter="set_filter_ledge_spans" getter="get_filter_ledge_spans" default="false">
+			If [code]true[/code], marks spans that are ledges as non-walkable.
+		</member>
+		<member name="filter_low_hanging_obstacles" type="bool" setter="set_filter_low_hanging_obstacles" getter="get_filter_low_hanging_obstacles" default="false">
+			If [code]true[/code], marks non-walkable spans as walkable if their maximum is within [member agent_max_climb] of a walkable neighbor.
+		</member>
+		<member name="filter_walkable_low_height_spans" type="bool" setter="set_filter_walkable_low_height_spans" getter="get_filter_walkable_low_height_spans" default="false">
+			If [code]true[/code], marks walkable spans as not walkable if the clearance above the span is less than [member agent_height].
+		</member>
+		<member name="geometry_collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The physics layers to scan for static colliders.
+			Only used when [member geometry_parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
+		</member>
+		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationMesh.ParsedGeometryType" default="2">
+			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
+		</member>
+		<member name="geometry_source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationMesh.SourceGeometryMode" default="0">
+			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
+		</member>
+		<member name="geometry_source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name" default="&amp;&quot;navigation_mesh_source_group&quot;">
+			The name of the group to scan for geometry.
+			Only used when [member geometry_source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
+		</member>
+		<member name="region_merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">
+			Any regions with a size smaller than this will be merged with larger regions if possible.
+			[b]Note:[/b] This value will be squared to calculate the number of cells. For example, a value of 20 will set the number of cells to 400.
+		</member>
+		<member name="region_min_size" type="float" setter="set_region_min_size" getter="get_region_min_size" default="2.0">
+			The minimum size of a region for it to be created.
+			[b]Note:[/b] This value will be squared to calculate the minimum number of cells allowed to form isolated island areas. For example, a value of 8 will set the number of cells to 64.
+		</member>
+		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
+			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+		</member>
+		<member name="vertices_per_polygon" type="float" setter="set_vertices_per_polygon" getter="get_vertices_per_polygon" default="6.0">
+			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
+		</member>
+	</members>
+	<constants>
+		<constant name="SAMPLE_PARTITION_WATERSHED" value="0" enum="SamplePartitionType">
+			Watershed partitioning. Generally the best choice if you precompute the navigation mesh, use this if you have large open areas.
+		</constant>
+		<constant name="SAMPLE_PARTITION_MONOTONE" value="1" enum="SamplePartitionType">
+			Monotone partitioning. Use this if you want fast navigation mesh generation.
+		</constant>
+		<constant name="SAMPLE_PARTITION_LAYERS" value="2" enum="SamplePartitionType">
+			Layer partitioning. Good choice to use for tiled navigation mesh with medium and small sized tiles.
+		</constant>
+		<constant name="SAMPLE_PARTITION_MAX" value="3" enum="SamplePartitionType">
+			Represents the size of the [enum SamplePartitionType] enum.
+		</constant>
+		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
+			Parses mesh instances as geometry. This includes [MeshInstance3D], [CSGShape3D], and [GridMap] nodes.
+		</constant>
+		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1" enum="ParsedGeometryType">
+			Parses [StaticBody3D] colliders as geometry. The collider should be in any of the layers specified by [member geometry_collision_mask].
+		</constant>
+		<constant name="PARSED_GEOMETRY_BOTH" value="2" enum="ParsedGeometryType">
+			Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
+		</constant>
+		<constant name="PARSED_GEOMETRY_MAX" value="3" enum="ParsedGeometryType">
+			Represents the size of the [enum ParsedGeometryType] enum.
+		</constant>
+		<constant name="SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" value="0" enum="SourceGeometryMode">
+			Scans the child nodes of the root node recursively for geometry.
+		</constant>
+		<constant name="SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN" value="1" enum="SourceGeometryMode">
+			Scans nodes in a group and their child nodes recursively for geometry. The group is specified by [member geometry_source_group_name].
+		</constant>
+		<constant name="SOURCE_GEOMETRY_GROUPS_EXPLICIT" value="2" enum="SourceGeometryMode">
+			Uses nodes in a group for geometry. The group is specified by [member geometry_source_group_name].
+		</constant>
+		<constant name="SOURCE_GEOMETRY_MAX" value="3" enum="SourceGeometryMode">
+			Represents the size of the [enum SourceGeometryMode] enum.
+		</constant>
+	</constants>
+</class>

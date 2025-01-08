@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StaticBody2D" inherits="PhysicsBody2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D physics body that can't be moved by external forces. When moved manually, it doesn't affect other bodies in its path.
+	</brief_description>
+	<description>
+		A static 2D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationMixer]s (with [member AnimationMixer.callback_mode_process] set to [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS]), and [RemoteTransform2D].
+		When [StaticBody2D] is moved, it is teleported to its new position without affecting other physics bodies in its path. If this is not desired, use [AnimatableBody2D] instead.
+		[StaticBody2D] is useful for completely static objects like floors and walls, as well as moving surfaces like conveyor belts and circular revolving platforms (by using [member constant_linear_velocity] and [member constant_angular_velocity]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="0.0">
+			The body's constant angular velocity. This does not rotate the body, but affects touching bodies, as if it were rotating.
+		</member>
+		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector2(0, 0)">
+			The body's constant linear velocity. This does not move the body, but affects touching bodies, as if it were moving.
+		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
+		</member>
+	</members>
+</class>

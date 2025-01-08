@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneTree" inherits="MainLoop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages the game loop via a hierarchy of nodes.
+	</brief_description>
+	<description>
+		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene, as well as scenes themselves. Nodes can be added, fetched and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded.
+		You can also use the [SceneTree] to organize your nodes into [b]groups[/b]: every node can be added to as many groups as you want to create, e.g. an "enemy" group. You can then iterate these groups or even call methods and set properties on all the nodes belonging to any given group.
+		[SceneTree] is the default [MainLoop] implementation used by the engine, and is thus in charge of the game loop.
+	</description>
+	<tutorials>
+		<link title="SceneTree">$DOCS_URL/tutorials/scripting/scene_tree.html</link>
+		<link title="Multiple resolutions">$DOCS_URL/tutorials/rendering/multiple_resolutions.html</link>
+	</tutorials>
+	<methods>
+		<method name="call_group" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Calls [param method] on each node inside this tree added to the given [param group]. You can pass arguments to [param method] by specifying them at the end of this method call. Nodes that cannot call [param method] (either because the method doesn't exist or the arguments do not match) are ignored. See also [method set_group] and [method notify_group].
+				[b]Note:[/b] This method acts immediately on all selected nodes at once, which may cause stuttering in some performance-intensive situations.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
+		<method name="call_group_flags" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="method" type="StringName" />
+			<description>
+				Calls the given [param method] on each node inside this tree added to the given [param group]. Use [param flags] to customize this method's behavior (see [enum GroupCallFlags]). Additional arguments for [param method] can be passed at the end of this method. Nodes that cannot call [param method] (either because the method doesn't exist or the arguments do not match) are ignored.
+				[codeblock]
+				# Calls "hide" to all nodes of the "enemies" group, at the end of the frame and in reverse tree order.
+				get_tree().call_group_flags(
+				        SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE,
+				        "enemies", "hide")
+				[/codeblock]
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
+		<method name="change_scene_to_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Changes the running scene to the one at the given [param path], after loading it into a [PackedScene] and creating a new instance.
+				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [param path] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
+				[b]Note:[/b] See [method change_scene_to_packed] for details on the order of operations.
+			</description>
+		</method>
+		<method name="change_scene_to_packed">
+			<return type="int" enum="Error" />
+			<param index="0" name="packed_scene" type="PackedScene" />
+			<description>
+				Changes the running scene to a new instance of the given [PackedScene] (which must be valid).
+				Returns [constant OK] on success, [constant ERR_CANT_CREATE] if the scene cannot be instantiated, or [constant ERR_INVALID_PARAMETER] if the scene is invalid.
+				[b]Note:[/b] Operations happen in the following order when [method change_scene_to_packed] is called:
+				1. The current scene node is immediately removed from the tree. From that point, [method Node.get_tree] called on the current (outgoing) scene will return [code]null[/code]. [member current_scene] will be [code]null[/code], too, because the new scene is not available yet.
+				2. At the end of the frame, the formerly current scene, already removed from the tree, will be deleted (freed from memory) and then the new scene will be instantiated and added to the tree. [method Node.get_tree] and [member current_scene] will be back to working as usual.
+				This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free].
+			</description>
+		</method>
+		<method name="create_timer">
+			<return type="SceneTreeTimer" />
+			<param index="0" name="time_sec" type="float" />
+			<param index="1" name="process_always" type="bool" default="true" />
+			<param index="2" name="process_in_physics" type="bool" default="false" />
+			<param index="3" name="ignore_time_scale" type="bool" default="false" />
+			<description>
+				Returns a new [SceneTreeTimer]. After [param time_sec] in seconds have passed, the timer will emit [signal SceneTreeTimer.timeout] and will be automatically freed.
+				If [param process_always] is [code]false[/code], the timer will be paused when setting [member SceneTree.paused] to [code]true[/code].
+				If [param process_in_physics] is [code]true[/code], the timer will update at the end of the physics frame, instead of the process frame.
+				If [param ignore_time_scale] is [code]true[/code], the timer will ignore [member Engine.time_scale] and update with the real, elapsed time.
+				This method is commonly used to create a one-shot delay timer, as in the following example:
+				[codeblocks]
+				[gdscript]
+				func some_function():
+				    print("start")
+				    await get_tree().create_timer(1.0).timeout
+				    print("end")
+				[/gdscript]
+				[csharp]
+				public async Task SomeFunction()
+				{
+				    GD.Print("start");
+				    await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+				    GD.Print("end");
+				}
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] The timer is always updated [i]after[/i] all of the nodes in the tree. A node's [method Node._process] method would be called before the timer updates (or [method Node._physics_process] if [param process_in_physics] is set to [code]true[/code]).
+			</description>
+		</method>
+		<method name="create_tween">
+			<return type="Tween" />
+			<description>
+				Creates and returns a new [Tween] processed in this tree. The Tween will start automatically on the next process frame or physics frame (depending on its [enum Tween.TweenProcessMode]).
+				[b]Note:[/b] A [Tween] created using this method is not bound to any [Node]. It may keep working until there is nothing left to animate. If you want the [Tween] to be automatically killed when the [Node] is freed, use [method Node.create_tween] or [method Tween.bind_node].
+			</description>
+		</method>
+		<method name="get_first_node_in_group">
+			<return type="Node" />
+			<param index="0" name="group" type="StringName" />
+			<description>
+				Returns the first [Node] found inside the tree, that has been added to the given [param group], in scene hierarchy order. Returns [code]null[/code] if no match is found. See also [method get_nodes_in_group].
+			</description>
+		</method>
+		<method name="get_frame" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many frames have been processed, since the application started. This is [i]not[/i] a measurement of elapsed time.
+			</description>
+		</method>
+		<method name="get_multiplayer" qualifiers="const">
+			<return type="MultiplayerAPI" />
+			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<description>
+				Searches for the [MultiplayerAPI] configured for the given path, if one does not exist it searches the parent paths until one is found. If the path is empty, or none is found, the default one is returned. See [method set_multiplayer].
+			</description>
+		</method>
+		<method name="get_node_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of nodes inside this tree.
+			</description>
+		</method>
+		<method name="get_node_count_in_group" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="group" type="StringName" />
+			<description>
+				Returns the number of nodes assigned to the given group.
+			</description>
+		</method>
+		<method name="get_nodes_in_group">
+			<return type="Node[]" />
+			<param index="0" name="group" type="StringName" />
+			<description>
+				Returns an [Array] containing all nodes inside this tree, that have been added to the given [param group], in scene hierarchy order.
+			</description>
+		</method>
+		<method name="get_processed_tweens">
+			<return type="Tween[]" />
+			<description>
+				Returns an [Array] of currently existing [Tween]s in the tree, including paused tweens.
+			</description>
+		</method>
+		<method name="has_group" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a node added to the given group [param name] exists in the tree.
+			</description>
+		</method>
+		<method name="notify_group">
+			<return type="void" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="notification" type="int" />
+			<description>
+				Calls [method Object.notification] with the given [param notification] to all nodes inside this tree added to the [param group]. See also [url=$DOCS_URL/tutorials/best_practices/godot_notifications.html]Godot notifications[/url] and [method call_group] and [method set_group].
+				[b]Note:[/b] This method acts immediately on all selected nodes at once, which may cause stuttering in some performance-intensive situations.
+			</description>
+		</method>
+		<method name="notify_group_flags">
+			<return type="void" />
+			<param index="0" name="call_flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="notification" type="int" />
+			<description>
+				Calls [method Object.notification] with the given [param notification] to all nodes inside this tree added to the [param group]. Use [param call_flags] to customize this method's behavior (see [enum GroupCallFlags]).
+			</description>
+		</method>
+		<method name="queue_delete">
+			<return type="void" />
+			<param index="0" name="obj" type="Object" />
+			<description>
+				Queues the given [param obj] to be deleted, calling its [method Object.free] at the end of the current frame. This method is similar to [method Node.queue_free].
+			</description>
+		</method>
+		<method name="quit">
+			<return type="void" />
+			<param index="0" name="exit_code" type="int" default="0" />
+			<description>
+				Quits the application at the end of the current iteration, with the given [param exit_code].
+				By convention, an exit code of [code]0[/code] indicates success, whereas any other exit code indicates an error. For portability reasons, it should be between [code]0[/code] and [code]125[/code] (inclusive).
+				[b]Note:[/b] On iOS this method doesn't work. Instead, as recommended by the [url=https://developer.apple.com/library/archive/qa/qa1561/_index.html]iOS Human Interface Guidelines[/url], the user is expected to close apps via the Home button.
+			</description>
+		</method>
+		<method name="reload_current_scene">
+			<return type="int" enum="Error" />
+			<description>
+				Reloads the currently active scene, replacing [member current_scene] with a new instance of its original [PackedScene].
+				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] is defined, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
+			</description>
+		</method>
+		<method name="set_group">
+			<return type="void" />
+			<param index="0" name="group" type="StringName" />
+			<param index="1" name="property" type="String" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets the given [param property] to [param value] on all nodes inside this tree added to the given [param group]. Nodes that do not have the [param property] are ignored. See also [method call_group] and [method notify_group].
+				[b]Note:[/b] This method acts immediately on all selected nodes at once, which may cause stuttering in some performance-intensive situations.
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
+		<method name="set_group_flags">
+			<return type="void" />
+			<param index="0" name="call_flags" type="int" />
+			<param index="1" name="group" type="StringName" />
+			<param index="2" name="property" type="String" />
+			<param index="3" name="value" type="Variant" />
+			<description>
+				Sets the given [param property] to [param value] on all nodes inside this tree added to the given [param group]. Nodes that do not have the [param property] are ignored. Use [param call_flags] to customize this method's behavior (see [enum GroupCallFlags]).
+				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
+		<method name="set_multiplayer">
+			<return type="void" />
+			<param index="0" name="multiplayer" type="MultiplayerAPI" />
+			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<description>
+				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
+				[b]Note:[/b] No [MultiplayerAPI] must be configured for the subpath containing [param root_path], nested custom multiplayers are not allowed. I.e. if one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will cause an error.
+			</description>
+		</method>
+		<method name="unload_current_scene">
+			<return type="void" />
+			<description>
+				If a current scene is loaded, calling this method will unload it.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="auto_accept_quit" type="bool" setter="set_auto_accept_quit" getter="is_auto_accept_quit" default="true">
+			If [code]true[/code], the application automatically accepts quitting requests.
+			For mobile platforms, see [member quit_on_go_back].
+		</member>
+		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
+			The root node of the currently loaded main scene, usually as a direct child of [member root]. See also [method change_scene_to_file], [method change_scene_to_packed], and [method reload_current_scene].
+			[b]Warning:[/b] Setting this property directly may not work as expected, as it does [i]not[/i] add or remove any nodes from this tree.
+		</member>
+		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
+			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_collisions_hint] while the project is running will not have the desired effect.
+		</member>
+		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint" default="false">
+			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_navigation_hint] while the project is running will not have the desired effect.
+		</member>
+		<member name="debug_paths_hint" type="bool" setter="set_debug_paths_hint" getter="is_debugging_paths_hint" default="false">
+			If [code]true[/code], curves from [Path2D] and [Path3D] nodes will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_paths_hint] while the project is running will not have the desired effect.
+		</member>
+		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
+			The root of the scene currently being edited in the editor. This is usually a direct child of [member root].
+			[b]Note:[/b] This property does nothing in release builds.
+		</member>
+		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled" default="true">
+			If [code]true[/code] (default value), enables automatic polling of the [MultiplayerAPI] for this SceneTree during [signal process_frame].
+			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs. This allows running RPCs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
+		</member>
+		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
+			If [code]true[/code], the scene tree is considered paused. This causes the following behavior:
+			- 2D and 3D physics will be stopped, as well as collision detection and related signals.
+			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process] and [method Node._input] callback methods may not called anymore.
+		</member>
+		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
+			If [code]true[/code], the renderer will interpolate the transforms of physics objects between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.
+			The default value of this property is controlled by [member ProjectSettings.physics/common/physics_interpolation].
+		</member>
+		<member name="quit_on_go_back" type="bool" setter="set_quit_on_go_back" getter="is_quit_on_go_back" default="true">
+			If [code]true[/code], the application quits automatically when navigating back (e.g. using the system "Back" button on Android).
+			To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
+		</member>
+		<member name="root" type="Window" setter="" getter="get_root">
+			The tree's root [Window]. This is top-most [Node] of the scene tree, and is always present. An absolute [NodePath] always starts from this node. Children of the root node may include the loaded [member current_scene], as well as any [url=$DOCS_URL/tutorials/scripting/singletons_autoload.html]AutoLoad[/url] configured in the Project Settings.
+			[b]Warning:[/b] Do not delete this node. This will result in unstable behavior, followed by a crash.
+		</member>
+	</members>
+	<signals>
+		<signal name="node_added">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when the [param node] enters this tree.
+			</description>
+		</signal>
+		<signal name="node_configuration_warning_changed">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when the [param node]'s [method Node.update_configuration_warnings] is called. Only emitted in the editor.
+			</description>
+		</signal>
+		<signal name="node_removed">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when the [param node] exits this tree.
+			</description>
+		</signal>
+		<signal name="node_renamed">
+			<param index="0" name="node" type="Node" />
+			<description>
+				Emitted when the [param node]'s [member Node.name] is changed.
+			</description>
+		</signal>
+		<signal name="physics_frame">
+			<description>
+				Emitted immediately before [method Node._physics_process] is called on every node in this tree.
+			</description>
+		</signal>
+		<signal name="process_frame">
+			<description>
+				Emitted immediately before [method Node._process] is called on every node in this tree.
+			</description>
+		</signal>
+		<signal name="tree_changed">
+			<description>
+				Emitted any time the tree's hierarchy changes (nodes being moved, renamed, etc.).
+			</description>
+		</signal>
+		<signal name="tree_process_mode_changed">
+			<description>
+				Emitted when the [member Node.process_mode] of any node inside the tree is changed. Only emitted in the editor, to update the visibility of disabled nodes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">
+			Call nodes within a group with no special behavior (default).
+		</constant>
+		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
+			Call nodes within a group in reverse tree hierarchy order (all nested children are called before their respective parent nodes).
+		</constant>
+		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags">
+			Call nodes within a group at the end of the current frame (can be either process or physics frame), similar to [method Object.call_deferred].
+		</constant>
+		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
+			Call nodes within a group only once, even if the call is executed many times in the same frame. Must be combined with [constant GROUP_CALL_DEFERRED] to work.
+			[b]Note:[/b] Different arguments are not taken into account. Therefore, when the same call is executed with different arguments, only the first call will be performed.
+		</constant>
+	</constants>
+</class>

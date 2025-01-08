@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisibleOnScreenNotifier2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A rectangular region of 2D space that detects whether it is visible on screen.
+	</brief_description>
+	<description>
+		[VisibleOnScreenNotifier2D] represents a rectangular region of 2D space. When any part of this region becomes visible on screen or in a viewport, it will emit a [signal screen_entered] signal, and likewise it will emit a [signal screen_exited] signal when no part of it remains visible.
+		If you want a node to be enabled automatically when this region is visible on screen, use [VisibleOnScreenEnabler2D].
+		[b]Note:[/b] [VisibleOnScreenNotifier2D] uses the render culling code to determine whether it's visible on screen, so it won't function unless [member CanvasItem.visible] is set to [code]true[/code].
+	</description>
+	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+	</tutorials>
+	<methods>
+		<method name="is_on_screen" qualifiers="const">
+			<return type="bool" />
+			<description>
+				If [code]true[/code], the bounding rectangle is on the screen.
+				[b]Note:[/b] It takes one frame for the [VisibleOnScreenNotifier2D]'s visibility to be determined once added to the scene tree, so this method will always return [code]false[/code] right after it is instantiated, before the draw pass.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-10, -10, 20, 20)">
+			The VisibleOnScreenNotifier2D's bounding rectangle.
+		</member>
+	</members>
+	<signals>
+		<signal name="screen_entered">
+			<description>
+				Emitted when the VisibleOnScreenNotifier2D enters the screen.
+			</description>
+		</signal>
+		<signal name="screen_exited">
+			<description>
+				Emitted when the VisibleOnScreenNotifier2D exits the screen.
+			</description>
+		</signal>
+	</signals>
+</class>

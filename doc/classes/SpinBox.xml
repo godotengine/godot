@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpinBox" inherits="Range" keywords="number, numeric, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An input field for numbers.
+	</brief_description>
+	<description>
+		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers.
+		[b]Example:[/b] Create a [SpinBox], disable its context menu and set its text alignment to right.
+		[codeblocks]
+		[gdscript]
+		var spin_box = SpinBox.new()
+		add_child(spin_box)
+		var line_edit = spin_box.get_line_edit()
+		line_edit.context_menu_enabled = false
+		spin_box.horizontal_alignment = LineEdit.HORIZONTAL_ALIGNMENT_RIGHT
+		[/gdscript]
+		[csharp]
+		var spinBox = new SpinBox();
+		AddChild(spinBox);
+		var lineEdit = spinBox.GetLineEdit();
+		lineEdit.ContextMenuEnabled = false;
+		spinBox.AlignHorizontal = LineEdit.HorizontalAlignEnum.Right;
+		[/csharp]
+		[/codeblocks]
+		See [Range] class for more options over the [SpinBox].
+		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
+		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="apply">
+			<return type="void" />
+			<description>
+				Applies the current value of this [SpinBox].
+			</description>
+		</method>
+		<method name="get_line_edit">
+			<return type="LineEdit" />
+			<description>
+				Returns the [LineEdit] instance from this [SpinBox]. You can use it to access properties and methods of [LineEdit].
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Changes the alignment of the underlying [LineEdit].
+		</member>
+		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
+			If not [code]0[/code], [member Range.value] will always be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons of the [SpinBox].
+		</member>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
+			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
+		</member>
+		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
+			Adds the specified prefix string before the numerical value of the [SpinBox].
+		</member>
+		<member name="select_all_on_focus" type="bool" setter="set_select_all_on_focus" getter="is_select_all_on_focus" default="false">
+			If [code]true[/code], the [SpinBox] will select the whole text when the [LineEdit] gains focus. Clicking the up and down arrows won't trigger this behavior.
+		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
+			Adds the specified suffix string after the numerical value of the [SpinBox].
+		</member>
+		<member name="update_on_text_changed" type="bool" setter="set_update_on_text_changed" getter="get_update_on_text_changed" default="false">
+			Sets the value of the [Range] for this [SpinBox] when the [LineEdit] text is [i]changed[/i] instead of [i]submitted[/i]. See [signal LineEdit.text_changed] and [signal LineEdit.text_submitted].
+		</member>
+	</members>
+	<theme_items>
+		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Down button icon modulation color, when the button is disabled.
+		</theme_item>
+		<theme_item name="down_hover_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Down button icon modulation color, when the button is hovered.
+		</theme_item>
+		<theme_item name="down_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Down button icon modulation color.
+		</theme_item>
+		<theme_item name="down_pressed_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Down button icon modulation color, when the button is being pressed.
+		</theme_item>
+		<theme_item name="up_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Up button icon modulation color, when the button is disabled.
+		</theme_item>
+		<theme_item name="up_hover_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Up button icon modulation color, when the button is hovered.
+		</theme_item>
+		<theme_item name="up_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Up button icon modulation color.
+		</theme_item>
+		<theme_item name="up_pressed_icon_modulate" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Up button icon modulation color, when the button is being pressed.
+		</theme_item>
+		<theme_item name="buttons_vertical_separation" data_type="constant" type="int" default="0">
+			Vertical separation between the up and down buttons.
+		</theme_item>
+		<theme_item name="buttons_width" data_type="constant" type="int" default="16">
+			Width of the up and down buttons. If smaller than any icon set on the buttons, the respective icon may overlap neighboring elements. If smaller than [code]0[/code], the width is automatically adjusted from the icon size.
+		</theme_item>
+		<theme_item name="field_and_buttons_separation" data_type="constant" type="int" default="2">
+			Width of the horizontal separation between the text input field ([LineEdit]) and the buttons.
+		</theme_item>
+		<theme_item name="set_min_buttons_width_from_icons" data_type="constant" type="int" default="1" deprecated="This property exists only for compatibility with older themes. Setting [theme_item buttons_width] to a negative value has the same effect.">
+			If not [code]0[/code], the minimum button width corresponds to the widest of all icons set on those buttons, even if [theme_item buttons_width] is smaller.
+		</theme_item>
+		<theme_item name="down" data_type="icon" type="Texture2D">
+			Down button icon, displayed in the middle of the down (value-decreasing) button.
+		</theme_item>
+		<theme_item name="down_disabled" data_type="icon" type="Texture2D">
+			Down button icon when the button is disabled.
+		</theme_item>
+		<theme_item name="down_hover" data_type="icon" type="Texture2D">
+			Down button icon when the button is hovered.
+		</theme_item>
+		<theme_item name="down_pressed" data_type="icon" type="Texture2D">
+			Down button icon when the button is being pressed.
+		</theme_item>
+		<theme_item name="up" data_type="icon" type="Texture2D">
+			Up button icon, displayed in the middle of the up (value-increasing) button.
+		</theme_item>
+		<theme_item name="up_disabled" data_type="icon" type="Texture2D">
+			Up button icon when the button is disabled.
+		</theme_item>
+		<theme_item name="up_hover" data_type="icon" type="Texture2D">
+			Up button icon when the button is hovered.
+		</theme_item>
+		<theme_item name="up_pressed" data_type="icon" type="Texture2D">
+			Up button icon when the button is being pressed.
+		</theme_item>
+		<theme_item name="updown" data_type="icon" type="Texture2D">
+			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. It is recommended to use individual [theme_item up] and [theme_item down] graphics for better usability. This can also be used as additional decoration between the two buttons.
+		</theme_item>
+		<theme_item name="down_background" data_type="style" type="StyleBox">
+			Background style of the down button.
+		</theme_item>
+		<theme_item name="down_background_disabled" data_type="style" type="StyleBox">
+			Background style of the down button when disabled.
+		</theme_item>
+		<theme_item name="down_background_hovered" data_type="style" type="StyleBox">
+			Background style of the down button when hovered.
+		</theme_item>
+		<theme_item name="down_background_pressed" data_type="style" type="StyleBox">
+			Background style of the down button when being pressed.
+		</theme_item>
+		<theme_item name="field_and_buttons_separator" data_type="style" type="StyleBox">
+			[StyleBox] drawn in the space occupied by the separation between the input field and the buttons.
+		</theme_item>
+		<theme_item name="up_background" data_type="style" type="StyleBox">
+			Background style of the up button.
+		</theme_item>
+		<theme_item name="up_background_disabled" data_type="style" type="StyleBox">
+			Background style of the up button when disabled.
+		</theme_item>
+		<theme_item name="up_background_hovered" data_type="style" type="StyleBox">
+			Background style of the up button when hovered.
+		</theme_item>
+		<theme_item name="up_background_pressed" data_type="style" type="StyleBox">
+			Background style of the up button when being pressed.
+		</theme_item>
+		<theme_item name="up_down_buttons_separator" data_type="style" type="StyleBox">
+			[StyleBox] drawn in the space occupied by the separation between the up and down buttons.
+		</theme_item>
+	</theme_items>
+</class>

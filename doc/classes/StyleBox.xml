@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBox" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for defining stylized boxes for UI elements.
+	</brief_description>
+	<description>
+		[StyleBox] is an abstract base class for drawing stylized boxes for UI elements. It is used for panels, buttons, [LineEdit] backgrounds, [Tree] backgrounds, etc. and also for testing a transparency mask for pointer signals. If mask test fails on a [StyleBox] assigned as mask to a control, clicks and motion signals will go through it to the one below.
+		[b]Note:[/b] For control nodes that have [i]Theme Properties[/i], the [code]focus[/code] [StyleBox] is displayed over the [code]normal[/code], [code]hover[/code] or [code]pressed[/code] [StyleBox]. This makes the [code]focus[/code] [StyleBox] more reusable across different nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_draw" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="to_canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_draw_rect" qualifiers="virtual const">
+			<return type="Rect2" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns a custom minimum size that the stylebox must respect when drawing. By default [method get_minimum_size] only takes content margins into account. This method can be overridden to add another size restriction. A combination of the default behavior and the output of this method will be used, to account for both sizes.
+			</description>
+		</method>
+		<method name="_test_mask" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="draw" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+				Draws this stylebox using a canvas item identified by the given [RID].
+				The [RID] value can either be the result of [method CanvasItem.get_canvas_item] called on an existing [CanvasItem]-derived node, or directly from creating a canvas item in the [RenderingServer] with [method RenderingServer.canvas_item_create].
+			</description>
+		</method>
+		<method name="get_content_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the default margin of the specified [enum Side].
+			</description>
+		</method>
+		<method name="get_current_item_drawn" qualifiers="const">
+			<return type="CanvasItem" />
+			<description>
+				Returns the [CanvasItem] that handles its [constant CanvasItem.NOTIFICATION_DRAW] or [method CanvasItem._draw] callback at this moment.
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the content margin offset for the specified [enum Side].
+				Positive values reduce size inwards, unlike [Control]'s margin values.
+			</description>
+		</method>
+		<method name="get_minimum_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the minimum size that this stylebox can be shrunk to.
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the "offset" of a stylebox. This helper function returns a value equivalent to [code]Vector2(style.get_margin(MARGIN_LEFT), style.get_margin(MARGIN_TOP))[/code].
+			</description>
+		</method>
+		<method name="set_content_margin">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="offset" type="float" />
+			<description>
+				Sets the default value of the specified [enum Side] to [param offset] pixels.
+			</description>
+		</method>
+		<method name="set_content_margin_all">
+			<return type="void" />
+			<param index="0" name="offset" type="float" />
+			<description>
+				Sets the default margin to [param offset] pixels for all sides.
+			</description>
+		</method>
+		<method name="test_mask" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+				Test a position in a rectangle, return whether it passes the mask test.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="content_margin_bottom" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
+			The bottom margin for the contents of this style box. Increasing this value reduces the space available to the contents from the bottom.
+			If this value is negative, it is ignored and a child-specific margin is used instead. For example, for [StyleBoxFlat], the border thickness (if any) is used instead.
+			It is up to the code using this style box to decide what these contents are: for example, a [Button] respects this content margin for the textual contents of the button.
+			[method get_margin] should be used to fetch this value as consumer instead of reading these properties directly. This is because it correctly respects negative values and the fallback mentioned above.
+		</member>
+		<member name="content_margin_left" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
+			The left margin for the contents of this style box. Increasing this value reduces the space available to the contents from the left.
+			Refer to [member content_margin_bottom] for extra considerations.
+		</member>
+		<member name="content_margin_right" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
+			The right margin for the contents of this style box. Increasing this value reduces the space available to the contents from the right.
+			Refer to [member content_margin_bottom] for extra considerations.
+		</member>
+		<member name="content_margin_top" type="float" setter="set_content_margin" getter="get_content_margin" default="-1.0">
+			The top margin for the contents of this style box. Increasing this value reduces the space available to the contents from the top.
+			Refer to [member content_margin_bottom] for extra considerations.
+		</member>
+	</members>
+</class>

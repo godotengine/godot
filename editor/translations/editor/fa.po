@@ -1,0 +1,6085 @@
+# Persian translation of the Godot Engine editor interface.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# alabd14313 <alabd14313@yahoo.com>, 2016.
+# Dante Marshal <Marshal.Devilhunter@gmail.com>, 2018.
+# hamed nasib <cghamed752@chmail.ir>, 2016.
+# Hasan Hejdari Nasab <hsn6@openmailbox.org>, 2017.
+# rezapouya <r.pouya@chmail.ir>, 2016.
+# sayyed hamed nasib <cghamed752@chmail.ir>, 2017.
+# Behrooz Kashani <bkashani@gmail.com>, 2018.
+# Mahdi <sadisticwarlock@gmail.com>, 2018.
+# hpn33 <hamed.hpn332@gmail.com>, 2019, 2020.
+# Focus <saeeddashticlash@gmail.com>, 2019, 2020.
+# mohamad por <mohamad24xx@gmail.com>, 2020.
+# Tetra Homer <tetrahomer@gmail.com>, 2020.
+# Farshad Faemiyi <ffaemiyi@gmail.com>, 2020.
+# Pikhosh <pikhosh@gmail.com>, 2020.
+# MSKF <walkingdeadstudio@outlook.com>, 2020.
+# Ahmad Maftoun <CarCedo.Pro@gmail.com>, 2020.
+# ItzMiad44909858f5774b6d <maidggg@gmail.com>, 2020.
+# YASAN <yasandev@gmail.com>, 2021.
+# duniyal ras <duniyalr@gmail.com>, 2021.
+# عبدالرئوف عابدی <abdolraoofabedi@gmail.com>, 2021.
+# Alireza Khodabande <alirezakhodabande74@gmail.com>, 2021.
+# Seyed Fazel Alavi <fazel8195@gmail.com>, 2022.
+# Giga hertz <gigahertzyt@gmail.com>, 2022.
+# Aryan Azadeh <aryan@azadeh.email>, 2022.
+# Mitsuha Miamizu <mitsuha.miamizu4444@gmail.com>, 2022.
+# LordProfo <nimaentity30@gmail.com>, 2022.
+# LordProfo (Nima) <nimaentity30@gmail.com>, 2022, 2023.
+# John Smith <pkafsharix@gmail.com>, 2022, 2023, 2024.
+# Ali Jafari <ali.jafari.sn@gmail.com>, 2022.
+# Ali Almasi <A710almasi@gmail.com>, 2022.
+# 2g.2d.2t <2g.2d.2t@gmail.com>, 2022.
+# "LordProfo (Nima)" <nimaentity30@gmail.com>, 2023.
+# behrooz bozorg chami <behroozbc@outlook.com>, 2023.
+# mary karaby <karabymary@gmail.com>, 2023.
+# M <bafandehmajid@gmail.com>, 2023.
+# "Shahab Baradaran Dilmaghani (bdshahab)" <bdshahab@gmail.com>, 2023.
+# محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
+# "P. A." <thekhanxp@gmail.com>, 2023.
+# MohammadSaleh Kamyab <mskf1383@envs.net>, 2023.
+# theBSH <bloodshot1387@hotmail.com>, 2023, 2024.
+# Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
+# Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
+# saeed dashti <saeed777724@gmail.com>, 2024.
+# Armin <Armin-KF@users.noreply.hosted.weblate.org>, 2024.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine editor interface\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-08-16 00:22+0000\n"
+"Last-Translator: Armin <Armin-KF@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/fa/>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.7\n"
+
+msgid "Main Thread"
+msgstr "موضوع اصلی"
+
+msgid "Unset"
+msgstr "تنظیم نشده"
+
+msgid "Physical"
+msgstr "فیزیکی"
+
+msgid "Left Mouse Button"
+msgstr "دکمه چپ ماوس"
+
+msgid "Right Mouse Button"
+msgstr "دکمه راست ماوس"
+
+msgid "Middle Mouse Button"
+msgstr "دکمه میانی ماوس"
+
+msgid "Mouse Wheel Up"
+msgstr "غلطاندن به بالا ماوس"
+
+msgid "Mouse Wheel Down"
+msgstr "غلطاندن ماوس به پایین"
+
+msgid "Mouse Wheel Left"
+msgstr "غلطاندن ماوس به سمت چپ"
+
+msgid "Mouse Wheel Right"
+msgstr "غلطاندن ماوس به سمت راست"
+
+msgid "Mouse Thumb Button 1"
+msgstr "دکمه شست ماوس 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "دکمه شست ماوس 2"
+
+msgid "Button"
+msgstr "دکمه"
+
+msgid "Double Click"
+msgstr "دابل کلیک"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "حرکت ماوس در موقعیت (%s) با شتاب (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "استیک چپ محور X، جوی استیک ۰ محور X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "استیک چپ محور Y، جوی استیک ۰ محور Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "استیک راست محور X، جوی استیک 1 محور X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "استیک راست محور Y، جوی استیک 1 محور Y"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "اهرمک 2 محور X، تریگر چپ، سونی L2، اکس‌باکس LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "اهرمک 2 محور Y، تریگر راست، سونی R2, اکس‌باکس RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "اهرمک 3 محور X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "اهرمک 3 محور Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "اهرمک 4 محور X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "اهرمک 4 محور Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "محور جوی‌پد ناشناخته"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "حرکت جوی‌پد روی محور %d (%s) با مقدار %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "کنش پایین، کراس سونی، اکس‌باکس A, نینتندو B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "کنش راست، دایره سونی، اکس‌باکس B, نینتندو A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "کنش چپ، مربع سونی، اکس‌باکس X, نینتندو Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "کنش بالا،مثلث سونی، اکس‌باکس Y، نینتندو X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "بازگشت، Select سونی، Back اکس‌باکس، - نینتندو"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "راهنما، PS سونی، Home اکس‌باکس"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "شروع، منوی اکس‌باکس، نینتندو +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "استیک چپ، سونی L3، اکس‌باکس L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "استیک راست، سونی R3، اکس‌باکس R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "شانه چپ، سونی L1، اکس‌باکس LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "شانه راست، سونی R1، اکس‌باکس RB"
+
+msgid "D-pad Up"
+msgstr "دی-پد بالا"
+
+msgid "D-pad Down"
+msgstr "دی-پد پایین"
+
+msgid "D-pad Left"
+msgstr "دی-پد چپ"
+
+msgid "D-pad Right"
+msgstr "دی-پد راست"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "اکس‌باکس Share, میکروفون پی‌اس۵، نینتندو کپچر"
+
+msgid "Xbox Paddle 1"
+msgstr "اکس‌باکس پدل 1"
+
+msgid "Xbox Paddle 2"
+msgstr "اکس‌باکس پدل 2"
+
+msgid "Xbox Paddle 3"
+msgstr "اکس‌باکس پدل 3"
+
+msgid "Xbox Paddle 4"
+msgstr "اکس‌باکس پدل 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "تاچ‌پدPS4/5"
+
+msgid "Joypad Button %d"
+msgstr "دکمه جوی‌پد %d"
+
+msgid "Pressure:"
+msgstr "فشار:"
+
+msgid "canceled"
+msgstr "لغو شده"
+
+msgid "touched"
+msgstr "لمس شده"
+
+msgid "released"
+msgstr "منتشر شد"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "نقاط لمس صفحه %s در (%s) با %s"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "صفحه با نقاط لمسی %s در موقعیت (%s) با شتاب (%s) کشیده شد"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "بزرگنمایی ژست در (%s) با فاکتور %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "ژست قلم در (%s) با دلتای (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "ورودی MIDI در کانال=%s پیام=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "رویداد ورودی با میانبر=%s"
+
+msgid "Accept"
+msgstr "تایید"
+
+msgid "Select"
+msgstr "انتخاب"
+
+msgid "Cancel"
+msgstr "لغو"
+
+msgid "Focus Next"
+msgstr "تمرکز بعدی"
+
+msgid "Focus Prev"
+msgstr "تمرکز قبلی"
+
+msgid "Left"
+msgstr "چپ"
+
+msgid "Right"
+msgstr "راست"
+
+msgid "Up"
+msgstr "بالا"
+
+msgid "Down"
+msgstr "پایین"
+
+msgid "Page Up"
+msgstr "Page Up"
+
+msgid "Page Down"
+msgstr "Page Down"
+
+msgid "Home"
+msgstr "خانه"
+
+msgid "End"
+msgstr "پایان"
+
+msgid "Cut"
+msgstr "برش"
+
+msgid "Copy"
+msgstr "کپی"
+
+msgid "Paste"
+msgstr "چسباندن"
+
+msgid "Undo"
+msgstr "عقب‌گرد"
+
+msgid "Redo"
+msgstr "جلوگرد"
+
+msgid "Completion Query"
+msgstr "تکمیل پرس و جو"
+
+msgid "New Line"
+msgstr "خط جدید"
+
+msgid "New Blank Line"
+msgstr "خط خالی جدید"
+
+msgid "New Line Above"
+msgstr "خط تازه بالا"
+
+msgid "Indent"
+msgstr "تورفتگی"
+
+msgid "Dedent"
+msgstr "دندانه"
+
+msgid "Backspace"
+msgstr "بک اسپیس"
+
+msgid "Backspace Word"
+msgstr "واژه بک‌اسپیس"
+
+msgid "Backspace all to Left"
+msgstr "بک‌اسپیس همه به چپ"
+
+msgid "Delete"
+msgstr "پاک کردن"
+
+msgid "Delete Word"
+msgstr "حذف کلمه"
+
+msgid "Delete all to Right"
+msgstr "حذف همه از راست"
+
+msgid "Caret Left"
+msgstr "نشان چپ"
+
+msgid "Caret Word Left"
+msgstr "نشانه واژه چپ"
+
+msgid "Caret Right"
+msgstr "نشانه راست"
+
+msgid "Caret Word Right"
+msgstr "نشانه واژه راست"
+
+msgid "Caret Up"
+msgstr "نشانه بالا"
+
+msgid "Caret Down"
+msgstr "نشانه پایین"
+
+msgid "Caret Line Start"
+msgstr "نشانه خط شروع"
+
+msgid "Caret Line End"
+msgstr "نشانه خط پایان"
+
+msgid "Caret Page Up"
+msgstr "نشانه Page Up"
+
+msgid "Caret Page Down"
+msgstr "نشانه Page Down"
+
+msgid "Caret Document Start"
+msgstr "نشانه شروع ستند"
+
+msgid "Caret Document End"
+msgstr "نشانه پایان سند"
+
+msgid "Caret Add Below"
+msgstr "نشانه افزودن پایین"
+
+msgid "Caret Add Above"
+msgstr "نشانه افزودن بالا"
+
+msgid "Scroll Up"
+msgstr "اسکرول به بالا"
+
+msgid "Scroll Down"
+msgstr "اسکرول به پایین"
+
+msgid "Select All"
+msgstr "انتخاب همه"
+
+msgid "Select Word Under Caret"
+msgstr "انتخاب کلمه پایین نشانه"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "افزودن گزینش برای رخداد بعدی"
+
+msgid "Skip Selection for Next Occurrence"
+msgstr "رد کردن انتخاب برای رخداد بعدی"
+
+msgid "Clear Carets and Selection"
+msgstr "پاکسازی نشانه‌ها و انتخاب"
+
+msgid "Toggle Insert Mode"
+msgstr "دکمه حالت درج"
+
+msgid "Submit Text"
+msgstr "ثبت متن"
+
+msgid "Duplicate Nodes"
+msgstr "گره‌های تکراری"
+
+msgid "Delete Nodes"
+msgstr "حذف گره‌ها"
+
+msgid "Go Up One Level"
+msgstr "یک سطح بالا رفتن"
+
+msgid "Refresh"
+msgstr "تازه‌سازی"
+
+msgid "Show Hidden"
+msgstr "نمایش پنهان‌شده"
+
+msgid "Swap Input Direction"
+msgstr "تغییر جهت ورودی"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "ورودی نامعتبر %d (تایید نشده) در عبارت"
+
+msgid "self can't be used because instance is null (not passed)"
+msgstr "از self نمی‌توان استفاده کرد زیرا نمونه null است (مقدار نگرفته است)"
+
+msgid "Invalid operands to operator %s, %s and %s."
+msgstr "عملوند های نامعتبر به عملگر %s, %s , %s."
+
+msgid "Invalid index of type %s for base type %s"
+msgstr "نوع ایندکس %s برای نوع اصلی %s نامعتبر است"
+
+msgid "Invalid named index '%s' for base type %s"
+msgstr "اندیس نام گذاری شده نامعتبر '%s' برای نوع پایه %s"
+
+msgid "Invalid arguments to construct '%s'"
+msgstr "آرگومان های نامعتبر برای ساخت '%s'"
+
+msgid "On call to '%s':"
+msgstr "به هنگام فراخوان تابع '%s':"
+
+msgid "Built-in script"
+msgstr "اسکریپت داخلی"
+
+msgid "Built-in"
+msgstr "درون‌ساخت"
+
+msgid "B"
+msgstr "بایت"
+
+msgid "KiB"
+msgstr "کیلوبایت"
+
+msgid "MiB"
+msgstr "مگابایت"
+
+msgid "GiB"
+msgstr "گیگابایت"
+
+msgid "TiB"
+msgstr "ترابایت"
+
+msgid "PiB"
+msgstr "پتابایت"
+
+msgid "EiB"
+msgstr "اگزابایت"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"عنوان کنش نامعتبر. عنوان نمی‌تواند خالی و یا شامل '/', ':', '=', '\\' یا '\"' "
+"باشد"
+
+msgid "An action with the name '%s' already exists."
+msgstr "عملیاتی با نام '%s' از قبل وجود دارد."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "امکان بازگشت وجود ندارد - عمل مانند وضعیت اولیه است"
+
+msgid "Revert Action"
+msgstr "بازگردانی کنش"
+
+msgid "Add Event"
+msgstr "افزودن رویداد"
+
+msgid "Remove Action"
+msgstr "حذف عمل"
+
+msgid "Cannot Remove Action"
+msgstr "نمی‌توان کنش را حذف کرد"
+
+msgid "Edit Event"
+msgstr "ویرایش رویداد"
+
+msgid "Remove Event"
+msgstr "حذف رویداد"
+
+msgid "Filter by Name"
+msgstr "فیلتر بر اساس نام..."
+
+msgid "Clear All"
+msgstr "پاک کردن همه"
+
+msgid "Clear all search filters."
+msgstr "پاک کردن تمام فیلتر های جستجو."
+
+msgid "Add New Action"
+msgstr "افزودن کنش تازه"
+
+msgid "Add"
+msgstr "افزودن"
+
+msgid "Show Built-in Actions"
+msgstr "نمایش کنش‌های داخلی"
+
+msgid "Action"
+msgstr "کنش"
+
+msgid "Deadzone"
+msgstr "منطقه مرده"
+
+msgid "Time:"
+msgstr "زمان:"
+
+msgid "Value:"
+msgstr "مقدار:"
+
+msgid "Update Selected Key Handles"
+msgstr "بروزرسانی هندل‌های کلید انتخاب شده"
+
+msgid "Insert Key Here"
+msgstr "کلید را اینجا وارد کنید"
+
+msgid "Duplicate Selected Key(s)"
+msgstr "تکرار کلید(های) منتخب"
+
+msgid "Cut Selected Key(s)"
+msgstr "حذف کلید(های) انتخاب شده"
+
+msgid "Copy Selected Key(s)"
+msgstr "کپی کلید(های) انتخاب شده"
+
+msgid "Paste Key(s)"
+msgstr "جای‌گذاری کلید(ها)"
+
+msgid "Delete Selected Key(s)"
+msgstr "حذف کلید(های) منتخب"
+
+msgid "Make Handles Free"
+msgstr "آزاد سازی هندل‌ها"
+
+msgid "Make Handles Linear"
+msgstr "خطی‌سازی هندل‌ها"
+
+msgid "Make Handles Balanced"
+msgstr "متعادل‌سازی هندل‌ها"
+
+msgid "Make Handles Mirrored"
+msgstr "قرینه‌سازی هندل‌ها"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "متعادل سازی هندل‌ها (مماس خودکار)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "قرینه‌سازی هندل‌ها (مماس خودکار)"
+
+msgid "Add Bezier Point"
+msgstr "افزودن نقطه بِزیِر"
+
+msgid "Move Bezier Points"
+msgstr "انتقال نقاط بِزیِر"
+
+msgid "Animation Duplicate Keys"
+msgstr "کلیدهای تکراری انیمیشن"
+
+msgid "Animation Cut Keys"
+msgstr "کلیدهای برش انیمیشن"
+
+msgid "Animation Paste Keys"
+msgstr "کلیدهای جای‌گذاری انیمیشن"
+
+msgid "Animation Delete Keys"
+msgstr "کلیدهای حذف انیمیشن"
+
+msgid "Focus"
+msgstr "تمرکز"
+
+msgid "Select All Keys"
+msgstr "انتخاب همه کلیدها"
+
+msgid "Deselect All Keys"
+msgstr "لغو انتخاب کلیدها"
+
+msgid "Animation Change Transition"
+msgstr "انتقال تغییر انیمیشن"
+
+msgid "Animation Change Position3D"
+msgstr "تغییر انیمیشن مختصات سه بعدی"
+
+msgid "Animation Change Rotation3D"
+msgstr "تغییر انیمیشن چرخش سه بعدی"
+
+msgid "Animation Change Scale3D"
+msgstr "تغییر انیمیشن ابعاد سه بعدی"
+
+msgid "Animation Change Keyframe Value"
+msgstr "تغییر مقدار لحظه‌کلید انیمیشن"
+
+msgid "Animation Change Call"
+msgstr "تغییر فراخوان انیمیشن"
+
+msgid "Animation Multi Change Transition"
+msgstr "انیمیشن انتقال چند تغییر"
+
+msgid "Animation Multi Change Position3D"
+msgstr "تغییرات انیمیشن مختصات سه بعدی"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "تغییرات انیمیشن چرخش سه بعدی"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "تغییرات انیمیشن ابعاد سه بعدی"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "تغییرات مقدار لحظه کلید انیمیشن"
+
+msgid "Animation Multi Change Call"
+msgstr "تغییرات فراخوان انیمیشن"
+
+msgid "Change Animation Length"
+msgstr "تغییر طول انیمیشن"
+
+msgid "Change Animation Loop"
+msgstr "تغییر حلقه(loop) انیمیشن"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "نمی‌‏توان حالت حلقه را روی انیمیشن نمونه از صحنه وارد شده تغییر داد."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "نمی‌توان حالت حلقه را در انیمیشن تعبیه شده در صحنه دیگر تغییر داد."
+
+msgid "3D Position Track..."
+msgstr "موقعیت مسیر سه بعدی..."
+
+msgid "3D Rotation Track..."
+msgstr "مسیر چرخش سه بعدی..."
+
+msgid "3D Scale Track..."
+msgstr "مسیر اندازه سه‌بعدی..."
+
+msgid "Animation length (frames)"
+msgstr "طول انیمیشن (فریم)"
+
+msgid "Animation length (seconds)"
+msgstr "طول انیمیشن (ثانیه)"
+
+msgid "Add Track"
+msgstr "افزودن مسیر"
+
+msgid "Animation Looping"
+msgstr "انیمیشن درحال تکرار"
+
+msgid "Functions:"
+msgstr "توابع:"
+
+msgid "Audio Clips:"
+msgstr "کلیپ‌های صوتی:"
+
+msgid "Animation Clips:"
+msgstr "کلیپ‌های انیمیشن:"
+
+msgid "Change Track Path"
+msgstr "تغییر مسیر"
+
+msgid "Toggle this track on/off."
+msgstr "این مسیر را روشن/خاموش کنید."
+
+msgid "Use Blend"
+msgstr "استفاده از درآمیختن"
+
+msgid "Update Mode (How this property is set)"
+msgstr "حالت به‌روزرسانی (نحوه تنظیم این ویژگی)"
+
+msgid "Interpolation Mode"
+msgstr "حالت درون‌یابی"
+
+msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
+msgstr "حالت بسته بندی حلقه (انتهای درون قطبی با شروع در حلقه)"
+
+msgid "Remove this track."
+msgstr "این ترک را حذف کن."
+
+msgid "Time (s):"
+msgstr "زمان:"
+
+msgid "Position:"
+msgstr "موقعیت:"
+
+msgid "Rotation:"
+msgstr "چرخش:"
+
+msgid "Scale:"
+msgstr "مقیاس:"
+
+msgid "Blend Shape:"
+msgstr "درآمیختن شکل:"
+
+msgid "Type:"
+msgstr "نوع:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(نامعتبر, نوع مورد انتظار: %s)"
+
+msgid "Easing:"
+msgstr "تسهیل:"
+
+msgid "In-Handle:"
+msgstr "داخل دسته:"
+
+msgid "Out-Handle:"
+msgstr "بیرون دسته:"
+
+msgid "Handle mode: Free\n"
+msgstr "حالت دسته : آزاد\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "حالت دسته: خطی\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "حالت دسته: متعادل\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "حالت دسته: تکرارشده\n"
+
+msgid "Stream:"
+msgstr "استریم:"
+
+msgid "Start (s):"
+msgstr "شروع:"
+
+msgid "End (s):"
+msgstr "پایان(ها):"
+
+msgid "Animation Clip:"
+msgstr "کلیپ انیمیشن:"
+
+msgid "Toggle Track Enabled"
+msgstr "ضامن ترک فعال است"
+
+msgid "Don't Use Blend"
+msgstr "از Blend استفاده نکنید"
+
+msgid "Continuous"
+msgstr "مستمر"
+
+msgid "Discrete"
+msgstr "گسسته"
+
+msgid "Capture"
+msgstr "گرفتن"
+
+msgid "Nearest"
+msgstr "نزدیکترین"
+
+msgid "Linear"
+msgstr "خطی"
+
+msgid "Cubic"
+msgstr "مکعب"
+
+msgid "Linear Angle"
+msgstr "زاویه خطی"
+
+msgid "Cubic Angle"
+msgstr "زاویه مکعبی"
+
+msgid "Clamp Loop Interp"
+msgstr "رابط گره حلقه(Loop)"
+
+msgid "Wrap Loop Interp"
+msgstr "رابط پوشش حلقه"
+
+msgid "Insert Key..."
+msgstr "درج کلید"
+
+msgid "Duplicate Key(s)"
+msgstr "تکرار کلید(ها)"
+
+msgid "Cut Key(s)"
+msgstr "برش کلید(ها)"
+
+msgid "Copy Key(s)"
+msgstr "کپی کلید(ها)"
+
+msgid "Add RESET Value(s)"
+msgstr "اضافه کردن مقدار(های) ریست"
+
+msgid "Delete Key(s)"
+msgstr "حذف کلید(ها)"
+
+msgid "Change Animation Update Mode"
+msgstr "تغییر حالت بروزرسانی انیمیشن"
+
+msgid "Change Animation Interpolation Mode"
+msgstr "تغییر حالت درون یابی (Interpolation) انیمیشن"
+
+msgid "Change Animation Loop Mode"
+msgstr "تغییر حالت تکرار (Loop) انیمیشن"
+
+msgid "Change Animation Use Blend"
+msgstr "تغییر حالت درآمیختن انیمیشن"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"ترک های فشرده را نمی توان ویرایش یا حذف کرد. انیمیشن را با غیرفعال کردن فشرده "
+"سازی به منظور ویرایش دوباره، وارد کنید."
+
+msgid "Remove Anim Track"
+msgstr "حذف ترک انیمیشن"
+
+msgid "Create new track for %s and insert key?"
+msgstr "یک مسیر جدید برای %s بساز و کلید را درج کن؟"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "ساختن مسیر‌های جدید %d و درج کلیدها؟"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"هنگام کلیک کردن روی نماد، کلید Shift را نگه دارید تا از این گفتگو رد شوید."
+
+msgid "Create"
+msgstr "ساخت"
+
+msgid "Animation Insert Key"
+msgstr "درج کلید انیمیشن"
+
+msgid "node '%s'"
+msgstr "گره '%s'"
+
+msgid "animation"
+msgstr "انیمیشن"
+
+msgid "AnimationPlayer can't animate itself, only other players."
+msgstr "انیمیشن پلیر نمی تواند خود را انیمیت کند. فقط پلیر دیگر."
+
+msgid "property '%s'"
+msgstr "ویژگی '%s'"
+
+msgid "Change Animation Step"
+msgstr "تغییر گام(Step)انیمیشن"
+
+msgid "Rearrange Tracks"
+msgstr "تنظیم مجدد مسیر"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "آمیختن شکل، تنها برای گره‌های MeshInstance3D اعمال می‌شود."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"موقعیت/چرخش/مقیاس ترک‌های سه‌بعدی تنها برای گره‌های مبتنی بر سه‌بعدی اعمال می‌شود."
+
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+"آهنگ‌های صوتی فقط می‌توانند به گره‌های نوع (nodes) اشاره کنند:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+
+msgid "Animation tracks can only point to AnimationPlayer nodes."
+msgstr "آهنگ‌های انیمیشن فقط می‌توانند به گره‌های انیمیشن پلیر اشاره کنند."
+
+msgid "Not possible to add a new track without a root"
+msgstr "بدون ریشه اضافه کردن مسیر امکان پذیر نیست"
+
+msgid "Invalid track for Bezier (no suitable sub-properties)"
+msgstr "مسیر نامعتبر برای Bezier ( زیر-خواص نامناسب)"
+
+msgid "Add Bezier Track"
+msgstr "افزودن مسیر Bezier"
+
+msgid "Track path is invalid, so can't add a key."
+msgstr "مسیر قطعه نامعتبر است، پس نمی‌توان کلیدی به آن افزود."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "ترک از نوع گره سه‌بعدی (Node3D) نیست، نمی‌توان کلید را وارد کرد"
+
+msgid "Track path is invalid, so can't add a method key."
+msgstr "مسیر نامعتبر است، پس نمی‌توان کلید تابعی (متد) اضافه کرد."
+
+msgid "Add Method Track Key"
+msgstr "افزودن تابع کلید میسر"
+
+msgid "Method not found in object:"
+msgstr "تابع در آبجکت یافت نشد:"
+
+msgid "Animation Move Keys"
+msgstr "جابه‌جایی کلیدها در انیمیشن"
+
+msgid "Position"
+msgstr "موقعیت"
+
+msgid "Rotation"
+msgstr "چرخش"
+
+msgid "Scale"
+msgstr "مقیاس"
+
+msgid "BlendShape"
+msgstr "بِلِندشِیپ"
+
+msgid "Methods"
+msgstr "متد ها"
+
+msgid "Bezier"
+msgstr "بزیه"
+
+msgid "Audio"
+msgstr "صدا"
+
+msgid "Clipboard is empty!"
+msgstr "حافظه پنهان خالی است!"
+
+msgid "Paste Tracks"
+msgstr "جاگذاری مسیر ها"
+
+msgid "Animation Scale Keys"
+msgstr "انیمیشن اندازه ی کلید ها"
+
+msgid "Animation Set Start Offset"
+msgstr "تعیین جابجایی شروع انیمیشن"
+
+msgid "Animation Set End Offset"
+msgstr "تعیین جابجایی پایان انیمیشن"
+
+msgid "Make Easing Keys"
+msgstr "ساخت کلید تسهیل"
+
+msgid "Animation Add RESET Keys"
+msgstr "اضافه کردن کلید های تنظیم مجدد (reset) انیمیشن"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "محاسبه پیش از اجرای انیمیشن به عنوان کلیدهای خطی"
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"این انیمیشن متعلق به یک صحنه ورودی است, بنابراین تغییرات در مسیرهای ورودی "
+"ذخیره نمیشوند.\n"
+"\n"
+"برای امکان اضافه کردن مسیر های سفارشی, به تنظیمات ورودی صحنه بروید و انیمیشن "
+"را انتخاب کنید.\n"
+"برخی گزینه ها مانند تکرار اینجا موجود هستند.برای اضافه کردن مسیر های "
+"سفارشی(Custom)\"ذخیره در فایل\" و \"نگه داشتن مسیر های سفارشی\" را\n"
+"فعال کنید."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"‏‏‎‏تعدادی از گزینه های ویرایشگر پخش کننده ی انیمیشن غیر فعال هستند زیرا این پخش "
+"کننده ی انیمیشن ساختگی، برای پیش نمایش است.\n"
+"پخش کننده ی ساختگی به اجبار فعال و غیر قطعی است و مسیر حرکتی ریشه را ندارد. "
+"علاوه بر این، گره ی اصلی به طور موقت غیر فعال است."
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "پخش کننده ی انیمیشن غیر فعال است. پخش پردازش نخواهد شد."
+
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "یک گره AnimationPlayer را برای ایجاد و ویرایش انیمیشن ها برگزینید."
+
+msgid "Imported Scene"
+msgstr "صحنه ی وارد شده"
+
+msgid "Warning: Editing imported animation"
+msgstr "هشدار: در حال ویرایش انیمیشن وارد شده"
+
+msgid "Dummy Player"
+msgstr "پخش کننده ی ساختگی"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "هشدار: در حال ویرایش پخش کننده ی انیمیشن ساختگی"
+
+msgid "Inactive Player"
+msgstr "پخش کننده ی غیر فعال"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "هشدار: پخش کننده ی انیمیشن غیر فعال است"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "بین ویرایشگر منحنی bezier و ویرایشگر مسیر جابه‌جا شوید."
+
+msgid "Only show tracks from nodes selected in tree."
+msgstr "فقط مسیرهای از گره های انتخاب شده در درخت نشان داده شود."
+
+msgid "Group tracks by node or display them as plain list."
+msgstr ""
+"مسیرها را بر اساس گره گروه‌بندی کنید یا آن‌ها را به عنوان لیست ساده نمایش دهید."
+
+msgid "Snap:"
+msgstr "چفت:"
+
+msgid "Animation step value."
+msgstr "مقدار مرحله انیمیشن."
+
+msgid "Seconds"
+msgstr "ثانیه ها"
+
+msgid "FPS"
+msgstr "لحظه بر ثانیه"
+
+msgid "Edit"
+msgstr "ویرایش"
+
+msgid "Animation properties."
+msgstr "ویژگی‌های انیمیشن."
+
+msgid "Scale Selection..."
+msgstr "تغییر اندازه انتخاب..."
+
+msgid "Scale From Cursor..."
+msgstr "تغییر اندازه نسبت به نشانگر"
+
+msgid "Set Start Offset (Audio)"
+msgstr "تعیین جابجایی شروع (صدا)"
+
+msgid "Set End Offset (Audio)"
+msgstr "تعیین جابجایی پایان (صدا)"
+
+msgid "Cut Selected Keys"
+msgstr "برش کلید(های) انتخاب شده"
+
+msgid "Copy Selected Keys"
+msgstr "کپی کلید(های) انتخاب شده"
+
+msgid "Paste Keys"
+msgstr "جای‌گذاری کلیدها"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "آخرین کلید انتخاب شده را به نشانگر ببر"
+
+msgid "Delete Selection"
+msgstr "حذف برگزیده"
+
+msgid "Go to Next Step"
+msgstr "برو به گام بعد"
+
+msgid "Go to Previous Step"
+msgstr "برو به گام پیشین"
+
+msgid "Apply Reset"
+msgstr "بازنشانی را اعمال کنید"
+
+msgid "Optimize Animation (no undo)..."
+msgstr "بهینه سازی انیمیشن (بازگردانی نمیشود)"
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "پاک سازی انیمیشن (بازگردانی نمیشود)"
+
+msgid "Pick a node to animate:"
+msgstr "گره را برای انیمیت کردن انتخاب کنید:"
+
+msgid "Use Bezier Curves"
+msgstr "بکارگیری منحنی بِزیِر"
+
+msgid "Create RESET Track(s)"
+msgstr "ایجاد آهنگ (های) بازنشانی"
+
+msgid "Animation Optimizer"
+msgstr "بهینه‌ساز انیمیشن"
+
+msgid "Max Velocity Error:"
+msgstr "خطای Max Velocity:"
+
+msgid "Max Angular Error:"
+msgstr "خطای Max Angular:"
+
+msgid "Max Precision Error:"
+msgstr "خطای Max Precision:"
+
+msgid "Optimize"
+msgstr "بهینه‌سازی کن"
+
+msgid "Remove invalid keys"
+msgstr "کلیدهای نامعتبر را حذف کن"
+
+msgid "Remove unresolved and empty tracks"
+msgstr "ترک‌های حل نشده و خالی را حذف کن"
+
+msgid "Clean-up all animations"
+msgstr "تمام انیمیشن‌ها را پاکسازی کن"
+
+msgid "Clean-Up Animation(s) (NO UNDO!)"
+msgstr "انیمیشن(ها) را پاکسازی کن (بدون بازگردانی !)"
+
+msgid "Clean-Up"
+msgstr "پاکسازی"
+
+msgid "Scale Ratio:"
+msgstr "نسبت تغییر مقیاس:"
+
+msgid "Select Transition and Easing"
+msgstr "انتخاب انتقال و تسهیل دهنده"
+
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "خطی"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "سینوس"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "پنج"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "چهار"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "چهار‌گوش"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "نمایی (Expo)"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "کشسان"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "مکعبی"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "دایره ای"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "پرش"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "عقب"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "فنر"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "ورود"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "خروج"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "ورود و خروج"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "خروج و ورود"
+
+msgid "Transition Type:"
+msgstr "نوع انتقال:"
+
+msgid "Ease Type:"
+msgstr "نوع سهول:"
+
+msgid "FPS:"
+msgstr "FPS:"
+
+msgid "Animation Baker"
+msgstr "از پیش تعیین کننده انیمیشن"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "مسیر مکان/چرخش/مقیاس سه‌بعدی:"
+
+msgid "Blendshape Track:"
+msgstr "مسیر BlendShape:"
+
+msgid "Value Track:"
+msgstr "مسیر مقدار:"
+
+msgid "Select Tracks to Copy"
+msgstr "انتخاب میسرها جهت کپی"
+
+msgid "Select All/None"
+msgstr "انتخاب همه/هیچ"
+
+msgid "Animation Change Keyframe Time"
+msgstr "تغییر زمان کلید فریم انیمیشن"
+
+msgid "Add Audio Track Clip"
+msgstr "افزودن کلیپ آهنگ صوتی"
+
+msgid "Change Audio Track Clip Start Offset"
+msgstr "تغییر افکت شروع کلیپ آهنگ صوتی"
+
+msgid "Change Audio Track Clip End Offset"
+msgstr "تغییر افست انتهای کلیپ آهنگ صوتی"
+
+msgid "Go to Line"
+msgstr "برو به خط"
+
+msgid "Line Number:"
+msgstr "شماره خط:"
+
+msgid "%d replaced."
+msgstr "%d جایگزین شده."
+
+msgid "No match"
+msgstr "بدون مطابقت"
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d مطابقت"
+msgstr[1] "%d مطابقت ها"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d از %d مطابقت"
+msgstr[1] "%d از %d مطابقت ها"
+
+msgid "Match Case"
+msgstr "تطابق بزرگی حروف"
+
+msgid "Whole Words"
+msgstr "کل کلمات"
+
+msgid "Replace"
+msgstr "جایگزینی"
+
+msgid "Replace All"
+msgstr "جایگزینی همه"
+
+msgid "Selection Only"
+msgstr "تنها در قسمت انتخاب شده"
+
+msgid "Hide"
+msgstr "مخفی کردن"
+
+msgctxt "Indentation"
+msgid "Tabs"
+msgstr "Tabs"
+
+msgid "Toggle Scripts Panel"
+msgstr "تغییر پنل اسکریپت ها"
+
+msgid "Zoom In"
+msgstr "بزرگنمایی"
+
+msgid "Zoom Out"
+msgstr "کوچکنمایی"
+
+msgid "Reset Zoom"
+msgstr "باز‌نشانی مقیاس"
+
+msgid "Errors"
+msgstr "خطا‌ها"
+
+msgid "Warnings"
+msgstr "هشدارها"
+
+msgid "Zoom factor"
+msgstr "مقدار بزرگنمایی"
+
+msgid "Line and column numbers."
+msgstr "شماره های خط و ستون."
+
+msgid "Method in target node must be specified."
+msgstr "تابع در گره مقصد باید مشخص شده باشد."
+
+msgid "Method name must be a valid identifier."
+msgstr "نام تابع باید یک شناسه‌ی معتبر باشد."
+
+msgid ""
+"Target method not found. Specify a valid method or attach a script to the "
+"target node."
+msgstr ""
+"متد هدف پیدا نشد. یک تابع معتبر تعیین کنید یا یک اسکریپت را به گره هدف پیوند "
+"دهید."
+
+msgid "Attached Script"
+msgstr "اسکریپت پیوست شده"
+
+msgid "Connect to Node:"
+msgstr "اتصال به گره:"
+
+msgid "Connect to Script:"
+msgstr "اتصال به اسکریپت:"
+
+msgid "From Signal:"
+msgstr "از سیگنال:"
+
+msgid "Filter Nodes"
+msgstr "فیلتر کردن گره‌ها"
+
+msgid "Go to Source"
+msgstr "برو به منبع"
+
+msgid "Scene does not contain any script."
+msgstr "صحنه شامل هیچ اسکریپتی نیست."
+
+msgid "Select Method"
+msgstr "روش انتخاب"
+
+msgid "Filter Methods"
+msgstr "روش‌های انتخاب"
+
+msgid "No method found matching given filters."
+msgstr "هیچ روشی مطابق با فیلترهای داده‌شده پیدا نشد."
+
+msgid "Script Methods Only"
+msgstr "تنها روش‌های اسکریپت"
+
+msgid "Compatible Methods Only"
+msgstr "تنها روش‌های سازگار"
+
+msgid "Remove"
+msgstr "برداشتن"
+
+msgid "Add Extra Call Argument:"
+msgstr "آرگومان اضافی فراخوانی را اضافه کن:"
+
+msgid "Extra Call Arguments:"
+msgstr "آرگومان‌های اضافی فراخوانی:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "اجازه می‌دهد تا آرگومان‌های ارسال شده توسط فرستنده سیگنال را رها کنید."
+
+msgid "Unbind Signal Arguments:"
+msgstr "آرگومان‌های سیگنال‌ Unbind:"
+
+msgid "Receiver Method:"
+msgstr "روش گیرنده:"
+
+msgid "Advanced"
+msgstr "پیشرفته"
+
+msgid "Deferred"
+msgstr "به تعویق افتاده"
+
+msgid ""
+"Defers the signal, storing it in a queue and only firing it at idle time."
+msgstr ""
+"سیگنال را تعویض می کند ، آن را در یک صف ذخیره می کند و فقط در زمان بیکاری "
+"شلیک می کند."
+
+msgid "One Shot"
+msgstr "یک تلاش"
+
+msgid "Disconnects the signal after its first emission."
+msgstr "سیگنال را پس از اولین انتشار آن قطع می‌کند."
+
+msgid "Cannot connect signal"
+msgstr "نمی‌توان سیگنال را متصل کرد"
+
+msgid "Close"
+msgstr "بستن"
+
+msgid "Connect"
+msgstr "اتصال"
+
+msgid "Connect '%s' to '%s'"
+msgstr "'%s' را به '%s' متصل کن"
+
+msgid "Disconnect '%s' from '%s'"
+msgstr "'%s' را از '%s' جدا کن"
+
+msgid "Disconnect all from signal: '%s'"
+msgstr "جدا کردن همه از سیگنال: '%s'"
+
+msgid "Connect..."
+msgstr "در حال اتصال..."
+
+msgid "Disconnect"
+msgstr "عدم اتصال"
+
+msgid "Connect a Signal to a Method"
+msgstr "وصل یک سیگنال به یک تابع"
+
+msgid "Edit Connection: '%s'"
+msgstr "ویرایش اتصال: '%s'"
+
+msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
+msgstr "آیا مطمئن هستید که می خواهید همه اتصالات را از سیگنال ‌\"%s\" حذف کنید؟"
+
+msgid "Signals"
+msgstr "سیگنال‌ها"
+
+msgid "Filter Signals"
+msgstr "فیلتر سیگنال‌ها"
+
+msgid "Are you sure you want to remove all connections from this signal?"
+msgstr "آیا مطمئن هستید که می خواهید همه اتصالات را از این سیگنال حذف کنید؟"
+
+msgid "Open Documentation"
+msgstr "باز کردن مستندات"
+
+msgid "Disconnect All"
+msgstr "جدا کردن همه"
+
+msgid "Copy Name"
+msgstr "کپی نام"
+
+msgid "Edit..."
+msgstr "ویرایش..."
+
+msgid "Go to Method"
+msgstr "برو به متد"
+
+msgid "Change Type of \"%s\""
+msgstr "تغییر نوع \"%s\""
+
+msgid "Change"
+msgstr "تغییر بده"
+
+msgid "Create New %s"
+msgstr "ساختن %s جدید"
+
+msgid "No results for \"%s\"."
+msgstr "هیچ نتیجه ای برای \"%s\" وجود ندارد."
+
+msgid "This class is marked as deprecated."
+msgstr "این کلاس به عنوان منسوخ علامت گذاری شده است."
+
+msgid "This class is marked as experimental."
+msgstr "این کلاس بعنوان آزمایشی علامت گذاری شده است."
+
+msgid "Favorites:"
+msgstr "برگزیده‌ها:"
+
+msgid "Recent:"
+msgstr "اخیر:"
+
+msgid "(Un)favorite selected item."
+msgstr "(نا)محبوب کردن مورد انتخاب شده."
+
+msgid "Search:"
+msgstr "جستجو:"
+
+msgid "Matches:"
+msgstr "تطبیق‌ها:"
+
+msgid "Description:"
+msgstr "توضیح:"
+
+msgid "Remote %s:"
+msgstr "ریموت%s:"
+
+msgid "Debugger"
+msgstr "اشکال زدا"
+
+msgid "Debug"
+msgstr "اشکال زدایی"
+
+msgid "Save Branch as Scene"
+msgstr "ذخیرهٔ شاخه به عنوان صحنه"
+
+msgid "Copy Node Path"
+msgstr "کپی کردن مسیر node"
+
+msgid "Instance:"
+msgstr "نمونه:"
+
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"این گره از یک فایل صحنه بسته‌بندی شده (PackedScene) نمونه سازی شده است:\n"
+"%s\n"
+"کلیک کنید تا فایل اصلی در ویرایشگر باز شود."
+
+msgid "Toggle Visibility"
+msgstr "دکمه قابلیت مشاهده"
+
+msgid "Updating assets on target device:"
+msgstr "به‌روزرسانی دارایی‌ها در افزارهٔ هدف:"
+
+msgid "Syncing headers"
+msgstr "همگام‌سازی سرصفحه‌ها"
+
+msgid "Getting remote file system"
+msgstr "دریافت سیستم فایل از راه دور"
+
+msgid "Decompressing remote file system"
+msgstr "در حال باز کردن(Decompress)سیستم فایل ریموت"
+
+msgid "Scanning for local changes"
+msgstr "در حال اسکن برای تغييرات محلی"
+
+msgid "Sending list of changed files:"
+msgstr "ارسال فهرست فایل‌های تغییر یافته:"
+
+msgid "Sending file:"
+msgstr "ارسال فایل:"
+
+msgid "ms"
+msgstr "میلی ثانیه"
+
+msgid "Monitors"
+msgstr "مانیتور‌ها"
+
+msgid "Monitor"
+msgstr "مانیتور"
+
+msgid "Value"
+msgstr "مقدار"
+
+msgid "Pick one or more items from the list to display the graph."
+msgstr "یک یا بیشتر مورد را از لیست انتخاب کنید تا نمودار نشان داده شود."
+
+msgid "Stop"
+msgstr "توقف"
+
+msgid "Start"
+msgstr "شروع"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
+msgid "Measure:"
+msgstr "اندازه گیری:"
+
+msgid "Frame Time (ms)"
+msgstr "زمان فریم (ms)"
+
+msgid "Average Time (ms)"
+msgstr "زمان متوسط (میلی‌ثانیه)"
+
+msgid "Frame %"
+msgstr "فریم %"
+
+msgid "Physics Frame %"
+msgstr "% فریم فیزیک"
+
+msgid "Inclusive"
+msgstr "تمام وقت"
+
+msgid "Self"
+msgstr "خود"
+
+msgid ""
+"Inclusive: Includes time from other functions called by this function.\n"
+"Use this to spot bottlenecks.\n"
+"\n"
+"Self: Only count the time spent in the function itself, not in other "
+"functions called by that function.\n"
+"Use this to find individual functions to optimize."
+msgstr ""
+"تمام وقت: شامل زمان از توابع دیگر فراخوانده شده توسط این تابع\n"
+"استفاده کن از این برای پیدا کردن bottleneck ها\n"
+"\n"
+"خود:فقط زمانی را می شمارد که درون خود توابع صرف شده نه در توابع دیگر "
+"فراخوانده شده توسط آن تابع.\n"
+"استفاده کن از این برای پیدا کردن توابع تکی برای بهینه سازی."
+
+msgid "Frame #:"
+msgstr "فریم #:"
+
+msgid "Name"
+msgstr "نام"
+
+msgid "Time"
+msgstr "زمان"
+
+msgid "Calls"
+msgstr "فراخوانی‌ها"
+
+msgid "Fit to Frame"
+msgstr "جا کردن در تصویر"
+
+msgid "Linked"
+msgstr "پیوند داده شده"
+
+msgid "CPU"
+msgstr "پردازنده (CPU)"
+
+msgid "GPU"
+msgstr "واحد پردازش گرافیکی (GPU)"
+
+msgid "Execution resumed."
+msgstr "راه‌اندازی از سر گرفته شد."
+
+msgid "Bytes:"
+msgstr "بایت‌ها:"
+
+msgid "Error:"
+msgstr "خطا:"
+
+msgid "%s Error"
+msgstr "خطای %s"
+
+msgid "%s Error:"
+msgstr "خطای %s:"
+
+msgid "%s Source"
+msgstr "منبع %s"
+
+msgid "%s Source:"
+msgstr "منبع %s:"
+
+msgid "Stack Trace"
+msgstr "ردیابی پشته(Stack Trace)"
+
+msgid "Stack Trace:"
+msgstr "ردیابی پشته(Stack Trace):"
+
+msgid "Debug session started."
+msgstr "نشست اشکال زدایی شزوع شد."
+
+msgid "Debug session closed."
+msgstr "نشست اشکال زدایی بسته شد."
+
+msgid "Line %d"
+msgstr "خط %d"
+
+msgid "Delete Breakpoint"
+msgstr "حذف Breakpoint"
+
+msgid "Delete All Breakpoints in:"
+msgstr "تمام Breakpoints ها را حذف کن در:"
+
+msgid "Delete All Breakpoints"
+msgstr "حذف تمام Breakpoint ها"
+
+msgid "Copy Error"
+msgstr "کپی خطا"
+
+msgid "Open C++ Source on GitHub"
+msgstr "بازکردن منبع C++ در گیت‌هاب"
+
+msgid "C++ Source"
+msgstr "منبع C++"
+
+msgid "Video RAM"
+msgstr "ویدئو رم"
+
+msgid "Skip Breakpoints"
+msgstr "ردکردن Breakpoint ها"
+
+msgid "Step Into"
+msgstr "قدم به درون"
+
+msgid "Step Over"
+msgstr "قدم برداشتن"
+
+msgid "Break"
+msgstr "وقفه"
+
+msgid "Continue"
+msgstr "ادامه"
+
+msgid "Thread:"
+msgstr "نخ:"
+
+msgid "Stack Frames"
+msgstr "روی هم چیدن فریم‌ها"
+
+msgid "Filter Stack Variables"
+msgstr "فیلتر متغیر های پشته"
+
+msgid "Breakpoints"
+msgstr "مکان های وقفه"
+
+msgid "Expand All"
+msgstr "بسط دادن همه"
+
+msgid "Collapse All"
+msgstr "بستن همه"
+
+msgid "Profiler"
+msgstr "پروفایلر"
+
+msgid "Visual Profiler"
+msgstr "پروفایلر دیداری"
+
+msgid "List of Video Memory Usage by Resource:"
+msgstr "فهرست استفاده از حافظه ویدئویی بر اساس منبع:"
+
+msgid "Total:"
+msgstr "کل:"
+
+msgid "Export list to a CSV file"
+msgstr "صدور لیست در یک فایل CSV"
+
+msgid "Resource Path"
+msgstr "مسیر منبع"
+
+msgid "Type"
+msgstr "تایپ"
+
+msgid "Format"
+msgstr "قالب"
+
+msgid "Usage"
+msgstr "استفاده"
+
+msgid "Misc"
+msgstr "متفرقه"
+
+msgid "Clicked Control:"
+msgstr "کنترل کلیک‌شده:"
+
+msgid "Clicked Control Type:"
+msgstr "گونهٔ کنترل کلیک‌شده:"
+
+msgid "Live Edit Root:"
+msgstr "ویرایش زنده Root:"
+
+msgid "Set From Tree"
+msgstr "تنظیم از Tree"
+
+msgid "Export measures as CSV"
+msgstr "صدور اندازه ها بعنوان CSV"
+
+msgid "Search Replacement For:"
+msgstr "جستجوی جایگزین برای:"
+
+msgid "Dependencies For:"
+msgstr "بستگی‌ها برای:"
+
+msgid ""
+"Scene '%s' is currently being edited.\n"
+"Changes will only take effect when reloaded."
+msgstr ""
+"ویرایش صحنه '%s' شروع شده است.\n"
+"تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
+
+msgid ""
+"Resource '%s' is in use.\n"
+"Changes will only take effect when reloaded."
+msgstr ""
+"منابع '%s' بکار رفته‌اند.\n"
+"تغییرات تنها وقتی جلوه گرند که از نو بارگیری شوند."
+
+msgid "Dependencies"
+msgstr "بستگی‌ها"
+
+msgid "Resource"
+msgstr "منبع"
+
+msgid "Path"
+msgstr "مسیر"
+
+msgid "Dependencies:"
+msgstr "بستگی‌ها:"
+
+msgid "Fix Broken"
+msgstr "(بستگی) معیوب را تعمیر کن"
+
+msgid "Dependency Editor"
+msgstr "ویرایشگر بستگی"
+
+msgid "Search Replacement Resource:"
+msgstr "منبع جایگزینی را جستجو کن:"
+
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "باز کردن صحنه"
+msgstr[1] "باز کردن صحنه ها"
+
+msgid "Open"
+msgstr "باز کن"
+
+msgid "Owners of: %s (Total: %d)"
+msgstr "صاحبان: %s (کل: %d)"
+
+msgid "Localization remap"
+msgstr "بومی‌سازی مجدد"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "بومی سازی مجدد برای مسیر '%s' و بومی '%s'."
+
+msgid ""
+"Remove the selected files from the project? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"فایل‌های انتخابی از پروژه حذف شوند؟ (قابل برگشت نیست.)\n"
+"بسته به پیکربندی سیستم فایل شما، فایل‌ها یا به سطل زباله سیستم منتقل می‌شوند و "
+"یا برای همیشه حذف می‌شوند."
+
+msgid ""
+"The files being removed are required by other resources in order for them to "
+"work.\n"
+"Remove them anyway? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"فایل های در حال حذف توسط منابع دیگر مورد نیاز است تا بتوانند کار کنند.\n"
+"به هر حال آنها را حذف کنم؟ (قابل واگرد نیست.)\n"
+"بسته به پیکربندی سیستم فایل شما ، فایل ها یا به سطل زباله سیستم منتقل می شوند "
+"و یا برای همیشه حذف می شوند."
+
+msgid "Cannot remove:"
+msgstr "امکان حذف وجود ندارد :"
+
+msgid "Error loading:"
+msgstr "خطا در بارگذاری:"
+
+msgid "Load failed due to missing dependencies:"
+msgstr "به دلیل مفقود شدن وابستگی‌ها بارگیری انجام نشد:"
+
+msgid "Open Anyway"
+msgstr "در هر صورت باز کن"
+
+msgid "Which action should be taken?"
+msgstr "کدام عمل باید اجرا شود؟"
+
+msgid "Fix Dependencies"
+msgstr "بستگی‌ها را تعمیر کن"
+
+msgid "Errors loading!"
+msgstr "خطا در بارگذاری!"
+
+msgid "Permanently delete %d item(s)? (No undo!)"
+msgstr "به طور دائمی تعداد '%d' آیتم را حذف کند؟ (بدون undo !)"
+
+msgid "Show Dependencies"
+msgstr "نمایش وابستگی‌ها"
+
+msgid "Orphan Resource Explorer"
+msgstr "پوینده‌ی منبع جدا افتاده"
+
+msgid "Owns"
+msgstr "اموال"
+
+msgid "Resources Without Explicit Ownership:"
+msgstr "منابع بدون مالکیت صریح:"
+
+msgid "Folder name cannot be empty."
+msgstr "نام پوشه نمی‌تواند خالی باشد."
+
+msgid "Folder name contains invalid characters."
+msgstr "نام پوشه شامل کاراکترهای نامعتبر است."
+
+msgid "Folder name cannot begin or end with a space."
+msgstr "نام پوشه نمی‌تواند با جای خالی شروع یا تمام شود."
+
+msgid "Folder name cannot begin with a dot."
+msgstr "نام پوشه نمی‌تواند با نقطه شروع شود."
+
+msgid "File with that name already exists."
+msgstr "فایل با این نام در حال حاضر وجود دارد."
+
+msgid "Folder with that name already exists."
+msgstr "پوشه با این نام در حال حاضر وجود دارد."
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr ""
+"استفاده از خط مورب در نام پوشه‌ها، زیرپوشه‌ها را به صورت بازگشتی ایجاد می‌کند."
+
+msgid "Could not create folder."
+msgstr "ناتوان در ساختن پوشه."
+
+msgid "Create new folder in %s:"
+msgstr "ساخت پوشه جدید در %s:"
+
+msgid "Create Folder"
+msgstr "ساخت پوشه"
+
+msgid "Folder name is valid."
+msgstr "نام پوشه معتبر است."
+
+msgid "Double-click to open in browser."
+msgstr "برای باز کردن در مرورگر دو بار کلیک کنید."
+
+msgid "Thanks from the Godot community!"
+msgstr "با تشکر از سوی جامعهٔ گودوت!"
+
+msgid "(unknown)"
+msgstr "(نامشخص)"
+
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version number."
+msgstr ""
+"تاریخ کامیت در گیت: %s\n"
+"برای کپی شماره نسخه، کلیک کنید."
+
+msgid "Godot Engine contributors"
+msgstr "مشارکت‌کنندگان موتور گودو"
+
+msgid "Project Founders"
+msgstr "بنیان‌گذاران پروژه"
+
+msgid "Lead Developer"
+msgstr "توسعه‌دهنده‌ی اصلی"
+
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "مدیر پروژه"
+
+msgid "Developers"
+msgstr "توسعه دهندگان"
+
+msgid "Authors"
+msgstr "مؤلفان"
+
+msgid "Patrons"
+msgstr "حامی"
+
+msgid "Platinum Sponsors"
+msgstr "حامیان پلاتینیومی"
+
+msgid "Gold Sponsors"
+msgstr "حامیان طلایی"
+
+msgid "Silver Sponsors"
+msgstr "حامیان نقره ای"
+
+msgid "Diamond Members"
+msgstr "اعضای الماسی"
+
+msgid "Titanium Members"
+msgstr "اعضای تیتانیومی"
+
+msgid "Platinum Members"
+msgstr "اعضای پلاتینیومی"
+
+msgid "Gold Members"
+msgstr "اعضای طلایی"
+
+msgid "Donors"
+msgstr "اهدا کنندگان"
+
+msgid "License"
+msgstr "پروانه"
+
+msgid "Third-party Licenses"
+msgstr "پروانه‌های شخص ثالث"
+
+msgid ""
+"Godot Engine relies on a number of third-party free and open source "
+"libraries, all compatible with the terms of its MIT license. The following is "
+"an exhaustive list of all such third-party components with their respective "
+"copyright statements and license terms."
+msgstr ""
+"موتور گودو به تعدادی از کتابخانه‌های منبع‌باز و شخص-ثالث رایگان متکی است که "
+"همگی با شرایط پروانه ام‌آی‌تی سازگار هستند. در زیر فهرستی جامع از تمامی "
+"مؤلفه‌های شخص ثالث با بیانیه‌های حق کپی برداری مربوطه و شرایط مجوز آنها قرار "
+"دارد."
+
+msgid "All Components"
+msgstr "همه اجزا"
+
+msgid "Components"
+msgstr "اجزا"
+
+msgid "Licenses"
+msgstr "پروانه‌ها"
+
+msgid "Error opening asset file for \"%s\" (not in ZIP format)."
+msgstr "خطا در گشودن پروندهٔ دارایی برای «%s» (در قالب ZIP نمی‌باشد)."
+
+msgid "%s (already exists)"
+msgstr "\"%s\" (در حال حاضر موجود است)"
+
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "فایل %d با پروژه شما در مغایرت است و نصب نمی شود"
+msgstr[1] "فایل های %d با پروژه شما در مغایرت است و نصب نمی شود"
+
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "این Asset یک مسیر Root ندارد پس نمیتوان آن را نادیده گرفت."
+
+msgid "Ignore the root directory when extracting files."
+msgstr "هنگام استخراج فایل ها مسیر Root را نادیده بگیر."
+
+msgid "Select Install Folder"
+msgstr "پوشه نصب را انتخاب کنید"
+
+msgid "Uncompressing Assets"
+msgstr "استخراج Asset ها"
+
+msgid "The following files failed extraction from asset \"%s\":"
+msgstr "استخراج پرونده‌های زیر از دارایی «%s» شکست خورد:"
+
+msgid "(and %s more files)"
+msgstr "(و %s دیگر فایل ها)"
+
+msgid "Success!"
+msgstr "موفقیت!"
+
+msgid "Asset:"
+msgstr "Asset:"
+
+msgid "Open the list of the asset contents and select which files to install."
+msgstr "باز کردنه لیست محتوا Asset ها و انتخاب فایل ها را برای نصب."
+
+msgid "Change Install Folder"
+msgstr "تغییر پوشه نصب"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "تغییر پوشه ای که محتوای Asset در آن نصب خواهد شد."
+
+msgid "Ignore asset root"
+msgstr "نادیده گرفتن Root ه Asset"
+
+msgid "No files conflict with your project"
+msgstr "هیچ فایلی با پروژه شما در مغایرت نیست"
+
+msgid "Show contents of the asset and conflicting files."
+msgstr "نشان دادن محتوای Asset و فایل های در مغایرت."
+
+msgid "Contents of the asset:"
+msgstr "محتوای Asset:"
+
+msgid "Installation preview:"
+msgstr "پیش‌نمایش نصب:"
+
+msgid "Configure Asset Before Installing"
+msgstr "تنظیم کردن Asset قبل از نصب کردن"
+
+msgid "Install"
+msgstr "نصب کردن"
+
+msgid "Speakers"
+msgstr "بلندگوها"
+
+msgid "Add Effect"
+msgstr "افزودن جلوه"
+
+msgid "Rename Audio Bus"
+msgstr "تغییر نام گذرگاه صدا"
+
+msgid "Change Audio Bus Volume"
+msgstr "تغییر مقدار صدای خطی"
+
+msgid "Toggle Audio Bus Solo"
+msgstr "دِگرحالتِ صدای تکی خطی"
+
+msgid "Toggle Audio Bus Mute"
+msgstr "دِگرحالتِ صدای سکوت خطی"
+
+msgid "Toggle Audio Bus Bypass Effects"
+msgstr "دِگرحالتِ صدای جلوه های میان بر خطی"
+
+msgid "Select Audio Bus Send"
+msgstr "انتخاب صدای ارسال گذرا"
+
+msgid "Add Audio Bus Effect"
+msgstr "افزودن صدای جلوه خطی"
+
+msgid "Move Bus Effect"
+msgstr "انتقال جلوه خطی"
+
+msgid "Delete Bus Effect"
+msgstr "حذف جلوه خطی"
+
+msgid "Drag & drop to rearrange."
+msgstr "برای چینش مجدد، بکشید و رها کنید."
+
+msgid "Solo"
+msgstr "انفرادی"
+
+msgid "Mute"
+msgstr "بدون صدا"
+
+msgid "Bypass"
+msgstr "‌گذرگاه فرعی"
+
+msgid "Bus Options"
+msgstr "گزینه های اتوبوس"
+
+msgid "Duplicate Bus"
+msgstr "تکثیر کردن Bus"
+
+msgid "Delete Bus"
+msgstr "حذف Bus"
+
+msgid "Reset Volume"
+msgstr "بازنشانی حجم"
+
+msgid "Delete Effect"
+msgstr "حذف جلوه"
+
+msgid "Add Audio Bus"
+msgstr "افزودن Bus صدا"
+
+msgid "Master bus can't be deleted!"
+msgstr "Bus اصلی قابل حذف نیست!"
+
+msgid "Delete Audio Bus"
+msgstr "حذف Bus صدا"
+
+msgid "Duplicate Audio Bus"
+msgstr "تکثیر Bus صدا"
+
+msgid "Reset Bus Volume"
+msgstr "باز‌نشانی مقدار Bus"
+
+msgid "Move Audio Bus"
+msgstr "انتقال Bus صدا"
+
+msgid "Save Audio Bus Layout As..."
+msgstr "ذخیره چیدمان Bus صوتی به عنوان ..."
+
+msgid "Location for New Layout..."
+msgstr "مکان برای چیدمان جدید ..."
+
+msgid "Open Audio Bus Layout"
+msgstr "بار کردن چیدمان Bus صوتی"
+
+msgid "There is no '%s' file."
+msgstr "فایل '%s' وجود ندارد."
+
+msgid "Layout:"
+msgstr "چیدمان:"
+
+msgid "Invalid file, not an audio bus layout."
+msgstr "پرونده نامعتبر است ، نه طرح اتوبوس صوتی."
+
+msgid "Error saving file: %s"
+msgstr "خطای ذخیره کردن پرونده: %s"
+
+msgid "Add Bus"
+msgstr "اتوبوس اضافه کنید"
+
+msgid "Add a new Audio Bus to this layout."
+msgstr "یک Audio Bus جدید به این طرح اضافه کنید."
+
+msgid "Load"
+msgstr "بارگیری"
+
+msgid "Load an existing Bus Layout."
+msgstr "چیدمان اتوبوس موجود را بارگیری کنید."
+
+msgid "Save As"
+msgstr "ذخیره در"
+
+msgid "Save this Bus Layout to a file."
+msgstr "این طرح Bus را در یک پرونده ذخیره کنید."
+
+msgid "Load Default"
+msgstr "بارگیری پیش فرض"
+
+msgid "Load the default Bus Layout."
+msgstr "طرح پیش فرض اتوبوس را بارگیری کنید."
+
+msgid "Create a new Bus Layout."
+msgstr "طرح جدید اتوبوس ایجاد کنید."
+
+msgid "Audio Bus Layout"
+msgstr "چیدمان Bus صوتی"
+
+msgid "Autoload '%s' already exists!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
+
+msgid "Rename Autoload"
+msgstr "بارگذاری خودکار را تغییر نام بده"
+
+msgid "Toggle Autoload Globals"
+msgstr "تغییر خودبارگیری متغیر های عمومی"
+
+msgid "Move Autoload"
+msgstr "انتقال بارگیری خودکار"
+
+msgid "Remove Autoload"
+msgstr "حذف بارگیری خودکار"
+
+msgid "Enable"
+msgstr "فعال کردن"
+
+msgid "Rearrange Autoloads"
+msgstr "تنظیم مجدد بارهای خودکار"
+
+msgid "Can't add Autoload:"
+msgstr "اضافه کردن بارگیری خودکار امکان پذیر نیست:"
+
+msgid "%s is an invalid path. File does not exist."
+msgstr "%s یک مسیر نامعتبر است. فایل موجود نمیباشد."
+
+msgid "%s is an invalid path. Not in resource path (res://)."
+msgstr "%s یک مسیر نامعتبر است. در مسیر منبع نیست (//:res)."
+
+msgid "Add Autoload"
+msgstr "افزودن بارگیری خودکار"
+
+msgid "Path:"
+msgstr "مسیر:"
+
+msgid "Node Name:"
+msgstr "نام گره:"
+
+msgid "Global Variable"
+msgstr "متغیر عمومی"
+
+msgid "3D Engine"
+msgstr "موتور ۳‌بعدی"
+
+msgid "2D Physics"
+msgstr "فیزیک دوبعدی"
+
+msgid "3D Physics"
+msgstr "فیزیک سه‌بعدی"
+
+msgid "Navigation"
+msgstr "جهت‌یابی"
+
+msgid "XR"
+msgstr "اکس‌آر"
+
+msgid "RenderingDevice"
+msgstr "دستگاه Render"
+
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Text Server: Fallback"
+msgstr "سرویس دهنده متن: Fallback"
+
+msgid "Text Server: Advanced"
+msgstr "سرویس دهنده متن: پیشرفته"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "فونت های TTF, OTF, Type 1, WOFF1"
+
+msgid "WOFF2 Fonts"
+msgstr "فونت‌ های WOFF2"
+
+msgid "SIL Graphite Fonts"
+msgstr "فونت های گرافیکی SIL"
+
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "Render فونت میدان فاصله امضا شده چند کاناله"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "دسترسی گره‌های ۳‌بعدی و همین طور سرویس دهنده Render به قابلیت های ۳‌بعدی."
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "گره‌های دوبعدی فیزیک و PhysicsServer2D."
+
+msgid "3D Physics nodes and PhysicsServer3D."
+msgstr "گره‌های سه‌بعدی فیزیک و PhysicsServer3D."
+
+msgid "Navigation, both 2D and 3D."
+msgstr "جهت‌یابی، هم دوبعدی هم سه‌بعدی."
+
+msgid "XR (AR and VR)."
+msgstr "اکس‌آر (ای‌آر و وی‌آر)."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr "رندر بر پایه دستگاه Render (اگر غیرفعال باشد بک اند OpenGL نیاز است)."
+
+msgid "OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr "بک اند OpenGL (اگر غیر فعال باشد بک اند دستگاه Render مورد نیاز است)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "بک اند Vulkan از دستگاه Render."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"پیاده سازی Fallback از سرویس دهنده متن\n"
+"از چیدمان های ساده متن پشتیبانی می کند."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"پیاده سازی سرویس دهنده متن با کمک کتابخانه های ICU و HarfBuzz.\n"
+"از چیدمان های پیچیده متن، BiDi و قابلیت های بافتی OpenType فونت پشتیبانی "
+"میکند."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr ""
+"پشتیبانی از فرمت WOFF2 برای فونت ها با استفاده از کتابخانه‌های FreeType و "
+"Brotli."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text Server "
+"only)."
+msgstr ""
+"SIL پشتیبانی از فناوری فونت هوشمند گرافیت (پشتیبانی فقط از طریق سرور متن "
+"پیشرفته )"
+
+msgid "General Features:"
+msgstr "ویژگی‌های اصلی:"
+
+msgid "Text Rendering and Font Options:"
+msgstr "گزینه‌های رندر متن و فونت:"
+
+msgid "File saving failed."
+msgstr "ذخیره فایل ناموفق بود."
+
+msgid "Nodes and Classes:"
+msgstr "نودها (Nodes) و کلاس‌ها:"
+
+msgid "File '%s' format is invalid, import aborted."
+msgstr "فرمت فایل '%s' نامعتبر است، وارد کردن متوقف شد."
+
+msgid "Error saving profile to path: '%s'."
+msgstr "خطای ذخیره نمایه در مسیر: '%s'."
+
+msgid "New"
+msgstr "جدید"
+
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Profile:"
+msgstr "پروفایل:"
+
+msgid "Reset to Defaults"
+msgstr "بازگشت به پیشفرض‌ها"
+
+msgid "Please Confirm:"
+msgstr "لطفاً تأیید کنید:"
+
+msgid "Load Profile"
+msgstr "بارگزاری پروفایل"
+
+msgid "Export Profile"
+msgstr "صادر کردن نمایه"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"خطا در اجرای \"%s\":\n"
+"%s"
+
+msgid "Filter Commands"
+msgstr "فیلتر دستورات"
+
+msgid "Paste Params"
+msgstr "چسباندن پارام ها"
+
+msgid "Updating Scene"
+msgstr "صحنه به روز می شود"
+
+msgid "Storing local changes..."
+msgstr "ذخیره تغییرات محلی ..."
+
+msgid "Updating scene..."
+msgstr "صحنه به روز می شود ..."
+
+msgid "[empty]"
+msgstr "[پوچ]"
+
+msgid "[unsaved]"
+msgstr "[ذخیره نشده]"
+
+msgid "%s - Godot Engine"
+msgstr "%s - موتور گودو"
+
+msgid "Make Floating"
+msgstr "شناور کردن"
+
+msgid "Move to Bottom"
+msgstr "جابه‌جا کردن به زیر"
+
+msgid "3D Editor"
+msgstr "ویرایشگر ۳بعدی"
+
+msgid "Script Editor"
+msgstr "ویرایشگر اسکریپت"
+
+msgid "Asset Library"
+msgstr "کتابخانه دارایی"
+
+msgid "Scene Tree Editing"
+msgstr "ویرایش درخت صحنه"
+
+msgid "Node Dock"
+msgstr "لنگرگاه گره:"
+
+msgid "FileSystem Dock"
+msgstr "قایل‌سیستم داک"
+
+msgid "Import Dock"
+msgstr "وارد کردن لنگرگاه"
+
+msgid "Allows to view and edit 3D scenes."
+msgstr "اجازه دیدن و ویرایش صحنه های ۳ بعدی را می‌دهد."
+
+msgid "Allows to edit scripts using the integrated script editor."
+msgstr "اجازهٔ ویرایش اسکریپت‌ها با استفاده از ویرایشگر اسکریپت داخلی را می‌دهد."
+
+msgid "Provides built-in access to the Asset Library."
+msgstr "دسترسی تعبیه‌ شده به کتابخانه دارایی را فراهم می‌کند."
+
+msgid ""
+"Allows to work with signals and groups of the node selected in the Scene dock."
+msgstr ""
+"به کار کردن با سیگنال ها و گروه ها ی گره انتخاب شده از داک صحنه اجازه میدهد."
+
+msgid "Allows to browse the local file system via a dedicated dock."
+msgstr "به مرور سیستم فایل محلی از طریق یک داک اختصاصی اجازه می دهد."
+
+msgid ""
+"Allows to configure import settings for individual assets. Requires the "
+"FileSystem dock to function."
+msgstr ""
+"اجازهٔ پیکربندی درون‌ریزی تنظیمات دارایی‌های مستقل را می‌دهد. برای عملکرد به داک "
+"پرونده‌سامانه نیاز دارد."
+
+msgid "(current)"
+msgstr "(کنونی)"
+
+msgid "(none)"
+msgstr "(هیچ)"
+
+msgid "Remove currently selected profile, '%s'? Cannot be undone."
+msgstr "نمایه انتخابی فعلی، '%s' حذف شود؟ قابل واگرد نیست."
+
+msgid "Profile must be a valid filename and must not contain '.'"
+msgstr "پروفایل باید یک نام فایل معتبر باشد و نباید حاوی «.» باشد"
+
+msgid "Profile with this name already exists."
+msgstr "نمایه با این نام در حال حاضر وجود دارد."
+
+msgid "(Editor Disabled, Properties Disabled)"
+msgstr "(ویرایشگر غیرفعال است، ویژگی‌ها غیرفعال است)"
+
+msgid "(Properties Disabled)"
+msgstr "(ویژگی‌های غیرفعال شده)"
+
+msgid "(Editor Disabled)"
+msgstr "(ویرایشگر غیرفعال شده)"
+
+msgid "Class Options:"
+msgstr "گزینه‌های کلاس:"
+
+msgid "Enable Contextual Editor"
+msgstr "فعال کردن ویرایشگر متنی"
+
+msgid "Class Properties:"
+msgstr "دارایی‌های کلاس:"
+
+msgid "Main Features:"
+msgstr "ویژگی‌های اصلی:"
+
+msgid ""
+"Profile '%s' already exists. Remove it first before importing, import aborted."
+msgstr ""
+"پروفایل '%s' از قبل وجود دارد. قبل از وارد کردن، ابتدا آن را حذف کنید، وارد "
+"کردن متوقف شد."
+
+msgid "Reset to Default"
+msgstr "بازنشانی به پیشفرض"
+
+msgid "Current Profile:"
+msgstr "نمایه موجود:"
+
+msgid "Create Profile"
+msgstr "ایجاد پروفایل"
+
+msgid "Remove Profile"
+msgstr "حذف پروفایل"
+
+msgid "Available Profiles:"
+msgstr "نمایه‌های موجود:"
+
+msgid "Make Current"
+msgstr "ساختن جریان"
+
+msgid "Import"
+msgstr "درون‌ریزی"
+
+msgid "Export"
+msgstr "برون‌ریزی"
+
+msgid "Configure Selected Profile:"
+msgstr "پیکربندی پروفایل انتخاب شده:"
+
+msgid "Extra Options:"
+msgstr "گزینه‌های اضافی:"
+
+msgid "Create or import a profile to edit available classes and properties."
+msgstr "یک پروفایل برای ویرایش کلاس‌ها و ویژگی‌های موجود ایجاد یا وارد کنید."
+
+msgid "New profile name:"
+msgstr "نام نمایه جدید:"
+
+msgid "Godot Feature Profile"
+msgstr "نمایه ویژگی گودو"
+
+msgid "Import Profile(s)"
+msgstr "وارد کردن نمایه(ها)"
+
+msgid "Manage Editor Feature Profiles"
+msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
+
+msgid "Restart"
+msgstr "راه‌اندازی مجدد"
+
+msgid "Save & Restart"
+msgstr "ذخیره و راه‌اندازی مجدد"
+
+msgid "ScanSources"
+msgstr "منابع‌اسکن"
+
+msgid ""
+"There are multiple importers for different types pointing to file %s, import "
+"aborted"
+msgstr ""
+"چندین واردکننده برای انواع مختلف وجود دارد که به فایل %s اشاره می‌کنند، وارد "
+"کردن لغو شد"
+
+msgid "(Re)Importing Assets"
+msgstr "(باز)درون‌ریزی دارایی‌ها"
+
+msgid "Import resources of type: %s"
+msgstr "وارد کردن منابع از نوع: %s"
+
+msgid "No return value."
+msgstr "بدون مقدار بازگشتی."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"این مقدار یک عدد صحیح ساخته شده بعنوان یک بت ماسک از پرچم های دنباله است."
+
+msgid "Experimental"
+msgstr "آزمایشی"
+
+msgid "This method supports a variable number of arguments."
+msgstr "این روش از تعداد متغیری از آرگومان ها پشتیبانی می‌کند."
+
+msgid ""
+"This method is called by the engine.\n"
+"It can be overridden to customize built-in behavior."
+msgstr ""
+"این روش توسط موتور فراخوانی می‌شود.\n"
+"برای سفارشی کردن رفتار داخلی، می‌توان آن را نادیده گرفت."
+
+msgid "Constructors"
+msgstr "سازندگان"
+
+msgid "Operators"
+msgstr "عملگر ها"
+
+msgid "Method Descriptions"
+msgstr "توضیحات تابع"
+
+msgid "Top"
+msgstr "بالا"
+
+msgid "Class:"
+msgstr "کلاس:"
+
+msgid "Inherits:"
+msgstr "ارث می‌برد از:"
+
+msgid "Inherited by:"
+msgstr "به ارث رسیده به وسیله:"
+
+msgid "Description"
+msgstr "تعریف"
+
+msgid "There is currently no description for this class."
+msgstr "درحال حاضر هیچ توضیحی برای این کلاس وجود ندارد."
+
+msgid "Online Tutorials"
+msgstr "آموزش‌های آنلاین"
+
+msgid "Properties"
+msgstr "ویژگی‌ها"
+
+msgid "overrides %s:"
+msgstr "%s را لغو می کند:"
+
+msgid "default:"
+msgstr "پیش فرض:"
+
+msgid "Theme Properties"
+msgstr "ویژگی‌های زمینه"
+
+msgid "Colors"
+msgstr "رنگ‌ها"
+
+msgid "Constants"
+msgstr "ثابت‌ها"
+
+msgid "Fonts"
+msgstr "فونت‌ها"
+
+msgid "Icons"
+msgstr "آیکون‌ها"
+
+msgid "Styles"
+msgstr "استایل‌ها"
+
+msgid "Enumerations"
+msgstr "شمارش‌ها"
+
+msgid "There is currently no description for this annotation."
+msgstr "درحال حاضر هیچ توضیحی برای این حاشیه‌نویسی وجود ندارد."
+
+msgid "Property Descriptions"
+msgstr "توضیحات خصیصه"
+
+msgid "(value)"
+msgstr "(مقدار)"
+
+msgid "There is currently no description for this property."
+msgstr "درحال حاضر هیچ توضیحی برای این ویژگی وجود ندارد."
+
+msgid "Editor"
+msgstr "ویرایشگر"
+
+msgid "Property:"
+msgstr "ویژگی:"
+
+msgid "Internal Property:"
+msgstr "ویژگی داخلی :"
+
+msgid "This property can only be set in the Inspector."
+msgstr "این ویژگی فقط در اینسپکتور ( inspector ) قابل تنظیم است ."
+
+msgid "Signal:"
+msgstr "سیگنال:"
+
+msgid "%d matches."
+msgstr "%d هم‌خوانی."
+
+msgid "Method"
+msgstr "متد"
+
+msgid "Signal"
+msgstr "سیگنال"
+
+msgid "Constant"
+msgstr "ثابت"
+
+msgid "Property"
+msgstr "خصیصه"
+
+msgid "Theme Property"
+msgstr "ویژگی زمینه"
+
+msgid "Search Help"
+msgstr "جستجوی راهنما"
+
+msgid "Case Sensitive"
+msgstr "حساس به حروف کوچک و بزرگ"
+
+msgid "Show Hierarchy"
+msgstr "نمایش سلسله‌مراتب"
+
+msgid "Display All"
+msgstr "نشان دادن همه"
+
+msgid "Classes Only"
+msgstr "تنها کلاس‌ها"
+
+msgid "Constructors Only"
+msgstr "فقط سازندگان"
+
+msgid "Methods Only"
+msgstr "تنها روش‌ها"
+
+msgid "Operators Only"
+msgstr "فقط عملگرها"
+
+msgid "Signals Only"
+msgstr "تنها سیگنال‌ها"
+
+msgid "Constants Only"
+msgstr "تنها ثوابت"
+
+msgid "Properties Only"
+msgstr "تنها ویژگی‌ها"
+
+msgid "Theme Properties Only"
+msgstr "تنها ویژگی‌های زمینه"
+
+msgid "Member Type"
+msgstr "نوع عضو"
+
+msgid "Keywords"
+msgstr "کلید واژه ها"
+
+msgid "Class"
+msgstr "کلاس"
+
+msgid "This member is marked as deprecated."
+msgstr "این عضو بعنوان منسوخ علامت گذاری شده است."
+
+msgid "This member is marked as experimental."
+msgstr "این عضو بعنوان آزمایشی علامت گذاری شده است."
+
+msgid "Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+"پین کردن یک مقدار آن را مجبور می کند حتی اگر برابر با مقدار پیش فرض باشد "
+"ذخیره شود."
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "%dتغییر"
+msgstr[1] "%dتغییرات"
+
+msgid "Move Up"
+msgstr "حرکت به بالا"
+
+msgid "Move Down"
+msgstr "حرکت به پایین"
+
+msgid "Resize Array..."
+msgstr "تغییر اندازه آرایه..."
+
+msgid "Resize Array"
+msgstr "آرایه را تغییر اندازه بده"
+
+msgid "Add Metadata"
+msgstr "افزودن فراداده(متادیتا)"
+
+msgid "Set %s"
+msgstr "تنظیم %s"
+
+msgid "Unpinned %s"
+msgstr "سنجاق %s برداشته شد"
+
+msgid "Metadata name can't be empty."
+msgstr "نام فراداده نمی‌تواند خالی باشد."
+
+msgid "Name:"
+msgstr "نام:"
+
+msgid "Metadata name is valid."
+msgstr "نام فراداده(متادیتا) معتبر است."
+
+msgid "Copy Property Path"
+msgstr "کپی کردن مسیر دارایی"
+
+msgid "Thumbnail..."
+msgstr "تصویر کوچک..."
+
+msgid "Or enter new layout name"
+msgstr "یا نام چیدمان جدید وارد کنید"
+
+msgid "Changed Locale Filter Mode"
+msgstr "حالت صافی بومی‌سازی تغییر کرد"
+
+msgid "Edit Filters"
+msgstr "ویرایش صافی ها"
+
+msgid "Language:"
+msgstr "زبان:"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "اسکریپت:"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "اسکریپت"
+
+msgid "Clear Output"
+msgstr "پاک کردن خروجی"
+
+msgid "Copy Selection"
+msgstr "کپی انتخاب"
+
+msgid "Focus Search/Filter Bar"
+msgstr "تمرکز نوار جستجو/فیلتر"
+
+msgid "Toggle visibility of errors."
+msgstr "تغییر پدیداری فایل‌های مخفی شده."
+
+msgid "Native Shader Source Inspector"
+msgstr "بازرس منبع سایه‌زن محلی"
+
+msgid "Unnamed Project"
+msgstr "پروژه بی‌نام"
+
+msgid "Spins when the editor window redraws."
+msgstr "هنگامی که پنجره ویرایشگر دوباره ترسیم می شود می چرخد."
+
+msgid "OK"
+msgstr "قبول"
+
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"این منبع نمی‌تواند ذخیره شود زیرا به صحنهٔ ویرایش شده تعلق ندارد. ابتدا آن را "
+"منحصر به فرد کنید."
+
+msgid "Save Resource As..."
+msgstr "ذخیره منبع از ..."
+
+msgid "Saving Scene"
+msgstr "ذخیره سازی صحنه"
+
+msgid "Analyzing"
+msgstr "در حال پردازش"
+
+msgid "Creating Thumbnail"
+msgstr "ایجاد بند انگشتی"
+
+msgid "Save scene before running..."
+msgstr "ذخیره صحنه پیش از اجرا..."
+
+msgid "Save All Scenes"
+msgstr "ذخیره همه صحنه‌ها"
+
+msgid "Can't overwrite scene that is still open!"
+msgstr "نمی‌توان صحنه‌ای که هنوز باز است را بازنویسی کرد!"
+
+msgid "Merge With Existing"
+msgstr "ترکیب کردن با نمونه ی موجود"
+
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
+"هنگام تلاش برای ذخیرهٔ چیدمان ویرایشگر خطایی روی داد.\n"
+" مطمئن شوید که مسیر داده کاربر در ویرایشگر قابل نوشتن است."
+
+msgid "Layout name not found!"
+msgstr "نام چیدمان پیدا نشد!"
+
+msgid "Restored the Default layout to its base settings."
+msgstr "طرح‌بندی پیش‌فرض را به تنظیمات پایه آن بازگرداند."
+
+msgid "This object is marked as read-only, so it's not editable."
+msgstr "این شی بعنوان فقط خواندنی علامت گذاری شده است، پس غیرقابل ویرایش است."
+
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"این منبع متعلق به صحنه‌ای است که ایمپورت شده است، بنابراین قابل ویرایش نیست.\n"
+" لطفاً اسناد مربوط به وارد کردن صحنه‌ها را بخوانید تا این گردش کار را بهتر درک "
+"کنید."
+
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr ""
+"این منبع وارد شده است، بنابراین قابل ویرایش نیست. تنظیمات آن را در پنل وارد "
+"کردن تغییر دهید و سپس دوباره وارد کنید."
+
+msgid "This object is read-only."
+msgstr "این شی فقط خواندنی است."
+
+msgid "Open Base Scene"
+msgstr "گشودن صحنه اصلی"
+
+msgid "Quick Open..."
+msgstr "گشودن فوری..."
+
+msgid "Quick Open Scene..."
+msgstr "گشودن فوری صحنه..."
+
+msgid "Quick Open Script..."
+msgstr "گشودن سریع اسکریپت..."
+
+msgid "Save Scene As..."
+msgstr "ذخیره صحنه در ..."
+
+msgid "Current scene not saved. Open anyway?"
+msgstr "صحنه فعلی ذخیره نشده است. به هر حال باز شود؟"
+
+msgid "Can't undo while mouse buttons are pressed."
+msgstr "نمی‌توان هنگامی که دکمه‌های ماوس فشرده اند لغو کرد."
+
+msgid "Nothing to undo."
+msgstr "چیزی برای لغو نیست."
+
+msgid "Nothing to redo."
+msgstr "چیزی برای انجام دوباره نیست."
+
+msgid "Can't reload a scene that was never saved."
+msgstr "صحنه‌ای که ذخیره نشده است قابل بارگذاری مجدد نیست."
+
+msgid "Reload Saved Scene"
+msgstr "بازیابی صحنه ذخیره شده"
+
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"صحنه کنونی تغییرات ذخیره نشده دارد.\n"
+"به هرحال صحنه ذخیره شده بارگذاری دوباره شود؟ این عمل قابل لغو نیست."
+
+msgid "Save modified resources before reloading?"
+msgstr "ذخیره منابع تغییر کرده پیش از بارگذاری مجدد؟"
+
+msgid "Save & Quit"
+msgstr "ذخیره و خروج"
+
+msgid "Save modified resources before closing?"
+msgstr "ذخیره منابع تغییر کرده پیش از بستن؟"
+
+msgid "Save changes to the following scene(s) before opening Project Manager?"
+msgstr "پیش از بازکردن مدیر پروژه تغییرات را در صحنه(های) زیر ذخیره می‌کنید؟"
+
+msgid "Pick a Main Scene"
+msgstr "یک صحنه اصلی انتخاب کنید"
+
+msgid "Export Mesh Library"
+msgstr "صادر کردن کتابخانه شبکه مش"
+
+msgid "Unable to load addon script from path: '%s'."
+msgstr "امکان بارگیری اسکریپت افزونه از مسیر وجود ندارد: '%s'."
+
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"صحنه انتخابی %s وجود ندارد، یک صحنه معتبر انتخاب کنید.\n"
+"بعدا می‌توانید در \"Project Settings\" در زیر بخش 'application' آن را تغییر "
+"دهید."
+
+msgid "Default"
+msgstr "پیش‌فرض"
+
+msgid "Save Layout"
+msgstr "ذخیره لایه"
+
+msgid "Delete Layout"
+msgstr "حذف طرح‌بندی"
+
+msgid "Save & Close"
+msgstr "ذخیره و بستن"
+
+msgid "%d more folders"
+msgstr "%d پوشه‌های بیش تر"
+
+msgid "Forward+"
+msgstr "فوروارد+"
+
+msgid "Mobile"
+msgstr "موبایل"
+
+msgid "Compatibility"
+msgstr "سازگاری"
+
+msgid "Distraction Free Mode"
+msgstr "حالت بدون حواس‌پرتی"
+
+msgid "Scene"
+msgstr "صحنه"
+
+msgid "Operations with scene files."
+msgstr "عملیات با فایل‌های صحنه."
+
+msgid "Copy Text"
+msgstr "کپی متن"
+
+msgid "New Scene"
+msgstr "صحنه جدید"
+
+msgid "New Inherited Scene..."
+msgstr "صحنه ارث‌برده‌شده جدید..."
+
+msgid "Open Scene..."
+msgstr "باز کردن صحنه..."
+
+msgid "Reopen Closed Scene"
+msgstr "باز کردن مجدد صحنه بسته شده"
+
+msgid "Open Recent"
+msgstr "باز کردن فایل اخیر"
+
+msgid "Save Scene"
+msgstr "ذخیره صحنه"
+
+msgid "Export As..."
+msgstr "صدور به عنوان..."
+
+msgid "Close Scene"
+msgstr "بستن صحنه"
+
+msgid "Quit"
+msgstr "خروج"
+
+msgid "Editor Settings..."
+msgstr "تنظیمات ویرایشگر…"
+
+msgid "Project"
+msgstr "پروژه"
+
+msgid "Project Settings"
+msgstr "تنظیمات پروژه"
+
+msgid "Version Control"
+msgstr "کنترل نسخه"
+
+msgid "Open User Data Folder"
+msgstr "گشودن پوشه اطلاعات کاربر"
+
+msgid "Tools"
+msgstr "ابزارها"
+
+msgid "Orphan Resource Explorer..."
+msgstr "پوینده‌ی منبع جاافتاده"
+
+msgid "Reload Current Project"
+msgstr "بارگذاری دوباره پروژه کنونی"
+
+msgid "Quit to Project List"
+msgstr "خروج به فهرست پروژه‌ها"
+
+msgid "Editor Layout"
+msgstr "طرح‌بندی ویرایشگر"
+
+msgid "Take Screenshot"
+msgstr "گرفتن اسکرین‌شات"
+
+msgid "Toggle Fullscreen"
+msgstr "تبدیل به تمام صفحه"
+
+msgid "Open Editor Data/Settings Folder"
+msgstr "گشودن پوشه اطلاعات/تنظیمات ویرایشگر"
+
+msgid "Manage Editor Features..."
+msgstr "مدیریت ویژگی‌های ویرایشگر..."
+
+msgid "Manage Export Templates..."
+msgstr "مدیریت صدور قالب ها..."
+
+msgid "Configure FBX Importer..."
+msgstr "پیکربندی وارد‌کننده FBX..."
+
+msgid "Help"
+msgstr "راهنما"
+
+msgid "Community"
+msgstr "اَنجُمَن"
+
+msgid "Copy System Info"
+msgstr "کپی اطلاعات سیستم"
+
+msgid "Report a Bug"
+msgstr "گزارش یک مشکل"
+
+msgid "Suggest a Feature"
+msgstr "پیشنهاد یک ویژگی"
+
+msgid "Support Godot Development"
+msgstr "از توسعه گودو حمایت کنید"
+
+msgid "Update Continuously"
+msgstr "بروزرسانی مستمر"
+
+msgid "Inspector"
+msgstr "اینسپکتور"
+
+msgid "Node"
+msgstr "گره"
+
+msgid "History"
+msgstr "تاریخچه"
+
+msgid "Don't Save"
+msgstr "ذخیره نکن"
+
+msgid "Manage Templates"
+msgstr "مدیریت قالب‌ها"
+
+msgid "Show in File Manager"
+msgstr "نمایش فایل داخلی مرجع"
+
+msgid "Import Templates From ZIP File"
+msgstr "واردکردن قالب ها از درون یک فایل ZIP"
+
+msgid "Export Library"
+msgstr "صدور کتابخانه"
+
+msgid "Open & Run a Script"
+msgstr "گشودن و اجرای یک اسکریپت"
+
+msgid "New Inherited"
+msgstr "وارث جدید"
+
+msgid "Load Errors"
+msgstr "خطاهای بارگذاری"
+
+msgid "Select Current"
+msgstr "انتخاب کنونی"
+
+msgid "Open 2D Editor"
+msgstr "باز کردن ویرایشگر دو بعدی"
+
+msgid "Open 3D Editor"
+msgstr "باز کردن ویرایشگر سه بعدی"
+
+msgid "Open Script Editor"
+msgstr "باز کردن ویرایشگر اسکریپت"
+
+msgid "Open Asset Library"
+msgstr "گشودن کتابخانه دارایی"
+
+msgid "Open the next Editor"
+msgstr "گشودن ویرایشگر متن"
+
+msgid "Warning!"
+msgstr "هشدار!"
+
+msgid "Edit Text:"
+msgstr "ویرایش متن:"
+
+msgid "On"
+msgstr "روشن"
+
+msgid "Rename"
+msgstr "تغییر نام"
+
+msgid "<empty>"
+msgstr "<پوچ>"
+
+msgid "Assign..."
+msgstr "واگذار کردن..."
+
+msgid "Size:"
+msgstr "اندازه:"
+
+msgid "Remove Item"
+msgstr "حذف مورد"
+
+msgid "Dictionary (size %d)"
+msgstr "دیکشنری (اندازه %d)"
+
+msgid "Load..."
+msgstr "بارگذاری..."
+
+msgid "Save As..."
+msgstr "ذخیره در..."
+
+msgid "Show in FileSystem"
+msgstr "نمایش در فایل‌سیستم"
+
+msgid "New Script..."
+msgstr "اسکریپت جدید..."
+
+msgid "Project Run"
+msgstr "اجرای پروژه"
+
+msgid "Editor Settings"
+msgstr "ویرایشگر ترجیحات"
+
+msgid "General"
+msgstr "عمومی"
+
+msgid "Filter Settings"
+msgstr "فیلتر تنظیمات"
+
+msgid "The editor must be restarted for changes to take effect."
+msgstr "باید ویرایشگر از نو شروع شود تا تغییرات جلوه کنند."
+
+msgid "Shortcuts"
+msgstr "میانبر‌‌ها"
+
+msgid "Left Stick Left, Joystick 0 Left"
+msgstr "چپ استیک چپ، اهرمک ۰ چپ"
+
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "چپ استیک راست، اهرمک ۰ راست"
+
+msgid "Left Stick Up, Joystick 0 Up"
+msgstr "چپ استیک بالا، اهرمک ۰ بالا"
+
+msgid "Unicode"
+msgstr "یونیکد"
+
+msgid "All Devices"
+msgstr "تمام دستگاه‌ها"
+
+msgid "Device"
+msgstr "دستگاه"
+
+msgid "Project export for platform:"
+msgstr "خروجی پروژه برای پلتفرم:"
+
+msgid "Completed with warnings."
+msgstr "با هشدار تکمیل شد."
+
+msgid "Completed successfully."
+msgstr "با موفقیت انجام شد."
+
+msgid "Failed."
+msgstr "ناموفق."
+
+msgid "Storing File: %s"
+msgstr "ذخیره فایل: %s"
+
+msgid "Storing File:"
+msgstr "ذخیره فایل:"
+
+msgid "Packing"
+msgstr "بسته بندی"
+
+msgid "Cannot create file \"%s\"."
+msgstr "نمیتوان فایل \"%s\" راساخت."
+
+msgid "Failed to export project files."
+msgstr "از فایل‌های پروژه خروجی گرفته نشد."
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "نمیتوان فایل را از مسیر \"%s\" برای خواندن بازکرد."
+
+msgid "Custom debug template not found."
+msgstr "قالب اشکال زدایی سفارشی یافت نشد."
+
+msgid "Custom release template not found."
+msgstr "قالب انتشار سفارشی یافت نشد."
+
+msgid "The given export path doesn't exist."
+msgstr "مسیر خروجی وجود ندارد."
+
+msgid "Template file not found: \"%s\"."
+msgstr "فایل قالب پیدا نشد: \"%s\"."
+
+msgid "Failed to copy export template."
+msgstr "خطا در کپی قالب خروجی."
+
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
+"در خروجی های ۳۲ بیتی پی‌سی‌کی تعبیه شده نمی‌تواند از ۴ گیگابایت بزرگ‌تر باشد."
+
+msgid "Error requesting URL:"
+msgstr "خطا در درخواست URL:"
+
+msgid "Request failed."
+msgstr "درخواست ناموفق بود."
+
+msgid "Request failed:"
+msgstr "درخواست ناموفق بود:"
+
+msgid "Cannot remove temporary file:"
+msgstr "امکان حذف فایل موقت وجود ندارد:"
+
+msgid "Connecting..."
+msgstr "در حال اتصال..."
+
+msgid "Requesting..."
+msgstr "در حال درخواست..."
+
+msgid "Importing:"
+msgstr "وارد کردن:"
+
+msgid "Uncompressing Android Build Sources"
+msgstr "استخراج منابع ساخت اندروید"
+
+msgid "Current Version:"
+msgstr "نسخه اخیر:"
+
+msgid "Uninstall"
+msgstr "حذف نصب"
+
+msgid "Open in Web Browser"
+msgstr "گشودن در مرورگر وب"
+
+msgid "Download and Install"
+msgstr "دانلود و نصب"
+
+msgid "Install from File"
+msgstr "نصب از فایل"
+
+msgid "Install templates from a local file."
+msgstr "قالب‌ها را از یک فایل محلی نصب کن."
+
+msgid "Godot Export Templates"
+msgstr "الگوهای خروجی گودو"
+
+msgid "Runnable"
+msgstr "قابل اجرا"
+
+msgid "Export the project for all the presets defined."
+msgstr "خروجی گرفتن پروژه برای تمام تنظیمات از پیش تعیین شده."
+
+msgid "Resources to export:"
+msgstr "منابع برای صدور:"
+
+msgid "Export With Debug"
+msgstr "صدور با اشکال زدا"
+
+msgid "Release"
+msgstr "انتشار"
+
+msgid "Presets"
+msgstr "پیش فرض ها"
+
+msgid "Add..."
+msgstr "افزودن..."
+
+msgid "Duplicate"
+msgstr "تکثیر کردن"
+
+msgid "Advanced Options"
+msgstr "تنظیمات پیشرفته"
+
+msgid "Export Path"
+msgstr "مسیر خروجی"
+
+msgid "Options"
+msgstr "گزینه ها"
+
+msgid "Resources"
+msgstr "منابع"
+
+msgid "Export all resources in the project"
+msgstr "خروجی گرفتن همه منابع در پروژه"
+
+msgid "Export selected scenes (and dependencies)"
+msgstr "صدور صحنه های انتخاب شده (و وابستگی ها)"
+
+msgid "Export selected resources (and dependencies)"
+msgstr "صدور منابع انتخاب شده (و وابستگی ها)"
+
+msgid "Export all resources in the project except resources checked below"
+msgstr "خروجی گرفتن همه منابع پروژه به جز منابعی که در زیر بررسی شده‌اند"
+
+msgid "Export Mode:"
+msgstr "حالت صدور:"
+
+msgid ""
+"Filters to exclude files/folders from project\n"
+"(comma-separated, e.g: *.json, *.txt, docs/*)"
+msgstr ""
+"فیلترهایی برای حذف فایل‌ها/پوشه‌ها از پروژه\n"
+"(با کاما از هم جدا شده‌اند، به عنوان مثال: *.json، *.txt، docs/*)"
+
+msgid "Features"
+msgstr "ویژگی‌ها"
+
+msgid "Custom (comma-separated):"
+msgstr "سفارشی (جدا شده با ویرگول):"
+
+msgid "Feature List:"
+msgstr "فهرست ویژگی‌ها:"
+
+msgid "More Info..."
+msgstr "اطلاعات بیشتر..."
+
+msgid "Export PCK/ZIP..."
+msgstr "صدور PCK/ZIP..."
+
+msgid "Export Project..."
+msgstr "خروجی گرفتن پروژه..."
+
+msgid "Export All"
+msgstr "صدور همه"
+
+msgid "Export All..."
+msgstr "صدور همه..."
+
+msgid "Godot Project Pack"
+msgstr "بسته پروژه گودو"
+
+msgid "Project Export"
+msgstr "خروجی گرفتن پروژه"
+
+msgid "Manage Export Templates"
+msgstr "مدیریت قالب‌های صدور"
+
+msgid "Click this link to download FBX2glTF"
+msgstr "برای دانلود FBX2glTF این لینک را کلیک کنید"
+
+msgid "Browse"
+msgstr "مرور"
+
+msgid "Favorites"
+msgstr "برگزیده‌ها"
+
+msgid "View items as a grid of thumbnails."
+msgstr "دیدن موارد به صورت جدولی از پیش‌نمایش‌ها."
+
+msgid "View items as a list."
+msgstr "مشاهده موارد به عنوان فهرست‌."
+
+msgid "Duplicating file:"
+msgstr "فایل تکراری:"
+
+msgid "Open Scenes"
+msgstr "باز کردن صحنه‌ها"
+
+msgid "Scene..."
+msgstr "صحنه..."
+
+msgid "Script..."
+msgstr "اسکریپت..."
+
+msgid "Add to Favorites"
+msgstr "اضافه به علاقمندی‌ها"
+
+msgid "Remove from Favorites"
+msgstr "حذف از علاقمندی‌ها"
+
+msgid "Reimport"
+msgstr "وارد کردن دوباره"
+
+msgid "Open in File Manager"
+msgstr "گشودن در مدیر پرونده"
+
+msgid "New Folder..."
+msgstr "ساختن پوشه..."
+
+msgid "New Scene..."
+msgstr "صحنه جدید..."
+
+msgid "New Resource..."
+msgstr "منبع جدید..."
+
+msgid "Copy Path"
+msgstr "کپی کردن مسیر"
+
+msgid "Duplicate..."
+msgstr "تکرار..."
+
+msgid "Rename..."
+msgstr "تغییر نام..."
+
+msgid "Re-Scan Filesystem"
+msgstr "پویش دوباره سامانه پرونده"
+
+msgid "Overwrite"
+msgstr "بازنویسی"
+
+msgid "Create Script"
+msgstr "ساخت اسکریپت"
+
+msgid "Find in Files"
+msgstr "یافتن در فایل‌ها"
+
+msgid "Find:"
+msgstr "یافتن:"
+
+msgid "Folder:"
+msgstr "پوشه:"
+
+msgid "Filters:"
+msgstr "فیلترها:"
+
+msgid ""
+"Include the files with the following extensions. Add or remove them in "
+"ProjectSettings."
+msgstr ""
+"فایل‌ها با پسوند زیر را وارد کنید. آنها را در تنطیمات پروژه اضافه یا حذف کنید."
+
+msgid "Find..."
+msgstr "جستجو..."
+
+msgid "Replace..."
+msgstr "جایگزین کردن..."
+
+msgid "Searching..."
+msgstr "در حال جستجو..."
+
+msgid "%d match in %d file"
+msgstr "%d نظیر در %d فایل"
+
+msgid "%d matches in %d file"
+msgstr "%d نظیر در %d فایل"
+
+msgid "%d matches in %d files"
+msgstr "%d نظیر در %d فایل"
+
+msgid "Rename Group"
+msgstr "تغییر نام گروه"
+
+msgid "Add to Group"
+msgstr "اضافه به گروه"
+
+msgid "Remove from Group"
+msgstr "حذف از گروه"
+
+msgid "Global"
+msgstr "جهانی"
+
+msgid "Move"
+msgstr "حرکت"
+
+msgid "Network"
+msgstr "شبکه"
+
+msgid "Select Current Folder"
+msgstr "انتخاب پوشه کنونی"
+
+msgid "Select This Folder"
+msgstr "برگزیدن این پوشه"
+
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند"
+
+msgid "All Files (*)"
+msgstr "همهٔ پرونده‌ها (*)"
+
+msgid "Open a File"
+msgstr "یک پرونده را باز کن"
+
+msgid "Open File(s)"
+msgstr "پرونده(ها) را باز کن"
+
+msgid "Open a Directory"
+msgstr "یک دیکشنری را باز کن"
+
+msgid "Open a File or Directory"
+msgstr "یک پرونده یا پوشه را باز کن"
+
+msgid "Save a File"
+msgstr "یک پرونده را ذخیره کن"
+
+msgid "Go Back"
+msgstr "به عقب بازگردید"
+
+msgid "Go Forward"
+msgstr "جلو بروید"
+
+msgid "Go Up"
+msgstr "بالا بروید"
+
+msgid "Toggle Hidden Files"
+msgstr "تغییر فایل‌های پنهان"
+
+msgid "Toggle Favorite"
+msgstr "تغییر موارد دلخواه"
+
+msgid "Toggle Mode"
+msgstr "تغییر حالت"
+
+msgid "Focus Path"
+msgstr "مسیر تمرکز"
+
+msgid "Move Favorite Up"
+msgstr "انتقال موارد دلخواه به بالا"
+
+msgid "Move Favorite Down"
+msgstr "انتقال موارد دلخواه به پایین"
+
+msgid "Go to previous folder."
+msgstr "برو به پوشه پیشین."
+
+msgid "Go to next folder."
+msgstr "برو به پوشه بعد."
+
+msgid "Go to parent folder."
+msgstr "برو به پوشه والد."
+
+msgid "Refresh files."
+msgstr "نوسازی پرونده‌ها."
+
+msgid "(Un)favorite current folder."
+msgstr "پوشه موجود (غیر)محبوب."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
+
+msgid "Directories & Files:"
+msgstr "پوشه‌ها و پرونده‌ها:"
+
+msgid "Preview:"
+msgstr "پیش‌نمایش:"
+
+msgid "File:"
+msgstr "پرونده:"
+
+msgid "No sub-resources found."
+msgstr "زیر‌منبعی پیدا نشد."
+
+msgid "Play the project."
+msgstr "اجرای پروژه."
+
+msgid "Play the edited scene."
+msgstr "صحنه ویرایش‌شده را اجرا کن."
+
+msgid "Play a custom scene."
+msgstr "یک صحنه سفارشی پخش کن."
+
+msgid "Reload the played scene."
+msgstr "صحنه پخش‌شده را دوباره بارگذاری کن."
+
+msgid "Quick Run Scene..."
+msgstr "اجرا فوری صحنه…"
+
+msgid "Run the project's default scene."
+msgstr "اجرای صحنه پیش‌فرض پروژه."
+
+msgid "Run Project"
+msgstr "اجرای پروژه"
+
+msgid "Pause Running Project"
+msgstr "توقف پروژه درحال اجرا"
+
+msgid "Stop the currently running project."
+msgstr "توقف پروژه ای که در حال اجرا است."
+
+msgid "Stop Running Project"
+msgstr "توقف پروژه در حال اجرا"
+
+msgid "Run Current Scene"
+msgstr "اجرای صفحه کنونی"
+
+msgid "Run Specific Scene"
+msgstr "اجرای صحنه مشخص"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"فعال سازی حالت فیلم‌ساز.\n"
+"پروژه با فریم‌بر‌ثانیه ثابت اجرا شده و خروجی بصری و صوتی در یک فایل ویدئویی ظبط "
+"خواهد شد."
+
+msgid "Play This Scene"
+msgstr "اجرای این صحنه"
+
+msgid "Close Tab"
+msgstr "بستن زبانه"
+
+msgid "Undo Close Tab"
+msgstr "برگرداندن زبانه"
+
+msgid "Close Other Tabs"
+msgstr "بستن زبانه های دیگر"
+
+msgid "Close Tabs to the Right"
+msgstr "بستن زبانه ها به طرف راست"
+
+msgid "Close All Tabs"
+msgstr "بستن تمام زبانه ها"
+
+msgid "New Window"
+msgstr "چارچوب جدید"
+
+msgid "Add a new scene."
+msgstr "افزودن صحنه جدید."
+
+msgid "No notifications."
+msgstr "بدون اعلان."
+
+msgid "Show notifications."
+msgstr "نمایش اعلان‌ها."
+
+msgid "Silence the notifications."
+msgstr "اعلان‌ها را بی‌صدا کن."
+
+msgid "Unlock Node"
+msgstr "بازکردن قفل گره"
+
+msgid "Open Script:"
+msgstr "باز کردن اسکریپت:"
+
+msgid "Open in Editor"
+msgstr "گشودن در ویرایشگر"
+
+msgid "Node Configuration Warning!"
+msgstr "هشدار پیکر‌بندی گره!"
+
+msgid "Select a Node"
+msgstr "انتخاب یک گره"
+
+msgid "The Beginning"
+msgstr "شروع"
+
+msgid "Importing Scene..."
+msgstr "وارد کردن صحنه..."
+
+msgid "Import Scene"
+msgstr "وارد کردن صحنه"
+
+msgid "Saving..."
+msgstr "در حال ذخیره..."
+
+msgid "Import ID: %s"
+msgstr "وارد کردن شناسه: %s"
+
+msgid "Error opening scene"
+msgstr "خطا در باز کردن صحنه"
+
+msgid "Warning: File exists"
+msgstr "هشدار: پرونده وجود دارد"
+
+msgid "Actions..."
+msgstr "فعالیت‌ها"
+
+msgid "Extract Materials"
+msgstr "استخراج مواد"
+
+msgid "Meshes"
+msgstr "مش‌ها"
+
+msgid "Materials"
+msgstr "جنس"
+
+msgid "Status"
+msgstr "وضعیت"
+
+msgid "Enable looping."
+msgstr "فعالسازی لوپ(حلقه)"
+
+msgid "Offset:"
+msgstr "انحراف:"
+
+msgid "2D"
+msgstr "۲‌بعدی"
+
+msgid "3D"
+msgstr "۳‌بعدی"
+
+msgid "Import As:"
+msgstr "وارد کردن به عنوان:"
+
+msgid "Preset"
+msgstr "از پیش تعیین شده"
+
+msgid "Advanced..."
+msgstr "پیشرفته..."
+
+msgid ""
+"Select a resource file in the filesystem or in the inspector to adjust import "
+"settings."
+msgstr ""
+"یک فایل منبع را در سامانه فایل یا در بازرس برای تنظیم تنظیمات واردات انتخاب "
+"کنید."
+
+msgid "Mouse Buttons"
+msgstr "دکمه‌های موس"
+
+msgid "Device:"
+msgstr "دستگاه:"
+
+msgid "Failed to load resource."
+msgstr "بارگیری منبع انجام نشد."
+
+msgid "Property Name Style"
+msgstr "سبک نام ویژگی"
+
+msgid "Localization not available for current language."
+msgstr "محلی‌سازی برای زبان فعلی موجود نمی‌باشد."
+
+msgid "Copy Properties"
+msgstr "کپی ویژگی‌ها"
+
+msgid "Paste Properties"
+msgstr "چسباندن ویژگی‌ها"
+
+msgid "Create a new resource in memory and edit it."
+msgstr "یک منبع جدید در حافظه بساز و آن را ویرایش کن."
+
+msgid "Load an existing resource from disk and edit it."
+msgstr "بارگذاری یک منبع موجود از دیسک و ویرایش آن."
+
+msgid "Copy Resource"
+msgstr "کپی منبع"
+
+msgid "Make Resource Built-In"
+msgstr "تعبیه کردن منبع"
+
+msgid "Go to previous edited object in history."
+msgstr "رفتن به شی ویرایش‌شده قبلی در تاریخچه."
+
+msgid "Go to next edited object in history."
+msgstr "رفتن به شی ویرایش‌شده بعدی در تاریخچه."
+
+msgid "History of recently edited objects."
+msgstr "تاریخچه اشیایی که اخیرا ویرایش شده‌اند."
+
+msgid "Filter Properties"
+msgstr "فیلتر ویژگی‌ها"
+
+msgid "Manage object properties."
+msgstr "مدیریت ویژگی‌های شی."
+
+msgid "Remove Translation"
+msgstr "حذف ترجمه"
+
+msgid "Translations"
+msgstr "ترجمه‌ها"
+
+msgid "Translations:"
+msgstr "ترجمه‌ها:"
+
+msgid "Remaps"
+msgstr "بازطرح‌شده‌ها"
+
+msgid "Resources:"
+msgstr "منابع:"
+
+msgid "Remaps by Locale:"
+msgstr "بازطرح‌شده‌ها توسط بومی‌سازی:"
+
+msgid "Locale"
+msgstr "بومی"
+
+msgid "Groups"
+msgstr "گروه‌ها"
+
+msgid "Create points."
+msgstr "ساخت نقاط."
+
+msgid "Erase points."
+msgstr "حذف نقاط."
+
+msgid "Add Animation"
+msgstr "اضافه کردن انیمیشن"
+
+msgid "Add %s"
+msgstr "اضافه کردن %s"
+
+msgid "Blend:"
+msgstr "درآمیختن:"
+
+msgid "Point"
+msgstr "نقطه"
+
+msgid "Open Editor"
+msgstr "باز کردن ویرایشگر"
+
+msgid "Open Animation Node"
+msgstr "باز کردن گره انیمیشن"
+
+msgid "Triangle already exists."
+msgstr "مثلث از قبل وجود دارد."
+
+msgid "Node Moved"
+msgstr "گره حرکت کرد"
+
+msgid "Nodes Connected"
+msgstr "گره‌ها متصل شدند"
+
+msgid "Nodes Disconnected"
+msgstr "گره‌ها جدا شدند"
+
+msgid "Delete Node"
+msgstr "حذف گره"
+
+msgid "Delete Node(s)"
+msgstr "حذف گره(ها)"
+
+msgid "Change Filter"
+msgstr "تغییر فیلتر"
+
+msgid "Functions"
+msgstr "توابع"
+
+msgid "Node Renamed"
+msgstr "نام گره تغییر کرد"
+
+msgid "Add Node..."
+msgstr "افزودن گره..."
+
+msgid "Enable Filtering"
+msgstr "فعال کردن فیلترها"
+
+msgid "Animation name can't be empty."
+msgstr "نام انیمیشن نمی‌تواند خالی باشد."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr "نام انیمیشن دارای کاراکترهای نامعتبر است: '/'، ':'، ',' یا '['."
+
+msgid "Animation with the same name already exists."
+msgstr "انیمیشنی با این نام وجود دارد."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr "نام کتابخانه دارای کاراکترهای نامعتبر است: '/'، ':'، ',' یا '['."
+
+msgid "Library name is valid."
+msgstr "نام کتابخانه معتبر است."
+
+msgid "Load Animation"
+msgstr "بارگذاری انیمیشن"
+
+msgid "Save Animation"
+msgstr "ذخیره انیمیشن"
+
+msgid "[Global]"
+msgstr "[عمومی]"
+
+msgid "Animation Name:"
+msgstr "نام انیمیشن:"
+
+msgid "Open in Inspector"
+msgstr "گشودن در اینسپکتور"
+
+msgid "[built-in]"
+msgstr "[تعبیه شده]"
+
+msgid "[foreign]"
+msgstr "[خارجی]"
+
+msgid "Toggle Autoplay"
+msgstr "تغییر پخش خودکار"
+
+msgid "Create New Animation"
+msgstr "ساخت انیمیشن جدید"
+
+msgid "New Animation Name:"
+msgstr "نام انیمیشن جدید:"
+
+msgid "Rename Animation"
+msgstr "تغییر نام انیمیشن"
+
+msgid "Change Animation Name:"
+msgstr "تغییر نام انیمیشن:"
+
+msgid "Remove Animation"
+msgstr "حذف انیمیشن"
+
+msgid "Invalid animation name!"
+msgstr "نام انیمیشن نامعتبر است!"
+
+msgid "Duplicate Animation"
+msgstr "انیمیشن تکراری"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "انیمیشن فعلی را از ابتدا پخش کن. (Shift+D)"
+
+msgid "Animation Tools"
+msgstr "ابزار انیمیشن"
+
+msgid "Animation"
+msgstr "انیمیشن"
+
+msgid "Manage Animations..."
+msgstr "مدیریت انیمیشن‌ها..."
+
+msgid "Edit Transitions..."
+msgstr "ویرایش انتقال‌ها..."
+
+msgid "Display list of animations in player."
+msgstr "نمایش فهرست انیمیشن‌ها در پخش‌کننده."
+
+msgid "Autoplay on Load"
+msgstr "پخش خودکار پس از بارگذاری"
+
+msgid "Directions"
+msgstr "جهت‌ها"
+
+msgid "Past"
+msgstr "گذشته"
+
+msgid "Future"
+msgstr "آینده"
+
+msgid "Depth"
+msgstr "عمق"
+
+msgid "Error!"
+msgstr "خطا!"
+
+msgid "Move Node"
+msgstr "حرکت دادن گره"
+
+msgid "Add Transition"
+msgstr "افزودن انتقال"
+
+msgid "Immediate"
+msgstr "فوری"
+
+msgid "Sync"
+msgstr "همگام‌سازی"
+
+msgid "Travel"
+msgstr "سفر"
+
+msgid "Node Removed"
+msgstr "گره حذف شد"
+
+msgid "Transition Removed"
+msgstr "انتقال حذف شد"
+
+msgid "Create new nodes."
+msgstr "ساخت گره‌های جدید."
+
+msgid "Connect nodes."
+msgstr "اتصال گره‌ها."
+
+msgid "Remove selected node or transition."
+msgstr "گره یا انتقال انتخاب شده را حذف کن."
+
+msgid "Delete Selected"
+msgstr "حذف انتخاب شده"
+
+msgid "Root"
+msgstr "ریشه"
+
+msgid "Version:"
+msgstr "نسخه:"
+
+msgid "Contents:"
+msgstr "محتواها:"
+
+msgid "View Files"
+msgstr "نمایش پرونده ها"
+
+msgid "Download"
+msgstr "دانلود"
+
+msgid "Can't connect."
+msgstr "ناتوان در اتصال."
+
+msgid "Can't connect to host:"
+msgstr "نمی‌توان به میزبان متصل شد:"
+
+msgid "No response."
+msgstr "بدون پاسخ."
+
+msgid "Failed:"
+msgstr "ناموفق:"
+
+msgid "Got:"
+msgstr "گرفته شد:"
+
+msgid "Asset Download Error:"
+msgstr "خطا در بارگیری دارایی:"
+
+msgid "Downloading (%s / %s)..."
+msgstr "در حال دانلود ‭(%s / %s)‫‫‫‫"
+
+msgid "Downloading..."
+msgstr "در حال دانلود..."
+
+msgid "Resolving..."
+msgstr "حل کردن..."
+
+msgid "Error making request"
+msgstr "خطای درخواست"
+
+msgid "Idle"
+msgstr "بیکار"
+
+msgid "Install..."
+msgstr "نصب..."
+
+msgid "Retry"
+msgstr "تلاش دوباره"
+
+msgid "Download Error"
+msgstr "خطاهای بارگیری"
+
+msgid "Recently Updated"
+msgstr "اخیرا بروزرسانی شده"
+
+msgid "Name (A-Z)"
+msgstr "نام (A-Z)"
+
+msgid "Name (Z-A)"
+msgstr "نام (Z-A)"
+
+msgid "License (A-Z)"
+msgstr "پروانه (A-Z)"
+
+msgid "License (Z-A)"
+msgstr "پروانه (Z-A)"
+
+msgid "Testing"
+msgstr "آزمودن"
+
+msgid "Loading..."
+msgstr "بارگذاری..."
+
+msgctxt "Pagination"
+msgid "First"
+msgstr "اولین"
+
+msgctxt "Pagination"
+msgid "Previous"
+msgstr "قبلی"
+
+msgctxt "Pagination"
+msgid "Last"
+msgstr "آخرین"
+
+msgid "All"
+msgstr "همه"
+
+msgid "Search Templates, Projects, and Demos"
+msgstr "جستجوی قالب‌ها، پروژه‌ها و دموها"
+
+msgid "Search Assets (Excluding Templates, Projects, and Demos)"
+msgstr "جست‌وجوی دارایی‌ها (به استثنای قالب‌ها، پروژه‌ها و دموها)"
+
+msgid "Import..."
+msgstr "وارد کردن..."
+
+msgid "Plugins..."
+msgstr "افزونه‌ها..."
+
+msgid "Sort:"
+msgstr "مرتب‌سازی:"
+
+msgid "Category:"
+msgstr "طبقه‌بندی:"
+
+msgid "Site:"
+msgstr "تارنما:"
+
+msgid "Support"
+msgstr "پشتیبانی"
+
+msgid "Assets ZIP File"
+msgstr "پروندهٔ ZIP‌ دارایی‌ها"
+
+msgid "Preview"
+msgstr "پیش نمایش"
+
+msgid "Rotation Offset:"
+msgstr "انحراف چرخش:"
+
+msgid "px"
+msgstr "پیکسل"
+
+msgid "units"
+msgstr "واحدها"
+
+msgid "Paste Pose"
+msgstr "حالت چسباندن"
+
+msgid "Select Mode"
+msgstr "انتخاب حالت"
+
+msgid "Move Mode"
+msgstr "حالت حرکت"
+
+msgid "Rotate Mode"
+msgstr "حالت چرخش"
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "نشان دادن فهرستی از گیره‌های قابل انتخاب در موقعیت کلیک شده."
+
+msgid "Ruler Mode"
+msgstr "حالت خط‌کش"
+
+msgid "Skeleton Options"
+msgstr "گزینه‌های اسکلت"
+
+msgid "Show Bones"
+msgstr "نشان دادن استخوان‌ها"
+
+msgid "View"
+msgstr "دیدن"
+
+msgid "Show"
+msgstr "نشان دادن"
+
+msgid "Grid"
+msgstr "شبکه شطرنجی"
+
+msgid "Show Rulers"
+msgstr "نمایش خط‌کش‌ها"
+
+msgid "Gizmos"
+msgstr "گیزمو‌ها"
+
+msgid "Frame Selection"
+msgstr "انتخاب فریم"
+
+msgid "Insert Key"
+msgstr "درج کلید"
+
+msgid "Copy Pose"
+msgstr "کپی کردن حالت"
+
+msgid "Clear Pose"
+msgstr "پاک کردن حالت"
+
+msgid "Adding %s..."
+msgstr "در حال اضافه کردن %s..."
+
+msgid "Create Node"
+msgstr "ساخت گره"
+
+msgid "Fill"
+msgstr "پر کردن"
+
+msgid "Expand"
+msgstr "گسترش دادن"
+
+msgid "Center"
+msgstr "مرکز"
+
+msgid "Generation Time (sec):"
+msgstr "زمان تولید (ثانیه):"
+
+msgid "Load Curve Preset"
+msgstr "بارگیری منحنی ذخیره‌شده"
+
+msgid "Add Curve Point"
+msgstr "اضافه کردن نقطه منحنی"
+
+msgid "Remove Curve Point"
+msgstr "حذف نقطهٔ منحنی"
+
+msgid "Modify Curve Point"
+msgstr "ویرایش نقطهٔ منحنی"
+
+msgid "Smoothstep"
+msgstr "گام نرم"
+
+msgid "Debug with External Editor"
+msgstr "اشکال زدایی با ویرایشگر خارجی"
+
+msgid "Deploy with Remote Debug"
+msgstr "استقرار با اشکال یابی از راه دور"
+
+msgid "Visible Collision Shapes"
+msgstr "اشکال برخورد پدیدار"
+
+msgid "Visible Paths"
+msgstr "مسیر‌های پدیدار"
+
+msgid "Visible Navigation"
+msgstr "ناوبری پدیدار"
+
+msgid "Synchronize Scene Changes"
+msgstr "همگام سازی تغییرات صحنه"
+
+msgid "Synchronize Script Changes"
+msgstr "همگام سازی تغییرات اسکریپت"
+
+msgid "Keep Debug Server Open"
+msgstr "باز نگه داشتن سرور اشکال زدایی"
+
+msgid "Edit Plugin"
+msgstr "ویرایش افزونه"
+
+msgid "Installed Plugins:"
+msgstr "افزونه های نصب شده:"
+
+msgid "Dimensions: %d × %d"
+msgstr "ابعاد: %d × %d"
+
+msgid "Features (%d of %d set)"
+msgstr "ویژگی‌ها (%d از %d ست)"
+
+msgid "Unable to preview font"
+msgstr "پیش‌نمایش فونت ممکن نیست"
+
+msgid "Change Camera Size"
+msgstr "تغییر اندازه دوربین"
+
+msgid "Change Sphere Shape Radius"
+msgstr "تغییر شعاع شکل کره"
+
+msgid "Change Capsule Shape Radius"
+msgstr "تغییر شعاع شکل کپسول"
+
+msgid "Change Capsule Shape Height"
+msgstr "تغییر ارتفاع شکل کپسول"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "تغییر شعاع شکل سیلندر"
+
+msgid "Change Cylinder Shape Height"
+msgstr "تغییر ارتفاع شکل سیلندر"
+
+msgid "Change Light Radius"
+msgstr "تغییر شعاع نور"
+
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr "ایجاد مستطیل دید (در انتظار شبیه‌سازی پارتیکل‌ها)"
+
+msgid "Generate Visibility Rect"
+msgstr "تولید مستطیل دید"
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "«%s» از گرهٔ سه‌بعدی ارث نمی‌برد."
+
+msgid "Create Emitter"
+msgstr "ساخت ساطع‌کننده"
+
+msgid "Surface Points"
+msgstr "نقاط سطحی"
+
+msgid "Volume"
+msgstr "حجم"
+
+msgid "Low"
+msgstr "پایین"
+
+msgid "High"
+msgstr "بالا"
+
+msgid "Subdivisions: %s"
+msgstr "تقسیمات فرعی: %s"
+
+msgid "Cell size: %s"
+msgstr "اندازه سلول: %s"
+
+msgid "Video RAM size: %s MB (%s)"
+msgstr "اندازه ویدئو رم: %s مگابایت ( %s)"
+
+msgid "Configure"
+msgstr "تنظیم کردن"
+
+msgid "Create Outline"
+msgstr "ساخت طرح کلی"
+
+msgid "Mesh"
+msgstr "مش"
+
+msgid "Outline Size:"
+msgstr "اندازه طرح کلی:"
+
+msgid "Add Item"
+msgstr "افزودن مورد"
+
+msgid "Remove Selected Item"
+msgstr "حذف مورد انتخاب‌شده"
+
+msgid "Update from Scene"
+msgstr "به‌روزرسانی از صحنه"
+
+msgid "Surface source is invalid (no faces)."
+msgstr "سطح منبع باطل است‌ (بدون وجه)."
+
+msgid "Target Surface:"
+msgstr "سطح هدف:"
+
+msgid "Source Mesh:"
+msgstr "مش منبع:"
+
+msgid "X-Axis"
+msgstr "محور X"
+
+msgid "Y-Axis"
+msgstr "محور Y"
+
+msgid "Z-Axis"
+msgstr "محور Z"
+
+msgid "Random Rotation:"
+msgstr "چرخش تصادفی:"
+
+msgid "Random Tilt:"
+msgstr "شیب تصادفی:"
+
+msgid "Random Scale:"
+msgstr "اندازه تصادفی:"
+
+msgid "Amount:"
+msgstr "مقدار:"
+
+msgid "Set NavigationObstacle3D Vertices"
+msgstr "تنظیم رئوس NavigationObstacle3D"
+
+msgid "Edit Poly"
+msgstr "ویرایش چندضلعی"
+
+msgid "Orthogonal"
+msgstr "قائم"
+
+msgid "Perspective"
+msgstr "دیدانداز"
+
+msgid " [auto]"
+msgstr " [خودکار]"
+
+msgid "FPS: %d"
+msgstr "فریم‌بر‌ثانیه: %d"
+
+msgid "None"
+msgstr "هیچکدام"
+
+msgid "Shadow Atlas"
+msgstr "اطلس سایه"
+
+msgid "View Environment"
+msgstr "مشاهده محیط"
+
+msgid "View Gizmos"
+msgstr "مشاهده گیزمو‌ها"
+
+msgid "View Information"
+msgstr "مشاهده اطلاعات"
+
+msgid "Audio Listener"
+msgstr "شونده صوتی"
+
+msgid "Add Preview Sun to Scene"
+msgstr "افزودن خورشید پیش‌نمایش به صحنه"
+
+msgid "Add Preview Environment to Scene"
+msgstr "افزودون محیط پیش‌نمایش به صحنه"
+
+msgid "Preview disabled."
+msgstr "پیش‌نمایش غیرفعال شد."
+
+msgid "Use Local Space"
+msgstr "استفاده از فضای محلی"
+
+msgid "Edit Sun and Environment settings."
+msgstr "ویرایش تنظیمات خورشید و محیط."
+
+msgid "Toggle Freelook"
+msgstr "دید آزاد"
+
+msgid "Decrease Field of View"
+msgstr "کاهش میدان دید"
+
+msgid "Increase Field of View"
+msgstr "افزایش میدان دید"
+
+msgid "Transform"
+msgstr "تبدیل‌کردن"
+
+msgid "Settings..."
+msgstr "تنظیمات..."
+
+msgid "Translate:"
+msgstr "ترجمه:"
+
+msgid "Rotate (deg.):"
+msgstr "چرخش (درجه):"
+
+msgid "Scale (ratio):"
+msgstr "مقیاس کردن (نسبت):"
+
+msgid "Transform Type"
+msgstr "نوع تبدیل"
+
+msgid "Pre"
+msgstr "پیش"
+
+msgid "Post"
+msgstr "پس"
+
+msgid "Preview Sun"
+msgstr "خورشید پیش‌نمایش"
+
+msgid "Sun Direction"
+msgstr "جهت خورشید"
+
+msgid "Sun Color"
+msgstr "رنگ خورشید"
+
+msgid "Sun Energy"
+msgstr "انرژی خورشید"
+
+msgid "Add Sun to Scene"
+msgstr "افزودن خورشید به صحنه"
+
+msgid "Preview Environment"
+msgstr "محیط پیش‌نمایش"
+
+msgid "Sky Color"
+msgstr "رنگ آسمان"
+
+msgid "Ground Color"
+msgstr "رنگ زمین"
+
+msgid "Glow"
+msgstr "درخشش"
+
+msgid "Tonemap"
+msgstr "تون‌مپ"
+
+msgid "Right Click: Delete Point"
+msgstr "کلیک راست: حذف نقطه"
+
+msgid "Delete Point"
+msgstr "حذف نقطه"
+
+msgid "Please Confirm..."
+msgstr "لطفاً تأیید کنید…"
+
+msgid "Move Joint"
+msgstr "حرکت مفصل"
+
+msgid "Create a Plugin"
+msgstr "ساخت یک افزونه"
+
+msgid "Plugin Name:"
+msgstr "نام افزونه:"
+
+msgid "Subfolder:"
+msgstr "زیرپوشه:"
+
+msgid "Author:"
+msgstr "خالق:"
+
+msgid "Script Name:"
+msgstr "نام اسکریپت:"
+
+msgid "Activate now?"
+msgstr "الان فعالسازی شود؟"
+
+msgid "Points"
+msgstr "نقاط"
+
+msgid "Polygons"
+msgstr "چندضلعی‌ها"
+
+msgid "Bones"
+msgstr "استخوان‌ها"
+
+msgid "Rotate Polygon"
+msgstr "چرخش چندضلعی"
+
+msgid "Radius:"
+msgstr "شعاع:"
+
+msgid "Show Grid"
+msgstr "نمایش شبکه شطرنجی"
+
+msgid "Add Resource"
+msgstr "افزودن منبع"
+
+msgid "Rename Resource"
+msgstr "تغییر نام منبع"
+
+msgid "Delete Resource"
+msgstr "حذف منبع"
+
+msgid "Paste Resource"
+msgstr "چسباندن منبع"
+
+msgid "Load Resource"
+msgstr "بارگذاری منبع"
+
+msgid "Can't open '%s'. The file could have been moved or deleted."
+msgstr "نمی‌توان %s را باز کرد. این فایل می‌تواند انتقال یافته یا حذف شده باشد."
+
+msgid "Error Saving"
+msgstr "خطا در ذخیره‌سازی"
+
+msgid "Error Importing"
+msgstr "خطا در وارد کردن"
+
+msgid "New Text File..."
+msgstr "فایل متنی جدید..."
+
+msgid "Open File"
+msgstr "باز کردن فایل"
+
+msgid "Save File As..."
+msgstr "ذخیره فایل به عنوان..."
+
+msgid "Import Theme"
+msgstr "وارد کردن زمینه"
+
+msgid "Error saving"
+msgstr "خطا در ذخیره‌سازی"
+
+msgid "Save Theme As..."
+msgstr "ذخیره زمینه بعنوان..."
+
+msgid "Open Godot online documentation."
+msgstr "بازکردن مستندات آنلاین گودو."
+
+msgid "Filter Scripts"
+msgstr "فیلتر اسکریپت‌ها"
+
+msgid "Sort"
+msgstr "مرتب‌سازی"
+
+msgid "File"
+msgstr "پرونده"
+
+msgid "Open..."
+msgstr "بار کردن..."
+
+msgid "Save All"
+msgstr "ذخیره‌سازی همه"
+
+msgid "Import Theme..."
+msgstr "وارد کردن زمینه..."
+
+msgid "Reload Theme"
+msgstr "بارگذاری دوباره زمینه"
+
+msgid "Theme"
+msgstr "زمینه"
+
+msgid "Save Theme"
+msgstr "ذخیره زمینه"
+
+msgid "Close All"
+msgstr "بستن همه"
+
+msgid "Run"
+msgstr "اجرا"
+
+msgid "Search"
+msgstr "جستجو"
+
+msgid "Discard"
+msgstr "رد کردن"
+
+msgid "Clear Recent Scripts"
+msgstr "حذف اسکریپت‌های اخیر"
+
+msgid "Uppercase"
+msgstr "حروف بزرگ"
+
+msgid "Lowercase"
+msgstr "حروف کوچک"
+
+msgid "Capitalize"
+msgstr "بزرگ کردن حروف"
+
+msgid "Standard"
+msgstr "استاندارد"
+
+msgid "JSON"
+msgstr "JSON"
+
+msgid "Source"
+msgstr "منبع"
+
+msgid "Target"
+msgstr "هدف"
+
+msgid "[Ignore]"
+msgstr "[چشم پوشی]"
+
+msgid "Go to Function"
+msgstr "برو به تابع"
+
+msgid "Pick Color"
+msgstr "انتخاب رنگ"
+
+msgid "Line"
+msgstr "خط"
+
+msgid "Convert Case"
+msgstr "تبدیل مورد"
+
+msgid "Bookmarks"
+msgstr "نشانک‌ها"
+
+msgid "Go To"
+msgstr "برو به"
+
+msgid "Delete Line"
+msgstr "حذف خط"
+
+msgid "Duplicate Selection"
+msgstr "تکثیر برگزیده"
+
+msgid "Find in Files..."
+msgstr "یافتن در فایل‌ها..."
+
+msgid "Go to Next Bookmark"
+msgstr "رفتن به نشانک بعدی"
+
+msgid "Go to Previous Bookmark"
+msgstr "رفتن به نشانک قبلی"
+
+msgid "Remove All Bookmarks"
+msgstr "حذف تمام نشانک‌ها"
+
+msgid "Go to Function..."
+msgstr "برو به تابع..."
+
+msgid "Go to Line..."
+msgstr "برو به خط..."
+
+msgid "Toggle Breakpoint"
+msgstr "یک Breakpoint درج کن"
+
+msgid "Shader Editor"
+msgstr "ویرایشگر سایه‌زن"
+
+msgid "Save File"
+msgstr "ذخیره فایل"
+
+msgid "Open File in Inspector"
+msgstr "بازکردن فایل در ویرایشگر"
+
+msgid "Close File"
+msgstr "بستن فایل"
+
+msgid "Make the shader editor floating."
+msgstr "معلق‌سازی ویرایشگر شیدر."
+
+msgid "Create physical bones"
+msgstr "ساخت استخوان‌های فیزیکی"
+
+msgid "Export Skeleton Profile"
+msgstr "صادر کردن نمایه اسکلت"
+
+msgid ""
+"Edit Mode\n"
+"Show buttons on joints."
+msgstr ""
+"حالت ویرایش\n"
+"نمایش دکمه‌های روی مفاصل."
+
+msgid "Bone Transform"
+msgstr "تبدیل استخوان"
+
+msgid "Play IK"
+msgstr "پخش IK"
+
+msgid "Create Polygon2D"
+msgstr "ساخت چندضلعی دوبعدی"
+
+msgid "Convert to Polygon2D"
+msgstr "تبدیل به چندضلعی دوبعدی"
+
+msgid "Sprite2D"
+msgstr "اسپرایت۲بعدی"
+
+msgid "Simplification:"
+msgstr "ساده‌سازی:"
+
+msgid "Shrink (Pixels):"
+msgstr "کوچک‌کردن (پیکسل):"
+
+msgid "Grow (Pixels):"
+msgstr "رشد (پیکسل):"
+
+msgid "Update Preview"
+msgstr "به‌روزرسانی پیش‌نمایش"
+
+msgid "Settings:"
+msgstr "تنظیمات:"
+
+msgid "No Frames Selected"
+msgstr "هیچ فریمی انتخاب نشده است"
+
+msgid "Add %d Frame(s)"
+msgstr "افزودن %d فریم"
+
+msgid "Add Frame"
+msgstr "افزودن فریم"
+
+msgid "Unable to load images"
+msgstr "قادر به بارگذاری تصاویر نیست"
+
+msgid "ERROR: Couldn't load frame resource!"
+msgstr "اخطار: منبع فریم بارگذاری نشد!"
+
+msgid "Add Empty"
+msgstr "اضافه کردن خالی"
+
+msgid "Move Frame"
+msgstr "حرکت دادن فریم"
+
+msgid "Delete Animation?"
+msgstr "انیمیشن حذف شود؟"
+
+msgid "Change Animation FPS"
+msgstr "تغییر فریم‌بر‌ثانیه انیمیشن"
+
+msgid "Set Frame Duration"
+msgstr "تعیین مدت زمان فریم"
+
+msgid "(empty)"
+msgstr "(خالی)"
+
+msgid "Animations:"
+msgstr "انیمیشن‌ها:"
+
+msgid "Animation Speed"
+msgstr "سرعت انیمیشن"
+
+msgid "Filter Animations"
+msgstr "فیلتر انیمیشن‌ها"
+
+msgid "Delete Animation"
+msgstr "حذف انیمیشن"
+
+msgid "This resource does not have any animations."
+msgstr "این منبع هیچ انیمیشنی ندارد."
+
+msgid "Animation Frames:"
+msgstr "فریم‌های انیمیشن:"
+
+msgid "Frame Duration:"
+msgstr "مدت زمان فریم:"
+
+msgid "Zoom Reset"
+msgstr "‪‮تنظیم مجدد بزرگنمایی"
+
+msgid "Add frame from file"
+msgstr "افزودن فریم از فایل"
+
+msgid "Add frames from sprite sheet"
+msgstr "افزودن فریم‌ها از ورقه اسپرایت"
+
+msgid "Delete Frame"
+msgstr "حذف فریم"
+
+msgid "Insert Empty (Before Selected)"
+msgstr "درج خالی (پیش از انتخاب‌شده)"
+
+msgid "Insert Empty (After Selected)"
+msgstr "درج خالی (پس از انتخاب‌شده)‏"
+
+msgid "Move Frame Left"
+msgstr "حرکت فریم به چپ"
+
+msgid "Move Frame Right"
+msgstr "حرکت فریم به راست"
+
+msgid "Select Frames"
+msgstr "انتخاب فریم‌ها"
+
+msgid "Frame Order"
+msgstr "ترتیب فریم"
+
+msgid "Toggle Settings Panel"
+msgstr "تغییر وضعیت تنظیمات پنل"
+
+msgid "Size"
+msgstr "اندازه"
+
+msgid "Create Frames from Sprite Sheet"
+msgstr "ساخت فریم‌ها از ورقه اسپرایت"
+
+msgid "Reload"
+msgstr "بارگذاری دوباره"
+
+msgid "Resave"
+msgstr "ذخیره مجدد"
+
+msgid "Set Margin"
+msgstr "تنظیم حاشیه"
+
+msgid "Auto Slice"
+msgstr "برش خودکار"
+
+msgid "Step:"
+msgstr "گام:"
+
+msgid "No colors found."
+msgstr "هیچ رنگی پیدا نشد."
+
+msgid "No fonts found."
+msgstr "هیچ فونتی پیدا نشد."
+
+msgid "No font sizes found."
+msgstr "هیچ اندازه فونتی پیدا نشد."
+
+msgid "No icons found."
+msgstr "هیچ آیکونی پیدا نشد."
+
+msgid "Importing Theme Items"
+msgstr "در حال وارد کردن موارد زمینه"
+
+msgid "Import Theme Items"
+msgstr "وارد کردن موارد زمینه"
+
+msgid ""
+"Caution: Adding icon data may considerably increase the size of your Theme "
+"resource."
+msgstr ""
+"احتیاط: افزودن داده های آیکون ممکن است اندازه منبع زمینه شما را به میزان قابل "
+"توجهی افزایش دهد."
+
+msgid "Select all Theme items."
+msgstr "انتخاب همه موارد زمینه."
+
+msgid "Deselect All"
+msgstr "لغو انتخاب همه"
+
+msgid "Deselect all Theme items."
+msgstr "لغو انتخاب همه موارد زمینه."
+
+msgid ""
+"Select a theme type from the list to edit its items.\n"
+"You can add a custom type or import a type with its items from another theme."
+msgstr ""
+"از فهرست یک نوع زمینه را انتخاب کرده تا مواردش را ویرایش کنید.\n"
+"شما می‌توانید یک نوع سفارشی اضافه کنید یا یک نوع را با مواردش از زمینه ای دیگر "
+"وارد کنید."
+
+msgid "Remove All Constant Items"
+msgstr "حذف همه موارد ثابت"
+
+msgid ""
+"This theme type is empty.\n"
+"Add more items to it manually or by importing from another theme."
+msgstr ""
+"این نوع زمینه خالی است.\n"
+"به صورت دستی یا با وارد کردن از زمینه دیگری به آن موارد بیشتری اضافه کنید."
+
+msgid "Remove Theme Item"
+msgstr "حذف مورد زمینه"
+
+msgid "Add Theme Type"
+msgstr "افزودن نوع زمینه"
+
+msgid "Create Theme Item"
+msgstr "ساخت مورد زمینه"
+
+msgid "Remove Theme Type"
+msgstr "حذف نوع زمینه"
+
+msgid "Remove Data Type Items From Theme"
+msgstr "حذف موارد نوع دیتا از زمینه"
+
+msgid "Remove Class Items From Theme"
+msgstr "حذف موارد کلاس از زمینه"
+
+msgid "Remove Custom Items From Theme"
+msgstr "حذف موارد سفارشی از زمینه"
+
+msgid "Remove All Items From Theme"
+msgstr "حذف همه موارد از زمینه"
+
+msgid "Add Constant Item"
+msgstr "افزودن مورد ثابت"
+
+msgid "Add Font Size Item"
+msgstr "افزودن مورد اندازه فونت"
+
+msgid "Rename Theme Item"
+msgstr "تغییر نام مورد زمینه"
+
+msgid "Invalid file, not a Theme resource."
+msgstr "فایل نامعتبر، یک منبع زمینه نیست."
+
+msgid "Invalid file, same as the edited Theme resource."
+msgstr "فایل نامعتبر، یکسان با منبع زمینه ویرایش‌شده."
+
+msgid "Manage Theme Items"
+msgstr "مدیریت موارد زمینه"
+
+msgid "Edit Items"
+msgstr "ویرایش موارد"
+
+msgid "Add Type:"
+msgstr "افزودن نوع:"
+
+msgid "Remove Class Items"
+msgstr "برداشتن موارد کلاس"
+
+msgid "Remove All Items"
+msgstr "حذف تمام موارد"
+
+msgid "Add Theme Item"
+msgstr "افزودن مورد زمینه"
+
+msgid "Import Items"
+msgstr "وارد کردن موارد"
+
+msgid "Default Theme"
+msgstr "زمینه پیش‌فرض"
+
+msgid "Editor Theme"
+msgstr "زمینه ویرایشگر"
+
+msgid "Select Another Theme Resource:"
+msgstr "انتخاب یک منبع زمینه دیگر:"
+
+msgid "Theme Resource"
+msgstr "منبع زمینه"
+
+msgid "Another Theme"
+msgstr "یک زمینه دیگر"
+
+msgid "Override All Default Theme Items"
+msgstr "بازنویسی همه موارد پیش‌فرض زمینه"
+
+msgid "Override Theme Item"
+msgstr "بازنویسی مورد زمینه"
+
+msgid "Set Color Item in Theme"
+msgstr "تعیین رنگ مورد در زمینه"
+
+msgid "Set Constant Item in Theme"
+msgstr "تعیین رنگ مورد ثابت در زمینه"
+
+msgid "Set Font Size Item in Theme"
+msgstr "تنظیم مورد اندازه فونت در زمینه"
+
+msgid "Set Font Item in Theme"
+msgstr "تعیین مورد فونت در زمینه"
+
+msgid "Set Icon Item in Theme"
+msgstr "تعیین مورد آیکون در زمینه"
+
+msgid "Set Theme Type Variation"
+msgstr "تعیین تنوع نوع زمینه"
+
+msgid "Base Type"
+msgstr "نوع پایه"
+
+msgid "Theme:"
+msgstr "زمینه:"
+
+msgid "Manage Items..."
+msgstr "مدیریت موارد..."
+
+msgid "Add, remove, organize and import Theme items."
+msgstr "افزودن، حذف، سازمان‌دهی و وارد کردن موارد زمینه."
+
+msgid "Toggle Button"
+msgstr "دکمهٔ تغییر"
+
+msgid "Item"
+msgstr "مورد"
+
+msgid "Check Item"
+msgstr "بررسی مورد"
+
+msgid "Checked Item"
+msgstr "مورد بررسی‌شده"
+
+msgid "Submenu"
+msgstr "زیر‌منو"
+
+msgid "Has"
+msgstr "دارد"
+
+msgid "Many"
+msgstr "بسیاری"
+
+msgid "Tab 1"
+msgstr "زبانه ۱"
+
+msgid "Tab 2"
+msgstr "زبانه ۲"
+
+msgid "Tab 3"
+msgstr "زبانه ۳"
+
+msgid "Subtree"
+msgstr "زیر‌درخت"
+
+msgid "Has,Many,Options"
+msgstr "دارد،بسیار،گزینه‌ها"
+
+msgid "Atlas Merging"
+msgstr "ترکیب اطلس‌ها"
+
+msgid "Base Tiles"
+msgstr "کاشی‌های پایه"
+
+msgid "Alternative Tiles"
+msgstr "کاشی‌های جایگزین"
+
+msgid "Reset Polygons"
+msgstr "باز‌نشاندن چندضلعی‌ها"
+
+msgid "Clear Polygons"
+msgstr "پاک‌کردن چندضلعی‌ها"
+
+msgid "Rotate Polygons Right"
+msgstr "چرخش چندضعلی‌ها به راست"
+
+msgid "Rotate Polygons Left"
+msgstr "چرخش چندضلعی‌ها به چپ"
+
+msgid "Flip Polygons Horizontally"
+msgstr "چرخش افقی چندضلعی‌ها"
+
+msgid "Flip Polygons Vertically"
+msgstr "چرخش عمودی چندضلعی‌ها"
+
+msgid "Edit Polygons"
+msgstr "ویرایش چندضلعی‌ها"
+
+msgid "Delete points tool"
+msgstr "ابزار حذف نقاط"
+
+msgid "Rotate Right"
+msgstr "چرخش به راست"
+
+msgid "Rotate Left"
+msgstr "چرخش به چپ"
+
+msgid "Flip Horizontally"
+msgstr "به صورت افقی قرینه شود"
+
+msgid "Flip Vertically"
+msgstr "به صورت عمودی قرینه شود"
+
+msgid "Delete tiles"
+msgstr "حذف کاشی‌ها"
+
+msgid "Change selection"
+msgstr "تغییر برگزیده"
+
+msgid "Move tiles"
+msgstr "حرکت کاشی‌ها"
+
+msgid "Paint tiles"
+msgstr "نقاشی کاشی‌ها"
+
+msgid "Paste tiles"
+msgstr "چسباندن کاشی‌ها"
+
+msgid "Tiles"
+msgstr "کاشی"
+
+msgid "Sort sources"
+msgstr "مرتب‌سازی منابع"
+
+msgid "Patterns"
+msgstr "الگوها"
+
+msgid "From Source"
+msgstr "از منبع"
+
+msgid "From Coords"
+msgstr "از مختصات"
+
+msgid "To Source"
+msgstr "به منبع"
+
+msgid "Atlas"
+msgstr "اطلس"
+
+msgid "Modulate"
+msgstr "میزان‌سازی"
+
+msgid "Z Index"
+msgstr "اندیس Z"
+
+msgid "Physics Layer %d"
+msgstr "لایه فیزیک %d"
+
+msgid "Navigation Layer %d"
+msgstr "لایه ناوبری %d"
+
+msgid "Custom Data"
+msgstr "داده سفارشی"
+
+msgid "Custom Data %d"
+msgstr "داده سفارشی %d"
+
+msgid "No custom data layers"
+msgstr "بدون لایه داده سفارشی"
+
+msgid "Setup"
+msgstr "آماده‌سازی"
+
+msgid "Select tiles."
+msgstr "انتخاب کاشی‌ها."
+
+msgid "Paint"
+msgstr "نقاشی"
+
+msgid "Paint Properties:"
+msgstr "ویژگی‌های نقاشی:"
+
+msgid "Yes"
+msgstr "بله"
+
+msgid "Scenes collection properties:"
+msgstr "ویژگی‌های مجموعه صحنه‌ها:"
+
+msgid "Rect"
+msgstr "مستطیل"
+
+msgid "Bucket"
+msgstr "سطل"
+
+msgid "Eraser"
+msgstr "پاک‌کن"
+
+msgid "Error"
+msgstr "خطا"
+
+msgid "Date:"
+msgstr "تاریخ:"
+
+msgid "Subtitle:"
+msgstr "زیرنویس:"
+
+msgid "Create Version Control Metadata"
+msgstr "ساخت فراداده کنترل نسخه"
+
+msgid "Username"
+msgstr "نام کاربری"
+
+msgid "Password"
+msgstr "گذرواژه"
+
+msgid "SSH Public Key Path"
+msgstr "مسیر کلید عمومی اس‌اس‌اچ"
+
+msgid "Select SSH public key path"
+msgstr "انتخاب مسیر کلید عمومی اس‌اس‌اچ"
+
+msgid "SSH Private Key Path"
+msgstr "مسیر کلید خصوصی اس‌اس‌اچ"
+
+msgid "Select SSH private key path"
+msgstr "انتخاب مسیر کلید خصوصی اس‌اس‌اچ"
+
+msgid "SSH Passphrase"
+msgstr "عبارت عبور اس‌اس‌اچ"
+
+msgid "Detect new changes"
+msgstr "شناسایی تغییرات جدید"
+
+msgid "Remotes"
+msgstr "ریموت‌ها"
+
+msgid "Remote Name"
+msgstr "نام ریموت"
+
+msgid "Remote URL"
+msgstr "مسیر ریموت"
+
+msgid "Fetch"
+msgstr "فراخوانی"
+
+msgid "Pull"
+msgstr "Pull"
+
+msgid "Push"
+msgstr "Push"
+
+msgid "Modified"
+msgstr "تغییر کرده"
+
+msgid "Renamed"
+msgstr "نام تغییر یافت"
+
+msgid "Deleted"
+msgstr "حذف شد"
+
+msgid "Unmerged"
+msgstr "ترکیب نشده"
+
+msgid "View:"
+msgstr "دیدگاه:"
+
+msgid "Unified"
+msgstr "متحد شده"
+
+msgid "Phi constant (1.618034). Golden ratio."
+msgstr "ثابت فی (1.618034). نسبت طلایی."
+
+msgid "Add Input"
+msgstr "اضافه کردن ورودی"
+
+msgid "Float"
+msgstr "ممیز شناور"
+
+msgid "Boolean"
+msgstr "بولین"
+
+msgid "Vertex"
+msgstr "رأس"
+
+msgid "Light"
+msgstr "نور"
+
+msgid "Process"
+msgstr "پروسه"
+
+msgid "Sky"
+msgstr "آسمان"
+
+msgid "Fog"
+msgstr "مه"
+
+msgid "Add Node"
+msgstr "افزودن گره"
+
+msgid "Color constant."
+msgstr "مقدار ثابت رنگ"
+
+msgid "Equal (==)"
+msgstr "مساوی (==)"
+
+msgid "Greater Than (>)"
+msgstr "بزرگتر از (<)"
+
+msgid "Greater Than or Equal (>=)"
+msgstr "بزرگتر یا برابر (=<)"
+
+msgid "Less Than (<)"
+msgstr "کمتر از (>)"
+
+msgid "Less Than or Equal (<=)"
+msgstr "کمتر یا مساوی (=>)"
+
+msgid "Not Equal (!=)"
+msgstr "نا مساوی (=!)"
+
+msgid ""
+"Returns an associated 2D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۲ بعدی مربوط برمی‌گرداند."
+
+msgid ""
+"Returns an associated 3D vector if the provided boolean value is true or "
+"false."
+msgstr ""
+"اگر مقدار بولی ارائه‌شده درست یا نادرست باشد یک بردار ۳‌ بعدی مربوط برمی‌گرداند."
+
+msgid "Boolean constant."
+msgstr "ثابت بولی."
+
+msgid "Translated to '%s' in Godot Shading Language."
+msgstr "به \"%s\" در زبان سایه گودو ترجمه شده است."
+
+msgid "Input parameter."
+msgstr "پارامتر ورودی."
+
+msgid "'%s' input parameter for sky shader mode."
+msgstr "'%s' پارامتر ورودی برای حالت شیدر آسمان"
+
+msgid "Natural logarithm."
+msgstr "لگاریتم طبیعی."
+
+msgid "Base-2 logarithm."
+msgstr "لگاریتم پایه ۲."
+
+msgid "Transform function."
+msgstr "تابع انتقال"
+
+msgid "Transform constant."
+msgstr "ثابت تبدیل"
+
+msgid "Bake VoxelGI"
+msgstr "بیک ووکسل‌جی‌آی"
+
+msgid "Are you sure to run %d projects at once?"
+msgstr "آیا مطمئن هستید که %d پروژه را همزمان اجرا می‌کنید؟"
+
+msgid ""
+"The selected project \"%s\" does not specify its supported Godot version in "
+"its configuration file (\"project.godot\").\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"پروژه انتخاب شده \"%s\" نسخه گودو پشتیبانی شده خود را در فایل پیکربندی خود "
+"(\"project.godot\") مشخص نمی‌کند\n"
+"\n"
+"مسیر پروژه: %s\n"
+"\n"
+"اگر به باز کردن آن ادامه دهید، به فرمت فایل پیکربندی فعلی گودو تبدیل می‌شود.\n"
+"\n"
+"هشدار: دیگر نمی‌توانید پروژه را با نسخه‌های قبلی موتور باز کنید."
+
+msgid ""
+"The selected project \"%s\" was generated by Godot 3.x, and needs to be "
+"converted for Godot 4.x.\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"You have three options:\n"
+"- Convert only the configuration file (\"project.godot\"). Use this to open "
+"the project without attempting to convert its scenes, resources and scripts.\n"
+"- Convert the entire project including its scenes, resources and scripts "
+"(recommended if you are upgrading).\n"
+"- Do nothing and go back.\n"
+"\n"
+"Warning: If you select a conversion option, you won't be able to open the "
+"project with previous versions of the engine anymore."
+msgstr ""
+"پروژهٔ انتخاب شده \"%s\" توسط گودو 3.x ایجاد شده است و باید برای گودو 4.x "
+"تبدیل شود.\n"
+"\n"
+"مسیر پروژه: %s\n"
+"\n"
+"شما سه گزینه دارید:\n"
+"- تنها فایل پیکربندی (\"project.godot\") را تبدیل کنید. از این برای بازکردن "
+"پروژه بدون تلاش برای تبدیل صحنه‌ها، منابع و اسکریپت‌های آن استفاده کنید.\n"
+"- کل پروژه از جمله صحنه‌ها، منابع و اسکریپت‌های آن را تبدیل کنید (اگر در حال "
+"ارتقا هستید توصیه می‌شود).\n"
+"- کاری نکن و برگرد.\n"
+"\n"
+"هشدار: اگر گزینه تبدیل را انتخاب کنید، دیگر نمی‌توانید پروژه را با نسخه‌های "
+"قبلی موتور باز کنید."
+
+msgid "Convert project.godot Only"
+msgstr "تنها تبدیل کردن project.godot"
+
+msgid ""
+"The selected project \"%s\" was generated by an older engine version, and "
+"needs to be converted for this version.\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"Do you want to convert it?\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"پروژهٔ انتخابی \"%s\" توسط یک نسخه موتور قدیمی ایجاد شده است و باید برای این "
+"نسخه تبدیل شود.\n"
+"\n"
+" مسیر پروژه: %s\n"
+"\n"
+" آیا می خواهید آن را تبدیل کنید؟\n"
+"\n"
+" هشدار: دیگر نمی‌توانید پروژه را با نسخه‌های قبلی موتور باز کنید."
+
+msgid "Convert project.godot"
+msgstr "تبدیل کردن project.godot"
+
+msgid ""
+"Can't open project \"%s\" at the following path:\n"
+"\n"
+"%s\n"
+"\n"
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
+"پروژهٔ \"%s\" در مسیر زیر باز نمی‌شود:\n"
+"\n"
+" %s\n"
+"\n"
+" تنظیمات پروژه توسط یک نسخه موتور جدیدتر ایجاد شده است که تنظیمات آن با این "
+"نسخه سازگار نیست."
+
+msgid ""
+"Warning: This project uses C#, but this build of Godot does not have\n"
+"the Mono module. If you proceed you will not be able to use any C# scripts.\n"
+"\n"
+msgstr ""
+"هشدار: این پروژه از سی‌شارپ استفاده می‌کند، اما این نسخهٔ گودو ماژول مونو را "
+"ندارد. اگر ادامه دهید، نمی‌توانید از هیچ اسکریپت سی‌شارپی استفاده کنید.\n"
+"\n"
+
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"هشدار: این پروژه آخرین بار در گودو %s ویراش شده است. گشودن پروژه را به گودو "
+"%s تغییر می‌دهد.\n"
+"\n"
+
+msgid ""
+"Warning: This project uses the following features not supported by this build "
+"of Godot:\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"هشدار: این پروژه از ویژگی‌های زیر استفاده می‌کند که توسط این نسخهٔ گودو پشتیبانی "
+"نمی‌شود:\n"
+"\n"
+"%s\n"
+"\n"
+
+msgid "Open anyway? Project will be modified."
+msgstr "به هر حال باز شود؟  پروژه اصلاح خواهد شد."
+
+msgid "Remove %d projects from the list?"
+msgstr "%d پروژه از فهرست حذف شود؟"
+
+msgid "Remove this project from the list?"
+msgstr "این پروژه از فهرست خارج شود؟"
+
+msgid ""
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
+msgstr ""
+"همهٔ پروژه‌های از دست رفته از فهرست حذف شوند؟\n"
+" محتویات پوشه‌های پروژه تغییر نخواهد کرد."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "این کاراکتر‌ها در برچسب‌ها مجاز نیستند: %s."
+
+msgid "New Project"
+msgstr "پروژه جدید"
+
+msgid "Scan"
+msgstr "پویش"
+
+msgid "Loading, please wait..."
+msgstr "در حال بارگیری، لطفا صبر کنید..."
+
+msgid "Filter Projects"
+msgstr "فیلتر پروژه‌ها"
+
+msgid "Last Edited"
+msgstr "آخرین ویرایش"
+
+msgid "Tags"
+msgstr "برچسب‌ها"
+
+msgid "Create New Project"
+msgstr "ساختن پروژه جدید"
+
+msgid "Import Existing Project"
+msgstr "وارد کردن پروژه موجود"
+
+msgid "Rename Project"
+msgstr "تغییر نام پروژه"
+
+msgid "Manage Tags"
+msgstr "مدیریت برچسب‌ها"
+
+msgid "Remove Missing"
+msgstr "حذف از دست رفته‌ها"
+
+msgid "Select a Folder to Scan"
+msgstr "انتخاب یک پوشه برای پویش"
+
+msgid "Remove All"
+msgstr "حذف همه"
+
+msgid "Convert Full Project"
+msgstr "تبدیل کردن کل پروژه"
+
+msgid "Manage Project Tags"
+msgstr "مدیریت برچسب‌های پروژه"
+
+msgid "Project Tags"
+msgstr "برچسب‌های پروژه"
+
+msgid "Click tag to remove it from the project."
+msgstr "برروی برچسب کلیک کنید تا از پروژه حذف شود‌."
+
+msgid "All Tags"
+msgstr "همه برچسب‌ها"
+
+msgid "Click tag to add it to the project."
+msgstr "برروی برچسب کلیک کنید تا به پروژه اضافه شود."
+
+msgid "Create New Tag"
+msgstr "ساختن برچسب تازه"
+
+msgid "Tags are capitalized automatically when displayed."
+msgstr "برچسب‌ها هنگام نمایش به صورت خودکار بزرگ‌نمایی می‌شوند."
+
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr "فایل پروژه \".zip\" نامعتبر است؛ زیرا حاوی فایل \"project.godot\" نیست."
+
+msgid "New Game Project"
+msgstr "پروژه بازی جدید"
+
+msgid "Supports desktop platforms only."
+msgstr "تنها حمایت از سکو‌های دسکتاپ."
+
+msgid "Can scale to large complex scenes."
+msgstr "توانایی تبدیل به صحنه های پیچیده بزرگ."
+
+msgid "Uses RenderingDevice backend."
+msgstr "استفاده از پایانه‌پشتی رندرینگ‌دیوایس."
+
+msgid "Slower rendering of simple scenes."
+msgstr "رندر کندتر صحنه‌های ساده."
+
+msgid ""
+"You are about to create a Godot project in a non-empty folder.\n"
+"The entire contents of this folder will be imported as project resources!\n"
+"\n"
+"Are you sure you wish to continue?"
+msgstr ""
+"شما درحال ایجاد یک پروژه گودو در یک پوشه غیر خالی هستید.\n"
+"کل محتویات این پوشه به عنوان منابع پروژه وارد خواهد شد!\n"
+"آیا از ادامه دادن مطمئن هستید؟"
+
+msgid "Couldn't create project.godot in project path."
+msgstr "project.godot در مسیر پروژه ایجاد نشد."
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "خطای گشودن بسته بندی پرونده، به شکل ZIP نیست."
+
+msgid "The following files failed extraction from package:"
+msgstr "استخراج پرونده های زیر از بسته بندی انجام نشد:"
+
+msgid "Import & Edit"
+msgstr "وارد کردن و ویرایش"
+
+msgid "Create & Edit"
+msgstr "ساخت و ویرایش"
+
+msgid "Install Project:"
+msgstr "نصب پروژه:"
+
+msgid "Install & Edit"
+msgstr "نصب و ویرایش"
+
+msgid "Project Name:"
+msgstr "نام پروژه:"
+
+msgid "Project Path:"
+msgstr "مسیر پروژه:"
+
+msgid "The renderer can be changed later, but scenes may need to be adjusted."
+msgstr ""
+"رندرر می‌تواند بعدا تغییر کند، اما صحنه‌ها ممکن است نیاز به تنظیم داشته باشند."
+
+msgid "Version Control Metadata:"
+msgstr "فراداده کنترل نسخه:"
+
+msgid "Git"
+msgstr "گیت"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "این پروژه آخرین بار در یک نسخه متفاوت از گودو ویرایش شده است. "
+
+msgid "Error: Project is missing on the filesystem."
+msgstr "خطا: پروژه در فایل‌های سیستمی وجود ندارد."
+
+msgid "Missing Project"
+msgstr "پروژه از دست رفته"
+
+msgid "Restart Now"
+msgstr "راه اندازی دوباره"
+
+msgid "Add Project Setting"
+msgstr "افزودن تنظیمات پروژه"
+
+msgid "Delete Item"
+msgstr "حذف مورد"
+
+msgid "(All)"
+msgstr "(همه)"
+
+msgid "Add Input Action"
+msgstr "افزودن عمل ورودی"
+
+msgid "Rename Input Action"
+msgstr "تغییر نام اکشن ورودی"
+
+msgid "Project Settings (project.godot)"
+msgstr "تنظیمات پروژه (project.godot)"
+
+msgid "Localization"
+msgstr "بومی‌سازی"
+
+msgid "Autoload"
+msgstr "بارگیری خودکار"
+
+msgid "Plugins"
+msgstr "افزونه‌ها"
+
+msgid "Prefix:"
+msgstr "پیشوند:"
+
+msgid "Suffix:"
+msgstr "پسوند:"
+
+msgid "Substitute"
+msgstr "جایگزین"
+
+msgid "Node name."
+msgstr "نام گره."
+
+msgid "Node type."
+msgstr "نوع گره."
+
+msgid "Current scene name."
+msgstr "نام صحنه فعلی."
+
+msgid "Root node name."
+msgstr "نام گره ریشه."
+
+msgid "Step"
+msgstr "گام"
+
+msgid "Post-Process"
+msgstr "پس-پردازش"
+
+msgid "Style"
+msgstr "شیوه"
+
+msgid "To Lowercase"
+msgstr "با حروف کوچک"
+
+msgid "To Uppercase"
+msgstr "با حروف بزرگ"
+
+msgid "Reset"
+msgstr "بازنشانی"
+
+msgid "Reparent Node"
+msgstr "گره تغییر والد"
+
+msgid "Scene name is empty."
+msgstr "نام صحنه خالی است."
+
+msgid "File name invalid."
+msgstr "نام فایل نامعتبر است."
+
+msgid "File already exists."
+msgstr "فایل از قبل وجود دارد."
+
+msgid "Invalid root node name."
+msgstr "نام گره ریشه نامعتبر است."
+
+msgid "2D Scene"
+msgstr "صحنه دوبعدی"
+
+msgid "3D Scene"
+msgstr "صحنه سه‌بعدی"
+
+msgid "User Interface"
+msgstr "رابط کاربر"
+
+msgid "Scene name is valid."
+msgstr "نام صحنه معتبر است."
+
+msgid "Duplicate Node(s)"
+msgstr "تکثیر گره(ها)"
+
+msgid "Delete %d nodes?"
+msgstr "حذف %d گره؟"
+
+msgid "Save New Scene As..."
+msgstr "ذخیره صحنه جدید بعنوان..."
+
+msgid "New Scene Root"
+msgstr "ریشه صحنه جدید"
+
+msgid "Create Root Node:"
+msgstr "ساخت گره ریشه:"
+
+msgid "Filters"
+msgstr "فیلترها"
+
+msgid "Attach Script"
+msgstr "پیوست کردن اسکریپت"
+
+msgid "Remove Node(s)"
+msgstr "حذف گره(ها)"
+
+msgid "This operation requires a single selected node."
+msgstr "این عملیات به یک گره انتخاب شده نیاز دارد."
+
+msgid "Clear Inheritance"
+msgstr "پاک کردن ارث‌بری"
+
+msgid "Editable Children"
+msgstr "فرزند قابل ویرایش"
+
+msgid "All Scene Sub-Resources"
+msgstr "همه زیرمنابع صحنه"
+
+msgid "Filter by Type"
+msgstr "فیلتر بر اساس نوع"
+
+msgid "Filter by Group"
+msgstr "فیلتر بر اساس گروه"
+
+msgid "Delete (No Confirm)"
+msgstr "حذف (بدون تأیید)"
+
+msgid "Add/Create a New Node."
+msgstr "افزودن/ساختن یک گره جدید."
+
+msgid "Attach a new or existing script to the selected node."
+msgstr "پیوست کردن یک اسکریپت جدید یا از پیش موجود برای گره انتخاب شده."
+
+msgid "Remote"
+msgstr "از راه دور"
+
+msgid "Local"
+msgstr "محلی"
+
+msgid "Clear Inheritance? (No Undo!)"
+msgstr "وراثت حذف شود؟ (بدون بازگشت!)"
+
+msgid "Path is empty."
+msgstr "مسیر خالی است."
+
+msgid "Filename is empty."
+msgstr "نام فایل خالی است."
+
+msgid "Filename is invalid."
+msgstr "نام فایل نامعتبر است."
+
+msgid "Path is not local."
+msgstr "مسیر محلی نیست."
+
+msgid "File does not exist."
+msgstr "پرونده موجود نیست."
+
+msgid "Error loading script from %s"
+msgstr "خطای بارگذاری اسکریپت از %s"
+
+msgid "Open Script / Choose Location"
+msgstr "باز کردن اسکریپت / انتخاب موقعیت"
+
+msgid "Open Script"
+msgstr "باز کردن اسکریپت"
+
+msgid "Invalid path."
+msgstr "مسیر نامعتبر."
+
+msgid "File exists, it will be reused."
+msgstr "فایل وجود دارد، دوباره استفاده خواهد شد."
+
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+"توجه: اسکریپت‌های داخلی محدود‌هایی دارند و نمی‌توانند با استفاده از ویرایشگر "
+"خارجی ویرایش شوند."
+
+msgid "Attach Node Script"
+msgstr "پیوست کردن اسکریپت گره"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Note: Built-in shaders can't be edited using an external editor."
+msgstr ""
+"توجه: شیدر‌های تعبیه شده نمی‌توانند با استفاده از ویرایشگر خارجی ویرایش شوند."
+
+msgid "glTF 2.0 Scene..."
+msgstr "صحنه glTF 2.0"
+
+msgid "Plane:"
+msgstr "سطح:"
+
+msgid "Edit X Axis"
+msgstr "ویرایش محور X"
+
+msgid "Edit Y Axis"
+msgstr "ویرایش محور Y"
+
+msgid "Edit Z Axis"
+msgstr "ویراش محور Z"
+
+msgid "Pick Distance:"
+msgstr "انتخاب فاصله:"
+
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr ""
+"تعداد بایت‌های مورد نظر برای رمزگشایی بایت‌ها کافی نیست،‌ و یا فرمت نامعتبر است ."
+
+msgid "%s/s"
+msgstr "%s/ثانیه"
+
+msgid "Incoming RPC"
+msgstr "ورودی RPC"
+
+msgid "Outgoing RPC"
+msgstr "خروجی RPC"
+
+msgid "Config"
+msgstr "پیکربندی"
+
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr "یک منبع NavigationMesh باید برای یک گره تنظیم یا ایجاد شود تا کار کند."
+
+msgid "Add an interaction profile."
+msgstr "افزودن نمایه تعاملی."
+
+msgid "Pose"
+msgstr "حالت"
+
+msgid "Unknown"
+msgstr "ناشناخته"
+
+msgid "Invalid package name:"
+msgstr "نام پکیج نامعتبر:"
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot "
+"library."
+msgstr ""
+"\"Min SDK\" نمی‌تواند کمتر از %d باشد، که نسخهٔ مورد نیاز کتابخانه گودو است."
+
+msgid "Exporting APK..."
+msgstr "صدور APK..."
+
+msgid "Uninstalling..."
+msgstr "در حال حذف نصب..."
+
+msgid "Installing to device, please wait..."
+msgstr "در حال نصب در دستگاه، لطفا صبر کنید..."
+
+msgid "Could not install to device: %s"
+msgstr "در دستگاه نصب نشد: %s"
+
+msgid ""
+"The project name does not meet the requirement for the package name format "
+"and will be updated to \"%s\". Please explicitly specify the package name if "
+"needed."
+msgstr ""
+"نام پروژه نیازمندی‌ قالب نام بسته را برآورده نمی کند و به \"%s\" به روز می‌شود. "
+"لطفا در صورت نیاز نام بسته را به صراحت مشخص کنید."
+
+msgid "Verifying %s..."
+msgstr "در حال تایید %s..."
+
+msgid "Adding files..."
+msgstr "افزودن فایل‌ها..."
+
+msgid "Export Icons"
+msgstr "آیکون‌های خروجی"
+
+msgid "Exporting project..."
+msgstr "صدور پروژه..."
+
+msgid "Starting project..."
+msgstr "شروع پروژه..."
+
+msgid "Making PKG"
+msgstr "ساخت PKG"
+
+msgid "Making DMG"
+msgstr "ساخت DMG"
+
+msgid "Making ZIP"
+msgstr "ساخت ZIP"
+
+msgid "Run exported project on remote macOS system"
+msgstr "اجرای پروژه خروجی گرفته‌شده روی سیستم مک‌او‌اس از راه دور"
+
+msgid ""
+"Exporting to Web is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target Web with C#/Mono instead."
+msgstr ""
+"هنگام استفاده از سی‌شارپ/دات‌نت، خروجی به وب در حال حاضر در گودو ۴ پشتیبانی "
+"نمی‌شود. در عوض از گودو ۳ برای هدف قرار دادن وب با سی‌شارپ/مونو استفاده کنید."
+
+msgid "Error starting HTTP server: %d."
+msgstr "خطا در راه‌اندازی سرور ‭"
+
+msgid "Run exported project on remote Windows system"
+msgstr "اجرای پروژه خروجی گرفته‌شده روی سیستم ویندوز از راه دور"
+
+msgid ""
+"A texture with the shape of the light must be supplied to the \"Texture\" "
+"property."
+msgstr "یک تکسچر با شکل نور باید برای دارایی \"Texture\" فراهم شده باشد."
+
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr "یک چندضلعی انسدادی باید تنظیم (یا ترسیم) شود تا جلوه کننده باشد."
+
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"گره ParallaxLayer تنها در زمانی که به عنوان فرزند یک گره ParallaxBackground "
+"تنظیم شود کار می‌کند."
+
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D تنها در زمانی که به عنوان یک فرزند یک گره Path2D تنظیم شود کار "
+"می‌کند."
+
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "یک CollisionPolygon2D خالی جلوه بر برخورد ندارد."
+
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"یک شکل باید برای CollisionShape2D فراهم شده باشد تا عمل کند. لطفا یک شکل منبع "
+"برای آن ایجاد کنید!"
+
+msgid "Node A and Node B must be PhysicsBody2Ds"
+msgstr "گره الف و گره ب باید PhysicsBody2D باشند"
+
+msgid "Node A must be a PhysicsBody2D"
+msgstr "گره الف باید یک PhysicsBody2D باشد"
+
+msgid "Node B must be a PhysicsBody2D"
+msgstr "گره ب باید یک PhysicsBody2D باشد"
+
+msgid "Node A and Node B must be different PhysicsBody2Ds"
+msgstr "گره الف و گره ب باید PhysicsBody2Dهای جداگانه باشند"
+
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "دارایی Path باید به یک گره Node2D معتبر اشاره کند تا کار کند."
+
+msgid "Node A and Node B must be PhysicsBody3Ds"
+msgstr "گره الف و گره ب باید PhysicsBody3D باشند"
+
+msgid "Node A must be a PhysicsBody3D"
+msgstr "گره الف باید یک PhysicsBody3D باشد"
+
+msgid "Node B must be a PhysicsBody3D"
+msgstr "گره ب باید یک PhysicsBody3D باشد"
+
+msgid "Node A and Node B must be different PhysicsBody3Ds"
+msgstr "گره الف و گره ب باید PhysicsBody3Dهای متفاوت باشند"
+
+msgid "Animation not found: '%s'"
+msgstr "انیمیشن پیدا نشد: '%s'"
+
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
+msgstr "اگر \"Exp ویرایش\" فعال است, \"حداقل داده\" باید بزرگتر از 0 باشد."
+
+msgid ""
+"This node is marked as deprecated and will be removed in future versions.\n"
+"Please check the Godot documentation for information about migration."
+msgstr ""
+"این گره به عنوان منسوخ علامت گذاری شده‌است و در نسخه‌های بعدی حذف خواهد شد.\n"
+"لطفاً اسناد گودو را برای اطلاعات در مورد مهاجرت بررسی کنید."
+
+msgid "Invalid source for preview."
+msgstr "منبع نامعتبر برای پیش نمایش."
+
+msgid "Invalid source for shader."
+msgstr "منبع نامعتبر برای شیدر."
+
+msgid "Filter"
+msgstr "صافی"
+
+msgid "Repeat"
+msgstr "تکرار"
+
+msgid "Invalid comparison function for that type."
+msgstr "عمل مقایسه نامعتبر بزای این نوع."
+
+msgid "Constants cannot be modified."
+msgstr "ثوابت قابل تغییر نیستند."
+
+msgid "Expected a function name."
+msgstr "نام تابع مورد انتظار است."
+
+msgid "Expected a '{' to begin function."
+msgstr "برای شروع یک تابع '{' انتظار میرود."
+
+msgid "Expected a '%s'."
+msgstr "%s انتظار میرود."
+
+msgid "Expected a '%s' or '%s'."
+msgstr "یک %s یا %s انتظار میرود."
+
+msgid "Expected a '%s' after '%s'."
+msgstr "%s بعد از %s انتظار میردود."
+
+msgid "Redefinition of '%s'."
+msgstr "تعریف دوباره از %s."
+
+msgid "Invalid argument name."
+msgstr "نام آرگومان نامعتبر."
+
+msgid "Missing condition."
+msgstr "نبود شرط."
+
+msgid "Condition evaluation error."
+msgstr "خطای ارزیابی شرط."
+
+msgid "Unmatched else."
+msgstr "else مچ نشده."
+
+msgid "Invalid else."
+msgstr "else نامعتبر."
+
+msgid "Invalid endif."
+msgstr "endif نامعتبر."
+
+msgid "Invalid ifdef."
+msgstr "ifdef نامعتبر."
+
+msgid "Invalid ifndef."
+msgstr "ifndef نامعتبر."
+
+msgid "Shader include file does not exist:"
+msgstr "فایل سایه‌زن موجود نیست:"
+
+msgid "Invalid pragma directive."
+msgstr "دستورالعمل نامعتبر پراگما."
+
+msgid "Invalid undef."
+msgstr "undef نامعتبر."
+
+msgid "Invalid macro argument list."
+msgstr "لیست آرگومان های کوچک نامعتبر."
+
+msgid "Invalid macro argument."
+msgstr "آرگومان کوچک نامعتبر."
+
+msgid "Invalid macro argument count."
+msgstr "تعداد آرگومان کوچک نامعتبر."

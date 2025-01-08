@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionObject3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for 3D physics objects.
+	</brief_description>
+	<description>
+		Abstract base class for 3D physics objects. [CollisionObject3D] can hold any number of [Shape3D]s for collision. Each shape must be assigned to a [i]shape owner[/i]. Shape owners are not nodes and do not appear in the editor, but are accessible through code using the [code]shape_owner_*[/code] methods.
+		[b]Warning:[/b] With a non-uniform scale, this node will likely not behave as expected. It is advised to keep its scale the same on all axes and adjust its collision shape(s) instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="camera" type="Camera3D" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="event_position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
+			<description>
+				Receives unhandled [InputEvent]s. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+			</description>
+		</method>
+		<method name="_mouse_enter" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+			</description>
+		</method>
+		<method name="_mouse_exit" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+			</description>
+		</method>
+		<method name="create_shape_owner">
+			<return type="int" />
+			<param index="0" name="owner" type="Object" />
+			<description>
+				Creates a new shape owner for the given object. Returns [code]owner_id[/code] of the new owner for future reference.
+			</description>
+		</method>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the object's [RID].
+			</description>
+		</method>
+		<method name="get_shape_owners">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
+			</description>
+		</method>
+		<method name="is_shape_owner_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				If [code]true[/code], the shape owner and its shapes are disabled.
+			</description>
+		</method>
+		<method name="remove_shape_owner">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Removes the given shape owner.
+			</description>
+		</method>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="shape_find_owner" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shape_index" type="int" />
+			<description>
+				Returns the [code]owner_id[/code] of the given shape.
+			</description>
+		</method>
+		<method name="shape_owner_add_shape">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape" type="Shape3D" />
+			<description>
+				Adds a [Shape3D] to the shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_clear_shapes">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Removes all shapes from the shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_owner" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Returns the parent object of the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape" qualifiers="const">
+			<return type="Shape3D" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
+			<description>
+				Returns the [Shape3D] with the given ID from the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Returns the number of shapes the given shape owner contains.
+			</description>
+		</method>
+		<method name="shape_owner_get_shape_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
+			<description>
+				Returns the child index of the [Shape3D] with the given ID from the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_get_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Returns the shape owner's [Transform3D].
+			</description>
+		</method>
+		<method name="shape_owner_remove_shape">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="shape_id" type="int" />
+			<description>
+				Removes a shape from the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_set_disabled">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				If [code]true[/code], disables the given shape owner.
+			</description>
+		</method>
+		<method name="shape_owner_set_transform">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Sets the [Transform3D] of the given shape owner.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this CollisionObject3D [b]is in[/b]. Collision objects can exist in one or more of 32 different layers. See also [member collision_mask].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this CollisionObject3D [b]scans[/b]. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
+		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="CollisionObject3D.DisableMode" default="0">
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+		</member>
+		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" default="false">
+			If [code]true[/code], the [CollisionObject3D] will continue to receive input events as the mouse is dragged across its shapes.
+		</member>
+		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
+		</member>
+	</members>
+	<signals>
+		<signal name="input_event">
+			<param index="0" name="camera" type="Node" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="event_position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
+			<description>
+				Emitted when the object receives an unhandled [InputEvent]. [param event_position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject3D]'s area is small. This signal may also not be emitted if another [CollisionObject3D] is overlapping the [CollisionObject3D] in question.
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CollisionObject3D]'s area is small. This signal may also not be emitted if another [CollisionObject3D] is overlapping the [CollisionObject3D] in question.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DISABLE_MODE_REMOVE" value="0" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], remove from the physics simulation to stop all physics interactions with this [CollisionObject3D].
+			Automatically re-added to the physics simulation when the [Node] is processed again.
+		</constant>
+		<constant name="DISABLE_MODE_MAKE_STATIC" value="1" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], make the body static. Doesn't affect [Area3D]. [PhysicsBody3D] can't be affected by forces or other bodies while static.
+			Automatically set [PhysicsBody3D] back to its original mode when the [Node] is processed again.
+		</constant>
+		<constant name="DISABLE_MODE_KEEP_ACTIVE" value="2" enum="DisableMode">
+			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], do not affect the physics simulation.
+		</constant>
+	</constants>
+</class>

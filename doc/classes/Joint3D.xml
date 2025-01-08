@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Joint3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for all 3D physics joints.
+	</brief_description>
+	<description>
+		Abstract base class for all joints in 3D physics. 3D joints bind together two physics bodies ([member node_a] and [member node_b]) and apply a constraint. If only one body is defined, it is attached to a fixed [StaticBody3D] without collision shapes.
+	</description>
+	<tutorials>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+	</tutorials>
+	<methods>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the joint's internal [RID] from the [PhysicsServer3D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="exclude_nodes_from_collision" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision" default="true">
+			If [code]true[/code], the two bodies bound together do not collide with each other.
+		</member>
+		<member name="node_a" type="NodePath" setter="set_node_a" getter="get_node_a" default="NodePath(&quot;&quot;)">
+			Path to the first node (A) attached to the joint. The node must inherit [PhysicsBody3D].
+			If left empty and [member node_b] is set, the body is attached to a fixed [StaticBody3D] without collision shapes.
+		</member>
+		<member name="node_b" type="NodePath" setter="set_node_b" getter="get_node_b" default="NodePath(&quot;&quot;)">
+			Path to the second node (B) attached to the joint. The node must inherit [PhysicsBody3D].
+			If left empty and [member node_a] is set, the body is attached to a fixed [StaticBody3D] without collision shapes.
+		</member>
+		<member name="solver_priority" type="int" setter="set_solver_priority" getter="get_solver_priority" default="1">
+			The priority used to define which solver is executed first for multiple joints. The lower the value, the higher the priority.
+		</member>
+	</members>
+</class>

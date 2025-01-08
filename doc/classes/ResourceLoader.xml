@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceLoader" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A singleton for loading resource files.
+	</brief_description>
+	<description>
+		A singleton used to load resource files from the filesystem.
+		It uses the many [ResourceFormatLoader] classes registered in the engine (either built-in or from a plugin) to load files into memory and convert them to a format that can be used by the engine.
+		[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+		[b]Note:[/b] Non-resource files such as plain text files cannot be read using [ResourceLoader]. Use [FileAccess] for those files instead, and be aware that non-resource files are not exported by default (see notes in the [FileAccess] class description for instructions on exporting them).
+	</description>
+	<tutorials>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
+	</tutorials>
+	<methods>
+		<method name="add_resource_format_loader">
+			<return type="void" />
+			<param index="0" name="format_loader" type="ResourceFormatLoader" />
+			<param index="1" name="at_front" type="bool" default="false" />
+			<description>
+				Registers a new [ResourceFormatLoader]. The ResourceLoader will use the ResourceFormatLoader as described in [method load].
+				This method is performed implicitly for ResourceFormatLoaders written in GDScript (see [ResourceFormatLoader] for more information).
+			</description>
+		</method>
+		<method name="exists">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<description>
+				Returns whether a recognized resource exists for the given [param path].
+				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
+				[b]Note:[/b] If you use [method Resource.take_over_path], this method will return [code]true[/code] for the taken path even if the resource wasn't saved (i.e. exists only in resource cache).
+			</description>
+		</method>
+		<method name="get_cached_ref">
+			<return type="Resource" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the cached resource reference for the given [param path].
+				[b]Note:[/b] If the resource is not cached, the returned [Resource] will be invalid.
+			</description>
+		</method>
+		<method name="get_dependencies">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the dependencies for the resource at the given [param path].
+				[b]Note:[/b] The dependencies are returned with slices separated by [code]::[/code]. You can use [method String.get_slice] to get their components.
+				[codeblock]
+				for dependency in ResourceLoader.get_dependencies(path):
+				    print(dependency.get_slice("::", 0)) # Prints the UID.
+				    print(dependency.get_slice("::", 2)) # Prints the path.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_recognized_extensions_for_type">
+			<return type="PackedStringArray" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Returns the list of recognized extensions for a resource type.
+			</description>
+		</method>
+		<method name="get_resource_uid">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the ID associated with a given resource path, or [code]-1[/code] when no such ID exists.
+			</description>
+		</method>
+		<method name="has_cached">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns whether a cached resource is available for the given [param path].
+				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
+			</description>
+		</method>
+		<method name="list_directory">
+			<return type="PackedStringArray" />
+			<param index="0" name="directory_path" type="String" />
+			<description>
+				Lists a directory (as example: "res://assets/enemies"), returning all resources contained within. The resource files are the original file names as visible in the editor before exporting.
+			</description>
+		</method>
+		<method name="load">
+			<return type="Resource" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<param index="2" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<description>
+				Loads a resource at the given [param path], caching the result for further access.
+				The registered [ResourceFormatLoader]s are queried sequentially to find the first one which can handle the file's extension, and then attempt loading. If loading fails, the remaining ResourceFormatLoaders are also attempted.
+				An optional [param type_hint] can be used to further specify the [Resource] type that should be handled by the [ResourceFormatLoader]. Anything that inherits from [Resource] can be used as a type hint, for example [Image].
+				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+				Returns an empty resource if no [ResourceFormatLoader] could handle the file, and prints an error if no file is found at the specified path.
+				GDScript has a simplified [method @GDScript.load] built-in method which can be used in most situations, leaving the use of [ResourceLoader] for more advanced scenarios.
+				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+				[b]Note:[/b] Relative paths will be prefixed with [code]"res://"[/code] before loading, to avoid unexpected results make sure your paths are absolute.
+			</description>
+		</method>
+		<method name="load_threaded_get">
+			<return type="Resource" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the resource loaded by [method load_threaded_request].
+				If this is called before the loading thread is done (i.e. [method load_threaded_get_status] is not [constant THREAD_LOAD_LOADED]), the calling thread will be blocked until the resource has finished loading. However, it's recommended to use [method load_threaded_get_status] to known when the load has actually completed.
+			</description>
+		</method>
+		<method name="load_threaded_get_status">
+			<return type="int" enum="ResourceLoader.ThreadLoadStatus" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="progress" type="Array" default="[]" />
+			<description>
+				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [param path]. See [enum ThreadLoadStatus] for possible return values.
+				An array variable can optionally be passed via [param progress], and will return a one-element array containing the ratio of completion of the threaded loading (between [code]0.0[/code] and [code]1.0[/code]).
+				[b]Note:[/b] The recommended way of using this method is to call it during different frames (e.g., in [method Node._process], instead of a loop).
+			</description>
+		</method>
+		<method name="load_threaded_request">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="type_hint" type="String" default="&quot;&quot;" />
+			<param index="2" name="use_sub_threads" type="bool" default="false" />
+			<param index="3" name="cache_mode" type="int" enum="ResourceLoader.CacheMode" default="1" />
+			<description>
+				Loads the resource using threads. If [param use_sub_threads] is [code]true[/code], multiple threads will be used to load the resource, which makes loading faster, but may affect the main thread (and thus cause game slowdowns).
+				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+			</description>
+		</method>
+		<method name="remove_resource_format_loader">
+			<return type="void" />
+			<param index="0" name="format_loader" type="ResourceFormatLoader" />
+			<description>
+				Unregisters the given [ResourceFormatLoader].
+			</description>
+		</method>
+		<method name="set_abort_on_missing_resources">
+			<return type="void" />
+			<param index="0" name="abort" type="bool" />
+			<description>
+				Changes the behavior on missing sub-resources. The default behavior is to abort loading.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="THREAD_LOAD_INVALID_RESOURCE" value="0" enum="ThreadLoadStatus">
+			The resource is invalid, or has not been loaded with [method load_threaded_request].
+		</constant>
+		<constant name="THREAD_LOAD_IN_PROGRESS" value="1" enum="ThreadLoadStatus">
+			The resource is still being loaded.
+		</constant>
+		<constant name="THREAD_LOAD_FAILED" value="2" enum="ThreadLoadStatus">
+			Some error occurred during loading and it failed.
+		</constant>
+		<constant name="THREAD_LOAD_LOADED" value="3" enum="ThreadLoadStatus">
+			The resource was loaded successfully and can be accessed via [method load_threaded_get].
+		</constant>
+		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
+		</constant>
+		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+	</constants>
+</class>

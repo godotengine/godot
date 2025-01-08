@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GrooveJoint2D" inherits="Joint2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A physics joint that restricts the movement of two 2D physics bodies to a fixed axis.
+	</brief_description>
+	<description>
+		A physics joint that restricts the movement of two 2D physics bodies to a fixed axis. For example, a [StaticBody2D] representing a piston base can be attached to a [RigidBody2D] representing the piston head, moving up and down.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="initial_offset" type="float" setter="set_initial_offset" getter="get_initial_offset" default="25.0">
+			The body B's initial anchor position defined by the joint's origin and a local offset [member initial_offset] along the joint's Y axis (along the groove).
+		</member>
+		<member name="length" type="float" setter="set_length" getter="get_length" default="50.0">
+			The groove's length. The groove is from the joint's origin towards [member length] along the joint's local Y axis.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorProperty" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Custom control for editing properties that can be added to the [EditorInspector].
+	</brief_description>
+	<description>
+		A custom control for editing properties that can be added to the [EditorInspector]. It is added via [EditorInspectorPlugin].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_set_read_only" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="read_only" type="bool" />
+			<description>
+				Called when the read-only status of the property is changed. It may be used to change custom controls into a read-only or modifiable state.
+			</description>
+		</method>
+		<method name="_update_property" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				When this virtual function is called, you must update your editor.
+			</description>
+		</method>
+		<method name="add_focusable">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void" />
+			<description>
+				Draw property as not selected. Used by the inspector.
+			</description>
+		</method>
+		<method name="emit_changed">
+			<return type="void" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="field" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="changing" type="bool" default="false" />
+			<description>
+				If one or several properties have changed, this must be called. [param field] is used in case your editor can modify fields separately (as an example, Vector3.x). The [param changing] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
+			</description>
+		</method>
+		<method name="get_edited_object">
+			<return type="Object" />
+			<description>
+				Gets the edited object.
+			</description>
+		</method>
+		<method name="get_edited_property" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
+			</description>
+		</method>
+		<method name="is_selected" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if property is drawn as selected. Used by the inspector.
+			</description>
+		</method>
+		<method name="select">
+			<return type="void" />
+			<param index="0" name="focusable" type="int" default="-1" />
+			<description>
+				Draw property as selected. Used by the inspector.
+			</description>
+		</method>
+		<method name="set_bottom_editor">
+			<return type="void" />
+			<param index="0" name="editor" type="Control" />
+			<description>
+				Puts the [param editor] control below the property label. The control must be previously added using [method Node.add_child].
+			</description>
+		</method>
+		<method name="set_label_reference">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Used by the inspector, set to a control that will be used as a reference to calculate the size of the label.
+			</description>
+		</method>
+		<method name="set_object_and_property">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Assigns object and property to edit.
+			</description>
+		</method>
+		<method name="update_property">
+			<return type="void" />
+			<description>
+				Forces refresh of the property display.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="checkable" type="bool" setter="set_checkable" getter="is_checkable" default="false">
+			Used by the inspector, set to [code]true[/code] when the property is checkable.
+		</member>
+		<member name="checked" type="bool" setter="set_checked" getter="is_checked" default="false">
+			Used by the inspector, set to [code]true[/code] when the property is checked.
+		</member>
+		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
+			Used by the inspector, set to [code]true[/code] when the property can be deleted by the user.
+		</member>
+		<member name="draw_background" type="bool" setter="set_draw_background" getter="is_draw_background" default="true">
+			Used by the inspector, set to [code]true[/code] when the property label is drawn.
+		</member>
+		<member name="draw_label" type="bool" setter="set_draw_label" getter="is_draw_label" default="true">
+			Used by the inspector, set to [code]true[/code] when the property background is drawn.
+		</member>
+		<member name="draw_warning" type="bool" setter="set_draw_warning" getter="is_draw_warning" default="false">
+			Used by the inspector, set to [code]true[/code] when the property is drawn with the editor theme's warning color. This is used for editable children's properties.
+		</member>
+		<member name="keying" type="bool" setter="set_keying" getter="is_keying" default="false">
+			Used by the inspector, set to [code]true[/code] when the property can add keys for animation.
+		</member>
+		<member name="label" type="String" setter="set_label" getter="get_label" default="&quot;&quot;">
+			Set this property to change the label (if you want to show one).
+		</member>
+		<member name="name_split_ratio" type="float" setter="set_name_split_ratio" getter="get_name_split_ratio" default="0.5">
+			Space distribution ratio between the label and the editing field.
+		</member>
+		<member name="read_only" type="bool" setter="set_read_only" getter="is_read_only" default="false" keywords="enabled, disabled, editable">
+			Used by the inspector, set to [code]true[/code] when the property is read-only.
+		</member>
+		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
+			Used by the inspector, set to [code]true[/code] when the property is selectable.
+		</member>
+		<member name="use_folding" type="bool" setter="set_use_folding" getter="is_using_folding" default="false">
+			Used by the inspector, set to [code]true[/code] when the property is using folding.
+		</member>
+	</members>
+	<signals>
+		<signal name="multiple_properties_changed">
+			<param index="0" name="properties" type="PackedStringArray" />
+			<param index="1" name="value" type="Array" />
+			<description>
+				Emit it if you want multiple properties modified at the same time. Do not use if added via [method EditorInspectorPlugin._parse_property].
+			</description>
+		</signal>
+		<signal name="object_id_selected">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Used by sub-inspectors. Emit it if what was selected was an Object ID.
+			</description>
+		</signal>
+		<signal name="property_can_revert_changed">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="can_revert" type="bool" />
+			<description>
+				Emitted when the revertability (i.e., whether it has a non-default value and thus is displayed with a revert icon) of a property has changed.
+			</description>
+		</signal>
+		<signal name="property_changed">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="field" type="StringName" />
+			<param index="3" name="changing" type="bool" />
+			<description>
+				Do not emit this manually, use the [method emit_changed] method instead.
+			</description>
+		</signal>
+		<signal name="property_checked">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="checked" type="bool" />
+			<description>
+				Emitted when a property was checked. Used internally.
+			</description>
+		</signal>
+		<signal name="property_deleted">
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Emitted when a property was deleted. Used internally.
+			</description>
+		</signal>
+		<signal name="property_favorited">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="favorited" type="bool" />
+			<description>
+				Emit it if you want to mark a property as favorited, making it appear at the top of the inspector.
+			</description>
+		</signal>
+		<signal name="property_keyed">
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Emit it if you want to add this value as an animation key (check for keying being enabled first).
+			</description>
+		</signal>
+		<signal name="property_keyed_with_value">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Emit it if you want to key a property with a single value.
+			</description>
+		</signal>
+		<signal name="property_pinned">
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="pinned" type="bool" />
+			<description>
+				Emit it if you want to mark (or unmark) the value of a property for being saved regardless of being equal to the default value.
+				The default value is the one the property will get when the node is just instantiated and can come from an ancestor scene in the inheritance/instantiation chain, a script or a builtin class.
+			</description>
+		</signal>
+		<signal name="resource_selected">
+			<param index="0" name="path" type="String" />
+			<param index="1" name="resource" type="Resource" />
+			<description>
+				If you want a sub-resource to be edited, emit this signal with the resource.
+			</description>
+		</signal>
+		<signal name="selected">
+			<param index="0" name="path" type="String" />
+			<param index="1" name="focusable_idx" type="int" />
+			<description>
+				Emitted when selected. Used internally.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CapsuleShape2D" inherits="Shape2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D capsule shape used for physics collision.
+	</brief_description>
+	<description>
+		A 2D capsule shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape2D].
+		[b]Performance:[/b] [CapsuleShape2D] is fast to check collisions against, but it is slower than [RectangleShape2D] and [CircleShape2D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="30.0">
+			The capsule's height.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
+			The capsule's radius.
+		</member>
+	</members>
+</class>

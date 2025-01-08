@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLine" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds a line of text.
+	</brief_description>
+	<description>
+		Abstraction over [TextServer] for handling a single line of text.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_object">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="size" type="Vector2" />
+			<param index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="length" type="int" default="1" />
+			<param index="4" name="baseline" type="float" default="0.0" />
+			<description>
+				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
+			</description>
+		</method>
+		<method name="add_string">
+			<return type="bool" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="font_size" type="int" />
+			<param index="3" name="language" type="String" default="&quot;&quot;" />
+			<param index="4" name="meta" type="Variant" default="null" />
+			<description>
+				Adds text span and font to draw it.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears text line (removes text and inline objects).
+			</description>
+		</method>
+		<method name="draw" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="outline_size" type="int" default="1" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="get_line_ascent" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
+			</description>
+		</method>
+		<method name="get_line_descent" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
+			</description>
+		</method>
+		<method name="get_line_underline_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="get_line_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns thickness of the underline.
+			</description>
+		</method>
+		<method name="get_line_width" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns width (for horizontal layout) or height (for vertical) of the text.
+			</description>
+		</method>
+		<method name="get_object_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="key" type="Variant" />
+			<description>
+				Returns bounding rectangle of the inline object.
+			</description>
+		</method>
+		<method name="get_objects" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns array of inline objects.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns TextServer buffer RID.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns size of the bounding box of the text.
+			</description>
+		</method>
+		<method name="hit_test" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="coords" type="float" />
+			<description>
+				Returns caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="resize_object">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="size" type="Vector2" />
+			<param index="2" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="3" name="baseline" type="float" default="0.0" />
+			<description>
+				Sets new size and alignment of embedded object.
+			</description>
+		</method>
+		<method name="set_bidi_override">
+			<return type="void" />
+			<param index="0" name="override" type="Array" />
+			<description>
+				Overrides BiDi for the structured text.
+				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="tab_align">
+			<return type="void" />
+			<param index="0" name="tab_stops" type="PackedFloat32Array" />
+			<description>
+				Aligns text to the given tab-stops.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Sets text alignment within the line as if the line was horizontal.
+		</member>
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
+			Text writing direction.
+		</member>
+		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
+			Ellipsis character used for text clipping.
+		</member>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="3">
+			Line alignment rules. For more info see [TextServer].
+		</member>
+		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
+			Text orientation.
+		</member>
+		<member name="preserve_control" type="bool" setter="set_preserve_control" getter="get_preserve_control" default="false">
+			If set to [code]true[/code] text will display control characters.
+		</member>
+		<member name="preserve_invalid" type="bool" setter="set_preserve_invalid" getter="get_preserve_invalid" default="true">
+			If set to [code]true[/code] text will display invalid characters.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
+			Sets the clipping behavior when the text exceeds the text line's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
+			Text line width.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFState" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents all data of a glTF file.
+	</brief_description>
+	<description>
+		Contains all nodes and resources of a glTF file. This is used by [GLTFDocument] as data storage, which allows [GLTFDocument] and all [GLTFDocumentExtension] classes to remain stateless.
+		GLTFState can be populated by [GLTFDocument] reading a file or by converting a Godot scene. Then the data can either be used to create a Godot scene or save to a glTF file. The code that converts to/from a Godot scene can be intercepted at arbitrary points by [GLTFDocumentExtension] classes. This allows for custom data to be stored in the glTF file or for custom data to be converted to/from Godot nodes.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="glTF asset header schema">https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/asset.schema.json</link>
+	</tutorials>
+	<methods>
+		<method name="add_used_extension">
+			<return type="void" />
+			<param index="0" name="extension_name" type="String" />
+			<param index="1" name="required" type="bool" />
+			<description>
+				Appends an extension to the list of extensions used by this glTF file during serialization. If [param required] is [code]true[/code], the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
+			</description>
+		</method>
+		<method name="append_data_to_buffers">
+			<return type="int" />
+			<param index="0" name="data" type="PackedByteArray" />
+			<param index="1" name="deduplication" type="bool" />
+			<description>
+				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is [code]true[/code], the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
+			</description>
+		</method>
+		<method name="append_gltf_node">
+			<return type="int" />
+			<param index="0" name="gltf_node" type="GLTFNode" />
+			<param index="1" name="godot_scene_node" type="Node" />
+			<param index="2" name="parent_node_index" type="int" />
+			<description>
+				Append the given [GLTFNode] to the state, and return its new index. This can be used to export one Godot node as multiple glTF nodes, or inject new glTF nodes at import time. On import, this must be called before [method GLTFDocumentExtension._generate_scene_node] finishes for the parent node. On export, this must be called before [method GLTFDocumentExtension._export_node] runs for the parent node.
+				The [param godot_scene_node] parameter is the Godot scene node that corresponds to this glTF node. This is highly recommended to be set to a valid node, but may be [code]null[/code] if there is no corresponding Godot scene node. One Godot scene node may be used for multiple glTF nodes, so if exporting multiple glTF nodes for one Godot scene node, use the same Godot scene node for each.
+				The [param parent_node_index] parameter is the index of the parent [GLTFNode] in the state. If [code]-1[/code], the node will be a root node, otherwise the new node will be added to the parent's list of children. The index will also be written to the [member GLTFNode.parent] property of the new node.
+			</description>
+		</method>
+		<method name="get_accessors">
+			<return type="GLTFAccessor[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+				Gets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_animation_player">
+			<return type="AnimationPlayer" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the [AnimationPlayer] node with the given index. These nodes are only used during the export process when converting Godot [AnimationPlayer] nodes to glTF animations.
+			</description>
+		</method>
+		<method name="get_animation_players_count">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the number of [AnimationPlayer] nodes in this [GLTFState]. These nodes are only used during the export process when converting Godot [AnimationPlayer] nodes to glTF animations.
+			</description>
+		</method>
+		<method name="get_animations">
+			<return type="GLTFAnimation[]" />
+			<description>
+				Returns an array of all [GLTFAnimation]s in the glTF file. When importing, these will be generated as animations in an [AnimationPlayer] node. When exporting, these will be generated from Godot [AnimationPlayer] nodes.
+			</description>
+		</method>
+		<method name="get_buffer_views">
+			<return type="GLTFBufferView[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_cameras">
+			<return type="GLTFCamera[]" />
+			<description>
+				Returns an array of all [GLTFCamera]s in the glTF file. These are the cameras that the [member GLTFNode.camera] index refers to.
+			</description>
+		</method>
+		<method name="get_handle_binary_image">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_images">
+			<return type="Texture2D[]" />
+			<description>
+				Gets the images of the glTF file as an array of [Texture2D]s. These are the images that the [member GLTFTexture.src_image] index refers to.
+			</description>
+		</method>
+		<method name="get_lights">
+			<return type="GLTFLight[]" />
+			<description>
+				Returns an array of all [GLTFLight]s in the glTF file. These are the lights that the [member GLTFNode.light] index refers to.
+			</description>
+		</method>
+		<method name="get_materials">
+			<return type="Material[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_meshes">
+			<return type="GLTFMesh[]" />
+			<description>
+				Returns an array of all [GLTFMesh]es in the glTF file. These are the meshes that the [member GLTFNode.mesh] index refers to.
+			</description>
+		</method>
+		<method name="get_node_index">
+			<return type="int" />
+			<param index="0" name="scene_node" type="Node" />
+			<description>
+				Returns the index of the [GLTFNode] corresponding to this Godot scene node. This is the inverse of [method get_scene_node]. Useful during the export process.
+				[b]Note:[/b] Not every Godot scene node will have a corresponding [GLTFNode], and not every [GLTFNode] will have a scene node generated. If there is no [GLTFNode] index for this scene node, [code]-1[/code] is returned.
+			</description>
+		</method>
+		<method name="get_nodes">
+			<return type="GLTFNode[]" />
+			<description>
+				Returns an array of all [GLTFNode]s in the glTF file. These are the nodes that [member GLTFNode.children] and [member root_nodes] refer to. This includes nodes that may not be generated in the Godot scene, or nodes that may generate multiple Godot scene nodes.
+			</description>
+		</method>
+		<method name="get_scene_node">
+			<return type="Node" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the Godot scene node that corresponds to the same index as the [GLTFNode] it was generated from. This is the inverse of [method get_node_index]. Useful during the import process.
+				[b]Note:[/b] Not every [GLTFNode] will have a scene node generated, and not every generated scene node will have a corresponding [GLTFNode]. If there is no scene node for this [GLTFNode] index, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="get_skeletons">
+			<return type="GLTFSkeleton[]" />
+			<description>
+				Returns an array of all [GLTFSkeleton]s in the glTF file. These are the skeletons that the [member GLTFNode.skeleton] index refers to.
+			</description>
+		</method>
+		<method name="get_skins">
+			<return type="GLTFSkin[]" />
+			<description>
+				Returns an array of all [GLTFSkin]s in the glTF file. These are the skins that the [member GLTFNode.skin] index refers to.
+			</description>
+		</method>
+		<method name="get_texture_samplers">
+			<return type="GLTFTextureSampler[]" />
+			<description>
+				Retrieves the array of texture samplers that are used by the textures contained in the glTF.
+			</description>
+		</method>
+		<method name="get_textures">
+			<return type="GLTFTexture[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_animation_names">
+			<return type="String[]" />
+			<description>
+				Returns an array of unique animation names. This is only used during the import process.
+			</description>
+		</method>
+		<method name="get_unique_names">
+			<return type="String[]" />
+			<description>
+				Returns an array of unique node names. This is used in both the import process and export process.
+			</description>
+		</method>
+		<method name="set_accessors">
+			<return type="void" />
+			<param index="0" name="accessors" type="GLTFAccessor[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+				Sets additional arbitrary data in this [GLTFState] instance. This can be used to keep per-file state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The first argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the second argument can be anything you want.
+			</description>
+		</method>
+		<method name="set_animations">
+			<return type="void" />
+			<param index="0" name="animations" type="GLTFAnimation[]" />
+			<description>
+				Sets the [GLTFAnimation]s in the state. When importing, these will be generated as animations in an [AnimationPlayer] node. When exporting, these will be generated from Godot [AnimationPlayer] nodes.
+			</description>
+		</method>
+		<method name="set_buffer_views">
+			<return type="void" />
+			<param index="0" name="buffer_views" type="GLTFBufferView[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_cameras">
+			<return type="void" />
+			<param index="0" name="cameras" type="GLTFCamera[]" />
+			<description>
+				Sets the [GLTFCamera]s in the state. These are the cameras that the [member GLTFNode.camera] index refers to.
+			</description>
+		</method>
+		<method name="set_handle_binary_image">
+			<return type="void" />
+			<param index="0" name="method" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_images">
+			<return type="void" />
+			<param index="0" name="images" type="Texture2D[]" />
+			<description>
+				Sets the images in the state stored as an array of [Texture2D]s. This can be used during export. These are the images that the [member GLTFTexture.src_image] index refers to.
+			</description>
+		</method>
+		<method name="set_lights">
+			<return type="void" />
+			<param index="0" name="lights" type="GLTFLight[]" />
+			<description>
+				Sets the [GLTFLight]s in the state. These are the lights that the [member GLTFNode.light] index refers to.
+			</description>
+		</method>
+		<method name="set_materials">
+			<return type="void" />
+			<param index="0" name="materials" type="Material[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_meshes">
+			<return type="void" />
+			<param index="0" name="meshes" type="GLTFMesh[]" />
+			<description>
+				Sets the [GLTFMesh]es in the state. These are the meshes that the [member GLTFNode.mesh] index refers to.
+			</description>
+		</method>
+		<method name="set_nodes">
+			<return type="void" />
+			<param index="0" name="nodes" type="GLTFNode[]" />
+			<description>
+				Sets the [GLTFNode]s in the state. These are the nodes that [member GLTFNode.children] and [member root_nodes] refer to. Some of the nodes set here may not be generated in the Godot scene, or may generate multiple Godot scene nodes.
+			</description>
+		</method>
+		<method name="set_skeletons">
+			<return type="void" />
+			<param index="0" name="skeletons" type="GLTFSkeleton[]" />
+			<description>
+				Sets the [GLTFSkeleton]s in the state. These are the skeletons that the [member GLTFNode.skeleton] index refers to.
+			</description>
+		</method>
+		<method name="set_skins">
+			<return type="void" />
+			<param index="0" name="skins" type="GLTFSkin[]" />
+			<description>
+				Sets the [GLTFSkin]s in the state. These are the skins that the [member GLTFNode.skin] index refers to.
+			</description>
+		</method>
+		<method name="set_texture_samplers">
+			<return type="void" />
+			<param index="0" name="texture_samplers" type="GLTFTextureSampler[]" />
+			<description>
+				Sets the array of texture samplers that are used by the textures contained in the glTF.
+			</description>
+		</method>
+		<method name="set_textures">
+			<return type="void" />
+			<param index="0" name="textures" type="GLTFTexture[]" />
+			<description>
+			</description>
+		</method>
+		<method name="set_unique_animation_names">
+			<return type="void" />
+			<param index="0" name="unique_animation_names" type="String[]" />
+			<description>
+				Sets the unique animation names in the state. This is only used during the import process.
+			</description>
+		</method>
+		<method name="set_unique_names">
+			<return type="void" />
+			<param index="0" name="unique_names" type="String[]" />
+			<description>
+				Sets the unique node names in the state. This is used in both the import process and export process.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_fps" type="float" setter="set_bake_fps" getter="get_bake_fps" default="30.0">
+			The baking fps of the animation for either import or export.
+		</member>
+		<member name="base_path" type="String" setter="set_base_path" getter="get_base_path" default="&quot;&quot;">
+			The folder path associated with this glTF data. This is used to find other files the glTF file references, like images or binary buffers. This will be set during import when appending from a file, and will be set during export when writing to a file.
+		</member>
+		<member name="buffers" type="PackedByteArray[]" setter="set_buffers" getter="get_buffers" default="[]">
+		</member>
+		<member name="copyright" type="String" setter="set_copyright" getter="get_copyright" default="&quot;&quot;">
+			The copyright string in the asset header of the glTF file. This is set during import if present and export if non-empty. See the glTF asset header documentation for more information.
+		</member>
+		<member name="create_animations" type="bool" setter="set_create_animations" getter="get_create_animations" default="true">
+		</member>
+		<member name="filename" type="String" setter="set_filename" getter="get_filename" default="&quot;&quot;">
+			The file name associated with this glTF data. If it ends with [code].gltf[/code], this is text-based glTF, otherwise this is binary GLB. This will be set during import when appending from a file, and will be set during export when writing to a file. If writing to a buffer, this will be an empty string.
+		</member>
+		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
+			The binary buffer attached to a .glb file.
+		</member>
+		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
+			If [code]true[/code], forces all GLTFNodes in the document to be bones of a single [Skeleton3D] Godot node.
+		</member>
+		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
+			The original raw JSON document corresponding to this GLTFState.
+		</member>
+		<member name="major_version" type="int" setter="set_major_version" getter="get_major_version" default="0">
+		</member>
+		<member name="minor_version" type="int" setter="set_minor_version" getter="get_minor_version" default="0">
+		</member>
+		<member name="root_nodes" type="PackedInt32Array" setter="set_root_nodes" getter="get_root_nodes" default="PackedInt32Array()">
+			The root nodes of the glTF file. Typically, a glTF file will only have one scene, and therefore one root node. However, a glTF file may have multiple scenes and therefore multiple root nodes, which will be generated as siblings of each other and as children of the root node of the generated Godot scene.
+		</member>
+		<member name="scene_name" type="String" setter="set_scene_name" getter="get_scene_name" default="&quot;&quot;">
+			The name of the scene. When importing, if not specified, this will be the file name. When exporting, if specified, the scene name will be saved to the glTF file.
+		</member>
+		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
+		</member>
+	</members>
+	<constants>
+		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
+			Discards all embedded textures and uses untextured materials.
+		</constant>
+		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1">
+			Extracts embedded textures to be reimported and compressed. Editor only. Acts as uncompressed at runtime.
+		</constant>
+		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2">
+			Embeds textures VRAM compressed with Basis Universal into the generated scene.
+		</constant>
+		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3">
+			Embeds textures compressed losslessly into the generated scene, matching old behavior.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PopupMenu" inherits="Popup" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A modal window used to display a list of options.
+	</brief_description>
+	<description>
+		[PopupMenu] is a modal window used to display a list of options. Useful for toolbars and context menus.
+		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents. If no maximum size is set, or if it is set to [code]0[/code], the [PopupMenu] height will be limited by its parent rect.
+		All [code]set_*[/code] methods allow negative item indices, i.e. [code]-1[/code] to access the last item, [code]-2[/code] to select the second-to-last item, and so on.
+		[b]Incremental search:[/b] Like [ItemList] and [Tree], [PopupMenu] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
+		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="activate_item_by_event">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="for_global_only" type="bool" default="false" />
+			<description>
+				Checks the provided [param event] against the [PopupMenu]'s shortcuts and accelerators, and activates the first item with matching events. If [param for_global_only] is [code]true[/code], only shortcuts and accelerators with [code]global[/code] set to [code]true[/code] will be called.
+				Returns [code]true[/code] if an item was successfully activated.
+				[b]Note:[/b] Certain [Control]s, such as [MenuButton], will call this method automatically.
+			</description>
+		</method>
+		<method name="add_check_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new checkable item with text [param label].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_check_shortcut">
+			<return type="void" />
+			<param index="0" name="shortcut" type="Shortcut" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="global" type="bool" default="false" />
+			<description>
+				Adds a new checkable item and assigns the specified [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_icon_check_item">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new checkable item with text [param label] and icon [param texture].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_icon_check_shortcut">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="global" type="bool" default="false" />
+			<description>
+				Adds a new checkable item and assigns the specified [Shortcut] and icon [param texture] to it. Sets the label of the checkbox to the [Shortcut]'s name.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_icon_item">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new item with text [param label] and icon [param texture].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+			</description>
+		</method>
+		<method name="add_icon_radio_check_item">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Same as [method add_icon_check_item], but uses a radio check button.
+			</description>
+		</method>
+		<method name="add_icon_radio_check_shortcut">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="global" type="bool" default="false" />
+			<description>
+				Same as [method add_icon_check_shortcut], but uses a radio check button.
+			</description>
+		</method>
+		<method name="add_icon_shortcut">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<param index="2" name="id" type="int" default="-1" />
+			<param index="3" name="global" type="bool" default="false" />
+			<param index="4" name="allow_echo" type="bool" default="false" />
+			<description>
+				Adds a new item and assigns the specified [Shortcut] and icon [param texture] to it. Sets the label of the checkbox to the [Shortcut]'s name.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new item with text [param label].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] The provided [param id] is used only in [signal id_pressed] and [signal id_focused] signals. It's not related to the [code]index[/code] arguments in e.g. [method set_item_checked].
+			</description>
+		</method>
+		<method name="add_multistate_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="max_states" type="int" />
+			<param index="2" name="default_state" type="int" default="0" />
+			<param index="3" name="id" type="int" default="-1" />
+			<param index="4" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new multistate item with text [param label].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. The default value is defined by [param default_state].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[codeblock]
+				func _ready():
+				    add_multistate_item("Item", 3, 0)
+
+				    index_pressed.connect(func(index: int):
+				            toggle_item_multistate(index)
+				            match get_item_multistate(index):
+				                0:
+				                    print("First state")
+				                1:
+				                    print("Second state")
+				                2:
+				                    print("Third state")
+				        )
+				[/codeblock]
+				[b]Note:[/b] Multistate items don't update their state automatically and must be done manually. See [method toggle_item_multistate], [method set_item_multistate] and [method get_item_multistate] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_radio_check_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="accel" type="int" enum="Key" default="0" />
+			<description>
+				Adds a new radio check button with text [param label].
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_radio_check_shortcut">
+			<return type="void" />
+			<param index="0" name="shortcut" type="Shortcut" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="global" type="bool" default="false" />
+			<description>
+				Adds a new radio check button and assigns a [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+			</description>
+		</method>
+		<method name="add_separator">
+			<return type="void" />
+			<param index="0" name="label" type="String" default="&quot;&quot;" />
+			<param index="1" name="id" type="int" default="-1" />
+			<description>
+				Adds a separator between items. Separators also occupy an index, which you can set by using the [param id] parameter.
+				A [param label] can optionally be provided, which will appear at the center of the separator.
+			</description>
+		</method>
+		<method name="add_shortcut">
+			<return type="void" />
+			<param index="0" name="shortcut" type="Shortcut" />
+			<param index="1" name="id" type="int" default="-1" />
+			<param index="2" name="global" type="bool" default="false" />
+			<param index="3" name="allow_echo" type="bool" default="false" />
+			<description>
+				Adds a [Shortcut].
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+				If [param allow_echo] is [code]true[/code], the shortcut can be activated with echo events.
+			</description>
+		</method>
+		<method name="add_submenu_item" deprecated="Prefer using [method add_submenu_node_item] instead.">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="submenu" type="String" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. The [param submenu] argument must be the name of an existing [PopupMenu] that has been added as a child to this node. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="add_submenu_node_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the parent [PopupMenu] node when clicked. This submenu will be shown when the item is clicked, hovered for long enough, or activated using the [code]ui_select[/code] or [code]ui_right[/code] input actions.
+				[param submenu] must be either child of this [PopupMenu] or has no parent node (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
+				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<param index="0" name="free_submenus" type="bool" default="false" />
+			<description>
+				Removes all items from the [PopupMenu]. If [param free_submenus] is [code]true[/code], the submenu nodes are automatically freed.
+			</description>
+		</method>
+		<method name="get_focused_item" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the currently focused item. Returns [code]-1[/code] if no item is focused.
+			</description>
+		</method>
+		<method name="get_item_accelerator" qualifiers="const">
+			<return type="int" enum="Key" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the accelerator of the item at the given [param index]. An accelerator is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The return value is an integer which is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]). If no accelerator is defined for the specified [param index], [method get_item_accelerator] returns [code]0[/code] (corresponding to [constant @GlobalScope.KEY_NONE]).
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the icon of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_icon_max_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the maximum allowed width of the icon for the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_icon_modulate" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns a [Color] modulating the item's icon at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the ID of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+			</description>
+		</method>
+		<method name="get_item_indent" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the index of the item containing the specified [param id]. Index is automatically assigned to each item by the engine and can not be set manually.
+			</description>
+		</method>
+		<method name="get_item_language" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns item's text language code.
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="get_item_multistate" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the state of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_multistate_max" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the max states of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_shortcut" qualifiers="const">
+			<return type="Shortcut" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [Shortcut] associated with the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_submenu" qualifiers="const" deprecated="Prefer using [method get_item_submenu_node] instead.">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the submenu name of the item at the given [param index]. See [method add_submenu_item] for more info on how to add a submenu.
+			</description>
+		</method>
+		<method name="get_item_submenu_node" qualifiers="const">
+			<return type="PopupMenu" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the submenu of the item at the given [param index], or [code]null[/code] if no submenu was added. See [method add_submenu_node_item] for more info on how to add a submenu.
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the text of the item at the given [param index].
+			</description>
+		</method>
+		<method name="get_item_text_direction" qualifiers="const">
+			<return type="int" enum="Control.TextDirection" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns item's text base writing direction.
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tooltip associated with the item at the given [param index].
+			</description>
+		</method>
+		<method name="is_item_checkable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the given [param index] is checkable in some way, i.e. if it has a checkbox or radio button.
+				[b]Note:[/b] Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="is_item_checked" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the given [param index] is checked.
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the given [param index] is disabled. When it is disabled it can't be selected, or its action invoked.
+				See [method set_item_disabled] for more info on how to disable an item.
+			</description>
+		</method>
+		<method name="is_item_radio_checkable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the given [param index] has radio button-style checkability.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+			</description>
+		</method>
+		<method name="is_item_separator" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the item is a separator. If it is, it will be displayed as a line. See [method add_separator] for more info on how to add a separator.
+			</description>
+		</method>
+		<method name="is_item_shortcut_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the specified item's shortcut is disabled.
+			</description>
+		</method>
+		<method name="is_native_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the system native menu is supported and currently used by this [PopupMenu].
+			</description>
+		</method>
+		<method name="is_system_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the menu is bound to the special system menu.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the item at the given [param index] from the menu.
+				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+			</description>
+		</method>
+		<method name="scroll_to_item">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Moves the scroll view to make the item at the given [param index] visible.
+			</description>
+		</method>
+		<method name="set_focused_item">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Sets the currently focused item as the given [param index].
+				Passing [code]-1[/code] as the index makes so that no item is focused.
+			</description>
+		</method>
+		<method name="set_item_accelerator">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="accel" type="int" enum="Key" />
+			<description>
+				Sets the accelerator of the item at the given [param index]. An accelerator is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. [param accel] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+			</description>
+		</method>
+		<method name="set_item_as_checkable">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the item at the given [param index] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+			</description>
+		</method>
+		<method name="set_item_as_radio_checkable">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets the type of the item at the given [param index] to radio button. If [code]false[/code], sets the type of the item to plain text.
+			</description>
+		</method>
+		<method name="set_item_as_separator">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Mark the item at the given [param index] as a separator, which means that it would be displayed as a line. If [code]false[/code], sets the type of the item to plain text.
+			</description>
+		</method>
+		<method name="set_item_checked">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="checked" type="bool" />
+			<description>
+				Sets the checkstate status of the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				Enables/disables the item at the given [param index]. When it is disabled, it can't be selected and its action can't be invoked.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Replaces the [Texture2D] icon of the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_icon_max_width">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the maximum allowed width of the icon for the item at the given [param index]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
+			</description>
+		</method>
+		<method name="set_item_icon_modulate">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="modulate" type="Color" />
+			<description>
+				Sets a modulating [Color] of the item's icon at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_id">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Sets the [param id] of the item at the given [param index].
+				The [param id] is used in [signal id_pressed] and [signal id_focused] signals.
+			</description>
+		</method>
+		<method name="set_item_indent">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="indent" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_language">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata of an item, which may be of any type. You can later get it with [method get_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="set_item_multistate">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="state" type="int" />
+			<description>
+				Sets the state of a multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
+		<method name="set_item_multistate_max">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="max_states" type="int" />
+			<description>
+				Sets the max states of a multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
+		<method name="set_item_shortcut">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="shortcut" type="Shortcut" />
+			<param index="2" name="global" type="bool" default="false" />
+			<description>
+				Sets a [Shortcut] for the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_shortcut_disabled">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				Disables the [Shortcut] of the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_submenu" deprecated="Prefer using [method set_item_submenu_node] instead.">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="submenu" type="String" />
+			<description>
+				Sets the submenu of the item at the given [param index]. The submenu is the name of a child [PopupMenu] node that would be shown when the item is clicked.
+			</description>
+		</method>
+		<method name="set_item_submenu_node">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="submenu" type="PopupMenu" />
+			<description>
+				Sets the submenu of the item at the given [param index]. The submenu is a [PopupMenu] node that would be shown when the item is clicked. It must either be a child of this [PopupMenu] or has no parent (in which case it will be automatically added as a child). If the [param submenu] popup has another parent, this method will fail.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Sets the text of the item at the given [param index].
+			</description>
+		</method>
+		<method name="set_item_text_direction">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
+			<description>
+				Sets item's text base writing direction.
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the [String] tooltip of the item at the given [param index].
+			</description>
+		</method>
+		<method name="toggle_item_checked">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Toggles the check state of the item at the given [param index].
+			</description>
+		</method>
+		<method name="toggle_item_multistate">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Cycle to the next state of a multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
+			If [code]true[/code], allows navigating [PopupMenu] with letter keys.
+		</member>
+		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
+			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
+		</member>
+		<member name="hide_on_item_selection" type="bool" setter="set_hide_on_item_selection" getter="is_hide_on_item_selection" default="true">
+			If [code]true[/code], hides the [PopupMenu] when an item is selected.
+		</member>
+		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection" default="false">
+			If [code]true[/code], hides the [PopupMenu] when a state item is selected.
+		</member>
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items currently in the list.
+		</member>
+		<member name="prefer_native_menu" type="bool" setter="set_prefer_native_menu" getter="is_prefer_native_menu" default="false">
+			If [code]true[/code], [MenuBar] will use native menu when supported.
+			[b]Note:[/b] If [PopupMenu] is linked to [StatusIndicator], [MenuBar], or another [PopupMenu] item it can use native menu regardless of this property, use [method is_native_menu] to check it.
+		</member>
+		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
+			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
+		</member>
+		<member name="system_menu_id" type="int" setter="set_system_menu" getter="get_system_menu" enum="NativeMenu.SystemMenus" default="0">
+			If set to one of the values of [enum NativeMenu.SystemMenus], this [PopupMenu] is bound to the special system menu. Only one [PopupMenu] can be bound to each special menu at a time.
+		</member>
+		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" overrides="Viewport" default="true" />
+	</members>
+	<signals>
+		<signal name="id_focused">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when the user navigated to an item of some [param id] using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input action.
+			</description>
+		</signal>
+		<signal name="id_pressed">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when an item of some [param id] is pressed or its accelerator is activated.
+				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
+			</description>
+		</signal>
+		<signal name="index_pressed">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when an item of some [param index] is pressed or its accelerator is activated.
+			</description>
+		</signal>
+		<signal name="menu_changed">
+			<description>
+				Emitted when any item is added, modified or removed.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="font_accelerator_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.8)">
+			The text [Color] used for shortcuts and accelerators that show next to the menu item name when defined. See [method get_item_accelerator] for more info on accelerators.
+		</theme_item>
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			The default text [Color] for menu items' names.
+		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.4, 0.4, 0.4, 0.8)">
+			[Color] used for disabled menu items' text.
+		</theme_item>
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			[Color] used for the hovered text.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The tint of text outline of the menu item.
+		</theme_item>
+		<theme_item name="font_separator_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			[Color] used for labeled separators' text. See [method add_separator].
+		</theme_item>
+		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The tint of text outline of the labeled separator.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal space between the item's elements.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the item's icon. This limit is applied on top of the default size of the icon, but before the value set with [method set_item_icon_max_width]. The height is adjusted according to the icon's ratio.
+		</theme_item>
+		<theme_item name="indent" data_type="constant" type="int" default="10">
+			Width of the single indentation level.
+		</theme_item>
+		<theme_item name="item_end_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the right of the items (or left, in RTL layout).
+		</theme_item>
+		<theme_item name="item_start_padding" data_type="constant" type="int" default="2">
+			Horizontal padding to the left of the items (or right, in RTL layout).
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the item text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
+			The size of the labeled separator text outline.
+		</theme_item>
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
+			The vertical space between each menu item.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] used for the menu items.
+		</theme_item>
+		<theme_item name="font_separator" data_type="font" type="Font">
+			[Font] used for the labeled separator.
+		</theme_item>
+		<theme_item name="font_separator_size" data_type="font_size" type="int">
+			Font size of the labeled separator.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the menu items.
+		</theme_item>
+		<theme_item name="checked" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked checkbox items.
+		</theme_item>
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked checkbox items when they are disabled.
+		</theme_item>
+		<theme_item name="radio_checked" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked radio button items.
+		</theme_item>
+		<theme_item name="radio_checked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the checked radio button items when they are disabled.
+		</theme_item>
+		<theme_item name="radio_unchecked" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked radio button items.
+		</theme_item>
+		<theme_item name="radio_unchecked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked radio button items when they are disabled.
+		</theme_item>
+		<theme_item name="submenu" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the submenu arrow (for left-to-right layouts).
+		</theme_item>
+		<theme_item name="submenu_mirrored" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the submenu arrow (for right-to-left layouts).
+		</theme_item>
+		<theme_item name="unchecked" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked checkbox items.
+		</theme_item>
+		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
+			[Texture2D] icon for the unchecked checkbox items when they are disabled.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			[StyleBox] displayed when the [PopupMenu] item is hovered.
+		</theme_item>
+		<theme_item name="labeled_separator_left" data_type="style" type="StyleBox">
+			[StyleBox] for the left side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="labeled_separator_right" data_type="style" type="StyleBox">
+			[StyleBox] for the right side of labeled separator. See [method add_separator].
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			[StyleBox] for the background panel.
+		</theme_item>
+		<theme_item name="separator" data_type="style" type="StyleBox">
+			[StyleBox] used for the separators. See [method add_separator].
+		</theme_item>
+	</theme_items>
+</class>

@@ -1,0 +1,86 @@
+# Slovenian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-11-16 16:21+0000\n"
+"Last-Translator: Andrej Koman <andrej.koman123@gmail.com>\n"
+"Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/sl/>\n"
+"Language: sl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
+"n%100==4 ? 2 : 3;\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "Network"
+msgstr "Omrežje"
+
+msgid "Open"
+msgstr "Odpri"
+
+msgid "Select Current Folder"
+msgstr "Izberite Trenutno Mapo"
+
+msgid "All Recognized"
+msgstr "Vse Prepoznano"
+
+msgid "Open a File"
+msgstr "Odpri v Datoteki"
+
+msgid "Open File(s)"
+msgstr "Odpri Datotek(o/e)"
+
+msgid "Open a Directory"
+msgstr "Odpri v Mapi"
+
+msgid "Open a File or Directory"
+msgstr "Odpri Datoteko ali Mapo"
+
+msgid "Save"
+msgstr "Shrani"
+
+msgid "Save a File"
+msgstr "Shrani Datoteko"
+
+msgid "Path:"
+msgstr "Pot:"
+
+msgid "Directories & Files:"
+msgstr "Mape & Datoteke:"
+
+msgid "File:"
+msgstr "Datoteka:"
+
+msgid "Create Folder"
+msgstr "Ustvarite Mapo"
+
+msgid "Name:"
+msgstr "Ime:"
+
+msgid "Could not create folder."
+msgstr "Mape ni mogoče ustvariti."
+
+msgid "Zoom Out"
+msgstr "Oddalji"
+
+msgid "Zoom In"
+msgstr "Približaj"
+
+msgid "Clear"
+msgstr "Počisti"
+
+msgid "Undo"
+msgstr "Razveljavi"
+
+msgid "Redo"
+msgstr "Ponovi"
+
+msgid "(Other)"
+msgstr "(Ostalo)"

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control that displays a texture.
+	</brief_description>
+	<description>
+		A control that displays a texture, for example an icon inside a GUI. The texture's placement can be controlled with the [member stretch_mode] property. It can scale, tile, or stay centered inside its bounding rectangle.
+	</description>
+	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+	</tutorials>
+	<members>
+		<member name="expand_mode" type="int" setter="set_expand_mode" getter="get_expand_mode" enum="TextureRect.ExpandMode" default="0" experimental="Using [constant EXPAND_FIT_WIDTH], [constant EXPAND_FIT_WIDTH_PROPORTIONAL], [constant EXPAND_FIT_HEIGHT], or [constant EXPAND_FIT_HEIGHT_PROPORTIONAL] may result in unstable behavior in some [Container] controls. This behavior may be re-evaluated and changed in the future.">
+			Defines how minimum size is determined based on the texture's size. See [enum ExpandMode] for options.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureRect.StretchMode" default="0">
+			Controls the texture's behavior when resizing the node's bounding rectangle. See [enum StretchMode].
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The node's [Texture2D] resource.
+		</member>
+	</members>
+	<constants>
+		<constant name="EXPAND_KEEP_SIZE" value="0" enum="ExpandMode">
+			The minimum size will be equal to texture size, i.e. [TextureRect] can't be smaller than the texture.
+		</constant>
+		<constant name="EXPAND_IGNORE_SIZE" value="1" enum="ExpandMode">
+			The size of the texture won't be considered for minimum size calculation, so the [TextureRect] can be shrunk down past the texture size.
+		</constant>
+		<constant name="EXPAND_FIT_WIDTH" value="2" enum="ExpandMode">
+			The height of the texture will be ignored. Minimum width will be equal to the current height. Useful for horizontal layouts, e.g. inside [HBoxContainer].
+		</constant>
+		<constant name="EXPAND_FIT_WIDTH_PROPORTIONAL" value="3" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_WIDTH], but keeps texture's aspect ratio.
+		</constant>
+		<constant name="EXPAND_FIT_HEIGHT" value="4" enum="ExpandMode">
+			The width of the texture will be ignored. Minimum height will be equal to the current width. Useful for vertical layouts, e.g. inside [VBoxContainer].
+		</constant>
+		<constant name="EXPAND_FIT_HEIGHT_PROPORTIONAL" value="5" enum="ExpandMode">
+			Same as [constant EXPAND_FIT_HEIGHT], but keeps texture's aspect ratio.
+		</constant>
+		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
+			Scale to fit the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
+			Tile inside the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
+			The texture keeps its original size and stays in the bounding rectangle's top-left corner.
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="3" enum="StretchMode">
+			The texture keeps its original size and stays centered in the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="4" enum="StretchMode">
+			Scale the texture to fit the node's bounding rectangle, but maintain the texture's aspect ratio.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5" enum="StretchMode">
+			Scale the texture to fit the node's bounding rectangle, center it and maintain its aspect ratio.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6" enum="StretchMode">
+			Scale the texture so that the shorter side fits the bounding rectangle. The other side clips to the node's limits.
+		</constant>
+	</constants>
+</class>

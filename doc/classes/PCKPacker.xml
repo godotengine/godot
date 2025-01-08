@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PCKPacker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Creates packages that can be loaded into a running project.
+	</brief_description>
+	<description>
+		The [PCKPacker] is used to create packages that can be loaded into a running project using [method ProjectSettings.load_resource_pack].
+		[codeblocks]
+		[gdscript]
+		var packer = PCKPacker.new()
+		packer.pck_start("test.pck")
+		packer.add_file("res://text.txt", "text.txt")
+		packer.flush()
+		[/gdscript]
+		[csharp]
+		var packer = new PckPacker();
+		packer.PckStart("test.pck");
+		packer.AddFile("res://text.txt", "text.txt");
+		packer.Flush();
+		[/csharp]
+		[/codeblocks]
+		The above [PCKPacker] creates package [code]test.pck[/code], then adds a file named [code]text.txt[/code] at the root of the package.
+		[b]Note:[/b] PCK is Godot's own pack file format. To create ZIP archives that can be read by any program, use [ZIPPacker] instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="target_path" type="String" />
+			<param index="1" name="source_path" type="String" />
+			<param index="2" name="encrypt" type="bool" default="false" />
+			<description>
+				Adds the [param source_path] file to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally.
+			</description>
+		</method>
+		<method name="add_file_removal">
+			<return type="int" enum="Error" />
+			<param index="0" name="target_path" type="String" />
+			<description>
+				Registers a file removal of the [param target_path] internal path to the PCK. This is mainly used for patches. If the file at this path has been loaded from a previous PCK, it will be removed. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally.
+			</description>
+		</method>
+		<method name="flush">
+			<return type="int" enum="Error" />
+			<param index="0" name="verbose" type="bool" default="false" />
+			<description>
+				Writes the files specified using all [method add_file] calls since the last flush. If [param verbose] is [code]true[/code], a list of files added will be printed to the console for easier debugging.
+			</description>
+		</method>
+		<method name="pck_start">
+			<return type="int" enum="Error" />
+			<param index="0" name="pck_path" type="String" />
+			<param index="1" name="alignment" type="int" default="32" />
+			<param index="2" name="key" type="String" default="&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;" />
+			<param index="3" name="encrypt_directory" type="bool" default="false" />
+			<description>
+				Creates a new PCK file at the file path [param pck_path]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [param pck_path] (even though it's not required).
+			</description>
+		</method>
+	</methods>
+</class>

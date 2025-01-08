@@ -1,0 +1,123 @@
+= COPYING.adoc for the Khronos Group OpenXR projects
+
+// Copyright (c) 2020-2024, The Khronos Group Inc.
+//
+// SPDX-License-Identifier: CC-BY-4.0
+
+This document is shared across a number of OpenXR GitHub projects, as the
+set of files in those projects is partially overlapping.
+(There is a single "source of truth" internal Khronos GitLab monorepo these
+GitHub repositories interact with.)
+
+== Licenses
+
+The OpenXR GitHub projects use several licenses.
+In general, we work to maintain compliance with the
+https://reuse.software/spec/[REUSE 3.0 specification] with clear copyright
+holders and license identifier listed for each file, preferably in each
+file.
+Where this is not possible, or e.g. when we are using files unmodified from
+other open source projects, license data is listed:
+
+* in an adjacent file of the same name, with the additional extension
+  "`.license`"
+* in the repository-wide "`.reuse/dep5`" copyright description
+  https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/["DEP5"
+  machine-readable copyright data] file.
+
+The https://github.com/fsfe/reuse-tool["`reuse`" command line tool] can be
+used to create a software bill of materials in SPDX format from this data.
+Note that this tool will typically exclude the generated files, so if the
+BOM is important to you, you may consider using the
+https://github.com/KhronosGroup/OpenXR-SDK[OpenXR-SDK] repository that
+contains the API headers and the loader source with all generated files
+pre-generated.
+
+The data in/adjacent to each file is the authoritative license and copyright
+data.
+However, for ease of understanding, the following general practices can be
+observed.
+(If in doubt, or if the following summary conflicts with the per-file data,
+the per-file data remains authoritative.)
+
+* The source files (in asciidoctor and other formats) for the OpenXR
+  Specification, reference pages, and supporting documentation are licensed
+  under the Creative Commons Attribution 4.0 International License (SPDX
+  license identifier "`CC-BY-4.0`").
+* Header files, scripts, programs, XML files, and other tooling used or
+  generated as part of the build process is licensed under the Apache
+  License, Version 2.0.
+* For compatibility with external developers working in GPLed projects who
+  have requested it, the main OpenXR headers, XML registry, and loader
+  source are licensed under a dual license with the SPDX license identifier
+  "`Apache-2.0 OR MIT`" .
+  Relevant files include:
+** "`specification/registry/xr.xml`"
+** "`include/openxr/openxr_platform_defines.h`"
+** The generated OpenXR headers "`openxr.h`", "`openxr_platform.h`", and
+   "`openxr_reflection.h`".
+** Source files in "`src/loader/`", and a few files in "`src/common/`".
+** Generated source files used by the loader (including pre-generated in
+   OpenXR-SDK): "`common_config.h`", "`xr_generated_loader.cpp`", and
+   "`xr_generated_loader.hpp`".
+* There are a few files adopted from other open source projects.
+  Such files continue under their original licenses, and appropriately
+  annotated in accordance with REUSE.
+* Some generated, transient files produced during the course of building the
+  specification, headers, or other targets may not have copyrights.
+  These are typically very short asciidoc fragments describing parts of the
+  OpenXR API, and are incorporated by reference into specification or
+  reference page builds.
+
+Users outside Khronos who create and post OpenXR Specifications, whether
+modified or not, should use the CC-BY-4.0 license on the output documents
+(HTML, PDF, etc.) they generate.
+
+
+== Frequently Asked Questions
+
+Q: Why are the HTML and PDF Specifications posted on Khronos' website under
+a license which is neither CC-BY-4.0 nor Apache 2.0?
+
+A: The Specifications posted by Khronos in the OpenXR Registry are licensed
+under the proprietary Khronos Specification License.
+Only these Specifications are Ratified by the Khronos Board of Promoters,
+and therefore they are the only Specifications covered by the Khronos
+Intellectual Property Rights Policy.
+
+
+Q: Does Khronos allow the creation and distribution of modified versions of
+the OpenXR Specification, such as translations to other languages?
+
+A: Yes.
+Such modified Specifications, since they are not created by Khronos, should
+be placed under the CC-BY-4.0 license.
+If you believe your modifications are of general interest, consider
+contributing them back by making a pull request (PR) on the OpenXR-Docs
+project.
+
+
+Q: Can I contribute changes to the OpenXR Specification?
+
+A: Yes, by opening an Issue or Pull Request (PR) on the
+link:https://github.com/KhronosGroup/OpenXR-Docs/[OpenXR-Docs] GitHub
+project.
+You must execute a click-through Contributor License Agreement, which brings
+your changes under the umbrella of the Khronos IP policy.
+
+
+Q: Can you change the license on your files so they're compatible with my
+license?
+
+A: We are using a dual license license on `xr.xml`, the main API headers,
+and the loader source files, to make them compatible with GPL-2.0- and
+LGPL-2.0/2.1-licensed projects.
+This replaces earlier approaches of an MIT-like license on the XML and
+Apache 2.0 on all headers, and allows use of the SPDX license identifier
+"`Apache-2.0 OR MIT`" to denote the license.
+
+If you *require* this same compatibility for use of other Apache-2.0
+licensed files in our repository, please raise an issue identifying the
+files and we will consider changing those specific files to the dual license
+as well.
+

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Sprite2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		General-purpose sprite node.
+	</brief_description>
+	<description>
+		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
+	</description>
+	<tutorials>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
+	</tutorials>
+	<methods>
+		<method name="get_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a [Rect2] representing the Sprite2D's boundary in local coordinates.
+				[b]Example:[/b] Detect if the Sprite2D was clicked:
+				[codeblocks]
+				[gdscript]
+				func _input(event):
+				    if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+				        if get_rect().has_point(to_local(event.position)):
+				            print("A click!")
+				[/gdscript]
+				[csharp]
+				public override void _Input(InputEvent @event)
+				{
+				    if (@event is InputEventMouseButton inputEventMouse)
+				    {
+				        if (inputEventMouse.Pressed &amp;&amp; inputEventMouse.ButtonIndex == MouseButton.Left)
+				        {
+				            if (GetRect().HasPoint(ToLocal(inputEventMouse.Position)))
+				            {
+				                GD.Print("A click!");
+				            }
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="is_pixel_opaque" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="pos" type="Vector2" />
+			<description>
+				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case. The position is in local coordinates.
+				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture is centered.
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
+			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1. This property is automatically adjusted when [member hframes] or [member vframes] are changed to keep pointing to the same visual frame (same column and row). If that's impossible, this value is reset to [code]0[/code].
+		</member>
+		<member name="frame_coords" type="Vector2i" setter="set_frame_coords" getter="get_frame_coords" default="Vector2i(0, 0)">
+			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member hframes] or [member vframes] must be greater than 1.
+		</member>
+		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
+			The number of columns in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
+			The texture's drawing offset.
+		</member>
+		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
+			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
+		</member>
+		<member name="region_filter_clip_enabled" type="bool" setter="set_region_filter_clip_enabled" getter="is_region_filter_clip_enabled" default="false">
+			If [code]true[/code], the area outside of the [member region_rect] is clipped to avoid bleeding of the surrounding texture pixels. [member region_enabled] must be [code]true[/code].
+		</member>
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
+			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			[Texture2D] object to draw.
+		</member>
+		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
+			The number of rows in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
+		</member>
+	</members>
+	<signals>
+		<signal name="frame_changed">
+			<description>
+				Emitted when the [member frame] changes.
+			</description>
+		</signal>
+		<signal name="texture_changed">
+			<description>
+				Emitted when the [member texture] changes.
+			</description>
+		</signal>
+	</signals>
+</class>

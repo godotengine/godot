@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicalSkyMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A material that defines a sky for a [Sky] resource by a set of physical properties.
+	</brief_description>
+	<description>
+		The [PhysicalSkyMaterial] uses the Preetham analytic daylight model to draw a sky based on physical properties. This results in a substantially more realistic sky than the [ProceduralSkyMaterial], but it is slightly slower and less flexible.
+		The [PhysicalSkyMaterial] only supports one sun. The color, energy, and direction of the sun are taken from the first [DirectionalLight3D] in the scene tree.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
+			The sky's overall brightness multiplier. Higher values result in a brighter sky.
+		</member>
+		<member name="ground_color" type="Color" setter="set_ground_color" getter="get_ground_color" default="Color(0.1, 0.07, 0.034, 1)">
+			Modulates the [Color] on the bottom half of the sky to represent the ground.
+		</member>
+		<member name="mie_coefficient" type="float" setter="set_mie_coefficient" getter="get_mie_coefficient" default="0.005">
+			Controls the strength of [url=https://en.wikipedia.org/wiki/Mie_scattering]Mie scattering[/url] for the sky. Mie scattering results from light colliding with larger particles (like water). On earth, Mie scattering results in a whitish color around the sun and horizon.
+		</member>
+		<member name="mie_color" type="Color" setter="set_mie_color" getter="get_mie_color" default="Color(0.69, 0.729, 0.812, 1)">
+			Controls the [Color] of the [url=https://en.wikipedia.org/wiki/Mie_scattering]Mie scattering[/url] effect. While not physically accurate, this allows for the creation of alien-looking planets.
+		</member>
+		<member name="mie_eccentricity" type="float" setter="set_mie_eccentricity" getter="get_mie_eccentricity" default="0.8">
+			Controls the direction of the [url=https://en.wikipedia.org/wiki/Mie_scattering]Mie scattering[/url]. A value of [code]1[/code] means that when light hits a particle it's passing through straight forward. A value of [code]-1[/code] means that all light is scatter backwards.
+		</member>
+		<member name="night_sky" type="Texture2D" setter="set_night_sky" getter="get_night_sky">
+			[Texture2D] for the night sky. This is added to the sky, so if it is bright enough, it may be visible during the day.
+		</member>
+		<member name="rayleigh_coefficient" type="float" setter="set_rayleigh_coefficient" getter="get_rayleigh_coefficient" default="2.0">
+			Controls the strength of the [url=https://en.wikipedia.org/wiki/Rayleigh_scattering]Rayleigh scattering[/url]. Rayleigh scattering results from light colliding with small particles. It is responsible for the blue color of the sky.
+		</member>
+		<member name="rayleigh_color" type="Color" setter="set_rayleigh_color" getter="get_rayleigh_color" default="Color(0.3, 0.405, 0.6, 1)">
+			Controls the [Color] of the [url=https://en.wikipedia.org/wiki/Rayleigh_scattering]Rayleigh scattering[/url]. While not physically accurate, this allows for the creation of alien-looking planets. For example, setting this to a red [Color] results in a Mars-looking atmosphere with a corresponding blue sunset.
+		</member>
+		<member name="sun_disk_scale" type="float" setter="set_sun_disk_scale" getter="get_sun_disk_scale" default="1.0">
+			Sets the size of the sun disk. Default value is based on Sol's perceived size from Earth.
+		</member>
+		<member name="turbidity" type="float" setter="set_turbidity" getter="get_turbidity" default="10.0">
+			Sets the thickness of the atmosphere. High turbidity creates a foggy-looking atmosphere, while a low turbidity results in a clearer atmosphere.
+		</member>
+		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="get_use_debanding" default="true">
+			If [code]true[/code], enables debanding. Debanding adds a small amount of noise which helps reduce banding that appears from the smooth changes in color in the sky.
+		</member>
+	</members>
+</class>

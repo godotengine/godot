@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Area2D" inherits="CollisionObject2D" keywords="trigger" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A region of 2D space that detects other [CollisionObject2D]s entering or exiting it.
+	</brief_description>
+	<description>
+		[Area2D] is a region of 2D space defined by one or multiple [CollisionShape2D] or [CollisionPolygon2D] child nodes. It detects when other [CollisionObject2D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
+		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
+		[b]Note:[/b] Areas and bodies created with [PhysicsServer2D] might not interact as expected with [Area2D]s, and might not emit signals or track objects correctly.
+	</description>
+	<tutorials>
+		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
+	</tutorials>
+	<methods>
+		<method name="get_overlapping_areas" qualifiers="const">
+			<return type="Area2D[]" />
+			<description>
+				Returns a list of intersecting [Area2D]s. The overlapping area's [member CollisionObject2D.collision_layer] must be part of this area's [member CollisionObject2D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="get_overlapping_bodies" qualifiers="const">
+			<return type="Node2D[]" />
+			<description>
+				Returns a list of intersecting [PhysicsBody2D]s and [TileMap]s. The overlapping body's [member CollisionObject2D.collision_layer] must be part of this area's [member CollisionObject2D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="has_overlapping_areas" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if intersecting any [Area2D]s, otherwise returns [code]false[/code]. The overlapping area's [member CollisionObject2D.collision_layer] must be part of this area's [member CollisionObject2D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) the list of overlapping areas is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="has_overlapping_bodies" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if intersecting any [PhysicsBody2D]s or [TileMap]s, otherwise returns [code]false[/code]. The overlapping body's [member CollisionObject2D.collision_layer] must be part of this area's [member CollisionObject2D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) the list of overlapping bodies is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_area" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="Node" />
+			<description>
+				Returns [code]true[/code] if the given [Area2D] intersects or overlaps this [Area2D], [code]false[/code] otherwise.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, the list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_body" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area2D], [code]false[/code] otherwise.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				The [param body] argument can either be a [PhysicsBody2D] or a [TileMap] instance. While TileMaps are not physics bodies themselves, they register their tiles with collision shapes as a virtual physics body.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="1.0">
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
+		</member>
+		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area2D.SpaceOverride" default="0">
+			Override mode for angular damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
+			The name of the area's audio bus.
+		</member>
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
+			If [code]true[/code], the area's audio bus overrides the default audio bus.
+		</member>
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="980.0">
+			The area's gravity intensity (in pixels per second squared). This value multiplies the gravity direction. This is useful to alter the force of gravity without altering its direction.
+		</member>
+		<member name="gravity_direction" type="Vector2" setter="set_gravity_direction" getter="get_gravity_direction" default="Vector2(0, 1)">
+			The area's gravity vector (not normalized).
+		</member>
+		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_point_center]). See also [member gravity_space_override].
+		</member>
+		<member name="gravity_point_center" type="Vector2" setter="set_gravity_point_center" getter="get_gravity_point_center" default="Vector2(0, 1)">
+			If gravity is a point (see [member gravity_point]), this will be the point of attraction.
+		</member>
+		<member name="gravity_point_unit_distance" type="float" setter="set_gravity_point_unit_distance" getter="get_gravity_point_unit_distance" default="0.0">
+			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 pixels in radius with a surface gravity of 4.0 px/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 pixels from the center the gravity will be 1.0 px/s² (twice the distance, 1/4th the gravity), at 50 pixels it will be 16.0 px/s² (half the distance, 4x the gravity), and so on.
+			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
+		</member>
+		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area2D.SpaceOverride" default="0">
+			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
+		</member>
+		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area2D.SpaceOverride" default="0">
+			Override mode for linear damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
+			If [code]true[/code], other monitoring areas can detect this area.
+		</member>
+		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
+			If [code]true[/code], the area detects bodies or areas entering and exiting it.
+		</member>
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			The area's priority. Higher priority areas are processed first. The [World2D]'s physics is always processed last, after all areas.
+		</member>
+	</members>
+	<signals>
+		<signal name="area_entered">
+			<param index="0" name="area" type="Area2D" />
+			<description>
+				Emitted when the received [param area] enters this area. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="area_exited">
+			<param index="0" name="area" type="Area2D" />
+			<description>
+				Emitted when the received [param area] exits this area. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="area_shape_entered">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area2D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape2D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer2D].
+				[b]Example:[/b] Get the [CollisionShape2D] node from the shape index:
+				[codeblocks]
+				[gdscript]
+				var other_shape_owner = area.shape_find_owner(area_shape_index)
+				var other_shape_node = area.shape_owner_get_owner(other_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</signal>
+		<signal name="area_shape_exited">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area2D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape2D] of the received [param area] exits a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal area_shape_entered].
+			</description>
+		</signal>
+		<signal name="body_entered">
+			<param index="0" name="body" type="Node2D" />
+			<description>
+				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="body_exited">
+			<param index="0" name="body" type="Node2D" />
+			<description>
+				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="body_shape_entered">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node2D" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape2D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer2D].
+				[b]Example:[/b] Get the [CollisionShape2D] node from the shape index:
+				[codeblocks]
+				[gdscript]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</signal>
+		<signal name="body_shape_exited">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node2D" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape2D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal body_shape_entered].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride">
+			This area does not affect gravity/damping.
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order).
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order), ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
+			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
+			This area replaces any gravity/damping calculated so far (in [member priority] order), but keeps calculating the rest of the areas.
+		</constant>
+	</constants>
+</class>

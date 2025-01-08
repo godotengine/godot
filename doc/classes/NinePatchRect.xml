@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NinePatchRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control that displays a texture by keeping its corners intact, but tiling its edges and center.
+	</brief_description>
+	<description>
+		Also known as 9-slice panels, [NinePatchRect] produces clean panels of any size based on a small texture. To do so, it splits the texture in a 3×3 grid. When you scale the node, it tiles the texture's edges horizontally or vertically, tiles the center on both axes, and leaves the corners unchanged.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_patch_margin" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the size of the margin on the specified [enum Side].
+			</description>
+		</method>
+		<method name="set_patch_margin">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Sets the size of the margin on the specified [enum Side] to [param value] pixels.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="NinePatchRect.AxisStretchMode" default="0">
+			The stretch mode to use for horizontal stretching/tiling. See [enum NinePatchRect.AxisStretchMode] for possible values.
+		</member>
+		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" enum="NinePatchRect.AxisStretchMode" default="0">
+			The stretch mode to use for vertical stretching/tiling. See [enum NinePatchRect.AxisStretchMode] for possible values.
+		</member>
+		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
+			If [code]true[/code], draw the panel's center. Else, only draw the 9-slice's borders.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
+		<member name="patch_margin_bottom" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
+			The height of the 9-slice's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
+		</member>
+		<member name="patch_margin_left" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
+			The width of the 9-slice's left column. A margin of 16 means the 9-slice's left corners and side will have a width of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
+		</member>
+		<member name="patch_margin_right" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
+			The width of the 9-slice's right column. A margin of 16 means the 9-slice's right corners and side will have a width of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
+		</member>
+		<member name="patch_margin_top" type="int" setter="set_patch_margin" getter="get_patch_margin" default="0">
+			The height of the 9-slice's top row. A margin of 16 means the 9-slice's top corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
+		</member>
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
+			Rectangular region of the texture to sample from. If you're working with an atlas, use this property to define the area the 9-slice should use. All other properties are relative to this one. If the rect is empty, NinePatchRect will use the whole texture.
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The node's texture resource.
+		</member>
+	</members>
+	<signals>
+		<signal name="texture_changed">
+			<description>
+				Emitted when the node's texture changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
+			Stretches the center texture across the NinePatchRect. This may cause the texture to be distorted.
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
+			Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
+			Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsBody3D" inherits="CollisionObject3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for 3D game objects affected by physics.
+	</brief_description>
+	<description>
+		[PhysicsBody3D] is an abstract base class for 3D game objects affected by physics. All 3D physics bodies inherit from it.
+		[b]Warning:[/b] With a non-uniform scale, this node will likely not behave as expected. It is advised to keep its scale the same on all axes and adjust its collision shape(s) instead.
+	</description>
+	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_collision_exception_with">
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Adds a body to the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<description>
+				Returns [code]true[/code] if the specified linear or rotational [param axis] is locked.
+			</description>
+		</method>
+		<method name="get_collision_exceptions">
+			<return type="PhysicsBody3D[]" />
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area3D] nodes and the global world gravity.
+			</description>
+		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision3D" />
+			<param index="0" name="motion" type="Vector3" />
+			<param index="1" name="test_only" type="bool" default="false" />
+			<param index="2" name="safe_margin" type="float" default="0.001" />
+			<param index="3" name="recovery_as_collision" type="bool" default="false" />
+			<param index="4" name="max_collisions" type="int" default="1" />
+			<description>
+				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
+				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is used e.g. by [CharacterBody3D] for improving floor detection during floor snapping.
+				[param max_collisions] allows to retrieve more than one collision result.
+			</description>
+		</method>
+		<method name="remove_collision_exception_with">
+			<return type="void" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Removes a body from the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="set_axis_lock">
+			<return type="void" />
+			<param index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis" />
+			<param index="1" name="lock" type="bool" />
+			<description>
+				Locks or unlocks the specified linear or rotational [param axis] depending on the value of [param lock].
+			</description>
+		</method>
+		<method name="test_move" keywords="check, collision, sweep">
+			<return type="bool" />
+			<param index="0" name="from" type="Transform3D" />
+			<param index="1" name="motion" type="Vector3" />
+			<param index="2" name="collision" type="KinematicCollision3D" default="null" />
+			<param index="3" name="safe_margin" type="float" default="0.001" />
+			<param index="4" name="recovery_as_collision" type="bool" default="false" />
+			<param index="5" name="max_collisions" type="int" default="1" />
+			<description>
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [param motion]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				[param collision] is an optional object of type [KinematicCollision3D], which contains additional information about the collision when stopped, or when touching another body along the motion.
+				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
+				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is useful for checking whether the body would [i]touch[/i] any other bodies.
+				[param max_collisions] allows to retrieve more than one collision result.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's rotation in the X axis.
+		</member>
+		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's rotation in the Y axis.
+		</member>
+		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's rotation in the Z axis.
+		</member>
+		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's linear movement in the X axis.
+		</member>
+		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's linear movement in the Y axis.
+		</member>
+		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's linear movement in the Z axis.
+		</member>
+	</members>
+</class>

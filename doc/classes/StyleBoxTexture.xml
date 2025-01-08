@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBoxTexture" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A texture-based nine-patch [StyleBox].
+	</brief_description>
+	<description>
+		A texture-based nine-patch [StyleBox], in a way similar to [NinePatchRect]. This stylebox performs a 3×3 scaling of a texture, where only the center cell is fully stretched. This makes it possible to design bordered styles regardless of the stylebox's size.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_expand_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the expand margin size of the specified [enum Side].
+			</description>
+		</method>
+		<method name="get_texture_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the margin size of the specified [enum Side].
+			</description>
+		</method>
+		<method name="set_expand_margin">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="size" type="float" />
+			<description>
+				Sets the expand margin to [param size] pixels for the specified [enum Side].
+			</description>
+		</method>
+		<method name="set_expand_margin_all">
+			<return type="void" />
+			<param index="0" name="size" type="float" />
+			<description>
+				Sets the expand margin to [param size] pixels for all sides.
+			</description>
+		</method>
+		<method name="set_texture_margin">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="size" type="float" />
+			<description>
+				Sets the margin to [param size] pixels for the specified [enum Side].
+			</description>
+		</method>
+		<method name="set_texture_margin_all">
+			<return type="void" />
+			<param index="0" name="size" type="float" />
+			<description>
+				Sets the margin to [param size] pixels for all sides.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
+			Controls how the stylebox's texture will be stretched or tiled horizontally. See [enum AxisStretchMode] for possible values.
+		</member>
+		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
+			Controls how the stylebox's texture will be stretched or tiled vertically. See [enum AxisStretchMode] for possible values.
+		</member>
+		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
+			If [code]true[/code], the nine-patch texture's center tile will be drawn.
+		</member>
+		<member name="expand_margin_bottom" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the bottom margin of this style box when drawing, causing it to be drawn larger than requested.
+		</member>
+		<member name="expand_margin_left" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the left margin of this style box when drawing, causing it to be drawn larger than requested.
+		</member>
+		<member name="expand_margin_right" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the right margin of this style box when drawing, causing it to be drawn larger than requested.
+		</member>
+		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the top margin of this style box when drawing, causing it to be drawn larger than requested.
+		</member>
+		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+			Modulates the color of the texture when this style box is drawn.
+		</member>
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
+			The region to use from the [member texture].
+			This is equivalent to first wrapping the [member texture] in an [AtlasTexture] with the same region.
+			If empty ([code]Rect2(0, 0, 0, 0)[/code]), the whole [member texture] is used.
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The texture to use when drawing this style box.
+		</member>
+		<member name="texture_margin_bottom" type="float" setter="set_texture_margin" getter="get_texture_margin" default="0.0">
+			Increases the bottom margin of the 3×3 texture box.
+			A higher value means more of the source texture is considered to be part of the bottom border of the 3×3 box.
+			This is also the value used as fallback for [member StyleBox.content_margin_bottom] if it is negative.
+		</member>
+		<member name="texture_margin_left" type="float" setter="set_texture_margin" getter="get_texture_margin" default="0.0">
+			Increases the left margin of the 3×3 texture box.
+			A higher value means more of the source texture is considered to be part of the left border of the 3×3 box.
+			This is also the value used as fallback for [member StyleBox.content_margin_left] if it is negative.
+		</member>
+		<member name="texture_margin_right" type="float" setter="set_texture_margin" getter="get_texture_margin" default="0.0">
+			Increases the right margin of the 3×3 texture box.
+			A higher value means more of the source texture is considered to be part of the right border of the 3×3 box.
+			This is also the value used as fallback for [member StyleBox.content_margin_right] if it is negative.
+		</member>
+		<member name="texture_margin_top" type="float" setter="set_texture_margin" getter="get_texture_margin" default="0.0">
+			Increases the top margin of the 3×3 texture box.
+			A higher value means more of the source texture is considered to be part of the top border of the 3×3 box.
+			This is also the value used as fallback for [member StyleBox.content_margin_top] if it is negative.
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
+			Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
+			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system.
+		</constant>
+		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
+			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system. Unlike [constant AXIS_STRETCH_MODE_TILE], the texture may be slightly stretched to make the nine-patch texture tile seamlessly.
+		</constant>
+	</constants>
+</class>

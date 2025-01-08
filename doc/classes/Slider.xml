@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Slider" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for sliders.
+	</brief_description>
+	<description>
+		Abstract base class for sliders, used to adjust a value by moving a grabber along a horizontal or vertical axis. Sliders are [Range]-based controls.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
+			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="scrollable" type="bool" setter="set_scrollable" getter="is_scrollable" default="true">
+			If [code]true[/code], the value can be changed using the mouse wheel.
+		</member>
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks" default="0">
+			Number of ticks displayed on the slider, including border ticks. Ticks are uniformly-distributed value markers.
+		</member>
+		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders" default="false">
+			If [code]true[/code], the slider will display ticks for minimum and maximum values.
+		</member>
+	</members>
+	<signals>
+		<signal name="drag_ended">
+			<param index="0" name="value_changed" type="bool" />
+			<description>
+				Emitted when the grabber stops being dragged. If [param value_changed] is [code]true[/code], [member Range.value] is different from the value when the dragging was started.
+			</description>
+		</signal>
+		<signal name="drag_started">
+			<description>
+				Emitted when the grabber starts being dragged. This is emitted before the corresponding [signal Range.value_changed] signal.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
+			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
+		</theme_item>
+		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
+			Vertical or horizontal offset of the grabber.
+		</theme_item>
+		<theme_item name="grabber" data_type="icon" type="Texture2D">
+			The texture for the grabber (the draggable element).
+		</theme_item>
+		<theme_item name="grabber_disabled" data_type="icon" type="Texture2D">
+			The texture for the grabber when it's disabled.
+		</theme_item>
+		<theme_item name="grabber_highlight" data_type="icon" type="Texture2D">
+			The texture for the grabber when it's focused.
+		</theme_item>
+		<theme_item name="tick" data_type="icon" type="Texture2D">
+			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
+		</theme_item>
+		<theme_item name="grabber_area" data_type="style" type="StyleBox">
+			The background of the area to the left or bottom of the grabber.
+		</theme_item>
+		<theme_item name="grabber_area_highlight" data_type="style" type="StyleBox">
+			The background of the area to the left or bottom of the grabber that displays when it's being hovered or focused.
+		</theme_item>
+		<theme_item name="slider" data_type="style" type="StyleBox">
+			The background for the whole slider. Affects the height or width of the [theme_item grabber_area].
+		</theme_item>
+	</theme_items>
+</class>

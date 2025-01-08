@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGCylinder3D" inherits="CSGPrimitive3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A CSG Cylinder shape.
+	</brief_description>
+	<description>
+		This node allows you to create a cylinder (or cone) for use with the CSG system.
+		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
+	</description>
+	<tutorials>
+		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
+	</tutorials>
+	<members>
+		<member name="cone" type="bool" setter="set_cone" getter="is_cone" default="false">
+			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The height of the cylinder.
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material used to render the cylinder.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The radius of the cylinder.
+		</member>
+		<member name="sides" type="int" setter="set_sides" getter="get_sides" default="8">
+			The number of sides of the cylinder, the higher this number the more detail there will be in the cylinder.
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="true">
+			If [code]true[/code] the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. If [code]false[/code] the cylinder will have a flat shaded look.
+		</member>
+	</members>
+</class>

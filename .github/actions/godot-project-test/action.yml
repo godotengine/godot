@@ -1,0 +1,39 @@
+name: Test Godot project
+description: Run the test Godot project.
+
+inputs:
+  bin:
+    description: The path to the Godot executable
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Download and extract zip archive with project, folder is renamed to be able to easy change used project
+    - name: Download test project
+      shell: sh
+      run: |
+        wget https://github.com/godotengine/regression-test-project/archive/4.0.zip
+        unzip 4.0.zip
+        mv "regression-test-project-4.0" "test_project"
+
+    # Editor is quite complicated piece of software, so it is easy to introduce bug here.
+
+    - name: Open and close editor (Vulkan)
+      shell: sh
+      run: |
+        xvfb-run ${{ inputs.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+        misc/scripts/check_ci_log.py sanitizers_log.txt
+
+    - name: Open and close editor (GLES3)
+      shell: sh
+      run: |
+        DRI_PRIME=0 xvfb-run ${{ inputs.bin }} --audio-driver Dummy --rendering-driver opengl3 --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+        misc/scripts/check_ci_log.py sanitizers_log.txt
+
+    # Run test project
+    - name: Run project
+      shell: sh
+      run: |
+        xvfb-run ${{ inputs.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+        misc/scripts/check_ci_log.py sanitizers_log.txt

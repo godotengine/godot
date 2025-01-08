@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeVec4Constant" inherits="VisualShaderNodeConstant" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 4D vector constant to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		A constant 4D vector, which can be used as an input node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="constant" type="Quaternion" setter="set_constant" getter="get_constant" default="Quaternion(0, 0, 0, 1)">
+			A 4D vector (represented as a [Quaternion]) constant which represents the state of this node.
+		</member>
+	</members>
+</class>

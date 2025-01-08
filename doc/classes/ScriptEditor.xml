@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptEditor" inherits="PanelContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Godot editor's script editor.
+	</brief_description>
+	<description>
+		Godot editor's script editor.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_breakpoints">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of breakpoints.
+			</description>
+		</method>
+		<method name="get_current_editor" qualifiers="const">
+			<return type="ScriptEditorBase" />
+			<description>
+				Returns the [ScriptEditorBase] object that the user is currently editing.
+			</description>
+		</method>
+		<method name="get_current_script">
+			<return type="Script" />
+			<description>
+				Returns a [Script] that is currently active in editor.
+			</description>
+		</method>
+		<method name="get_open_script_editors" qualifiers="const">
+			<return type="ScriptEditorBase[]" />
+			<description>
+				Returns an array with all [ScriptEditorBase] objects which are currently open in editor.
+			</description>
+		</method>
+		<method name="get_open_scripts" qualifiers="const">
+			<return type="Script[]" />
+			<description>
+				Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+		<method name="goto_help">
+			<return type="void" />
+			<param index="0" name="topic" type="String" />
+			<description>
+				Opens help for the given topic. The [param topic] is an encoded string that controls which class, method, constant, signal, annotation, property, or theme item should be focused.
+				The supported [param topic] formats include [code]class_name:class[/code], [code]class_method:class:method[/code], [code]class_constant:class:constant[/code], [code]class_signal:class:signal[/code], [code]class_annotation:class:@annotation[/code], [code]class_property:class:property[/code], and [code]class_theme_item:class:item[/code], where [code]class[/code] is the class name, [code]method[/code] is the method name, [code]constant[/code] is the constant name, [code]signal[/code] is the signal name, [code]annotation[/code] is the annotation name, [code]property[/code] is the property name, and [code]item[/code] is the theme item.
+				[codeblock]
+				# Shows help for the Node class.
+				class_name:Node
+				# Shows help for the global min function.
+				# Global objects are accessible in the `@GlobalScope` namespace, shown here.
+				class_method:@GlobalScope:min
+				# Shows help for get_viewport in the Node class.
+				class_method:Node:get_viewport
+				# Shows help for the Input constant MOUSE_BUTTON_MIDDLE.
+				class_constant:Input:MOUSE_BUTTON_MIDDLE
+				# Shows help for the BaseButton signal pressed.
+				class_signal:BaseButton:pressed
+				# Shows help for the CanvasItem property visible.
+				class_property:CanvasItem:visible
+				# Shows help for the GDScript annotation export.
+				# Annotations should be prefixed with the `@` symbol in the descriptor, as shown here.
+				class_annotation:@GDScript:@export
+				# Shows help for the GraphNode theme item named panel_selected.
+				class_theme_item:GraphNode:panel_selected
+				[/codeblock]
+			</description>
+		</method>
+		<method name="goto_line">
+			<return type="void" />
+			<param index="0" name="line_number" type="int" />
+			<description>
+				Goes to the specified line in the current script.
+			</description>
+		</method>
+		<method name="open_script_create_dialog">
+			<return type="void" />
+			<param index="0" name="base_name" type="String" />
+			<param index="1" name="base_path" type="String" />
+			<description>
+				Opens the script create dialog. The script will extend [param base_name]. The file extension can be omitted from [param base_path]. It will be added based on the selected scripting language.
+			</description>
+		</method>
+		<method name="register_syntax_highlighter">
+			<return type="void" />
+			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
+			<description>
+				Registers the [EditorSyntaxHighlighter] to the editor, the [EditorSyntaxHighlighter] will be available on all open scripts.
+				[b]Note:[/b] Does not apply to scripts that are already opened.
+			</description>
+		</method>
+		<method name="unregister_syntax_highlighter">
+			<return type="void" />
+			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
+			<description>
+				Unregisters the [EditorSyntaxHighlighter] from the editor.
+				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
+			</description>
+		</method>
+		<method name="update_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Updates the documentation for the given [param script] if the script's documentation is currently open.
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="editor_script_changed">
+			<param index="0" name="script" type="Script" />
+			<description>
+				Emitted when user changed active script. Argument is a freshly activated [Script].
+			</description>
+		</signal>
+		<signal name="script_close">
+			<param index="0" name="script" type="Script" />
+			<description>
+				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.
+			</description>
+		</signal>
+	</signals>
+</class>

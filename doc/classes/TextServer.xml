@@ -1,0 +1,2178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextServer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A server interface for font management and text rendering.
+	</brief_description>
+	<description>
+		[TextServer] is the API backend for managing fonts and rendering text.
+		[b]Note:[/b] This is a low-level API, consider using [TextLine], [TextParagraph], and [Font] classes instead.
+		This is an abstract class, so to get the currently active [TextServer] instance, use the following code:
+		[codeblocks]
+		[gdscript]
+		var ts = TextServerManager.get_primary_interface()
+		[/gdscript]
+		[csharp]
+		var ts = TextServerManager.GetPrimaryInterface();
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_font">
+			<return type="RID" />
+			<description>
+				Creates a new, empty font cache entry resource. To free the resulting resource, use the [method free_rid] method.
+			</description>
+		</method>
+		<method name="create_font_linked_variation">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Creates a new variation existing font which is reusing the same glyph cache and font data. To free the resulting resource, use the [method free_rid] method.
+			</description>
+		</method>
+		<method name="create_shaped_text">
+			<return type="RID" />
+			<param index="0" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Creates a new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+			</description>
+		</method>
+		<method name="draw_hex_code_box" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="index" type="int" />
+			<param index="4" name="color" type="Color" />
+			<description>
+				Draws box displaying character hexadecimal code. Used for replacing missing characters.
+			</description>
+		</method>
+		<method name="font_clear_glyphs">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="font_clear_kerning_map">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Removes all kerning overrides.
+			</description>
+		</method>
+		<method name="font_clear_size_cache">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Removes all font sizes from the cache entry.
+			</description>
+		</method>
+		<method name="font_clear_textures">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes all textures from font cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
+			</description>
+		</method>
+		<method name="font_draw_glyph" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="pos" type="Vector2" />
+			<param index="4" name="index" type="int" />
+			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+			</description>
+		</method>
+		<method name="font_draw_glyph_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="outline_size" type="int" />
+			<param index="4" name="pos" type="Vector2" />
+			<param index="5" name="index" type="int" />
+			<param index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
+				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+			</description>
+		</method>
+		<method name="font_get_antialiasing" qualifiers="const">
+			<return type="int" enum="TextServer.FontAntialiasing" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font anti-aliasing mode.
+			</description>
+		</method>
+		<method name="font_get_ascent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="font_get_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="font_get_char_from_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_index" type="int" />
+			<description>
+				Returns character code associated with [param glyph_index], or [code]0[/code] if [param glyph_index] is invalid. See [method font_get_glyph_index].
+			</description>
+		</method>
+		<method name="font_get_descent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="font_get_disable_embedded_bitmaps" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns whether the font's embedded bitmap loading is disabled.
+			</description>
+		</method>
+		<method name="font_get_embolden" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font embolden strength.
+			</description>
+		</method>
+		<method name="font_get_face_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns number of faces in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="font_get_face_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns an active face index in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="font_get_fixed_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns bitmap font fixed size.
+			</description>
+		</method>
+		<method name="font_get_fixed_size_scale_mode" qualifiers="const">
+			<return type="int" enum="TextServer.FixedSizeScaleMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns bitmap font scaling mode.
+			</description>
+		</method>
+		<method name="font_get_generate_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if font texture mipmap generation is enabled.
+			</description>
+		</method>
+		<method name="font_get_global_oversampling" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the font oversampling factor, shared by all fonts in the TextServer.
+			</description>
+		</method>
+		<method name="font_get_glyph_advance" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="font_get_glyph_contours" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="index" type="int" />
+			<description>
+				Returns outline contours of the glyph as a [Dictionary] with the following contents:
+				[code]points[/code]         - [PackedVector3Array], containing outline points. [code]x[/code] and [code]y[/code] are point coordinates. [code]z[/code] is the type of the point, using the [enum ContourPointTag] values.
+				[code]contours[/code]       - [PackedInt32Array], containing indices the end points of each contour.
+				[code]orientation[/code]    - [bool], contour orientation. If [code]true[/code], clockwise contours must be filled.
+				- Two successive [constant CONTOUR_CURVE_TAG_ON] points indicate a line segment.
+				- One [constant CONTOUR_CURVE_TAG_OFF_CONIC] point between two [constant CONTOUR_CURVE_TAG_ON] points indicates a single conic (quadratic) Bézier arc.
+				- Two [constant CONTOUR_CURVE_TAG_OFF_CUBIC] points between two [constant CONTOUR_CURVE_TAG_ON] points indicate a single cubic Bézier arc.
+				- Two successive [constant CONTOUR_CURVE_TAG_OFF_CONIC] points indicate two successive conic (quadratic) Bézier arcs with a virtual [constant CONTOUR_CURVE_TAG_ON] point at their middle.
+				- Each contour is closed. The last point of a contour uses the first point of a contour as its next point, and vice versa. The first point can be [constant CONTOUR_CURVE_TAG_OFF_CONIC] point.
+			</description>
+		</method>
+		<method name="font_get_glyph_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="char" type="int" />
+			<param index="3" name="variation_selector" type="int" />
+			<description>
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector]. See [method font_get_char_from_glyph_index].
+			</description>
+		</method>
+		<method name="font_get_glyph_list" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Returns list of rendered glyphs in the cache entry.
+			</description>
+		</method>
+		<method name="font_get_glyph_offset" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="font_get_glyph_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns size of the glyph.
+			</description>
+		</method>
+		<method name="font_get_glyph_texture_idx" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="font_get_glyph_texture_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns resource ID of the cache texture containing the glyph.
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+			</description>
+		</method>
+		<method name="font_get_glyph_texture_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns size of the cache texture containing the glyph.
+				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+			</description>
+		</method>
+		<method name="font_get_glyph_uv_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="font_get_hinting" qualifiers="const">
+			<return type="int" enum="TextServer.Hinting" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the font hinting mode. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_get_keep_rounding_remainders" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns glyph position rounding behavior. If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+			</description>
+		</method>
+		<method name="font_get_kerning" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Returns kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="font_get_kerning_list" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns list of the kerning overrides.
+			</description>
+		</method>
+		<method name="font_get_language_support_override">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [param language].
+			</description>
+		</method>
+		<method name="font_get_language_support_overrides">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns list of language support overrides.
+			</description>
+		</method>
+		<method name="font_get_msdf_pixel_range" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="font_get_msdf_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns source font size used to generate MSDF textures.
+			</description>
+		</method>
+		<method name="font_get_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font family name.
+			</description>
+		</method>
+		<method name="font_get_opentype_feature_overrides" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font OpenType feature set override.
+			</description>
+		</method>
+		<method name="font_get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
+		<method name="font_get_oversampling" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_get_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="font_get_script_support_override">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+				Returns [code]true[/code] if support override is enabled for the [param script].
+			</description>
+		</method>
+		<method name="font_get_script_support_overrides">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns list of script support overrides.
+			</description>
+		</method>
+		<method name="font_get_size_cache_list" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
+			</description>
+		</method>
+		<method name="font_get_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns the spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="font_get_stretch" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+			</description>
+		</method>
+		<method name="font_get_style" qualifiers="const">
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style flags, see [enum FontStyle].
+			</description>
+		</method>
+		<method name="font_get_style_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font style name.
+			</description>
+		</method>
+		<method name="font_get_subpixel_positioning" qualifiers="const">
+			<return type="int" enum="TextServer.SubpixelPositioning" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font subpixel glyph positioning mode.
+			</description>
+		</method>
+		<method name="font_get_supported_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns a string containing all the characters available in the font.
+			</description>
+		</method>
+		<method name="font_get_supported_glyphs" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns an array containing all glyph indices in the font.
+			</description>
+		</method>
+		<method name="font_get_texture_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Returns number of textures used by font cache entry.
+			</description>
+		</method>
+		<method name="font_get_texture_image" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Returns font cache texture image data.
+			</description>
+		</method>
+		<method name="font_get_texture_offsets" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Returns array containing glyph packing data.
+			</description>
+		</method>
+		<method name="font_get_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns 2D transform applied to the font outlines.
+			</description>
+		</method>
+		<method name="font_get_underline_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="font_get_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Returns thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_get_variation_coordinates" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns variation coordinates for the specified font cache entry. See [method font_supported_variation_list] for more info.
+			</description>
+		</method>
+		<method name="font_get_weight" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+			</description>
+		</method>
+		<method name="font_has_char" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="char" type="int" />
+			<description>
+				Returns [code]true[/code] if a Unicode [param char] is available in the font.
+			</description>
+		</method>
+		<method name="font_is_allow_system_fallback" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if system fonts can be automatically used as fallbacks.
+			</description>
+		</method>
+		<method name="font_is_force_autohinter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_is_language_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+			</description>
+		</method>
+		<method name="font_is_multichannel_signed_distance_field" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+			</description>
+		</method>
+		<method name="font_is_script_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given script (ISO 15924 code).
+			</description>
+		</method>
+		<method name="font_remove_glyph">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Removes specified rendered glyph information from the cache entry.
+				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+			</description>
+		</method>
+		<method name="font_remove_kerning">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+				Removes kerning override for the pair of glyphs.
+			</description>
+		</method>
+		<method name="font_remove_language_support_override">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Remove language support override.
+			</description>
+		</method>
+		<method name="font_remove_script_support_override">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+				Removes script support override.
+			</description>
+		</method>
+		<method name="font_remove_size_cache">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Removes specified font size from the cache entry.
+			</description>
+		</method>
+		<method name="font_remove_texture">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+				Removes specified texture from the cache entry.
+				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
+			</description>
+		</method>
+		<method name="font_render_glyph">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="index" type="int" />
+			<description>
+				Renders specified glyph to the font cache texture.
+			</description>
+		</method>
+		<method name="font_render_range">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="end" type="int" />
+			<description>
+				Renders the range of characters to the font cache texture.
+			</description>
+		</method>
+		<method name="font_set_allow_system_fallback">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="allow_system_fallback" type="bool" />
+			<description>
+				If set to [code]true[/code], system fonts can be automatically used as fallbacks.
+			</description>
+		</method>
+		<method name="font_set_antialiasing">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="antialiasing" type="int" enum="TextServer.FontAntialiasing" />
+			<description>
+				Sets font anti-aliasing mode.
+			</description>
+		</method>
+		<method name="font_set_ascent">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="ascent" type="float" />
+			<description>
+				Sets the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="font_set_baseline_offset">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="font_set_data">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<description>
+				Sets font source data, e.g contents of the dynamic font source file.
+			</description>
+		</method>
+		<method name="font_set_descent">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="descent" type="float" />
+			<description>
+				Sets the font descent (number of pixels below the baseline).
+			</description>
+		</method>
+		<method name="font_set_disable_embedded_bitmaps">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="disable_embedded_bitmaps" type="bool" />
+			<description>
+				If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+			</description>
+		</method>
+		<method name="font_set_embolden">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="strength" type="float" />
+			<description>
+				Sets font embolden strength. If [param strength] is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
+			</description>
+		</method>
+		<method name="font_set_face_index">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="face_index" type="int" />
+			<description>
+				Sets an active face index in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="font_set_fixed_size">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size" type="int" />
+			<description>
+				Sets bitmap font fixed size. If set to value greater than zero, same cache entry will be used for all font sizes.
+			</description>
+		</method>
+		<method name="font_set_fixed_size_scale_mode">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size_scale_mode" type="int" enum="TextServer.FixedSizeScaleMode" />
+			<description>
+				Sets bitmap font scaling mode. This property is used only if [code]fixed_size[/code] is greater than zero.
+			</description>
+		</method>
+		<method name="font_set_force_autohinter">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="force_autohinter" type="bool" />
+			<description>
+				If set to [code]true[/code] auto-hinting is preferred over font built-in hinting.
+			</description>
+		</method>
+		<method name="font_set_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="generate_mipmaps" type="bool" />
+			<description>
+				If set to [code]true[/code] font texture mipmap generation is enabled.
+			</description>
+		</method>
+		<method name="font_set_global_oversampling">
+			<return type="void" />
+			<param index="0" name="oversampling" type="float" />
+			<description>
+				Sets oversampling factor, shared by all font in the TextServer.
+				[b]Note:[/b] This value can be automatically changed by display server.
+			</description>
+		</method>
+		<method name="font_set_glyph_advance">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="advance" type="Vector2" />
+			<description>
+				Sets glyph advance (offset of the next glyph).
+				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+			</description>
+		</method>
+		<method name="font_set_glyph_offset">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="offset" type="Vector2" />
+			<description>
+				Sets glyph offset from the baseline.
+			</description>
+		</method>
+		<method name="font_set_glyph_size">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="gl_size" type="Vector2" />
+			<description>
+				Sets size of the glyph.
+			</description>
+		</method>
+		<method name="font_set_glyph_texture_idx">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="texture_idx" type="int" />
+			<description>
+				Sets index of the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="font_set_glyph_uv_rect">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="uv_rect" type="Rect2" />
+			<description>
+				Sets rectangle in the cache texture containing the glyph.
+			</description>
+		</method>
+		<method name="font_set_hinting">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="hinting" type="int" enum="TextServer.Hinting" />
+			<description>
+				Sets font hinting mode. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_set_keep_rounding_remainders">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="keep_rounding_remainders" type="bool" />
+			<description>
+				Sets glyph position rounding behavior. If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+			</description>
+		</method>
+		<method name="font_set_kerning">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<param index="3" name="kerning" type="Vector2" />
+			<description>
+				Sets kerning for the pair of glyphs.
+			</description>
+		</method>
+		<method name="font_set_language_support_override">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<param index="2" name="supported" type="bool" />
+			<description>
+				Adds override for [method font_is_language_supported].
+			</description>
+		</method>
+		<method name="font_set_msdf_pixel_range">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf_pixel_range" type="int" />
+			<description>
+				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
+			</description>
+		</method>
+		<method name="font_set_msdf_size">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf_size" type="int" />
+			<description>
+				Sets source font size used to generate MSDF textures.
+			</description>
+		</method>
+		<method name="font_set_multichannel_signed_distance_field">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf" type="bool" />
+			<description>
+				If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data. MSDF rendering allows displaying the font at any scaling factor without blurriness, and without incurring a CPU cost when the font size changes (since the font no longer needs to be rasterized on the CPU). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
+				[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
+			</description>
+		</method>
+		<method name="font_set_name">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the font family name.
+			</description>
+		</method>
+		<method name="font_set_opentype_feature_overrides">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="overrides" type="Dictionary" />
+			<description>
+				Sets font OpenType feature set override.
+			</description>
+		</method>
+		<method name="font_set_oversampling">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="oversampling" type="float" />
+			<description>
+				Sets font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
+			</description>
+		</method>
+		<method name="font_set_scale">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="scale" type="float" />
+			<description>
+				Sets scaling factor of the color bitmap font.
+			</description>
+		</method>
+		<method name="font_set_script_support_override">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<param index="2" name="supported" type="bool" />
+			<description>
+				Adds override for [method font_is_script_supported].
+			</description>
+		</method>
+		<method name="font_set_spacing">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+			</description>
+		</method>
+		<method name="font_set_stretch">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
+			<description>
+				Sets font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_transform] instead.
+			</description>
+		</method>
+		<method name="font_set_style">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
+			<description>
+				Sets the font style flags, see [enum FontStyle].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.
+			</description>
+		</method>
+		<method name="font_set_style_name">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the font style name.
+			</description>
+		</method>
+		<method name="font_set_subpixel_positioning">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
+			<description>
+				Sets font subpixel glyph positioning mode.
+			</description>
+		</method>
+		<method name="font_set_texture_image">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="image" type="Image" />
+			<description>
+				Sets font cache texture image data.
+			</description>
+		</method>
+		<method name="font_set_texture_offsets">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="offset" type="PackedInt32Array" />
+			<description>
+				Sets array containing glyph packing data.
+			</description>
+		</method>
+		<method name="font_set_transform">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
+				For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
+			</description>
+		</method>
+		<method name="font_set_underline_position">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_position" type="float" />
+			<description>
+				Sets pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="font_set_underline_thickness">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_thickness" type="float" />
+			<description>
+				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_set_variation_coordinates">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="variation_coordinates" type="Dictionary" />
+			<description>
+				Sets variation coordinates for the specified font cache entry. See [method font_supported_variation_list] for more info.
+			</description>
+		</method>
+		<method name="font_set_weight">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
+			<description>
+				Sets weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_embolden] instead.
+			</description>
+		</method>
+		<method name="font_supported_feature_list" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the dictionary of the supported OpenType features.
+			</description>
+		</method>
+		<method name="font_supported_variation_list" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns the dictionary of the supported OpenType variation coordinates.
+			</description>
+		</method>
+		<method name="format_number" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="number" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				If [param language] is omitted, the active locale will be used.
+			</description>
+		</method>
+		<method name="free_rid">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Frees an object created by this [TextServer].
+			</description>
+		</method>
+		<method name="get_features" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns text server features, see [enum Feature].
+			</description>
+		</method>
+		<method name="get_hex_code_box_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns size of the replacement character (box with character hexadecimal code that is drawn in place of invalid characters).
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the server interface.
+			</description>
+		</method>
+		<method name="get_support_data" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns default TextServer database (e.g. ICU break iterators and dictionaries).
+			</description>
+		</method>
+		<method name="get_support_data_filename" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns default TextServer database (e.g. ICU break iterators and dictionaries) filename.
+			</description>
+		</method>
+		<method name="get_support_data_info" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns TextServer database (e.g. ICU break iterators and dictionaries) description.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if [param rid] is valid resource owned by this text server.
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="feature" type="int" enum="TextServer.Feature" />
+			<description>
+				Returns [code]true[/code] if the server supports a feature.
+			</description>
+		</method>
+		<method name="is_confusable" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="dict" type="PackedStringArray" />
+			<description>
+				Returns index of the first string in [param dict] which is visually confusable with the [param string], or [code]-1[/code] if none is found.
+				[b]Note:[/b] This method doesn't detect invisible characters, for spoof detection use it in combination with [method spoof_check].
+				[b]Note:[/b] Always returns [code]-1[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+			</description>
+		</method>
+		<method name="is_locale_right_to_left" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns [code]true[/code] if locale is right-to-left.
+			</description>
+		</method>
+		<method name="is_valid_identifier" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] if [param string] is a valid identifier.
+				If the text server supports the [constant FEATURE_UNICODE_IDENTIFIERS] feature, a valid identifier must:
+				- Conform to normalization form C.
+				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				- May contain Unicode characters of class XID_Continue in the other positions.
+				- Use UAX #31 recommended scripts only (mixed scripts are allowed).
+				If the [constant FEATURE_UNICODE_IDENTIFIERS] feature is not supported, a valid identifier must:
+				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				- May contain Unicode characters of class XID_Continue in the other positions.
+			</description>
+		</method>
+		<method name="is_valid_letter" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="unicode" type="int" />
+			<description>
+				Returns [code]true[/code] if the given code point is a valid letter, i.e. it belongs to the Unicode category "L".
+			</description>
+		</method>
+		<method name="load_support_data">
+			<return type="bool" />
+			<param index="0" name="filename" type="String" />
+			<description>
+				Loads optional TextServer database (e.g. ICU break iterators and dictionaries).
+				[b]Note:[/b] This function should be called before any other TextServer functions used, otherwise it won't have any effect.
+			</description>
+		</method>
+		<method name="name_to_tag" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Converts readable feature, variation, script, or language name to OpenType tag.
+			</description>
+		</method>
+		<method name="parse_number" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="number" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Converts [param number] from the numeral systems used in [param language] to Western Arabic (0..9).
+			</description>
+		</method>
+		<method name="parse_structured_text" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
+			<param index="1" name="args" type="Array" />
+			<param index="2" name="text" type="String" />
+			<description>
+				Default implementation of the BiDi algorithm override function. See [enum StructuredTextParser] for more info.
+			</description>
+		</method>
+		<method name="percent_sign" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns percent sign used in the [param language].
+			</description>
+		</method>
+		<method name="save_support_data" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="filename" type="String" />
+			<description>
+				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
+				[b]Note:[/b] This function is used by during project export, to include TextServer database.
+			</description>
+		</method>
+		<method name="shaped_get_span_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of text spans added using [method shaped_text_add_string] or [method shaped_text_add_object].
+			</description>
+		</method>
+		<method name="shaped_get_span_embedded_object" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns text embedded object key.
+			</description>
+		</method>
+		<method name="shaped_get_span_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns text span metadata.
+			</description>
+		</method>
+		<method name="shaped_set_span_update_font">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<param index="2" name="fonts" type="RID[]" />
+			<param index="3" name="size" type="int" />
+			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
+			<description>
+				Changes text span font, font size, and OpenType features, without changing the text.
+			</description>
+		</method>
+		<method name="shaped_text_add_object">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<param index="2" name="size" type="Vector2" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="4" name="length" type="int" default="1" />
+			<param index="5" name="baseline" type="float" default="0.0" />
+			<description>
+				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
+			</description>
+		</method>
+		<method name="shaped_text_add_string">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="fonts" type="RID[]" />
+			<param index="3" name="size" type="int" />
+			<param index="4" name="opentype_features" type="Dictionary" default="{}" />
+			<param index="5" name="language" type="String" default="&quot;&quot;" />
+			<param index="6" name="meta" type="Variant" default="null" />
+			<description>
+				Adds text span and font to draw it to the text buffer.
+			</description>
+		</method>
+		<method name="shaped_text_clear">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Clears text buffer (removes text and inline objects).
+			</description>
+		</method>
+		<method name="shaped_text_closest_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns composite character position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_draw" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="clip_l" type="float" default="-1" />
+			<param index="4" name="clip_r" type="float" default="-1" />
+			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+			</description>
+		</method>
+		<method name="shaped_text_draw_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="clip_l" type="float" default="-1" />
+			<param index="4" name="clip_r" type="float" default="-1" />
+			<param index="5" name="outline_size" type="int" default="1" />
+			<param index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
+			</description>
+		</method>
+		<method name="shaped_text_fit_to_width">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<description>
+				Adjusts text width to fit to specified width, returns new text width.
+			</description>
+		</method>
+		<method name="shaped_text_get_ascent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
+				[b]Note:[/b] Overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
+			</description>
+		</method>
+		<method name="shaped_text_get_carets" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="position" type="int" />
+			<description>
+				Returns shapes of the carets corresponding to the character offset [param position] in the text. Returned caret shape is 1 pixel wide rectangle.
+			</description>
+		</method>
+		<method name="shaped_text_get_character_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns array of the composite character boundaries.
+			</description>
+		</method>
+		<method name="shaped_text_get_custom_ellipsis" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns ellipsis character used for text clipping.
+			</description>
+		</method>
+		<method name="shaped_text_get_custom_punctuation" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
+			</description>
+		</method>
+		<method name="shaped_text_get_descent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
+				[b]Note:[/b] Overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
+			</description>
+		</method>
+		<method name="shaped_text_get_direction" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns direction of the text.
+			</description>
+		</method>
+		<method name="shaped_text_get_dominant_direction_in_range" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="end" type="int" />
+			<description>
+				Returns dominant direction of in the range of text.
+			</description>
+		</method>
+		<method name="shaped_text_get_ellipsis_glyph_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of glyphs in the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_ellipsis_glyphs" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns array of the glyphs in the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_ellipsis_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns position of the ellipsis.
+			</description>
+		</method>
+		<method name="shaped_text_get_glyph_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns number of glyphs in the buffer.
+			</description>
+		</method>
+		<method name="shaped_text_get_glyphs" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns an array of glyphs in the visual order.
+			</description>
+		</method>
+		<method name="shaped_text_get_grapheme_bounds" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns composite character's bounds as offsets from the start of the line.
+			</description>
+		</method>
+		<method name="shaped_text_get_inferred_direction" qualifiers="const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns direction of the text, inferred by the BiDi algorithm.
+			</description>
+		</method>
+		<method name="shaped_text_get_line_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" />
+			<param index="2" name="start" type="int" default="0" />
+			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<description>
+				Breaks text to the lines and returns character ranges for each line.
+			</description>
+		</method>
+		<method name="shaped_text_get_line_breaks_adv" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="PackedFloat32Array" />
+			<param index="2" name="start" type="int" default="0" />
+			<param index="3" name="once" type="bool" default="true" />
+			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<description>
+				Breaks text to the lines and columns. Returns character ranges for each segment.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_glyph" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the glyph index of the inline object.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_range" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns the character range of the inline object.
+			</description>
+		</method>
+		<method name="shaped_text_get_object_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns bounding rectangle of the inline object.
+			</description>
+		</method>
+		<method name="shaped_text_get_objects" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns array of inline objects.
+			</description>
+		</method>
+		<method name="shaped_text_get_orientation" qualifiers="const">
+			<return type="int" enum="TextServer.Orientation" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns text orientation.
+			</description>
+		</method>
+		<method name="shaped_text_get_parent" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns the parent buffer from which the substring originates.
+			</description>
+		</method>
+		<method name="shaped_text_get_preserve_control" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if text buffer is configured to display control characters.
+			</description>
+		</method>
+		<method name="shaped_text_get_preserve_invalid" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
+				[b]Note:[/b] If set to [code]false[/code], nothing is displayed in place of invalid characters.
+			</description>
+		</method>
+		<method name="shaped_text_get_range" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns substring buffer character range in the parent buffer.
+			</description>
+		</method>
+		<method name="shaped_text_get_selection" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="end" type="int" />
+			<description>
+				Returns selection rectangles for the specified character range.
+			</description>
+		</method>
+		<method name="shaped_text_get_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns size of the text.
+			</description>
+		</method>
+		<method name="shaped_text_get_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns extra spacing added between glyphs or lines in pixels.
+			</description>
+		</method>
+		<method name="shaped_text_get_trim_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns the position of the overrun trim.
+			</description>
+		</method>
+		<method name="shaped_text_get_underline_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns pixel offset of the underline below the baseline.
+			</description>
+		</method>
+		<method name="shaped_text_get_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns thickness of the underline.
+			</description>
+		</method>
+		<method name="shaped_text_get_width" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns width (for horizontal layout) or height (for vertical) of the text.
+			</description>
+		</method>
+		<method name="shaped_text_get_word_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
+			<param index="2" name="skip_grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="4" />
+			<description>
+				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
+			</description>
+		</method>
+		<method name="shaped_text_has_visible_chars" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if text buffer contains any visible characters.
+			</description>
+		</method>
+		<method name="shaped_text_hit_test_grapheme" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coords" type="float" />
+			<description>
+				Returns grapheme index at the specified pixel offset at the baseline, or [code]-1[/code] if none is found.
+			</description>
+		</method>
+		<method name="shaped_text_hit_test_position" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coords" type="float" />
+			<description>
+				Returns caret character offset at the specified pixel offset at the baseline. This function always returns a valid position.
+			</description>
+		</method>
+		<method name="shaped_text_is_ready" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code] if buffer is successfully shaped.
+			</description>
+		</method>
+		<method name="shaped_text_next_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns composite character end position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_next_grapheme_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns grapheme end position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_overrun_trim_to_width">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" default="0" />
+			<param index="2" name="overrun_trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" default="0" />
+			<description>
+				Trims text if it exceeds the given width.
+			</description>
+		</method>
+		<method name="shaped_text_prev_character_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns composite character start position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_prev_grapheme_pos" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+				Returns grapheme start position closest to the [param pos].
+			</description>
+		</method>
+		<method name="shaped_text_resize_object">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<param index="2" name="size" type="Vector2" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="4" name="baseline" type="float" default="0.0" />
+			<description>
+				Sets new size and alignment of embedded object.
+			</description>
+		</method>
+		<method name="shaped_text_set_bidi_override">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="override" type="Array" />
+			<description>
+				Overrides BiDi for the structured text.
+				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="shaped_text_set_custom_ellipsis">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="char" type="int" />
+			<description>
+				Sets ellipsis character used for text clipping.
+			</description>
+		</method>
+		<method name="shaped_text_set_custom_punctuation">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="punct" type="String" />
+			<description>
+				Sets custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
+			</description>
+		</method>
+		<method name="shaped_text_set_direction">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<description>
+				Sets desired text direction. If set to [constant DIRECTION_AUTO], direction will be detected based on the buffer contents and current locale.
+				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
+			</description>
+		</method>
+		<method name="shaped_text_set_orientation">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Sets desired text orientation.
+				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+			</description>
+		</method>
+		<method name="shaped_text_set_preserve_control">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If set to [code]true[/code] text buffer will display control characters.
+			</description>
+		</method>
+		<method name="shaped_text_set_preserve_invalid">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If set to [code]true[/code] text buffer will display invalid characters as hexadecimal codes, otherwise nothing is displayed.
+			</description>
+		</method>
+		<method name="shaped_text_set_spacing">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+				Sets extra spacing added between glyphs or lines in pixels.
+			</description>
+		</method>
+		<method name="shaped_text_shape">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Shapes buffer if it's not shaped. Returns [code]true[/code] if the string is shaped successfully.
+				[b]Note:[/b] It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
+			</description>
+		</method>
+		<method name="shaped_text_sort_logical">
+			<return type="Dictionary[]" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns text glyphs in the logical order.
+			</description>
+		</method>
+		<method name="shaped_text_substr" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="length" type="int" />
+			<description>
+				Returns text buffer for the substring of the text in the [param shaped] text buffer (including inline objects).
+			</description>
+		</method>
+		<method name="shaped_text_tab_align">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="tab_stops" type="PackedFloat32Array" />
+			<description>
+				Aligns shaped text to the given tab-stops.
+			</description>
+		</method>
+		<method name="spoof_check" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Returns [code]true[/code] if [param string] is likely to be an attempt at confusing the reader.
+				[b]Note:[/b] Always returns [code]false[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+			</description>
+		</method>
+		<method name="string_get_character_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns array of the composite character boundaries.
+				[codeblock]
+				var ts = TextServerManager.get_primary_interface()
+				print(ts.string_get_character_breaks("Test ❤️‍🔥 Test")) # Prints [1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="string_get_word_breaks" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<param index="2" name="chars_per_line" type="int" default="0" />
+			<description>
+				Returns an array of the word break boundaries. Elements in the returned array are the offsets of the start and end of words. Therefore the length of the array is always even.
+				When [param chars_per_line] is greater than zero, line break boundaries are returned instead.
+				[codeblock]
+				var ts = TextServerManager.get_primary_interface()
+				# Corresponds to the substrings "The", "Godot", "Engine", and "4".
+				print(ts.string_get_word_breaks("The Godot Engine, 4")) # Prints [0, 3, 4, 9, 10, 16, 18, 19]
+				# Corresponds to the substrings "The", "Godot", "Engin", and "e, 4".
+				print(ts.string_get_word_breaks("The Godot Engine, 4", "en", 5)) # Prints [0, 3, 4, 9, 10, 15, 15, 19]
+				# Corresponds to the substrings "The Godot" and "Engine, 4".
+				print(ts.string_get_word_breaks("The Godot Engine, 4", "en", 10)) # Prints [0, 9, 10, 19]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="string_to_lower" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to lowercase.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="string_to_title" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to title case.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="string_to_upper" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<description>
+				Returns the string converted to uppercase.
+				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="strip_diacritics" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Strips diacritics from the string.
+				[b]Note:[/b] The result may be longer or shorter than the original.
+			</description>
+		</method>
+		<method name="tag_to_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="tag" type="int" />
+			<description>
+				Converts OpenType tag to readable feature, variation, script, or language name.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FONT_ANTIALIASING_NONE" value="0" enum="FontAntialiasing">
+			Font glyphs are rasterized as 1-bit bitmaps.
+		</constant>
+		<constant name="FONT_ANTIALIASING_GRAY" value="1" enum="FontAntialiasing">
+			Font glyphs are rasterized as 8-bit grayscale anti-aliased bitmaps.
+		</constant>
+		<constant name="FONT_ANTIALIASING_LCD" value="2" enum="FontAntialiasing">
+			Font glyphs are rasterized for LCD screens.
+			LCD subpixel layout is determined by the value of [code]gui/theme/lcd_subpixel_layout[/code] project settings.
+			LCD subpixel anti-aliasing mode is suitable only for rendering horizontal, unscaled text in 2D.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_NONE" value="0" enum="FontLCDSubpixelLayout">
+			Unknown or unsupported subpixel layout, LCD subpixel antialiasing is disabled.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HRGB" value="1" enum="FontLCDSubpixelLayout">
+			Horizontal RGB subpixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HBGR" value="2" enum="FontLCDSubpixelLayout">
+			Horizontal BGR subpixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VRGB" value="3" enum="FontLCDSubpixelLayout">
+			Vertical RGB subpixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VBGR" value="4" enum="FontLCDSubpixelLayout">
+			Vertical BGR subpixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
+			Represents the size of the [enum FontLCDSubpixelLayout] enum.
+		</constant>
+		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
+			Text direction is determined based on contents and current locale.
+		</constant>
+		<constant name="DIRECTION_LTR" value="1" enum="Direction">
+			Text is written from left to right.
+		</constant>
+		<constant name="DIRECTION_RTL" value="2" enum="Direction">
+			Text is written from right to left.
+		</constant>
+		<constant name="DIRECTION_INHERITED" value="3" enum="Direction">
+			Text writing direction is the same as base string writing direction. Used for BiDi override only.
+		</constant>
+		<constant name="ORIENTATION_HORIZONTAL" value="0" enum="Orientation">
+			Text is written horizontally.
+		</constant>
+		<constant name="ORIENTATION_VERTICAL" value="1" enum="Orientation">
+			Left to right text is written vertically from top to bottom.
+			Right to left text is written vertically from bottom to top.
+		</constant>
+		<constant name="JUSTIFICATION_NONE" value="0" enum="JustificationFlag" is_bitfield="true">
+			Do not justify text.
+		</constant>
+		<constant name="JUSTIFICATION_KASHIDA" value="1" enum="JustificationFlag" is_bitfield="true">
+			Justify text by adding and removing kashidas.
+		</constant>
+		<constant name="JUSTIFICATION_WORD_BOUND" value="2" enum="JustificationFlag" is_bitfield="true">
+			Justify text by changing width of the spaces between the words.
+		</constant>
+		<constant name="JUSTIFICATION_TRIM_EDGE_SPACES" value="4" enum="JustificationFlag" is_bitfield="true">
+			Remove trailing and leading spaces from the justified text.
+		</constant>
+		<constant name="JUSTIFICATION_AFTER_LAST_TAB" value="8" enum="JustificationFlag" is_bitfield="true">
+			Only apply justification to the part of the text after the last tab.
+		</constant>
+		<constant name="JUSTIFICATION_CONSTRAIN_ELLIPSIS" value="16" enum="JustificationFlag" is_bitfield="true">
+			Apply justification to the trimmed line with ellipsis.
+		</constant>
+		<constant name="JUSTIFICATION_SKIP_LAST_LINE" value="32" enum="JustificationFlag" is_bitfield="true">
+			Do not apply justification to the last line of the paragraph.
+		</constant>
+		<constant name="JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS" value="64" enum="JustificationFlag" is_bitfield="true">
+			Do not apply justification to the last line of the paragraph with visible characters (takes precedence over [constant JUSTIFICATION_SKIP_LAST_LINE]).
+		</constant>
+		<constant name="JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE" value="128" enum="JustificationFlag" is_bitfield="true">
+			Always apply justification to the paragraphs with a single line ([constant JUSTIFICATION_SKIP_LAST_LINE] and [constant JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS] are ignored).
+		</constant>
+		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
+			Autowrap is disabled.
+		</constant>
+		<constant name="AUTOWRAP_ARBITRARY" value="1" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by allowing to break lines at arbitrary positions, which is useful when very limited space is available.
+		</constant>
+		<constant name="AUTOWRAP_WORD" value="2" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by soft-breaking between words.
+		</constant>
+		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
+			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
+		</constant>
+		<constant name="BREAK_NONE" value="0" enum="LineBreakFlag" is_bitfield="true">
+			Do not break the line.
+		</constant>
+		<constant name="BREAK_MANDATORY" value="1" enum="LineBreakFlag" is_bitfield="true">
+			Break the line at the line mandatory break characters (e.g. [code]"\n"[/code]).
+		</constant>
+		<constant name="BREAK_WORD_BOUND" value="2" enum="LineBreakFlag" is_bitfield="true">
+			Break the line between the words.
+		</constant>
+		<constant name="BREAK_GRAPHEME_BOUND" value="4" enum="LineBreakFlag" is_bitfield="true">
+			Break the line between any unconnected graphemes.
+		</constant>
+		<constant name="BREAK_ADAPTIVE" value="8" enum="LineBreakFlag" is_bitfield="true">
+			Should be used only in conjunction with [constant BREAK_WORD_BOUND], break the line between any unconnected graphemes, if it's impossible to break it between the words.
+		</constant>
+		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
+			Remove edge spaces from the broken line segments.
+		</constant>
+		<constant name="BREAK_TRIM_INDENT" value="32" enum="LineBreakFlag" is_bitfield="true">
+			Subtract first line indentation width from all lines after the first one.
+		</constant>
+		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
+			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.
+			[b]Note:[/b] In this mode, trimmed text is not processed at all. It is not accounted for in line breaking and size calculations.
+		</constant>
+		<constant name="VC_CHARS_AFTER_SHAPING" value="1" enum="VisibleCharactersBehavior">
+			Displays glyphs that are mapped to the first [member Label.visible_characters] or [member RichTextLabel.visible_characters] characters from the beginning of the text.
+		</constant>
+		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+		</constant>
+		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left.
+		</constant>
+		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the right.
+		</constant>
+		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
+			No text trimming is performed.
+		</constant>
+		<constant name="OVERRUN_TRIM_CHAR" value="1" enum="OverrunBehavior">
+			Trims the text per character.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD" value="2" enum="OverrunBehavior">
+			Trims the text per word.
+		</constant>
+		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
+			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
+			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
+		</constant>
+		<constant name="OVERRUN_NO_TRIM" value="0" enum="TextOverrunFlag" is_bitfield="true">
+			No trimming is performed.
+		</constant>
+		<constant name="OVERRUN_TRIM" value="1" enum="TextOverrunFlag" is_bitfield="true">
+			Trims the text when it exceeds the given width.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ONLY" value="2" enum="TextOverrunFlag" is_bitfield="true">
+			Trims the text per word instead of per grapheme.
+		</constant>
+		<constant name="OVERRUN_ADD_ELLIPSIS" value="4" enum="TextOverrunFlag" is_bitfield="true">
+			Determines whether an ellipsis should be added at the end of the text.
+		</constant>
+		<constant name="OVERRUN_ENFORCE_ELLIPSIS" value="8" enum="TextOverrunFlag" is_bitfield="true">
+			Determines whether the ellipsis at the end of the text is enforced and may not be hidden.
+		</constant>
+		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
+			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
+		</constant>
+		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is supported by the font, and can be drawn.
+		</constant>
+		<constant name="GRAPHEME_IS_RTL" value="2" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is part of right-to-left or bottom-to-top run.
+		</constant>
+		<constant name="GRAPHEME_IS_VIRTUAL" value="4" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is not part of source text, it was added by justification process.
+		</constant>
+		<constant name="GRAPHEME_IS_SPACE" value="8" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is whitespace.
+		</constant>
+		<constant name="GRAPHEME_IS_BREAK_HARD" value="16" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is mandatory break point (e.g. [code]"\n"[/code]).
+		</constant>
+		<constant name="GRAPHEME_IS_BREAK_SOFT" value="32" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is optional break point (e.g. space).
+		</constant>
+		<constant name="GRAPHEME_IS_TAB" value="64" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is the tabulation character.
+		</constant>
+		<constant name="GRAPHEME_IS_ELONGATION" value="128" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is kashida.
+		</constant>
+		<constant name="GRAPHEME_IS_PUNCTUATION" value="256" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is punctuation character.
+		</constant>
+		<constant name="GRAPHEME_IS_UNDERSCORE" value="512" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is underscore character.
+		</constant>
+		<constant name="GRAPHEME_IS_CONNECTED" value="1024" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is connected to the previous grapheme. Breaking line before this grapheme is not safe.
+		</constant>
+		<constant name="GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL" value="2048" enum="GraphemeFlag" is_bitfield="true">
+			It is safe to insert a U+0640 before this grapheme for elongation.
+		</constant>
+		<constant name="GRAPHEME_IS_EMBEDDED_OBJECT" value="4096" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is an object replacement character for the embedded object.
+		</constant>
+		<constant name="GRAPHEME_IS_SOFT_HYPHEN" value="8192" enum="GraphemeFlag" is_bitfield="true">
+			Grapheme is a soft hyphen.
+		</constant>
+		<constant name="HINTING_NONE" value="0" enum="Hinting">
+			Disables font hinting (smoother but less crisp).
+		</constant>
+		<constant name="HINTING_LIGHT" value="1" enum="Hinting">
+			Use the light font hinting mode.
+		</constant>
+		<constant name="HINTING_NORMAL" value="2" enum="Hinting">
+			Use the default font hinting mode (crisper but less smooth).
+			[b]Note:[/b] This hinting mode changes both horizontal and vertical glyph metrics. If applied to monospace font, some glyphs might have different width.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_DISABLED" value="0" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to the whole pixel size, each glyph is rasterized once.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_AUTO" value="1" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded based on font size.
+			- To one quarter of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE].
+			- To one half of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE].
+			- To the whole pixel size for larger fonts.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_HALF" value="2" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to one half of the pixel size, each glyph is rasterized up to two times.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER" value="3" enum="SubpixelPositioning">
+			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
+			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+		</constant>
+		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
+			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+		</constant>
+		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
+			TextServer supports simple text layouts.
+		</constant>
+		<constant name="FEATURE_BIDI_LAYOUT" value="2" enum="Feature">
+			TextServer supports bidirectional text layouts.
+		</constant>
+		<constant name="FEATURE_VERTICAL_LAYOUT" value="4" enum="Feature">
+			TextServer supports vertical layouts.
+		</constant>
+		<constant name="FEATURE_SHAPING" value="8" enum="Feature">
+			TextServer supports complex text shaping.
+		</constant>
+		<constant name="FEATURE_KASHIDA_JUSTIFICATION" value="16" enum="Feature">
+			TextServer supports justification using kashidas.
+		</constant>
+		<constant name="FEATURE_BREAK_ITERATORS" value="32" enum="Feature">
+			TextServer supports complex line/word breaking rules (e.g. dictionary based).
+		</constant>
+		<constant name="FEATURE_FONT_BITMAP" value="64" enum="Feature">
+			TextServer supports loading bitmap fonts.
+		</constant>
+		<constant name="FEATURE_FONT_DYNAMIC" value="128" enum="Feature">
+			TextServer supports loading dynamic (TrueType, OpeType, etc.) fonts.
+		</constant>
+		<constant name="FEATURE_FONT_MSDF" value="256" enum="Feature">
+			TextServer supports multichannel signed distance field dynamic font rendering.
+		</constant>
+		<constant name="FEATURE_FONT_SYSTEM" value="512" enum="Feature">
+			TextServer supports loading system fonts.
+		</constant>
+		<constant name="FEATURE_FONT_VARIABLE" value="1024" enum="Feature">
+			TextServer supports variable fonts.
+		</constant>
+		<constant name="FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION" value="2048" enum="Feature">
+			TextServer supports locale dependent and context sensitive case conversion.
+		</constant>
+		<constant name="FEATURE_USE_SUPPORT_DATA" value="4096" enum="Feature">
+			TextServer require external data file for some features, see [method load_support_data].
+		</constant>
+		<constant name="FEATURE_UNICODE_IDENTIFIERS" value="8192" enum="Feature">
+			TextServer supports UAX #31 identifier validation, see [method is_valid_identifier].
+		</constant>
+		<constant name="FEATURE_UNICODE_SECURITY" value="16384" enum="Feature">
+			TextServer supports [url=https://unicode.org/reports/tr36/]Unicode Technical Report #36[/url] and [url=https://unicode.org/reports/tr39/]Unicode Technical Standard #39[/url] based spoof detection features.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_ON" value="1" enum="ContourPointTag">
+			Contour point is on the curve.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CONIC" value="0" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a conic (quadratic) Bézier arc.
+		</constant>
+		<constant name="CONTOUR_CURVE_TAG_OFF_CUBIC" value="2" enum="ContourPointTag">
+			Contour point isn't on the curve, but serves as a control point for a cubic Bézier arc.
+		</constant>
+		<constant name="SPACING_GLYPH" value="0" enum="SpacingType">
+			Spacing for each glyph.
+		</constant>
+		<constant name="SPACING_SPACE" value="1" enum="SpacingType">
+			Spacing for the space character.
+		</constant>
+		<constant name="SPACING_TOP" value="2" enum="SpacingType">
+			Spacing at the top of the line.
+		</constant>
+		<constant name="SPACING_BOTTOM" value="3" enum="SpacingType">
+			Spacing at the bottom of the line.
+		</constant>
+		<constant name="SPACING_MAX" value="4" enum="SpacingType">
+			Represents the size of the [enum SpacingType] enum.
+		</constant>
+		<constant name="FONT_BOLD" value="1" enum="FontStyle" is_bitfield="true">
+			Font is bold.
+		</constant>
+		<constant name="FONT_ITALIC" value="2" enum="FontStyle" is_bitfield="true">
+			Font is italic or oblique.
+		</constant>
+		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle" is_bitfield="true">
+			Font have fixed-width characters.
+		</constant>
+		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
+			Use default Unicode BiDi algorithm.
+		</constant>
+		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
+			BiDi override for URI.
+		</constant>
+		<constant name="STRUCTURED_TEXT_FILE" value="2" enum="StructuredTextParser">
+			BiDi override for file path.
+		</constant>
+		<constant name="STRUCTURED_TEXT_EMAIL" value="3" enum="StructuredTextParser">
+			BiDi override for email.
+		</constant>
+		<constant name="STRUCTURED_TEXT_LIST" value="4" enum="StructuredTextParser">
+			BiDi override for lists. Structured text options: list separator [String].
+		</constant>
+		<constant name="STRUCTURED_TEXT_GDSCRIPT" value="5" enum="StructuredTextParser">
+			BiDi override for GDScript.
+		</constant>
+		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
+			User defined structured text BiDi override function.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_DISABLE" value="0" enum="FixedSizeScaleMode">
+			Bitmap font is not scaled.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_INTEGER_ONLY" value="1" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to the closest integer multiple of the font's fixed size. This is the recommended option for pixel art fonts.
+		</constant>
+		<constant name="FIXED_SIZE_SCALE_ENABLED" value="2" enum="FixedSizeScaleMode">
+			Bitmap font is scaled to an arbitrary (fractional) size. This is the recommended option for non-pixel art fonts.
+		</constant>
+	</constants>
+</class>

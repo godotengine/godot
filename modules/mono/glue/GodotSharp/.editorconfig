@@ -1,0 +1,39 @@
+# This file should only contain severity override to diagnostics, in order to make generated and
+# interop code compilation readable. We want to limit the scope of suppression as much as possible.
+
+[**/Generated/**.cs]
+# IDE1006: Naming rule violation
+dotnet_diagnostic.IDE1006.severity = none
+# CA1062: Validate parameter is non-null before using it
+# Useful for generated code, as it disables nullable
+dotnet_diagnostic.CA1062.severity = error
+# CA1069: Enums should not have duplicate values
+dotnet_diagnostic.CA1069.severity = none
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+# CA1708: Identifiers should differ by more than case
+dotnet_diagnostic.CA1708.severity = none
+# CA1711: Identifiers should not have incorrect suffix
+# Disable warning for suffixes like EventHandler, Flags, Enum, etc.
+dotnet_diagnostic.CA1711.severity = none
+# CA1716: Identifiers should not match keywords
+# This is suppressed, because it will report `@event` as well as `event`
+dotnet_diagnostic.CA1716.severity = none
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = none
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+# CS1573: Parameter has no matching param tag in the XML comment
+dotnet_diagnostic.CS1573.severity = none
+# TODO: Temporary change to not pollute the warnings, but this denotes with ou doc generation
+# CS1734: XML comment on '' has a paramref tag for '', but there is no parameter by that name
+dotnet_diagnostic.CS1734.severity = none
+
+[GodotSharp/Core/NativeInterop/**.cs]
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = none
+
+[GodotSharp/Core/**.cs]
+# CS1591: Missing XML comment for publicly visible type or member
+# TODO: Temporary change to not pollute the warnings, but we need to document public APIs
+dotnet_diagnostic.CS1591.severity = suggestion

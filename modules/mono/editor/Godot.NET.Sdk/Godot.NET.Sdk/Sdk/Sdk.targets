@@ -1,0 +1,27 @@
+<Project>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
+
+  <PropertyGroup>
+    <!--
+    Define constant to determine whether the real_t type in Godot is double precision or not.
+    By default this is false, like the official Godot builds. If someone is using a custom
+    Godot build where real_t is double, they can override the GodotFloat64 property.
+    -->
+    <DefineConstants Condition=" '$(GodotFloat64)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- C# source generators -->
+  <ItemGroup Condition=" '$(DisableImplicitGodotGeneratorReferences)' != 'true' ">
+    <PackageReference Include="Godot.SourceGenerators" Version="$(PackageVersion_Godot_SourceGenerators)" />
+  </ItemGroup>
+
+  <!-- Godot API references -->
+  <ItemGroup Condition=" '$(DisableImplicitGodotSharpReferences)' != 'true' ">
+    <PackageReference Include="GodotSharp" Version="$(PackageVersion_GodotSharp)" />
+    <PackageReference Include="GodotSharpEditor" Version="$(PackageVersion_GodotSharp)" Condition=" '$(Configuration)' == 'Debug' " />
+  </ItemGroup>
+
+  <!-- iOS-specific build targets -->
+  <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+
+</Project>

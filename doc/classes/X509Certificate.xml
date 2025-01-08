@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="X509Certificate" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An X509 certificate (e.g. for TLS).
+	</brief_description>
+	<description>
+		The X509Certificate class represents an X509 certificate. Certificates can be loaded and saved like any other [Resource].
+		They can be used as the server certificate in [method StreamPeerTLS.accept_stream] (along with the proper [CryptoKey]), and to specify the only certificate that should be accepted when connecting to a TLS server via [method StreamPeerTLS.connect_to_stream].
+	</description>
+	<tutorials>
+		<link title="SSL certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads a certificate from [param path] ("*.crt" file).
+			</description>
+		</method>
+		<method name="load_from_string">
+			<return type="int" enum="Error" />
+			<param index="0" name="string" type="String" />
+			<description>
+				Loads a certificate from the given [param string].
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves a certificate to the given [param path] (should be a "*.crt" file).
+			</description>
+		</method>
+		<method name="save_to_string">
+			<return type="String" />
+			<description>
+				Returns a string representation of the certificate, or an empty string if the certificate is invalid.
+			</description>
+		</method>
+	</methods>
+</class>

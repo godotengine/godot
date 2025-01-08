@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineDepthStencilState" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline depth/stencil state (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		[RDPipelineDepthStencilState] controls the way depth and stencil comparisons are performed when sampling those values using [RenderingDevice].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="back_op_compare" type="int" setter="set_back_op_compare" getter="get_back_op_compare" enum="RenderingDevice.CompareOperator" default="7">
+			The method used for comparing the previous back stencil value and [member back_op_reference].
+		</member>
+		<member name="back_op_compare_mask" type="int" setter="set_back_op_compare_mask" getter="get_back_op_compare_mask" default="0">
+			Selects which bits from the back stencil value will be compared.
+		</member>
+		<member name="back_op_depth_fail" type="int" setter="set_back_op_depth_fail" getter="get_back_op_depth_fail" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for back pixels that pass the stencil test but fail the depth test.
+		</member>
+		<member name="back_op_fail" type="int" setter="set_back_op_fail" getter="get_back_op_fail" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for back pixels that fail the stencil test.
+		</member>
+		<member name="back_op_pass" type="int" setter="set_back_op_pass" getter="get_back_op_pass" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for back pixels that pass the stencil test.
+		</member>
+		<member name="back_op_reference" type="int" setter="set_back_op_reference" getter="get_back_op_reference" default="0">
+			The value the previous back stencil value will be compared to.
+		</member>
+		<member name="back_op_write_mask" type="int" setter="set_back_op_write_mask" getter="get_back_op_write_mask" default="0">
+			Selects which bits from the back stencil value will be changed.
+		</member>
+		<member name="depth_compare_operator" type="int" setter="set_depth_compare_operator" getter="get_depth_compare_operator" enum="RenderingDevice.CompareOperator" default="7">
+			The method used for comparing the previous and current depth values.
+		</member>
+		<member name="depth_range_max" type="float" setter="set_depth_range_max" getter="get_depth_range_max" default="0.0">
+			The maximum depth that returns [code]true[/code] for [member enable_depth_range].
+		</member>
+		<member name="depth_range_min" type="float" setter="set_depth_range_min" getter="get_depth_range_min" default="0.0">
+			The minimum depth that returns [code]true[/code] for [member enable_depth_range].
+		</member>
+		<member name="enable_depth_range" type="bool" setter="set_enable_depth_range" getter="get_enable_depth_range" default="false">
+			If [code]true[/code], each depth value will be tested to see if it is between [member depth_range_min] and [member depth_range_max]. If it is outside of these values, it is discarded.
+		</member>
+		<member name="enable_depth_test" type="bool" setter="set_enable_depth_test" getter="get_enable_depth_test" default="false">
+			If [code]true[/code], enables depth testing which allows objects to be automatically occluded by other objects based on their depth. This also allows objects to be partially occluded by other objects. If [code]false[/code], objects will appear in the order they were drawn (like in Godot's 2D renderer).
+		</member>
+		<member name="enable_depth_write" type="bool" setter="set_enable_depth_write" getter="get_enable_depth_write" default="false">
+			If [code]true[/code], writes to the depth buffer whenever the depth test returns [code]true[/code]. Only works when enable_depth_test is also [code]true[/code].
+		</member>
+		<member name="enable_stencil" type="bool" setter="set_enable_stencil" getter="get_enable_stencil" default="false">
+			If [code]true[/code], enables stencil testing. There are separate stencil buffers for front-facing triangles and back-facing triangles. See properties that begin with "front_op" and properties with "back_op" for each.
+		</member>
+		<member name="front_op_compare" type="int" setter="set_front_op_compare" getter="get_front_op_compare" enum="RenderingDevice.CompareOperator" default="7">
+			The method used for comparing the previous front stencil value and [member front_op_reference].
+		</member>
+		<member name="front_op_compare_mask" type="int" setter="set_front_op_compare_mask" getter="get_front_op_compare_mask" default="0">
+			Selects which bits from the front stencil value will be compared.
+		</member>
+		<member name="front_op_depth_fail" type="int" setter="set_front_op_depth_fail" getter="get_front_op_depth_fail" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for front pixels that pass the stencil test but fail the depth test.
+		</member>
+		<member name="front_op_fail" type="int" setter="set_front_op_fail" getter="get_front_op_fail" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for front pixels that fail the stencil test.
+		</member>
+		<member name="front_op_pass" type="int" setter="set_front_op_pass" getter="get_front_op_pass" enum="RenderingDevice.StencilOperation" default="1">
+			The operation to perform on the stencil buffer for front pixels that pass the stencil test.
+		</member>
+		<member name="front_op_reference" type="int" setter="set_front_op_reference" getter="get_front_op_reference" default="0">
+			The value the previous front stencil value will be compared to.
+		</member>
+		<member name="front_op_write_mask" type="int" setter="set_front_op_write_mask" getter="get_front_op_write_mask" default="0">
+			Selects which bits from the front stencil value will be changed.
+		</member>
+	</members>
+</class>

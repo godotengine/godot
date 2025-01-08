@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRController3D" inherits="XRNode3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D node representing a spatially-tracked controller.
+	</brief_description>
+	<description>
+		This is a helper 3D node that is linked to the tracking of controllers. It also offers several handy passthroughs to the state of buttons and such on the controllers.
+		Controllers are linked by their ID. You can create controller nodes before the controllers are available. If your game always uses two controllers (one for each hand), you can predefine the controllers with ID 1 and 2; they will become active as soon as the controllers are identified. If you expect additional controllers to be used, you should react to the signals and add XRController3D nodes to your scene.
+		The position of the controller node is automatically updated by the [XRServer]. This makes this node ideal to add child nodes to visualize the controller.
+		As many XR runtimes now use a configurable action map all inputs are named.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_float" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
+			</description>
+		</method>
+		<method name="get_input" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns a [Variant] for the input with the given [param name]. This works for any input type, the variant will be typed according to the actions configuration.
+			</description>
+		</method>
+		<method name="get_tracker_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand" />
+			<description>
+				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
+			</description>
+		</method>
+		<method name="get_vector2" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
+			</description>
+		</method>
+		<method name="is_button_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the button with the given [param name] is pressed.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="button_pressed">
+			<param index="0" name="name" type="String" />
+			<description>
+				Emitted when a button on this controller is pressed.
+			</description>
+		</signal>
+		<signal name="button_released">
+			<param index="0" name="name" type="String" />
+			<description>
+				Emitted when a button on this controller is released.
+			</description>
+		</signal>
+		<signal name="input_float_changed">
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Emitted when a trigger or similar input on this controller changes value.
+			</description>
+		</signal>
+		<signal name="input_vector2_changed">
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Vector2" />
+			<description>
+				Emitted when a thumbstick or thumbpad on this controller is moved.
+			</description>
+		</signal>
+		<signal name="profile_changed">
+			<param index="0" name="role" type="String" />
+			<description>
+				Emitted when the interaction profile on this controller is changed.
+			</description>
+		</signal>
+	</signals>
+</class>

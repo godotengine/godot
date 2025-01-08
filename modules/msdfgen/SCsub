@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_msdfgen = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_msdfgen"]:
+    env_msdfgen.disable_warnings()
+
+    thirdparty_dir = "#thirdparty/msdfgen/"
+    thirdparty_sources = [
+        "core/Contour.cpp",
+        "core/EdgeHolder.cpp",
+        "core/MSDFErrorCorrection.cpp",
+        "core/Projection.cpp",
+        "core/Scanline.cpp",
+        "core/Shape.cpp",
+        "core/contour-combiners.cpp",
+        "core/edge-coloring.cpp",
+        "core/edge-segments.cpp",
+        "core/edge-selectors.cpp",
+        "core/equation-solver.cpp",
+        "core/msdf-error-correction.cpp",
+        "core/msdfgen.cpp",
+        "core/rasterization.cpp",
+        "core/render-sdf.cpp",
+        "core/sdf-error-estimation.cpp",
+        "core/shape-description.cpp",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
+    env_msdfgen.Prepend(CPPPATH=["#thirdparty/freetype/include", "#thirdparty/msdfgen", "#thirdparty/nanosvg"])
+
+    lib = env_msdfgen.add_library("msdfgen_builtin", thirdparty_sources)
+    thirdparty_obj += lib
+
+    # Needs to be appended to arrive after libscene in the linker call,
+    # but we don't want it to arrive *after* system libs, so manual hack
+    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
+    # and then plain strings for system library. We insert between the two.
+    inserted = False
+    for idx, linklib in enumerate(env["LIBS"]):
+        if isinstance(linklib, (str, bytes)):  # first system lib such as "X11", otherwise SCons lib object
+            env["LIBS"].insert(idx, lib)
+            inserted = True
+            break
+    if not inserted:
+        env.Append(LIBS=[lib])
+
+
+# Godot source files
+
+module_obj = []
+
+env_msdfgen.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

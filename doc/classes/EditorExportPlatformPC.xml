@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformPC" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for the desktop platform exporter (Windows and Linux/BSD).
+	</brief_description>
+	<description>
+		The base class for the desktop platform exporters. These include Windows and Linux/BSD, but not macOS. See the classes inheriting this one for more details.
+	</description>
+	<tutorials>
+		<link title="Exporting for Windows">$DOCS_URL/tutorials/export/exporting_for_windows.html</link>
+		<link title="Exporting for Linux">$DOCS_URL/tutorials/export/exporting_for_linux.html</link>
+	</tutorials>
+</class>

@@ -1,0 +1,17 @@
+{
+  "name": "Godot Engine Web Editor",
+  "short_name": "Godot",
+  "description": "Multi-platform 2D and 3D game engine with a feature-rich editor (Web edition)",
+  "lang": "en",
+  "start_url": "./godot.editor.html",
+  "display": "standalone",
+  "theme_color": "#202531",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#333b4f"
+}

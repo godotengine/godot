@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HashingContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides functionality for computing cryptographic hashes chunk by chunk.
+	</brief_description>
+	<description>
+		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. Useful for computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
+		The [enum HashType] enum shows the supported hashing algorithms.
+		[codeblocks]
+		[gdscript]
+		const CHUNK_SIZE = 1024
+
+		func hash_file(path):
+		    # Check that file exists.
+		    if not FileAccess.file_exists(path):
+		        return
+		    # Start an SHA-256 context.
+		    var ctx = HashingContext.new()
+		    ctx.start(HashingContext.HASH_SHA256)
+		    # Open the file to hash.
+		    var file = FileAccess.open(path, FileAccess.READ)
+		    # Update the context after reading each chunk.
+		    while file.get_position() &lt; file.get_length():
+		        var remaining = file.get_length() - file.get_position()
+		        ctx.update(file.get_buffer(min(remaining, CHUNK_SIZE)))
+		    # Get the computed hash.
+		    var res = ctx.finish()
+		    # Print the result as hex string and array.
+		    printt(res.hex_encode(), Array(res))
+		[/gdscript]
+		[csharp]
+		public const int ChunkSize = 1024;
+
+		public void HashFile(string path)
+		{
+		    // Check that file exists.
+		    if (!FileAccess.FileExists(path))
+		    {
+		        return;
+		    }
+		    // Start an SHA-256 context.
+		    var ctx = new HashingContext();
+		    ctx.Start(HashingContext.HashType.Sha256);
+		    // Open the file to hash.
+		    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+		    // Update the context after reading each chunk.
+		    while (file.GetPosition() &lt; file.GetLength())
+		    {
+		        int remaining = (int)(file.GetLength() - file.GetPosition());
+		        ctx.Update(file.GetBuffer(Mathf.Min(remaining, ChunkSize)));
+		    }
+		    // Get the computed hash.
+		    byte[] res = ctx.Finish();
+		    // Print the result as hex string and array.
+		    GD.PrintT(res.HexEncode(), (Variant)res);
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="finish">
+			<return type="PackedByteArray" />
+			<description>
+				Closes the current context, and return the computed hash.
+			</description>
+		</method>
+		<method name="start">
+			<return type="int" enum="Error" />
+			<param index="0" name="type" type="int" enum="HashingContext.HashType" />
+			<description>
+				Starts a new hash computation of the given [param type] (e.g. [constant HASH_SHA256] to start computation of an SHA-256).
+			</description>
+		</method>
+		<method name="update">
+			<return type="int" enum="Error" />
+			<param index="0" name="chunk" type="PackedByteArray" />
+			<description>
+				Updates the computation with the given [param chunk] of data.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="HASH_MD5" value="0" enum="HashType">
+			Hashing algorithm: MD5.
+		</constant>
+		<constant name="HASH_SHA1" value="1" enum="HashType">
+			Hashing algorithm: SHA-1.
+		</constant>
+		<constant name="HASH_SHA256" value="2" enum="HashType">
+			Hashing algorithm: SHA-256.
+		</constant>
+	</constants>
+</class>

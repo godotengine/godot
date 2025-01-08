@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Light2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Casts light in a 2D environment.
+	</brief_description>
+	<description>
+		Casts light in a 2D environment. A light is defined as a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related).
+	</description>
+	<tutorials>
+		<link title="2D lights and shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_height" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the light's height, which is used in 2D normal mapping. See [member PointLight2D.height] and [member DirectionalLight2D.height].
+			</description>
+		</method>
+		<method name="set_height">
+			<return type="void" />
+			<param index="0" name="height" type="float" />
+			<description>
+				Sets the light's height, which is used in 2D normal mapping. See [member PointLight2D.height] and [member DirectionalLight2D.height].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="Light2D.BlendMode" default="0">
+			The Light2D's blend mode. See [enum BlendMode] constants for values.
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			The Light2D's [Color].
+		</member>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
+			If [code]true[/code], Light2D will only appear when editing the scene.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]true[/code], Light2D will emit light.
+		</member>
+		<member name="energy" type="float" setter="set_energy" getter="get_energy" default="1.0">
+			The Light2D's energy value. The larger the value, the stronger the light.
+		</member>
+		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask" default="1">
+			The layer mask. Only objects with a matching [member CanvasItem.light_mask] will be affected by the Light2D. See also [member shadow_item_cull_mask], which affects which objects can cast shadows.
+			[b]Note:[/b] [member range_item_cull_mask] is ignored by [DirectionalLight2D], which will always light a 2D node regardless of the 2D node's [member CanvasItem.light_mask].
+		</member>
+		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max" default="0">
+			Maximum layer value of objects that are affected by the Light2D.
+		</member>
+		<member name="range_layer_min" type="int" setter="set_layer_range_min" getter="get_layer_range_min" default="0">
+			Minimum layer value of objects that are affected by the Light2D.
+		</member>
+		<member name="range_z_max" type="int" setter="set_z_range_max" getter="get_z_range_max" default="1024">
+			Maximum [code]z[/code] value of objects that are affected by the Light2D.
+		</member>
+		<member name="range_z_min" type="int" setter="set_z_range_min" getter="get_z_range_min" default="-1024">
+			Minimum [code]z[/code] value of objects that are affected by the Light2D.
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0)">
+			[Color] of shadows cast by the Light2D.
+		</member>
+		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled" default="false">
+			If [code]true[/code], the Light2D will cast shadows.
+		</member>
+		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter" default="0">
+			Shadow filter type. See [enum ShadowFilter] for possible values.
+		</member>
+		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" default="0.0">
+			Smoothing value for shadows. Higher values will result in softer shadows, at the cost of visible streaks that can appear in shadow rendering. [member shadow_filter_smooth] only has an effect if [member shadow_filter] is [constant SHADOW_FILTER_PCF5] or [constant SHADOW_FILTER_PCF13].
+		</member>
+		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
+			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching [member CanvasItem.light_mask] will cast shadows. See also [member range_item_cull_mask], which affects which objects can [i]receive[/i] the light.
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_FILTER_NONE" value="0" enum="ShadowFilter">
+			No filter applies to the shadow map. This provides hard shadow edges and is the fastest to render. See [member shadow_filter].
+		</constant>
+		<constant name="SHADOW_FILTER_PCF5" value="1" enum="ShadowFilter">
+			Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
+		</constant>
+		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
+			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtering mode, and should be used sparingly. See [member shadow_filter].
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="0" enum="BlendMode">
+			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="1" enum="BlendMode">
+			Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+		</constant>
+		<constant name="BLEND_MODE_MIX" value="2" enum="BlendMode">
+			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MobileVRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Generic mobile VR implementation.
+	</brief_description>
+	<description>
+		This is a generic mobile VR implementation where you need to provide details about the phone and HMD used. It does not rely on any existing framework. This is the most basic interface we have. For the best effect, you need a mobile phone with a gyroscope and accelerometer.
+		Note that even though there is no positional tracking, the camera will assume the headset is at a height of 1.85 meters. You can change this by setting [member eye_height].
+		You can initialize this interface as follows:
+		[codeblock]
+		var interface = XRServer.find_interface("Native mobile")
+		if interface and interface.initialize():
+		    get_viewport().use_xr = true
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="display_to_lens" type="float" setter="set_display_to_lens" getter="get_display_to_lens" default="4.0">
+			The distance between the display and the lenses inside of the device in centimeters.
+		</member>
+		<member name="display_width" type="float" setter="set_display_width" getter="get_display_width" default="14.5">
+			The width of the display in centimeters.
+		</member>
+		<member name="eye_height" type="float" setter="set_eye_height" getter="get_eye_height" default="1.85">
+			The height at which the camera is placed in relation to the ground (i.e. [XROrigin3D] node).
+		</member>
+		<member name="iod" type="float" setter="set_iod" getter="get_iod" default="6.0">
+			The interocular distance, also known as the interpupillary distance. The distance between the pupils of the left and right eye.
+		</member>
+		<member name="k1" type="float" setter="set_k1" getter="get_k1" default="0.215">
+			The k1 lens factor is one of the two constants that define the strength of the lens used and directly influences the lens distortion effect.
+		</member>
+		<member name="k2" type="float" setter="set_k2" getter="get_k2" default="0.215">
+			The k2 lens factor, see k1.
+		</member>
+		<member name="offset_rect" type="Rect2" setter="set_offset_rect" getter="get_offset_rect" default="Rect2(0, 0, 1, 1)">
+			Set the offset rect relative to the area being rendered. A length of 1 represents the whole rendering area on that axis.
+		</member>
+		<member name="oversample" type="float" setter="set_oversample" getter="get_oversample" default="1.5">
+			The oversample setting. Because of the lens distortion we have to render our buffers at a higher resolution then the screen can natively handle. A value between 1.5 and 2.0 often provides good results but at the cost of performance.
+		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="xr_play_area_mode" type="int" setter="set_play_area_mode" getter="get_play_area_mode" overrides="XRInterface" enum="XRInterface.PlayAreaMode" default="1" />
+	</members>
+</class>

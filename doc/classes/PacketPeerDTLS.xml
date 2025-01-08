@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeerDTLS" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		DTLS packet peer.
+	</brief_description>
+	<description>
+		This class represents a DTLS peer connection. It can be used to connect to a DTLS server, and is returned by [method DTLSServer.take_connection].
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[b]Warning:[/b] TLS certificate revocation and certificate pinning are currently not supported. Revoked certificates are accepted as long as they are otherwise valid. If this is a concern, you may want to use automatically managed certificates with a short validity period.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="connect_to_peer">
+			<return type="int" enum="Error" />
+			<param index="0" name="packet_peer" type="PacketPeerUDP" />
+			<param index="1" name="hostname" type="String" />
+			<param index="2" name="client_options" type="TLSOptions" default="null" />
+			<description>
+				Connects a [param packet_peer] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). You can optionally specify the [param client_options] to be used while verifying the TLS connections. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+			</description>
+		</method>
+		<method name="disconnect_from_peer">
+			<return type="void" />
+			<description>
+				Disconnects this peer, terminating the DTLS session.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="PacketPeerDTLS.Status" />
+			<description>
+				Returns the status of the connection. See [enum Status] for values.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void" />
+			<description>
+				Poll the connection to check for incoming packets. Call this frequently to update the status and keep the connection working.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
+			A status representing a [PacketPeerDTLS] that is disconnected.
+		</constant>
+		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
+			A status representing a [PacketPeerDTLS] that is currently performing the handshake with a remote peer.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [PacketPeerDTLS] that is connected to a remote peer.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [PacketPeerDTLS] in a generic error state.
+		</constant>
+		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
+			An error status that shows a mismatch in the DTLS certificate domain presented by the host and the domain requested for validation.
+		</constant>
+	</constants>
+</class>

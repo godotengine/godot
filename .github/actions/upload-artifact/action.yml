@@ -1,0 +1,22 @@
+name: Upload Godot artifact
+description: Upload the Godot artifact.
+
+inputs:
+  name:
+    description: The artifact name.
+    default: ${{ github.job }}
+  path:
+    description: The path to upload.
+    required: true
+    default: bin/*
+
+runs:
+  using: composite
+  steps:
+    - name: Upload Godot Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        # Default is 90 days.
+        retention-days: 60

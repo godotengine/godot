@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScenePostImport" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Post-processes scenes after import.
+	</brief_description>
+	<description>
+		Imported scenes can be automatically modified right after import by setting their [b]Custom Script[/b] Import property to a [code]tool[/code] script that inherits from this class.
+		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene:
+		[codeblocks]
+		[gdscript]
+		@tool # Needed so it runs in editor.
+		extends EditorScenePostImport
+
+		# This sample changes all node names.
+		# Called right after the scene is imported and gets the root node.
+		func _post_import(scene):
+		    # Change all node names to "modified_[oldnodename]"
+		    iterate(scene)
+		    return scene # Remember to return the imported scene
+
+		func iterate(node):
+		    if node != null:
+		        node.name = "modified_" + node.name
+		        for child in node.get_children():
+		            iterate(child)
+		[/gdscript]
+		[csharp]
+		using Godot;
+
+		// This sample changes all node names.
+		// Called right after the scene is imported and gets the root node.
+		[Tool]
+		public partial class NodeRenamer : EditorScenePostImport
+		{
+		    public override GodotObject _PostImport(Node scene)
+		    {
+		        // Change all node names to "modified_[oldnodename]"
+		        Iterate(scene);
+		        return scene; // Remember to return the imported scene
+		    }
+
+		    public void Iterate(Node node)
+		    {
+		        if (node != null)
+		        {
+		            node.Name = $"modified_{node.Name}";
+		            foreach (Node child in node.GetChildren())
+		            {
+		                Iterate(child);
+		            }
+		        }
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Importing 3D scenes: Configuration: Using import scripts for automation">$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation</link>
+	</tutorials>
+	<methods>
+		<method name="_post_import" qualifiers="virtual">
+			<return type="Object" />
+			<param index="0" name="scene" type="Node" />
+			<description>
+				Called after the scene was imported. This method must return the modified version of the scene.
+			</description>
+		</method>
+		<method name="get_source_file" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
+			</description>
+		</method>
+	</methods>
+</class>

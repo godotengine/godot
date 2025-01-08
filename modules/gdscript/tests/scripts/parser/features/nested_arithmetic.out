@@ -1,0 +1,31 @@
+GDTEST_OK
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+2.718
+
+2.718
+-2.718
+
+-1000
+
+-2.718
+
+36900.9009009009
+2
+8192
+-8

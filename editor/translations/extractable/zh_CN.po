@@ -1,0 +1,258 @@
+# Chinese (Simplified) translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: 2018-01-20 12:15+0200\n"
+"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
+"godot-engine/godot/zh_Hans/>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "New Code Region"
+msgstr "新建代码区域"
+
+msgid "Pick a color from the screen."
+msgstr "从屏幕中拾取颜色。"
+
+msgid "Pick a color from the application window."
+msgstr "从应用程序窗口中拾取颜色。"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color\n"
+"RMB: Remove preset"
+msgstr ""
+"颜色：#%s\n"
+"鼠标左键：应用颜色\n"
+"鼠标右键：移除预设"
+
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"颜色：#%s\n"
+"鼠标左键：应用颜色"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "输入十六进制码（\"#ff0000\"）或颜色名称（\"red\"）。"
+
+msgid "Select a picker shape."
+msgstr "选择选取器形状。"
+
+msgid "Select a picker mode."
+msgstr "选择选取器模式。"
+
+msgid "Hex code or named color"
+msgstr "十六进制码或颜色名称"
+
+msgid "Add current color as a preset."
+msgstr "将当前颜色添加为预设。"
+
+msgid "Network"
+msgstr "网络"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"文件“%s”已存在。\n"
+"是否要覆盖？"
+
+msgid "Open"
+msgstr "打开"
+
+msgid "Select Current Folder"
+msgstr "选择当前文件夹"
+
+msgid "Select This Folder"
+msgstr "选择此文件夹"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "你无权访问此文件夹的内容。"
+
+msgid "All Recognized"
+msgstr "所有可用类型"
+
+msgid "All Files"
+msgstr "所有文件"
+
+msgid "Open a File"
+msgstr "打开文件"
+
+msgid "Open File(s)"
+msgstr "打开文件"
+
+msgid "Open a Directory"
+msgstr "打开目录"
+
+msgid "Open a File or Directory"
+msgstr "打开文件或目录"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save a File"
+msgstr "保存文件"
+
+msgid "Go to previous folder."
+msgstr "转到上个文件夹。"
+
+msgid "Go to next folder."
+msgstr "转到下个文件夹。"
+
+msgid "Go to parent folder."
+msgstr "转到父文件夹。"
+
+msgid "Path:"
+msgstr "路径："
+
+msgid "Refresh files."
+msgstr "刷新文件。"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "切换隐藏文件的可见性。"
+
+msgid "Directories & Files:"
+msgstr "目录与文件："
+
+msgid "File:"
+msgstr "文件："
+
+msgid "Create Folder"
+msgstr "创建文件夹"
+
+msgid "Name:"
+msgstr "名称："
+
+msgid "Could not create folder."
+msgstr "无法创建文件夹。"
+
+msgid "Invalid extension, or empty filename."
+msgstr "扩展名无效或文件名为空。"
+
+msgid "Zoom Out"
+msgstr "缩小"
+
+msgid "Zoom Reset"
+msgstr "重置缩放"
+
+msgid "Zoom In"
+msgstr "放大"
+
+msgid "Toggle the visual grid."
+msgstr "开关可视网格。"
+
+msgid "Toggle snapping to the grid."
+msgstr "开关网格吸附。"
+
+msgid "Change the snapping distance."
+msgstr "修改吸附距离。"
+
+msgid "Toggle the graph minimap."
+msgstr "开关小地图。"
+
+msgid "Automatically arrange selected nodes."
+msgstr "自动排列所选节点。"
+
+msgid "Same as Layout Direction"
+msgstr "与布局方向一致"
+
+msgid "Auto-Detect Direction"
+msgstr "自动检测方向"
+
+msgid "Left-to-Right"
+msgstr "从左至右"
+
+msgid "Right-to-Left"
+msgstr "从右至左"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "从左至右标志（LRM）"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "从右至左标志（RLM）"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr "开始从左至右嵌入（LRE）"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr "开始从右至左嵌入（RLE）"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr "开始从左至右强制（LRO）"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr "开始从右至左强制（RLO）"
+
+msgid "Pop Direction Formatting (PDF)"
+msgstr "退出方向格式化（PDF）"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "阿拉伯字母标记（ALM）"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "从左至右隔离（LRI）"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "从右至左隔离（RLI）"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "第一个强隔离（FSI）"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "退出方向隔离（PDI）"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "零宽连接符（ZWJ）"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "零宽非连接符（ZWNJ）"
+
+msgid "Word Joiner (WJ)"
+msgstr "文字连接符（WJ）"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "软连字符（SHY）"
+
+msgid "Cut"
+msgstr "剪切"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Paste"
+msgstr "粘贴"
+
+msgid "Select All"
+msgstr "全选"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Undo"
+msgstr "撤销"
+
+msgid "Redo"
+msgstr "重做"
+
+msgid "Text Writing Direction"
+msgstr "文本书写方向"
+
+msgid "Display Control Characters"
+msgstr "显示控制字符"
+
+msgid "Insert Control Character"
+msgstr "插入控制字符"
+
+msgid "(Other)"
+msgstr "（其他）"

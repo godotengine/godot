@@ -1,0 +1,8 @@
+GDTEST_OK
+hello == A.hello? false
+hello == A.B.hello? false
+hello == C.hello? false
+A.hello == A.B.hello? false
+A.hello == C.hello? false
+A.B.hello == C.hello? false
+C.hello == C.hello? true

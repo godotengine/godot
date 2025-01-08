@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshLibrary" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Library of meshes.
+	</brief_description>
+	<description>
+		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. Each item can also include collision and navigation shapes. This resource is used in [GridMap].
+	</description>
+	<tutorials>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the library.
+			</description>
+		</method>
+		<method name="create_item">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Creates a new item in the library with the given ID.
+				You can get an unused ID from [method get_last_unused_item_id].
+			</description>
+		</method>
+		<method name="find_item_by_name" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the first item with the given name, or [code]-1[/code] if no item is found.
+			</description>
+		</method>
+		<method name="get_item_list" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the list of item IDs in use.
+			</description>
+		</method>
+		<method name="get_item_mesh" qualifiers="const">
+			<return type="Mesh" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's mesh.
+			</description>
+		</method>
+		<method name="get_item_mesh_cast_shadow" qualifiers="const">
+			<return type="int" enum="RenderingServer.ShadowCastingSetting" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's shadow casting mode. See [enum RenderingServer.ShadowCastingSetting] for possible values.
+			</description>
+		</method>
+		<method name="get_item_mesh_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the transform applied to the item's mesh.
+			</description>
+		</method>
+		<method name="get_item_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's name.
+			</description>
+		</method>
+		<method name="get_item_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's navigation layers bitmask.
+			</description>
+		</method>
+		<method name="get_item_navigation_mesh" qualifiers="const">
+			<return type="NavigationMesh" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's navigation mesh.
+			</description>
+		</method>
+		<method name="get_item_navigation_mesh_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the transform applied to the item's navigation mesh.
+			</description>
+		</method>
+		<method name="get_item_preview" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="id" type="int" />
+			<description>
+				When running in the editor, returns a generated item preview (a 3D rendering in isometric perspective). When used in a running project, returns the manually-defined item preview which can be set using [method set_item_preview]. Returns an empty [Texture2D] if no preview was manually set in a running project.
+			</description>
+		</method>
+		<method name="get_item_shapes" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns an item's collision shapes.
+				The array consists of each [Shape3D] followed by its [Transform3D].
+			</description>
+		</method>
+		<method name="get_last_unused_item_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Gets an unused ID for a new item.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes the item.
+			</description>
+		</method>
+		<method name="set_item_mesh">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="mesh" type="Mesh" />
+			<description>
+				Sets the item's mesh.
+			</description>
+		</method>
+		<method name="set_item_mesh_cast_shadow">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="shadow_casting_setting" type="int" enum="RenderingServer.ShadowCastingSetting" />
+			<description>
+				Sets the item's shadow casting mode. See [enum RenderingServer.ShadowCastingSetting] for possible values.
+			</description>
+		</method>
+		<method name="set_item_mesh_transform">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="mesh_transform" type="Transform3D" />
+			<description>
+				Sets the transform to apply to the item's mesh.
+			</description>
+		</method>
+		<method name="set_item_name">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the item's name.
+				This name is shown in the editor. It can also be used to look up the item later using [method find_item_by_name].
+			</description>
+		</method>
+		<method name="set_item_navigation_layers">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the item's navigation layers bitmask.
+			</description>
+		</method>
+		<method name="set_item_navigation_mesh">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Sets the item's navigation mesh.
+			</description>
+		</method>
+		<method name="set_item_navigation_mesh_transform">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_mesh" type="Transform3D" />
+			<description>
+				Sets the transform to apply to the item's navigation mesh.
+			</description>
+		</method>
+		<method name="set_item_preview">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Sets a texture to use as the item's preview icon in the editor.
+			</description>
+		</method>
+		<method name="set_item_shapes">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="shapes" type="Array" />
+			<description>
+				Sets an item's collision shapes.
+				The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
+			</description>
+		</method>
+	</methods>
+</class>

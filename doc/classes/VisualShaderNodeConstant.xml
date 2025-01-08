@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeConstant" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base type for the constants within the visual shader graph.
+	</brief_description>
+	<description>
+		This is an abstract class. See the derived types for descriptions of the possible values.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

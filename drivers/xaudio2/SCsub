@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+env.Append(CPPDEFINES=["XAUDIO2_ENABLED"])
+env.Append(LINKFLAGS=["xaudio2_8.lib"])

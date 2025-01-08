@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#202531">
+		<meta name="msapplication-navbutton-color" content="#202531">
+		<title>You are offline</title>
+		<style>
+html {
+	background-color: #333b4f;
+	color: #e0e0e0;
+}
+
+body {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	margin: 2rem;
+}
+
+p {
+	margin-block: 1rem;
+}
+
+button {
+	display: block;
+	padding: 1rem 2rem;
+	margin: 3rem auto 0;
+}
+		</style>
+	</head>
+	<body>
+		<h1>You are offline</h1>
+		<p>This application requires an Internet connection to run for the first time.</p>
+		<p>Press the button below to try reloading:</p>
+		<button type="button">Reload</button>
+
+		<script>
+document.querySelector('button').addEventListener('click', () => {
+	window.location.reload();
+});
+		</script>
+	</body>
+</html>

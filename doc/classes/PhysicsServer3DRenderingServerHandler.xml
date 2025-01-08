@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsServer3DRenderingServerHandler" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A class used to provide [method PhysicsServer3DExtension._soft_body_update_rendering_server] with a rendering handler for soft bodies.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_set_aabb" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="aabb" type="AABB" />
+			<description>
+				Called by the [PhysicsServer3D] to set the bounding box for the [SoftBody3D].
+			</description>
+		</method>
+		<method name="_set_normal" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="normal" type="Vector3" />
+			<description>
+				Called by the [PhysicsServer3D] to set the normal for the [SoftBody3D] vertex at the index specified by [param vertex_id].
+				[b]Note:[/b] The [param normal] parameter used to be of type [code]const void*[/code] prior to Godot 4.2.
+			</description>
+		</method>
+		<method name="_set_vertex" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="vertex" type="Vector3" />
+			<description>
+				Called by the [PhysicsServer3D] to set the position for the [SoftBody3D] vertex at the index specified by [param vertex_id].
+				[b]Note:[/b] The [param vertex] parameter used to be of type [code]const void*[/code] prior to Godot 4.2.
+			</description>
+		</method>
+		<method name="set_aabb">
+			<return type="void" />
+			<param index="0" name="aabb" type="AABB" />
+			<description>
+				Sets the bounding box for the [SoftBody3D].
+			</description>
+		</method>
+		<method name="set_normal">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="normal" type="Vector3" />
+			<description>
+				Sets the normal for the [SoftBody3D] vertex at the index specified by [param vertex_id].
+			</description>
+		</method>
+		<method name="set_vertex">
+			<return type="void" />
+			<param index="0" name="vertex_id" type="int" />
+			<param index="1" name="vertex" type="Vector3" />
+			<description>
+				Sets the position for the [SoftBody3D] vertex at the index specified by [param vertex_id].
+			</description>
+		</method>
+	</methods>
+</class>

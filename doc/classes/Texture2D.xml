@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Texture2D" inherits="Texture" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture for 2D and 3D.
+	</brief_description>
+	<description>
+		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite2D] or GUI [Control].
+		Textures are often created by loading them from a file. See [method @GDScript.load].
+		[Texture2D] is a base for other resources. It cannot be used directly.
+		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations. Larger textures may fail to import.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_draw" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="to_canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="modulate" type="Color" />
+			<param index="3" name="transpose" type="bool" />
+			<description>
+				Called when the entire [Texture2D] is requested to be drawn over a [CanvasItem], with the top-left offset specified in [param pos]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+			</description>
+		</method>
+		<method name="_draw_rect" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="to_canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="tile" type="bool" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="transpose" type="bool" />
+			<description>
+				Called when the [Texture2D] is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+			</description>
+		</method>
+		<method name="_draw_rect_region" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="to_canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="src_rect" type="Rect2" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="transpose" type="bool" />
+			<param index="5" name="clip_uv" type="bool" />
+			<description>
+				Called when a part of the [Texture2D] specified by [param src_rect]'s coordinates is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
+				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+			</description>
+		</method>
+		<method name="_get_height" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the [Texture2D]'s height is queried.
+			</description>
+		</method>
+		<method name="_get_width" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Called when the [Texture2D]'s width is queried.
+			</description>
+		</method>
+		<method name="_has_alpha" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Called when the presence of an alpha channel in the [Texture2D] is queried.
+			</description>
+		</method>
+		<method name="_is_pixel_opaque" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<description>
+				Called when a pixel's opaque state in the [Texture2D] is queried at the specified [code](x, y)[/code] position.
+			</description>
+		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture2D]).
+			</description>
+		</method>
+		<method name="draw" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="position" type="Vector2" />
+			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="3" name="transpose" type="bool" default="false" />
+			<description>
+				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [param position].
+			</description>
+		</method>
+		<method name="draw_rect" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="tile" type="bool" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="transpose" type="bool" default="false" />
+			<description>
+				Draws the texture using a [CanvasItem] with the [RenderingServer] API.
+			</description>
+		</method>
+		<method name="draw_rect_region" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="src_rect" type="Rect2" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="transpose" type="bool" default="false" />
+			<param index="5" name="clip_uv" type="bool" default="true" />
+			<description>
+				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the texture height in pixels.
+			</description>
+		</method>
+		<method name="get_image" qualifiers="const">
+			<return type="Image" />
+			<description>
+				Returns an [Image] that is a copy of data from this [Texture2D] (a new [Image] is created each time). [Image]s can be accessed and manipulated directly.
+				[b]Note:[/b] This will return [code]null[/code] if this [Texture2D] is invalid.
+				[b]Note:[/b] This will fetch the texture data from the GPU, which might cause performance problems when overused. Avoid calling [method get_image] every frame, especially on large textures.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the texture size in pixels.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the texture width in pixels.
+			</description>
+		</method>
+		<method name="has_alpha" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Texture2D] has an alpha channel.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerTCP" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A stream peer that handles TCP connections.
+	</brief_description>
+	<description>
+		A stream peer that handles TCP connections. This object can be used to connect to TCP servers, or also is returned by a TCP server.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bind">
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="host" type="String" default="&quot;*&quot;" />
+			<description>
+				Opens the TCP socket, and binds it to the specified local address.
+				This method is generally not needed, and only used to force the subsequent call to [method connect_to_host] to use the specified [param host] and [param port] as source address. This can be desired in some NAT punchthrough techniques, or when forcing the source network interface.
+			</description>
+		</method>
+		<method name="connect_to_host">
+			<return type="int" enum="Error" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="port" type="int" />
+			<description>
+				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success.
+			</description>
+		</method>
+		<method name="disconnect_from_host">
+			<return type="void" />
+			<description>
+				Disconnects from host.
+			</description>
+		</method>
+		<method name="get_connected_host" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the IP of this peer.
+			</description>
+		</method>
+		<method name="get_connected_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the port of this peer.
+			</description>
+		</method>
+		<method name="get_local_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the local port to which this peer is bound.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerTCP.Status" />
+			<description>
+				Returns the status of the connection, see [enum Status].
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error" />
+			<description>
+				Poll the socket, updating its state. See [method get_status].
+			</description>
+		</method>
+		<method name="set_no_delay">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], packets will be sent immediately. If [param enabled] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
+				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_NONE" value="0" enum="Status">
+			The initial status of the [StreamPeerTCP]. This is also the status after disconnecting.
+		</constant>
+		<constant name="STATUS_CONNECTING" value="1" enum="Status">
+			A status representing a [StreamPeerTCP] that is connecting to a host.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [StreamPeerTCP] that is connected to a host.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [StreamPeerTCP] in error state.
+		</constant>
+	</constants>
+</class>

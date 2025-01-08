@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTexture2DArray" inherits="VisualShaderNodeSample3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D texture uniform array to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		Translated to [code]uniform sampler2DArray[/code] in the shader language.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="texture_array" type="TextureLayered" setter="set_texture_array" getter="get_texture_array">
+			A source texture array. Used if [member VisualShaderNodeSample3D.source] is set to [constant VisualShaderNodeSample3D.SOURCE_TEXTURE].
+		</member>
+	</members>
+</class>

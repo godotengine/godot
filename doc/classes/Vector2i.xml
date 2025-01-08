@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector2i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D vector using integer coordinates.
+	</brief_description>
+	<description>
+		A 2-element structure that can be used to represent 2D grid coordinates or any other pair of integers.
+		It uses integer coordinates and is therefore preferable to [Vector2] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector2] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
+		[b]Note:[/b] In a boolean context, a Vector2i will evaluate to [code]false[/code] if it's equal to [code]Vector2i(0, 0)[/code]. Otherwise, a Vector2i will always evaluate to [code]true[/code].
+	</description>
+	<tutorials>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
+			<description>
+				Constructs a default-initialized [Vector2i] with all components set to [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
+			<param index="0" name="from" type="Vector2i" />
+			<description>
+				Constructs a [Vector2i] as a copy of the given [Vector2i].
+			</description>
+		</constructor>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
+			<param index="0" name="from" type="Vector2" />
+			<description>
+				Constructs a new [Vector2i] from the given [Vector2] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector2.ceil], [method Vector2.floor] or [method Vector2.round] to this constructor instead.
+			</description>
+		</constructor>
+		<constructor name="Vector2i">
+			<return type="Vector2i" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<description>
+				Constructs a new [Vector2i] from the given [param x] and [param y].
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="aspect" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the aspect ratio of this vector, the ratio of [member x] to [member y].
+			</description>
+		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="min" type="Vector2i" />
+			<param index="1" name="max" type="Vector2i" />
+			<description>
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="clampi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector2i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector2i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
+			<return type="float" />
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="Vector2i" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2i(maxi(x, with.x), maxi(y, with.y))[/code].
+			</description>
+		</method>
+		<method name="max_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
+			</description>
+		</method>
+		<method name="maxi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2i(maxi(x, with), maxi(y, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="Vector2i" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2i(mini(x, with.x), mini(y, with.y))[/code].
+			</description>
+		</method>
+		<method name="min_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
+		<method name="mini" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2i(mini(x, with), mini(y, with))[/code].
+			</description>
+		</method>
+		<method name="sign" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns a new vector with each component set to [code]1[/code] if it's positive, [code]-1[/code] if it's negative, and [code]0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="step" type="Vector2i" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
+			</description>
+		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="int" setter="" getter="" default="0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
+		</member>
+		<member name="y" type="int" setter="" getter="" default="0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0" enum="Axis">
+			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_Y" value="1" enum="Axis">
+			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="ZERO" value="Vector2i(0, 0)">
+			Zero vector, a vector with all components set to [code]0[/code].
+		</constant>
+		<constant name="ONE" value="Vector2i(1, 1)">
+			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="MIN" value="Vector2i(-2147483648, -2147483648)">
+			Min vector, a vector with all components equal to [code]INT32_MIN[/code]. Can be used as a negative integer equivalent of [constant Vector2.INF].
+		</constant>
+		<constant name="MAX" value="Vector2i(2147483647, 2147483647)">
+			Max vector, a vector with all components equal to [code]INT32_MAX[/code]. Can be used as an integer equivalent of [constant Vector2.INF].
+		</constant>
+		<constant name="LEFT" value="Vector2i(-1, 0)">
+			Left unit vector. Represents the direction of left.
+		</constant>
+		<constant name="RIGHT" value="Vector2i(1, 0)">
+			Right unit vector. Represents the direction of right.
+		</constant>
+		<constant name="UP" value="Vector2i(0, -1)">
+			Up unit vector. Y is down in 2D, so this vector points -Y.
+		</constant>
+		<constant name="DOWN" value="Vector2i(0, 1)">
+			Down unit vector. Y is down in 2D, so this vector points +Y.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Gets the remainder of each component of the [Vector2i] with the components of the given [Vector2i]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector2i(10, -20) % Vector2i(7, 8)) # Prints (3, -4)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Gets the remainder of each component of the [Vector2i] with the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
+				[codeblock]
+				print(Vector2i(10, -20) % 7) # Prints (3, -6)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Multiplies each component of the [Vector2i] by the components of the given [Vector2i].
+				[codeblock]
+				print(Vector2i(10, 20) * Vector2i(3, 4)) # Prints (30, 80)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies each component of the [Vector2i] by the given [float]. Returns a [Vector2].
+				[codeblock]
+				print(Vector2i(10, 15) * 0.9) # Prints (9.0, 13.5)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies each component of the [Vector2i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Adds each component of the [Vector2i] by the components of the given [Vector2i].
+				[codeblock]
+				print(Vector2i(10, 20) + Vector2i(3, 4)) # Prints (13, 24)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Subtracts each component of the [Vector2i] by the components of the given [Vector2i].
+				[codeblock]
+				print(Vector2i(10, 20) - Vector2i(3, 4)) # Prints (7, 16)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Divides each component of the [Vector2i] by the components of the given [Vector2i].
+				[codeblock]
+				print(Vector2i(10, 20) / Vector2i(2, 5)) # Prints (5, 4)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides each component of the [Vector2i] by the given [float]. Returns a [Vector2].
+				[codeblock]
+				print(Vector2i(10, 20) / 2.9) # Prints (5.0, 10.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides each component of the [Vector2i] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the vectors are equal.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Compares two [Vector2i] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors. This operator is useful for sorting vectors.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], and [code]v[1][/code] is equivalent to [code]v.y[/code].
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector2i" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector2i" />
+			<description>
+				Returns the negative value of the [Vector2i]. This is the same as writing [code]Vector2i(-v.x, -v.y)[/code]. This operation flips the direction of the vector while keeping the same magnitude.
+			</description>
+		</operator>
+	</operators>
+</class>

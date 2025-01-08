@@ -1,0 +1,5603 @@
+# Ukrainian translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Aleksandr <XpycT.TOP@gmail.com>, 2017.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019, 2020, 2021, 2022.
+# Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
+# Гидеон Теон <t.kudely94@gmail.com>, 2017.
+# Максим Якимчук <xpinovo@gmail.com>, 2018, 2019.
+# Марс Ямбар <mjambarmeta@gmail.com>, 2017-2018.
+# Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
+# Kirill Omelchenko <kirill.omelchenko@gmail.com>, 2018.
+# Александр <ol-vin@mail.ru>, 2018.
+# Богдан Матвіїв <bomtvv@gmail.com>, 2019, 2022.
+# Tymofij Lytvynenko <till.svit@gmail.com>, 2020, 2021.
+# Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
+# Микола Тимошенко <9081@ukr.net>, 2020.
+# Miroslav <zinmirx@gmail.com>, 2020.
+# IllusiveMan196 <hamsterrv@gmail.com>, 2021, 2022.
+# KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022, 2023.
+# Мирослав <hlopukmyroslav@gmail.com>, 2022, 2023.
+# Ostap <ostapbataj79@gmail.com>, 2022.
+# Wald Sin <naaveranos@gmail.com>, 2022.
+# Гліб Соколов <ramithes@i.ua>, 2022.
+# Max Donchenko <maxx.donchenko@gmail.com>, 2022.
+# Artem <artem@molotov.work>, 2022.
+# Teashrock <kajitsu22@gmail.com>, 2022, 2023.
+# kirill7606 <k7606irill@gmail.com>, 2022.
+# Alex <anna.loban@yahoo.com>, 2023.
+# Maksym <maksym@mowemax.com>, 2023.
+# Dan <jonweblin2205@protonmail.com>, 2023.
+# Siked Siked <siked3@gmail.com>, 2023.
+# Вадим Коваль <vadimkoval571@gmail.com>, 2023.
+# Volodymyr Mikhav <mihaw.wolodymyr@gmail.com>, 2023.
+# Bogdan <Bgdn.Weblate@users.noreply.hosted.weblate.org>, 2024.
+# Veni Vid <venivid28@gmail.com>, 2024.
+# Oleksandr <galaxynarium@gmail.com>, 2024.
+msgid ""
+msgstr ""
+"Project-Id-Version: Ukrainian (Godot Engine)\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-09-07 20:09+0000\n"
+"Last-Translator: Oleksandr <galaxynarium@gmail.com>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
+"godot-properties/uk/>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.8-dev\n"
+
+msgid "Application"
+msgstr "Застосунок"
+
+msgid "Config"
+msgstr "Налаштування"
+
+msgid "Name"
+msgstr "Назва"
+
+msgid "Name Localized"
+msgstr "Назва локалізації"
+
+msgid "Description"
+msgstr "Опис"
+
+msgid "Version"
+msgstr "Версія"
+
+msgid "Run"
+msgstr "Запустити"
+
+msgid "Main Scene"
+msgstr "Головна сцена"
+
+msgid "Disable stdout"
+msgstr "Вимкнути stdout"
+
+msgid "Disable stderr"
+msgstr "Вимкнути stderr"
+
+msgid "Print Header"
+msgstr "Вивести Заголовок"
+
+msgid "Enable Alt Space Menu"
+msgstr "Увімкнути Меню Alt Space"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "Прихований каталог даних проєкту"
+
+msgid "Use Custom User Dir"
+msgstr "Нетиповий каталог користувача"
+
+msgid "Custom User Dir Name"
+msgstr "Нетипова назва каталогу користувача"
+
+msgid "Project Settings Override"
+msgstr "Перевизначення параметрів проєкту"
+
+msgid "Main Loop Type"
+msgstr "Знайти тип вузла"
+
+msgid "Auto Accept Quit"
+msgstr "Автоматично виходити"
+
+msgid "Quit on Go Back"
+msgstr "Вийти і Повернутися назад"
+
+msgid "Display"
+msgstr "Показ"
+
+msgid "Window"
+msgstr "Вікно"
+
+msgid "Size"
+msgstr "Розмір"
+
+msgid "Viewport Width"
+msgstr "Ширина вікна перегляду"
+
+msgid "Viewport Height"
+msgstr "Висота вікна перегляду"
+
+msgid "Mode"
+msgstr "Режим"
+
+msgid "Initial Position Type"
+msgstr "Тип початкової позиції"
+
+msgid "Initial Position"
+msgstr "Початкова позиція"
+
+msgid "Initial Screen"
+msgstr "Початковий екран"
+
+msgid "Resizable"
+msgstr "Зі зміною розміру"
+
+msgid "Borderless"
+msgstr "Без рамки"
+
+msgid "Always on Top"
+msgstr "Завжди Згори"
+
+msgid "Transparent"
+msgstr "Прозорість"
+
+msgid "Extend to Title"
+msgstr "Розширити до Заголовка"
+
+msgid "No Focus"
+msgstr "Без Фокусу"
+
+msgid "Window Width Override"
+msgstr "Перевизначення ширини вікна"
+
+msgid "Window Height Override"
+msgstr "Перевизначення висоти вікна"
+
+msgid "Energy Saving"
+msgstr "Заощадження енергії"
+
+msgid "Keep Screen On"
+msgstr "Не вимикати екран"
+
+msgid "Animation"
+msgstr "Анімація"
+
+msgid "Warnings"
+msgstr "Попередження"
+
+msgid "Check Invalid Track Paths"
+msgstr "Перевірте недійсні шляхи треків"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Перевірте Кутову Інтерполяцію Конфлікт типу"
+
+msgid "Audio"
+msgstr "Аудіо"
+
+msgid "Buses"
+msgstr "Шини"
+
+msgid "Default Bus Layout"
+msgstr "Розташування шини за замовчуванням"
+
+msgid "General"
+msgstr "Загальне"
+
+msgid "Text to Speech"
+msgstr "Текст у Мовлення"
+
+msgid "2D Panning Strength"
+msgstr "Сила 2D панорамування"
+
+msgid "3D Panning Strength"
+msgstr "Сила 3D панорамування"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Категорія сесії"
+
+msgid "Mix With Others"
+msgstr "Поєднати із іншими"
+
+msgid "Subwindows"
+msgstr "Підвікна"
+
+msgid "Physics"
+msgstr "Фізика"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Запуск на окремому потоці"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Stretch"
+msgstr "Розтягнути"
+
+msgid "Aspect"
+msgstr "Аспект"
+
+msgid "Scale"
+msgstr "Масштаб"
+
+msgid "Scale Mode"
+msgstr "Режим масштабування"
+
+msgid "Debug"
+msgstr "Діагностика"
+
+msgid "Settings"
+msgstr "Параметри"
+
+msgid "Profiler"
+msgstr "Профайлер"
+
+msgid "Max Functions"
+msgstr "Максимум функцій"
+
+msgid "Compression"
+msgstr "Стиснення"
+
+msgid "Formats"
+msgstr "Формати"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Зіставлення на великій відстані"
+
+msgid "Compression Level"
+msgstr "Рівень стиснення"
+
+msgid "Window Log Size"
+msgstr "Розмір вікна журналу"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "Обробник аварій"
+
+msgid "Message"
+msgstr "Повідомлення"
+
+msgid "Rendering"
+msgstr "Рендеринг"
+
+msgid "Occlusion Culling"
+msgstr "Переглянути відбраковування замикання"
+
+msgid "BVH Build Quality"
+msgstr "Якість збірки BVH"
+
+msgid "Internationalization"
+msgstr "Інтернаціоналізація"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Примусовий напрямок макета справа наліво"
+
+msgid "Root Node Layout Direction"
+msgstr "Напрямок макета кореневого вузла"
+
+msgid "GUI"
+msgstr "Інтерфейс"
+
+msgid "Timers"
+msgstr "Таймери"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Максимальний інтервал інкрементального пошуку, мсек"
+
+msgid "Tooltip Delay (sec)"
+msgstr "Затримка підказки (секунд)"
+
+msgid "Common"
+msgstr "Загальні"
+
+msgid "Snap Controls to Pixels"
+msgstr "Прив'язка елементів керування до пікселів"
+
+msgid "Fonts"
+msgstr "Шрифти"
+
+msgid "Dynamic Fonts"
+msgstr "Динамічні шрифти"
+
+msgid "Use Oversampling"
+msgstr "Передискретизація"
+
+msgid "Rendering Device"
+msgstr "Пристрій рендерингу"
+
+msgid "V-Sync"
+msgstr "Верт. синхронізація"
+
+msgid "Staging Buffer"
+msgstr "Проміжний буфер"
+
+msgid "Block Size (KB)"
+msgstr "Розмір блоку (Кб)"
+
+msgid "Max Size (MB)"
+msgstr "Максимальний розмір (Мб)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Розмір області завантаження текстури Px"
+
+msgid "Pipeline Cache"
+msgstr "Кеш конвеєра"
+
+msgid "Enable"
+msgstr "Увімкнути"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Зберегти розмір блоку (MB)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Макс. кількість дескрипторів на пул"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Textures"
+msgstr "Текстури"
+
+msgid "Canvas Textures"
+msgstr "Текстури полотна"
+
+msgid "Default Texture Filter"
+msgstr "Фільтр текстур за замовчуванням"
+
+msgid "Default Texture Repeat"
+msgstr "Повторення текстури за замовчуванням"
+
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Використовувати адаптивний"
+
+msgid "Low Processor Usage Mode"
+msgstr "Режим низького використання процесора"
+
+msgid "Delta Smoothing"
+msgstr "Дельта-згладжування"
+
+msgid "Print Error Messages"
+msgstr "Виводити повідомлення про помилки"
+
+msgid "Physics Ticks per Second"
+msgstr "Фізичні тіки на секунду"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Максимум фізичних кроків на кадр"
+
+msgid "Max FPS"
+msgstr "Макс. FPS"
+
+msgid "Time Scale"
+msgstr "Шкала часу"
+
+msgid "Physics Jitter Fix"
+msgstr "Корекція джитеру фізики"
+
+msgid "Mouse Mode"
+msgstr "Режим миші"
+
+msgid "Use Accumulated Input"
+msgstr "Використати накопичувальне введення"
+
+msgid "Emulate Mouse From Touch"
+msgstr "Емулювати мишу з дотику"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Емулювати дотик з миші"
+
+msgid "Input Devices"
+msgstr "Пристрої вводу"
+
+msgid "Device"
+msgstr "Пристрій"
+
+msgid "Window ID"
+msgstr "Ідентифікатор вікна"
+
+msgid "Command or Control Autoremap"
+msgstr "Командна або керуюча автомапа"
+
+msgid "Alt Pressed"
+msgstr "Натиснуто Alt"
+
+msgid "Shift Pressed"
+msgstr "Натиснуто Shift"
+
+msgid "Ctrl Pressed"
+msgstr "Натиснуто Ctrl"
+
+msgid "Meta Pressed"
+msgstr "Натиснуто Meta"
+
+msgid "Pressed"
+msgstr "Натиснута"
+
+msgid "Key Label"
+msgstr "Мітка клавіші"
+
+msgid "Unicode"
+msgstr "Юнікод"
+
+msgid "Location"
+msgstr "Розташування"
+
+msgid "Echo"
+msgstr "Луна"
+
+msgid "Button Mask"
+msgstr "Кнопка"
+
+msgid "Position"
+msgstr "Позиція"
+
+msgid "Global Position"
+msgstr "Загальне розташування"
+
+msgid "Factor"
+msgstr "Множник"
+
+msgid "Button Index"
+msgstr "Індекс кнопки"
+
+msgid "Double Click"
+msgstr "Подвійне клацання"
+
+msgid "Tilt"
+msgstr "Нахил"
+
+msgid "Pressure"
+msgstr "Тиск"
+
+msgid "Pen Inverted"
+msgstr "Перо перевернуте"
+
+msgid "Relative"
+msgstr "Відносний"
+
+msgid "Velocity"
+msgstr "Швидкість"
+
+msgid "Axis"
+msgstr "Вісь"
+
+msgid "Axis Value"
+msgstr "Значення вісі"
+
+msgid "Index"
+msgstr "Індекс"
+
+msgid "Action"
+msgstr "Дія"
+
+msgid "Strength"
+msgstr "Потужність"
+
+msgid "Delta"
+msgstr "Зміна"
+
+msgid "Channel"
+msgstr "Канал"
+
+msgid "Pitch"
+msgstr "Висота тону"
+
+msgid "Instrument"
+msgstr "Інструмент"
+
+msgid "Controller Number"
+msgstr "Номер контролера"
+
+msgid "Controller Value"
+msgstr "Значення контролера"
+
+msgid "Shortcut"
+msgstr "Скорочення"
+
+msgid "Events"
+msgstr "Події"
+
+msgid "Include Navigational"
+msgstr "Включити навігацію"
+
+msgid "Include Hidden"
+msgstr "Включити приховане"
+
+msgid "Big Endian"
+msgstr "Зворотний"
+
+msgid "Blocking Mode Enabled"
+msgstr "Увімкнено режим блокування"
+
+msgid "Read Chunk Size"
+msgstr "Розмір фрагмента читання"
+
+msgid "Data"
+msgstr "Дані"
+
+msgid "Object ID"
+msgstr "Ідентифікатор об'єкта"
+
+msgid "Encode Buffer Max Size"
+msgstr "Макс. розмір буфера кодування"
+
+msgid "Input Buffer Max Size"
+msgstr "Макс. розмір буфера введення"
+
+msgid "Output Buffer Max Size"
+msgstr "Макс. розмір буфера виведення"
+
+msgid "Resource"
+msgstr "Ресурс"
+
+msgid "Path"
+msgstr "Шлях"
+
+msgid "Data Array"
+msgstr "Масив даних"
+
+msgid "Max Pending Connections"
+msgstr "Макс. к-ть з'єднань у черзі"
+
+msgid "Region"
+msgstr "Область"
+
+msgid "Offset"
+msgstr "Зміщення"
+
+msgid "Cell Size"
+msgstr "Розмір комірки"
+
+msgid "Jumping Enabled"
+msgstr "Стрибки увімкнено"
+
+msgid "Default Compute Heuristic"
+msgstr "Евристика обчислення за замовчуванням"
+
+msgid "Default Estimate Heuristic"
+msgstr "Евристика оцінки за замовчуванням"
+
+msgid "Diagonal Mode"
+msgstr "Діагональний режим"
+
+msgid "Seed"
+msgstr "База"
+
+msgid "State"
+msgstr "Стан"
+
+msgid "Memory"
+msgstr "Пам'ять"
+
+msgid "Limits"
+msgstr "Обмеження"
+
+msgid "Message Queue"
+msgstr "Черга повідомлень"
+
+msgid "Max Steps"
+msgstr "Макс. к-ть кроків"
+
+msgid "Network"
+msgstr "Мережа"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "Час очікування на з'єднання у секундах"
+
+msgid "Packet Peer Stream"
+msgstr "Пакетний потік вузла"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Макс. буфер (степінь 2)"
+
+msgid "Certificate Bundle Override"
+msgstr "Перевизначення пакету сертифікатів"
+
+msgid "Max Threads"
+msgstr "Макс. потоків"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Коефіцієнт низького пріоритету потоку"
+
+msgid "Locale"
+msgstr "Мова"
+
+msgid "Test"
+msgstr "Тест"
+
+msgid "Fallback"
+msgstr "Резерв"
+
+msgid "Pseudolocalization"
+msgstr "Псевдолокалізація"
+
+msgid "Use Pseudolocalization"
+msgstr "Використання псевдолокалізації"
+
+msgid "Replace With Accents"
+msgstr "Замінити з акцентами"
+
+msgid "Double Vowels"
+msgstr "Подвійні голосні"
+
+msgid "Fake BiDi"
+msgstr "Фальшивий BiDi"
+
+msgid "Override"
+msgstr "Перевизначити"
+
+msgid "Expansion Ratio"
+msgstr "Коефіцієнт розширення"
+
+msgid "Prefix"
+msgstr "Префікс"
+
+msgid "Suffix"
+msgstr "Суфікс"
+
+msgid "Skip Placeholders"
+msgstr "Пропустити заповнювачі"
+
+msgid "Rotation"
+msgstr "Обертання"
+
+msgid "Value"
+msgstr "Значення"
+
+msgid "Arg Count"
+msgstr "Кількість аргументів"
+
+msgid "Type"
+msgstr "Тип"
+
+msgid "In Handle"
+msgstr "Дескриптор входу"
+
+msgid "Out Handle"
+msgstr "Дескриптор виходу"
+
+msgid "Handle Mode"
+msgstr "Ручний режим"
+
+msgid "Stream"
+msgstr "Потік"
+
+msgid "Start Offset"
+msgstr "Початковий відступ"
+
+msgid "End Offset"
+msgstr "Кінцевий відступ"
+
+msgid "Easing"
+msgstr "Пом'якшення"
+
+msgid "Debug Adapter"
+msgstr "Налагоджувальний адаптер"
+
+msgid "Remote Port"
+msgstr "Віддалений порт"
+
+msgid "Request Timeout"
+msgstr "Час очікування запиту минув"
+
+msgid "Sync Breakpoints"
+msgstr "Точки розриву синхронізації"
+
+msgid "FileSystem"
+msgstr "Файлова система"
+
+msgid "File Server"
+msgstr "Файловий сервер"
+
+msgid "Port"
+msgstr "Порт"
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "Default Feature Profile"
+msgstr "Типовий профіль можливостей"
+
+msgid "Text Editor"
+msgstr "Текстовий редактор"
+
+msgid "Help"
+msgstr "Довідка"
+
+msgid "Sort Functions Alphabetically"
+msgstr "Упорядкувати функції за абеткою"
+
+msgid "Label"
+msgstr "Мітка"
+
+msgid "Read Only"
+msgstr "Лише для читання"
+
+msgid "Checkable"
+msgstr "Можна позначати"
+
+msgid "Checked"
+msgstr "Позначено"
+
+msgid "Draw Warning"
+msgstr "Попередження малювання"
+
+msgid "Keying"
+msgstr "Набір"
+
+msgid "Deletable"
+msgstr "Видалити"
+
+msgid "Distraction Free Mode"
+msgstr "Режим без відволікання"
+
+msgid "Theme"
+msgstr "Тема"
+
+msgid "Line Spacing"
+msgstr "Інтервал між рядками"
+
+msgid "Base Type"
+msgstr "Базовий тип"
+
+msgid "Editable"
+msgstr "Можна редагувати"
+
+msgid "Toggle Mode"
+msgstr "Перемкнути режим"
+
+msgid "Interface"
+msgstr "Інтерфейс"
+
+msgid "Editor"
+msgstr "Редактор"
+
+msgid "Editor Language"
+msgstr "Мова редактора"
+
+msgid "Localize Settings"
+msgstr "Параметри локалізації"
+
+msgid "Display Scale"
+msgstr "Масштаб показу"
+
+msgid "Custom Display Scale"
+msgstr "Нетиповий масштаб дисплея"
+
+msgid "Use Embedded Menu"
+msgstr "Використання вбудованого меню"
+
+msgid "Expand to Title"
+msgstr "Розгорнути до заголовка"
+
+msgid "Main Font Size"
+msgstr "Розмір основного шрифту"
+
+msgid "Code Font Size"
+msgstr "Розмір шрифту коду"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Контекстні лігатури кодового шрифту"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Користувацькі функції OpenType шрифту коду"
+
+msgid "Code Font Custom Variations"
+msgstr "Користувацькі варіанти шрифту коду"
+
+msgid "Font Antialiasing"
+msgstr "Згладжування шрифту"
+
+msgid "Font Hinting"
+msgstr "Гінтінґ шрифту"
+
+msgid "Font Subpixel Positioning"
+msgstr "Позиціонування субпікселів шрифту"
+
+msgid "Main Font"
+msgstr "Основний шрифт"
+
+msgid "Main Font Bold"
+msgstr "Жирний основний шрифт"
+
+msgid "Code Font"
+msgstr "Шрифт коду"
+
+msgid "Separate Distraction Mode"
+msgstr "Окремий режим без відволікання"
+
+msgid "Automatically Open Screenshots"
+msgstr "Автоматично відкривати знімки вікон"
+
+msgid "Single Window Mode"
+msgstr "Режим єдиного вікна"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Додаткові кнопки миші для навігації журналом"
+
+msgid "Save Each Scene on Quit"
+msgstr "Зберігати усі сцени при виході"
+
+msgid "Save on Focus Loss"
+msgstr "Зберігати при втраті фокусування"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Погоджувати діалогові кнопки Скасувати ОК"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Показувати внутрішні помилки у спливаючих сповіщеннях"
+
+msgid "Show Update Spinner"
+msgstr "Показувати індикатор оновлення"
+
+msgid "V-Sync Mode"
+msgstr "Режим верт. синхронізації"
+
+msgid "Update Continuously"
+msgstr "Оновлювати неперервно"
+
+msgid "Inspector"
+msgstr "Інспектор"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Макс. к-ть елементів масиву/словника на сторінку"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Показати низькорівневі функції OpenType"
+
+msgid "Default Property Name Style"
+msgstr "Типовий стиль назв властивостей"
+
+msgid "Default Float Step"
+msgstr "Типовий крок пересування"
+
+msgid "Disable Folding"
+msgstr "Вимкнути згортання"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "Автоматично розгортати сторонні сцени"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "Редагування горизонтального вектора2"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "Редагування типів горизонтального вектора"
+
+msgid "Open Resources in Current Inspector"
+msgstr "Відкрити ресурси у поточному Інспекторі"
+
+msgid "Resources to Open in New Inspector"
+msgstr "Ресурси, які слід відкрити у новому Інспекторі"
+
+msgid "Default Color Picker Mode"
+msgstr "Типовий режим піпетки кольорів"
+
+msgid "Default Color Picker Shape"
+msgstr "Палітра кольорів за замовчуванням"
+
+msgid "Preset"
+msgstr "Набір"
+
+msgid "Icon and Font Color"
+msgstr "Колір піктограм і шрифту"
+
+msgid "Base Color"
+msgstr "Базовий колір"
+
+msgid "Accent Color"
+msgstr "Колір акценту"
+
+msgid "Contrast"
+msgstr "Контрастність"
+
+msgid "Draw Extra Borders"
+msgstr "Малювати додаткові рамки"
+
+msgid "Icon Saturation"
+msgstr "Насиченість піктограм"
+
+msgid "Relationship Line Opacity"
+msgstr "Непрозорість лінії зв'язку"
+
+msgid "Border Size"
+msgstr "Розмір рамки"
+
+msgid "Corner Radius"
+msgstr "Радіус кутового скруглення"
+
+msgid "Additional Spacing"
+msgstr "Додаткові інтервали"
+
+msgid "Custom Theme"
+msgstr "Нетипова тема"
+
+msgid "Touchscreen"
+msgstr "Сенсорний екран"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "Збільшити область дотику смуги прокрутки"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Приймати довге натискання, як клацання ПКМ"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Увімкнути жести панорам та масштабу"
+
+msgid "Scene Tabs"
+msgstr "Вкладки сцен"
+
+msgid "Display Close Button"
+msgstr "Відображати кнопку закриття"
+
+msgid "Show Thumbnail on Hover"
+msgstr "Показувати мініатюру при наведенні"
+
+msgid "Maximum Width"
+msgstr "Максимальна ширина"
+
+msgid "Show Script Button"
+msgstr "Показувати кнопку скрипту"
+
+msgid "Restore Scenes on Load"
+msgstr "Відновлення сцен під час завантаження"
+
+msgid "External Programs"
+msgstr "Зовнішні програми"
+
+msgid "Raster Image Editor"
+msgstr "Редактор растрових зображень"
+
+msgid "Vector Image Editor"
+msgstr "Редактор векторних зображень"
+
+msgid "Audio Editor"
+msgstr "Редактор аудіо"
+
+msgid "3D Model Editor"
+msgstr "Редактор 3D моделей"
+
+msgid "Directories"
+msgstr "Каталоги"
+
+msgid "Autoscan Project Path"
+msgstr "Автоматичне сканування шляху проєкту"
+
+msgid "Default Project Path"
+msgstr "Типовий шлях до проєкту"
+
+msgid "On Save"
+msgstr "При зберіганні"
+
+msgid "Compress Binary Resources"
+msgstr "Стискати двійкові ресурси"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Безпечне зберігання при резервному копіюванні і перейменування"
+
+msgid "File Dialog"
+msgstr "Діалогове вікно файлів"
+
+msgid "Show Hidden Files"
+msgstr "Показувати приховані файли"
+
+msgid "Display Mode"
+msgstr "Режим показу"
+
+msgid "Thumbnail Size"
+msgstr "Розмір мініатюр"
+
+msgid "Import"
+msgstr "Імпорт"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "Docks"
+msgstr "Панелі"
+
+msgid "Scene Tree"
+msgstr "Ієрархія сцен"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "Запускати із повністю розгорнутим вікном створення"
+
+msgid "Auto Expand to Selected"
+msgstr "Автоматичне розширення до вибраного"
+
+msgid "Always Show Folders"
+msgstr "Завжди показувати теки"
+
+msgid "Property Editor"
+msgstr "Редактор властивостей"
+
+msgid "Auto Refresh Interval"
+msgstr "Інтервал автооновлення"
+
+msgid "Subresource Hue Tint"
+msgstr "Ухил відтінку підресурсів"
+
+msgid "Color Theme"
+msgstr "Тема кольорів"
+
+msgid "Appearance"
+msgstr "Вигляд"
+
+msgid "Caret"
+msgstr "Позначка вставки"
+
+msgid "Caret Blink"
+msgstr "Блимання каретки"
+
+msgid "Caret Blink Interval"
+msgstr "Інтервал блимання каретки"
+
+msgid "Highlight Current Line"
+msgstr "Підсвічувати поточний рядок"
+
+msgid "Highlight All Occurrences"
+msgstr "Підсвічувати усі входження"
+
+msgid "Guidelines"
+msgstr "Лінії підказки"
+
+msgid "Show Line Length Guidelines"
+msgstr "Показувати лінії-підказки для довжини рядків"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "Позиція лінії-підказки м'якого перенесення довгого рядка"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "Позиція лінії-підказки жорсткого перенесення довгого рядка"
+
+msgid "Gutters"
+msgstr "Поле збоку"
+
+msgid "Show Line Numbers"
+msgstr "Показувати номери рядків"
+
+msgid "Line Numbers Zero Padded"
+msgstr "Номери рядків із нульовою фаскою"
+
+msgid "Highlight Type Safe Lines"
+msgstr "Підсвічувати рядки із безпечними типами"
+
+msgid "Show Info Gutter"
+msgstr "Показувати збоку інформацію"
+
+msgid "Minimap"
+msgstr "Мінікарта"
+
+msgid "Show Minimap"
+msgstr "Показувати мінікарту"
+
+msgid "Minimap Width"
+msgstr "Ширина мінікарти"
+
+msgid "Lines"
+msgstr "Рядки"
+
+msgid "Code Folding"
+msgstr "Згортання коду"
+
+msgid "Word Wrap"
+msgstr "Перенесення слів"
+
+msgid "Whitespace"
+msgstr "Вільний простір"
+
+msgid "Draw Tabs"
+msgstr "Візуалізація табуляцій"
+
+msgid "Draw Spaces"
+msgstr "Візуалізація пробілів"
+
+msgid "Behavior"
+msgstr "Поведінка"
+
+msgid "Navigation"
+msgstr "Навігація"
+
+msgid "Move Caret on Right Click"
+msgstr "Переміщати карет кліком ПКМ"
+
+msgid "Scroll Past End of File"
+msgstr "Прокручувати за межі кінця файлу"
+
+msgid "Smooth Scrolling"
+msgstr "Плавне гортання"
+
+msgid "V Scroll Speed"
+msgstr "Швидкість верт. гортання"
+
+msgid "Drag and Drop Selection"
+msgstr "Перетягувати виділене"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "Залишатися в редакторі скриптів на вибраному вузлі"
+
+msgid "Indent"
+msgstr "Відступ"
+
+msgid "Auto Indent"
+msgstr "Автовідступ"
+
+msgid "Files"
+msgstr "Файли"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "Обрізати кінцеві пробіли при зберіганні"
+
+msgid "Autosave Interval Secs"
+msgstr "Інтервал автозбереження у секундах"
+
+msgid "Restore Scripts on Load"
+msgstr "Відновлювати скрипти при завантаженні"
+
+msgid "Convert Indent on Save"
+msgstr "Перетворювати відступи при зберіганні"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "Автоматично перезавантажувати скрипти при зміні зовні"
+
+msgid "Script List"
+msgstr "Список скриптів"
+
+msgid "Show Members Overview"
+msgstr "Показувати огляд елементів"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "Упорядковувати огляд елементів за абеткою"
+
+msgid "Completion"
+msgstr "Завершення"
+
+msgid "Idle Parse Delay"
+msgstr "Затримка відкладеної обробки"
+
+msgid "Auto Brace Complete"
+msgstr "Автоматичне доповнення дужок"
+
+msgid "Code Complete Delay"
+msgstr "Затримка доповнення коду"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "Розташовувати підказку викликів під поточним рядком"
+
+msgid "Complete File Paths"
+msgstr "Повні шляхи до файлів"
+
+msgid "Add Type Hints"
+msgstr "Додати підказки щодо типу"
+
+msgid "Use Single Quotes"
+msgstr "Одинарні лапки"
+
+msgid "Show Help Index"
+msgstr "Показати покажчик довідки"
+
+msgid "Help Font Size"
+msgstr "Розмір шрифт довідки"
+
+msgid "Help Source Font Size"
+msgstr "Розмір шрифту коду у довідці"
+
+msgid "Help Title Font Size"
+msgstr "Розмір шрифту заголовків у довідці"
+
+msgid "Class Reference Examples"
+msgstr "Зразки посилання на клас"
+
+msgid "Editors"
+msgstr "Редактори"
+
+msgid "Grid Map"
+msgstr "Карта сітки"
+
+msgid "Pick Distance"
+msgstr "Відстань вибору"
+
+msgid "Primary Grid Color"
+msgstr "Колір основної сітки"
+
+msgid "Secondary Grid Color"
+msgstr "Колір вторинної сітки"
+
+msgid "Selection Box Color"
+msgstr "Колір прямокутника позначення"
+
+msgid "3D Gizmos"
+msgstr "Просторові гізмо"
+
+msgid "Gizmo Colors"
+msgstr "Кольори гізмо"
+
+msgid "Instantiated"
+msgstr "Вставлений екземпляр"
+
+msgid "Joint"
+msgstr "З’єднання"
+
+msgid "Primary Grid Steps"
+msgstr "Кількість кроків основної сітки"
+
+msgid "Grid Size"
+msgstr "Розмір сітки"
+
+msgid "Grid Division Level Max"
+msgstr "Макс. рівень поділу сітки"
+
+msgid "Grid Division Level Min"
+msgstr "Мін. рівень поділу сітки"
+
+msgid "Grid Division Level Bias"
+msgstr "Ухил рівня поділу сітки"
+
+msgid "Grid XZ Plane"
+msgstr "Площина XZ сітки"
+
+msgid "Grid XY Plane"
+msgstr "Площина XY сітки"
+
+msgid "Grid YZ Plane"
+msgstr "Площина YZ сітки"
+
+msgid "Default FOV"
+msgstr "Типове поле зору"
+
+msgid "Default Z Near"
+msgstr "Типове Z близьке"
+
+msgid "Default Z Far"
+msgstr "Типове Z далеке"
+
+msgid "Invert X Axis"
+msgstr "Інвертувати вісь X"
+
+msgid "Invert Y Axis"
+msgstr "Інвертувати вісь Y"
+
+msgid "Navigation Scheme"
+msgstr "Схема навігації"
+
+msgid "Zoom Style"
+msgstr "Стиль масштабування"
+
+msgid "Emulate Numpad"
+msgstr "Імітувати цифрову панель"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "Імітувати 3-кнопкову мишу"
+
+msgid "Orbit Modifier"
+msgstr "Модифікатор орбіти"
+
+msgid "Pan Modifier"
+msgstr "Модифікатор панорамування"
+
+msgid "Zoom Modifier"
+msgstr "Модифікатор масштабування"
+
+msgid "Warped Mouse Panning"
+msgstr "Зациклене панорамування мишею"
+
+msgid "Navigation Feel"
+msgstr "Поведінка навігації"
+
+msgid "Orbit Sensitivity"
+msgstr "Чутливість орбіти"
+
+msgid "Orbit Inertia"
+msgstr "Інерція орбіти"
+
+msgid "Translation Inertia"
+msgstr "Інерція перенесення"
+
+msgid "Zoom Inertia"
+msgstr "Інерція масштабування"
+
+msgid "Freelook"
+msgstr "Довільний огляд"
+
+msgid "Freelook Navigation Scheme"
+msgstr "Схема навігації довільного огляду"
+
+msgid "Freelook Sensitivity"
+msgstr "Чутливість довільного огляду"
+
+msgid "Freelook Inertia"
+msgstr "Інерція довільного огляду"
+
+msgid "Freelook Base Speed"
+msgstr "Базова швидкість довільного огляду"
+
+msgid "Freelook Activation Modifier"
+msgstr "Модифікатор активації довільного огляду"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "Зв'язок швидкості масштабування довільного огляду"
+
+msgid "Grid Color"
+msgstr "Колір сітки"
+
+msgid "Guides Color"
+msgstr "Колір напрямних"
+
+msgid "Smart Snapping Line Color"
+msgstr "Колір ліній інтелектуального прилипання"
+
+msgid "Bone Width"
+msgstr "Товщина кісток"
+
+msgid "Bone Color 1"
+msgstr "Колір кісток 1"
+
+msgid "Bone Color 2"
+msgstr "Колір кісток 2"
+
+msgid "Bone Selected Color"
+msgstr "Колір позначення кісток"
+
+msgid "Bone IK Color"
+msgstr "Колір IK кісток"
+
+msgid "Bone Outline Color"
+msgstr "Колір контуру кісток"
+
+msgid "Bone Outline Size"
+msgstr "Розмір контуру кісток"
+
+msgid "Viewport Border Color"
+msgstr "Колір рамки панелі перегляду"
+
+msgid "Panning"
+msgstr "Панорамування"
+
+msgid "2D Editor Panning Scheme"
+msgstr "Схема панорамування 2D редактора"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Схема панорамування підредакторів"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Схема панорамування редакторів анімації"
+
+msgid "Simple Panning"
+msgstr "Просте панорамування"
+
+msgid "2D Editor Pan Speed"
+msgstr "Швидкість панорамування 2D редактора"
+
+msgid "Tiles Editor"
+msgstr "Редактор плиток"
+
+msgid "Display Grid"
+msgstr "Показувати сітку"
+
+msgid "Polygon Editor"
+msgstr "Редактор полігонів"
+
+msgid "Point Grab Radius"
+msgstr "Радіус захоплення точки"
+
+msgid "Show Previous Outline"
+msgstr "Показувати попередній контур"
+
+msgid "Autorename Animation Tracks"
+msgstr "Автоматично перейменовувати доріжки анімації"
+
+msgid "Default Create Bezier Tracks"
+msgstr "Типове створення доріжок Безьє"
+
+msgid "Default Create Reset Tracks"
+msgstr "Створити доріжки RESET"
+
+msgid "Onion Layers Past Color"
+msgstr "Колір шарів кальки минулого"
+
+msgid "Onion Layers Future Color"
+msgstr "Колір шарів кальки майбутнього"
+
+msgid "Visual Editors"
+msgstr "Візуальні редактори"
+
+msgid "Minimap Opacity"
+msgstr "Непрозорість мінікарти"
+
+msgid "Lines Curvature"
+msgstr "Кривизна ліній"
+
+msgid "Visual Shader"
+msgstr "Візуальний шейдер"
+
+msgid "Port Preview Size"
+msgstr "Розмір попереднього перегляду порту"
+
+msgid "Window Placement"
+msgstr "Розташування вікон"
+
+msgid "Rect"
+msgstr "Прямокутник"
+
+msgid "Rect Custom Position"
+msgstr "Нетипове розташування прямокутника"
+
+msgid "Screen"
+msgstr "Екран"
+
+msgid "Auto Save"
+msgstr "Автозбереження"
+
+msgid "Save Before Running"
+msgstr "Зберігати перед запуском"
+
+msgid "Output"
+msgstr "Вивід"
+
+msgid "Font Size"
+msgstr "Розмір шрифту"
+
+msgid "Always Clear Output on Play"
+msgstr "Завжди очищувати вивід при відтворенні"
+
+msgid "HTTP Proxy"
+msgstr "HTTP-проксі"
+
+msgid "Host"
+msgstr "Вузол"
+
+msgid "Editor TLS Certificates"
+msgstr "Сертифікати TLS редактора"
+
+msgid "Remote Host"
+msgstr "Віддалений вузол"
+
+msgid "Debugger"
+msgstr "Засіб діагностики"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
+
+msgid "Profiler Frame History Size"
+msgstr "Розмір журналу панелі засобу профілювання"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Перейменувати функцію"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Інтервал оновлення ієрархії віддаленої сцени"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Інтервал оновлення віддаленого інспектування"
+
+msgid "Input"
+msgstr "Введення"
+
+msgid "Buffering"
+msgstr "Буферизація"
+
+msgid "Agile Event Flushing"
+msgstr "Зріле витирання подій"
+
+msgid "Project Manager"
+msgstr "Керування проєктами"
+
+msgid "Sorting Order"
+msgstr "Режим упорядковування"
+
+msgid "Default Renderer"
+msgstr "Обробник за замовчуванням"
+
+msgid "Highlighting"
+msgstr "Підсвічування"
+
+msgid "Symbol Color"
+msgstr "Колір символу"
+
+msgid "Keyword Color"
+msgstr "Колір ключових слів"
+
+msgid "Control Flow Keyword Color"
+msgstr "Колір ключових слів керівної логіки"
+
+msgid "Base Type Color"
+msgstr "Колір базових типів"
+
+msgid "Engine Type Color"
+msgstr "Колір типів рушія"
+
+msgid "User Type Color"
+msgstr "Колір типів користувача"
+
+msgid "Comment Color"
+msgstr "Колір коментарів"
+
+msgid "String Color"
+msgstr "Колір рядків"
+
+msgid "Background Color"
+msgstr "Колір тла"
+
+msgid "Completion Background Color"
+msgstr "Колір тла доповнення"
+
+msgid "Completion Selected Color"
+msgstr "Колір позначення доповнення"
+
+msgid "Completion Existing Color"
+msgstr "Наявний колір доповнення"
+
+msgid "Completion Scroll Color"
+msgstr "Колір гортання доповнення"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Колір прокрутки доповнення при наведенні"
+
+msgid "Completion Font Color"
+msgstr "Колір шрифту доповнення"
+
+msgid "Text Color"
+msgstr "Колір тексту"
+
+msgid "Line Number Color"
+msgstr "Колір номерів рядків"
+
+msgid "Safe Line Number Color"
+msgstr "Безпечний колір номерів рядків"
+
+msgid "Caret Color"
+msgstr "Колір каретки"
+
+msgid "Caret Background Color"
+msgstr "Колір тла каретки"
+
+msgid "Text Selected Color"
+msgstr "Колір позначеного тексту"
+
+msgid "Selection Color"
+msgstr "Колір позначення"
+
+msgid "Brace Mismatch Color"
+msgstr "Колір дужок без відповідників"
+
+msgid "Current Line Color"
+msgstr "Колір поточного рядка"
+
+msgid "Line Length Guideline Color"
+msgstr "Колір напрямної довжини рядка"
+
+msgid "Word Highlighted Color"
+msgstr "Колір підсвічених слів"
+
+msgid "Number Color"
+msgstr "Колір номерів"
+
+msgid "Function Color"
+msgstr "Колір функцій"
+
+msgid "Member Variable Color"
+msgstr "Колір змінних-елементів"
+
+msgid "Mark Color"
+msgstr "Колір позначок"
+
+msgid "Bookmark Color"
+msgstr "Колір закладок"
+
+msgid "Breakpoint Color"
+msgstr "Колір точок зупину"
+
+msgid "Executing Line Color"
+msgstr "Колір виконуваного рядка"
+
+msgid "Code Folding Color"
+msgstr "Колір згортання коду"
+
+msgid "Search Result Color"
+msgstr "Колір результатів пошуку"
+
+msgid "Search Result Border Color"
+msgstr "Колір рамки результатів пошуку"
+
+msgid "Custom Template"
+msgstr "Нетиповий шаблон"
+
+msgid "Release"
+msgstr "Випуск"
+
+msgid "Binary Format"
+msgstr "Двійковий формат"
+
+msgid "Embed PCK"
+msgstr "Вбудувати PCK"
+
+msgid "Texture Format"
+msgstr "Формат текстури"
+
+msgid "Export"
+msgstr "Експортування"
+
+msgid "Export Path"
+msgstr "Шлях експорту"
+
+msgid "Access"
+msgstr "Доступ"
+
+msgid "File Mode"
+msgstr "Режим файлу"
+
+msgid "Filters"
+msgstr "Фільтри"
+
+msgid "Disable Overwrite Warning"
+msgstr "Вимкнути попередження про перезапис"
+
+msgid "Flat"
+msgstr "Плоска"
+
+msgid "Hide Slider"
+msgstr "Приховати повзунок"
+
+msgid "Zoom"
+msgstr "Масштаб"
+
+msgid "Bone Renamer"
+msgstr "Перейменування кісток"
+
+msgid "Rename Bones"
+msgstr "Перейменувати кістки"
+
+msgid "Unique Node"
+msgstr "Унікальний вузол"
+
+msgid "Make Unique"
+msgstr "Зробити унікальним"
+
+msgid "Skeleton Name"
+msgstr "Назва скелета"
+
+msgid "Apply Node Transforms"
+msgstr "Застосувати перетворення вузлів"
+
+msgid "Normalize Position Tracks"
+msgstr "Нормалізація доріжок позиції"
+
+msgid "Overwrite Axis"
+msgstr "Перезаписати вісь"
+
+msgid "Filter"
+msgstr "Фільтр"
+
+msgid "Threshold"
+msgstr "Поріг"
+
+msgid "Base Height Adjustment"
+msgstr "Регулювання висоти основи"
+
+msgid "Remove Tracks"
+msgstr "Видалення доріжок"
+
+msgid "Except Bone Transform"
+msgstr "За винятком кісткового перетворення"
+
+msgid "Unimportant Positions"
+msgstr "Неважливі позиції"
+
+msgid "Generate Tangents"
+msgstr "Згенерувати точки"
+
+msgid "Scale Mesh"
+msgstr "Масштабувати сітку"
+
+msgid "Offset Mesh"
+msgstr "Зміщення сітки"
+
+msgid "Optimize Mesh"
+msgstr "Оптимізувати сітку"
+
+msgid "Skip Import"
+msgstr "Пропустити імпорт"
+
+msgid "Generate"
+msgstr "Створити"
+
+msgid "NavMesh"
+msgstr "NavMesh"
+
+msgid "Body Type"
+msgstr "Тип тіла"
+
+msgid "Shape Type"
+msgstr "Тип форми"
+
+msgid "Layer"
+msgstr "Шар"
+
+msgid "Mask"
+msgstr "Маска"
+
+msgid "Layers"
+msgstr "Шари"
+
+msgid "Cast Shadow"
+msgstr "Накласти тінь"
+
+msgid "Decomposition"
+msgstr "Розкладання"
+
+msgid "Advanced"
+msgstr "Додатково"
+
+msgid "Precision"
+msgstr "Точність"
+
+msgid "Max Concavity"
+msgstr "Макс Увігнутість"
+
+msgid "Normalize Mesh"
+msgstr "Нормалізувати сітку"
+
+msgid "Primitive"
+msgstr "Примітиви"
+
+msgid "Height"
+msgstr "Висота"
+
+msgid "Radius"
+msgstr "Радіус"
+
+msgid "Occluder"
+msgstr "Оклюдер"
+
+msgid "Simplification Distance"
+msgstr "Спрощення відстані"
+
+msgid "Save to File"
+msgstr "Зберегти у файл"
+
+msgid "Enabled"
+msgstr "Увімкнено"
+
+msgid "Shadow Meshes"
+msgstr "Тіньові сітки"
+
+msgid "Lightmap UV"
+msgstr "UV Карти освітлення"
+
+msgid "LODs"
+msgstr "LOD(и)"
+
+msgid "Use External"
+msgstr "Використовувати зовнішні"
+
+msgid "Loop Mode"
+msgstr "Режим переміщення"
+
+msgid "Keep Custom Tracks"
+msgstr "Зберігати нетипові доріжки"
+
+msgid "Slices"
+msgstr "Зрізи"
+
+msgid "Amount"
+msgstr "Кількість"
+
+msgid "Optimizer"
+msgstr "Optimizer (Оптимізатор)"
+
+msgid "Max Velocity Error"
+msgstr "Помилка максимальної швидкості"
+
+msgid "Max Angular Error"
+msgstr "Макс. кутова похибка"
+
+msgid "Max Precision Error"
+msgstr "Максимальна похибка точності"
+
+msgid "Page Size"
+msgstr "Розмір сторінки"
+
+msgid "Import Tracks"
+msgstr "Імпорт доріжок"
+
+msgid "Bone Map"
+msgstr "Карта кістки"
+
+msgid "Nodes"
+msgstr "Вузли"
+
+msgid "Root Type"
+msgstr "Тип кореня"
+
+msgid "Root Name"
+msgstr "Назва кореня"
+
+msgid "Apply Root Scale"
+msgstr "Додати Шкалу кореня"
+
+msgid "Root Scale"
+msgstr "Root Scale (Шкала кореня)"
+
+msgid "Meshes"
+msgstr "Меші"
+
+msgid "Ensure Tangents"
+msgstr "Забезпечити дотичність"
+
+msgid "Generate LODs"
+msgstr "Згенерувати LOD(и)"
+
+msgid "Create Shadow Meshes"
+msgstr "Створити меш шейдера"
+
+msgid "Light Baking"
+msgstr "Запікання світла"
+
+msgid "Lightmap Texel Size"
+msgstr "Розмір текселів карти освітлення"
+
+msgid "Skins"
+msgstr "Оболонки"
+
+msgid "Use Named Skins"
+msgstr "Використати іменовані оболонки"
+
+msgid "FPS"
+msgstr "Кадри за секунду"
+
+msgid "Trimming"
+msgstr "Обрізання"
+
+msgid "Import Script"
+msgstr "Скрипт імпорту"
+
+msgid "Antialiasing"
+msgstr "Згладжування"
+
+msgid "Allow System Fallback"
+msgstr "Дозволити резервну систему"
+
+msgid "Hinting"
+msgstr "Уточнення"
+
+msgid "Subpixel Positioning"
+msgstr "Розташування субпікселів"
+
+msgid "Metadata Overrides"
+msgstr "Перевизначення метаданих"
+
+msgid "Language Support"
+msgstr "Підтримка мови"
+
+msgid "Script Support"
+msgstr "Підтримка скриптів"
+
+msgid "OpenType Features"
+msgstr "Функції OpenType"
+
+msgid "Fallbacks"
+msgstr "Резерв"
+
+msgid "Compress"
+msgstr "Стиснути"
+
+msgid "Language"
+msgstr "Мова"
+
+msgid "Outline Size"
+msgstr "Розмір обведення"
+
+msgid "Variation"
+msgstr "Дисперсія"
+
+msgid "OpenType"
+msgstr "Відкритий Тип"
+
+msgid "Transform"
+msgstr "Перетворення"
+
+msgid "Create From"
+msgstr "Створити на основі"
+
+msgid "Delimiter"
+msgstr "Роздільник"
+
+msgid "Columns"
+msgstr "Стовпчики"
+
+msgid "Rows"
+msgstr "Ряди"
+
+msgid "Image Margin"
+msgstr "Поле зображення"
+
+msgid "High Quality"
+msgstr "Висока якість"
+
+msgid "Lossy Quality"
+msgstr "Низька якість"
+
+msgid "HDR Compression"
+msgstr "Стиснення HDR"
+
+msgid "Channel Pack"
+msgstr "Пакет каналів"
+
+msgid "Mipmaps"
+msgstr "MIP-текстурування"
+
+msgid "Limit"
+msgstr "Обмеження"
+
+msgid "Horizontal"
+msgstr "Горизонтальний"
+
+msgid "Vertical"
+msgstr "Вертикальний"
+
+msgid "Layout"
+msgstr "Макет"
+
+msgid "Normal Map"
+msgstr "Нормальне картографування"
+
+msgid "Roughness"
+msgstr "Шорсткість"
+
+msgid "Process"
+msgstr "Обробка"
+
+msgid "Fix Alpha Border"
+msgstr "Виправити прозору рамку"
+
+msgid "Premult Alpha"
+msgstr "Попереднє множення альфи"
+
+msgid "Normal Map Invert Y"
+msgstr "Інвертування Y нормальної карти"
+
+msgid "HDR as sRGB"
+msgstr "HDR як sRGB"
+
+msgid "Size Limit"
+msgstr "Обмеження розміру"
+
+msgid "Detect 3D"
+msgstr "Виявити 3D (Detect 3D)"
+
+msgid "Compress To"
+msgstr "Стиснути до"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Atlas File"
+msgstr "Файл атласу"
+
+msgid "Import Mode"
+msgstr "Режим імпортування"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Обрізати прозору рамку з області"
+
+msgid "8 Bit"
+msgstr "8-бітова"
+
+msgid "Mono"
+msgstr "Моно"
+
+msgid "Max Rate"
+msgstr "Макс. частота"
+
+msgid "Max Rate Hz"
+msgstr "Макс. частота (Гц)"
+
+msgid "Edit"
+msgstr "Редагувати"
+
+msgid "Trim"
+msgstr "Обрізати"
+
+msgid "Normalize"
+msgstr "Нормалізувати"
+
+msgid "Loop Begin"
+msgstr "Початок циклу"
+
+msgid "Loop End"
+msgstr "Кінець циклу"
+
+msgid "Asset Library"
+msgstr "Бібліотека пакунків"
+
+msgid "Use Threads"
+msgstr "Використовувати потоки обробки"
+
+msgid "Available URLs"
+msgstr "Доступні адреси"
+
+msgid "Unset"
+msgstr "Зняти"
+
+msgid "Set"
+msgstr "Встановити"
+
+msgid "Error"
+msgstr "Помилка"
+
+msgid "Stream Player 3D"
+msgstr "Потокове мовлення просторового програвача"
+
+msgid "Camera"
+msgstr "Фотоапарат"
+
+msgid "Particles"
+msgstr "Частинки"
+
+msgid "Joint Body A"
+msgstr "З'єднання тіл A"
+
+msgid "Joint Body B"
+msgstr "З'єднання тіл B"
+
+msgid "Reflection Probe"
+msgstr "Вибір властивості"
+
+msgid "Visibility Notifier"
+msgstr "Сповіщувач щодо видимості"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Розмір гаджета маніпулятора"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Непрозорість гаджета маніпулятора"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "Показувати гаджет обертання панелі перегляду"
+
+msgid "External"
+msgstr "Зовнішній"
+
+msgid "Use External Editor"
+msgstr "Зневадження за допомогою зовнішнього редактора"
+
+msgid "Exec Path"
+msgstr "Шлях експорту"
+
+msgid "Script Temperature Enabled"
+msgstr "Виберіть файл шаблону"
+
+msgid "Script Temperature History Size"
+msgstr "Розмір журналу температури скриптів"
+
+msgid "Group Help Pages"
+msgstr "Згрупувати позначені"
+
+msgid "Sort Scripts By"
+msgstr "Створити скрипт"
+
+msgid "List Script Names As"
+msgstr "Показувати список назв скриптів як"
+
+msgid "Exec Flags"
+msgstr "Виконувані прапорці"
+
+msgid "Skeleton"
+msgstr "Каркас"
+
+msgid "ID"
+msgstr "Ідентифікатор"
+
+msgid "Texture"
+msgstr "Текстура"
+
+msgid "Separation"
+msgstr "Розділення"
+
+msgid "Speed"
+msgstr "Швидкість"
+
+msgid "Version Control"
+msgstr "Керування версіями"
+
+msgid "Username"
+msgstr "Користувач"
+
+msgid "SSH Public Key Path"
+msgstr "Шлях до відкритого ключа SSH"
+
+msgid "SSH Private Key Path"
+msgstr "Шлях до закритого ключа SSH"
+
+msgid "Main Run Args"
+msgstr "Аргументи основного запуску"
+
+msgid "Script"
+msgstr "Скрипт"
+
+msgid "Templates Search Path"
+msgstr "Шлях пошуку шаблонів"
+
+msgid "Naming"
+msgstr "Іменування"
+
+msgid "Default Signal Callback Name"
+msgstr "Ім'я сигналу зворотного виклику за замовчуванням"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Сигнал зворотного виклику за замовчуванням до власного імені"
+
+msgid "Scene Name Casing"
+msgstr "Регістр назв сцени"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Повторно імпортувати пропущені імпортовані файли"
+
+msgid "Use Multiple Threads"
+msgstr "Використання кількох потоків"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Перетворювати текстові ресурси на двійкові"
+
+msgid "Plugin Name"
+msgstr "Назва додатка"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "Показувати кореневе позначення ієрархії сцени"
+
+msgid "Use Favorites Root Selection"
+msgstr "Кадрувати вибране"
+
+msgid "File Logging"
+msgstr "Журналювання до файлів"
+
+msgid "Enable File Logging"
+msgstr "Увімкнути журналювання до файлів"
+
+msgid "Log Path"
+msgstr "Шлях до журналу"
+
+msgid "Driver"
+msgstr "Драйвер"
+
+msgid "Renderer"
+msgstr "Рендерер"
+
+msgid "DPI"
+msgstr "Роздільність"
+
+msgid "Allow hiDPI"
+msgstr "Дозволити hiDPI"
+
+msgid "Per Pixel Transparency"
+msgstr "Прозорість за пікселями"
+
+msgid "Allowed"
+msgstr "Дозволено"
+
+msgid "Threads"
+msgstr "Потоки"
+
+msgid "Thread Model"
+msgstr "Модель потоків"
+
+msgid "Handheld"
+msgstr "Кишеньковий пристрій"
+
+msgid "Orientation"
+msgstr "Орієнтація"
+
+msgid "Output Latency"
+msgstr "Затримка виведення"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "Виводити частоту кадрів"
+
+msgid "Print GPU Profile"
+msgstr "Виводити профілювання GPU"
+
+msgid "Verbose stdout"
+msgstr "Детальне виведення до stdout"
+
+msgid "Low Processor Mode"
+msgstr "Режим низького споживання процесора"
+
+msgid "Hide Home Indicator"
+msgstr "Приховати індикатор домівки"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "Form Factor"
+msgstr "Форм-фактор"
+
+msgid "View Configuration"
+msgstr "Конфігурація подання"
+
+msgid "Reference Space"
+msgstr "Опорний простір"
+
+msgid "Environment Blend Mode"
+msgstr "Режим змішування середовища"
+
+msgid "Foveation Level"
+msgstr "Рівень фовеації"
+
+msgid "Foveation Dynamic"
+msgstr "Динамічна фовеація"
+
+msgid "Boot Splash"
+msgstr "Вітання системи"
+
+msgid "BG Color"
+msgstr "Колір тла"
+
+msgid "Environment"
+msgstr "Середовище"
+
+msgid "Default Clear Color"
+msgstr "Типовий чистий колір"
+
+msgid "Icon"
+msgstr "Піктограма"
+
+msgid "Pointing"
+msgstr "Фокус"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Search in File Extensions"
+msgstr "Пошук у розширеннях файлів"
+
+msgid "Mouse Cursor"
+msgstr "Курсор миші"
+
+msgid "Custom Image Hotspot"
+msgstr "Нетипова активна ділянка зображення"
+
+msgid "Tooltip Position Offset"
+msgstr "Відступ позиції підказки"
+
+msgid "Show Image"
+msgstr "Показати зображення"
+
+msgid "Image"
+msgstr "Зображення"
+
+msgid "Fullsize"
+msgstr "Повний розмір"
+
+msgid "Use Filter"
+msgstr "Фільтрування"
+
+msgid "Minimum Display Time"
+msgstr "Мінімальний час показу"
+
+msgid "Dotnet"
+msgstr "Dotnet"
+
+msgid "Project"
+msgstr "Проєкт"
+
+msgid "Assembly Name"
+msgstr "Назва збірки"
+
+msgid "Solution Directory"
+msgstr "Каталог проєкту"
+
+msgid "Time"
+msgstr "Час"
+
+msgid "Polygons"
+msgstr "Полігони"
+
+msgid "Operation"
+msgstr "Дія"
+
+msgid "Snap"
+msgstr "Прилипання"
+
+msgid "Calculate Tangents"
+msgstr "Обчислити дотичні"
+
+msgid "Collision"
+msgstr "Зіткнення"
+
+msgid "Use Collision"
+msgstr "Зіткнення"
+
+msgid "Collision Layer"
+msgstr "Режим перешкоди"
+
+msgid "Collision Mask"
+msgstr "Режим перешкоди"
+
+msgid "Flip Faces"
+msgstr "Віддзеркалити поверхні"
+
+msgid "Mesh"
+msgstr "Сітка"
+
+msgid "Material"
+msgstr "Матеріал"
+
+msgid "Radial Segments"
+msgstr "Радіальні сегменти"
+
+msgid "Rings"
+msgstr "Кільця"
+
+msgid "Smooth Faces"
+msgstr "Згладжені поверхні"
+
+msgid "Sides"
+msgstr "Сторони"
+
+msgid "Cone"
+msgstr "Конус"
+
+msgid "Inner Radius"
+msgstr "Внутрішній радіус"
+
+msgid "Outer Radius"
+msgstr "Зовнішній радіус"
+
+msgid "Ring Sides"
+msgstr "Сторони Кільця"
+
+msgid "Polygon"
+msgstr "Багатокутник"
+
+msgid "Depth"
+msgstr "Глибина"
+
+msgid "Spin Degrees"
+msgstr "Градуси обертання"
+
+msgid "Spin Sides"
+msgstr "Сторони обертання"
+
+msgid "Path Node"
+msgstr "Вузол контуру"
+
+msgid "Path Interval Type"
+msgstr "Створити внутрішню вершину"
+
+msgid "Path Interval"
+msgstr "Інтервал контуру"
+
+msgid "Path Simplify Angle"
+msgstr "Кут спрощення контуру"
+
+msgid "Path Rotation"
+msgstr "Обертання контуру"
+
+msgid "Path Local"
+msgstr "Локальний контур"
+
+msgid "Path Continuous U"
+msgstr "Неперервна U контуру"
+
+msgid "Path U Distance"
+msgstr "U-відстань контуру"
+
+msgid "Path Joined"
+msgstr "Контур з'єднано"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "GDScript"
+msgstr "Скрипт"
+
+msgid "Function Definition Color"
+msgstr "Колір визначення функції"
+
+msgid "Node Path Color"
+msgstr "Копіювати вузол шляху"
+
+msgid "Exclude Addons"
+msgstr "Виключити додатки"
+
+msgid "Language Server"
+msgstr "Сервер мови"
+
+msgid "Enable Smart Resolve"
+msgstr "Не вдається вирішити"
+
+msgid "Use Thread"
+msgstr "Потік обробки"
+
+msgid "Copyright"
+msgstr "Авторські права"
+
+msgid "Color"
+msgstr "Колір"
+
+msgid "Intensity"
+msgstr "Інтенсивність"
+
+msgid "Range"
+msgstr "Діапазон"
+
+msgid "Inner Cone Angle"
+msgstr "Внутрішній кут конуса"
+
+msgid "Outer Cone Angle"
+msgstr "Зовнішній кут конуса"
+
+msgid "Diffuse Img"
+msgstr "Розсіяне зображення"
+
+msgid "Diffuse Factor"
+msgstr "Фактор розсіювання"
+
+msgid "Specular Factor"
+msgstr "Коефіцієнт дзеркальності"
+
+msgid "Spec Gloss Img"
+msgstr "Дзеркальне глянцеве зображення"
+
+msgid "Mass"
+msgstr "Маса"
+
+msgid "Linear Velocity"
+msgstr "Лінійна швидкість"
+
+msgid "Angular Velocity"
+msgstr "Кутова швидкість"
+
+msgid "Json"
+msgstr "Json"
+
+msgid "Major Version"
+msgstr "Основна версія"
+
+msgid "Minor Version"
+msgstr "Другорядна версія"
+
+msgid "GLB Data"
+msgstr "Дані GLB"
+
+msgid "Buffers"
+msgstr "Буфери"
+
+msgid "Buffer Views"
+msgstr "Вигляд ззаду"
+
+msgid "Accessors"
+msgstr "Засоби доступу"
+
+msgid "Materials"
+msgstr "Матеріали"
+
+msgid "Scene Name"
+msgstr "Назва сцени"
+
+msgid "Base Path"
+msgstr "Базовий шлях"
+
+msgid "Root Nodes"
+msgstr "Кореневі вузли"
+
+msgid "Images"
+msgstr "Зображення"
+
+msgid "Cameras"
+msgstr "Фотоапарати"
+
+msgid "Lights"
+msgstr "Освітлення"
+
+msgid "Unique Names"
+msgstr "Унікальні імена"
+
+msgid "Unique Animation Names"
+msgstr "Унікальні назви анімації"
+
+msgid "Skeletons"
+msgstr "Скелети"
+
+msgid "Animations"
+msgstr "Анімації"
+
+msgid "Buffer View"
+msgstr "Перегляд буфера"
+
+msgid "Byte Offset"
+msgstr "Відступ у байтах"
+
+msgid "Component Type"
+msgstr "Тип компонента"
+
+msgid "Normalized"
+msgstr "Нормалізовано"
+
+msgid "Count"
+msgstr "Кількість"
+
+msgid "Min"
+msgstr "Мін."
+
+msgid "Max"
+msgstr "Макс."
+
+msgid "Sparse Count"
+msgstr "Кількість розсіювання"
+
+msgid "Sparse Indices Buffer View"
+msgstr "Перегляд буфера розріджених індексів"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "Байтовий зсув розріджених індексів"
+
+msgid "Sparse Indices Component Type"
+msgstr "Тип компонентів індексів розсіювання"
+
+msgid "Sparse Values Buffer View"
+msgstr "Перегляд буфера розріджених значень"
+
+msgid "Sparse Values Byte Offset"
+msgstr "Зміщення байтів розріджених значень"
+
+msgid "Loop"
+msgstr "Зациклити"
+
+msgid "Buffer"
+msgstr "Буфер"
+
+msgid "Byte Length"
+msgstr "Байтова довжина"
+
+msgid "Byte Stride"
+msgstr "Байтовий крок"
+
+msgid "Indices"
+msgstr "Індекси"
+
+msgid "Perspective"
+msgstr "Перспектива"
+
+msgid "FOV"
+msgstr "ПЗ"
+
+msgid "Blend Weights"
+msgstr "Ваги злиття"
+
+msgid "Instance Materials"
+msgstr "Матеріали екземпляра"
+
+msgid "Parent"
+msgstr "Батьківський"
+
+msgid "Xform"
+msgstr "Xform"
+
+msgid "Skin"
+msgstr "Оболонка"
+
+msgid "Children"
+msgstr "Дочірні"
+
+msgid "Light"
+msgstr "Світло"
+
+msgid "Joints"
+msgstr "Суглоби"
+
+msgid "Roots"
+msgstr "Корені"
+
+msgid "Godot Bone Node"
+msgstr "Отримати вузол сцени"
+
+msgid "Skin Root"
+msgstr "Корінь оболонки"
+
+msgid "Joints Original"
+msgstr "Початок з'єднання"
+
+msgid "Non Joints"
+msgstr "Без з'єднань"
+
+msgid "Src Image"
+msgstr "Початкове зображення"
+
+msgid "Sampler"
+msgstr "Зразок"
+
+msgid "Palette Min Width"
+msgstr "Мінімальна ширина палітри"
+
+msgid "Preview Size"
+msgstr "Розмір перегляду"
+
+msgid "Editor Side"
+msgstr "Редактор"
+
+msgid "Mesh Library"
+msgstr "Бібліотека сітки"
+
+msgid "Physics Material"
+msgstr "Матеріал фізики"
+
+msgid "Cell"
+msgstr "Мобільний"
+
+msgid "Octant Size"
+msgstr "Розмір октанта"
+
+msgid "Center X"
+msgstr "Центр за X"
+
+msgid "Center Y"
+msgstr "Центр за Y"
+
+msgid "Center Z"
+msgstr "Центр за Z"
+
+msgid "Priority"
+msgstr "Пріоритетність"
+
+msgid "Lightmapping"
+msgstr "Карта освітлення"
+
+msgid "Low Quality Ray Count"
+msgstr "Кількість променів низької якості"
+
+msgid "Medium Quality Ray Count"
+msgstr "Середня якість підрахунку променів"
+
+msgid "High Quality Ray Count"
+msgstr "Висока якість підрахунку променів"
+
+msgid "Ultra Quality Ray Count"
+msgstr "Кількість променів високої якості"
+
+msgid "Max Rays per Pass"
+msgstr "Макс. променів за прохід"
+
+msgid "Loop Offset"
+msgstr "Зміщення циклу"
+
+msgid "Eye Height"
+msgstr "Висота очей"
+
+msgid "IOD"
+msgstr "IOD"
+
+msgid "Display Width"
+msgstr "Ширина екрану"
+
+msgid "Oversample"
+msgstr "Надвибірка"
+
+msgid "K1"
+msgstr "K1"
+
+msgid "K2"
+msgstr "K2"
+
+msgid "Allow Object Decoding"
+msgstr "Дозволити декодування об'єктів"
+
+msgid "Refuse New Connections"
+msgstr "Відмовляти у нових з'єднаннях"
+
+msgid "Server Relay"
+msgstr "Перемикання сервера"
+
+msgid "Octaves"
+msgstr "Октави"
+
+msgid "Lacunarity"
+msgstr "Лакунарність"
+
+msgid "Gain"
+msgstr "Підсилення"
+
+msgid "Return Type"
+msgstr "Тип результату"
+
+msgid "Width"
+msgstr "Ширина"
+
+msgid "Invert"
+msgstr "Інвертувати"
+
+msgid "Seamless"
+msgstr "Без швів"
+
+msgid "As Normal Map"
+msgstr "Як нормальна карта"
+
+msgid "Bump Strength"
+msgstr "Потужність витискання"
+
+msgid "Color Ramp"
+msgstr "Рампа кольорів"
+
+msgid "Noise"
+msgstr "Шум"
+
+msgid "Subject"
+msgstr "Призначення"
+
+msgid "Names"
+msgstr "Назви"
+
+msgid "Strings"
+msgstr "Рядки"
+
+msgid "Discover Multicast If"
+msgstr "Виявляти групову трансляцію, якщо"
+
+msgid "Discover Local Port"
+msgstr "Виявляти локальний порт"
+
+msgid "Discover IPv6"
+msgstr "Виявляти IPv6"
+
+msgid "Description URL"
+msgstr "Адрес опису"
+
+msgid "Service Type"
+msgstr "Тип служби"
+
+msgid "IGD Control URL"
+msgstr "Адреса керування IGD"
+
+msgid "IGD Service Type"
+msgstr "Тип служби IGD"
+
+msgid "IGD Status"
+msgstr "Стан IGD"
+
+msgid "WebRTC"
+msgstr "WebRTC"
+
+msgid "Write Mode"
+msgstr "Режим пріоритетності"
+
+msgid "Handshake Timeout"
+msgstr "Перевищення часу початкового етапу обміну даними"
+
+msgid "Session Mode"
+msgstr "Режим області"
+
+msgid "Required Features"
+msgstr "Обов'язкові можливості"
+
+msgid "Optional Features"
+msgstr "Необов'язкові можливості"
+
+msgid "Visibility State"
+msgstr "Перемкнути видимість"
+
+msgid "Android SDK Path"
+msgstr "Шлях Android SDK"
+
+msgid "Debug Keystore"
+msgstr "Зневаджувач"
+
+msgid "Export Format"
+msgstr "Формат експортування"
+
+msgid "Min SDK"
+msgstr "Мін. SDK"
+
+msgid "Target SDK"
+msgstr "SDK призначення"
+
+msgid "Plugins"
+msgstr "Плаґіни (додатки)"
+
+msgid "Keystore"
+msgstr "Сховище ключів"
+
+msgid "Debug User"
+msgstr "Користувач діагностики"
+
+msgid "Debug Password"
+msgstr "Пароль діагностики"
+
+msgid "Release User"
+msgstr "Користувач випуску"
+
+msgid "Release Password"
+msgstr "Пароль випуску"
+
+msgid "Code"
+msgstr "Код"
+
+msgid "Package"
+msgstr "Пакунок"
+
+msgid "Unique Name"
+msgstr "Унікальна назва"
+
+msgid "Signed"
+msgstr "Підписано"
+
+msgid "App Category"
+msgstr "Категорія програм"
+
+msgid "Exclude From Recents"
+msgstr "Виключити з нещодавніх"
+
+msgid "Graphics"
+msgstr "Графіка"
+
+msgid "OpenGL Debug"
+msgstr "Діагностика OpenGL"
+
+msgid "XR Features"
+msgstr "Можливості XR"
+
+msgid "XR Mode"
+msgstr "Режим XR"
+
+msgid "Immersive Mode"
+msgstr "Режим занурення"
+
+msgid "Support Small"
+msgstr "Підтримка малих"
+
+msgid "Support Normal"
+msgstr "Підтримка звичайних"
+
+msgid "Support Large"
+msgstr "Підтримка великих"
+
+msgid "Support Xlarge"
+msgstr "Підтримка дуже великих"
+
+msgid "User Data Backup"
+msgstr "Резервне копіювання даних користувача"
+
+msgid "Allow"
+msgstr "Дозволити"
+
+msgid "Command Line"
+msgstr "Командний рядок"
+
+msgid "Extra Args"
+msgstr "Додаткові аргументи"
+
+msgid "APK Expansion"
+msgstr "Розгортання APK"
+
+msgid "Salt"
+msgstr "Сіль"
+
+msgid "Public Key"
+msgstr "Відкритий ключ"
+
+msgid "Permissions"
+msgstr "Права доступу"
+
+msgid "Custom Permissions"
+msgstr "Нетипові права доступу"
+
+msgid "Icons"
+msgstr "Піктограми"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 76 X 76"
+msgstr "iPad 76 X 76"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "App Store Team ID"
+msgstr "Ідентифікатор команди App Store"
+
+msgid "Code Sign Identity Debug"
+msgstr "Налагодження ідентифікації коду"
+
+msgid "Export Method Debug"
+msgstr "Діагностика методу експортування"
+
+msgid "Export Method Release"
+msgstr "Випуск методу експортування"
+
+msgid "Signature"
+msgstr "Підпис"
+
+msgid "Short Version"
+msgstr "Коротка версія"
+
+msgid "Capabilities"
+msgstr "Можливості"
+
+msgid "Access Wi-Fi"
+msgstr "Доступ до Wi-Fi"
+
+msgid "Push Notifications"
+msgstr "Імпульсні сповіщення"
+
+msgid "User Data"
+msgstr "Дані користувача"
+
+msgid "Privacy"
+msgstr "Конфіденційність"
+
+msgid "Camera Usage Description"
+msgstr "Опис використання камери"
+
+msgid "Microphone Usage Description"
+msgstr "Опис використання мікрофона"
+
+msgid "Photolibrary Usage Description"
+msgstr "Опис використання бібліотеки світлин"
+
+msgid "Storyboard"
+msgstr "Розкадрування"
+
+msgid "Image Scale Mode"
+msgstr "Режим масштабування зображень"
+
+msgid "Custom Image @2x"
+msgstr "Нетипове зображення @2x"
+
+msgid "Custom Image @3x"
+msgstr "Нетипове зображення @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Нетиповий колір тла"
+
+msgid "Custom BG Color"
+msgstr "Нетиповий колір тла"
+
+msgid "Architecture"
+msgstr "Архітектура"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "High Res"
+msgstr "Висока роздільність"
+
+msgid "Codesign"
+msgstr "Codesign"
+
+msgid "Identity"
+msgstr "Профіль"
+
+msgid "Entitlements"
+msgstr "Права"
+
+msgid "Custom File"
+msgstr "Нетиповий файл"
+
+msgid "Disable Library Validation"
+msgstr "Вимкнути перевірку бібліотеки"
+
+msgid "Audio Input"
+msgstr "Звуковий вхід"
+
+msgid "Address Book"
+msgstr "Адресна книга"
+
+msgid "Calendars"
+msgstr "Календарі"
+
+msgid "Photos Library"
+msgstr "Бібліотека світлин"
+
+msgid "Apple Events"
+msgstr "Події Apple"
+
+msgid "Debugging"
+msgstr "Діагностика"
+
+msgid "App Sandbox"
+msgstr "Пісочниця програм"
+
+msgid "Network Server"
+msgstr "Мережевий сервер"
+
+msgid "Network Client"
+msgstr "Клієнт мережі"
+
+msgid "Device USB"
+msgstr "USB пристрою"
+
+msgid "Device Bluetooth"
+msgstr "Bluetooth пристрою"
+
+msgid "Files Downloads"
+msgstr "Отримання файлів"
+
+msgid "Files Pictures"
+msgstr "Файлові зображення"
+
+msgid "Files Music"
+msgstr "Файлова музика"
+
+msgid "Files Movies"
+msgstr "Файлове відео"
+
+msgid "Custom Options"
+msgstr "Нетипові параметри"
+
+msgid "Notarization"
+msgstr "Засвідчення"
+
+msgid "Apple ID Name"
+msgstr "Ім'я Apple ID"
+
+msgid "Apple ID Password"
+msgstr "Пароль до Apple ID"
+
+msgid "Location Usage Description"
+msgstr "Опис використання даних щодо розташування"
+
+msgid "Address Book Usage Description"
+msgstr "Опис використання адресної книги"
+
+msgid "Calendar Usage Description"
+msgstr "Опис використання календаря"
+
+msgid "Photos Library Usage Description"
+msgstr "Опис використання бібліотеки світлин"
+
+msgid "Desktop Folder Usage Description"
+msgstr "Опис використання теки стільниці"
+
+msgid "Documents Folder Usage Description"
+msgstr "Опис використання теки документів"
+
+msgid "Downloads Folder Usage Description"
+msgstr "Опис використання теки отриманих даних"
+
+msgid "Network Volumes Usage Description"
+msgstr "Опис використання томів у мережі"
+
+msgid "Removable Volumes Usage Description"
+msgstr "Опис використання портативних томів"
+
+msgid "Web"
+msgstr "Інтернет"
+
+msgid "HTTP Host"
+msgstr "Вузол HTTP"
+
+msgid "HTTP Port"
+msgstr "Порт HTTP"
+
+msgid "Variant"
+msgstr "Варіант"
+
+msgid "VRAM Texture Compression"
+msgstr "Стискання текстур у VRAM"
+
+msgid "For Desktop"
+msgstr "Для комп'ютера"
+
+msgid "For Mobile"
+msgstr "Для мобільного пристрою"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Export Icon"
+msgstr "Експортування піктограми"
+
+msgid "Custom HTML Shell"
+msgstr "Нетипова HTML-оболонка"
+
+msgid "Experimental Virtual Keyboard"
+msgstr "Експериментальна віртуальна клавіатура"
+
+msgid "Offline Page"
+msgstr "Позамережева сторінка"
+
+msgid "Icon 144 X 144"
+msgstr "Піктограма 144⨯144"
+
+msgid "Icon 180 X 180"
+msgstr "Піктограма 180⨯180"
+
+msgid "Icon 512 X 512"
+msgstr "Піктограма 512⨯12"
+
+msgid "Windows"
+msgstr "Windows"
+
+msgid "Identity Type"
+msgstr "Тип профілю"
+
+msgid "Timestamp"
+msgstr "Часова позначка"
+
+msgid "Timestamp Server URL"
+msgstr "Адреса сервера часових позначок"
+
+msgid "Digest Algorithm"
+msgstr "Алгоритм контрольної суми"
+
+msgid "Modify Resources"
+msgstr "Змінити ресурси"
+
+msgid "File Version"
+msgstr "Версія файла"
+
+msgid "Product Version"
+msgstr "Версія продукту"
+
+msgid "Company Name"
+msgstr "Назва організації"
+
+msgid "Product Name"
+msgstr "Назва продукту"
+
+msgid "File Description"
+msgstr "Опис файла"
+
+msgid "Trademarks"
+msgstr "Торгівельні марки"
+
+msgid "Frame"
+msgstr "Кадр"
+
+msgid "Speed Scale"
+msgstr "Масштаб"
+
+msgid "Centered"
+msgstr "За центром"
+
+msgid "Flip H"
+msgstr "Гор. віддзеркалення"
+
+msgid "Flip V"
+msgstr "Верт. віддзеркалення"
+
+msgid "Current"
+msgstr "Поточний"
+
+msgid "Volume dB"
+msgstr "Гучність (дБ)"
+
+msgid "Pitch Scale"
+msgstr "Масштаб"
+
+msgid "Playing"
+msgstr "Відтворення"
+
+msgid "Autoplay"
+msgstr "Перемкнути автовідтворення"
+
+msgid "Max Distance"
+msgstr "Макс. відстань"
+
+msgid "Attenuation"
+msgstr "Анімація"
+
+msgid "Bus"
+msgstr "Автобус"
+
+msgid "Area Mask"
+msgstr "Маска області"
+
+msgid "Copy Mode"
+msgstr "Режим копіювання"
+
+msgid "Anchor Mode"
+msgstr "Режим піктограм"
+
+msgid "Left"
+msgstr "Ліворуч"
+
+msgid "Top"
+msgstr "Верхівка"
+
+msgid "Right"
+msgstr "Праворуч"
+
+msgid "Bottom"
+msgstr "Внизу"
+
+msgid "Smoothed"
+msgstr "Згладжений"
+
+msgid "Horizontal Enabled"
+msgstr "Увімкнено горизонтально"
+
+msgid "Vertical Enabled"
+msgstr "Увімкнено вертикально"
+
+msgid "Top Margin"
+msgstr "Верхнє поле"
+
+msgid "Draw Screen"
+msgstr "Намалювати екран"
+
+msgid "Draw Limits"
+msgstr "Обмеження малювання"
+
+msgid "Draw Drag Margin"
+msgstr "Малювати поле перетягування"
+
+msgid "Tweaks"
+msgstr "Коригування"
+
+msgid "Use Mipmaps"
+msgstr "Використовувати MIP-текстурування"
+
+msgid "Emitting"
+msgstr "Надсилання"
+
+msgid "Lifetime"
+msgstr "Строк служби"
+
+msgid "One Shot"
+msgstr "Один знімок"
+
+msgid "Preprocess"
+msgstr "preprocess()"
+
+msgid "Explosiveness"
+msgstr "Вибуховість"
+
+msgid "Randomness"
+msgstr "Випадковість"
+
+msgid "Fixed FPS"
+msgstr "Фіксована частота кадрів"
+
+msgid "Fract Delta"
+msgstr "Фракт Дельта"
+
+msgid "Drawing"
+msgstr "Малюнок"
+
+msgid "Local Coords"
+msgstr "Локальні координати"
+
+msgid "Draw Order"
+msgstr "Порядок малювання"
+
+msgid "Emission Shape"
+msgstr "Маска випромінювання"
+
+msgid "Shape"
+msgstr "Форма"
+
+msgid "Sphere Radius"
+msgstr "Радіус сфери"
+
+msgid "Rect Extents"
+msgstr "Розміри прямокутника"
+
+msgid "Points"
+msgstr "Точки"
+
+msgid "Normals"
+msgstr "Нормалі"
+
+msgid "Colors"
+msgstr "Кольори"
+
+msgid "Align Y"
+msgstr "Вирівнювання за Y"
+
+msgid "Direction"
+msgstr "Напрямок"
+
+msgid "Spread"
+msgstr "Розсіювання"
+
+msgid "Gravity"
+msgstr "Тяжіння"
+
+msgid "Initial Velocity"
+msgstr "Ініціалізувати"
+
+msgid "Velocity Curve"
+msgstr "Крива швидкості"
+
+msgid "Orbit Velocity"
+msgstr "Орбітальний вид праворуч"
+
+msgid "Linear Accel"
+msgstr "Лінійний"
+
+msgid "Accel Curve"
+msgstr "Крива прискорення"
+
+msgid "Radial Accel"
+msgstr "Радіальне прискорення"
+
+msgid "Tangential Accel"
+msgstr "Дотичне прискорення"
+
+msgid "Damping"
+msgstr "В’язкість"
+
+msgid "Damping Curve"
+msgstr "Крива в’язкості"
+
+msgid "Angle"
+msgstr "Кут"
+
+msgid "Angle Min"
+msgstr "Мін. кут"
+
+msgid "Angle Max"
+msgstr "Макс. кут"
+
+msgid "Angle Curve"
+msgstr "Крива кутів"
+
+msgid "Scale Amount Curve"
+msgstr "Крива величини масштабування"
+
+msgid "Hue Variation"
+msgstr "Дисперсія відтінків"
+
+msgid "Variation Curve"
+msgstr "Крива дисперсії"
+
+msgid "Speed Curve"
+msgstr "Крива швидкості"
+
+msgid "Offset Curve"
+msgstr "Крива відступів"
+
+msgid "Process Material"
+msgstr "Обробляти матеріал"
+
+msgid "Visibility Rect"
+msgstr "Прямокутник видимості"
+
+msgid "Editor Only"
+msgstr "Лише редактор"
+
+msgid "Energy"
+msgstr "Енергія"
+
+msgid "Blend Mode"
+msgstr "Режим змішування"
+
+msgid "Z Min"
+msgstr "Мін. за Z"
+
+msgid "Z Max"
+msgstr "Макс. за Z"
+
+msgid "Layer Min"
+msgstr "Мін. за шаром"
+
+msgid "Layer Max"
+msgstr "Макс. за шаром"
+
+msgid "Shadow"
+msgstr "Тінь"
+
+msgid "Filter Smooth"
+msgstr "Згладжування фільтрування"
+
+msgid "Texture Scale"
+msgstr "TextureRegion"
+
+msgid "Closed"
+msgstr "Замкнено"
+
+msgid "Cull Mode"
+msgstr "Режим вибракування"
+
+msgid "Width Curve"
+msgstr "Розділити криву"
+
+msgid "Default Color"
+msgstr "Типовий колір"
+
+msgid "Fill"
+msgstr "Заповнення"
+
+msgid "Gradient"
+msgstr "Градієнт"
+
+msgid "Texture Mode"
+msgstr "TextureRegion"
+
+msgid "Capping"
+msgstr "Вершина"
+
+msgid "Joint Mode"
+msgstr "Режим піктограм"
+
+msgid "Begin Cap Mode"
+msgstr "Режим області"
+
+msgid "End Cap Mode"
+msgstr "Режим кінцевої вершини"
+
+msgid "Border"
+msgstr "Кордон"
+
+msgid "Sharp Limit"
+msgstr "Обмеження різкості"
+
+msgid "Round Precision"
+msgstr "Точність округлення"
+
+msgid "Antialiased"
+msgstr "Згладжена"
+
+msgid "Gizmo Extents"
+msgstr "Гаджети"
+
+msgid "Path Max Distance"
+msgstr "Макс. відстань контуру"
+
+msgid "Max Speed"
+msgstr "Макс. швидкість"
+
+msgid "Scroll Offset"
+msgstr "Відступ гортання"
+
+msgid "Repeat"
+msgstr "Повторення"
+
+msgid "End"
+msgstr "Кінець"
+
+msgid "Follow Viewport"
+msgstr "Показати панель перегляду"
+
+msgid "Scroll"
+msgstr "Гортання"
+
+msgid "Base Offset"
+msgstr "Базове зміщення"
+
+msgid "Base Scale"
+msgstr "Базовий масштаб"
+
+msgid "Limit Begin"
+msgstr "Початок обмеження"
+
+msgid "Limit End"
+msgstr "Кінець обмеження"
+
+msgid "Ignore Camera Zoom"
+msgstr "Ігнорувати масштабування камери"
+
+msgid "Motion"
+msgstr "Рух"
+
+msgid "Mirroring"
+msgstr "Віддзеркалення"
+
+msgid "Curve"
+msgstr "Крива"
+
+msgid "Progress"
+msgstr "Поступ"
+
+msgid "H Offset"
+msgstr "Гор. зміщення"
+
+msgid "V Offset"
+msgstr "Верт. зміщення"
+
+msgid "Cubic Interp"
+msgstr "Кубічна інтерп"
+
+msgid "Monitoring"
+msgstr "Спостереження"
+
+msgid "Monitorable"
+msgstr "Можна спостерігати"
+
+msgid "Space Override"
+msgstr "Перевизначення"
+
+msgid "Point"
+msgstr "Точка"
+
+msgid "Linear Damp"
+msgstr "Лінійний"
+
+msgid "Angular Damp"
+msgstr "Кутове уповільнення"
+
+msgid "Audio Bus"
+msgstr "Додавання аудіо шини"
+
+msgid "Max Angle"
+msgstr "Макс. кут"
+
+msgid "Moving Platform"
+msgstr "Рухома платформа"
+
+msgid "Safe Margin"
+msgstr "Встановити поле"
+
+msgid "Pickable"
+msgstr "Можна вибирати"
+
+msgid "Build Mode"
+msgstr "Режим вимірювання"
+
+msgid "Disabled"
+msgstr "Вимкнено"
+
+msgid "One Way Collision"
+msgstr "Однобічне зіткнення"
+
+msgid "One Way Collision Margin"
+msgstr "Створити полігон зіткнення"
+
+msgid "Length"
+msgstr "Довжина"
+
+msgid "Rest Length"
+msgstr "Довжина у нерозтягненому стані"
+
+msgid "Stiffness"
+msgstr "Жорсткість"
+
+msgid "Initial Offset"
+msgstr "Ініціалізувати"
+
+msgid "Node A"
+msgstr "Вузол A"
+
+msgid "Node B"
+msgstr "Вузол B"
+
+msgid "Bias"
+msgstr "Нахил"
+
+msgid "Disable Collision"
+msgstr "Вимкнути зіткнення"
+
+msgid "Softness"
+msgstr "М’якість"
+
+msgid "Angular Limit"
+msgstr "Кутове обмеження"
+
+msgid "Lower"
+msgstr "Опустити"
+
+msgid "Upper"
+msgstr "Верхня"
+
+msgid "Motor"
+msgstr "Рушій"
+
+msgid "Target Velocity"
+msgstr "Цільова швидкість"
+
+msgid "Exclude Parent"
+msgstr "Виключити батьківський"
+
+msgid "Collide With"
+msgstr "Об'єкт зіткнення"
+
+msgid "Areas"
+msgstr "Області"
+
+msgid "Bodies"
+msgstr "Тіла"
+
+msgid "Gravity Scale"
+msgstr "Масштаб тяжіння"
+
+msgid "Inertia"
+msgstr "Інерція"
+
+msgid "Sleeping"
+msgstr "Сон"
+
+msgid "Can Sleep"
+msgstr "Може спати"
+
+msgid "Custom Integrator"
+msgstr "Нетиповий інтегратор"
+
+msgid "Continuous CD"
+msgstr "Неперервне CD"
+
+msgid "Contact Monitor"
+msgstr "Монітор контакту"
+
+msgid "Linear"
+msgstr "Лінійний"
+
+msgid "Damp Mode"
+msgstr "Режим прилипання"
+
+msgid "Damp"
+msgstr "В’язкість"
+
+msgid "Angular"
+msgstr "Кутовий"
+
+msgid "Torque"
+msgstr "Момент"
+
+msgid "Margin"
+msgstr "Поле"
+
+msgid "Constant Linear Velocity"
+msgstr "Стала лінійна швидкість"
+
+msgid "Constant Angular Velocity"
+msgstr "Стала кутова швидкість"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Vertex Colors"
+msgstr "Кольори вершин"
+
+msgid "Internal Vertex Count"
+msgstr "Створити внутрішню вершину"
+
+msgid "Remote Path"
+msgstr "Віддалений шлях"
+
+msgid "Use Global Coordinates"
+msgstr "Глобальні координати"
+
+msgid "Update"
+msgstr "Оновити"
+
+msgid "Editor Settings"
+msgstr "Параметри редактора"
+
+msgid "Rest"
+msgstr "Відпочинок"
+
+msgid "Frame Coords"
+msgstr "Координати кадру"
+
+msgid "Tile Set"
+msgstr "Набір плитки"
+
+msgid "Bitmask"
+msgstr "Бітова маска"
+
+msgid "Shape Centered"
+msgstr "Центрована форма"
+
+msgid "Shape Visible"
+msgstr "Видимість форми"
+
+msgid "Visibility Mode"
+msgstr "Режим пріоритетності"
+
+msgid "Node Path"
+msgstr "Шлях до вузла"
+
+msgid "Attenuation Model"
+msgstr "Анімаційний вузол"
+
+msgid "Max dB"
+msgstr "Макс дБ"
+
+msgid "Emission Angle"
+msgstr "Кольори випромінювання"
+
+msgid "Degrees"
+msgstr "Градуси"
+
+msgid "Filter Attenuation dB"
+msgstr "Поглинання фільтра у дБ"
+
+msgid "Cutoff Hz"
+msgstr "Пропускання (у Гц)"
+
+msgid "dB"
+msgstr "дБ"
+
+msgid "Doppler"
+msgstr "Доплер"
+
+msgid "Tracking"
+msgstr "Стеження"
+
+msgid "Bone Name"
+msgstr "Назва кістки"
+
+msgid "Keep Aspect"
+msgstr "Зберегти пропорції"
+
+msgid "Cull Mask"
+msgstr "Маска Вибракування"
+
+msgid "Doppler Tracking"
+msgstr "Доріжка властивостей"
+
+msgid "Projection"
+msgstr "Проєкція"
+
+msgid "Frustum Offset"
+msgstr "Зсув обрізка"
+
+msgid "Near"
+msgstr "Близько"
+
+msgid "Far"
+msgstr "Далеко"
+
+msgid "Visibility AABB"
+msgstr "AABB видимості"
+
+msgid "Box Extents"
+msgstr "Розміри панелі"
+
+msgid "Ring Axis"
+msgstr "Вісь кільця"
+
+msgid "Ring Height"
+msgstr "Висота кільця"
+
+msgid "Ring Radius"
+msgstr "Радіус кільця"
+
+msgid "Ring Inner Radius"
+msgstr "Внутрішній радіус кільця"
+
+msgid "Rotate Y"
+msgstr "Обертання навколо Y"
+
+msgid "Disable Z"
+msgstr "Вимкнути Z"
+
+msgid "Flatness"
+msgstr "Пласкість"
+
+msgid "Albedo"
+msgstr "Альбедо"
+
+msgid "Emission"
+msgstr "Випромінювання"
+
+msgid "Parameters"
+msgstr "Параметри"
+
+msgid "Modulate"
+msgstr "Модулювати"
+
+msgid "Draw Passes"
+msgstr "Намалювати проходи"
+
+msgid "Passes"
+msgstr "Проходи"
+
+msgid "Thickness"
+msgstr "Товщина"
+
+msgid "Update Mode"
+msgstr "Режим повороту"
+
+msgid "Pixel Size"
+msgstr "Розмір у пікселях"
+
+msgid "Flags"
+msgstr "Прапорці"
+
+msgid "Shaded"
+msgstr "Відтінено"
+
+msgid "Double Sided"
+msgstr "Двобічний"
+
+msgid "No Depth Test"
+msgstr "Без перевірки глибини"
+
+msgid "Fixed Size"
+msgstr "Незмінний розмір"
+
+msgid "Alpha Cut"
+msgstr "Обрізання альфи"
+
+msgid "Render Priority"
+msgstr "Увімкнути пріоритетність"
+
+msgid "Text"
+msgstr "Текст"
+
+msgid "Font"
+msgstr "Шрифт"
+
+msgid "Uppercase"
+msgstr "ВЕРХНІЙ РЕГІСТР"
+
+msgid "Temperature"
+msgstr "Температура"
+
+msgid "Indirect Energy"
+msgstr "Опосередкована енергія"
+
+msgid "Negative"
+msgstr "Від'ємний"
+
+msgid "Specular"
+msgstr "Відбите"
+
+msgid "Bake Mode"
+msgstr "Режим запікання"
+
+msgid "Normal Bias"
+msgstr "Нормальний ухил"
+
+msgid "Reverse Cull Face"
+msgstr "Обернути поверхню відбраковування"
+
+msgid "Opacity"
+msgstr "Непрозорість"
+
+msgid "Blur"
+msgstr "Розмиття"
+
+msgid "Directional Shadow"
+msgstr "Спрямована тінь"
+
+msgid "Split 1"
+msgstr "Поділ 1"
+
+msgid "Split 2"
+msgstr "Поділ 2"
+
+msgid "Split 3"
+msgstr "Поділ 3"
+
+msgid "Blend Splits"
+msgstr "Поділи змішування"
+
+msgid "Shadow Mode"
+msgstr "Режим тіней"
+
+msgid "Spot"
+msgstr "Пляма"
+
+msgid "Angle Attenuation"
+msgstr "Затримування кута"
+
+msgid "Quality"
+msgstr "Якість"
+
+msgid "Bounces"
+msgstr "Відскоки"
+
+msgid "Interior"
+msgstr "Зсередини"
+
+msgid "Use Denoiser"
+msgstr "Використати усування шуму"
+
+msgid "Custom Sky"
+msgstr "Нетипове небо"
+
+msgid "Custom Color"
+msgstr "Нетиповий колір"
+
+msgid "Custom Energy"
+msgstr "Нетипова енергія"
+
+msgid "Subdiv"
+msgstr "Підподіл"
+
+msgid "Light Data"
+msgstr "З даними"
+
+msgid "Visibility"
+msgstr "Видимість"
+
+msgid "Visible"
+msgstr "Видимий"
+
+msgid "Rotation Mode"
+msgstr "Режим повороту"
+
+msgid "Uniformity"
+msgstr "Однорідність"
+
+msgid "Swing Span"
+msgstr "Діапазон гойдання"
+
+msgid "Twist Span"
+msgstr "Діапазон обертання"
+
+msgid "Relaxation"
+msgstr "Релаксація"
+
+msgid "Linear Limit"
+msgstr "Лінійне обмеження"
+
+msgid "Upper Distance"
+msgstr "Верхня відстань"
+
+msgid "Lower Distance"
+msgstr "Нижня відстань"
+
+msgid "Restitution"
+msgstr "Відновлення"
+
+msgid "Force Limit"
+msgstr "Примусове обмеження"
+
+msgid "Equilibrium Point"
+msgstr "Точка рівноваги"
+
+msgid "Upper Angle"
+msgstr "Верхній кут"
+
+msgid "Lower Angle"
+msgstr "Нижній кут"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Params"
+msgstr "Параметри"
+
+msgid "Max Impulse"
+msgstr "Макс. імпульс"
+
+msgid "Linear Motion"
+msgstr "Лінійний рух"
+
+msgid "Linear Ortho"
+msgstr "Лінійне орто"
+
+msgid "Angular Motion"
+msgstr "Кутовий рух"
+
+msgid "Angular Ortho"
+msgstr "Кутове орто"
+
+msgid "Body Offset"
+msgstr "Зміщення вмісту"
+
+msgid "Friction"
+msgstr "Функція"
+
+msgid "Bounce"
+msgstr "Відскакування"
+
+msgid "Axis Lock"
+msgstr "Вісь"
+
+msgid "Linear X"
+msgstr "Лінійний за X"
+
+msgid "Linear Y"
+msgstr "Лінійний за Y"
+
+msgid "Linear Z"
+msgstr "Лінійний за Z"
+
+msgid "Angular X"
+msgstr "Кутовий за X"
+
+msgid "Angular Y"
+msgstr "Кутовий за Y"
+
+msgid "Angular Z"
+msgstr "Кутовий за Z"
+
+msgid "Debug Shape"
+msgstr "Зневаджувач"
+
+msgid "Spring Length"
+msgstr "Довжина пружини"
+
+msgid "Per-Wheel Motion"
+msgstr "Рух за окремими колесами"
+
+msgid "Engine Force"
+msgstr "Сила рушія"
+
+msgid "Brake"
+msgstr "Гальма"
+
+msgid "Steering"
+msgstr "Керування"
+
+msgid "Wheel"
+msgstr "Колесо"
+
+msgid "Friction Slip"
+msgstr "Ковзання з тертям"
+
+msgid "Suspension"
+msgstr "Призупинення"
+
+msgid "Travel"
+msgstr "Подорож"
+
+msgid "Max Force"
+msgstr "Максимальна сила"
+
+msgid "Origin Offset"
+msgstr "Зсув початку координат"
+
+msgid "Box Projection"
+msgstr "Проєкція панелі"
+
+msgid "Enable Shadows"
+msgstr "Увімкнути тіні"
+
+msgid "Bones"
+msgstr "Кістки"
+
+msgid "Root Bone"
+msgstr "Коренева кістка"
+
+msgid "Tip Bone"
+msgstr "Кінчик кістки"
+
+msgid "Target"
+msgstr "Призначення"
+
+msgid "Override Tip Basis"
+msgstr "Перевизначити основу кінця"
+
+msgid "Magnet"
+msgstr "Магніт"
+
+msgid "Target Node"
+msgstr "Цільовий вузол"
+
+msgid "Min Distance"
+msgstr "Мін. відстань"
+
+msgid "Max Iterations"
+msgstr "Макс к-ть ітерацій"
+
+msgid "Active"
+msgstr "Активний"
+
+msgid "Pinned Points"
+msgstr "Закріплені Точки"
+
+msgid "Parent Collision Ignore"
+msgstr "Ігнорувати батьківські зіткнення"
+
+msgid "Simulation Precision"
+msgstr "Точність імітації"
+
+msgid "Total Mass"
+msgstr "Загальна маса"
+
+msgid "Pressure Coefficient"
+msgstr "Коефіцієнт тиску"
+
+msgid "Drag Coefficient"
+msgstr "Коефіцієнт опору"
+
+msgid "Track Physics Step"
+msgstr "Крок стеження за фізикою"
+
+msgid "Geometry"
+msgstr "Геометрія"
+
+msgid "Material Override"
+msgstr "Перевизначення"
+
+msgid "Material Overlay"
+msgstr "Накладання матеріалу"
+
+msgid "Extra Cull Margin"
+msgstr "Додаткове поле відбракування"
+
+msgid "Lightmap Scale"
+msgstr "Приготування карти освітлення"
+
+msgid "Dynamic Range"
+msgstr "Динамічний діапазон"
+
+msgid "Propagation"
+msgstr "Навігація"
+
+msgid "Pose"
+msgstr "Поза"
+
+msgid "World Scale"
+msgstr "Масштаб світу"
+
+msgid "Play Mode"
+msgstr "Режим гри"
+
+msgid "Sync"
+msgstr "Синхронізувати"
+
+msgid "Mix Mode"
+msgstr "Змішувати вузол"
+
+msgid "Fadein Time"
+msgstr "Час наростання"
+
+msgid "Fadeout Time"
+msgstr "Час згасання"
+
+msgid "Auto Restart"
+msgstr "Автоматичний перезапуск"
+
+msgid "Autorestart"
+msgstr "Автоматичний перезапуск"
+
+msgid "Random Delay"
+msgstr "Випадкова затримка"
+
+msgid "Xfade Time"
+msgstr "Час X-Fade"
+
+msgid "Root Node"
+msgstr "Кореневий вузол"
+
+msgid "Track"
+msgstr "Доріжка"
+
+msgid "Reset"
+msgstr "Скинути"
+
+msgid "Switch"
+msgstr "Перемкнутися"
+
+msgid "Switch Mode"
+msgstr "Перемкнути режим"
+
+msgid "Condition"
+msgstr "Умова"
+
+msgid "Expression"
+msgstr "Вираз"
+
+msgid "Current Animation"
+msgstr "Поточна анімація"
+
+msgid "Playback Options"
+msgstr "Параметри відтворення"
+
+msgid "Default Blend Time"
+msgstr "Типовий час змішування"
+
+msgid "Tree Root"
+msgstr "Корінь дерева"
+
+msgid "Anim Player"
+msgstr "Програвач анімації"
+
+msgid "Animation Path"
+msgstr "Шлях анімації"
+
+msgid "Zero Y"
+msgstr "Нуль за Y"
+
+msgid "Mix Target"
+msgstr "Призначення"
+
+msgid "Ratio"
+msgstr "Пропорція"
+
+msgid "Stretch Mode"
+msgstr "Режим виділення"
+
+msgid "Alignment"
+msgstr "Вирівнювання"
+
+msgid "Button Pressed"
+msgstr "Кнопку натиснуто"
+
+msgid "Action Mode"
+msgstr "Режим піктограм"
+
+msgid "Button Group"
+msgstr "Група кнопок"
+
+msgid "Clip Text"
+msgstr "Текст кліпу"
+
+msgid "Expand Icon"
+msgstr "Піктограма розгортання"
+
+msgid "Use Top Left"
+msgstr "Згори ліворуч"
+
+msgid "Indentation"
+msgstr "Відступ"
+
+msgid "Edit Alpha"
+msgstr "Редагувати прозорість"
+
+msgid "Deferred Mode"
+msgstr "Відкладений режим"
+
+msgid "Presets Visible"
+msgstr "Видимі набори"
+
+msgid "Constants"
+msgstr "Константи"
+
+msgid "Grow Direction"
+msgstr "Напрямки"
+
+msgid "Pivot Offset"
+msgstr "Відступ точки обертання"
+
+msgid "Stretch Ratio"
+msgstr "Співвідношення розтягування"
+
+msgid "Localization"
+msgstr "Локалізація"
+
+msgid "Tooltip"
+msgstr "Підказка"
+
+msgid "Focus"
+msgstr "Фокусування"
+
+msgid "Next"
+msgstr "Далі"
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Mouse"
+msgstr "Миша"
+
+msgid "Default Cursor Shape"
+msgstr "Типова форма курсора"
+
+msgid "Dialog"
+msgstr "Діалогове вікно"
+
+msgid "Autowrap"
+msgstr "Автозацикленість"
+
+msgid "Mode Overrides Title"
+msgstr "Режим перевизначення заголовків"
+
+msgid "Right Disconnects"
+msgstr "Праворуч роз'єднує"
+
+msgid "Zoom Min"
+msgstr "Мін. масштабу"
+
+msgid "Zoom Max"
+msgstr "Макс. масштабу"
+
+msgid "Zoom Step"
+msgstr "Крок масштабування"
+
+msgid "Show Zoom Label"
+msgstr "Показувати мітку масштабу"
+
+msgid "Selected"
+msgstr "Позначено"
+
+msgid "Title"
+msgstr "Заголовок"
+
+msgid "Select Mode"
+msgstr "Режим виділення"
+
+msgid "Allow Reselect"
+msgstr "Дозволити повторне позначення"
+
+msgid "Allow RMB Select"
+msgstr "Дозволити позначення правою кнопкою"
+
+msgid "Allow Search"
+msgstr "Дозволити пошук"
+
+msgid "Max Text Lines"
+msgstr "Макс. к-то рядків тексту"
+
+msgid "Auto Height"
+msgstr "Автоматична висота"
+
+msgid "Items"
+msgstr "Елементи"
+
+msgid "Max Columns"
+msgstr "Макс. кількість стовпчиків"
+
+msgid "Same Column Width"
+msgstr "Однакова ширина стовпчиків"
+
+msgid "Fixed Column Width"
+msgstr "Фіксована ширина стовпчика"
+
+msgid "Icon Mode"
+msgstr "Режим піктограм"
+
+msgid "Icon Scale"
+msgstr "Масштаб піктограм"
+
+msgid "Fixed Icon Size"
+msgstr "Фіксований розмір піктограм"
+
+msgid "Lines Skipped"
+msgstr "Рядки пропущено"
+
+msgid "Max Lines Visible"
+msgstr "Макс. к-то видимих рядків"
+
+msgid "Visible Characters"
+msgstr "Видимі символи"
+
+msgid "Max Length"
+msgstr "Максимальна довжина"
+
+msgid "Context Menu Enabled"
+msgstr "Увімкнено контекстне меню"
+
+msgid "Virtual Keyboard Enabled"
+msgstr "Увімкнено віртуальну клавіатуру"
+
+msgid "Clear Button Enabled"
+msgstr "Увімкнено кнопку очищення"
+
+msgid "Shortcut Keys Enabled"
+msgstr "Увімкнено клавіатурні скорочення"
+
+msgid "Middle Mouse Paste Enabled"
+msgstr "Увімкнено вставлення середньою кнопкою миші"
+
+msgid "Selecting Enabled"
+msgstr "Увімкнено позначення"
+
+msgid "Right Icon"
+msgstr "Права кнопка"
+
+msgid "Blink"
+msgstr "Блимання"
+
+msgid "Secret"
+msgstr "Пароль"
+
+msgid "Secret Character"
+msgstr "Символ пароля"
+
+msgid "Underline"
+msgstr "Підкреслений"
+
+msgid "Draw Center"
+msgstr "Малювати центр"
+
+msgid "Region Rect"
+msgstr "Прямокутник області"
+
+msgid "Patch Margin"
+msgstr "Встановити поле"
+
+msgid "Axis Stretch"
+msgstr "Розтягування вісі"
+
+msgid "Submenu Popup Delay"
+msgstr "Затримка показу контекстного підменю"
+
+msgid "Fill Mode"
+msgstr "Режим заповнення"
+
+msgid "Min Value"
+msgstr "Мін. значення"
+
+msgid "Max Value"
+msgstr "Макс. значення"
+
+msgid "Step"
+msgstr "Крок"
+
+msgid "Page"
+msgstr "Сторінка"
+
+msgid "Exp Edit"
+msgstr "Редагувати степінь"
+
+msgid "Rounded"
+msgstr "Округлений"
+
+msgid "Allow Greater"
+msgstr "Дозволити більше"
+
+msgid "Allow Lesser"
+msgstr "Дозволити менше"
+
+msgid "Border Color"
+msgstr "Колір рамки"
+
+msgid "Border Width"
+msgstr "Ширина смуг"
+
+msgid "Elapsed Time"
+msgstr "Витрачений час"
+
+msgid "Env"
+msgstr "Сер."
+
+msgid "Relative Index"
+msgstr "Відносний індекс"
+
+msgid "Scroll Active"
+msgstr "Активне гортання"
+
+msgid "Tab Size"
+msgstr "Розмір табуляції"
+
+msgid "Custom Effects"
+msgstr "Перемістити ефект шини"
+
+msgid "Meta Underlined"
+msgstr "Підкреслена Meta"
+
+msgid "Selection Enabled"
+msgstr "Увімкнено позначення"
+
+msgid "Custom Step"
+msgstr "Нетиповий вузол"
+
+msgid "Follow Focus"
+msgstr "Слідувати за фокусом"
+
+msgid "Scrollable"
+msgstr "З гортанням"
+
+msgid "Tick Count"
+msgstr "Вибрати колір"
+
+msgid "Split Offset"
+msgstr "Відступ поділу"
+
+msgid "Collapsed"
+msgstr "Згорнуто"
+
+msgid "Dragger Visibility"
+msgstr "Перемкнути видимість"
+
+msgid "Stretch Shrink"
+msgstr "Стягування розтягування"
+
+msgid "Current Tab"
+msgstr "Поточна вкладка"
+
+msgid "Tab Close Display Policy"
+msgstr "Правила показу закриття вкладок"
+
+msgid "Scrolling Enabled"
+msgstr "Гортання увімкнено"
+
+msgid "Tabs Visible"
+msgstr "Вкладки видимі"
+
+msgid "Fit Content Height"
+msgstr "Висота підбирання за вмістом"
+
+msgid "Draw"
+msgstr "Креслення"
+
+msgid "Syntax Highlighter"
+msgstr "Засіб підсвічування синтаксису"
+
+msgid "Hover"
+msgstr "Наведення"
+
+msgid "Focused"
+msgstr "Фокусоване"
+
+msgid "Click Mask"
+msgstr "Маска клацання"
+
+msgid "Radial Fill"
+msgstr "Радіальне заповнення"
+
+msgid "Initial Angle"
+msgstr "Початковий кут"
+
+msgid "Fill Degrees"
+msgstr "Градуси заповнення"
+
+msgid "Center Offset"
+msgstr "Центральний зсув"
+
+msgid "Nine Patch Stretch"
+msgstr "Розтягування за дев'ятьма позиціями"
+
+msgid "Under"
+msgstr "Нижче"
+
+msgid "Over"
+msgstr "Згори"
+
+msgid "Progress Offset"
+msgstr "Відступ поступу"
+
+msgid "Tint"
+msgstr "Затінення"
+
+msgid "Column Titles Visible"
+msgstr "Видимість заголовків стовпчиків"
+
+msgid "Hide Folding"
+msgstr "Приховати згортання"
+
+msgid "Hide Root"
+msgstr "Приховати кореневий"
+
+msgid "Drop Mode Flags"
+msgstr "Прапорці режиму скидання"
+
+msgid "Audio Track"
+msgstr "Доріжка"
+
+msgid "Paused"
+msgstr "Призупинено"
+
+msgid "Expand"
+msgstr "Розгорнути"
+
+msgid "Buffering Msec"
+msgstr "Буферизація (мс)"
+
+msgid "Self Modulate"
+msgstr "Самомодуляція"
+
+msgid "Light Mask"
+msgstr "Приготування карти освітлення"
+
+msgid "Z Index"
+msgstr "Індекс Z"
+
+msgid "Use Parent Material"
+msgstr "Батьківський матеріал"
+
+msgid "Download File"
+msgstr "Отримання файла"
+
+msgid "Download Chunk Size"
+msgstr "Завантаження"
+
+msgid "Body Size Limit"
+msgstr "Обмеження розміру вмісту"
+
+msgid "Max Redirects"
+msgstr "Макс. переспрямувань"
+
+msgid "Timeout"
+msgstr "Час очікування"
+
+msgid "Transfer Mode"
+msgstr "Режим передавання"
+
+msgid "Transfer Channel"
+msgstr "Канал перенесення"
+
+msgid "Editor Description"
+msgstr "Опис"
+
+msgid "Time Left"
+msgstr "Залишилось часу"
+
+msgid "Debug Collisions Hint"
+msgstr "Підказка діагностики зіткнень"
+
+msgid "Debug Navigation Hint"
+msgstr "Підказка діагностики навігації"
+
+msgid "Multiplayer Poll"
+msgstr "Опитування щодо декількох гравців"
+
+msgid "Shapes"
+msgstr "Форми"
+
+msgid "Shape Color"
+msgstr "Колір форми"
+
+msgid "Contact Color"
+msgstr "Вибрати колір"
+
+msgid "Geometry Color"
+msgstr "Колір геометрії"
+
+msgid "Draw 2D Outlines"
+msgstr "Створити контур"
+
+msgid "Anti Aliasing"
+msgstr "Згладжування"
+
+msgid "Atlas Size"
+msgstr "Розмір атласу"
+
+msgid "Enable Object Picking"
+msgstr "Увімкнути калькування"
+
+msgid "Menu"
+msgstr "Меню"
+
+msgid "Wait Time"
+msgstr "Намалювати плитку"
+
+msgid "Autostart"
+msgstr "Автозапуск"
+
+msgid "Viewport Path"
+msgstr "Шлях до панелі перегляду"
+
+msgid "Disable 3D"
+msgstr "Вимкнути тривимірність"
+
+msgid "Transparent BG"
+msgstr "Прозоре тло"
+
+msgid "Handle Input Locally"
+msgstr "Обробляти введення локально"
+
+msgid "Debug Draw"
+msgstr "Діагностика"
+
+msgid "Audio Listener"
+msgstr "Прослуховування звуку"
+
+msgid "Enable 2D"
+msgstr "Увімкнути двовимірність"
+
+msgid "Enable 3D"
+msgstr "Увімкнути тривимірність"
+
+msgid "Object Picking"
+msgstr "Вибір об'єктів"
+
+msgid "Disable Input"
+msgstr "Вимкнути введення"
+
+msgid "Render Target"
+msgstr "Призначення обробки"
+
+msgid "Clear Mode"
+msgstr "Очистити режим"
+
+msgid "Current Screen"
+msgstr "Поточний екран"
+
+msgid "Exclusive"
+msgstr "Виключна"
+
+msgid "Min Size"
+msgstr "Мін. розмір"
+
+msgid "Max Size"
+msgstr "Макс. розмір"
+
+msgid "Layer Names"
+msgstr "Назви шарів"
+
+msgid "2D Render"
+msgstr "Двовимірна обробка"
+
+msgid "3D Render"
+msgstr "Просторова обробка"
+
+msgid "2D Physics"
+msgstr "2D фізика"
+
+msgid "3D Physics"
+msgstr "3D фізика"
+
+msgid "Segments"
+msgstr "Сегменти"
+
+msgid "Parsed Geometry Type"
+msgstr "Оброблений тип геометрії"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "Б"
+
+msgid "Custom Solver Bias"
+msgstr "Нетиповий нахил розв'язування"
+
+msgid "Terrains"
+msgstr "Місцевості"
+
+msgid "Custom Data"
+msgstr "Спеціальні дані"
+
+msgid "Physics Layers"
+msgstr "Шари фізики"
+
+msgid "Scene"
+msgstr "Сцена"
+
+msgid "Transpose"
+msgstr "Транспонувати"
+
+msgid "Probability"
+msgstr "Ймовірність"
+
+msgid "Distance"
+msgstr "Відстань"
+
+msgid "Map Width"
+msgstr "Ширина карти"
+
+msgid "Map Depth"
+msgstr "Глибина"
+
+msgid "Map Data"
+msgstr "Дані карти"
+
+msgid "Item"
+msgstr "Елемент"
+
+msgid "Preview"
+msgstr "Попередній перегляд"
+
+msgid "Add UV2"
+msgstr "Додати UV2"
+
+msgid "Top Radius"
+msgstr "Радіус згори"
+
+msgid "Bottom Radius"
+msgstr "Внизу праворуч"
+
+msgid "Sky"
+msgstr "Небо"
+
+msgid "Top Color"
+msgstr "Колір верху"
+
+msgid "Horizon Color"
+msgstr "Колір горизонту"
+
+msgid "Ground"
+msgstr "Земля"
+
+msgid "Bottom Color"
+msgstr "Колір низу"
+
+msgid "Sun"
+msgstr "Сонце"
+
+msgid "Panorama"
+msgstr "Панорама"
+
+msgid "Ground Color"
+msgstr "Колір грунту"
+
+msgid "Fallback Environment"
+msgstr "Перегляд середовища"
+
+msgid "Plane"
+msgstr "Площина"
+
+msgid "Frames"
+msgstr "Кадри"
+
+msgid "Pause"
+msgstr "Пауза"
+
+msgid "Atlas"
+msgstr "Атлас"
+
+msgid "Filter Clip"
+msgstr "Обрізання фільтра"
+
+msgid "Format"
+msgstr "Формат"
+
+msgid "Mix Rate"
+msgstr "Змішувати вузол"
+
+msgid "Stereo"
+msgstr "Стерео"
+
+msgid "Exposure"
+msgstr "Експозиція"
+
+msgid "Auto Exposure"
+msgstr "Автоекспозиція"
+
+msgid "Camera Feed ID"
+msgstr "Ідентифікатор живлення камери"
+
+msgid "Camera Is Active"
+msgstr "Камера є активною"
+
+msgid "Light Mode"
+msgstr "Режим освітлення"
+
+msgid "Particles Animation"
+msgstr "Анімація частинок"
+
+msgid "Particles Anim Loop"
+msgstr "Цикл анімації частинок"
+
+msgid "Load Path"
+msgstr "Завантажити шаблон"
+
+msgid "Bake Resolution"
+msgstr "Половина роздільності"
+
+msgid "Bake Interval"
+msgstr "Інтервал запікання"
+
+msgid "Up Vector"
+msgstr "Вектор"
+
+msgid "Background"
+msgstr "Тло"
+
+msgid "Ambient Light"
+msgstr "Навколишнє світло"
+
+msgid "Source"
+msgstr "Джерело"
+
+msgid "Sky Contribution"
+msgstr "Внесок неба"
+
+msgid "Tonemap"
+msgstr "Переспрямування"
+
+msgid "White"
+msgstr "Білий"
+
+msgid "Fade In"
+msgstr "Наростання"
+
+msgid "Fade Out"
+msgstr "Згасання"
+
+msgid "Depth Tolerance"
+msgstr "Чутливість глибини"
+
+msgid "Detail"
+msgstr "Подробиці"
+
+msgid "Light Affect"
+msgstr "Вплив на світло"
+
+msgid "AO Channel Affect"
+msgstr "Вплив на канали AO"
+
+msgid "Glow"
+msgstr "Сяйво"
+
+msgid "Levels"
+msgstr "Рівні"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "Поєднання"
+
+msgid "Bloom"
+msgstr "Світіння"
+
+msgid "HDR Threshold"
+msgstr "Поріг HDR"
+
+msgid "HDR Scale"
+msgstr "Масштаб HDR"
+
+msgid "Fog"
+msgstr "Туман"
+
+msgid "Anisotropy"
+msgstr "Анізотропія"
+
+msgid "Adjustments"
+msgstr "Коригування"
+
+msgid "Brightness"
+msgstr "Яскравість"
+
+msgid "Saturation"
+msgstr "Насиченість"
+
+msgid "Color Correction"
+msgstr "Кольорова компенсація"
+
+msgid "Features"
+msgstr "Можливості"
+
+msgid "Extra Spacing"
+msgstr "Додатковий інтервал"
+
+msgid "Space"
+msgstr "Простір"
+
+msgid "Interpolation"
+msgstr "Інтерполяція"
+
+msgid "Raw Data"
+msgstr "Необроблені дані"
+
+msgid "Offsets"
+msgstr "Зміщення"
+
+msgid "Use HDR"
+msgstr "HDR"
+
+msgid "To"
+msgstr "До"
+
+msgid "Next Pass"
+msgstr "Наступна площина"
+
+msgid "Shader"
+msgstr "Шейдер"
+
+msgid "Depth Draw Mode"
+msgstr "Режим малювання глибини"
+
+msgid "Shading"
+msgstr "Затінювання"
+
+msgid "Diffuse Mode"
+msgstr "Режим розсіювання"
+
+msgid "Specular Mode"
+msgstr "Режим віддзеркалення"
+
+msgid "Disable Ambient Light"
+msgstr "Вимкнути розсіяне світло"
+
+msgid "Vertex Color"
+msgstr "Вершина"
+
+msgid "Metallic"
+msgstr "Метал"
+
+msgid "Texture Channel"
+msgstr "Канал текстур"
+
+msgid "Operator"
+msgstr "Оператор"
+
+msgid "Rim"
+msgstr "Обідок"
+
+msgid "Clearcoat"
+msgstr "Очистити"
+
+msgid "Ambient Occlusion"
+msgstr "Навколишня оклюзія"
+
+msgid "Min Layers"
+msgstr "Мін. к-ть шарів"
+
+msgid "Max Layers"
+msgstr "Макс. к-ть шарів"
+
+msgid "Flip Binormal"
+msgstr "Віддзеркалити бінормально"
+
+msgid "Subsurface Scattering"
+msgstr "Підповерхневе розсіювання"
+
+msgid "Refraction"
+msgstr "Заломлення"
+
+msgid "UV Layer"
+msgstr "УФ-шар"
+
+msgid "UV1"
+msgstr "UV"
+
+msgid "UV2"
+msgstr "UV"
+
+msgid "Shadows"
+msgstr "Тіні"
+
+msgid "Particles Anim"
+msgstr "Частинки"
+
+msgid "H Frames"
+msgstr "H-кадри"
+
+msgid "V Frames"
+msgstr "V-кадри"
+
+msgid "Grow"
+msgstr "Збільшити"
+
+msgid "Use Point Size"
+msgstr "Розмір крапки"
+
+msgid "Point Size"
+msgstr "Розмір крапки"
+
+msgid "Proximity Fade"
+msgstr "Режим пріоритетності"
+
+msgid "Lightmap Size Hint"
+msgstr "Підказка розміру карти освітлення"
+
+msgid "Base Texture"
+msgstr "Вилучити текстуру"
+
+msgid "Image Size"
+msgstr "Розмір зображення"
+
+msgid "Transform Format"
+msgstr "Формат перетворення"
+
+msgid "Instance Count"
+msgstr "Екземпляр"
+
+msgid "Source Group Name"
+msgstr "Назва групи джерел"
+
+msgid "Merge Size"
+msgstr "Об'єднати зі сцени"
+
+msgid "Max Error"
+msgstr "Помилка"
+
+msgid "Sample Distance"
+msgstr "Відстань дискретизації"
+
+msgid "Sample Max Error"
+msgstr "Зразок"
+
+msgid "Ledge Spans"
+msgstr "Розміри планки"
+
+msgid "Bundled"
+msgstr "З'єднане"
+
+msgid "Scale Curve"
+msgstr "Крива масштабування"
+
+msgid "Rough"
+msgstr "Грубо"
+
+msgid "Process Mode"
+msgstr "Режим переміщення"
+
+msgid "Radiance Size"
+msgstr "Розмір сяйва"
+
+msgid "Blend"
+msgstr "Змішати"
+
+msgid "Top Left"
+msgstr "Згори ліворуч"
+
+msgid "Top Right"
+msgstr "Згори праворуч"
+
+msgid "Bottom Right"
+msgstr "Внизу праворуч"
+
+msgid "Bottom Left"
+msgstr "Внизу ліворуч"
+
+msgid "Default Font"
+msgstr "Типовий шрифт"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Input Name"
+msgstr "Карта введення"
+
+msgid "Parameter Name"
+msgstr "Назва параметру"
+
+msgid "Constant"
+msgstr "Сталий"
+
+msgid "Texture Type"
+msgstr "TextureRegion"
+
+msgid "Function"
+msgstr "Функція"
+
+msgid "Hint"
+msgstr "Підказка"
+
+msgid "Default Value Enabled"
+msgstr "Увімкнено типове значення"
+
+msgid "Default Value"
+msgstr "Типове значення"
+
+msgid "Color Default"
+msgstr "Завантажити типовий"
+
+msgid "Use All Surfaces"
+msgstr "Використовувати всі поверхні"
+
+msgid "Surface Index"
+msgstr "Індекс поверхні"
+
+msgid "H Separation"
+msgstr "Гор. відокремлення"
+
+msgid "Underline Spacing"
+msgstr "Інтервал підкреслювання"
+
+msgid "Arrow"
+msgstr "Стрілка"
+
+msgid "Arrow Margin"
+msgstr "Поле стрілки"
+
+msgid "Hover Pressed"
+msgstr "Наведення, натиснуто"
+
+msgid "Checked Disabled"
+msgstr "Позначено, вимкнено"
+
+msgid "Unchecked"
+msgstr "Не позначено"
+
+msgid "Unchecked Disabled"
+msgstr "Не позначено, вимкнено"
+
+msgid "Radio Checked"
+msgstr "Варіант позначено"
+
+msgid "Radio Checked Disabled"
+msgstr "Варіант позначено, вимкнено"
+
+msgid "Shadow Offset X"
+msgstr "Зсув тіні за X"
+
+msgid "Shadow Offset Y"
+msgstr "Зсув тіні за Y"
+
+msgid "Clear Button Color"
+msgstr "Колір кнопки очищення"
+
+msgid "Clear"
+msgstr "Очистити"
+
+msgid "Tab"
+msgstr "Табуляція"
+
+msgid "Breakpoint"
+msgstr "Точка зупинки"
+
+msgid "Folded"
+msgstr "Згорнуто"
+
+msgid "Completion Lines"
+msgstr "Лінії завершення"
+
+msgid "Completion Max Width"
+msgstr "Макс. ширина завершення"
+
+msgid "Scroll Focus"
+msgstr "Фокус гортання"
+
+msgid "Grabber"
+msgstr "Захоплення"
+
+msgid "Increment"
+msgstr "Крок збільшення"
+
+msgid "Decrement"
+msgstr "Зменшення"
+
+msgid "Slider"
+msgstr "Повзунок"
+
+msgid "Tick"
+msgstr "Галочка"
+
+msgid "Title Font"
+msgstr "Шрифт титрів"
+
+msgid "Title Color"
+msgstr "Колір заголовка"
+
+msgid "Title Height"
+msgstr "Висота заголовка"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Parent Folder"
+msgstr "Батьківська тека"
+
+msgid "Reload"
+msgstr "Перезавантажити"
+
+msgid "Folder"
+msgstr "Тека"
+
+msgid "Separator"
+msgstr "Роздільник"
+
+msgid "Submenu"
+msgstr "Підменю"
+
+msgid "Font Separator"
+msgstr "Роздільник шрифтів"
+
+msgid "V Separation"
+msgstr "Верт. відокремлення"
+
+msgid "Resizer"
+msgstr "Засіб зміни розміру"
+
+msgid "Selected Focus"
+msgstr "Фокус позначення"
+
+msgid "Cursor"
+msgstr "Курсор"
+
+msgid "Title Button Normal"
+msgstr "Звичайна кнопка заголовка"
+
+msgid "Title Button Pressed"
+msgstr "Кнопку заголовка натиснуто"
+
+msgid "Title Button Hover"
+msgstr "Наведення на кнопку заголовка"
+
+msgid "Custom Button"
+msgstr "Нетипова кнопка"
+
+msgid "Custom Button Pressed"
+msgstr "Нетипову кнопку натиснуто"
+
+msgid "Custom Button Hover"
+msgstr "Наведення на нетипову кнопку"
+
+msgid "Select Arrow"
+msgstr "Стрілка позначення"
+
+msgid "Arrow Collapsed"
+msgstr "Стрілку згорнуто"
+
+msgid "Title Button Font"
+msgstr "Шрифт кнопки заголовка"
+
+msgid "Title Button Color"
+msgstr "Колір кнопки заголовка"
+
+msgid "Relationship Line Color"
+msgstr "Колір лінії зв'язку"
+
+msgid "Custom Button Font Highlight"
+msgstr "Підсвічений шрифт нетипової кнопки"
+
+msgid "Item Margin"
+msgstr "Поле пункту"
+
+msgid "Button Margin"
+msgstr "Поле кнопки"
+
+msgid "Draw Relationship Lines"
+msgstr "Малювати лінії зв'язку"
+
+msgid "Draw Guides"
+msgstr "Малювати напрямні"
+
+msgid "Scroll Border"
+msgstr "Рамка гортання"
+
+msgid "Scroll Speed"
+msgstr "Швидкість прокрутки"
+
+msgid "Icon Margin"
+msgstr "Поле піктограми"
+
+msgid "Tab Disabled"
+msgstr "Вкладку вимкнено"
+
+msgid "Menu Highlight"
+msgstr "Підсвічування меню"
+
+msgid "Side Margin"
+msgstr "Бічне поле"
+
+msgid "Label Width"
+msgstr "Ширина мітки"
+
+msgid "Add Preset"
+msgstr "Додати набір"
+
+msgid "Overbright Indicator"
+msgstr "Індикатор пересвічення"
+
+msgid "Color Hue"
+msgstr "Відтінок кольору"
+
+msgid "BG"
+msgstr "КТ"
+
+msgid "Preset FG"
+msgstr "Передній план набору"
+
+msgid "Preset BG"
+msgstr "Тло набору"
+
+msgid "Normal Font"
+msgstr "Звичайний шрифт"
+
+msgid "Bold Font"
+msgstr "Напівжирний шрифт"
+
+msgid "Italics Font"
+msgstr "Курсивний шрифт"
+
+msgid "Bold Italics Font"
+msgstr "Напівжирний курсивний шрифт"
+
+msgid "Mono Font"
+msgstr "Моноширинний шрифт"
+
+msgid "Table H Separation"
+msgstr "Гор. відокремлення у таблиці"
+
+msgid "Table V Separation"
+msgstr "Верт. відокремлення у таблиці"
+
+msgid "Margin Left"
+msgstr "Ліва межа"
+
+msgid "Margin Top"
+msgstr "Верхня межа"
+
+msgid "Margin Right"
+msgstr "Права межа"
+
+msgid "Margin Bottom"
+msgstr "Нижня межа"
+
+msgid "Autohide"
+msgstr "Автоприховування"
+
+msgid "Grid Minor"
+msgstr "Проміжна ґратка"
+
+msgid "Grid Major"
+msgstr "Основна ґратка"
+
+msgid "Selection Fill"
+msgstr "Заповнення позначеного"
+
+msgid "Selection Stroke"
+msgstr "Штрих позначеного"
+
+msgid "Activity"
+msgstr "Діяльність"
+
+msgid "Node"
+msgstr "Вузол"
+
+msgid "Playback Mode"
+msgstr "Режим відтворення"
+
+msgid "Random Pitch"
+msgstr "Випадковий тон"
+
+msgid "Buffer Length"
+msgstr "Розмір буфера"
+
+msgid "Wet"
+msgstr "мокрий"
+
+msgid "Voice"
+msgstr "Голос"
+
+msgid "Rate Hz"
+msgstr "Частота (Гц)"
+
+msgid "Depth (ms)"
+msgstr "Глибина (мс)"
+
+msgid "Level dB"
+msgstr "Рівень (дБ)"
+
+msgid "Pan"
+msgstr "Панорамування"
+
+msgid "Release (ms)"
+msgstr "Відпускання (мс)"
+
+msgid "Tap 1"
+msgstr "удар"
+
+msgid "Tap 2"
+msgstr "удар"
+
+msgid "Feedback"
+msgstr "Зворотній зв’язок"
+
+msgid "Low-pass"
+msgstr "Нижні частоти"
+
+msgid "Drive"
+msgstr "Диск"
+
+msgid "Post Gain"
+msgstr "Після"
+
+msgid "Resonance"
+msgstr "Резонанс"
+
+msgid "Threshold dB"
+msgstr "Поріг у дБ"
+
+msgid "FFT Size"
+msgstr "Розмір ШПФ"
+
+msgid "Msec"
+msgstr "мс"
+
+msgid "Room Size"
+msgstr "Розмір зали"
+
+msgid "High-pass"
+msgstr "Високі частоти"
+
+msgid "Time Pullout (ms)"
+msgstr "Відтягування часу (мс)"
+
+msgid "Surround"
+msgstr "Об'ємний 7.1"
+
+msgid "Bus Count"
+msgstr "Кількість шин"
+
+msgid "Feed"
+msgstr "Подача"
+
+msgid "Is Active"
+msgstr "Активний"
+
+msgid "Inverse Inertia"
+msgstr "Зворотна інерція"
+
+msgid "Total Linear Damp"
+msgstr "Загальне лінійне згасання"
+
+msgid "Total Gravity"
+msgstr "Загальне тяжіння"
+
+msgid "Exclude"
+msgstr "Виключити"
+
+msgid "Collide With Bodies"
+msgstr "Режим перешкоди"
+
+msgid "Shape RID"
+msgstr "RID форми"
+
+msgid "Default Gravity"
+msgstr "Типове тяжіння"
+
+msgid "Default Gravity Vector"
+msgstr "Типовий вектор тяжіння"
+
+msgid "Principal Inertia Axes"
+msgstr "Головні вісі інерції"
+
+msgid "Vertex"
+msgstr "Вершина"
+
+msgid "Fragment"
+msgstr "Фрагмент"
+
+msgid "Base Error"
+msgstr "Основна помилка"
+
+msgid "Cull"
+msgstr "Вибракування"
+
+msgid "Unshaded"
+msgstr "Без тіней"
+
+msgid "Ensure Correct Normals"
+msgstr "Забезпечити коректні нормалі"
+
+msgid "Render Loop Enabled"
+msgstr "Увімкнено цикл обробки"
+
+msgid "VRAM Compression"
+msgstr "Вираз"
+
+msgid "Lossless Compression"
+msgstr "Стискання без втрат"
+
+msgid "Force PNG"
+msgstr "Примусово записати"
+
+msgid "Shadow Atlas"
+msgstr "Новий атлас"
+
+msgid "Shader Cache"
+msgstr "Кеш шейдерів"
+
+msgid "Reflections"
+msgstr "Відбиття"
+
+msgid "Texture Array Reflections"
+msgstr "Центрувати на вибраному"
+
+msgid "Overrides"
+msgstr "Перевизначення"
+
+msgid "Buffer Size"
+msgstr "Розмір буфера"
+
+msgid "Shaders"
+msgstr "Шейдери"
+
+msgid "AR"
+msgstr "ar"
+
+msgid "Primary Interface"
+msgstr "Основний інтерфейс"

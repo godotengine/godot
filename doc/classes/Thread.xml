@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Thread" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A unit of execution in a process.
+	</brief_description>
+	<description>
+		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex] or [Semaphore] is advised if working with shared objects.
+		[b]Warning:[/b]
+		To ensure proper cleanup without crashes or deadlocks, when a [Thread]'s reference count reaches zero and it is therefore destroyed, the following conditions must be met:
+		- It must not have any [Mutex] objects locked.
+		- It must not be waiting on any [Semaphore] objects.
+		- [method wait_to_finish] should have been called on it.
+	</description>
+	<tutorials>
+		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+	</tutorials>
+	<methods>
+		<method name="get_id" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] has not started running or if [method wait_to_finish] has been called, this returns an empty string.
+			</description>
+		</method>
+		<method name="is_alive" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Thread] is currently running the provided function. This is useful for determining if [method wait_to_finish] can be called without blocking the calling thread.
+				To check if a [Thread] is joinable, use [method is_started].
+			</description>
+		</method>
+		<method name="is_started" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Thread] has been started. Once started, this will return [code]true[/code] until it is joined using [method wait_to_finish]. For checking if a [Thread] is still executing its task, use [method is_alive].
+			</description>
+		</method>
+		<method name="set_thread_safety_checks_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether the thread safety checks the engine normally performs in methods of certain classes (e.g., [Node]) should happen [b]on the current thread[/b].
+				The default, for every thread, is that they are enabled (as if called with [param enabled] being [code]true[/code]).
+				Those checks are conservative. That means that they will only succeed in considering a call thread-safe (and therefore allow it to happen) if the engine can guarantee such safety.
+				Because of that, there may be cases where the user may want to disable them ([param enabled] being [code]false[/code]) to make certain operations allowed again. By doing so, it becomes the user's responsibility to ensure thread safety (e.g., by using [Mutex]) for those objects that are otherwise protected by the engine.
+				[b]Note:[/b] This is an advanced usage of the engine. You are advised to use it only if you know what you are doing and there is no safer way.
+				[b]Note:[/b] This is useful for scripts running on either arbitrary [Thread] objects or tasks submitted to the [WorkerThreadPool]. It doesn't apply to code running during [Node] group processing, where the checks will be always performed.
+				[b]Note:[/b] Even in the case of having disabled the checks in a [WorkerThreadPool] task, there's no need to re-enable them at the end. The engine will do so.
+			</description>
+		</method>
+		<method name="start">
+			<return type="int" enum="Error" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="priority" type="int" enum="Thread.Priority" default="1" />
+			<description>
+				Starts a new [Thread] that calls [param callable].
+				If the method takes some arguments, you can pass them using [method Callable.bind].
+				The [param priority] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
+				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
+			</description>
+		</method>
+		<method name="wait_to_finish">
+			<return type="Variant" />
+			<description>
+				Joins the [Thread] and waits for it to finish. Returns the output of the [Callable] passed to [method start].
+				Should either be used when you want to retrieve the value returned from the method called by the [Thread] or before freeing the instance that contains the [Thread].
+				To determine if this can be called without blocking the calling thread, check if [method is_alive] is [code]false[/code].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PRIORITY_LOW" value="0" enum="Priority">
+			A thread running with lower priority than normally.
+		</constant>
+		<constant name="PRIORITY_NORMAL" value="1" enum="Priority">
+			A thread with a standard priority.
+		</constant>
+		<constant name="PRIORITY_HIGH" value="2" enum="Priority">
+			A thread running with higher priority than normally.
+		</constant>
+	</constants>
+</class>

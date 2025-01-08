@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFBufferView" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Represents a glTF buffer view.
+	</brief_description>
+	<description>
+		GLTFBufferView is a data structure representing a glTF [code]bufferView[/code] that would be found in the [code]"bufferViews"[/code] array. A buffer is a blob of binary data. A buffer view is a slice of a buffer that can be used to identify and extract data from the buffer.
+		Most custom uses of buffers only need to use the [member buffer], [member byte_length], and [member byte_offset]. The [member byte_stride] and [member indices] properties are for more advanced use cases such as interleaved mesh data encoded for the GPU.
+	</description>
+	<tutorials>
+		<link title="Buffers, BufferViews, and Accessors in Khronos glTF specification">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="load_buffer_view_data" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Loads the buffer view data from the buffer referenced by this buffer view in the given [GLTFState]. Interleaved data with a byte stride is not yet supported by this method. The data is returned as a [PackedByteArray].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="buffer" type="int" setter="set_buffer" getter="get_buffer" default="-1">
+			The index of the buffer this buffer view is referencing. If [code]-1[/code], this buffer view is not referencing any buffer.
+		</member>
+		<member name="byte_length" type="int" setter="set_byte_length" getter="get_byte_length" default="0">
+			The length, in bytes, of this buffer view. If [code]0[/code], this buffer view is empty.
+		</member>
+		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
+			The offset, in bytes, from the start of the buffer to the start of this buffer view.
+		</member>
+		<member name="byte_stride" type="int" setter="set_byte_stride" getter="get_byte_stride" default="-1">
+			The stride, in bytes, between interleaved data. If [code]-1[/code], this buffer view is not interleaved.
+		</member>
+		<member name="indices" type="bool" setter="set_indices" getter="get_indices" default="false">
+			[code]true[/code] if the GLTFBufferView's OpenGL GPU buffer type is an [code]ELEMENT_ARRAY_BUFFER[/code] used for vertex indices (integer constant [code]34963[/code]). [code]false[/code] if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
+		</member>
+		<member name="vertex_attributes" type="bool" setter="set_vertex_attributes" getter="get_vertex_attributes" default="false">
+			[code]true[/code] if the GLTFBufferView's OpenGL GPU buffer type is an [code]ARRAY_BUFFER[/code] used for vertex attributes (integer constant [code]34962[/code]). [code]false[/code] if the buffer type is any other value. See [url=https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md]Buffers, BufferViews, and Accessors[/url] for possible values. This property is set on import and used on export.
+		</member>
+	</members>
+</class>

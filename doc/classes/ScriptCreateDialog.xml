@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptCreateDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Godot editor's popup dialog for creating new [Script] files.
+	</brief_description>
+	<description>
+		The [ScriptCreateDialog] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Window.popup] methods.
+		[codeblocks]
+		[gdscript]
+		func _ready():
+		    var dialog = ScriptCreateDialog.new();
+		    dialog.config("Node", "res://new_node.gd") # For in-engine types.
+		    dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types.
+		    dialog.popup_centered()
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var dialog = new ScriptCreateDialog();
+		    dialog.Config("Node", "res://NewNode.cs"); // For in-engine types.
+		    dialog.Config("\"res://BaseNode.cs\"", "res://DerivedNode.cs"); // For script types.
+		    dialog.PopupCentered();
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="config">
+			<return type="void" />
+			<param index="0" name="inherits" type="String" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="built_in_enabled" type="bool" default="true" />
+			<param index="3" name="load_enabled" type="bool" default="true" />
+			<description>
+				Prefills required fields to configure the ScriptCreateDialog for use.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Create&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Attach Node Script&quot;" />
+	</members>
+	<signals>
+		<signal name="script_created">
+			<param index="0" name="script" type="Script" />
+			<description>
+				Emitted when the user clicks the OK button.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRHandTracker" inherits="XRPositionalTracker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A tracked hand in XR.
+	</brief_description>
+	<description>
+		A hand tracking system will create an instance of this object and add it to the [XRServer]. This tracking system will then obtain skeleton data, convert it to the Godot Humanoid hand skeleton and store this data on the [XRHandTracker] object.
+		Use [XRHandModifier3D] to animate a hand mesh using hand tracking data.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_hand_joint_angular_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Returns the angular velocity for the given hand joint.
+			</description>
+		</method>
+		<method name="get_hand_joint_flags" qualifiers="const">
+			<return type="int" enum="XRHandTracker.HandJointFlags" is_bitfield="true" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Returns flags about the validity of the tracking data for the given hand joint (see [enum XRHandTracker.HandJointFlags]).
+			</description>
+		</method>
+		<method name="get_hand_joint_linear_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Returns the linear velocity for the given hand joint.
+			</description>
+		</method>
+		<method name="get_hand_joint_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Returns the radius of the given hand joint.
+			</description>
+		</method>
+		<method name="get_hand_joint_transform" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<description>
+				Returns the transform for the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand_joint_angular_velocity">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<param index="1" name="angular_velocity" type="Vector3" />
+			<description>
+				Sets the angular velocity for the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand_joint_flags">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<param index="1" name="flags" type="int" enum="XRHandTracker.HandJointFlags" is_bitfield="true" />
+			<description>
+				Sets flags about the validity of the tracking data for the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand_joint_linear_velocity">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<param index="1" name="linear_velocity" type="Vector3" />
+			<description>
+				Sets the linear velocity for the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand_joint_radius">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the given hand joint.
+			</description>
+		</method>
+		<method name="set_hand_joint_transform">
+			<return type="void" />
+			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
+			<param index="1" name="transform" type="Transform3D" />
+			<description>
+				Sets the transform for the given hand joint.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="hand" type="int" setter="set_tracker_hand" getter="get_tracker_hand" overrides="XRPositionalTracker" enum="XRPositionalTracker.TrackerHand" default="1" />
+		<member name="hand_tracking_source" type="int" setter="set_hand_tracking_source" getter="get_hand_tracking_source" enum="XRHandTracker.HandTrackingSource" default="0">
+			The source of the hand tracking data.
+		</member>
+		<member name="has_tracking_data" type="bool" setter="set_has_tracking_data" getter="get_has_tracking_data" default="false">
+			If [code]true[/code], the hand tracking data is valid.
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="16" />
+	</members>
+	<constants>
+		<constant name="HAND_TRACKING_SOURCE_UNKNOWN" value="0" enum="HandTrackingSource">
+			The source of hand tracking data is unknown.
+		</constant>
+		<constant name="HAND_TRACKING_SOURCE_UNOBSTRUCTED" value="1" enum="HandTrackingSource">
+			The source of hand tracking data is unobstructed, meaning that an accurate method of hand tracking is used. These include optical hand tracking, data gloves, etc.
+		</constant>
+		<constant name="HAND_TRACKING_SOURCE_CONTROLLER" value="2" enum="HandTrackingSource">
+			The source of hand tracking data is a controller, meaning that joint positions are inferred from controller inputs.
+		</constant>
+		<constant name="HAND_TRACKING_SOURCE_NOT_TRACKED" value="3" enum="HandTrackingSource">
+			No hand tracking data is tracked, this either means the hand is obscured, the controller is turned off, or tracking is not supported for the current input type.
+		</constant>
+		<constant name="HAND_TRACKING_SOURCE_MAX" value="4" enum="HandTrackingSource">
+			Represents the size of the [enum HandTrackingSource] enum.
+		</constant>
+		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoint">
+			Palm joint.
+		</constant>
+		<constant name="HAND_JOINT_WRIST" value="1" enum="HandJoint">
+			Wrist joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_METACARPAL" value="2" enum="HandJoint">
+			Thumb metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_PHALANX_PROXIMAL" value="3" enum="HandJoint">
+			Thumb phalanx proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_PHALANX_DISTAL" value="4" enum="HandJoint">
+			Thumb phalanx distal joint.
+		</constant>
+		<constant name="HAND_JOINT_THUMB_TIP" value="5" enum="HandJoint">
+			Thumb tip joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_FINGER_METACARPAL" value="6" enum="HandJoint">
+			Index finger metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_FINGER_PHALANX_PROXIMAL" value="7" enum="HandJoint">
+			Index finger phalanx proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_FINGER_PHALANX_INTERMEDIATE" value="8" enum="HandJoint">
+			Index finger phalanx intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_FINGER_PHALANX_DISTAL" value="9" enum="HandJoint">
+			Index finger phalanx distal joint.
+		</constant>
+		<constant name="HAND_JOINT_INDEX_FINGER_TIP" value="10" enum="HandJoint">
+			Index finger tip joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_FINGER_METACARPAL" value="11" enum="HandJoint">
+			Middle finger metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_FINGER_PHALANX_PROXIMAL" value="12" enum="HandJoint">
+			Middle finger phalanx proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_FINGER_PHALANX_INTERMEDIATE" value="13" enum="HandJoint">
+			Middle finger phalanx intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_FINGER_PHALANX_DISTAL" value="14" enum="HandJoint">
+			Middle finger phalanx distal joint.
+		</constant>
+		<constant name="HAND_JOINT_MIDDLE_FINGER_TIP" value="15" enum="HandJoint">
+			Middle finger tip joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_FINGER_METACARPAL" value="16" enum="HandJoint">
+			Ring finger metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_FINGER_PHALANX_PROXIMAL" value="17" enum="HandJoint">
+			Ring finger phalanx proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_FINGER_PHALANX_INTERMEDIATE" value="18" enum="HandJoint">
+			Ring finger phalanx intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_FINGER_PHALANX_DISTAL" value="19" enum="HandJoint">
+			Ring finger phalanx distal joint.
+		</constant>
+		<constant name="HAND_JOINT_RING_FINGER_TIP" value="20" enum="HandJoint">
+			Ring finger tip joint.
+		</constant>
+		<constant name="HAND_JOINT_PINKY_FINGER_METACARPAL" value="21" enum="HandJoint">
+			Pinky finger metacarpal joint.
+		</constant>
+		<constant name="HAND_JOINT_PINKY_FINGER_PHALANX_PROXIMAL" value="22" enum="HandJoint">
+			Pinky finger phalanx proximal joint.
+		</constant>
+		<constant name="HAND_JOINT_PINKY_FINGER_PHALANX_INTERMEDIATE" value="23" enum="HandJoint">
+			Pinky finger phalanx intermediate joint.
+		</constant>
+		<constant name="HAND_JOINT_PINKY_FINGER_PHALANX_DISTAL" value="24" enum="HandJoint">
+			Pinky finger phalanx distal joint.
+		</constant>
+		<constant name="HAND_JOINT_PINKY_FINGER_TIP" value="25" enum="HandJoint">
+			Pinky finger tip joint.
+		</constant>
+		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoint">
+			Represents the size of the [enum HandJoint] enum.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_ORIENTATION_VALID" value="1" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's orientation data is valid.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_ORIENTATION_TRACKED" value="2" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's orientation is actively tracked. May not be set if tracking has been temporarily lost.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_POSITION_VALID" value="4" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's position data is valid.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_POSITION_TRACKED" value="8" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's position is actively tracked. May not be set if tracking has been temporarily lost.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_LINEAR_VELOCITY_VALID" value="16" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's linear velocity data is valid.
+		</constant>
+		<constant name="HAND_JOINT_FLAG_ANGULAR_VELOCITY_VALID" value="32" enum="HandJointFlags" is_bitfield="true">
+			The hand joint's angular velocity data is valid.
+		</constant>
+	</constants>
+</class>

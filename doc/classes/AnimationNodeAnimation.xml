@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeAnimation" inherits="AnimationRootNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An input animation for an [AnimationNodeBlendTree].
+	</brief_description>
+	<description>
+		A resource to add to an [AnimationNodeBlendTree]. Only has one output port using the [member animation] property. Used as an input for [AnimationNode]s that blend animations together.
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<members>
+		<member name="advance_on_start" type="bool" setter="set_advance_on_start" getter="is_advance_on_start" default="false">
+			If [code]true[/code], on receiving a request to play an animation from the start, the first frame is not drawn, but only processed, and playback starts from the next frame.
+			See also the notes of [method AnimationPlayer.play].
+		</member>
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;&quot;">
+			Animation to use as an output. It is one of the animations provided by [member AnimationTree.anim_player].
+		</member>
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode">
+			If [member use_custom_timeline] is [code]true[/code], override the loop settings of the original [Animation] resource with the value.
+			[b]Note:[/b] If the [member Animation.loop_mode] isn't set to looping, the [method Animation.track_set_interpolation_loop_wrap] option will not be respected. If you cannot get the expected behavior, consider duplicating the [Animation] resource and changing the loop settings.
+		</member>
+		<member name="play_mode" type="int" setter="set_play_mode" getter="get_play_mode" enum="AnimationNodeAnimation.PlayMode" default="0">
+			Determines the playback direction of the animation.
+		</member>
+		<member name="start_offset" type="float" setter="set_start_offset" getter="get_start_offset">
+			If [member use_custom_timeline] is [code]true[/code], offset the start position of the animation.
+			This is useful for adjusting which foot steps first in 3D walking animations.
+		</member>
+		<member name="stretch_time_scale" type="bool" setter="set_stretch_time_scale" getter="is_stretching_time_scale">
+			If [code]true[/code], scales the time so that the length specified in [member timeline_length] is one cycle.
+			This is useful for matching the periods of walking and running animations.
+			If [code]false[/code], the original animation length is respected. If you set the loop to [member loop_mode], the animation will loop in [member timeline_length].
+		</member>
+		<member name="timeline_length" type="float" setter="set_timeline_length" getter="get_timeline_length">
+			If [member use_custom_timeline] is [code]true[/code], offset the start position of the animation.
+		</member>
+		<member name="use_custom_timeline" type="bool" setter="set_use_custom_timeline" getter="is_using_custom_timeline" default="false">
+			If [code]true[/code], [AnimationNode] provides an animation based on the [Animation] resource with some parameters adjusted.
+		</member>
+	</members>
+	<constants>
+		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
+			Plays animation in forward direction.
+		</constant>
+		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
+			Plays animation in backward direction.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,415 @@
+ext.versions = [
+    androidGradlePlugin: '8.2.0',
+    compileSdk         : 34,
+    // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
+    minSdk             : 21,
+    // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
+    targetSdk          : 34,
+    buildTools         : '34.0.0',
+    kotlinVersion      : '1.9.20',
+    fragmentVersion    : '1.7.1',
+    nexusPublishVersion: '1.3.0',
+    javaVersion        : JavaVersion.VERSION_17,
+    // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
+    ndkVersion         : '23.2.8568313',
+    splashscreenVersion: '1.0.1'
+
+]
+
+ext.getExportPackageName = { ->
+    // Retrieve the app id from the project property set by the Godot build command.
+    String appId = project.hasProperty("export_package_name") ? project.property("export_package_name") : ""
+    // Check if the app id is valid, otherwise use the default.
+    if (appId == null || appId.isEmpty()) {
+        appId = "com.godot.game"
+    }
+    return appId
+}
+
+ext.getExportVersionCode = { ->
+    String versionCode = project.hasProperty("export_version_code") ? project.property("export_version_code") : ""
+    if (versionCode == null || versionCode.isEmpty()) {
+        versionCode = "1"
+    }
+    try {
+        return Integer.parseInt(versionCode)
+    } catch (NumberFormatException ignored) {
+        return 1
+    }
+}
+
+ext.getExportVersionName = { ->
+    String versionName = project.hasProperty("export_version_name") ? project.property("export_version_name") : ""
+    if (versionName == null || versionName.isEmpty()) {
+        versionName = "1.0"
+    }
+    return versionName
+}
+
+ext.getExportMinSdkVersion = { ->
+    String minSdkVersion = project.hasProperty("export_version_min_sdk") ? project.property("export_version_min_sdk") : ""
+    if (minSdkVersion == null || minSdkVersion.isEmpty()) {
+        minSdkVersion = "$versions.minSdk"
+    }
+    try {
+        return Integer.parseInt(minSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.minSdk
+    }
+}
+
+ext.getExportTargetSdkVersion = { ->
+    String targetSdkVersion = project.hasProperty("export_version_target_sdk") ? project.property("export_version_target_sdk") : ""
+    if (targetSdkVersion == null || targetSdkVersion.isEmpty()) {
+        targetSdkVersion = "$versions.targetSdk"
+    }
+    try {
+        return Integer.parseInt(targetSdkVersion)
+    } catch (NumberFormatException ignored) {
+        return versions.targetSdk
+    }
+}
+
+ext.getGodotEditorVersion = { ->
+    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
+    if (editorVersion == null || editorVersion.isEmpty()) {
+        // Try the library version first
+        editorVersion = getGodotLibraryVersionName()
+
+        if (editorVersion.isEmpty()) {
+            // Fallback value.
+            editorVersion = "custom_build"
+        }
+    }
+    return editorVersion
+}
+
+ext.getGodotLibraryVersionCode = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionCode
+}
+
+ext.getGodotLibraryVersionName = { ->
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = getGodotLibraryVersion()
+    return versionName
+}
+
+ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
+    // Attempt to read the version from the `version.py` file.
+    String libraryVersionName = ""
+    int libraryVersionCode = 0
+
+    File versionFile = new File("../../../version.py")
+    if (versionFile.isFile()) {
+        def map = [:]
+
+        List<String> lines = versionFile.readLines()
+        for (String line in lines) {
+            String[] keyValue = line.split("=")
+            String key = keyValue[0].trim()
+            String value = keyValue[1].trim().replaceAll("\"", "")
+
+            if (requiredKeys.contains(key)) {
+                if (!value.isEmpty()) {
+                    map[key] = value
+                }
+                requiredKeys.remove(key)
+            }
+        }
+
+        if (requiredKeys.empty) {
+            libraryVersionName = map.values().join(".")
+            try {
+                if (map.containsKey("status")) {
+                    int statusCode = 0
+                    String statusValue = map["status"]
+                    if (statusValue == null) {
+                        statusCode = 0
+                    } else if (statusValue.startsWith("dev")) {
+                        statusCode = 1
+                    } else if (statusValue.startsWith("alpha")) {
+                        statusCode = 2
+                    } else if (statusValue.startsWith("beta")) {
+                        statusCode = 3
+                    } else if (statusValue.startsWith("rc")) {
+                        statusCode = 4
+                    } else if (statusValue.startsWith("stable")) {
+                        statusCode = 5
+                    } else {
+                        statusCode = 0
+                    }
+
+                    libraryVersionCode = statusCode
+                }
+
+                if (map.containsKey("patch")) {
+                    libraryVersionCode += Integer.parseInt(map["patch"]) * 10
+                }
+
+                if (map.containsKey("minor")) {
+                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 1000)
+                }
+
+                if (map.containsKey("major")) {
+                    libraryVersionCode += (Integer.parseInt(map["major"]) * 100000)
+                }
+            } catch (NumberFormatException ignore) {
+                libraryVersionCode = 1
+            }
+        }
+    }
+
+    if (libraryVersionName.isEmpty()) {
+        // Fallback value in case we're unable to read the file.
+        libraryVersionName = "custom_build"
+    }
+
+    if (libraryVersionCode == 0) {
+        libraryVersionCode = 1
+    }
+
+    return [libraryVersionName, libraryVersionCode]
+}
+
+ext.getGodotLibraryVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status", "module_config"]
+    return generateGodotLibraryVersion(requiredKeys)
+}
+
+ext.getGodotPublishVersion = { ->
+    List<String> requiredKeys = ["major", "minor", "patch", "status"]
+    String versionName = ""
+    int versionCode = 1
+    (versionName, versionCode) = generateGodotLibraryVersion(requiredKeys)
+    if (!versionName.endsWith("stable")) {
+        versionName += "-SNAPSHOT"
+    }
+    return versionName
+}
+
+final String VALUE_SEPARATOR_REGEX = "\\|"
+
+// get the list of ABIs the project should be exported to
+ext.getExportEnabledABIs = { ->
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : ""
+    if (enabledABIs == null || enabledABIs.isEmpty()) {
+        enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
+    }
+    Set<String> exportAbiFilter = []
+    for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
+        if (!abi_name.trim().isEmpty()){
+            exportAbiFilter.add(abi_name)
+        }
+    }
+    return exportAbiFilter
+}
+
+ext.getExportPath = {
+    String exportPath = project.hasProperty("export_path") ? project.property("export_path") : ""
+    if (exportPath == null || exportPath.isEmpty()) {
+        exportPath = "."
+    }
+    return exportPath
+}
+
+ext.getExportFilename = {
+    String exportFilename = project.hasProperty("export_filename") ? project.property("export_filename") : ""
+    if (exportFilename == null || exportFilename.isEmpty()) {
+        exportFilename = "godot_android"
+    }
+    return exportFilename
+}
+
+ext.getExportEdition = {
+    String exportEdition = project.hasProperty("export_edition") ? project.property("export_edition") : ""
+    if (exportEdition == null || exportEdition.isEmpty()) {
+        exportEdition = "standard"
+    }
+    return exportEdition
+}
+
+ext.getExportBuildType = {
+    String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
+    if (exportBuildType == null || exportBuildType.isEmpty()) {
+        exportBuildType = "debug"
+    }
+    return exportBuildType
+}
+
+ext.getExportFormat = {
+    String exportFormat = project.hasProperty("export_format") ? project.property("export_format") : ""
+    if (exportFormat == null || exportFormat.isEmpty()) {
+        exportFormat = "apk"
+    }
+    return exportFormat
+}
+
+/**
+ * Parse the project properties for the 'plugins_maven_repos' property and return the list
+ * of maven repos.
+ */
+ext.getGodotPluginsMavenRepos = { ->
+    Set<String> mavenRepos = []
+
+    // Retrieve the list of maven repos.
+    if (project.hasProperty("plugins_maven_repos")) {
+        String mavenReposProperty = project.property("plugins_maven_repos")
+        if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
+            for (String mavenRepoUrl : mavenReposProperty.split(VALUE_SEPARATOR_REGEX)) {
+                mavenRepos += mavenRepoUrl.trim()
+            }
+        }
+    }
+
+    return mavenRepos
+}
+
+/**
+ * Parse the project properties for the 'plugins_remote_binaries' property and return
+ * it for inclusion in the build dependencies.
+ */
+ext.getGodotPluginsRemoteBinaries = { ->
+    Set<String> remoteDeps = []
+
+    // Retrieve the list of remote plugins binaries.
+    if (project.hasProperty("plugins_remote_binaries")) {
+        String remoteDepsList = project.property("plugins_remote_binaries")
+        if (remoteDepsList != null && !remoteDepsList.trim().isEmpty()) {
+            for (String dep: remoteDepsList.split(VALUE_SEPARATOR_REGEX)) {
+                remoteDeps += dep.trim()
+            }
+        }
+    }
+    return remoteDeps
+}
+
+/**
+ * Parse the project properties for the 'plugins_local_binaries' property and return
+ * their binaries for inclusion in the build dependencies.
+ */
+ext.getGodotPluginsLocalBinaries = { ->
+    Set<String> binDeps = []
+
+    // Retrieve the list of local plugins binaries.
+    if (project.hasProperty("plugins_local_binaries")) {
+        String pluginsList = project.property("plugins_local_binaries")
+        if (pluginsList != null && !pluginsList.trim().isEmpty()) {
+            for (String plugin : pluginsList.split(VALUE_SEPARATOR_REGEX)) {
+                binDeps += plugin.trim()
+            }
+        }
+    }
+
+    return binDeps
+}
+
+ext.getDebugKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("debug_keystore_file") ? project.property("debug_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.hasCustomDebugKeystore = { ->
+    File keystoreFile = new File(getDebugKeystoreFile())
+    return keystoreFile.isFile()
+}
+
+ext.getDebugKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("debug_keystore_password") ? project.property("debug_keystore_password") : ""
+    if (keystorePassword == null || keystorePassword.isEmpty()) {
+        keystorePassword = "android"
+    }
+    return keystorePassword
+}
+
+ext.getDebugKeyAlias = { ->
+    String keyAlias = project.hasProperty("debug_keystore_alias") ? project.property("debug_keystore_alias") : ""
+    if (keyAlias == null || keyAlias.isEmpty()) {
+        keyAlias = "androiddebugkey"
+    }
+    return keyAlias
+}
+
+ext.getReleaseKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("release_keystore_file") ? project.property("release_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.getReleaseKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("release_keystore_password") ? project.property("release_keystore_password") : ""
+    return keystorePassword
+}
+
+ext.getReleaseKeyAlias = { ->
+    String keyAlias = project.hasProperty("release_keystore_alias") ? project.property("release_keystore_alias") : ""
+    return keyAlias
+}
+
+ext.isAndroidStudio = { ->
+    return project.hasProperty('android.injected.invoked.from.ide')
+}
+
+ext.shouldZipAlign = { ->
+    String zipAlignFlag = project.hasProperty("perform_zipalign") ? project.property("perform_zipalign") : ""
+    if (zipAlignFlag == null || zipAlignFlag.isEmpty()) {
+        if (isAndroidStudio()) {
+            zipAlignFlag = "true"
+        } else {
+            zipAlignFlag = "false"
+        }
+    }
+    return Boolean.parseBoolean(zipAlignFlag)
+}
+
+ext.shouldSign = { ->
+    String signFlag = project.hasProperty("perform_signing") ? project.property("perform_signing") : ""
+    if (signFlag == null || signFlag.isEmpty()) {
+        if (isAndroidStudio()) {
+            signFlag = "true"
+        } else {
+            signFlag = "false"
+        }
+    }
+    return Boolean.parseBoolean(signFlag)
+}
+
+ext.shouldNotStrip = { ->
+    return isAndroidStudio() || project.hasProperty("doNotStrip")
+}
+
+/**
+ * Whether to use the legacy convention of compressing all .so files in the APK.
+ *
+ * For more background, see:
+ * - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+ * - https://stackoverflow.com/a/44704840
+ */
+ext.shouldUseLegacyPackaging = { ->
+    int minSdk = getExportMinSdkVersion()
+    if (minSdk < 23) {
+        // Enforce the default behavior for compatibility with device running api < 23
+        return true
+    }
+
+    String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
+    if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
+        return Boolean.parseBoolean(legacyPackagingFlag)
+    }
+
+    // Default behavior for minSdk >= 23
+    return false
+}
+
+ext.getAddonsDirectory = { ->
+    String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
+    return addonsDirectory
+}

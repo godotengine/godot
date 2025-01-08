@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextEffect" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A custom effect for a [RichTextLabel].
+	</brief_description>
+	<description>
+		A custom effect for a [RichTextLabel], which can be loaded in the [RichTextLabel] inspector or using [method RichTextLabel.install_effect].
+		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
+		[codeblocks]
+		[gdscript skip-lint]
+		# The RichTextEffect will be usable like this: `[example]Some text[/example]`
+		var bbcode = "example"
+		[/gdscript]
+		[csharp skip-lint]
+		// The RichTextEffect will be usable like this: `[example]Some text[/example]`
+		string bbcode = "example";
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
+	</description>
+	<tutorials>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
+		<link title="RichTextEffect test project (third-party)">https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
+	</tutorials>
+	<methods>
+		<method name="_process_custom_fx" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="char_fx" type="CharFXTransform" />
+			<description>
+				Override this method to modify properties in [param char_fx]. The method must return [code]true[/code] if the character could be transformed successfully. If the method returns [code]false[/code], it will skip transformation to avoid displaying broken text.
+			</description>
+		</method>
+	</methods>
+</class>

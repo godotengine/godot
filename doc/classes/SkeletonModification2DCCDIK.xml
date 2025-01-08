@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification2DCCDIK" inherits="SkeletonModification2D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A modification that uses CCDIK to manipulate a series of bones to reach a target in 2D.
+	</brief_description>
+	<description>
+		This [SkeletonModification2D] uses an algorithm called Cyclic Coordinate Descent Inverse Kinematics, or CCDIK, to manipulate a chain of bones in a [Skeleton2D] so it reaches a defined target.
+		CCDIK works by rotating a set of bones, typically called a "bone chain", on a single axis. Each bone is rotated to face the target from the tip (by default), which over a chain of bones allow it to rotate properly to reach the target. Because the bones only rotate on a single axis, CCDIK [i]can[/i] look more robotic than other IK solvers.
+		[b]Note:[/b] The CCDIK modifier has [code]ccdik_joints[/code], which are the data objects that hold the data for each joint in the CCDIK chain. This is different from a bone! CCDIK joints hold the data needed for each bone in the bone chain used by CCDIK.
+		CCDIK also fully supports angle constraints, allowing for more control over how a solution is met.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_ccdik_joint_bone2d_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the [Bone2D] node assigned to the CCDIK joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_bone_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the index of the [Bone2D] node assigned to the CCDIK joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_angle_invert" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns whether the CCDIK joint at [param joint_idx] uses an inverted joint constraint. See [method set_ccdik_joint_constraint_angle_invert] for details.
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_angle_max" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the maximum angle constraint for the joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_constraint_angle_min" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the minimum angle constraint for the joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="get_ccdik_joint_enable_constraint" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns whether angle constraints on the CCDIK joint at [param joint_idx] are enabled.
+			</description>
+		</method>
+		<method name="get_ccdik_joint_rotate_from_joint" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns whether the joint at [param joint_idx] is set to rotate from the joint, [code]true[/code], or to rotate from the tip, [code]false[/code]. The default is to rotate from the tip.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_bone2d_node">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="bone2d_nodepath" type="NodePath" />
+			<description>
+				Sets the [Bone2D] node assigned to the CCDIK joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="set_ccdik_joint_bone_index">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="bone_idx" type="int" />
+			<description>
+				Sets the bone index, [param bone_idx], of the CCDIK joint at [param joint_idx]. When possible, this will also update the [code]bone2d_node[/code] of the CCDIK joint based on data provided by the linked skeleton.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_angle_invert">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="invert" type="bool" />
+			<description>
+				Sets whether the CCDIK joint at [param joint_idx] uses an inverted joint constraint.
+				An inverted joint constraint only constraints the CCDIK joint to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_angle_max">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="angle_max" type="float" />
+			<description>
+				Sets the maximum angle constraint for the joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="set_ccdik_joint_constraint_angle_min">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="angle_min" type="float" />
+			<description>
+				Sets the minimum angle constraint for the joint at [param joint_idx].
+			</description>
+		</method>
+		<method name="set_ccdik_joint_enable_constraint">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="enable_constraint" type="bool" />
+			<description>
+				Determines whether angle constraints on the CCDIK joint at [param joint_idx] are enabled. When [code]true[/code], constraints will be enabled and taken into account when solving.
+			</description>
+		</method>
+		<method name="set_ccdik_joint_rotate_from_joint">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="rotate_from_joint" type="bool" />
+			<description>
+				Sets whether the joint at [param joint_idx] is set to rotate from the joint, [code]true[/code], or to rotate from the tip, [code]false[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ccdik_data_chain_length" type="int" setter="set_ccdik_data_chain_length" getter="get_ccdik_data_chain_length" default="0">
+			The number of CCDIK joints in the CCDIK modification.
+		</member>
+		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that is the target for the CCDIK modification. This node is what the CCDIK chain will attempt to rotate the bone chain to.
+		</member>
+		<member name="tip_nodepath" type="NodePath" setter="set_tip_node" getter="get_tip_node" default="NodePath(&quot;&quot;)">
+			The end position of the CCDIK chain. Typically, this should be a child of a [Bone2D] node attached to the final [Bone2D] in the CCDIK chain.
+		</member>
+	</members>
+</class>

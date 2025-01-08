@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Texture" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for all texture types.
+	</brief_description>
+	<description>
+		[Texture] is the base class for all texture types. Common texture types are [Texture2D] and [ImageTexture]. See also [Image].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

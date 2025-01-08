@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShaderMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A material defined by a custom [Shader] program and the values of its shader parameters.
+	</brief_description>
+	<description>
+		A material that uses a custom [Shader] program to render visual items (canvas items, meshes, skies, fog), or to process particles. Compared to other materials, [ShaderMaterial] gives deeper control over the generated shader code. For more information, see the shaders documentation index below.
+		Multiple [ShaderMaterial]s can use the same shader and configure different values for the shader uniforms.
+		[b]Note:[/b] For performance reasons, the [signal Resource.changed] signal is only emitted when the [member Resource.resource_name] changes. Only in editor, it is also emitted for [member shader] changes.
+	</description>
+	<tutorials>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_shader_parameter" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="param" type="StringName" />
+			<description>
+				Returns the current value set for this material of a uniform in the shader.
+			</description>
+		</method>
+		<method name="set_shader_parameter">
+			<return type="void" />
+			<param index="0" name="param" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Changes the value set for this material of a uniform in the shader.
+				[b]Note:[/b] [param param] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
+				[b]Note:[/b] Changes to the shader uniform will be effective on all instances using this [ShaderMaterial]. To prevent this, use per-instance uniforms with [method GeometryInstance3D.set_instance_shader_parameter] or duplicate the [ShaderMaterial] resource using [method Resource.duplicate]. Per-instance uniforms allow for better shader reuse and are therefore faster, so they should be preferred over duplicating the [ShaderMaterial] when possible.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">
+			The [Shader] program used to render this material.
+		</member>
+	</members>
+</class>

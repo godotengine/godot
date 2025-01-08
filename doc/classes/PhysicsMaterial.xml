@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsMaterial" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds physics-related properties of a surface, namely its roughness and bounciness.
+	</brief_description>
+	<description>
+		Holds physics-related properties of a surface, namely its roughness and bounciness. This class is used to apply these properties to a physics body.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent" default="false">
+			If [code]true[/code], subtracts the bounciness from the colliding object's bounciness instead of adding it.
+		</member>
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce" default="0.0">
+			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
+			[b]Note:[/b] Even with [member bounce] set to [code]1.0[/code], some energy will be lost over time due to linear and angular damping. To have a physics body that preserves all its energy over time, set [member bounce] to [code]1.0[/code], the body's linear damp mode to [b]Replace[/b] (if applicable), its linear damp to [code]0.0[/code], its angular damp mode to [b]Replace[/b] (if applicable), and its angular damp to [code]0.0[/code].
+		</member>
+		<member name="friction" type="float" setter="set_friction" getter="get_friction" default="1.0">
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
+		</member>
+		<member name="rough" type="bool" setter="set_rough" getter="is_rough" default="false">
+			If [code]true[/code], the physics engine will use the friction of the object marked as "rough" when two objects collide. If [code]false[/code], the physics engine will use the lowest friction of all colliding objects instead. If [code]true[/code] for both colliding objects, the physics engine will use the highest friction.
+		</member>
+	</members>
+</class>

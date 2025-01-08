@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorResourcePicker" inherits="HBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Godot editor's control for selecting [Resource] type properties.
+	</brief_description>
+	<description>
+		This [Control] node is used in the editor's Inspector dock to allow editing of [Resource] type properties. It provides options for creating, loading, saving and converting resources. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
+		[b]Note:[/b] This [Control] does not include any editor for the resource, as editing is controlled by the Inspector dock itself or sub-Inspectors.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_handle_menu_selected" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="id" type="int" />
+			<description>
+				This virtual method can be implemented to handle context menu items not handled by default. See [method _set_create_options].
+			</description>
+		</method>
+		<method name="_set_create_options" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="menu_node" type="Object" />
+			<description>
+				This virtual method is called when updating the context menu of [EditorResourcePicker]. Implement this method to override the "New ..." items with your own options. [param menu_node] is a reference to the [PopupMenu] node.
+				[b]Note:[/b] Implement [method _handle_menu_selected] to handle these custom items.
+			</description>
+		</method>
+		<method name="get_allowed_types" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all allowed types and subtypes corresponding to the [member base_type]. If the [member base_type] is empty, an empty list is returned.
+			</description>
+		</method>
+		<method name="set_toggle_pressed">
+			<return type="void" />
+			<param index="0" name="pressed" type="bool" />
+			<description>
+				Sets the toggle mode state for the main button. Works only if [member toggle_mode] is set to [code]true[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;&quot;">
+			The base type of allowed resource types. Can be a comma-separated list of several options.
+		</member>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
+			If [code]true[/code], the value can be selected and edited.
+		</member>
+		<member name="edited_resource" type="Resource" setter="set_edited_resource" getter="get_edited_resource">
+			The edited resource value.
+		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" default="false">
+			If [code]true[/code], the main button with the resource preview works in the toggle mode. Use [method set_toggle_pressed] to manually set the state.
+		</member>
+	</members>
+	<signals>
+		<signal name="resource_changed">
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				Emitted when the value of the edited resource was changed.
+			</description>
+		</signal>
+		<signal name="resource_selected">
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="inspect" type="bool" />
+			<description>
+				Emitted when the resource value was set and user clicked to edit it. When [param inspect] is [code]true[/code], the signal was caused by the context menu "Edit" or "Inspect" option.
+			</description>
+		</signal>
+	</signals>
+</class>

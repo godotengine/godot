@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Line2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D polyline that can optionally be textured.
+	</brief_description>
+	<description>
+		This node draws a 2D polyline, i.e. a shape consisting of several points connected by segments. [Line2D] is not a mathematical polyline, i.e. the segments are not infinitely thin. It is intended for rendering and it can be colored and optionally textured.
+		[b]Warning:[/b] Certain configurations may be impossible to draw nicely, such as very sharp angles. In these situations, the node uses fallback drawing logic to look decent.
+		[b]Note:[/b] [Line2D] is drawn using a 2D mesh.
+	</description>
+	<tutorials>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
+	</tutorials>
+	<methods>
+		<method name="add_point">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds a point with the specified [param position] relative to the polyline's own position. If no [param index] is provided, the new point will be added to the end of the points array.
+				If [param index] is given, the new point is inserted before the existing point identified by index [param index]. The indices of the points after the new point get increased by 1. The provided [param index] must not exceed the number of existing points in the polyline. See [method get_point_count].
+			</description>
+		</method>
+		<method name="clear_points">
+			<return type="void" />
+			<description>
+				Removes all points from the polyline, making it empty.
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of points in the polyline.
+			</description>
+		</method>
+		<method name="get_point_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the position of the point at index [param index].
+			</description>
+		</method>
+		<method name="remove_point">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the point at index [param index] from the polyline.
+			</description>
+		</method>
+		<method name="set_point_position">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="position" type="Vector2" />
+			<description>
+				Overwrites the position of the point at the given [param index] with the supplied [param position].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
+			If [code]true[/code], the polyline's border will be anti-aliased.
+			[b]Note:[/b] [Line2D] is not accelerated by batching when being anti-aliased.
+		</member>
+		<member name="begin_cap_mode" type="int" setter="set_begin_cap_mode" getter="get_begin_cap_mode" enum="Line2D.LineCapMode" default="0">
+			The style of the beginning of the polyline, if [member closed] is [code]false[/code]. Use [enum LineCapMode] constants.
+		</member>
+		<member name="closed" type="bool" setter="set_closed" getter="is_closed" default="false">
+			If [code]true[/code] and the polyline has more than 2 points, the last point and the first one will be connected by a segment.
+			[b]Note:[/b] The shape of the closing segment is not guaranteed to be seamless if a [member width_curve] is provided.
+			[b]Note:[/b] The joint between the closing segment and the first segment is drawn first and it samples the [member gradient] and the [member width_curve] at the beginning. This is an implementation detail that might change in a future version.
+		</member>
+		<member name="default_color" type="Color" setter="set_default_color" getter="get_default_color" default="Color(1, 1, 1, 1)">
+			The color of the polyline. Will not be used if a gradient is set.
+		</member>
+		<member name="end_cap_mode" type="int" setter="set_end_cap_mode" getter="get_end_cap_mode" enum="Line2D.LineCapMode" default="0">
+			The style of the end of the polyline, if [member closed] is [code]false[/code]. Use [enum LineCapMode] constants.
+		</member>
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
+			The gradient is drawn through the whole line from start to finish. The [member default_color] will not be used if this property is set.
+		</member>
+		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode" default="0">
+			The style of the connections between segments of the polyline. Use [enum LineJointMode] constants.
+		</member>
+		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
+			The points of the polyline, interpreted in local 2D coordinates. Segments are drawn between the adjacent points in this array.
+		</member>
+		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
+			The smoothness used for rounded joints and caps. Higher values result in smoother corners, but are more demanding to render and update.
+		</member>
+		<member name="sharp_limit" type="float" setter="set_sharp_limit" getter="get_sharp_limit" default="2.0">
+			Determines the miter limit of the polyline. Normally, when [member joint_mode] is set to [constant LINE_JOINT_SHARP], sharp angles fall back to using the logic of [constant LINE_JOINT_BEVEL] joints to prevent very long miters. Higher values of this property mean that the fallback to a bevel joint will happen at sharper angles.
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The texture used for the polyline. Uses [member texture_mode] for drawing style.
+		</member>
+		<member name="texture_mode" type="int" setter="set_texture_mode" getter="get_texture_mode" enum="Line2D.LineTextureMode" default="0">
+			The style to render the [member texture] of the polyline. Use [enum LineTextureMode] constants.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="10.0">
+			The polyline's width.
+		</member>
+		<member name="width_curve" type="Curve" setter="set_curve" getter="get_curve">
+			The polyline's width curve. The width of the polyline over its length will be equivalent to the value of the width curve over its domain. The width curve should be a unit [Curve].
+		</member>
+	</members>
+	<constants>
+		<constant name="LINE_JOINT_SHARP" value="0" enum="LineJointMode">
+			Makes the polyline's joints pointy, connecting the sides of the two segments by extending them until they intersect. If the rotation of a joint is too big (based on [member sharp_limit]), the joint falls back to [constant LINE_JOINT_BEVEL] to prevent very long miters.
+		</constant>
+		<constant name="LINE_JOINT_BEVEL" value="1" enum="LineJointMode">
+			Makes the polyline's joints bevelled/chamfered, connecting the sides of the two segments with a simple line.
+		</constant>
+		<constant name="LINE_JOINT_ROUND" value="2" enum="LineJointMode">
+			Makes the polyline's joints rounded, connecting the sides of the two segments with an arc. The detail of this arc depends on [member round_precision].
+		</constant>
+		<constant name="LINE_CAP_NONE" value="0" enum="LineCapMode">
+			Draws no line cap.
+		</constant>
+		<constant name="LINE_CAP_BOX" value="1" enum="LineCapMode">
+			Draws the line cap as a box, slightly extending the first/last segment.
+		</constant>
+		<constant name="LINE_CAP_ROUND" value="2" enum="LineCapMode">
+			Draws the line cap as a semicircle attached to the first/last segment.
+		</constant>
+		<constant name="LINE_TEXTURE_NONE" value="0" enum="LineTextureMode">
+			Takes the left pixels of the texture and renders them over the whole polyline.
+		</constant>
+		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
+			Tiles the texture over the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_ENABLED] or [constant CanvasItem.TEXTURE_REPEAT_MIRROR] for it to work properly.
+		</constant>
+		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
+			Stretches the texture across the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_DISABLED] for best results.
+		</constant>
+	</constants>
+</class>

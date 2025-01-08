@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRInterface" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for an XR interface implementation.
+	</brief_description>
+	<description>
+		This class needs to be implemented to make an AR or VR platform available to Godot and these should be implemented as C++ modules or GDExtension modules. Part of the interface is exposed to GDScript so you can detect, enable and configure an AR or VR platform.
+		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through [XRServer].
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_camera_feed_id">
+			<return type="int" />
+			<description>
+				If this is an AR interface that requires displaying a camera feed as the background, this method returns the feed ID in the [CameraServer] for this interface.
+			</description>
+		</method>
+		<method name="get_capabilities" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a combination of [enum Capabilities] flags providing information about the capabilities of this interface.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of this interface ([code]"OpenXR"[/code], [code]"OpenVR"[/code], [code]"OpenHMD"[/code], [code]"ARKit"[/code], etc.).
+			</description>
+		</method>
+		<method name="get_play_area" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns an array of vectors that represent the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+			</description>
+		</method>
+		<method name="get_projection_for_view">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="near" type="float" />
+			<param index="3" name="far" type="float" />
+			<description>
+				Returns the projection matrix for a view/eye.
+			</description>
+		</method>
+		<method name="get_render_target_size">
+			<return type="Vector2" />
+			<description>
+				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
+			</description>
+		</method>
+		<method name="get_supported_environment_blend_modes">
+			<return type="Array" />
+			<description>
+				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
+			</description>
+		</method>
+		<method name="get_system_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with extra system info. Interfaces are expected to return [code]XRRuntimeName[/code] and [code]XRRuntimeVersion[/code] providing info about the used XR runtime. Additional entries may be provided specific to an interface.
+				[b]Note:[/b]This information may only be available after [method initialize] was successfully called.
+			</description>
+		</method>
+		<method name="get_tracking_status" qualifiers="const">
+			<return type="int" enum="XRInterface.TrackingStatus" />
+			<description>
+				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
+			</description>
+		</method>
+		<method name="get_transform_for_view">
+			<return type="Transform3D" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="cam_transform" type="Transform3D" />
+			<description>
+				Returns the transform for a view/eye.
+				[param view] is the view/eye index.
+				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the [member Node3D.global_transform] of the current XROrigin3D.
+			</description>
+		</method>
+		<method name="get_view_count">
+			<return type="int" />
+			<description>
+				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="bool" />
+			<description>
+				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
+				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence.
+				[b]Note:[/b] You must enable the XR mode on the main viewport for any device that uses the main output of Godot, such as for mobile VR.
+				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively, you can add a separate viewport node to your scene and enable AR/VR on that viewport. It will be used to output to the HMD, leaving you free to do anything you like in the main window, such as using a separate camera as a spectator camera or rendering something completely different.
+				While currently not used, you can activate additional interfaces. You may wish to do this if you want to track controllers from other platforms. However, at this point in time only one interface can render to an HMD.
+			</description>
+		</method>
+		<method name="is_initialized" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this interface has been initialized.
+			</description>
+		</method>
+		<method name="is_passthrough_enabled" deprecated="Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if passthrough is enabled.
+			</description>
+		</method>
+		<method name="is_passthrough_supported" deprecated="Check that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is supported using [method get_supported_environment_blend_modes], instead.">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this interface supports passthrough.
+			</description>
+		</method>
+		<method name="set_environment_blend_mode">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
+			<description>
+				Sets the active environment blend mode.
+				[param mode] is the environment blend mode starting with the next frame.
+				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
+				[codeblock]
+				func _ready():
+				    var xr_interface = XRServer.find_interface("OpenXR")
+				    if xr_interface and xr_interface.is_initialized():
+				        var vp = get_viewport()
+				        vp.use_xr = true
+				        var acceptable_modes = [XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE]
+				        var modes = xr_interface.get_supported_environment_blend_modes()
+				        for mode in acceptable_modes:
+				            if mode in modes:
+				                xr_interface.set_environment_blend_mode(mode)
+				                break
+				[/codeblock]
+			</description>
+		</method>
+		<method name="set_play_area_mode">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+				[b]Note:[/b] Changing this after the interface has already been initialized can be jarring for the player, so it's recommended to recenter on the HMD with [method XRServer.center_on_hmd] (if switching to [constant XRInterface.XR_PLAY_AREA_STAGE]) or make the switch during a scene change.
+			</description>
+		</method>
+		<method name="start_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
+			<return type="bool" />
+			<description>
+				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
+				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
+			</description>
+		</method>
+		<method name="stop_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_OPAQUE], instead.">
+			<return type="void" />
+			<description>
+				Stops passthrough.
+			</description>
+		</method>
+		<method name="supports_play_area_mode">
+			<return type="bool" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
+			<description>
+				Call this to find out if a given play area mode is supported by this interface.
+			</description>
+		</method>
+		<method name="trigger_haptic_pulse">
+			<return type="void" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="tracker_name" type="StringName" />
+			<param index="2" name="frequency" type="float" />
+			<param index="3" name="amplitude" type="float" />
+			<param index="4" name="duration_sec" type="float" />
+			<param index="5" name="delay_sec" type="float" />
+			<description>
+				Triggers a haptic pulse on a device associated with this interface.
+				[param action_name] is the name of the action for this pulse.
+				[param tracker_name] is optional and can be used to direct the pulse to a specific device provided that device is bound to this haptic.
+				[param frequency] is the frequency of the pulse, set to [code]0.0[/code] to have the system use a default frequency.
+				[param amplitude] is the amplitude of the pulse between [code]0.0[/code] and [code]1.0[/code].
+				[param duration_sec] is the duration of the pulse in seconds.
+				[param delay_sec] is a delay in seconds before the pulse is given.
+			</description>
+		</method>
+		<method name="uninitialize">
+			<return type="void" />
+			<description>
+				Turns the interface off.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ar_is_anchor_detection_enabled" type="bool" setter="set_anchor_detection_is_enabled" getter="get_anchor_detection_is_enabled" default="false">
+			On an AR interface, [code]true[/code] if anchor detection is enabled.
+		</member>
+		<member name="environment_blend_mode" type="int" setter="set_environment_blend_mode" getter="get_environment_blend_mode" enum="XRInterface.EnvironmentBlendMode" default="0">
+			Specify how XR should blend in the environment. This is specific to certain AR and passthrough devices where camera images are blended in by the XR compositor.
+		</member>
+		<member name="interface_is_primary" type="bool" setter="set_primary" getter="is_primary" default="false">
+			[code]true[/code] if this is the primary interface.
+		</member>
+		<member name="xr_play_area_mode" type="int" setter="set_play_area_mode" getter="get_play_area_mode" enum="XRInterface.PlayAreaMode" default="0">
+			The play area mode for this interface.
+		</member>
+	</members>
+	<signals>
+		<signal name="play_area_changed">
+			<param index="0" name="mode" type="int" />
+			<description>
+				Emitted when the play area is changed. This can be a result of the player resetting the boundary or entering a new play area, the player changing the play area mode, the world scale changing or the player resetting their headset orientation.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="XR_NONE" value="0" enum="Capabilities">
+			No XR capabilities.
+		</constant>
+		<constant name="XR_MONO" value="1" enum="Capabilities">
+			This interface can work with normal rendering output (non-HMD based AR).
+		</constant>
+		<constant name="XR_STEREO" value="2" enum="Capabilities">
+			This interface supports stereoscopic rendering.
+		</constant>
+		<constant name="XR_QUAD" value="4" enum="Capabilities">
+			This interface supports quad rendering (not yet supported by Godot).
+		</constant>
+		<constant name="XR_VR" value="8" enum="Capabilities">
+			This interface supports VR.
+		</constant>
+		<constant name="XR_AR" value="16" enum="Capabilities">
+			This interface supports AR (video background and real world tracking).
+		</constant>
+		<constant name="XR_EXTERNAL" value="32" enum="Capabilities">
+			This interface outputs to an external device. If the main viewport is used, the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of [method get_render_target_size]). Using a separate viewport node frees up the main viewport for other purposes.
+		</constant>
+		<constant name="XR_NORMAL_TRACKING" value="0" enum="TrackingStatus">
+			Tracking is behaving as expected.
+		</constant>
+		<constant name="XR_EXCESSIVE_MOTION" value="1" enum="TrackingStatus">
+			Tracking is hindered by excessive motion (the player is moving faster than tracking can keep up).
+		</constant>
+		<constant name="XR_INSUFFICIENT_FEATURES" value="2" enum="TrackingStatus">
+			Tracking is hindered by insufficient features, it's too dark (for camera-based tracking), player is blocked, etc.
+		</constant>
+		<constant name="XR_UNKNOWN_TRACKING" value="3" enum="TrackingStatus">
+			We don't know the status of the tracking or this interface does not provide feedback.
+		</constant>
+		<constant name="XR_NOT_TRACKING" value="4" enum="TrackingStatus">
+			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
+		</constant>
+		<constant name="XR_PLAY_AREA_UNKNOWN" value="0" enum="PlayAreaMode">
+			Play area mode not set or not available.
+		</constant>
+		<constant name="XR_PLAY_AREA_3DOF" value="1" enum="PlayAreaMode">
+			Play area only supports orientation tracking, no positional tracking, area will center around player.
+		</constant>
+		<constant name="XR_PLAY_AREA_SITTING" value="2" enum="PlayAreaMode">
+			Player is in seated position, limited positional tracking, fixed guardian around player.
+		</constant>
+		<constant name="XR_PLAY_AREA_ROOMSCALE" value="3" enum="PlayAreaMode">
+			Player is free to move around, full positional tracking.
+		</constant>
+		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
+			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
+			Opaque blend mode. This is typically used for VR devices.
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_ADDITIVE" value="1" enum="EnvironmentBlendMode">
+			Additive blend mode. This is typically used for AR devices or VR devices with passthrough.
+		</constant>
+		<constant name="XR_ENV_BLEND_MODE_ALPHA_BLEND" value="2" enum="EnvironmentBlendMode">
+			Alpha blend mode. This is typically used for AR or VR devices with passthrough capabilities. The alpha channel controls how much of the passthrough is visible. Alpha of 0.0 means the passthrough is visible and this pixel works in ADDITIVE mode. Alpha of 1.0 means that the passthrough is not visible and this pixel works in OPAQUE mode.
+		</constant>
+	</constants>
+</class>

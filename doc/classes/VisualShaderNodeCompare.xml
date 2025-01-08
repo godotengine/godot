@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeCompare" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A comparison function for common types within the visual shader graph.
+	</brief_description>
+	<description>
+		Compares [code]a[/code] and [code]b[/code] of [member type] by [member function]. Returns a boolean scalar. Translates to [code]if[/code] instruction in shader code.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="condition" type="int" setter="set_condition" getter="get_condition" enum="VisualShaderNodeCompare.Condition" default="0">
+			Extra condition which is applied if [member type] is set to [constant CTYPE_VECTOR_3D].
+		</member>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeCompare.Function" default="0">
+			A comparison function. See [enum Function] for options.
+		</member>
+		<member name="type" type="int" setter="set_comparison_type" getter="get_comparison_type" enum="VisualShaderNodeCompare.ComparisonType" default="0">
+			The type to be used in the comparison. See [enum ComparisonType] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="CTYPE_SCALAR" value="0" enum="ComparisonType">
+			A floating-point scalar.
+		</constant>
+		<constant name="CTYPE_SCALAR_INT" value="1" enum="ComparisonType">
+			An integer scalar.
+		</constant>
+		<constant name="CTYPE_SCALAR_UINT" value="2" enum="ComparisonType">
+			An unsigned integer scalar.
+		</constant>
+		<constant name="CTYPE_VECTOR_2D" value="3" enum="ComparisonType">
+			A 2D vector type.
+		</constant>
+		<constant name="CTYPE_VECTOR_3D" value="4" enum="ComparisonType">
+			A 3D vector type.
+		</constant>
+		<constant name="CTYPE_VECTOR_4D" value="5" enum="ComparisonType">
+			A 4D vector type.
+		</constant>
+		<constant name="CTYPE_BOOLEAN" value="6" enum="ComparisonType">
+			A boolean type.
+		</constant>
+		<constant name="CTYPE_TRANSFORM" value="7" enum="ComparisonType">
+			A transform ([code]mat4[/code]) type.
+		</constant>
+		<constant name="CTYPE_MAX" value="8" enum="ComparisonType">
+			Represents the size of the [enum ComparisonType] enum.
+		</constant>
+		<constant name="FUNC_EQUAL" value="0" enum="Function">
+			Comparison for equality ([code]a == b[/code]).
+		</constant>
+		<constant name="FUNC_NOT_EQUAL" value="1" enum="Function">
+			Comparison for inequality ([code]a != b[/code]).
+		</constant>
+		<constant name="FUNC_GREATER_THAN" value="2" enum="Function">
+			Comparison for greater than ([code]a &gt; b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
+		</constant>
+		<constant name="FUNC_GREATER_THAN_EQUAL" value="3" enum="Function">
+			Comparison for greater than or equal ([code]a &gt;= b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
+		</constant>
+		<constant name="FUNC_LESS_THAN" value="4" enum="Function">
+			Comparison for less than ([code]a &lt; b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
+		</constant>
+		<constant name="FUNC_LESS_THAN_EQUAL" value="5" enum="Function">
+			Comparison for less than or equal ([code]a &lt;= b[/code]). Cannot be used if [member type] set to [constant CTYPE_BOOLEAN] or [constant CTYPE_TRANSFORM].
+		</constant>
+		<constant name="FUNC_MAX" value="6" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+		<constant name="COND_ALL" value="0" enum="Condition">
+			The result will be [code]true[/code] if all components in the vector satisfy the comparison condition.
+		</constant>
+		<constant name="COND_ANY" value="1" enum="Condition">
+			The result will be [code]true[/code] if any component in the vector satisfies the comparison condition.
+		</constant>
+		<constant name="COND_MAX" value="2" enum="Condition">
+			Represents the size of the [enum Condition] enum.
+		</constant>
+	</constants>
+</class>

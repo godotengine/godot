@@ -1,0 +1,118 @@
+# Thai translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-12-13 14:13+0000\n"
+"Last-Translator: รัชพล คิดการ <rutchaphon.far@gmail.com>\n"
+"Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
+"th/>\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.3-rc\n"
+
+msgid "Add current color as a preset."
+msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
+
+msgid "Open"
+msgstr "เปิด"
+
+msgid "Select Current Folder"
+msgstr "เลือกโฟลเดอร์ปัจจุบัน"
+
+msgid "Select This Folder"
+msgstr "เลือกโฟลเดอร์นี้"
+
+msgid "All Recognized"
+msgstr "ทุกนามสุกลที่รู้จัก"
+
+msgid "Open a File"
+msgstr "เปิดไฟล์"
+
+msgid "Open File(s)"
+msgstr "เปิดไฟล์"
+
+msgid "Open a Directory"
+msgstr "เปิดโฟลเดอร์"
+
+msgid "Open a File or Directory"
+msgstr "เปิดไฟล์หรือโฟลเดอร์"
+
+msgid "Save"
+msgstr "บันทึก"
+
+msgid "Save a File"
+msgstr "บันทึกไฟล์"
+
+msgid "Go to previous folder."
+msgstr "ไปยังโฟลเดอร์ก่อนหน้า"
+
+msgid "Go to next folder."
+msgstr "ไปยังโฟลเดอร์ถัดไป"
+
+msgid "Go to parent folder."
+msgstr "ไปยังโฟลเดอร์หลัก"
+
+msgid "Path:"
+msgstr "ตำแหน่ง:"
+
+msgid "Refresh files."
+msgstr "รีเฟรชไฟล์"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
+
+msgid "Directories & Files:"
+msgstr "ไฟล์และโฟลเดอร์:"
+
+msgid "File:"
+msgstr "ไฟล์:"
+
+msgid "Create Folder"
+msgstr "สร้างโฟลเดอร์"
+
+msgid "Name:"
+msgstr "ชื่อ:"
+
+msgid "Could not create folder."
+msgstr "ไม่สามารถสร้างโฟลเดอร์"
+
+msgid "Zoom Out"
+msgstr "ย่อ"
+
+msgid "Zoom Reset"
+msgstr "รีเซ็ตการซูม"
+
+msgid "Zoom In"
+msgstr "ขยาย"
+
+msgid "Cut"
+msgstr "ตัด"
+
+msgid "Copy"
+msgstr "คัดลอก"
+
+msgid "Paste"
+msgstr "วาง"
+
+msgid "Select All"
+msgstr "เลือกทั้งหมด"
+
+msgid "Clear"
+msgstr "เคลียร์"
+
+msgid "Undo"
+msgstr "ยกเลิกการกระทำ"
+
+msgid "Redo"
+msgstr "ทำซ้ำ"
+
+msgid "(Other)"
+msgstr "(อื่น)"

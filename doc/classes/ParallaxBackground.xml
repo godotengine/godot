@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ParallaxBackground" inherits="CanvasLayer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node used to create a parallax scrolling background.
+	</brief_description>
+	<description>
+		A ParallaxBackground uses one or more [ParallaxLayer] child nodes to create a parallax effect. Each [ParallaxLayer] can move at a different speed using [member ParallaxLayer.motion_offset]. This creates an illusion of depth in a 2D game. If not used with a [Camera2D], you must manually calculate the [member scroll_offset].
+		[b]Note:[/b] Each [ParallaxBackground] is drawn on one specific [Viewport] and cannot be shared between multiple [Viewport]s, see [member CanvasLayer.custom_viewport]. When using multiple [Viewport]s, for example in a split-screen game, you need create an individual [ParallaxBackground] for each [Viewport] you want it to be drawn on.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="layer" type="int" setter="set_layer" getter="get_layer" overrides="CanvasLayer" default="-100" />
+		<member name="scroll_base_offset" type="Vector2" setter="set_scroll_base_offset" getter="get_scroll_base_offset" default="Vector2(0, 0)">
+			The base position offset for all [ParallaxLayer] children.
+		</member>
+		<member name="scroll_base_scale" type="Vector2" setter="set_scroll_base_scale" getter="get_scroll_base_scale" default="Vector2(1, 1)">
+			The base motion scale for all [ParallaxLayer] children.
+		</member>
+		<member name="scroll_ignore_camera_zoom" type="bool" setter="set_ignore_camera_zoom" getter="is_ignore_camera_zoom" default="false">
+			If [code]true[/code], elements in [ParallaxLayer] child aren't affected by the zoom level of the camera.
+		</member>
+		<member name="scroll_limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin" default="Vector2(0, 0)">
+			Top-left limits for scrolling to begin. If the camera is outside of this limit, the background will stop scrolling. Must be lower than [member scroll_limit_end] to work.
+		</member>
+		<member name="scroll_limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end" default="Vector2(0, 0)">
+			Bottom-right limits for scrolling to end. If the camera is outside of this limit, the background will stop scrolling. Must be higher than [member scroll_limit_begin] to work.
+		</member>
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
+			The ParallaxBackground's scroll value. Calculated automatically when using a [Camera2D], but can be used to manually manage scrolling when no camera is present.
+		</member>
+	</members>
+</class>

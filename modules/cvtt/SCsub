@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_cvtt = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/cvtt/"
+thirdparty_sources = [
+    "ConvectionKernels_API.cpp",
+    "ConvectionKernels_ETC.cpp",
+    "ConvectionKernels_BC67.cpp",
+    "ConvectionKernels_IndexSelector.cpp",
+    "ConvectionKernels_BC6H_IO.cpp",
+    "ConvectionKernels_S3TC.cpp",
+    "ConvectionKernels_BC7_PrioData.cpp",
+    "ConvectionKernels_SingleFile.cpp",
+    "ConvectionKernels_BCCommon.cpp",
+    "ConvectionKernels_Util.cpp",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_cvtt.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_cvtt.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_cvtt.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

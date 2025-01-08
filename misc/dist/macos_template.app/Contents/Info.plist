@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>$binary</string>
+	<key>CFBundleName</key>
+	<string>$name</string>
+	<key>CFBundleDisplayName</key>
+	<string>$name</string>
+	<key>CFBundleIconFile</key>
+	<string>icon.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>$bundle_identifier</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$short_version</string>
+	<key>CFBundleSignature</key>
+	<string>$signature</string>
+	<key>CFBundleVersion</key>
+	<string>$version</string>
+	<key>DTPlatformBuild</key>
+	<string>$platfbuild</string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>DTPlatformVersion</key>
+	<string>$sdkver</string>
+	<key>DTSDKBuild</key>
+	<string>$sdkbuild</string>
+	<key>DTSDKName</key>
+	<string>$sdkname</string>
+	<key>DTXcode</key>
+	<string>$xcodever</string>
+	<key>DTXcodeBuild</key>
+	<string>$xcodebuild</string>
+$usage_descriptions
+	<key>NSHumanReadableCopyright</key>
+	<string>$copyright</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.$app_category</string>
+	<key>LSArchitecturePriority</key>
+	<array>
+		<string>arm64</string>
+		<string>x86_64</string>
+	</array>
+	<key>LSMinimumSystemVersionByArchitecture</key>
+	<dict>
+		<key>arm64</key>
+		<string>$min_version_arm64</string>
+		<key>x86_64</key>
+		<string>$min_version_x86_64</string>
+	</dict>
+	<key>NSHighResolutionCapable</key>
+$highres
+$additional_plist_content
+</dict>
+</plist>

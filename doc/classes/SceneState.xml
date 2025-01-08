@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneState" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides access to a scene file's information.
+	</brief_description>
+	<description>
+		Maintains a list of resources, nodes, exported and overridden properties, and built-in scripts associated with a scene. They cannot be modified from a [SceneState], only accessed. Useful for peeking into what a [PackedScene] contains without instantiating it.
+		This class cannot be instantiated directly, it is retrieved for a given scene as the result of [method PackedScene.get_state].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_connection_binds" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the list of bound parameters for the signal at [param idx].
+			</description>
+		</method>
+		<method name="get_connection_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of signal connections in the scene.
+				The [code]idx[/code] argument used to query connection metadata in other [code]get_connection_*[/code] methods in the interval [code][0, get_connection_count() - 1][/code].
+			</description>
+		</method>
+		<method name="get_connection_flags" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the connection flags for the signal at [param idx]. See [enum Object.ConnectFlags] constants.
+			</description>
+		</method>
+		<method name="get_connection_method" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the method connected to the signal at [param idx].
+			</description>
+		</method>
+		<method name="get_connection_signal" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the name of the signal at [param idx].
+			</description>
+		</method>
+		<method name="get_connection_source" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the path to the node that owns the signal at [param idx], relative to the root node.
+			</description>
+		</method>
+		<method name="get_connection_target" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the path to the node that owns the method connected to the signal at [param idx], relative to the root node.
+			</description>
+		</method>
+		<method name="get_connection_unbinds" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the number of unbound parameters for the signal at [param idx].
+			</description>
+		</method>
+		<method name="get_node_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of nodes in the scene.
+				The [code]idx[/code] argument used to query node data in other [code]get_node_*[/code] methods in the interval [code][0, get_node_count() - 1][/code].
+			</description>
+		</method>
+		<method name="get_node_groups" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the list of group names associated with the node at [param idx].
+			</description>
+		</method>
+		<method name="get_node_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the node's index, which is its position relative to its siblings. This is only relevant and saved in scenes for cases where new nodes are added to an instantiated or inherited scene among siblings from the base scene. Despite the name, this index is not related to the [param idx] argument used here and in other methods.
+			</description>
+		</method>
+		<method name="get_node_instance" qualifiers="const">
+			<return type="PackedScene" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns a [PackedScene] for the node at [param idx] (i.e. the whole branch starting at this node, with its child nodes and resources), or [code]null[/code] if the node is not an instance.
+			</description>
+		</method>
+		<method name="get_node_instance_placeholder" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the path to the represented scene file if the node at [param idx] is an [InstancePlaceholder].
+			</description>
+		</method>
+		<method name="get_node_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the name of the node at [param idx].
+			</description>
+		</method>
+		<method name="get_node_owner_path" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the path to the owner of the node at [param idx], relative to the root node.
+			</description>
+		</method>
+		<method name="get_node_path" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="for_parent" type="bool" default="false" />
+			<description>
+				Returns the path to the node at [param idx].
+				If [param for_parent] is [code]true[/code], returns the path of the [param idx] node's parent instead.
+			</description>
+		</method>
+		<method name="get_node_property_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the number of exported or overridden properties for the node at [param idx].
+				The [code]prop_idx[/code] argument used to query node property data in other [code]get_node_property_*[/code] methods in the interval [code][0, get_node_property_count() - 1][/code].
+			</description>
+		</method>
+		<method name="get_node_property_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="prop_idx" type="int" />
+			<description>
+				Returns the name of the property at [param prop_idx] for the node at [param idx].
+			</description>
+		</method>
+		<method name="get_node_property_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="prop_idx" type="int" />
+			<description>
+				Returns the value of the property at [param prop_idx] for the node at [param idx].
+			</description>
+		</method>
+		<method name="get_node_type" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the type of the node at [param idx].
+			</description>
+		</method>
+		<method name="is_node_instance_placeholder" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the node at [param idx] is an [InstancePlaceholder].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], blocks edits to the scene state.
+		</constant>
+		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], provides inherited scene resources to the local scene.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
+			If passed to [method PackedScene.instantiate], it's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
+			[b]Note:[/b] Only available in editor builds.
+		</constant>
+	</constants>
+</class>

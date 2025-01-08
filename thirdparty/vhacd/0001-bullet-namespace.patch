@@ -1,0 +1,213 @@
+diff --git a/thirdparty/vhacd/inc/btAlignedAllocator.h b/thirdparty/vhacd/inc/btAlignedAllocator.h
+index 11f6e12dc..94e71d512 100644
+--- a/thirdparty/vhacd/inc/btAlignedAllocator.h
++++ b/thirdparty/vhacd/inc/btAlignedAllocator.h
+@@ -21,6 +21,11 @@ subject to the following restrictions:
+ ///that is better portable and more predictable
+ 
+ #include "btScalar.h"
++
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ //#define BT_DEBUG_MEMORY_ALLOCATIONS 1
+ #ifdef BT_DEBUG_MEMORY_ALLOCATIONS
+ 
+@@ -101,4 +106,8 @@ public:
+     friend bool operator==(const self_type&, const self_type&) { return true; }
+ };
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_ALIGNED_ALLOCATOR
+diff --git a/thirdparty/vhacd/inc/btAlignedObjectArray.h b/thirdparty/vhacd/inc/btAlignedObjectArray.h
+index e6620adf6..1ce03d21b 100644
+--- a/thirdparty/vhacd/inc/btAlignedObjectArray.h
++++ b/thirdparty/vhacd/inc/btAlignedObjectArray.h
+@@ -38,6 +38,10 @@ subject to the following restrictions:
+ #include <new> //for placement new
+ #endif //BT_USE_PLACEMENT_NEW
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ ///The btAlignedObjectArray template class uses a subset of the stl::vector interface for its methods
+ ///It is developed to replace stl::vector to avoid portability issues, including STL alignment issues to add SIMD/SSE data
+ template <typename T>
+@@ -445,4 +449,8 @@ public:
+     }
+ };
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_OBJECT_ARRAY__
+diff --git a/thirdparty/vhacd/inc/btConvexHullComputer.h b/thirdparty/vhacd/inc/btConvexHullComputer.h
+index 3c5075c2c..04bb96f64 100644
+--- a/thirdparty/vhacd/inc/btConvexHullComputer.h
++++ b/thirdparty/vhacd/inc/btConvexHullComputer.h
+@@ -18,6 +18,10 @@ subject to the following restrictions:
+ #include "btAlignedObjectArray.h"
+ #include "btVector3.h"
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ /// Convex hull implementation based on Preparata and Hong
+ /// See http://code.google.com/p/bullet/issues/detail?id=275
+ /// Ole Kniemeyer, MAXON Computer GmbH
+@@ -94,4 +98,8 @@ public:
+     }
+ };
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_CONVEX_HULL_COMPUTER_H
+diff --git a/thirdparty/vhacd/inc/btMinMax.h b/thirdparty/vhacd/inc/btMinMax.h
+index 40b0ceb6e..9bc1e1c77 100644
+--- a/thirdparty/vhacd/inc/btMinMax.h
++++ b/thirdparty/vhacd/inc/btMinMax.h
+@@ -17,6 +17,10 @@ subject to the following restrictions:
+ 
+ #include "btScalar.h"
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ template <class T>
+ SIMD_FORCE_INLINE const T& btMin(const T& a, const T& b)
+ {
+@@ -62,4 +66,8 @@ SIMD_FORCE_INLINE void btClamp(T& a, const T& lb, const T& ub)
+     }
+ }
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_GEN_MINMAX_H
+diff --git a/thirdparty/vhacd/inc/btScalar.h b/thirdparty/vhacd/inc/btScalar.h
+index b814474bd..617fd7c44 100644
+--- a/thirdparty/vhacd/inc/btScalar.h
++++ b/thirdparty/vhacd/inc/btScalar.h
+@@ -28,11 +28,19 @@ subject to the following restrictions:
+ /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
+ #define BT_BULLET_VERSION 279
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ inline int32_t btGetVersion()
+ {
+     return BT_BULLET_VERSION;
+ }
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #if defined(DEBUG) || defined(_DEBUG)
+ #define BT_DEBUG
+ #endif
+@@ -199,6 +207,10 @@ inline int32_t btGetVersion()
+ #endif //__CELLOS_LV2__
+ #endif
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ ///The btScalar type abstracts floating point numbers, to easily switch between double and single floating point precision.
+ #if defined(BT_USE_DOUBLE_PRECISION)
+ typedef double btScalar;
+@@ -530,4 +542,9 @@ struct btTypedObject {
+         return m_objectType;
+     }
+ };
++
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_SCALAR_H
+diff --git a/thirdparty/vhacd/inc/btVector3.h b/thirdparty/vhacd/inc/btVector3.h
+index 0f2fefbbd..4ed971673 100644
+--- a/thirdparty/vhacd/inc/btVector3.h
++++ b/thirdparty/vhacd/inc/btVector3.h
+@@ -26,6 +26,10 @@ subject to the following restrictions:
+ #define btVector3DataName "btVector3FloatData"
+ #endif //BT_USE_DOUBLE_PRECISION
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ /**@brief btVector3 can be used to represent 3D points and vectors.
+  * It has an un-used w component to suit 16-byte alignment when btVector3 is stored in containers. This extra component can be used by derived classes (Quaternion?) or by user
+  * Ideally, this class should be replaced by a platform optimized SIMD version that keeps the data in registers
+@@ -712,4 +716,8 @@ SIMD_FORCE_INLINE void btVector3::deSerialize(const struct btVector3Data& dataIn
+         m_floats[i] = dataIn.m_floats[i];
+ }
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_VECTOR3_H
+diff --git a/thirdparty/vhacd/src/btAlignedAllocator.cpp b/thirdparty/vhacd/src/btAlignedAllocator.cpp
+index 11d594f6c..ce0e7f26f 100644
+--- a/thirdparty/vhacd/src/btAlignedAllocator.cpp
++++ b/thirdparty/vhacd/src/btAlignedAllocator.cpp
+@@ -15,6 +15,10 @@ subject to the following restrictions:
+ 
+ #include "btAlignedAllocator.h"
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ #ifdef _MSC_VER
+ #pragma warning(disable:4311 4302)
+ #endif
+@@ -177,4 +181,8 @@ void btAlignedFreeInternal(void* ptr)
+     sAlignedFreeFunc(ptr);
+ }
+ 
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --
++
+ #endif //BT_DEBUG_MEMORY_ALLOCATIONS
+diff --git a/thirdparty/vhacd/src/btConvexHullComputer.cpp b/thirdparty/vhacd/src/btConvexHullComputer.cpp
+index d3d749adb..8ab34af2a 100644
+--- a/thirdparty/vhacd/src/btConvexHullComputer.cpp
++++ b/thirdparty/vhacd/src/btConvexHullComputer.cpp
+@@ -49,6 +49,10 @@ typedef unsigned long long int32_t uint64_t;
+ #include <stdio.h>
+ #endif
+ 
++// -- GODOT start --
++namespace VHACD {
++// -- GODOT end --
++
+ // Convex hull implementation based on Preparata and Hong
+ // Ole Kniemeyer, MAXON Computer GmbH
+ class btConvexHullInternal {
+@@ -2477,3 +2481,7 @@ btScalar btConvexHullComputer::compute(const void* coords, bool doubleCoords, in
+ 
+     return shift;
+ }
++
++// -- GODOT start --
++}; // namespace VHACD
++// -- GODOT end --

@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="int" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A built-in type for integers.
+	</brief_description>
+	<description>
+		Signed 64-bit integer type. This means that it can take values from [code]-2^63[/code] to [code]2^63 - 1[/code], i.e. from [code]-9223372036854775808[/code] to [code]9223372036854775807[/code]. When it exceeds these bounds, it will wrap around.
+		[int]s can be automatically converted to [float]s when necessary, for example when passing them as arguments in functions. The [float] will be as close to the original integer as possible.
+		Likewise, [float]s can be automatically converted into [int]s. This will truncate the [float], discarding anything after the floating-point.
+		[b]Note:[/b] In a boolean context, an [int] will evaluate to [code]false[/code] if it equals [code]0[/code], and to [code]true[/code] otherwise.
+		[codeblocks]
+		[gdscript]
+		var x: int = 1 # x is 1
+		x = 4.2 # x is 4, because 4.2 gets truncated
+		var max_int = 9223372036854775807 # Biggest value an int can store
+		max_int += 1 # max_int is -9223372036854775808, because it wrapped around
+		[/gdscript]
+		[csharp]
+		int x = 1; // x is 1
+		x = (int)4.2; // x is 4, because 4.2 gets truncated
+		// We use long below, because GDScript's int is 64-bit while C#'s int is 32-bit.
+		long maxLong = 9223372036854775807; // Biggest value a long can store
+		maxLong++; // maxLong is now -9223372036854775808, because it wrapped around.
+
+		// Alternatively with C#'s 32-bit int type, which has a smaller maximum value.
+		int maxInt = 2147483647; // Biggest value an int can store
+		maxInt++; // maxInt is now -2147483648, because it wrapped around
+		[/csharp]
+		[/codeblocks]
+		You can use the [code]0b[/code] literal for binary representation, the [code]0x[/code] literal for hexadecimal representation, and the [code]_[/code] symbol to separate long numbers and improve readability.
+		[codeblocks]
+		[gdscript]
+		var x = 0b1001 # x is 9
+		var y = 0xF5 # y is 245
+		var z = 10_000_000 # z is 10000000
+		[/gdscript]
+		[csharp]
+		int x = 0b1001; // x is 9
+		int y = 0xF5; // y is 245
+		int z = 10_000_000; // z is 10000000
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="int">
+			<return type="int" />
+			<description>
+				Constructs an [int] set to [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
+			<param index="0" name="from" type="int" />
+			<description>
+				Constructs an [int] as a copy of the given [int].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
+			<param index="0" name="from" type="String" />
+			<description>
+				Constructs a new [int] from a [String], following the same rules as [method String.to_int].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
+			<param index="0" name="from" type="bool" />
+			<description>
+				Constructs a new [int] from a [bool]. [code]true[/code] is converted to [code]1[/code] and [code]false[/code] is converted to [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="int">
+			<return type="int" />
+			<param index="0" name="from" type="float" />
+			<description>
+				Constructs a new [int] from a [float]. This will truncate the [float], discarding anything after the floating point.
+			</description>
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is not equivalent to the [float].
+			</description>
+		</operator>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the [int]s are not equal.
+			</description>
+		</operator>
+		<operator name="operator %">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns the remainder after dividing two [int]s. Uses truncated division, which returns a negative number if the dividend is negative. If this is not desired, consider using [method @GlobalScope.posmod].
+				[codeblock]
+				print(6 % 2) # Prints 0
+				print(11 % 4) # Prints 3
+				print(-5 % 3) # Prints -2
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator &amp;">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Performs the bitwise [code]AND[/code] operation.
+				[codeblock]
+				print(0b1100 &amp; 0b1010) # Prints 8 (binary 1000)
+				[/codeblock]
+				This is useful for retrieving binary flags from a variable.
+				[codeblock]
+				var flags = 0b101
+				# Check if the first or second bit are enabled.
+				if flags &amp; 0b011:
+				    do_stuff() # This line will run.
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Color" />
+			<param index="0" name="right" type="Color" />
+			<description>
+				Multiplies each component of the [Color] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Quaternion" />
+			<param index="0" name="right" type="Quaternion" />
+			<description>
+				Multiplies each component of the [Quaternion] by the [int]. This operation is not meaningful on its own, but it can be used as a part of a larger expression.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
+			<description>
+				Multiplies each component of the [Vector2] by the [int].
+				[codeblock]
+				print(2 * Vector2(1, 4)) # Prints (2, 8)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2i" />
+			<param index="0" name="right" type="Vector2i" />
+			<description>
+				Multiplies each component of the [Vector2i] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Multiplies each component of the [Vector3] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3i" />
+			<param index="0" name="right" type="Vector3i" />
+			<description>
+				Multiplies each component of the [Vector3i] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4" />
+			<description>
+				Multiplies each component of the [Vector4] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4i" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+				Multiplies each component of the [Vector4i] by the [int].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="float" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies the [float] by the [int]. The result is a [float].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies the two [int]s.
+			</description>
+		</operator>
+		<operator name="operator **">
+			<return type="float" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Raises an [int] to a power of a [float]. The result is a [float].
+				[codeblock]
+				print(2 ** 0.5) # Prints 1.4142135623731
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator **">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Raises the left [int] to a power of the right [int].
+				[codeblock]
+				print(3 ** 4) # Prints 81
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="float" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Adds the [int] and the [float]. The result is a [float].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Adds the two [int]s.
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="float" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Subtracts the [float] from the [int]. The result is a [float].
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Subtracts the two [int]s.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="float" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides the [int] by the [float]. The result is a [float].
+				[codeblock]
+				print(10 / 3.0) # Prints 3.33333333333333
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides the two [int]s. The result is an [int]. This will truncate the [float], discarding anything after the floating point.
+				[codeblock]
+				print(6 / 2) # Prints 3
+				print(5 / 3) # Prints 1
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is less than the [float].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the left [int] is less than the right [int].
+			</description>
+		</operator>
+		<operator name="operator &lt;&lt;">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Performs the bitwise shift left operation. Effectively the same as multiplying by a power of 2.
+				[codeblock]
+				print(0b1010 &lt;&lt; 1) # Prints 20 (binary 10100)
+				print(0b1010 &lt;&lt; 3) # Prints 80 (binary 1010000)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is less than or equal to the [float].
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the left [int] is less than or equal to the right [int].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is equal to the [float].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the two [int]s are equal.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is greater than the [float].
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the left [int] is greater than the right [int].
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Returns [code]true[/code] if the [int] is greater than or equal to the [float].
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Returns [code]true[/code] if the left [int] is greater than or equal to the right [int].
+			</description>
+		</operator>
+		<operator name="operator &gt;&gt;">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Performs the bitwise shift right operation. Effectively the same as dividing by a power of 2.
+				[codeblock]
+				print(0b1010 &gt;&gt; 1) # Prints 5 (binary 101)
+				print(0b1010 &gt;&gt; 2) # Prints 2 (binary 10)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator ^">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Performs the bitwise [code]XOR[/code] operation.
+				[codeblock]
+				print(0b1100 ^ 0b1010) # Prints 6 (binary 110)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="int" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="int" />
+			<description>
+				Returns the negated value of the [int]. If positive, turns the number negative. If negative, turns the number positive. If zero, does nothing.
+			</description>
+		</operator>
+		<operator name="operator |">
+			<return type="int" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Performs the bitwise [code]OR[/code] operation.
+				[codeblock]
+				print(0b1100 | 0b1010) # Prints 14 (binary 1110)
+				[/codeblock]
+				This is useful for storing binary flags in a variable.
+				[codeblock]
+				var flags = 0
+				flags |= 0b101 # Turn the first and third bits on.
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator ~">
+			<return type="int" />
+			<description>
+				Performs the bitwise [code]NOT[/code] operation on the [int]. Due to [url=https://en.wikipedia.org/wiki/Two%27s_complement]2's complement[/url], it's effectively equal to [code]-(int + 1)[/code].
+				[codeblock]
+				print(~4) # Prints -5
+				print(~(-7)) # Prints 6
+				[/codeblock]
+			</description>
+		</operator>
+	</operators>
+</class>

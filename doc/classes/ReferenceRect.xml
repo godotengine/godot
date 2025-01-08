@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ReferenceRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A rectangle hint for designing UIs.
+	</brief_description>
+	<description>
+		A rectangle box that displays only a colored border around its rectangle. It is used to visualize the extents of a [Control].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(1, 0, 0, 1)">
+			Sets the border color of the [ReferenceRect].
+		</member>
+		<member name="border_width" type="float" setter="set_border_width" getter="get_border_width" default="1.0">
+			Sets the border width of the [ReferenceRect]. The border grows both inwards and outwards with respect to the rectangle box.
+		</member>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="get_editor_only" default="true">
+			If [code]true[/code], the [ReferenceRect] will only be visible while in editor. Otherwise, [ReferenceRect] will be visible in the running project.
+		</member>
+	</members>
+</class>

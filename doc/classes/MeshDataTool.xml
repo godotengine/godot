@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshDataTool" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Helper tool to access and edit [Mesh] data.
+	</brief_description>
+	<description>
+		MeshDataTool provides access to individual vertices in a [Mesh]. It allows users to read and edit vertex data of meshes. It also creates an array of faces and edges.
+		To use MeshDataTool, load a mesh with [method create_from_surface]. When you are finished editing the data commit the data to a mesh with [method commit_to_surface].
+		Below is an example of how MeshDataTool may be used.
+		[codeblocks]
+		[gdscript]
+		var mesh = ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, BoxMesh.new().get_mesh_arrays())
+		var mdt = MeshDataTool.new()
+		mdt.create_from_surface(mesh, 0)
+		for i in range(mdt.get_vertex_count()):
+		    var vertex = mdt.get_vertex(i)
+		    # In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
+		    vertex += mdt.get_vertex_normal(i)
+		    # Save your change.
+		    mdt.set_vertex(i, vertex)
+		mesh.clear_surfaces()
+		mdt.commit_to_surface(mesh)
+		var mi = MeshInstance.new()
+		mi.mesh = mesh
+		add_child(mi)
+		[/gdscript]
+		[csharp]
+		var mesh = new ArrayMesh();
+		mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, new BoxMesh().GetMeshArrays());
+		var mdt = new MeshDataTool();
+		mdt.CreateFromSurface(mesh, 0);
+		for (var i = 0; i &lt; mdt.GetVertexCount(); i++)
+		{
+		    Vector3 vertex = mdt.GetVertex(i);
+		    // In this example we extend the mesh by one unit, which results in separated faces as it is flat shaded.
+		    vertex += mdt.GetVertexNormal(i);
+		    // Save your change.
+		    mdt.SetVertex(i, vertex);
+		}
+		mesh.ClearSurfaces();
+		mdt.CommitToSurface(mesh);
+		var mi = new MeshInstance();
+		mi.Mesh = mesh;
+		AddChild(mi);
+		[/csharp]
+		[/codeblocks]
+		See also [ArrayMesh], [ImmediateMesh] and [SurfaceTool] for procedural geometry generation.
+		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
+	</description>
+	<tutorials>
+		<link title="Using the MeshDataTool">$DOCS_URL/tutorials/3d/procedural_geometry/meshdatatool.html</link>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears all data currently in MeshDataTool.
+			</description>
+		</method>
+		<method name="commit_to_surface">
+			<return type="int" enum="Error" />
+			<param index="0" name="mesh" type="ArrayMesh" />
+			<param index="1" name="compression_flags" type="int" default="0" />
+			<description>
+				Adds a new surface to specified [Mesh] with edited data.
+			</description>
+		</method>
+		<method name="create_from_surface">
+			<return type="int" enum="Error" />
+			<param index="0" name="mesh" type="ArrayMesh" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Uses specified surface of given [Mesh] to populate data for MeshDataTool.
+				Requires [Mesh] with primitive type [constant Mesh.PRIMITIVE_TRIANGLES].
+			</description>
+		</method>
+		<method name="get_edge_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of edges in this [Mesh].
+			</description>
+		</method>
+		<method name="get_edge_faces" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns array of faces that touch given edge.
+			</description>
+		</method>
+		<method name="get_edge_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns meta information assigned to given edge.
+			</description>
+		</method>
+		<method name="get_edge_vertex" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="int" />
+			<description>
+				Returns index of specified vertex connected to given edge.
+				Vertex argument can only be 0 or 1 because edges are comprised of two vertices.
+			</description>
+		</method>
+		<method name="get_face_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of faces in this [Mesh].
+			</description>
+		</method>
+		<method name="get_face_edge" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="edge" type="int" />
+			<description>
+				Returns specified edge associated with given face.
+				Edge argument must be either 0, 1, or 2 because a face only has three edges.
+			</description>
+		</method>
+		<method name="get_face_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the metadata associated with the given face.
+			</description>
+		</method>
+		<method name="get_face_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Calculates and returns the face normal of the given face.
+			</description>
+		</method>
+		<method name="get_face_vertex" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="int" />
+			<description>
+				Returns the specified vertex index of the given face.
+				[param vertex] must be either [code]0[/code], [code]1[/code], or [code]2[/code] because faces contain three vertices.
+				[codeblocks]
+				[gdscript]
+				var index = mesh_data_tool.get_face_vertex(0, 1) # Gets the index of the second vertex of the first face.
+				var position = mesh_data_tool.get_vertex(index)
+				var normal = mesh_data_tool.get_vertex_normal(index)
+				[/gdscript]
+				[csharp]
+				int index = meshDataTool.GetFaceVertex(0, 1); // Gets the index of the second vertex of the first face.
+				Vector3 position = meshDataTool.GetVertex(index);
+				Vector3 normal = meshDataTool.GetVertexNormal(index);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [Mesh]'s format as a combination of the [enum Mesh.ArrayFormat] flags. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [constant Mesh.ARRAY_FORMAT_VERTEX] is [code]1[/code] and [constant Mesh.ARRAY_FORMAT_NORMAL] is [code]2[/code].
+			</description>
+		</method>
+		<method name="get_material" qualifiers="const">
+			<return type="Material" />
+			<description>
+				Returns the material assigned to the [Mesh].
+			</description>
+		</method>
+		<method name="get_vertex" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the position of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_bones" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the bones of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the color of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of vertices in [Mesh].
+			</description>
+		</method>
+		<method name="get_vertex_edges" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns an array of edges that share the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_faces" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns an array of faces that share the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the metadata associated with the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the normal of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_tangent" qualifiers="const">
+			<return type="Plane" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the tangent of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_uv" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the UV of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_uv2" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the UV2 of the given vertex.
+			</description>
+		</method>
+		<method name="get_vertex_weights" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns bone weights of the given vertex.
+			</description>
+		</method>
+		<method name="set_edge_meta">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
+			<description>
+				Sets the metadata of the given edge.
+			</description>
+		</method>
+		<method name="set_face_meta">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
+			<description>
+				Sets the metadata of the given face.
+			</description>
+		</method>
+		<method name="set_material">
+			<return type="void" />
+			<param index="0" name="material" type="Material" />
+			<description>
+				Sets the material to be used by newly-constructed [Mesh].
+			</description>
+		</method>
+		<method name="set_vertex">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="vertex" type="Vector3" />
+			<description>
+				Sets the position of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_bones">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="bones" type="PackedInt32Array" />
+			<description>
+				Sets the bones of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_color">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the color of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_meta">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="meta" type="Variant" />
+			<description>
+				Sets the metadata associated with the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_normal">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="normal" type="Vector3" />
+			<description>
+				Sets the normal of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_tangent">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="tangent" type="Plane" />
+			<description>
+				Sets the tangent of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_uv">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="uv" type="Vector2" />
+			<description>
+				Sets the UV of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_uv2">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="uv2" type="Vector2" />
+			<description>
+				Sets the UV2 of the given vertex.
+			</description>
+		</method>
+		<method name="set_vertex_weights">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="weights" type="PackedFloat32Array" />
+			<description>
+				Sets the bone weights of the given vertex.
+			</description>
+		</method>
+	</methods>
+</class>

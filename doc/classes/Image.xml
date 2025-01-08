@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Image" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Image datatype.
+	</brief_description>
+	<description>
+		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		An [Image] cannot be assigned to a texture property of an object directly (such as [member Sprite2D.texture]), and has to be converted manually to an [ImageTexture] first.
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
+	</description>
+	<tutorials>
+		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="adjust_bcs">
+			<return type="void" />
+			<param index="0" name="brightness" type="float" />
+			<param index="1" name="contrast" type="float" />
+			<param index="2" name="saturation" type="float" />
+			<description>
+				Adjusts this image's [param brightness], [param contrast], and [param saturation] by the given values. Does not work if the image is compressed (see [method is_compressed]).
+			</description>
+		</method>
+		<method name="blend_rect">
+			<return type="void" />
+			<param index="0" name="src" type="Image" />
+			<param index="1" name="src_rect" type="Rect2i" />
+			<param index="2" name="dst" type="Vector2i" />
+			<description>
+				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+			</description>
+		</method>
+		<method name="blend_rect_mask">
+			<return type="void" />
+			<param index="0" name="src" type="Image" />
+			<param index="1" name="mask" type="Image" />
+			<param index="2" name="src_rect" type="Rect2i" />
+			<param index="3" name="dst" type="Vector2i" />
+			<description>
+				Alpha-blends [param src_rect] from [param src] image to this image using [param mask] image at coordinates [param dst], clipped accordingly to both image bounds. Alpha channels are required for both [param src] and [param mask]. [param dst] pixels and [param src] pixels will blend if the corresponding mask pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
+			</description>
+		</method>
+		<method name="blit_rect">
+			<return type="void" />
+			<param index="0" name="src" type="Image" />
+			<param index="1" name="src_rect" type="Rect2i" />
+			<param index="2" name="dst" type="Vector2i" />
+			<description>
+				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+				[b]Note:[/b] The alpha channel data in [param src] will overwrite the corresponding data in this image at the target position. To blend alpha channels, use [method blend_rect] instead.
+			</description>
+		</method>
+		<method name="blit_rect_mask">
+			<return type="void" />
+			<param index="0" name="src" type="Image" />
+			<param index="1" name="mask" type="Image" />
+			<param index="2" name="src_rect" type="Rect2i" />
+			<param index="3" name="dst" type="Vector2i" />
+			<description>
+				Blits [param src_rect] area from [param src] image to this image at the coordinates given by [param dst], clipped accordingly to both image bounds. [param src] pixel is copied onto [param dst] if the corresponding [param mask] pixel's alpha value is not 0. This image and [param src] image [b]must[/b] have the same format. [param src] image and [param mask] image [b]must[/b] have the same size (width and height) but they can have different formats. [param src_rect] with non-positive size is treated as empty.
+			</description>
+		</method>
+		<method name="bump_map_to_normal_map">
+			<return type="void" />
+			<param index="0" name="bump_scale" type="float" default="1.0" />
+			<description>
+				Converts a bump map to a normal map. A bump map provides a height offset per-pixel, while a normal map provides a normal direction per pixel.
+			</description>
+		</method>
+		<method name="clear_mipmaps">
+			<return type="void" />
+			<description>
+				Removes the image's mipmaps.
+			</description>
+		</method>
+		<method name="compress">
+			<return type="int" enum="Error" />
+			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
+			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
+			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<description>
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				The [param source] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
+				For ASTC compression, the [param astc_format] parameter must be supplied.
+			</description>
+		</method>
+		<method name="compress_from_channels">
+			<return type="int" enum="Error" />
+			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
+			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
+			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<description>
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
+				For ASTC compression, the [param astc_format] parameter must be supplied.
+			</description>
+		</method>
+		<method name="compute_image_metrics">
+			<return type="Dictionary" />
+			<param index="0" name="compared_image" type="Image" />
+			<param index="1" name="use_luma" type="bool" />
+			<description>
+				Compute image metrics on the current image and the compared image.
+				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
+			</description>
+		</method>
+		<method name="convert">
+			<return type="void" />
+			<param index="0" name="format" type="int" enum="Image.Format" />
+			<description>
+				Converts the image's format. See [enum Format] constants.
+			</description>
+		</method>
+		<method name="copy_from">
+			<return type="void" />
+			<param index="0" name="src" type="Image" />
+			<description>
+				Copies [param src] image to this image.
+			</description>
+		</method>
+		<method name="create" qualifiers="static" deprecated="Use [method create_empty].">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+			</description>
+		</method>
+		<method name="create_empty" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+			</description>
+		</method>
+		<method name="create_from_data" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
+			</description>
+		</method>
+		<method name="crop">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<description>
+				Crops the image to the given [param width] and [param height]. If the specified size is larger than the current size, the extra area is filled with black pixels.
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="int" enum="Error" />
+			<description>
+				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
+				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
+			</description>
+		</method>
+		<method name="detect_alpha" qualifiers="const">
+			<return type="int" enum="Image.AlphaMode" />
+			<description>
+				Returns [constant ALPHA_BLEND] if the image has data for alpha values. Returns [constant ALPHA_BIT] if all the alpha values are stored in a single bit. Returns [constant ALPHA_NONE] if no data for alpha values is found.
+			</description>
+		</method>
+		<method name="detect_used_channels" qualifiers="const">
+			<return type="int" enum="Image.UsedChannels" />
+			<param index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
+			<description>
+				Returns the color channels used by this image, as one of the [enum UsedChannels] constants. If the image is compressed, the original [param source] must be specified.
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Fills the image with [param color].
+			</description>
+		</method>
+		<method name="fill_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Fills [param rect] with [param color].
+			</description>
+		</method>
+		<method name="fix_alpha_edges">
+			<return type="void" />
+			<description>
+				Blends low-alpha pixels with nearby pixels.
+			</description>
+		</method>
+		<method name="flip_x">
+			<return type="void" />
+			<description>
+				Flips the image horizontally.
+			</description>
+		</method>
+		<method name="flip_y">
+			<return type="void" />
+			<description>
+				Flips the image vertically.
+			</description>
+		</method>
+		<method name="generate_mipmaps">
+			<return type="int" enum="Error" />
+			<param index="0" name="renormalize" type="bool" default="false" />
+			<description>
+				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal map textures will make sure all resulting vector values are normalized.
+				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count]. Calling [method generate_mipmaps] on an image that already has mipmaps will replace existing mipmaps in the image.
+			</description>
+		</method>
+		<method name="get_data" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns a copy of the image's raw data.
+			</description>
+		</method>
+		<method name="get_data_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns size (in bytes) of the image's raw data.
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<description>
+				Returns the image's format. See [enum Format] constants.
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the image's height.
+			</description>
+		</method>
+		<method name="get_mipmap_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of mipmap levels or 0 if the image has no mipmaps. The largest main level image is not counted as a mipmap level by this method, so if you want to include it you can add 1 to this count.
+			</description>
+		</method>
+		<method name="get_mipmap_offset" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="mipmap" type="int" />
+			<description>
+				Returns the offset where the image's mipmap with index [param mipmap] is stored in the [member data] dictionary.
+			</description>
+		</method>
+		<method name="get_pixel" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<description>
+				Returns the color of the pixel at [code](x, y)[/code].
+				This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2i] argument.
+			</description>
+		</method>
+		<method name="get_pixelv" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="point" type="Vector2i" />
+			<description>
+				Returns the color of the pixel at [param point].
+				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
+			</description>
+		</method>
+		<method name="get_region" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="region" type="Rect2i" />
+			<description>
+				Returns a new [Image] that is a copy of this [Image]'s area specified with [param region].
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the image's size (width and height).
+			</description>
+		</method>
+		<method name="get_used_rect" qualifiers="const">
+			<return type="Rect2i" />
+			<description>
+				Returns a [Rect2i] enclosing the visible portion of the image, considering each pixel with a non-zero alpha channel as visible.
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the image's width.
+			</description>
+		</method>
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the image has generated mipmaps.
+			</description>
+		</method>
+		<method name="is_compressed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the image is compressed.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the image has no data.
+			</description>
+		</method>
+		<method name="is_invisible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
+			</description>
+		</method>
+		<method name="linear_to_srgb">
+			<return type="void" />
+			<description>
+				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
+		<method name="load">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Loads an image from file [param path]. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
+				See also [ImageTexture] description for usage examples.
+			</description>
+		</method>
+		<method name="load_bmp_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a BMP file.
+				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
+				[b]Note:[/b] This method is only available in engine builds with the BMP module enabled. By default, the BMP module is enabled, but it can be disabled at build-time using the [code]module_bmp_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a new [Image] and loads data from the specified file.
+			</description>
+		</method>
+		<method name="load_jpg_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a JPEG file.
+			</description>
+		</method>
+		<method name="load_ktx_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a [url=https://github.com/KhronosGroup/KTX-Software]KTX[/url] file. Unlike most image formats, KTX can store VRAM-compressed data and embed mipmaps.
+				[b]Note:[/b] Godot's libktx implementation only supports 2D images. Cubemaps, texture arrays, and de-padding are not supported.
+				[b]Note:[/b] This method is only available in engine builds with the KTX module enabled. By default, the KTX module is enabled, but it can be disabled at build-time using the [code]module_ktx_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_png_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a PNG file.
+			</description>
+		</method>
+		<method name="load_svg_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<description>
+				Loads an image from the UTF-8 binary contents of an [b]uncompressed[/b] SVG file ([b].svg[/b]).
+				[b]Note:[/b] Beware when using compressed SVG files (like [b].svgz[/b]), they need to be [code]decompressed[/code] before loading.
+				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_svg_from_string">
+			<return type="int" enum="Error" />
+			<param index="0" name="svg_str" type="String" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<description>
+				Loads an image from the string contents of an SVG file ([b].svg[/b]).
+				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_tga_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a TGA file.
+				[b]Note:[/b] This method is only available in engine builds with the TGA module enabled. By default, the TGA module is enabled, but it can be disabled at build-time using the [code]module_tga_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_webp_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a WebP file.
+			</description>
+		</method>
+		<method name="normal_map_to_xy">
+			<return type="void" />
+			<description>
+				Converts the image's data to represent coordinates on a 3D plane. This is used when the image represents a normal map. A normal map can add lots of detail to a 3D surface without increasing the polygon count.
+			</description>
+		</method>
+		<method name="premultiply_alpha">
+			<return type="void" />
+			<description>
+				Multiplies color values with alpha values. Resulting color values for a pixel are [code](color * alpha)/256[/code]. See also [member CanvasItemMaterial.blend_mode].
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
+			<description>
+				Resizes the image to the given [param width] and [param height]. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+			</description>
+		</method>
+		<method name="resize_to_po2">
+			<return type="void" />
+			<param index="0" name="square" type="bool" default="false" />
+			<param index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
+			<description>
+				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+			</description>
+		</method>
+		<method name="rgbe_to_srgb">
+			<return type="Image" />
+			<description>
+				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
+			</description>
+		</method>
+		<method name="rotate_90">
+			<return type="void" />
+			<param index="0" name="direction" type="int" enum="ClockDirection" />
+			<description>
+				Rotates the image in the specified [param direction] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
+			</description>
+		</method>
+		<method name="rotate_180">
+			<return type="void" />
+			<description>
+				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
+			</description>
+		</method>
+		<method name="save_exr" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="grayscale" type="bool" default="false" />
+			<description>
+				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_exr_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="grayscale" type="bool" default="false" />
+			<description>
+				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_jpg" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to [param path] with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger file sizes. Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_jpg_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG file to a byte array with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
+				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_png" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves the image as a PNG file to the file at [param path].
+			</description>
+		</method>
+		<method name="save_png_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Saves the image as a PNG file to a byte array.
+			</description>
+		</method>
+		<method name="save_webp" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="lossy" type="bool" default="false" />
+			<param index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
+				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
+			</description>
+		</method>
+		<method name="save_webp_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="lossy" type="bool" default="false" />
+			<param index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
+				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
+			</description>
+		</method>
+		<method name="set_pixel">
+			<return type="void" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
+				[codeblocks]
+				[gdscript]
+				var img_width = 10
+				var img_height = 5
+				var img = Image.create(img_width, img_height, false, Image.FORMAT_RGBA8)
+
+				img.set_pixel(1, 2, Color.RED) # Sets the color at (1, 2) to red.
+				[/gdscript]
+				[csharp]
+				int imgWidth = 10;
+				int imgHeight = 5;
+				var img = Image.Create(imgWidth, imgHeight, false, Image.Format.Rgba8);
+
+				img.SetPixel(1, 2, Colors.Red); // Sets the color at (1, 2) to red.
+				[/csharp]
+				[/codeblocks]
+				This is the same as [method set_pixelv], but with a two integer arguments instead of a [Vector2i] argument.
+			</description>
+		</method>
+		<method name="set_pixelv">
+			<return type="void" />
+			<param index="0" name="point" type="Vector2i" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the [Color] of the pixel at [param point] to [param color].
+				[codeblocks]
+				[gdscript]
+				var img_width = 10
+				var img_height = 5
+				var img = Image.create(img_width, img_height, false, Image.FORMAT_RGBA8)
+
+				img.set_pixelv(Vector2i(1, 2), Color.RED) # Sets the color at (1, 2) to red.
+				[/gdscript]
+				[csharp]
+				int imgWidth = 10;
+				int imgHeight = 5;
+				var img = Image.Create(imgWidth, imgHeight, false, Image.Format.Rgba8);
+
+				img.SetPixelv(new Vector2I(1, 2), Colors.Red); // Sets the color at (1, 2) to red.
+				[/csharp]
+				[/codeblocks]
+				This is the same as [method set_pixel], but with a [Vector2i] argument instead of two integer arguments.
+			</description>
+		</method>
+		<method name="shrink_x2">
+			<return type="void" />
+			<description>
+				Shrinks the image by a factor of 2 on each axis (this divides the pixel count by 4).
+			</description>
+		</method>
+		<method name="srgb_to_linear">
+			<return type="void" />
+			<description>
+				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmaps&quot;: false, &quot;width&quot;: 0 }">
+			Holds all the image's color data in a given format. See [enum Format] constants.
+		</member>
+	</members>
+	<constants>
+		<constant name="MAX_WIDTH" value="16777216">
+			The maximal width allowed for [Image] resources.
+		</constant>
+		<constant name="MAX_HEIGHT" value="16777216">
+			The maximal height allowed for [Image] resources.
+		</constant>
+		<constant name="FORMAT_L8" value="0" enum="Format">
+			Texture format with a single 8-bit depth representing luminance.
+		</constant>
+		<constant name="FORMAT_LA8" value="1" enum="Format">
+			OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
+		</constant>
+		<constant name="FORMAT_R8" value="2" enum="Format">
+			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
+		</constant>
+		<constant name="FORMAT_RG8" value="3" enum="Format">
+			OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.
+		</constant>
+		<constant name="FORMAT_RGB8" value="4" enum="Format">
+			OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_RGBA8" value="5" enum="Format">
+			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
+			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
+		</constant>
+		<constant name="FORMAT_RGB565" value="7" enum="Format">
+			OpenGL texture format [code]RGB[/code] with three components. Red and blue have a bitdepth of 5, and green has a bitdepth of 6.
+		</constant>
+		<constant name="FORMAT_RF" value="8" enum="Format">
+			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
+		</constant>
+		<constant name="FORMAT_RGF" value="9" enum="Format">
+			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 32-bit floating-point values.
+		</constant>
+		<constant name="FORMAT_RGBF" value="10" enum="Format">
+			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 32-bit floating-point values.
+		</constant>
+		<constant name="FORMAT_RGBAF" value="11" enum="Format">
+			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
+		</constant>
+		<constant name="FORMAT_RH" value="12" enum="Format">
+			OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="FORMAT_RGH" value="13" enum="Format">
+			OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="FORMAT_RGBH" value="14" enum="Format">
+			OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="FORMAT_RGBAH" value="15" enum="Format">
+			OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
+			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.
+		</constant>
+		<constant name="FORMAT_DXT1" value="17" enum="Format">
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_DXT3" value="18" enum="Format">
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_DXT5" value="19" enum="Format">
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+		</constant>
+		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+		</constant>
+		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
+		</constant>
+		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
+		</constant>
+		<constant name="FORMAT_ETC" value="25" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
+		</constant>
+		<constant name="FORMAT_ETC2_R11" value="26" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
+		</constant>
+		<constant name="FORMAT_ETC2_R11S" value="27" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
+		</constant>
+		<constant name="FORMAT_ETC2_RG11" value="28" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
+		</constant>
+		<constant name="FORMAT_ETC2_RG11S" value="29" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
+		</constant>
+		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code] variant), which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_ETC2_RGBA8].
+		</constant>
+		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3, which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_DXT5].
+		</constant>
+		<constant name="FORMAT_ASTC_4x4" value="35" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4×4 (high quality) mode.
+		</constant>
+		<constant name="FORMAT_ASTC_4x4_HDR" value="36" enum="Format">
+			Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
+		</constant>
+		<constant name="FORMAT_ASTC_8x8" value="37" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8×8 (low quality) mode.
+		</constant>
+		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
+			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
+		</constant>
+		<constant name="FORMAT_MAX" value="39" enum="Format">
+			Represents the size of the [enum Format] enum.
+		</constant>
+		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
+			Performs nearest-neighbor interpolation. If the image is resized, it will be pixelated.
+		</constant>
+		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">
+			Performs bilinear interpolation. If the image is resized, it will be blurry. This mode is faster than [constant INTERPOLATE_CUBIC], but it results in lower quality.
+		</constant>
+		<constant name="INTERPOLATE_CUBIC" value="2" enum="Interpolation">
+			Performs cubic interpolation. If the image is resized, it will be blurry. This mode often gives better results compared to [constant INTERPOLATE_BILINEAR], at the cost of being slower.
+		</constant>
+		<constant name="INTERPOLATE_TRILINEAR" value="3" enum="Interpolation">
+			Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
+			It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with far fewer aliasing artifacts.
+			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
+			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps]] on it in advance, to avoid wasting processing power in generating them again and again.
+			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
+		</constant>
+		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
+			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
+		</constant>
+		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
+			Image does not have alpha.
+		</constant>
+		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
+			Image stores alpha in a single bit.
+		</constant>
+		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
+			Image uses alpha.
+		</constant>
+		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
+			Use S3TC compression.
+		</constant>
+		<constant name="COMPRESS_ETC" value="1" enum="CompressMode">
+			Use ETC compression.
+		</constant>
+		<constant name="COMPRESS_ETC2" value="2" enum="CompressMode">
+			Use ETC2 compression.
+		</constant>
+		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
+			Use BPTC compression.
+		</constant>
+		<constant name="COMPRESS_ASTC" value="4" enum="CompressMode">
+			Use ASTC compression.
+		</constant>
+		<constant name="COMPRESS_MAX" value="5" enum="CompressMode">
+			Represents the size of the [enum CompressMode] enum.
+		</constant>
+		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
+			The image only uses one channel for luminance (grayscale).
+		</constant>
+		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
+			The image uses two channels for luminance and alpha, respectively.
+		</constant>
+		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
+			The image only uses the red channel.
+		</constant>
+		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
+			The image uses two channels for red and green.
+		</constant>
+		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
+			The image uses three channels for red, green, and blue.
+		</constant>
+		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
+			The image uses four channels for red, green, blue, and alpha.
+		</constant>
+		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
+			Source texture (before compression) is a regular texture. Default for all textures.
+		</constant>
+		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
+			Source texture (before compression) is in sRGB space.
+		</constant>
+		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
+			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
+		</constant>
+		<constant name="ASTC_FORMAT_4x4" value="0" enum="ASTCFormat">
+			Hint to indicate that the high quality 4×4 ASTC compression format should be used.
+		</constant>
+		<constant name="ASTC_FORMAT_8x8" value="1" enum="ASTCFormat">
+			Hint to indicate that the low quality 8×8 ASTC compression format should be used.
+		</constant>
+	</constants>
+</class>

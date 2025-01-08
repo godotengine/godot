@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFDocument" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Class for importing and exporting glTF files in and out of Godot.
+	</brief_description>
+	<description>
+		GLTFDocument supports reading data from a glTF file, buffer, or Godot scene. This data can then be written to the filesystem, buffer, or used to create a Godot scene.
+		All of the data in a glTF scene is stored in the [GLTFState] class. GLTFDocument processes state objects, but does not contain any scene data itself. GLTFDocument has member variables to store export configuration settings such as the image format, but is otherwise stateless. Multiple scenes can be processed with the same settings using the same GLTFDocument object and different [GLTFState] objects.
+		GLTFDocument can be extended with arbitrary functionality by extending the [GLTFDocumentExtension] class and registering it with GLTFDocument via [method register_gltf_document_extension]. This allows for custom data to be imported and exported.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="glTF &apos;What the duck?&apos; guide">https://www.khronos.org/files/gltf20-reference-guide.pdf</link>
+		<link title="Khronos glTF specification">https://registry.khronos.org/glTF/</link>
+	</tutorials>
+	<methods>
+		<method name="append_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="bytes" type="PackedByteArray" />
+			<param index="1" name="base_path" type="String" />
+			<param index="2" name="state" type="GLTFState" />
+			<param index="3" name="flags" type="int" default="0" />
+			<description>
+				Takes a [PackedByteArray] defining a glTF and imports the data to the given [GLTFState] object through the [param state] parameter.
+				[b]Note:[/b] The [param base_path] tells [method append_from_buffer] where to find dependencies and can be empty.
+			</description>
+		</method>
+		<method name="append_from_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="state" type="GLTFState" />
+			<param index="2" name="flags" type="int" default="0" />
+			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
+			<description>
+				Takes a path to a glTF file and imports the data at that file path to the given [GLTFState] object through the [param state] parameter.
+				[b]Note:[/b] The [param base_path] tells [method append_from_file] where to find dependencies and can be empty.
+			</description>
+		</method>
+		<method name="append_from_scene">
+			<return type="int" enum="Error" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="state" type="GLTFState" />
+			<param index="2" name="flags" type="int" default="0" />
+			<description>
+				Takes a Godot Engine scene node and exports it and its descendants to the given [GLTFState] object through the [param state] parameter.
+			</description>
+		</method>
+		<method name="export_object_model_property" qualifiers="static">
+			<return type="GLTFObjectModelProperty" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="node_path" type="NodePath" />
+			<param index="2" name="godot_node" type="Node" />
+			<param index="3" name="gltf_node_index" type="int" />
+			<description>
+				Determines a mapping between the given Godot [param node_path] and the corresponding glTF Object Model JSON pointer(s) in the generated glTF file. The details of this mapping are returned in a [GLTFObjectModelProperty] object. Additional mappings can be supplied via the [method GLTFDocumentExtension._import_object_model_property] callback method.
+			</description>
+		</method>
+		<method name="generate_buffer">
+			<return type="PackedByteArray" />
+			<param index="0" name="state" type="GLTFState" />
+			<description>
+				Takes a [GLTFState] object through the [param state] parameter and returns a glTF [PackedByteArray].
+			</description>
+		</method>
+		<method name="generate_scene">
+			<return type="Node" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="bake_fps" type="float" default="30" />
+			<param index="2" name="trimming" type="bool" default="false" />
+			<param index="3" name="remove_immutable_tracks" type="bool" default="true" />
+			<description>
+				Takes a [GLTFState] object through the [param state] parameter and returns a Godot Engine scene node.
+				The [param bake_fps] parameter overrides the bake_fps in [param state].
+			</description>
+		</method>
+		<method name="get_supported_gltf_extensions" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all support glTF extensions, including extensions supported directly by the engine, and extensions supported by user plugins registering [GLTFDocumentExtension] classes.
+				[b]Note:[/b] If this method is run before a GLTFDocumentExtension is registered, its extensions won't be included in the list. Be sure to only run this method after all extensions are registered. If you run this when the engine starts, consider waiting a frame before calling this method to ensure all extensions are registered.
+			</description>
+		</method>
+		<method name="import_object_model_property" qualifiers="static">
+			<return type="GLTFObjectModelProperty" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="json_pointer" type="String" />
+			<description>
+				Determines a mapping between the given glTF Object Model [param json_pointer] and the corresponding Godot node path(s) in the generated Godot scene. The details of this mapping are returned in a [GLTFObjectModelProperty] object. Additional mappings can be supplied via the [method GLTFDocumentExtension._export_object_model_property] callback method.
+			</description>
+		</method>
+		<method name="register_gltf_document_extension" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="extension" type="GLTFDocumentExtension" />
+			<param index="1" name="first_priority" type="bool" default="false" />
+			<description>
+				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [param first_priority] is [code]true[/code], this extension will be run first. Otherwise, it will be run last.
+				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+			</description>
+		</method>
+		<method name="unregister_gltf_document_extension" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="extension" type="GLTFDocumentExtension" />
+			<description>
+				Unregisters the given [GLTFDocumentExtension] instance.
+			</description>
+		</method>
+		<method name="write_to_filesystem">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Takes a [GLTFState] object through the [param state] parameter and writes a glTF file to the filesystem.
+				[b]Note:[/b] The extension of the glTF file determines if it is a .glb binary file or a .gltf text file.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="image_format" type="String" setter="set_image_format" getter="get_image_format" default="&quot;PNG&quot;">
+			The user-friendly name of the export image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
+			By default, Godot allows the following options: "None", "PNG", "JPEG", "Lossless WebP", and "Lossy WebP". Support for more image formats can be added in [GLTFDocumentExtension] classes.
+		</member>
+		<member name="lossy_quality" type="float" setter="set_lossy_quality" getter="get_lossy_quality" default="0.75">
+			If [member image_format] is a lossy image format, this determines the lossy quality of the image. On a range of [code]0.0[/code] to [code]1.0[/code], where [code]0.0[/code] is the lowest quality and [code]1.0[/code] is the highest quality. A lossy quality of [code]1.0[/code] is not the same as lossless.
+		</member>
+		<member name="root_node_mode" type="int" setter="set_root_node_mode" getter="get_root_node_mode" enum="GLTFDocument.RootNodeMode" default="0">
+			How to process the root node during export. See [enum RootNodeMode] for details. The default and recommended value is [constant ROOT_NODE_MODE_SINGLE_ROOT].
+			[b]Note:[/b] Regardless of how the glTF file is exported, when importing, the root node type and name can be overridden in the scene import settings tab.
+		</member>
+	</members>
+	<constants>
+		<constant name="ROOT_NODE_MODE_SINGLE_ROOT" value="0" enum="RootNodeMode">
+			Treat the Godot scene's root node as the root node of the glTF file, and mark it as the single root node via the [code]GODOT_single_root[/code] glTF extension. This will be parsed the same as [constant ROOT_NODE_MODE_KEEP_ROOT] if the implementation does not support [code]GODOT_single_root[/code].
+		</constant>
+		<constant name="ROOT_NODE_MODE_KEEP_ROOT" value="1" enum="RootNodeMode">
+			Treat the Godot scene's root node as the root node of the glTF file, but do not mark it as anything special. An extra root node will be generated when importing into Godot. This uses only vanilla glTF features. This is equivalent to the behavior in Godot 4.1 and earlier.
+		</constant>
+		<constant name="ROOT_NODE_MODE_MULTI_ROOT" value="2" enum="RootNodeMode">
+			Treat the Godot scene's root node as the name of the glTF scene, and add all of its children as root nodes of the glTF file. This uses only vanilla glTF features. This avoids an extra root node, but only the name of the Godot scene's root node will be preserved, as it will not be saved as a node.
+		</constant>
+	</constants>
+</class>

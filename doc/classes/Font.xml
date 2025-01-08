@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Font" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for fonts and font variations.
+	</brief_description>
+	<description>
+		Abstract base class for different font types. It has methods for drawing text and font character introspection.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="draw_char" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="char" type="int" />
+			<param index="3" name="font_size" type="int" />
+			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw a single Unicode character [param char] into a canvas item using the font, at a given position, with [param modulate] color. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
+			</description>
+		</method>
+		<method name="draw_char_outline" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="char" type="int" />
+			<param index="3" name="font_size" type="int" />
+			<param index="4" name="size" type="int" default="-1" />
+			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<description>
+				Draw a single Unicode character [param char] outline into a canvas item using the font, at a given position, with [param modulate] color and [param size] outline size. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
+			</description>
+		</method>
+		<method name="draw_multiline_string" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="max_lines" type="int" default="-1" />
+			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Breaks [param text] into lines using rules specified by [param brk_flags] and draws it into a canvas item using the font, at a given position, with [param modulate] color, optionally clipping the width and aligning horizontally. [param pos] specifies the baseline of the first line, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_multiline_string].
+			</description>
+		</method>
+		<method name="draw_multiline_string_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="max_lines" type="int" default="-1" />
+			<param index="7" name="size" type="int" default="1" />
+			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Breaks [param text] to the lines using rules specified by [param brk_flags] and draws text outline into a canvas item using the font, at a given position, with [param modulate] color and [param size] outline size, optionally clipping the width and aligning horizontally. [param pos] specifies the baseline of the first line, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_multiline_string_outline].
+			</description>
+		</method>
+		<method name="draw_string" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Draw [param text] into a canvas item using the font, at a given position, with [param modulate] color, optionally clipping the width and aligning horizontally. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_string].
+			</description>
+		</method>
+		<method name="draw_string_outline" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas_item" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="text" type="String" />
+			<param index="3" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="4" name="width" type="float" default="-1" />
+			<param index="5" name="font_size" type="int" default="16" />
+			<param index="6" name="size" type="int" default="1" />
+			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Draw [param text] outline into a canvas item using the font, at a given position, with [param modulate] color and [param size] outline size, optionally clipping the width and aligning horizontally. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_string_outline].
+			</description>
+		</method>
+		<method name="find_variation" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="variation_coordinates" type="Dictionary" />
+			<param index="1" name="face_index" type="int" default="0" />
+			<param index="2" name="strength" type="float" default="0.0" />
+			<param index="3" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
+			<param index="4" name="spacing_top" type="int" default="0" />
+			<param index="5" name="spacing_bottom" type="int" default="0" />
+			<param index="6" name="spacing_space" type="int" default="0" />
+			<param index="7" name="spacing_glyph" type="int" default="0" />
+			<param index="8" name="baseline_offset" type="float" default="0.0" />
+			<description>
+				Returns [TextServer] RID of the font cache for specific variation.
+			</description>
+		</method>
+		<method name="get_ascent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_size" type="int" default="16" />
+			<description>
+				Returns the average font ascent (number of pixels above the baseline).
+				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
+			</description>
+		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="char" type="int" />
+			<param index="1" name="font_size" type="int" />
+			<description>
+				Returns the size of a character. Does not take kerning into account.
+				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
+			</description>
+		</method>
+		<method name="get_descent" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_size" type="int" default="16" />
+			<description>
+				Returns the average font descent (number of pixels below the baseline).
+				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
+			</description>
+		</method>
+		<method name="get_face_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of faces in the TrueType / OpenType collection.
+			</description>
+		</method>
+		<method name="get_font_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns font family name.
+			</description>
+		</method>
+		<method name="get_font_stretch" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+			</description>
+		</method>
+		<method name="get_font_style" qualifiers="const">
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
+			<description>
+				Returns font style flags, see [enum TextServer.FontStyle].
+			</description>
+		</method>
+		<method name="get_font_style_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns font style name.
+			</description>
+		</method>
+		<method name="get_font_weight" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_size" type="int" default="16" />
+			<description>
+				Returns the total average font height (ascent plus descent) in pixels.
+				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the height of empty line).
+			</description>
+		</method>
+		<method name="get_multiline_string_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="2" name="width" type="float" default="-1" />
+			<param index="3" name="font_size" type="int" default="16" />
+			<param index="4" name="max_lines" type="int" default="-1" />
+			<param index="5" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="6" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="7" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="8" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Returns the size of a bounding box of a string broken into the lines, taking kerning and advance into account.
+				See also [method draw_multiline_string].
+			</description>
+		</method>
+		<method name="get_opentype_features" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
+		<method name="get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
+		<method name="get_rids" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns [Array] of valid [Font] [RID]s, which can be passed to the [TextServer] methods.
+			</description>
+		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+				Returns the spacing for the given [code]type[/code] (see [enum TextServer.SpacingType]).
+			</description>
+		</method>
+		<method name="get_string_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="alignment" type="int" enum="HorizontalAlignment" default="0" />
+			<param index="2" name="width" type="float" default="-1" />
+			<param index="3" name="font_size" type="int" default="16" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
+			<param index="5" name="direction" type="int" enum="TextServer.Direction" default="0" />
+			<param index="6" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<description>
+				Returns the size of a bounding box of a single-line string, taking kerning, advance and subpixel positioning into account. See also [method get_multiline_string_size] and [method draw_string].
+				For example, to get the string size as displayed by a single-line Label, use:
+				[codeblocks]
+				[gdscript]
+				var string_size = $Label.get_theme_font("font").get_string_size($Label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, $Label.get_theme_font_size("font_size"))
+				[/gdscript]
+				[csharp]
+				Label label = GetNode&lt;Label&gt;("Label");
+				Vector2 stringSize = label.GetThemeFont("font").GetStringSize(label.Text, HorizontalAlignment.Left, -1, label.GetThemeFontSize("font_size"));
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] Since kerning, advance and subpixel positioning are taken into account by [method get_string_size], using separate [method get_string_size] calls on substrings of a string then adding the results together will return a different result compared to using a single [method get_string_size] call on the full string.
+				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
+			</description>
+		</method>
+		<method name="get_supported_chars" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a string containing all the characters available in the font.
+				If a given character is included in more than one font data source, it appears only once in the returned string.
+			</description>
+		</method>
+		<method name="get_supported_feature_list" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns list of OpenType features supported by font.
+			</description>
+		</method>
+		<method name="get_supported_variation_list" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
+				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+				To print available variation axes of a variable font:
+				[codeblock]
+				var fv = FontVariation.new()
+				fv.base_font = load("res://RobotoFlex.ttf")
+				var variation_list = fv.get_supported_variation_list()
+				for tag in variation_list:
+				    var name = TextServerManager.get_primary_interface().tag_to_name(tag)
+				    var values = variation_list[tag]
+				    print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
+				[/codeblock]
+				[b]Note:[/b] To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].
+			</description>
+		</method>
+		<method name="get_underline_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_size" type="int" default="16" />
+			<description>
+				Returns average pixel offset of the underline below the baseline.
+				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+			</description>
+		</method>
+		<method name="get_underline_thickness" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="font_size" type="int" default="16" />
+			<description>
+				Returns average thickness of the underline.
+				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+			</description>
+		</method>
+		<method name="has_char" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="char" type="int" />
+			<description>
+				Returns [code]true[/code] if a Unicode [param char] is available in the font.
+			</description>
+		</method>
+		<method name="is_language_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+			</description>
+		</method>
+		<method name="is_script_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="script" type="String" />
+			<description>
+				Returns [code]true[/code], if font supports given script ([url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
+			</description>
+		</method>
+		<method name="set_cache_capacity">
+			<return type="void" />
+			<param index="0" name="single_line" type="int" />
+			<param index="1" name="multi_line" type="int" />
+			<description>
+				Sets LRU cache capacity for [code]draw_*[/code] methods.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">
+			Array of fallback [Font]s to use as a substitute if a glyph is not found in this current [Font].
+			If this array is empty in a [FontVariation], the [member FontVariation.base_font]'s fallbacks are used instead.
+		</member>
+	</members>
+</class>

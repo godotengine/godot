@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MethodTweener" inherits="Tweener" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Interpolates an abstract value and supplies it to a method called over time.
+	</brief_description>
+	<description>
+		[MethodTweener] is similar to a combination of [CallbackTweener] and [PropertyTweener]. It calls a method providing an interpolated value as a parameter. See [method Tween.tween_method] for more usage information.
+		The tweener will finish automatically if the callback's target object is freed.
+		[b]Note:[/b] [method Tween.tween_method] is the only correct way to create [MethodTweener]. Any [MethodTweener] created manually will not function correctly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_delay">
+			<return type="MethodTweener" />
+			<param index="0" name="delay" type="float" />
+			<description>
+				Sets the time in seconds after which the [MethodTweener] will start interpolating. By default there's no delay.
+			</description>
+		</method>
+		<method name="set_ease">
+			<return type="MethodTweener" />
+			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
+			<description>
+				Sets the type of used easing from [enum Tween.EaseType]. If not set, the default easing is used from the [Tween] that contains this Tweener.
+			</description>
+		</method>
+		<method name="set_trans">
+			<return type="MethodTweener" />
+			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
+			<description>
+				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
+			</description>
+		</method>
+	</methods>
+</class>

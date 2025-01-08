@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputMap" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A singleton that manages all [InputEventAction]s.
+	</brief_description>
+	<description>
+		Manages all [InputEventAction] which can be created/modified from the project settings menu [b]Project &gt; Project Settings &gt; Input Map[/b] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
+	</description>
+	<tutorials>
+		<link title="Using InputEvent: InputMap">$DOCS_URL/tutorials/inputs/inputevent.html#inputmap</link>
+	</tutorials>
+	<methods>
+		<method name="action_add_event">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Adds an [InputEvent] to an action. This [InputEvent] will trigger the action.
+			</description>
+		</method>
+		<method name="action_erase_event">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Removes an [InputEvent] from an action.
+			</description>
+		</method>
+		<method name="action_erase_events">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Removes all events from an action.
+			</description>
+		</method>
+		<method name="action_get_deadzone">
+			<return type="float" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Returns a deadzone value for the action.
+			</description>
+		</method>
+		<method name="action_get_events">
+			<return type="InputEvent[]" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Returns an array of [InputEvent]s associated with a given action.
+				[b]Note:[/b] When used in the editor (e.g. a tool script or [EditorPlugin]), this method will return events for the editor action. If you want to access your project's input binds from the editor, read the [code]input/*[/code] settings from [ProjectSettings].
+			</description>
+		</method>
+		<method name="action_has_event">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<description>
+				Returns [code]true[/code] if the action has the given [InputEvent] associated with it.
+			</description>
+		</method>
+		<method name="action_set_deadzone">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="deadzone" type="float" />
+			<description>
+				Sets a deadzone value for the action.
+			</description>
+		</method>
+		<method name="add_action">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="deadzone" type="float" default="0.2" />
+			<description>
+				Adds an empty action to the [InputMap] with a configurable [param deadzone].
+				An [InputEvent] can then be added to this action with [method action_add_event].
+			</description>
+		</method>
+		<method name="erase_action">
+			<return type="void" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Removes an action from the [InputMap].
+			</description>
+		</method>
+		<method name="event_is_action" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<param index="1" name="action" type="StringName" />
+			<param index="2" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+			</description>
+		</method>
+		<method name="get_actions">
+			<return type="StringName[]" />
+			<description>
+				Returns an array of all actions in the [InputMap].
+			</description>
+		</method>
+		<method name="has_action" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
+			</description>
+		</method>
+		<method name="load_from_project_settings">
+			<return type="void" />
+			<description>
+				Clears all [InputEventAction] in the [InputMap] and load it anew from [ProjectSettings].
+			</description>
+		</method>
+	</methods>
+</class>

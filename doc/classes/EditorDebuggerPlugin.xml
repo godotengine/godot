@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorDebuggerPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base class to implement debugger plugins.
+	</brief_description>
+	<description>
+		[EditorDebuggerPlugin] provides functions related to the editor side of the debugger.
+		To interact with the debugger, an instance of this class must be added to the editor via [method EditorPlugin.add_debugger_plugin].
+		Once added, the [method _setup_session] callback will be called for every [EditorDebuggerSession] available to the plugin, and when new ones are created (the sessions may be inactive during this stage).
+		You can retrieve the available [EditorDebuggerSession]s via [method get_sessions] or get a specific one via [method get_session].
+		[codeblocks]
+		[gdscript]
+		@tool
+		extends EditorPlugin
+
+		class ExampleEditorDebugger extends EditorDebuggerPlugin:
+
+		    func _has_capture(capture):
+		        # Return true if you wish to handle messages with the prefix "my_plugin:".
+		        return capture == "my_plugin"
+
+		    func _capture(message, data, session_id):
+		        if message == "my_plugin:ping":
+		            get_session(session_id).send_message("my_plugin:echo", data)
+		            return true
+		        return false
+
+		    func _setup_session(session_id):
+		        # Add a new tab in the debugger session UI containing a label.
+		        var label = Label.new()
+		        label.name = "Example plugin" # Will be used as the tab title.
+		        label.text = "Example plugin"
+		        var session = get_session(session_id)
+		        # Listens to the session started and stopped signals.
+		        session.started.connect(func (): print("Session started"))
+		        session.stopped.connect(func (): print("Session stopped"))
+		        session.add_session_tab(label)
+
+		var debugger = ExampleEditorDebugger.new()
+
+		func _enter_tree():
+		    add_debugger_plugin(debugger)
+
+		func _exit_tree():
+		    remove_debugger_plugin(debugger)
+		[/gdscript]
+		[/codeblocks]
+		To connect on the running game side, use the [EngineDebugger] singleton:
+		[codeblocks]
+		[gdscript]
+		extends Node
+
+		func _ready():
+		    EngineDebugger.register_message_capture("my_plugin", _capture)
+		    EngineDebugger.send_message("my_plugin:ping", ["test"])
+
+		func _capture(message, data):
+		    # Note that the "my_plugin:" prefix is not used here.
+		    if message == "echo":
+		        prints("Echo received:", data)
+		        return true
+		    return false
+		[/gdscript]
+		[/codeblocks]
+		[b]Note:[/b] While the game is running, [method @GlobalScope.print] and similar functions [i]called in the editor[/i] do not print anything, the Output Log prints only game messages.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_breakpoint_set_in_tree" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<param index="1" name="line" type="int" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Override this method to be notified when a breakpoint is set in the editor.
+			</description>
+		</method>
+		<method name="_breakpoints_cleared_in_tree" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to be notified when all breakpoints are cleared in the editor.
+			</description>
+		</method>
+		<method name="_capture" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" />
+			<param index="2" name="session_id" type="int" />
+			<description>
+				Override this method to process incoming messages. The [param session_id] is the ID of the [EditorDebuggerSession] that received the [param message]. Use [method get_session] to retrieve the session. This method should return [code]true[/code] if the message is recognized.
+			</description>
+		</method>
+		<method name="_goto_script_line" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<param index="1" name="line" type="int" />
+			<description>
+				Override this method to be notified when a breakpoint line has been clicked in the debugger breakpoint panel.
+			</description>
+		</method>
+		<method name="_has_capture" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="capture" type="String" />
+			<description>
+				Override this method to enable receiving messages from the debugger. If [param capture] is "my_message" then messages starting with "my_message:" will be passes to the [method _capture] method.
+			</description>
+		</method>
+		<method name="_setup_session" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="session_id" type="int" />
+			<description>
+				Override this method to be notified whenever a new [EditorDebuggerSession] is created. Note that the session may be inactive during this stage.
+			</description>
+		</method>
+		<method name="get_session">
+			<return type="EditorDebuggerSession" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the [EditorDebuggerSession] with the given [param id].
+			</description>
+		</method>
+		<method name="get_sessions">
+			<return type="Array" />
+			<description>
+				Returns an array of [EditorDebuggerSession] currently available to this debugger plugin.
+				[b]Note:[/b] Sessions in the array may be inactive, check their state via [method EditorDebuggerSession.is_active].
+			</description>
+		</method>
+	</methods>
+</class>

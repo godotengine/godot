@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineSpecializationConstant" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline specialization constant (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		A [i]specialization constant[/i] is a way to create additional variants of shaders without actually increasing the number of shader versions that are compiled. This allows improving performance by reducing the number of shader versions and reducing [code]if[/code] branching, while still allowing shaders to be flexible for different use cases.
+		This object is used by [RenderingDevice].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="constant_id" type="int" setter="set_constant_id" getter="get_constant_id" default="0">
+			The identifier of the specialization constant. This is a value starting from [code]0[/code] and that increments for every different specialization constant for a given shader.
+		</member>
+		<member name="value" type="Variant" setter="set_value" getter="get_value">
+			The specialization constant's value. Only [bool], [int] and [float] types are valid for specialization constants.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Transform2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2×3 matrix representing a 2D transformation.
+	</brief_description>
+	<description>
+		The [Transform2D] built-in [Variant] type is a 2×3 [url=https://en.wikipedia.org/wiki/Matrix_(mathematics)]matrix[/url] representing a transformation in 2D space. It contains three [Vector2] values: [member x], [member y], and [member origin]. Together, they can represent translation, rotation, scale, and skew.
+		The [member x] and [member y] axes form a 2×2 matrix, known as the transform's [b]basis[/b]. The length of each axis ([method Vector2.length]) influences the transform's scale, while the direction of all axes influence the rotation. Usually, both axes are perpendicular to one another. However, when you rotate one axis individually, the transform becomes skewed. Applying a skewed transform to a 2D sprite will make the sprite appear distorted.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
+		[b]Note:[/b] Unlike [Transform3D], there is no 2D equivalent to the [Basis] type. All mentions of "basis" refer to the [member x] and [member y] components of [Transform2D].
+	</description>
+	<tutorials>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Transform2D">
+			<return type="Transform2D" />
+			<description>
+				Constructs a [Transform2D] identical to [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Transform2D] with all of its components set to [constant Vector2.ZERO].
+			</description>
+		</constructor>
+		<constructor name="Transform2D">
+			<return type="Transform2D" />
+			<param index="0" name="from" type="Transform2D" />
+			<description>
+				Constructs a [Transform2D] as a copy of the given [Transform2D].
+			</description>
+		</constructor>
+		<constructor name="Transform2D">
+			<return type="Transform2D" />
+			<param index="0" name="rotation" type="float" />
+			<param index="1" name="position" type="Vector2" />
+			<description>
+				Constructs a [Transform2D] from a given angle (in radians) and position.
+			</description>
+		</constructor>
+		<constructor name="Transform2D">
+			<return type="Transform2D" />
+			<param index="0" name="rotation" type="float" />
+			<param index="1" name="scale" type="Vector2" />
+			<param index="2" name="skew" type="float" />
+			<param index="3" name="position" type="Vector2" />
+			<description>
+				Constructs a [Transform2D] from a given angle (in radians), scale, skew (in radians), and position.
+			</description>
+		</constructor>
+		<constructor name="Transform2D">
+			<return type="Transform2D" />
+			<param index="0" name="x_axis" type="Vector2" />
+			<param index="1" name="y_axis" type="Vector2" />
+			<param index="2" name="origin" type="Vector2" />
+			<description>
+				Constructs a [Transform2D] from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three matrix columns).
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="affine_inverse" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the inverted version of this transform. Unlike [method inverse], this method works with almost any basis, including non-uniform ones, but is slower.
+				[b]Note:[/b] For this method to return correctly, the transform's basis needs to have a determinant that is not exactly [code]0.0[/code] (see [method determinant]).
+			</description>
+		</method>
+		<method name="basis_xform" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="v" type="Vector2" />
+			<description>
+				Returns a copy of the [param v] vector, transformed (multiplied) by the transform basis's matrix. Unlike the multiplication operator ([code]*[/code]), this method ignores the [member origin].
+			</description>
+		</method>
+		<method name="basis_xform_inv" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="v" type="Vector2" />
+			<description>
+				Returns a copy of the [param v] vector, transformed (multiplied) by the inverse transform basis's matrix (see [method inverse]). This method ignores the [member origin].
+				[b]Note:[/b] This method assumes that this transform's basis is [i]orthonormal[/i] (see [method orthonormalized]). If the basis is not orthonormal, [code]transform.affine_inverse().basis_xform(vector)[/code] should be used instead (see [method affine_inverse]).
+			</description>
+		</method>
+		<method name="determinant" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the [url=https://en.wikipedia.org/wiki/Determinant]determinant[/url] of this transform basis's matrix. For advanced math, this number can be used to determine a few attributes:
+				- If the determinant is exactly [code]0.0[/code], the basis is not invertible (see [method inverse]).
+				- If the determinant is a negative number, the basis represents a negative scale.
+				[b]Note:[/b] If the basis's scale is the same for every axis, its determinant is always that scale by the power of 2.
+			</description>
+		</method>
+		<method name="get_origin" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns this transform's translation. Equivalent to [member origin].
+			</description>
+		</method>
+		<method name="get_rotation" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns this transform's rotation (in radians). This is equivalent to [member x]'s angle (see [method Vector2.angle]).
+			</description>
+		</method>
+		<method name="get_scale" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the length of both [member x] and [member y], as a [Vector2]. If this transform's basis is not skewed, this value is the scaling factor. It is not affected by rotation.
+				[codeblocks]
+				[gdscript]
+				var my_transform = Transform2D(
+				    Vector2(2, 0),
+				    Vector2(0, 4),
+				    Vector2(0, 0)
+				)
+				# Rotating the Transform2D in any way preserves its scale.
+				my_transform = my_transform.rotated(TAU / 2)
+
+				print(my_transform.get_scale()) # Prints (2.0, 4.0)
+				[/gdscript]
+				[csharp]
+				var myTransform = new Transform2D(
+				    Vector3(2.0f, 0.0f),
+				    Vector3(0.0f, 4.0f),
+				    Vector3(0.0f, 0.0f)
+				);
+				// Rotating the Transform2D in any way preserves its scale.
+				myTransform = myTransform.Rotated(Mathf.Tau / 2.0f);
+
+				GD.Print(myTransform.GetScale()); // Prints (2, 4)
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If the value returned by [method determinant] is negative, the scale is also negative.
+			</description>
+		</method>
+		<method name="get_skew" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns this transform's skew (in radians).
+			</description>
+		</method>
+		<method name="interpolate_with" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="xform" type="Transform2D" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns the result of the linear interpolation between this transform and [param xform] by the given [param weight].
+				The [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Values outside this range are allowed and can be used to perform [i]extrapolation[/i] instead.
+			</description>
+		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the [url=https://en.wikipedia.org/wiki/Invertible_matrix]inverted version of this transform[/url].
+				[b]Note:[/b] For this method to return correctly, the transform's basis needs to be [i]orthonormal[/i] (see [method orthonormalized]). That means the basis should only represent a rotation. If it does not, use [method affine_inverse] instead.
+			</description>
+		</method>
+		<method name="is_conformal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this transform's basis is conformal. A conformal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]uniform[/i] (the axes share the same length). This method can be especially useful during physics calculations.
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="xform" type="Transform2D" />
+			<description>
+				Returns [code]true[/code] if this transform and [param xform] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this transform is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
+		<method name="looking_at" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="target" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Returns a copy of the transform rotated such that the rotated X-axis points towards the [param target] position, in global space.
+			</description>
+		</method>
+		<method name="orthonormalized" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns a copy of this transform with its basis orthonormalized. An orthonormal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]normalized[/i] (the axes have a length of [code]1.0[/code]), which also means it can only represent a rotation.
+			</description>
+		</method>
+		<method name="rotated" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="angle" type="float" />
+			<description>
+				Returns a copy of this transform rotated by the given [param angle] (in radians).
+				If [param angle] is positive, the transform is rotated clockwise.
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="rotated_local" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="angle" type="float" />
+			<description>
+				Returns a copy of the transform rotated by the given [param angle] (in radians).
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
+				This can be seen as transforming with respect to the local frame.
+			</description>
+		</method>
+		<method name="scaled" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="scale" type="Vector2" />
+			<description>
+				Returns a copy of the transform scaled by the given [param scale] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="scaled_local" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="scale" type="Vector2" />
+			<description>
+				Returns a copy of the transform scaled by the given [param scale] factor.
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
+				This can be seen as transforming with respect to the local frame.
+			</description>
+		</method>
+		<method name="translated" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Returns a copy of the transform translated by the given [param offset].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
+				This can be seen as transforming with respect to the global/parent frame.
+			</description>
+		</method>
+		<method name="translated_local" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Returns a copy of the transform translated by the given [param offset].
+				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
+				This can be seen as transforming with respect to the local frame.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="origin" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
+			The translation offset of this transform, and the column [code]2[/code] of the matrix. In 2D space, this can be seen as the position.
+		</member>
+		<member name="x" type="Vector2" setter="" getter="" default="Vector2(1, 0)">
+			The transform basis's X axis, and the column [code]0[/code] of the matrix. Combined with [member y], this represents the transform's rotation, scale, and skew.
+			On the identity transform, this vector points right ([constant Vector2.RIGHT]).
+		</member>
+		<member name="y" type="Vector2" setter="" getter="" default="Vector2(0, 1)">
+			The transform basis's Y axis, and the column [code]1[/code] of the matrix. Combined with [member x], this represents the transform's rotation, scale, and skew.
+			On the identity transform, this vector points down ([constant Vector2.DOWN]).
+		</member>
+	</members>
+	<constants>
+		<constant name="IDENTITY" value="Transform2D(1, 0, 0, 1, 0, 0)">
+			The identity [Transform2D]. This is a transform with no translation, no rotation, and a scale of [constant Vector2.ONE]. This also means that:
+			- The [member x] points right ([constant Vector2.RIGHT]);
+			- The [member y] points down ([constant Vector2.DOWN]).
+			[codeblock]
+			var transform = Transform2D.IDENTITY
+			print("| X | Y | Origin")
+			print("| %.f | %.f | %.f" % [transform.x.x, transform.y.x, transform.origin.x])
+			print("| %.f | %.f | %.f" % [transform.x.y, transform.y.y, transform.origin.y])
+			# Prints:
+			# | X | Y | Origin
+			# | 1 | 0 | 0
+			# | 0 | 1 | 0
+			[/codeblock]
+			If a [Vector2], a [Rect2], a [PackedVector2Array], or another [Transform2D] is transformed (multiplied) by this constant, no transformation occurs.
+			[b]Note:[/b] In GDScript, this constant is equivalent to creating a [constructor Transform2D] without any arguments. It can be used to make your code clearer, and for consistency with C#.
+		</constant>
+		<constant name="FLIP_X" value="Transform2D(-1, 0, 0, 1, 0, 0)">
+			When any transform is multiplied by [constant FLIP_X], it negates all components of the [member x] axis (the X column).
+			When [constant FLIP_X] is multiplied by any transform, it negates the [member Vector2.x] component of all axes (the X row).
+		</constant>
+		<constant name="FLIP_Y" value="Transform2D(1, 0, 0, -1, 0, 0)">
+			When any transform is multiplied by [constant FLIP_Y], it negates all components of the [member y] axis (the Y column).
+			When [constant FLIP_Y] is multiplied by any transform, it negates the [member Vector2.y] component of all axes (the Y row).
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Transform2D" />
+			<description>
+				Returns [code]true[/code] if the components of both transforms are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="PackedVector2Array" />
+			<param index="0" name="right" type="PackedVector2Array" />
+			<description>
+				Transforms (multiplies) every [Vector2] element of the given [PackedVector2Array] by this transformation matrix.
+				On larger arrays, this operation is much faster than transforming each [Vector2] individually.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Rect2" />
+			<param index="0" name="right" type="Rect2" />
+			<description>
+				Transforms (multiplies) the [Rect2] by this transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="Transform2D" />
+			<description>
+				Transforms (multiplies) this transform by the [param right] transform.
+				This is the operation performed between parent and child [CanvasItem] nodes.
+				[b]Note:[/b] If you need to only modify one attribute of this transform, consider using one of the following methods, instead:
+				- For translation, see [method translated] or [method translated_local].
+				- For rotation, see [method rotated] or [method rotated_local].
+				- For scale, see [method scaled] or [method scaled_local].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector2" />
+			<param index="0" name="right" type="Vector2" />
+			<description>
+				Transforms (multiplies) the [Vector2] by this transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies all components of the [Transform2D] by the given [float], including the [member origin]. This affects the transform's scale uniformly.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies all components of the [Transform2D] by the given [int], including the [member origin]. This affects the transform's scale uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides all components of the [Transform2D] by the given [float], including the [member origin]. This affects the transform's scale uniformly.
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform2D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides all components of the [Transform2D] by the given [int], including the [member origin]. This affects the transform's scale uniformly.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Transform2D" />
+			<description>
+				Returns [code]true[/code] if the components of both transforms are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Accesses each axis (column) of this transform by their index. Index [code]0[/code] is the same as [member x], index [code]1[/code] is the same as [member y], and index [code]2[/code] is the same as [member origin].
+			</description>
+		</operator>
+	</operators>
+</class>
