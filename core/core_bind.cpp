@@ -1437,8 +1437,8 @@ PackedStringArray ClassDB::get_class_list() const {
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-	List<StringName> classes;
-	::ClassDB::get_inheriters_from_class(p_class, &classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_inheriters_from_class(p_class, classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
