@@ -185,6 +185,7 @@ protected:
 	void _warning_clicked(const Variant &p_line);
 
 	void _notification(int p_what);
+	static void _bind_methods();
 
 	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);
@@ -201,6 +202,8 @@ protected:
 	void _validate_symbol(const String &p_symbol);
 
 	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+	void _show_resource_path_tooltip(const String &p_path, const String &p_uid);
+	void _resource_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 

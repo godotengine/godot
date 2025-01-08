@@ -46,6 +46,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -1102,6 +1103,28 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 }
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column) {
+	{
+		bool is_path = p_symbol.begins_with("res://");
+		bool is_uid = p_symbol.begins_with("uid://");
+		if (is_path || is_uid) {
+			String path;
+			String uid;
+
+			if (is_path) {
+				path = p_symbol;
+				ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+				if (id != ResourceUID::INVALID_ID) {
+					uid = ResourceUID::get_singleton()->id_to_text(id);
+				}
+			} else {
+				uid = p_symbol;
+				path = ResourceUID::uid_to_path(uid);
+			}
+			_show_resource_path_tooltip(path, uid);
+			return;
+		}
+	}
+
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base, base, script);
@@ -1214,6 +1237,63 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
 		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true);
+	}
+}
+
+void ScriptTextEditor::_show_resource_path_tooltip(const String &p_path, const String &p_uid) {
+	VBoxContainer *info_container = memnew(VBoxContainer);
+
+	GridContainer *labels = memnew(GridContainer);
+	labels->set_columns(2);
+	info_container->add_child(labels);
+
+	if (!p_path.is_empty()) {
+		Label *label = memnew(Label(TTRC("Path:")));
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+		labels->add_child(label);
+
+		label = memnew(Label(p_path));
+		labels->add_child(label);
+	}
+
+	if (!p_uid.is_empty()) {
+		Label *label = memnew(Label(TTRC("UID:")));
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+		labels->add_child(label);
+
+		label = memnew(Label(p_uid));
+		labels->add_child(label);
+	}
+
+	{
+		Label *label = memnew(Label(TTRC("Type:")));
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		label->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+		labels->add_child(label);
+
+		label = memnew(Label(ResourceLoader::get_resource_type(p_path)));
+		labels->add_child(label);
+	}
+
+	TextureRect *preview = memnew(TextureRect);
+	preview->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	info_container->add_child(preview);
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_resource_thumbnail_ready", preview->get_instance_id());
+
+	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(code_editor->get_text_editor()));
+	tooltip->add_child(info_container);
+	code_editor->get_text_editor()->add_child(tooltip);
+
+	tooltip->popup_under_cursor();
+}
+
+void ScriptTextEditor::_resource_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
+	ObjectID trid = p_udata;
+	TextureRect *tr = Object::cast_to<TextureRect>(ObjectDB::get_instance(trid));
+	if (tr) {
+		tr->set_texture(p_preview);
 	}
 }
 
@@ -1806,6 +1886,10 @@ void ScriptTextEditor::_notification(int p_what) {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
 	}
+}
+
+void ScriptTextEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_resource_thumbnail_ready"), &ScriptTextEditor::_resource_thumbnail_ready);
 }
 
 Control *ScriptTextEditor::get_edit_menu() {
