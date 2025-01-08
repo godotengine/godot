@@ -1280,7 +1280,7 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="ambient" type="int" enum="RenderingServer.EnvironmentAmbientSource" default="0" />
 			<param index="3" name="energy" type="float" default="1.0" />
-			<param index="4" name="sky_contibution" type="float" default="0.0" />
+			<param index="4" name="sky_contribution" type="float" default="0.0" />
 			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
 			<description>
 				Sets the values to be used for ambient light rendering. See [Environment] for more details.

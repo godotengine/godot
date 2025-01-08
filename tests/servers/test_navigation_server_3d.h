@@ -634,7 +634,7 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(source_geometry->get_indices().size(), 6);
 		}
 
-		SUBCASE("Parsed geometry should be extendible with other geometry") {
+		SUBCASE("Parsed geometry should be extendable with other geometry") {
 			source_geometry->merge(source_geometry); // Merging with itself.
 			const Vector<float> vertices = source_geometry->get_vertices();
 			const Vector<int> indices = source_geometry->get_indices();

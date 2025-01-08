@@ -51,7 +51,7 @@ struct GLTFKeyValue {
 
 struct GLTFTestCase {
 	String filename;
-	String copywrite;
+	String copyright;
 	String generator;
 	String version;
 	Vector<GLTFArraySize> array_sizes;
@@ -169,7 +169,7 @@ void test_gltf_document_values(Ref<GLTFDocument> &p_gltf_document, Ref<GLTFState
 		CHECK_MESSAGE(p_gltf_state->getvar(key_value.key) == key_value.val, "Expected \"", key_value.key, "\" to be \"", key_value.val, "\".");
 	}
 
-	CHECK(p_gltf_state->get_copyright() == p_test_case.copywrite);
+	CHECK(p_gltf_state->get_copyright() == p_test_case.copyright);
 	CHECK(((Dictionary)p_gltf_state->get_json()["asset"])["generator"] == p_test_case.generator);
 	CHECK(((Dictionary)p_gltf_state->get_json()["asset"])["version"] == p_test_case.version);
 }

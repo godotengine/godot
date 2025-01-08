@@ -8175,7 +8175,7 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::get_supported_gltf_extensions);
 }
 
-void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> p_state) {
+void GLTFDocument::_build_parent_hierarchy(Ref<GLTFState> p_state) {
 	// build the hierarchy
 	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); node_i++) {
 		for (int j = 0; j < p_state->nodes[node_i]->children.size(); j++) {

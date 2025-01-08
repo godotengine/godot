@@ -275,7 +275,7 @@ private:
 		uint32_t spare3; // Not used.
 		uint64_t code_limit_64; // Set to 0 and ignore.
 		// Version 0x20400
-		uint64_t exec_seg_base; // Start of the signed code segmet.
+		uint64_t exec_seg_base; // Start of the signed code segment.
 		uint64_t exec_seg_limit; // Code segment (__TEXT) vmsize.
 		uint64_t exec_seg_flags; // Executable segment flags.
 		// Version 0x20500

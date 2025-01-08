@@ -817,7 +817,7 @@ void TextEdit::_notification(int p_what) {
 
 			int first_vis_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-			draw_amount += draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
+			draw_amount += draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
 
 			// Draw minimap.
 			if (draw_minimap) {
@@ -1046,8 +1046,8 @@ void TextEdit::_notification(int p_what) {
 
 				const Ref<TextParagraph> ldata = draw_placeholder ? placeholder_data_buf : text.get_line_data(line);
 
-				const Vector<String> wrap_rows = draw_placeholder ? placeholder_wraped_rows : get_line_wrapped_text(line);
-				int line_wrap_amount = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(line);
+				const Vector<String> wrap_rows = draw_placeholder ? placeholder_wrapped_rows : get_line_wrapped_text(line);
+				int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
 
 				for (int line_wrap_index = 0; line_wrap_index <= line_wrap_amount; line_wrap_index++) {
 					if (line_wrap_index != 0) {
@@ -2915,10 +2915,10 @@ void TextEdit::_update_placeholder() {
 	placeholder_max_width = placeholder_data_buf->get_size().x;
 
 	// Update wrapped rows.
-	placeholder_wraped_rows.clear();
+	placeholder_wrapped_rows.clear();
 	for (int i = 0; i <= wrap_amount; i++) {
 		Vector2i line_range = placeholder_data_buf->get_line_range(i);
-		placeholder_wraped_rows.push_back(placeholder_translated.substr(line_range.x, line_range.y - line_range.x));
+		placeholder_wrapped_rows.push_back(placeholder_translated.substr(line_range.x, line_range.y - line_range.x));
 	}
 }
 
@@ -7328,8 +7328,8 @@ void TextEdit::_paste_internal(int p_caret) {
 	}
 
 	// Paste text at each caret or one line per caret.
-	Vector<String> clipboad_lines = clipboard.split("\n");
-	bool insert_line_per_caret = p_caret == -1 && get_caret_count() > 1 && clipboad_lines.size() == get_caret_count();
+	Vector<String> clipboard_lines = clipboard.split("\n");
+	bool insert_line_per_caret = p_caret == -1 && get_caret_count() > 1 && clipboard_lines.size() == get_caret_count();
 
 	begin_complex_operation();
 	begin_multicaret_edit();
@@ -7345,7 +7345,7 @@ void TextEdit::_paste_internal(int p_caret) {
 		}
 
 		if (insert_line_per_caret) {
-			clipboard = clipboad_lines[i];
+			clipboard = clipboard_lines[i];
 		}
 
 		insert_text_at_caret(clipboard, caret_index);
@@ -7988,7 +7988,7 @@ void TextEdit::_update_scrollbars() {
 	bool draw_placeholder = _using_placeholder();
 
 	int visible_rows = get_visible_line_count();
-	int total_rows = draw_placeholder ? placeholder_wraped_rows.size() : get_total_visible_line_count();
+	int total_rows = draw_placeholder ? placeholder_wrapped_rows.size() : get_total_visible_line_count();
 	if (scroll_past_end_of_file_enabled && !fit_content_height) {
 		total_rows += visible_rows - 1;
 	}
@@ -8074,14 +8074,14 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		for (n_line = 0; n_line < text.size(); n_line++) {
 			if (!_is_line_hidden(n_line)) {
 				sc++;
-				sc += draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
+				sc += draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
 				if (sc > v_scroll_i) {
 					break;
 				}
 			}
 		}
 		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(n_line);
+		int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
 
