@@ -219,6 +219,7 @@ void OpenXRCompositionLayer::_setup_composition_layer_provider() {
 	if (use_android_surface || layer_viewport) {
 		if (composition_layer_extension) {
 			composition_layer_extension->register_viewport_composition_layer_provider(openxr_layer_provider);
+			registered = true;
 		}
 
 		// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
@@ -232,6 +233,7 @@ void OpenXRCompositionLayer::_setup_composition_layer_provider() {
 void OpenXRCompositionLayer::_clear_composition_layer_provider() {
 	if (composition_layer_extension) {
 		composition_layer_extension->unregister_viewport_composition_layer_provider(openxr_layer_provider);
+		registered = false;
 	}
 
 	// NOTE: We don't setup/clear when using Android surfaces, so we don't destroy the surface unexpectedly.
@@ -296,6 +298,9 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	}
 
 	layer_viewport = p_viewport;
+	if (!registered && is_natively_supported() && openxr_session_running && is_inside_tree() && is_visible()) {
+		_setup_composition_layer_provider();
+	}
 
 	if (layer_viewport) {
 		SubViewport::UpdateMode update_mode = layer_viewport->get_update_mode();
