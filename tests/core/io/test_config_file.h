@@ -123,7 +123,7 @@ TEST_CASE("[ConfigFile] Saving file") {
 	config_file.set_value("player", "position", Vector2(3, 4));
 	config_file.set_value("graphics", "antialiasing", true);
 	config_file.set_value("graphics", "antiAliasing", false);
-	config_file.set_value("quoted", String::utf8("静音"), 42);
+	config_file.set_value("quoted", String::utf8(u8"静音"), 42);
 	config_file.set_value("quoted", "a=b", 7);
 
 #ifdef WINDOWS_ENABLED
