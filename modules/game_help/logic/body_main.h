@@ -494,6 +494,13 @@ public:
 		for (auto& part : bodyPart) {
 			aabb = aabb.merge(part.value->get_mesh_aabb());
 		}
+        Skeleton3D * skeleton = get_skeleton();
+        if(skeleton) {
+            int root_bone = skeleton->find_bone("root");
+            if(root_bone != -1) {
+                aabb = skeleton->get_bone_global_pose(root_bone).xform(aabb);
+            }
+        }
 		return aabb;
 	}
     Ref<RenIK> get_ik()

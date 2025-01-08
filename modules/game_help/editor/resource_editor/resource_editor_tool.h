@@ -16,9 +16,11 @@ public:
             Button* child = Object::cast_to<Button>(tool_bar->get_child(i));
             if(child->get_text() == tool) {
                 child->set_pressed(true);
+                child->set_modulate(Color(1, 0.355482, 0.26278, 1));
             }
             else {
                 child->set_pressed(false);
+                child->set_modulate(Color(1, 1, 1, 1));
             }
         }
         for(auto &item : items) {

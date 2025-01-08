@@ -166,6 +166,8 @@ void initialize_game_help_module(ModuleInitializationLevel p_level) {
 
 		ClassDB::register_class<CharacterPrefabProcessPanellItem>();
 		ClassDB::register_class<CharacterPrefabProcessPanel>();
+
+		
 #endif
 
 		ClassDB::register_class<CSVData>();

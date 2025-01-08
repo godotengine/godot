@@ -573,7 +573,7 @@ UnityLinkServerEditorPlugin::UnityLinkServerEditorPlugin() {
 	EditorInspectorPluginBBParam *param_plugin = memnew(EditorInspectorPluginBBParam);
 	add_inspector_plugin(param_plugin);
 	add_inspector_plugin(var_plugin);
-	add_control_to_bottom_panel(memnew(ResourceEditorTool),L"资源编辑器工具");
+	add_control_to_bottom_panel(memnew(ResourceEditorTool),L"资源编辑器");
 
 	EditorNode::get_log()->add_message("register:GameHelpInspectorPlugin");
 }

@@ -68,6 +68,7 @@ AnimationPreviewPanel::AnimationPreviewPanel() {
     animation_list->set_h_size_flags(SIZE_EXPAND_FILL);
     animation_list->set_v_size_flags(SIZE_EXPAND_FILL); 
     animation_list->set_layout_mode(LAYOUT_MODE_CONTAINER);
+	animation_list->set_item_size(Vector2(300, 280));
     hbc->add_child(animation_list);
 
     set_process(true);
