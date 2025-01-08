@@ -31,8 +31,8 @@
 #ifndef LRU_H
 #define LRU_H
 
+#include "a_hash_map.h"
 #include "core/math/math_funcs.h"
-#include "hash_map.h"
 #include "list.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -65,7 +65,7 @@ public:
 
 private:
 	List<Pair> _list;
-	HashMap<TKey, Element, Hasher, Comparator> _map;
+	AHashMap<TKey, Element, Hasher, Comparator> _map;
 	size_t capacity;
 
 public:
@@ -82,7 +82,7 @@ public:
 			_list.erase(*e);
 			_map.erase(p_key);
 		}
-		_map[p_key] = _list.front();
+		_map.insert_new(p_key, _list.front());
 
 		while (_map.size() > capacity) {
 			Element d = _list.back();

@@ -144,21 +144,9 @@ private:
 	} runlevel_data;
 	ConditionVariable control_cond_var;
 
-	HashMap<Thread::ID, int> thread_ids;
-	HashMap<
-			TaskID,
-			Task *,
-			HashMapHasherDefault,
-			HashMapComparatorDefault<TaskID>,
-			PagedAllocator<HashMapElement<TaskID, Task *>, false, TASKS_PAGE_SIZE>>
-			tasks;
-	HashMap<
-			GroupID,
-			Group *,
-			HashMapHasherDefault,
-			HashMapComparatorDefault<GroupID>,
-			PagedAllocator<HashMapElement<GroupID, Group *>, false, GROUPS_PAGE_SIZE>>
-			groups;
+	AHashMap<Thread::ID, int> thread_ids;
+	AHashMap<TaskID, Task *> tasks;
+	AHashMap<GroupID, Group *> groups;
 
 	uint32_t max_low_priority_threads = 0;
 	uint32_t low_priority_threads_used = 0;

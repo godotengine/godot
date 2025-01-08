@@ -36,6 +36,7 @@
 #include "core/object/object_id.h"
 #include "core/os/rw_lock.h"
 #include "core/os/spin_lock.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -610,12 +611,11 @@ private:
 			List<Connection>::Element *cE = nullptr;
 		};
 
-		MethodInfo user;
-		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
-		bool removable = false;
+		AHashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
 	};
 
-	HashMap<StringName, SignalData> signal_map;
+	AHashMap<StringName, SignalData> signal_map;
+	AHashMap<StringName, MethodInfo> user_signal_map = 8u;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
