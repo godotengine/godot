@@ -846,8 +846,8 @@
 			If [code]true[/code], it will require two swipes to access iOS UI that uses gestures.
 			[b]Note:[/b] This setting has no effect on the home indicator if [code]hide_home_indicator[/code] is [code]true[/code].
 		</member>
-		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/viewport/transparent_background].
+		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, but is necessary to allow non-embedded [Popup]s to have visible shadows. If you don't need this, you can change it to [code]false[/code]. See also [member display/window/size/transparent] and [member rendering/viewport/transparent_background].
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Forces the main window to be always on top.
