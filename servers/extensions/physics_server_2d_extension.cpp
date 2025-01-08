@@ -40,11 +40,15 @@ void PhysicsDirectSpaceState2DExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_body_excluded_from_query", "body"), &PhysicsDirectSpaceState2DExtension::is_body_excluded_from_query);
 
 	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "result");
-	GDVIRTUAL_BIND(_intersect_point, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
+	GDVIRTUAL_BIND(_intersect_point, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results", "check_canvas_instance_id");
 	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "result", "max_results");
 	GDVIRTUAL_BIND(_cast_motion, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "closest_safe", "closest_unsafe");
 	GDVIRTUAL_BIND(_collide_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results", "result_count");
 	GDVIRTUAL_BIND(_rest_info, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "rest_info");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_intersect_point_compat_101300, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
+#endif // DISABLE_DEPRECATED
 }
 
 PhysicsDirectSpaceState2DExtension::PhysicsDirectSpaceState2DExtension() {
