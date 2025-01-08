@@ -53,7 +53,8 @@
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
-			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.
+			The [Color] of the light in linear space. Defaults to white. A black color causes the light to have no effect.
+			This value is linear to match glTF, but will be converted to nonlinear sRGB when creating a Godot [Light3D] node upon import, or converted to linear when exporting a Godot [Light3D] to glTF.
 		</member>
 		<member name="inner_cone_angle" type="float" setter="set_inner_cone_angle" getter="get_inner_cone_angle" default="0.0">
 			The inner angle of the cone in a spotlight. Must be less than or equal to the outer cone angle.
