@@ -111,7 +111,7 @@ def print_info(*values: object) -> None:
     if _stdout_override:
         print(f"{Ansi.GRAY}{Ansi.BOLD}INFO:{Ansi.REGULAR}", *values, Ansi.RESET)
     else:
-        print(*values)
+        print("INFO:", *values)
 
 
 def print_warning(*values: object) -> None:
@@ -119,7 +119,7 @@ def print_warning(*values: object) -> None:
     if _stderr_override:
         print(f"{Ansi.YELLOW}{Ansi.BOLD}WARNING:{Ansi.REGULAR}", *values, Ansi.RESET, file=sys.stderr)
     else:
-        print(*values, file=sys.stderr)
+        print("WARNING:", *values, file=sys.stderr)
 
 
 def print_error(*values: object) -> None:
@@ -127,4 +127,4 @@ def print_error(*values: object) -> None:
     if _stderr_override:
         print(f"{Ansi.RED}{Ansi.BOLD}ERROR:{Ansi.REGULAR}", *values, Ansi.RESET, file=sys.stderr)
     else:
-        print(*values, file=sys.stderr)
+        print("ERROR:", *values, file=sys.stderr)
