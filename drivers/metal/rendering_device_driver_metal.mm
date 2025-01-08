@@ -4025,6 +4025,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.metal_fx_spatial;
 		case SUPPORTS_METALFX_TEMPORAL:
 			return device_properties->features.metal_fx_temporal;
+		case SUPPORTS_NATIVE_RENDER_AREA_CLEAR:
+			return false;
 		default:
 			return false;
 	}

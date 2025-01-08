@@ -5874,6 +5874,13 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return vrs_capabilities.attachment_vrs_supported && physical_device_features.shaderStorageImageExtendedFormats;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_NATIVE_RENDER_AREA_CLEAR:
+#if defined(__APPLE__)
+			// MoltenVK internally uses Metal, which does not support the feature and has to emulate it.
+			return false;
+#else
+			return true;
+#endif
 		default:
 			return false;
 	}

@@ -896,6 +896,15 @@ public:
 		SUPPORTS_METALFX_TEMPORAL,
 		// If not supported, a fragment shader with only side effects (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
+		// API natively supports clearing a subregion of the RenderTarget (as opposed to the whole
+		// RenderTarget). When API does not, then asking the Godot device to clear a subregion
+		// results in suboptimal performance.
+		// APIs support:
+		//	1. Vulkan (native): Supported.
+		//	2. Vulkan (MoltenVK): Unsupported.
+		//	3. Metal: Unsupported.
+		//	4. D3D12: N/A. Godot is currently not using Render Passes. Returns unsupported.
+		SUPPORTS_NATIVE_RENDER_AREA_CLEAR,
 	};
 
 	enum SubgroupOperations {

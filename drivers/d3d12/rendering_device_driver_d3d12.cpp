@@ -6271,6 +6271,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return vrs_capabilities.ss_image_supported;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_NATIVE_RENDER_AREA_CLEAR:
+			return false;
 		default:
 			return false;
 	}
