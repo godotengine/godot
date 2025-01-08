@@ -343,6 +343,44 @@ private:
 
 	void _variant_call_error(const String &p_method, Callable::CallError &error);
 
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_int() const {
+		switch (get_type()) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_int();
+			default: {
+				return 0;
+			}
+		}
+	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_float() const {
+		switch (type) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_float();
+			default: {
+				return 0;
+			}
+		}
+	}
+
 	// Avoid accidental conversion. If you reached this point, it's because you most likely forgot to dereference
 	// a Variant pointer (so add * like this: *variant_pointer).
 

@@ -38,6 +38,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -205,12 +206,24 @@ void EditorSceneTabs::_update_context_menu() {
 		scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), EditorNode::FILE_CLOSE_RIGHT);
 		_disable_menu_option_if(EditorNode::FILE_CLOSE_RIGHT, EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
 		scene_tabs_context_menu->add_item(TTR("Close All Tabs"), EditorNode::FILE_CLOSE_ALL);
+
+		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
+	} else {
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, {});
 	}
+	last_hovered_tab = tab_id;
 }
 
 void EditorSceneTabs::_disable_menu_option_if(int p_option, bool p_condition) {
 	if (p_condition) {
 		scene_tabs_context_menu->set_item_disabled(scene_tabs_context_menu->get_item_index(p_option), true);
+	}
+}
+
+void EditorSceneTabs::_custom_menu_option(int p_option) {
+	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
+		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
 	}
 }
 
@@ -420,6 +433,7 @@ EditorSceneTabs::EditorSceneTabs() {
 	scene_tabs_context_menu = memnew(PopupMenu);
 	tabbar_container->add_child(scene_tabs_context_menu);
 	scene_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(EditorNode::get_singleton(), &EditorNode::trigger_menu_option).bind(false));
+	scene_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorSceneTabs::_custom_menu_option));
 
 	scene_tab_add = memnew(Button);
 	scene_tab_add->set_flat(true);

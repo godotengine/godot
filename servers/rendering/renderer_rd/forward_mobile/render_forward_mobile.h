@@ -527,6 +527,14 @@ protected:
 		return forward_id_storage_mobile;
 	}
 
+	struct ForwardIDByMapSort {
+		uint8_t map;
+		RendererRD::ForwardID forward_id;
+		bool operator<(const ForwardIDByMapSort &p_sort) const {
+			return map > p_sort.map;
+		}
+	};
+
 public:
 	static RenderForwardMobile *get_singleton() { return singleton; }
 
