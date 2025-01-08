@@ -24,3 +24,11 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-101300
+---------
+Validate extension JSON: Error: Hash changed for 'classes/PhysicsDirectSpaceState2DExtension/methods/_intersect_point', from 1F234F84 to 5E11CF6F. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2DExtension/methods/_intersect_point/arguments': size changed value in new API, from 7 to 8.
+
+Added argument to disable checking the canvas instance ID on point intersection queries.
