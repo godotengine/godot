@@ -66,11 +66,15 @@ class EditorFileSystemDirectory : public Object {
 		String import_group_file;
 		Vector<String> deps;
 		bool verified = false; //used for checking changes
-		// These are for script resources only.
-		String script_class_name;
-		String script_class_extends;
-		String script_class_icon_path;
-		String icon_path;
+		// This is for script resources only.
+		struct ScriptClassInfo {
+			String name;
+			String extends;
+			String icon_path;
+			bool is_abstract = false;
+			bool is_tool = false;
+		};
+		ScriptClassInfo class_info;
 	};
 
 	Vector<FileInfo *> files;
@@ -203,9 +207,11 @@ class EditorFileSystem : public Node {
 
 	static EditorFileSystem *singleton;
 
+	using ScriptClassInfo = EditorFileSystemDirectory::FileInfo::ScriptClassInfo;
+
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
-		String type;
+		StringName type;
 		String resource_script_class;
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		uint64_t modification_time = 0;
@@ -215,9 +221,7 @@ class EditorFileSystem : public Node {
 		Vector<String> deps;
 		bool import_valid = false;
 		String import_group_file;
-		String script_class_name;
-		String script_class_extends;
-		String script_class_icon_path;
+		ScriptClassInfo class_info;
 	};
 
 	HashMap<String, FileCache> file_cache;
@@ -288,17 +292,27 @@ class EditorFileSystem : public Node {
 		}
 	};
 
-	struct ScriptInfo {
-		String type;
-		String script_class_name;
-		String script_class_extends;
-		String script_class_icon_path;
+	struct ScriptClassInfoUpdate : public ScriptClassInfo {
+		StringName type;
+		ScriptClassInfoUpdate() = default;
+		explicit ScriptClassInfoUpdate(const ScriptClassInfo &p_info) :
+				ScriptClassInfo(p_info) {}
+		static ScriptClassInfoUpdate from_file_info(const EditorFileSystemDirectory::FileInfo *p_fi) {
+			ScriptClassInfoUpdate update;
+			update.type = p_fi->type;
+			update.name = p_fi->class_info.name;
+			update.extends = p_fi->class_info.extends;
+			update.icon_path = p_fi->class_info.icon_path;
+			update.is_abstract = p_fi->class_info.is_abstract;
+			update.is_tool = p_fi->class_info.is_tool;
+			return update;
+		}
 	};
 
 	Mutex update_script_mutex;
-	HashMap<String, ScriptInfo> update_script_paths;
+	HashMap<String, ScriptClassInfoUpdate> update_script_paths;
 	HashSet<String> update_script_paths_documentation;
-	void _queue_update_script_class(const String &p_path, const String &p_type, const String &p_script_class_name, const String &p_script_class_extends, const String &p_script_class_icon_path);
+	void _queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update);
 	void _update_script_classes();
 	void _update_script_documentation();
 	void _process_update_pending();
@@ -312,7 +326,7 @@ class EditorFileSystem : public Node {
 	void _update_pending_scene_groups();
 	void _get_all_scenes(EditorFileSystemDirectory *p_dir, HashSet<String> &r_list);
 
-	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+	ScriptClassInfo _get_global_script_class(const String &p_type, const String &p_path) const;
 
 	static Error _resource_import(const String &p_path);
 	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
@@ -359,7 +373,7 @@ class EditorFileSystem : public Node {
 	void _remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names);
 	String _get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info);
 
-	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const String &p_type, const String &p_script_class_name, const String &p_script_class_extends, const String &p_script_class_icon_path);
+	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update);
 
 protected:
 	void _notification(int p_what);
