@@ -138,6 +138,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
 		default:
 			return false;
