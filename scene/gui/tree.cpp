@@ -3822,12 +3822,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						warp_mouse(range_drag_capture_pos);
 					} else {
-						Rect2 rect;
-						if (select_mode == SELECT_ROW) {
-							rect = get_selected()->get_meta("__focus_col_" + itos(selected_col));
-						} else {
-							rect = get_selected()->get_meta("__focus_rect");
-						}
+						Rect2 rect = _get_item_focus_rect(get_selected());
 						Point2 mpos = mb->get_position();
 						int icon_size_x = 0;
 						Ref<Texture2D> icon = get_selected()->get_icon(selected_col);
@@ -4205,12 +4200,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 	}
 
 	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
-	Rect2 rect;
-	if (select_mode == SELECT_ROW) {
-		rect = s->get_meta("__focus_col_" + itos(selected_col));
-	} else {
-		rect = s->get_meta("__focus_rect");
-	}
+	Rect2 rect = _get_item_focus_rect(s);
 	rect.position *= popup_scale;
 	popup_edited_item = s;
 	popup_edited_item_col = col;
@@ -4315,6 +4305,16 @@ bool Tree::edit_selected(bool p_force_edit) {
 	}
 
 	return false;
+}
+
+Rect2 Tree::_get_item_focus_rect(const TreeItem *p_item) const {
+	Rect2 rect;
+	if (select_mode == SELECT_ROW) {
+		rect = p_item->get_meta("__focus_col_" + itos(selected_col));
+	} else {
+		rect = p_item->get_meta("__focus_rect");
+	}
+	return rect;
 }
 
 bool Tree::is_editing() {
@@ -4599,7 +4599,7 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (popup_edited_item != nullptr) {
-				Rect2 rect = popup_edited_item->get_meta("__focus_rect");
+				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
 				popup_editor->set_position(get_global_position() + rect.position);
 				popup_editor->set_size(rect.size);
