@@ -607,8 +607,8 @@ static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vect
 			p_vector->push_back(p_type);
 		}
 
-		List<StringName> inheriters;
-		ClassDB::get_inheriters_from_class(p_type, &inheriters);
+		LocalVector<StringName> inheriters;
+		ClassDB::get_inheriters_from_class(p_type, inheriters);
 		for (const StringName &S : inheriters) {
 			_add_allowed_type(S, p_vector);
 		}

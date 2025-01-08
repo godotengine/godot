@@ -281,12 +281,12 @@ void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List
 }
 #endif
 
-void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+void ClassDB::get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
 		if (E.key != p_class && _is_parent_class(E.key, p_class)) {
-			p_classes->push_back(E.key);
+			p_classes.push_back(E.key);
 		}
 	}
 }

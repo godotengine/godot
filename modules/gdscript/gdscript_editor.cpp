@@ -921,8 +921,8 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 		node.insert_text = node.display.quote(p_quote_style);
 		r_result.insert(node.display, node);
 
-		List<StringName> native_classes;
-		ClassDB::get_inheriters_from_class("Node", &native_classes);
+		LocalVector<StringName> native_classes;
+		ClassDB::get_inheriters_from_class("Node", native_classes);
 		for (const StringName &E : native_classes) {
 			if (!ClassDB::is_class_exposed(E)) {
 				continue;
