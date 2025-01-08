@@ -1,7 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using BitFaster.Caching.Lru;
 using Godot.NativeInterop;
+using BitFaster.Caching;
+using BitFaster.Caching.Lru;
 
 #nullable enable
 
@@ -49,7 +50,10 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly ConcurrentLru<string, NodePath> _nodePathCache = new(capacity: 1_000);
+        private static readonly ICache<string, NodePath> _nodePathCache = new ConcurrentLruBuilder<string, NodePath>()
+            .WithCapacity(1_000)
+            .WithExpireAfterAccess(TimeSpan.FromSeconds(30))
+            .Build();
 
         ~NodePath()
         {
