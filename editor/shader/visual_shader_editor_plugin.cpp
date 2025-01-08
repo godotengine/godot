@@ -2158,12 +2158,12 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDScript classes.
 	{
-		List<StringName> class_list;
-		ScriptServer::get_global_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ScriptServer::get_global_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ScriptServer::get_global_class_native_base(E) == "VisualShaderNodeCustom") {
-				String script_path = ScriptServer::get_global_class_path(E);
+		for (const StringName &class_name : class_list) {
+			if (ScriptServer::get_global_class_native_base(class_name) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_name);
 				Ref<Resource> res = ResourceLoader::load(script_path);
 				ERR_CONTINUE(res.is_null());
 				ERR_CONTINUE(!res->is_class("Script"));
@@ -2188,19 +2188,19 @@ void VisualShaderEditor::_update_nodes() {
 
 	// Add GDExtension classes.
 	{
-		List<StringName> class_list;
-		ClassDB::get_class_list(&class_list);
+		LocalVector<StringName> class_list;
+		ClassDB::get_class_list(class_list);
 
-		for (const StringName &E : class_list) {
-			if (ClassDB::get_parent_class(E) == "VisualShaderNodeCustom") {
-				Object *instance = ClassDB::instantiate(E);
+		for (const StringName &class_name : class_list) {
+			if (ClassDB::get_parent_class(class_name) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_name);
 				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
 				ERR_CONTINUE(ref.is_null());
 				if (!ref->is_available(visual_shader->get_mode(), get_current_shader_type())) {
 					continue;
 				}
 				Dictionary dict = get_custom_node_data(ref);
-				dict["type"] = E;
+				dict["type"] = class_name;
 				dict["script"] = Ref<Script>();
 
 				String key;
