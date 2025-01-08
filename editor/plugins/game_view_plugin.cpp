@@ -401,11 +401,17 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 	switch (p_id) {
 		case EMBED_RUN_GAME_EMBEDDED: {
 			embed_on_play = !embed_on_play;
-			EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_on_play", embed_on_play);
+			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
+			if (game_mode == 0) { // Save only if not overridden by editor.
+				EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_on_play", embed_on_play);
+			}
 		} break;
 		case EMBED_MAKE_FLOATING_ON_PLAY: {
 			make_floating_on_play = !make_floating_on_play;
-			EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
+			int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
+			if (game_mode == 0) { // Save only if not overridden by editor.
+				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
+			}
 		} break;
 	}
 	_update_embed_menu_options();
@@ -585,9 +591,27 @@ void GameView::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
 				// Embedding available.
-				embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
-				make_floating_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_on_play", true);
+				int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
+				switch (game_mode) {
+					case 1: { // Embed.
+						embed_on_play = true;
+						make_floating_on_play = false;
+					} break;
+					case 2: { // Floating.
+						embed_on_play = true;
+						make_floating_on_play = true;
+					} break;
+					case 3: { // Disabled.
+						embed_on_play = false;
+						make_floating_on_play = false;
+					} break;
+					default: {
+						embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
+						make_floating_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_on_play", true);
+					} break;
+				}
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
+				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
 				_update_embed_menu_options();
 
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
