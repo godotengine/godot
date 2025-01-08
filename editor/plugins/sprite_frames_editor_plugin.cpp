@@ -1904,7 +1904,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	duplicate_anim = memnew(Button);
-	duplicate_anim->set_flat(true);
+	duplicate_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	hbc_animlist->add_child(duplicate_anim);
 	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 
