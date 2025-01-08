@@ -497,19 +497,6 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
 
-String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *_se) {
-	String val = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
-	const int display_limit = 300;
-	if (!val.is_empty()) {
-		if (val.size() > display_limit) {
-			val = val.left(display_limit) + " [...] truncated!";
-		}
-		return p_text + ": " + val;
-	} else {
-		return String();
-	}
-}
-
 void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	if (external_editor_active) {
 		return;
@@ -2633,7 +2620,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	// If we delete a script within the filesystem, the original resource path
 	// is lost, so keep it as metadata to figure out the exact tab to delete.
 	se->set_meta("_edit_res_path", p_resource->get_path());
-	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());

@@ -217,7 +217,8 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		//case FEATURE_NATIVE_DIALOG_INPUT:
 #ifdef DBUS_ENABLED
 		case FEATURE_NATIVE_DIALOG_FILE:
-		case FEATURE_NATIVE_DIALOG_FILE_EXTRA: {
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
 			return true;
 		} break;
 #endif
@@ -990,6 +991,13 @@ void DisplayServerWayland::window_start_drag(WindowID p_window) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wayland_thread.window_start_drag(p_window);
+}
+
+void DisplayServerWayland::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	wayland_thread.window_start_resize(p_edge, p_window);
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {

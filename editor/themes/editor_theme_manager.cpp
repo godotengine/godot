@@ -1788,7 +1788,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// ProjectTag.
 		{
-			p_theme->set_type_variation("ProjectTag", "Button");
+			p_theme->set_type_variation("ProjectTagButton", "Button");
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
 			tag->set_bg_color(p_config.dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
@@ -1796,21 +1796,21 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(CoreStringName(normal), "ProjectTag", tag);
+			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_hover->duplicate();
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(SceneStringName(hover), "ProjectTag", tag);
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTag", tag);
+			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagButton", tag);
 		}
 	}
 
@@ -1945,6 +1945,11 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_launch_pad_movie->set_border_color(p_config.accent_color);
 		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
 		p_theme->set_stylebox("LaunchPadMovieMode", EditorStringName(EditorStyles), style_launch_pad_movie);
+		Ref<StyleBoxFlat> style_launch_pad_recovery_mode = style_launch_pad->duplicate();
+		style_launch_pad_recovery_mode->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
+		style_launch_pad_recovery_mode->set_border_color(p_config.warning_color);
+		style_launch_pad_recovery_mode->set_border_width_all(Math::round(2 * EDSCALE));
+		p_theme->set_stylebox("LaunchPadRecoveryMode", EditorStringName(EditorStyles), style_launch_pad_recovery_mode);
 
 		p_theme->set_stylebox("MovieWriterButtonNormal", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 		Ref<StyleBoxFlat> style_write_movie_button = p_config.button_style_pressed->duplicate();
@@ -1970,6 +1975,17 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_stylebox(CoreStringName(normal), "ProfilerAutostartIndicator", style_profiler_autostart);
 		p_theme->set_stylebox(SceneStringName(pressed), "ProfilerAutostartIndicator", style_profiler_autostart);
 		p_theme->set_stylebox("hover", "ProfilerAutostartIndicator", style_profiler_autostart);
+
+		// Recovery mode button style
+		Ref<StyleBoxFlat> style_recovery_mode_button = p_config.button_style_pressed->duplicate();
+		style_recovery_mode_button->set_bg_color(p_config.warning_color);
+		style_recovery_mode_button->set_corner_radius_all(p_config.corner_radius * EDSCALE);
+		style_recovery_mode_button->set_content_margin_all(0);
+		// Recovery mode button is implicitly styled from the panel's background.
+		// So, remove any existing borders. (e.g. from draw_extra_borders config)
+		style_recovery_mode_button->set_border_width_all(0);
+		style_recovery_mode_button->set_expand_margin(SIDE_RIGHT, 2 * EDSCALE);
+		p_theme->set_stylebox("RecoveryModeButton", EditorStringName(EditorStyles), style_recovery_mode_button);
 	}
 
 	// Standard GUI variations.

@@ -52,10 +52,8 @@
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 #ifdef ANDROID_ENABLED
 #include "../os_android.h"
@@ -2145,11 +2143,14 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
-#define CLEANUP_AND_RETURN(m_err)                         \
-	{                                                     \
-		DirAccess::remove_file_or_error(tmp_export_path); \
-		return m_err;                                     \
-	}                                                     \
+#define CLEANUP_AND_RETURN(m_err)                                        \
+	{                                                                    \
+		DirAccess::remove_file_or_error(tmp_export_path);                \
+		if (FileAccess::exists(tmp_export_path + ".idsig")) {            \
+			DirAccess::remove_file_or_error(tmp_export_path + ".idsig"); \
+		}                                                                \
+		return m_err;                                                    \
+	}                                                                    \
 	((void)0)
 
 	// Export to temporary APK before sending to device.
@@ -3827,7 +3828,6 @@ void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -3836,7 +3836,6 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 
 		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		devices_changed.set();
 #ifndef DISABLE_DEPRECATED

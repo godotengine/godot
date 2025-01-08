@@ -44,10 +44,6 @@
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
-#ifdef MODULE_REGEX_ENABLED
-
 /*************************************************************************/
 /* CodeSignCodeResources                                                 */
 /*************************************************************************/
@@ -355,7 +351,5 @@ class CodeSign {
 public:
 	static Error codesign(bool p_use_hardened_runtime, bool p_force, const String &p_path, const String &p_ent_path, String &r_error_msg);
 };
-
-#endif // MODULE_REGEX_ENABLED
 
 #endif // CODESIGN_H

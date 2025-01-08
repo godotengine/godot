@@ -378,8 +378,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool restoring_layout;
 
-	String _get_debug_tooltip(const String &p_text, Node *_se);
-
 	void _resave_scripts(const String &p_str);
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());

@@ -112,6 +112,7 @@ private:
 	static PlatformFunctions platform_functions;
 
 	ID id = UNASSIGNED_ID;
+
 	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
 	THREADING_NAMESPACE::thread thread;
@@ -119,7 +120,7 @@ private:
 	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
 
 	static void make_main_thread() { caller_id = MAIN_ID; }
-	static void release_main_thread() { caller_id = UNASSIGNED_ID; }
+	static void release_main_thread() { caller_id = id_counter.increment(); }
 
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
@@ -127,9 +128,6 @@ public:
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
 	_FORCE_INLINE_ static ID get_caller_id() {
-		if (unlikely(caller_id == UNASSIGNED_ID)) {
-			caller_id = id_counter.increment();
-		}
 		return caller_id;
 	}
 	// get the ID of the main thread

@@ -34,6 +34,7 @@
 #include "core/string/fuzzy_search.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -187,6 +188,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_theme_constant_override("separation", 0);
+	history_file.instantiate();
 
 	{
 		// Results section
@@ -316,6 +318,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 
 	const int display_mode_behavior = EDITOR_GET("filesystem/quick_open_dialog/default_display_mode");
 	const bool adaptive_display_mode = (display_mode_behavior == 0);
+	const bool first_open = never_opened;
 
 	if (adaptive_display_mode) {
 		_set_display_mode(get_adaptive_display_mode(p_base_types));
@@ -335,12 +338,38 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		E->enable_highlights = enable_highlights;
 	}
 
+	if (first_open && history_file->load(_get_cache_file_path()) == OK) {
+		// Load history when opening for the first time.
+		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
+
+		List<String> history_keys;
+		history_file->get_section_keys("selected_history", &history_keys);
+		for (const String &type : history_keys) {
+			const StringName type_name = type;
+			const PackedStringArray paths = history_file->get_value("selected_history", type);
+
+			Vector<QuickOpenResultCandidate> loaded_candidates;
+			loaded_candidates.resize(paths.size());
+			{
+				QuickOpenResultCandidate *candidates_write = loaded_candidates.ptrw();
+				int i = 0;
+				for (const String &path : paths) {
+					filetypes.insert(path, type_name);
+					QuickOpenResultCandidate candidate;
+					_setup_candidate(candidate, path);
+					candidates_write[i] = candidate;
+					i++;
+				}
+				selected_history.insert(type, loaded_candidates);
+			}
+		}
+	}
 	_create_initial_results();
 }
 
 void QuickOpenResultContainer::_create_initial_results() {
 	file_type_icons.clear();
-	file_type_icons.insert("__default_icon", get_editor_theme_icon(SNAME("Object")));
+	file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 	filepaths.clear();
 	filetypes.clear();
 	_find_filepaths_in_folder(EditorFileSystem::get_singleton()->get_filesystem(), include_addons_toggle->is_pressed());
@@ -381,21 +410,29 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 	update_results();
 }
 
-void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &candidate, const String &filepath) {
-	StringName actual_type = *filetypes.lookup_ptr(filepath);
-	candidate.file_path = filepath;
-	candidate.result = nullptr;
+void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath) {
+	p_candidate.file_path = p_filepath;
+	p_candidate.result = nullptr;
 
-	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(filepath);
+	StringName actual_type;
+	{
+		StringName *actual_type_ptr = filetypes.lookup_ptr(p_filepath);
+		if (actual_type_ptr) {
+			actual_type = *actual_type_ptr;
+		} else {
+			ERR_PRINT(vformat("EditorQuickOpenDialog: No type for path %s.", p_filepath));
+		}
+	}
+	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(p_filepath);
 	if (item.preview.is_valid()) {
-		candidate.thumbnail = item.preview;
+		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
-		candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
+		p_candidate.thumbnail = *file_type_icons.lookup_ptr(actual_type);
 	} else if (has_theme_icon(actual_type, EditorStringName(EditorIcons))) {
-		candidate.thumbnail = get_editor_theme_icon(actual_type);
-		file_type_icons.insert(actual_type, candidate.thumbnail);
+		p_candidate.thumbnail = get_editor_theme_icon(actual_type);
+		file_type_icons.insert(actual_type, p_candidate.thumbnail);
 	} else {
-		candidate.thumbnail = *file_type_icons.lookup_ptr("__default_icon");
+		p_candidate.thumbnail = *file_type_icons.lookup_ptr(SNAME("__default_icon"));
 	}
 }
 
@@ -611,6 +648,10 @@ void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
 	update_results();
 }
 
+String QuickOpenResultContainer::_get_cache_file_path() const {
+	return EditorPaths::get_singleton()->get_project_settings_dir().path_join("quick_open_dialog_cache.cfg");
+}
+
 void QuickOpenResultContainer::_toggle_include_addons(bool p_pressed) {
 	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/include_addons", p_pressed);
 	cleanup();
@@ -705,7 +746,7 @@ void QuickOpenResultContainer::save_selected_item() {
 	}
 
 	const StringName &base_type = base_types[0];
-	const QuickOpenResultCandidate &selected = candidates[selection_index];
+	QuickOpenResultCandidate &selected = candidates.write[selection_index];
 	Vector<QuickOpenResultCandidate> *type_history = selected_history.lookup_ptr(base_type);
 
 	if (!type_history) {
@@ -720,11 +761,25 @@ void QuickOpenResultContainer::save_selected_item() {
 		}
 	}
 
+	selected.result = nullptr;
 	type_history->insert(0, selected);
-	type_history->ptrw()->result = nullptr;
 	if (type_history->size() > MAX_HISTORY_SIZE) {
 		type_history->resize(MAX_HISTORY_SIZE);
 	}
+
+	PackedStringArray paths;
+	paths.resize(type_history->size());
+	{
+		String *paths_write = paths.ptrw();
+
+		int i = 0;
+		for (const QuickOpenResultCandidate &candidate : *type_history) {
+			paths_write[i] = candidate.file_path;
+			i++;
+		}
+	}
+	history_file->set_value("selected_history", base_type, paths);
+	history_file->save(_get_cache_file_path());
 }
 
 void QuickOpenResultContainer::cleanup() {
