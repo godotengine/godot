@@ -788,6 +788,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
 		case FEATURE_WINDOW_DRAG:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
 		default: {
 		}
