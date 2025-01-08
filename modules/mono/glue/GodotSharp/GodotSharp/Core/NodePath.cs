@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using BitFaster.Caching.Lru;
 using Godot.NativeInterop;
-using Microsoft.Extensions.Caching.Memory;
 
 #nullable enable
 
@@ -49,7 +49,7 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly MemoryCache _nodePathCache = new(new MemoryCacheOptions());
+        private static readonly ConcurrentLru<string, NodePath> _nodePathCache = new(capacity: 1_000);
 
         ~NodePath()
         {
@@ -143,7 +143,7 @@ namespace Godot
             {
                 return null;
             }
-            return _nodePathCache.GetOrCreate(from, static (ICacheEntry entry) => new NodePath((string)entry.Key))!;
+            return _nodePathCache.GetOrAdd(from, static (string from) => new NodePath(from));
         }
 
         /// <summary>
