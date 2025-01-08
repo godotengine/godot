@@ -417,8 +417,8 @@ public:
 		}
 	}
 
-	void set_description(const char *p_descrption) {
-		description = p_descrption;
+	void set_description(const char *p_description) {
+		description = p_description;
 	}
 
 	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) {
@@ -515,8 +515,8 @@ public:
 		alloc.fill_owned_buffer(p_rid_buffer);
 	}
 
-	void set_description(const char *p_descrption) {
-		alloc.set_description(p_descrption);
+	void set_description(const char *p_description) {
+		alloc.set_description(p_description);
 	}
 
 	RID_PtrOwner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) :
@@ -570,8 +570,8 @@ public:
 		alloc.fill_owned_buffer(p_rid_buffer);
 	}
 
-	void set_description(const char *p_descrption) {
-		alloc.set_description(p_descrption);
+	void set_description(const char *p_description) {
+		alloc.set_description(p_description);
 	}
 	RID_Owner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) :
 			alloc(p_target_chunk_byte_size, p_maximum_number_of_elements) {}

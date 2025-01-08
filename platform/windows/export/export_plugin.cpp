@@ -512,7 +512,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		}
 	}
 
-	String file_verion = p_preset->get_version("application/file_version", true);
+	String file_version = p_preset->get_version("application/file_version", true);
 	String product_version = p_preset->get_version("application/product_version", true);
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
@@ -527,9 +527,9 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		args.push_back("--set-icon");
 		args.push_back(tmp_icon_path);
 	}
-	if (!file_verion.is_empty()) {
+	if (!file_version.is_empty()) {
 		args.push_back("--set-file-version");
-		args.push_back(file_verion);
+		args.push_back(file_version);
 	}
 	if (!product_version.is_empty()) {
 		args.push_back("--set-product-version");

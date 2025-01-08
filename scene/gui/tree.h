@@ -498,7 +498,7 @@ private:
 
 	VBoxContainer *popup_editor_vb = nullptr;
 
-	bool popup_edit_commited = true;
+	bool popup_edit_committed = true;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
 	TextEdit *text_editor = nullptr;

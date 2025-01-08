@@ -348,10 +348,10 @@ String OS_IOS::get_temp_path() const {
 }
 
 String OS_IOS::get_locale() const {
-	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
+	NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject;
 
-	if (preferedLanguage) {
-		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
+	if (preferredLanguage) {
+		return String::utf8([preferredLanguage UTF8String]).replace("-", "_");
 	}
 
 	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];

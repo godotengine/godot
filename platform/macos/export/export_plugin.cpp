@@ -1296,18 +1296,18 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
 
-		bool plist_misssing = false;
+		bool plist_missing = false;
 		Ref<PList> plist;
 		plist.instantiate();
 		plist->load_file(p_src_path.path_join("Resources").path_join("Info.plist"));
 
 		Ref<PListNode> root_node = plist->get_root();
 		if (root_node.is_null()) {
-			plist_misssing = true;
+			plist_missing = true;
 		} else {
 			Dictionary root = root_node->get_value();
 			if (!root.has("CFBundleExecutable") || !root.has("CFBundleIdentifier") || !root.has("CFBundlePackageType") || !root.has("CFBundleInfoDictionaryVersion") || !root.has("CFBundleName") || !root.has("CFBundleSupportedPlatforms")) {
-				plist_misssing = true;
+				plist_missing = true;
 			}
 		}
 
@@ -1315,7 +1315,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		if (err == OK) {
 			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
 		}
-		if (err == OK && plist_misssing) {
+		if (err == OK && plist_missing) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
 			// Generate Info.plist
 			String lib_name = p_src_path.get_basename().get_file();

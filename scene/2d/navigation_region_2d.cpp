@@ -163,14 +163,14 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 #ifdef DEBUG_ENABLED
-			_set_debug_visibile(is_visible_in_tree());
+			_set_debug_visible(is_visible_in_tree());
 #endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			_region_exit_navigation_map();
 #ifdef DEBUG_ENABLED
-			_set_debug_visibile(false);
+			_set_debug_visible(false);
 #endif // DEBUG_ENABLED
 		} break;
 
@@ -208,7 +208,7 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 
 #ifdef DEBUG_ENABLED
 	if (navigation_polygon.is_null()) {
-		_set_debug_visibile(false);
+		_set_debug_visible(false);
 	}
 #endif // DEBUG_ENABLED
 
@@ -445,7 +445,7 @@ void NavigationRegion2D::_region_update_transform() {
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_update_debug_mesh() {
 	if (!is_inside_tree()) {
-		_set_debug_visibile(false);
+		_set_debug_visible(false);
 		return;
 	}
 
@@ -640,7 +640,7 @@ void NavigationRegion2D::_update_debug_baking_rect() {
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
-void NavigationRegion2D::_set_debug_visibile(bool p_visible) {
+void NavigationRegion2D::_set_debug_visible(bool p_visible) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 	ERR_FAIL_NULL(rs);
 	if (debug_instance_rid.is_valid()) {

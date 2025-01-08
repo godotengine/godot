@@ -103,7 +103,7 @@ public:
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
-	void _build_parent_hierachy(Ref<GLTFState> p_state);
+	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
 	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);

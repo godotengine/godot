@@ -1277,8 +1277,8 @@ Ref<Script> ScriptEditor::_get_current_script() {
 TypedArray<Script> ScriptEditor::_get_open_scripts() const {
 	TypedArray<Script> ret;
 	Vector<Ref<Script>> scripts = get_open_scripts();
-	int scrits_amount = scripts.size();
-	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
+	int scripts_amount = scripts.size();
+	for (int idx_script = 0; idx_script < scripts_amount; idx_script++) {
 		ret.push_back(scripts[idx_script]);
 	}
 	return ret;
