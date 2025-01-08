@@ -8,6 +8,7 @@
 // #include <godot_cpp/classes/reg_ex_match.hpp>
 #include "core/io/file_access.h"
 #include "core/io/dir_access.h"
+#include "modules/regex/regex.h"
 
 #include "mbrush_manager.h"
 #include "navmesh/mnavigation_region_3d.h"
