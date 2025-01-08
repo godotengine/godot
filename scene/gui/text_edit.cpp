@@ -7579,7 +7579,29 @@ void TextEdit::_push_current_op() {
 		next_operation_is_complex = false;
 	}
 
-	undo_stack.push_back(current_op);
+	TextOperation *last = !undo_stack.is_empty() ? &undo_stack.back()->get() : nullptr;
+	// merge simple edits of the same kind and same logical operation, but only if we're not going to thrash anything
+	if (last && last->type == current_op.type && current_op.type != TextOperation::TYPE_NONE && !current_op.chain_forward && complex_operation_count > 0
+			// careful: multicursor edits have their actions split up and the inputs associated with a given caret are not directly adjacent in the undo buffer!
+			// so, we can only easily merge single-caret edits
+			&& last->end_carets.size() == 1 && current_op.start_carets.size() == 1 && last->end_carets[0].line == current_op.start_carets[0].line) {
+		auto merge_bounds = [](TextOperation &a, TextOperation &b) {
+			a.from_line = MIN(a.from_line, b.from_line);
+			a.from_column = MIN(a.from_column, b.from_column);
+			a.to_line = MAX(a.to_line, b.to_line);
+			a.to_column = MAX(a.to_column, b.to_column);
+		};
+		if (current_op.type == TextOperation::TYPE_INSERT && last->end_carets[0].column + last->text.length() == current_op.start_carets[0].column) {
+			merge_bounds(undo_stack.back()->get(), current_op);
+			last->text = current_op.text + last->text;
+		} else if (current_op.type == TextOperation::TYPE_REMOVE && last->end_carets[0].column - last->text.length() == current_op.start_carets[0].column) {
+			merge_bounds(undo_stack.back()->get(), current_op);
+			last->text = current_op.text + last->text;
+		}
+	} else {
+		undo_stack.push_back(current_op);
+	}
+
 	current_op.type = TextOperation::TYPE_NONE;
 	current_op.text = "";
 	current_op.chain_forward = false;
