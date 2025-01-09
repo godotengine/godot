@@ -724,7 +724,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 
 /* clang-format on */
 
-#ifdef MODE_RENDER_DEPTH
+#if defined(MODE_RENDER_DEPTH) && !defined(USE_COLOR_ATTACHMENT)
 
 #ifdef MODE_RENDER_MATERIAL
 

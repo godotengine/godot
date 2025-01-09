@@ -778,7 +778,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	p_render_data->scene_data->calculate_motion_vectors = false; // for now, not yet supported...
 
 	p_render_data->scene_data->directional_light_count = 0;
-	p_render_data->scene_data->opaque_prepass_threshold = 0.0;
+	p_render_data->scene_data->opaque_prepass_threshold = 0.99f;
 
 	// We can only use our full subpass approach if we're:
 	// - not reading from SCREEN_TEXTURE/DEPTH_TEXTURE
@@ -844,9 +844,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	// fill our render lists early so we can find out if we use various features
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
+	render_list[RENDER_LIST_DEPTH].sort_by_key();
 	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
 	_fill_instance_data(RENDER_LIST_OPAQUE);
 	_fill_instance_data(RENDER_LIST_ALPHA);
+	_fill_instance_data(RENDER_LIST_DEPTH);
 
 	if (p_render_data->render_info) {
 		p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = p_render_data->instances->size();
@@ -1134,6 +1136,23 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		if (merge_transparent_pass) {
+			if (render_list[RENDER_LIST_DEPTH].element_info.size() > 0) {
+				// depth prepass
+
+				RD::get_singleton()->draw_command_begin_label("Transparent Depth Prepass");
+
+				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_DEPTH, nullptr, RID(), samplers);
+
+				RenderListParameters render_list_params(render_list[RENDER_LIST_DEPTH].elements.ptr(), render_list[RENDER_LIST_DEPTH].element_info.ptr(), render_list[RENDER_LIST_DEPTH].elements.size(), reverse_cull, PASS_MODE_DEPTH, rp_uniform_set, base_specialization, false, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+
+				render_list_params.framebuffer_format = fb_format;
+				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
+
+				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+
+				RD::get_singleton()->draw_command_end_label(); // Transparent Depth Prepass
+			}
+
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
 				// transparent pass
 
@@ -1184,8 +1203,30 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
-				RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
 				RENDER_TIMESTAMP("Render Transparent");
+
+				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, Rect2(), breadcrumb);
+			}
+
+			if (render_list[RENDER_LIST_DEPTH].element_info.size() > 0) {
+				// depth prepass
+
+				RD::get_singleton()->draw_command_begin_label("Transparent Depth Prepass");
+
+				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_DEPTH, nullptr, RID(), samplers);
+
+				RenderListParameters render_list_params(render_list[RENDER_LIST_DEPTH].elements.ptr(), render_list[RENDER_LIST_DEPTH].element_info.ptr(), render_list[RENDER_LIST_DEPTH].elements.size(), reverse_cull, PASS_MODE_DEPTH, rp_uniform_set, base_specialization, false, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+
+				render_list_params.framebuffer_format = fb_format;
+				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
+
+				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
+
+				RD::get_singleton()->draw_command_end_label(); // Transparent Depth Prepass
+			}
+
+			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
+				RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
@@ -1196,7 +1237,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
-				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, Rect2(), breadcrumb);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 				RD::get_singleton()->draw_list_end();
 
@@ -1919,6 +1959,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		rl->clear();
 		if (p_render_list == RENDER_LIST_OPAQUE) {
 			render_list[RENDER_LIST_ALPHA].clear(); //opaque fills alpha too
+			render_list[RENDER_LIST_DEPTH].clear(); //opaque fills depth too
 		}
 	}
 
@@ -2048,6 +2089,9 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
 					render_list[RENDER_LIST_ALPHA].add_element(surf);
 				}
+				if (!force_alpha && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA) && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH)) {
+					render_list[RENDER_LIST_DEPTH].add_element(surf);
+				}
 
 				if (uses_lightmap) {
 					surf->sort.uses_lightmap = 1; // This needs to become our lightmap index but we'll do that in a separate PR.
@@ -2126,6 +2170,9 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 		case PASS_MODE_SHADOW_DP: {
 			_render_list_template<PASS_MODE_SHADOW_DP>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
+		case PASS_MODE_DEPTH: {
+			_render_list_template<PASS_MODE_DEPTH>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
+		} break;
 		case PASS_MODE_DEPTH_MATERIAL: {
 			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
@@ -2196,11 +2243,10 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			push_constant.uv_offset[1] = 0.0;
 		}
 
-		if (shadow_pass) {
+		if (shadow_pass || p_params->pass_mode == PASS_MODE_DEPTH) { //regular depth pass can use these too
 			material_uniform_set = surf->material_uniform_set_shadow;
 			shader = surf->shader_shadow;
 			mesh_surface = surf->surface_shadow;
-
 		} else {
 			pipeline_specialization.use_light_projector = inst->use_projector;
 			pipeline_specialization.use_light_soft_shadows = inst->use_soft_shadow;
@@ -2270,6 +2316,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			case PASS_MODE_SHADOW_DP: {
 				ERR_FAIL_COND_MSG(p_params->view_count > 1, "Multiview not supported for shadow DP pass");
 				pipeline_key.version = SceneShaderForwardMobile::SHADER_VERSION_SHADOW_PASS_DP;
+			} break;
+			case PASS_MODE_DEPTH: {
+				pipeline_key.version = p_params->view_count > 1 ? SceneShaderForwardMobile::SHADER_VERSION_DEPTH_PASS_MULTIVIEW : SceneShaderForwardMobile::SHADER_VERSION_DEPTH_PASS;
 			} break;
 			case PASS_MODE_DEPTH_MATERIAL: {
 				ERR_FAIL_COND_MSG(p_params->view_count > 1, "Multiview not supported for material pass");

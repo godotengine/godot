@@ -306,6 +306,9 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		} else if (p_pipeline_key.version == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
 			// Writes to normal and roughness in opaque way.
 			blend_state = RD::PipelineColorBlendState::create_disabled(5);
+		} else if (p_pipeline_key.version == SHADER_VERSION_DEPTH_PASS || p_pipeline_key.version == SHADER_VERSION_DEPTH_PASS_MULTIVIEW) {
+			// Doesn't write to color, but does use the color attachment
+			blend_state = blend_state_opaque;
 		} else {
 			// Do not use this version (error case).
 		}
@@ -489,12 +492,14 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 			shader_versions.push_back(base_define + "\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
 			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
 			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n"); // SHADER_VERSION_SHADOW_PASS_DP
+			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define USE_COLOR_ATTACHMENT\n"); // SHADER_VERSION_DEPTH_PASS
 			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 
 			// Multiview versions of our shaders.
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
 			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define USE_COLOR_ATTACHMENT\n"); // SHADER_VERSION_DEPTH_PASS_MULTIVIEW
 		}
 
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
