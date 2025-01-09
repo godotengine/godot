@@ -138,6 +138,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
 		default:
 			return false;
@@ -3997,6 +3998,52 @@ void DisplayServerWindows::window_start_drag(WindowID p_window) {
 	ScreenToClient(wd.hWnd, &coords);
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+}
+
+void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	ReleaseCapture();
+
+	POINT coords;
+	GetCursorPos(&coords);
+	ScreenToClient(wd.hWnd, &coords);
+
+	DWORD op = 0;
+	switch (p_edge) {
+		case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+			op = WMSZ_TOPLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP: {
+			op = WMSZ_TOP;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+			op = WMSZ_TOPRIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_LEFT: {
+			op = WMSZ_LEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_RIGHT: {
+			op = WMSZ_RIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+			op = WMSZ_BOTTOMLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM: {
+			op = WMSZ_BOTTOM;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+			op = WMSZ_BOTTOMRIGHT;
+		} break;
+		default:
+			break;
+	}
+
+	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_SIZE | op, MAKELPARAM(coords.x, coords.y));
 }
 
 void DisplayServerWindows::set_context(Context p_context) {

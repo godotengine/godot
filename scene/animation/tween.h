@@ -44,7 +44,7 @@ class Tweener : public RefCounted {
 
 public:
 	virtual void set_tween(const Ref<Tween> &p_tween);
-	virtual void start() = 0;
+	virtual void start();
 	virtual bool step(double &r_delta) = 0;
 
 protected:
@@ -163,9 +163,9 @@ public:
 
 	Ref<Tween> bind_node(const Node *p_node);
 	Ref<Tween> set_process_mode(TweenProcessMode p_mode);
-	TweenProcessMode get_process_mode();
+	TweenProcessMode get_process_mode() const;
 	Ref<Tween> set_pause_mode(TweenPauseMode p_mode);
-	TweenPauseMode get_pause_mode();
+	TweenPauseMode get_pause_mode() const;
 	Ref<Tween> set_ignore_time_scale(bool p_ignore = true);
 	bool is_ignoring_time_scale() const;
 
@@ -174,9 +174,9 @@ public:
 	int get_loops_left() const;
 	Ref<Tween> set_speed_scale(float p_speed);
 	Ref<Tween> set_trans(TransitionType p_trans);
-	TransitionType get_trans();
+	TransitionType get_trans() const;
 	Ref<Tween> set_ease(EaseType p_ease);
-	EaseType get_ease();
+	EaseType get_ease() const;
 
 	Ref<Tween> parallel();
 	Ref<Tween> chain();
@@ -190,7 +190,6 @@ public:
 	double get_total_time() const;
 
 	Tween();
-	Tween(bool p_valid);
 	Tween(SceneTree *p_parent_tree);
 };
 
@@ -246,7 +245,6 @@ class IntervalTweener : public Tweener {
 	GDCLASS(IntervalTweener, Tweener);
 
 public:
-	void start() override;
 	bool step(double &r_delta) override;
 
 	IntervalTweener(double p_time);
@@ -262,7 +260,6 @@ class CallbackTweener : public Tweener {
 public:
 	Ref<CallbackTweener> set_delay(double p_delay);
 
-	void start() override;
 	bool step(double &r_delta) override;
 
 	CallbackTweener(const Callable &p_callback);
@@ -287,7 +284,6 @@ public:
 	Ref<MethodTweener> set_delay(double p_delay);
 
 	void set_tween(const Ref<Tween> &p_tween) override;
-	void start() override;
 	bool step(double &r_delta) override;
 
 	MethodTweener(const Callable &p_callback, const Variant &p_from, const Variant &p_to, double p_duration);

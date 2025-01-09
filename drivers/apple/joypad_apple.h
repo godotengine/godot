@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  joypad_ios.h                                                          */
+/*  joypad_apple.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/input/input.h"
+
+#define Key _QKey
 #import <GameController/GameController.h>
+#undef Key
 
-@interface JoypadIOSObserver : NSObject
+@class GCController;
+class RumbleContext;
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+struct GameController {
+	int joy_id;
+	GCController *controller;
+	RumbleContext *rumble_context API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) = nil;
+	NSInteger ff_effect_timestamp = 0;
+	bool force_feedback = false;
 
-@end
+	GameController(int p_joy_id, GCController *p_controller);
+	~GameController();
+};
 
-class JoypadIOS {
+class JoypadApple {
 private:
-	JoypadIOSObserver *observer;
+	id<NSObject> connect_observer = nil;
+	id<NSObject> disconnect_observer = nil;
+	HashMap<int, GameController *> joypads;
+	HashMap<GCController *, int> controller_to_joy_id;
+
+	GCControllerPlayerIndex get_free_player_index();
+
+	void add_joypad(GCController *p_controller);
+	void remove_joypad(GCController *p_controller);
 
 public:
-	JoypadIOS();
-	~JoypadIOS();
+	JoypadApple();
+	~JoypadApple();
 
-	void start_processing();
+	void joypad_vibration_start(GameController &p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0));
+	void joypad_vibration_stop(GameController &p_joypad, uint64_t p_timestamp) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0));
+
+	void process_joypads();
 };

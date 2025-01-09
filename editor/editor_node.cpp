@@ -164,9 +164,9 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
 
-#include <stdlib.h>
-
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
+
+#include <stdlib.h>
 
 EditorNode *EditorNode::singleton = nullptr;
 
@@ -1113,7 +1113,14 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 		ap->stop(true);
 	}
 
+	// Only refresh the current scene tab if it's been reimported.
+	// Otherwise the scene tab will try to grab focus unnecessarily.
+	bool should_refresh_current_scene_tab = false;
+	const String current_scene_tab = editor_data.get_scene_path(current_tab);
 	for (const String &E : scenes_reimported) {
+		if (!should_refresh_current_scene_tab && E == current_scene_tab) {
+			should_refresh_current_scene_tab = true;
+		}
 		reload_scene(E);
 	}
 
@@ -1123,7 +1130,9 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	scenes_reimported.clear();
 	resources_reimported.clear();
 
-	_set_current_scene_nocheck(current_tab);
+	if (should_refresh_current_scene_tab) {
+		_set_current_scene_nocheck(current_tab);
+	}
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -4877,11 +4886,29 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
 	Ref<Script> scr = p_object->get_script();
+
+	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+		String class_name;
+		if (scr.is_valid()) {
+			class_name = scr->get_global_name();
+
+			if (class_name.is_empty()) {
+				// If there is no class_name in this script we just take the script path.
+				class_name = scr->get_path();
+			}
+		}
+		return get_class_icon(class_name.is_empty() ? Object::cast_to<EditorDebuggerRemoteObject>(p_object)->type_name : class_name, p_fallback);
+	}
+
 	if (scr.is_null() && p_object->is_class("Script")) {
 		scr = p_object;
 	}
 
-	return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+	if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		return get_class_icon(Object::cast_to<MultiNodeEdit>(p_object)->get_edited_class_name(), p_fallback);
+	} else {
+		return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+	}
 }
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {

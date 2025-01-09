@@ -100,7 +100,7 @@ private:
 	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hostspot);
+	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hotspot);
 
 protected:
 	static void _bind_methods();
@@ -499,6 +499,20 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) {}
 
+	enum WindowResizeEdge {
+		WINDOW_EDGE_TOP_LEFT,
+		WINDOW_EDGE_TOP,
+		WINDOW_EDGE_TOP_RIGHT,
+		WINDOW_EDGE_LEFT,
+		WINDOW_EDGE_RIGHT,
+		WINDOW_EDGE_BOTTOM_LEFT,
+		WINDOW_EDGE_BOTTOM,
+		WINDOW_EDGE_BOTTOM_RIGHT,
+		WINDOW_EDGE_MAX,
+	};
+
+	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window = MAIN_WINDOW_ID) {}
+
 	// necessary for GL focus, may be able to use one of the existing functions for this, not sure yet
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
 
@@ -639,6 +653,7 @@ VARIANT_ENUM_CAST(DisplayServer::MouseMode)
 VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
+VARIANT_ENUM_CAST(DisplayServer::WindowResizeEdge)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)
 VARIANT_ENUM_CAST(DisplayServer::VirtualKeyboardType);
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)

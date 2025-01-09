@@ -644,32 +644,31 @@ bool SceneTree::process(double p_time) {
 
 void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 	_THREAD_SAFE_METHOD_
-	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
+	const List<Ref<SceneTreeTimer>>::Element *L = timers.back(); // Last element.
+	const double unscaled_delta = Engine::get_singleton()->get_process_step();
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
-		if ((paused && !E->get()->is_process_always()) || (E->get()->is_process_in_physics() != p_physics_frame)) {
+		Ref<SceneTreeTimer> timer = E->get();
+
+		if ((paused && !timer->is_process_always()) || (timer->is_process_in_physics() != p_physics_frame)) {
 			if (E == L) {
-				break; //break on last, so if new timers were added during list traversal, ignore them.
+				break; // Break on last, so if new timers were added during list traversal, ignore them.
 			}
 			E = N;
 			continue;
 		}
 
-		double time_left = E->get()->get_time_left();
-		if (E->get()->is_ignoring_time_scale()) {
-			time_left -= Engine::get_singleton()->get_process_step();
-		} else {
-			time_left -= p_delta;
-		}
-		E->get()->set_time_left(time_left);
+		double time_left = timer->get_time_left();
+		time_left -= timer->is_ignoring_time_scale() ? unscaled_delta : p_delta;
+		timer->set_time_left(time_left);
 
 		if (time_left <= 0) {
 			E->get()->emit_signal(SNAME("timeout"));
 			timers.erase(E);
 		}
 		if (E == L) {
-			break; //break on last, so if new timers were added during list traversal, ignore them.
+			break; // Break on last, so if new timers were added during list traversal, ignore them.
 		}
 		E = N;
 	}
@@ -678,12 +677,15 @@ void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 void SceneTree::process_tweens(double p_delta, bool p_physics) {
 	_THREAD_SAFE_METHOD_
 	// This methods works similarly to how SceneTreeTimers are handled.
-	List<Ref<Tween>>::Element *L = tweens.back();
+	const List<Ref<Tween>>::Element *L = tweens.back();
+	const double unscaled_delta = Engine::get_singleton()->get_process_step();
 
 	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
 		List<Ref<Tween>>::Element *N = E->next();
+		Ref<Tween> &tween = E->get();
+
 		// Don't process if paused or process mode doesn't match.
-		if (!E->get()->can_process(paused) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+		if (!tween->can_process(paused) || (p_physics == (tween->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
 			if (E == L) {
 				break;
 			}
@@ -691,9 +693,8 @@ void SceneTree::process_tweens(double p_delta, bool p_physics) {
 			continue;
 		}
 
-		double time_step = E->get()->is_ignoring_time_scale() ? Engine::get_singleton()->get_process_step() : p_delta;
-		if (!E->get()->step(time_step)) {
-			E->get()->clear();
+		if (!tween->step(tween->is_ignoring_time_scale() ? unscaled_delta : p_delta)) {
+			tween->clear();
 			tweens.erase(E);
 		}
 		if (E == L) {
@@ -1589,9 +1590,14 @@ Ref<Tween> SceneTree::create_tween() {
 	return tween;
 }
 
-bool SceneTree::remove_tween(const Ref<Tween> &p_tween) {
+void SceneTree::remove_tween(const Ref<Tween> &p_tween) {
 	_THREAD_SAFE_METHOD_
-	return tweens.erase(p_tween);
+	for (List<Ref<Tween>>::Element *E = tweens.back(); E; E = E->prev()) {
+		if (E->get() == p_tween) {
+			E->erase();
+			break;
+		}
+	}
 }
 
 TypedArray<Tween> SceneTree::get_processed_tweens() {

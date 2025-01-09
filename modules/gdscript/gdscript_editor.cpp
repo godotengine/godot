@@ -2249,7 +2249,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			// Operator `is` used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
 			// Super dirty hack, but very useful.
 			// Credit: Zylann.
-			// TODO: this could be hacked to detect ANDed conditions too...
+			// TODO: this could be hacked to detect AND-ed conditions too...
 			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(suite->parent_if->condition);
 			if (type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier->name && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->source == p_identifier->source) {
 				// Bingo.
