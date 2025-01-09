@@ -235,7 +235,7 @@ its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (5380688660a3801aec4b25483366027fe0442d7b, 2024)
+- Version: 2.0 (a43d6925bee49277945cf3e311e4a022ae0c2073, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
