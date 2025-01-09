@@ -64,6 +64,7 @@ using namespace godot;
 #ifdef _MSC_VER
 #pragma warning(disable : 4458)
 #endif
+#include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>

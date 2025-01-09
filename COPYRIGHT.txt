@@ -469,7 +469,7 @@ License: BSD-2-clause
 
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
-Copyright: 2016-2022, Viktor Chlumsky
+Copyright: 2014-2024, Viktor Chlumsky
 License: Expat
 
 Files: ./thirdparty/nvapi/nvapi_minimal.h
