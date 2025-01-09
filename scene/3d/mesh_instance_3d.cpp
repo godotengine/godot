@@ -835,6 +835,13 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 	return bake_mesh;
 }
 
+Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
+	if (mesh.is_valid()) {
+		return mesh->generate_triangle_mesh();
+	}
+	return Ref<TriangleMesh>();
+}
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
