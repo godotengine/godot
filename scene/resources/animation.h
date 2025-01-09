@@ -253,9 +253,6 @@ private:
 
 	Vector<Track *> tracks;
 
-	template <typename T>
-	void _clear(T &p_keys);
-
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
 
