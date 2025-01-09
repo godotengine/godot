@@ -433,7 +433,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 		{
 			const int *counts_ptr = merged_normals_counts.ptr();
-			Vector3 *merged_normals_ptrw = merged_normals.ptr();
+			Vector3 *merged_normals_ptrw = merged_normals.ptrw();
 			for (unsigned int j = 0; j < merged_vertex_count; j++) {
 				merged_normals_ptrw[j] /= counts_ptr[j];
 			}

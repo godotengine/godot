@@ -524,7 +524,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 			break;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
+		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
@@ -566,9 +566,9 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 			e->abs_f_score = e->f_score - e->g_score;
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
 			}
 		}
 	}

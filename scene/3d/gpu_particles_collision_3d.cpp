@@ -493,7 +493,7 @@ Ref<Image> GPUParticlesCollisionSDF3D::bake() {
 
 	LocalVector<BVH> bvh;
 
-	_create_bvh(bvh, face_pos.ptr(), face_pos.size(), faces.ptr(), th);
+	_create_bvh(bvh, face_pos.ptrw(), face_pos.size(), faces.ptr(), th);
 
 	Vector<uint8_t> cells_data;
 	cells_data.resize(sdf_size.z * sdf_size.y * sdf_size.x * (int)sizeof(float));

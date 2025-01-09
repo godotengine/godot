@@ -461,7 +461,7 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 
 	TightLocalVector<VkExtensionProperties> instance_extensions;
 	instance_extensions.resize(instance_extension_count);
-	err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions.ptr());
+	err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions.ptrw());
 	if (err != VK_SUCCESS && err != VK_INCOMPLETE) {
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
@@ -503,7 +503,7 @@ Error RenderingContextDriverVulkan::_find_validation_layers(TightLocalVector<con
 	if (instance_layer_count > 0) {
 		TightLocalVector<VkLayerProperties> layer_properties;
 		layer_properties.resize(instance_layer_count);
-		err = vkEnumerateInstanceLayerProperties(&instance_layer_count, layer_properties.ptr());
+		err = vkEnumerateInstanceLayerProperties(&instance_layer_count, layer_properties.ptrw());
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 
 		// Preferred set of validation layers.
@@ -832,7 +832,7 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		driver_devices.resize(physical_device_count);
 		physical_devices.resize(physical_device_count);
 		device_queue_families.resize(physical_device_count);
-		err = vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.ptr());
+		err = vkEnumeratePhysicalDevices(instance, &physical_device_count, physical_devices.ptrw());
 		ERR_FAIL_COND_V(err != VK_SUCCESS, ERR_CANT_CREATE);
 	}
 
@@ -854,7 +854,7 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 
 		if (queue_family_properties_count > 0) {
 			device_queue_families[i].properties.resize(queue_family_properties_count);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, device_queue_families[i].properties.ptr());
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, device_queue_families[i].properties.ptrw());
 		}
 	}
 

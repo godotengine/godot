@@ -204,7 +204,7 @@ void MaterialStorage::get_shader_parameter_list(RID p_shader, List<PropertyInfo>
 		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));
 	}
 	int uniform_count = filtered_uniforms.size();
-	sorter.sort(filtered_uniforms.ptr(), uniform_count);
+	sorter.sort(filtered_uniforms.ptrw(), uniform_count);
 
 	String last_group;
 	for (int i = 0; i < uniform_count; i++) {

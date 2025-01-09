@@ -247,7 +247,7 @@ void GodotSoftBody3D::update_area() {
 	LocalVector<int> counts;
 	if (nodes.size() > 0) {
 		counts.resize(nodes.size());
-		memset(counts.ptr(), 0, counts.size() * sizeof(int));
+		memset(counts.ptrw(), 0, counts.size() * sizeof(int));
 	}
 
 	for (Node &node : nodes) {
@@ -547,7 +547,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 	// Create links and faces from triangles.
 	LocalVector<bool> chks;
 	chks.resize(node_count * node_count);
-	memset(chks.ptr(), 0, chks.size() * sizeof(bool));
+	memset(chks.ptrw(), 0, chks.size() * sizeof(bool));
 
 	for (uint32_t i = 0; i < triangle_count * 3; i += 3) {
 		const int idx[] = { triangles[i], triangles[i + 1], triangles[i + 2] };

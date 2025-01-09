@@ -2206,7 +2206,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 		spec_constant_base_flags |= SceneShaderGLES3::RENDER_SHADOWS_LINEAR;
 	}
 
-	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), reverse_cull, spec_constant_base_flags, false);
+	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), reverse_cull, spec_constant_base_flags, false);
 
 	_render_list_template<PASS_MODE_SHADOW>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
 
@@ -2510,7 +2510,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				SceneShaderGLES3::DISABLE_LIGHTMAP | SceneShaderGLES3::DISABLE_LIGHT_OMNI |
 				SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant, use_wireframe);
+		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptrw(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant, use_wireframe);
 		_render_list_template<PASS_MODE_DEPTH>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
 		glColorMask(1, 1, 1, 1);
@@ -2614,7 +2614,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	// Render Opaque Objects.
-	RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
+	RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptrw(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
@@ -2690,7 +2690,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.enable_gl_blend(true);
 
 	//Render transparent pass
-	RenderListParameters render_list_params_alpha(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
+	RenderListParameters render_list_params_alpha(render_list[RENDER_LIST_ALPHA].elements.ptrw(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, spec_constant_base_flags, use_wireframe);
 
 	_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(&render_list_params_alpha, &render_data, 0, render_list[RENDER_LIST_ALPHA].elements.size(), true);
 
@@ -3711,7 +3711,7 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, 31, false);
+	RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, 31, false);
 
 	_render_list_template<PASS_MODE_SHADOW>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_SECONDARY].elements.size());
 
@@ -3769,7 +3769,7 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 		base_spec_constant |= SceneShaderGLES3::DISABLE_LIGHTMAP;
 
-		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, base_spec_constant, true, Vector2(0, 0));
+		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptrw(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, base_spec_constant, true, Vector2(0, 0));
 
 		const int uv_offset_count = 9;
 		static const Vector2 uv_offsets[uv_offset_count] = {

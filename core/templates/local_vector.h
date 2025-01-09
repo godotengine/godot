@@ -49,13 +49,11 @@ private:
 	T *data = nullptr;
 
 public:
-	T *ptr() {
-		return data;
-	}
-
-	const T *ptr() const {
-		return data;
-	}
+	// This function is the same as ptr(), in that it returns a pointer to the underlying buffer.
+	// It is called ptrw() to convey write intention. This decision was made to have API uniformity
+	// to other collection types, e.g. Vector.
+	T *ptrw() { return data; }
+	const T *ptr() const { return data; }
 
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {

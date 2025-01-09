@@ -278,7 +278,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		uint64_t file_size = tcp_client->get_u64();
 		file_buffer.resize(file_size);
 
-		err = tcp_client->get_data(file_buffer.ptr(), file_size);
+		err = tcp_client->get_data(file_buffer.ptrw(), file_size);
 		if (err != OK) {
 			ERR_PRINT(vformat("Error retrieving file from remote filesystem: '%s'.", file));
 			server_disconnected = true;

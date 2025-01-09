@@ -1303,7 +1303,7 @@ public:
 		read(len);
 		CHECK(len);
 		p_val.resize(len);
-		memcpy(p_val.ptr(), data + pos, len);
+		memcpy(p_val.ptrw(), data + pos, len);
 		pos += len;
 	}
 

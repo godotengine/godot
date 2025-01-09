@@ -632,7 +632,7 @@ void NavMap::step(real_t p_deltatime) {
 
 	if (active_2d_avoidance_agents.size() > 0) {
 		if (use_threads && avoidance_use_multiple_threads) {
-			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_2d, active_2d_avoidance_agents.ptr(), active_2d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents2D"));
+			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_2d, active_2d_avoidance_agents.ptrw(), active_2d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents2D"));
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent *agent : active_2d_avoidance_agents) {
@@ -646,7 +646,7 @@ void NavMap::step(real_t p_deltatime) {
 
 	if (active_3d_avoidance_agents.size() > 0) {
 		if (use_threads && avoidance_use_multiple_threads) {
-			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_3d, active_3d_avoidance_agents.ptr(), active_3d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents3D"));
+			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_3d, active_3d_avoidance_agents.ptrw(), active_3d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents3D"));
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent *agent : active_3d_avoidance_agents) {

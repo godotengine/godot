@@ -1786,7 +1786,7 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	command->self_stages = compute_instruction_list.stages;
 	command->instruction_data_size = instruction_data_size;
 	memcpy(command->instruction_data(), compute_instruction_list.data.ptr(), instruction_data_size);
-	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
+	_add_command_to_graph(compute_instruction_list.command_trackers.ptrw(), compute_instruction_list.command_tracker_usages.ptrw(), compute_instruction_list.command_trackers.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, bool p_uses_color, bool p_uses_depth, uint32_t p_breadcrumb, bool p_split_cmd_buffer) {
@@ -2046,7 +2046,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	}
 
 	memcpy(command->instruction_data(), draw_instruction_list.data.ptr(), instruction_data_size);
-	_add_command_to_graph(draw_instruction_list.command_trackers.ptr(), draw_instruction_list.command_tracker_usages.ptr(), draw_instruction_list.command_trackers.size(), command_index, command);
+	_add_command_to_graph(draw_instruction_list.command_trackers.ptrw(), draw_instruction_list.command_tracker_usages.ptrw(), draw_instruction_list.command_trackers.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range) {
@@ -2179,7 +2179,7 @@ void RenderingDeviceGraph::add_texture_update(RDD::TextureID p_dst, ResourceTrac
 		trackers.push_back(p_dst_tracker);
 		usages.push_back(RESOURCE_USAGE_COPY_TO);
 
-		_add_command_to_graph(trackers.ptr(), usages.ptr(), trackers.size(), command_index, command);
+		_add_command_to_graph(trackers.ptrw(), usages.ptrw(), trackers.size(), command_index, command);
 	} else {
 		ResourceUsage usage = RESOURCE_USAGE_COPY_TO;
 		_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
@@ -2236,7 +2236,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 
 		// Count all the incoming connections to every node by traversing their adjacency list.
 		command_degrees.resize(command_count);
-		memset(command_degrees.ptr(), 0, sizeof(uint32_t) * command_degrees.size());
+		memset(command_degrees.ptrw(), 0, sizeof(uint32_t) * command_degrees.size());
 		for (uint32_t i = 0; i < command_count; i++) {
 			const RecordedCommand &recorded_command = *reinterpret_cast<const RecordedCommand *>(&command_data[command_data_offsets[i]]);
 			adjacency_list_index = recorded_command.adjacent_command_list_index;

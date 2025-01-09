@@ -3173,7 +3173,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_broken) {
 	if (state.canvas_instance_batches.size() == 0) {
 		state.canvas_instance_batches.push_back(Batch());
-		return state.canvas_instance_batches.ptr();
+		return state.canvas_instance_batches.ptrw();
 	}
 
 	if (r_batch_broken || state.canvas_instance_batches[state.current_batch_index].instance_count == 0) {

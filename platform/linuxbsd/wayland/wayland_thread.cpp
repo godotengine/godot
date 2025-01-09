@@ -71,7 +71,7 @@ Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 	uint32_t bytes_read = 0;
 
 	while (true) {
-		ssize_t last_bytes_read = read(fd, data.ptr() + bytes_read, chunk_size);
+		ssize_t last_bytes_read = read(fd, data.ptrw() + bytes_read, chunk_size);
 		if (last_bytes_read < 0) {
 			ERR_PRINT(vformat("Read error %d.", errno));
 

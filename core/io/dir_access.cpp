@@ -443,7 +443,7 @@ Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flag
 				break;
 			}
 
-			int bytes_read = fsrc->get_buffer(buffer.ptr(), buffer_size);
+			int bytes_read = fsrc->get_buffer(buffer.ptrw(), buffer_size);
 			if (bytes_read <= 0) {
 				err = FAILED;
 				break;

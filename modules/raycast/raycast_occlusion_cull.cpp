@@ -77,7 +77,7 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 	camera_rays = (CameraRayTile *)(camera_rays_unaligned_buffer + alignment - (((uint64_t)camera_rays_unaligned_buffer) % alignment));
 
 	camera_ray_masks.resize(camera_rays_tile_count * TILE_RAYS);
-	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
+	memset(camera_ray_masks.ptrw(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
 }
 
 void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Vector3 &p_near_bottom_left, const Vector2 &p_near_extents, real_t p_z_far, bool p_cam_orthogonal) {
@@ -336,7 +336,7 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	occ_inst->xformed_vertices.resize(3 * vertices_size + 3);
 
 	const Vector3 *read_ptr = occ->vertices.ptr();
-	float *write_ptr = occ_inst->xformed_vertices.ptr();
+	float *write_ptr = occ_inst->xformed_vertices.ptrw();
 
 	if (vertices_size > 1024) {
 		TransformThreadData td;
@@ -353,7 +353,7 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	}
 
 	occ_inst->indices.resize(occ->indices.size());
-	memcpy(occ_inst->indices.ptr(), occ->indices.ptr(), occ->indices.size() * sizeof(int32_t));
+	memcpy(occ_inst->indices.ptrw(), occ->indices.ptr(), occ->indices.size() * sizeof(int32_t));
 }
 
 void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data) {
@@ -425,13 +425,13 @@ void RaycastOcclusionCull::Scenario::update() {
 
 	if (dirty_instances_array.size() / WorkerThreadPool::get_singleton()->get_thread_count() > 128) {
 		// Lots of instances, use per-instance threading
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_update_dirty_instance_thread, dirty_instances_array.ptr(), dirty_instances_array.size(), -1, true, SNAME("RaycastOcclusionCullUpdate"));
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_update_dirty_instance_thread, dirty_instances_array.ptrw(), dirty_instances_array.size(), -1, true, SNAME("RaycastOcclusionCullUpdate"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	} else {
 		// Few instances, use threading on the vertex transforms
 		for (unsigned int i = 0; i < dirty_instances_array.size(); i++) {
-			_update_dirty_instance(i, dirty_instances_array.ptr());
+			_update_dirty_instance(i, dirty_instances_array.ptrw());
 		}
 	}
 

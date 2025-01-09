@@ -438,7 +438,7 @@ void BoundUniformSet::merge_into(ResourceUsageMap &p_dst) const {
 		resources->reserve(resources->size() + keyval.value.size());
 
 		uint32_t i = 0, j = 0;
-		__unsafe_unretained id<MTLResource> *resources_ptr = resources->ptr();
+		__unsafe_unretained id<MTLResource> *resources_ptr = resources->ptrw();
 		const __unsafe_unretained id<MTLResource> *keyval_ptr = keyval.value.ptr();
 		// 2-way merge.
 		while (i < resources->size() && j < keyval.value.size()) {

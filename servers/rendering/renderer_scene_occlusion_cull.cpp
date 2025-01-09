@@ -105,7 +105,7 @@ void RendererSceneOcclusionCull::HZBuffer::resize(const Size2i &p_size) {
 
 	w = p_size.x;
 	h = p_size.y;
-	float *ptr = data.ptr();
+	float *ptr = data.ptrw();
 
 	for (int i = 0; i < mip_count; i++) {
 		sizes[i] = Size2i(w, h);

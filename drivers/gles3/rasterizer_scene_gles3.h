@@ -600,12 +600,12 @@ private:
 
 		void sort_by_key() {
 			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
-			sorter.sort(elements.ptr(), elements.size());
+			sorter.sort(elements.ptrw(), elements.size());
 		}
 
 		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
 			SortArray<GeometryInstanceSurface *, SortByKey> sorter;
-			sorter.sort(elements.ptr() + p_from, p_size);
+			sorter.sort(elements.ptrw() + p_from, p_size);
 		}
 
 		struct SortByDepth {
@@ -617,7 +617,7 @@ private:
 		void sort_by_depth() { //used for shadows
 
 			SortArray<GeometryInstanceSurface *, SortByDepth> sorter;
-			sorter.sort(elements.ptr(), elements.size());
+			sorter.sort(elements.ptrw(), elements.size());
 		}
 
 		struct SortByReverseDepthAndPriority {
@@ -629,7 +629,7 @@ private:
 		void sort_by_reverse_depth_and_priority() { //used for alpha
 
 			SortArray<GeometryInstanceSurface *, SortByReverseDepthAndPriority> sorter;
-			sorter.sort(elements.ptr(), elements.size());
+			sorter.sort(elements.ptrw(), elements.size());
 		}
 
 		_FORCE_INLINE_ void add_element(GeometryInstanceSurface *p_element) {
