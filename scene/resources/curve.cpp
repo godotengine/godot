@@ -1258,8 +1258,15 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	midpoints.resize(points.size() - 1);
 
 	int pc = 1;
+	int last_unrepeated = 0;
 	for (int i = 0; i < points.size() - 1; i++) {
-		_bake_segment2d(midpoints.write[i], 0, 1, points[i].position, points[i].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_tolerance);
+		// look for adjacent points on the curve that are the same, otherwise
+		// we duplicate the point in the returned tessellation
+		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()) {
+			continue;
+		}
+		_bake_segment2d(midpoints.write[i], 0, 1, points[last_unrepeated].position, points[last_unrepeated].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_tolerance);
+		last_unrepeated = i + 1;
 		pc++;
 		pc += midpoints[i].size();
 	}
@@ -1270,11 +1277,17 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-		for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
-			pidx++;
-			bpw[pidx] = E.value;
+		if ((points[i].position - points[i + 1].position).is_zero_approx() && (points[i].in - points[i + 1].in).is_zero_approx() && (points[i].out - points[i + 1].out).is_zero_approx()) {
+			continue;
 		}
-
+		// empty value here gives realloc() : invalid next size error
+		// in the nested loop
+		if (midpoints[i].size() != 0) {
+			for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
+				pidx++;
+				bpw[pidx] = E.value;
+			}
+		}
 		pidx++;
 		bpw[pidx] = points[i + 1].position;
 	}
