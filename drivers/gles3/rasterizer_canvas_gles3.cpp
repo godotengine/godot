@@ -2205,12 +2205,18 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 	GLES3::RenderTarget *render_target = texture_storage->get_render_target(p_to_render_target);
 
 	if (p_to_backbuffer) {
+		// TODO is backbuffer copy after MSAA resolve and is this thus safe? Or do we have a problem here?
+
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->backbuffer_fbo);
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
 		glBindTexture(GL_TEXTURE_2D, tex->tex_id);
 	} else {
-		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		if (render_target->msaa_2d.mode != RS::VIEWPORT_MSAA_DISABLED && render_target->msaa_2d.fbo != 0) {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->msaa_2d.fbo);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
+		}
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
 		if (render_target->backbuffer != 0) {
