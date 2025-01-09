@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Callable "call_me" can only be invoked using ".call()".

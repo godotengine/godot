@@ -3688,18 +3688,31 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 		if (!found && (is_self || (base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN))) {
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
-#ifdef SUGGEST_GODOT4_RENAMES
-			String rename_hint;
-			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
-				const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
-				if (renamed_function_name) {
-					rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
+			GDScriptParser::FunctionNode *parent_function = parser->current_function;
+			bool try_to_call_parameter = false;
+			if (parent_function && !parent_function->parameters.is_empty()) {
+				for (const auto &param : parent_function->parameters) {
+					if (param->identifier && param->identifier->name == p_call->function_name) {
+						try_to_call_parameter = true;
+					}
 				}
 			}
-			push_error(vformat(R"*(Function "%s()" not found in base %s.%s)*", p_call->function_name, base_name, rename_hint), p_call->is_super ? p_call : p_call->callee);
+			if (try_to_call_parameter) {
+				push_error(vformat(R"*(Callable "%s" can only be invoked using ".call()".)*", p_call->function_name), p_call->is_super ? p_call : p_call->callee);
+			} else {
+#ifdef SUGGEST_GODOT4_RENAMES
+				String rename_hint;
+				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+					const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
+					if (renamed_function_name) {
+						rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
+					}
+				}
+				push_error(vformat(R"*(Function "%s()" not found in base %s.%s)*", p_call->function_name, base_name, rename_hint), p_call->is_super ? p_call : p_call->callee);
 #else
-			push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
+				push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
 #endif // SUGGEST_GODOT4_RENAMES
+			}
 		} else if (!found && (!p_call->is_super && base_type.is_hard_type() && base_type.is_meta_type)) {
 			push_error(vformat(R"*(Static function "%s()" not found in base "%s".)*", p_call->function_name, base_type.to_string()), p_call);
 		}

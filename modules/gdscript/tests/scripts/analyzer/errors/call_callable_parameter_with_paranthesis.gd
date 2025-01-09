@@ -1,0 +1,2 @@
+func test(param):
+	param()
