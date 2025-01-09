@@ -419,7 +419,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 			orbiting_index = p_index;
 		}
 	} else {
-		if (focused_axis > -1) {
+		if (focused_axis > -1 && gizmo_activated) {
 			viewport->_menu_option(axis_menu_options[focused_axis]);
 			_update_focus();
 		}
@@ -432,10 +432,11 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 }
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
-	if (orbiting_index == p_index) {
+	if (orbiting_index == p_index && gizmo_activated) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			orbiting_mouse_start = p_position;
+			viewport->previous_cursor = viewport->cursor;
 		}
 		viewport->_nav_orbit(p_event, p_relative_position);
 		focused_axis = -1;
@@ -447,10 +448,35 @@ void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event
 void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	// Key events
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->warp_mouse(orbiting_mouse_start);
+			viewport->cursor = viewport->previous_cursor;
+			gizmo_activated = false;
+		}
+	}
+
 	// Mouse events
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
-		_process_click(100, mb->get_position(), mb->is_pressed());
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			_process_click(100, mb->get_position(), mb->is_pressed());
+			if (mb->is_pressed()) {
+				gizmo_activated = true;
+				grab_focus();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->warp_mouse(orbiting_mouse_start);
+				viewport->cursor = viewport->previous_cursor;
+				gizmo_activated = false;
+			}
+		}
 	}
 
 	const Ref<InputEventMouseMotion> mm = p_event;
@@ -3325,7 +3351,7 @@ void Node3DEditorViewport::_draw() {
 		force_over_plugin_list->forward_3d_force_draw_over_viewport(surface);
 	}
 
-	if (surface->has_focus()) {
+	if (surface->has_focus() || rotation_control->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r = Rect2(Point2(), size);
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
@@ -5778,6 +5804,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
 	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
+	rotation_control->set_focus_mode(FOCUS_CLICK);
 	top_right_vbox->add_child(rotation_control);
 
 	frame_time_panel = memnew(PanelContainer);
