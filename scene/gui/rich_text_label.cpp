@@ -819,6 +819,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	}
 
 	int line_count = 0;
+	bool has_visible_chars = false;
 	// Bottom margin for text clipping.
 	float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
 	Size2 ctrl_size = get_size();
@@ -842,8 +843,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 		float length = l.text_buf->get_line_size(line).x;
 
 		// Draw line.
-		line_count++;
-
 		if (rtl) {
 			off.x = p_width - l.offset.x - width;
 			if (!lrtl && p_frame == main) { // Skip Scrollbar.
@@ -1306,6 +1305,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 						if (!skip) {
 							if (txt_visible) {
+								has_visible_chars = true;
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
 										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
@@ -1426,6 +1426,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		r_processed_glyphs = processed_glyphs_step;
 		off.y += TS->shaped_text_get_descent(rid);
+		if (has_visible_chars) {
+			line_count++;
+			has_visible_chars = false;
+		}
 	}
 
 	return line_count;
