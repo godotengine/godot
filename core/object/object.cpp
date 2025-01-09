@@ -1599,9 +1599,12 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
+	auto& base_comparator = *p_callable.get_base_comparator();
+	if (!s->slot_map.has(base_comparator)) {
+		return false;
+	}
 
-	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
+	SignalData::Slot *slot = &s->slot_map[base_comparator];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it

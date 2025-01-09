@@ -48,7 +48,7 @@ int InputEvent::get_device() const {
 }
 
 bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const {
-	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match);
+	return InputMap::get_singleton()->has_action(p_action) && InputMap::get_singleton()->event_is_action(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match);
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
