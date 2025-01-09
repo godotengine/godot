@@ -115,6 +115,7 @@ class EditorPropertyArray : public EditorProperty {
 
 	PopupMenu *change_type = nullptr;
 
+	bool preview_value = false;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
@@ -169,6 +170,7 @@ protected:
 
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
+	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyArray();
@@ -182,7 +184,9 @@ class EditorPropertyDictionary : public EditorProperty {
 		HBoxContainer *container = nullptr;
 		int index = -1;
 		Variant::Type type = Variant::VARIANT_MAX;
+		Variant::Type key_type = Variant::VARIANT_MAX;
 		bool as_id = false;
+		bool key_as_id = false;
 		EditorProperty *prop = nullptr;
 		EditorProperty *prop_key = nullptr;
 		String prop_name;
@@ -202,6 +206,15 @@ class EditorPropertyDictionary : public EditorProperty {
 			update_prop_or_index();
 		}
 
+		void set_key_prop(EditorProperty *p_prop) {
+			if (prop_key) {
+				prop_key->add_sibling(p_prop);
+				prop_key->queue_free();
+				prop_key = p_prop;
+				update_prop_or_index();
+			}
+		}
+
 		void update_prop_or_index() {
 			prop->set_object_and_property(object.ptr(), prop_name);
 			if (prop_key) {
@@ -215,6 +228,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	PopupMenu *change_type = nullptr;
 	bool updating = false;
 
+	bool preview_value = false;
 	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
@@ -252,6 +266,7 @@ protected:
 
 public:
 	void setup(PropertyHint p_hint, const String &p_hint_string = "");
+	void set_preview_value(bool p_preview_value);
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();
