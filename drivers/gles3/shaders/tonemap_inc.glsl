@@ -84,71 +84,73 @@ vec3 tonemap_aces(vec3 color, float p_white) {
 	return color_tonemapped / p_white_tonemapped;
 }
 
-// Mean error^2: 3.6705141e-06
+// Polynomial approximation of EaryChow's AgX sigmoid curve.
+// In Blender's implementation, numbers could go a little bit over 1.0, so it's best to ensure
+// this behaves the same as Blender's with values up to 1.1. Input values cannot be lower than 0.
 vec3 agx_default_contrast_approx(vec3 x) {
+	// Generated with Excel trendline
+	// Input data: Generated using python sigmoid with EaryChow's configuration and 57 steps
+	// 6th order, intercept of 0.0 to remove an operation and ensure intersection at 0.0
 	vec3 x2 = x * x;
 	vec3 x4 = x2 * x2;
-
-	return +15.5 * x4 * x2 - 40.14 * x4 * x + 31.96 * x4 - 6.868 * x2 * x + 0.4298 * x2 + 0.1191 * x - 0.00232;
+	return -0.20687445 * x + 6.80888933 * x2 - 37.60519607 * x2 * x + 93.32681938 * x4 - 95.2780858 * x4 * x + 33.96372259 * x4 * x2;
 }
-
-const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
-		vec3(1.6605, -0.1246, -0.0182),
-		vec3(-0.5876, 1.1329, -0.1006),
-		vec3(-0.0728, -0.0083, 1.1187));
 
 const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
 		vec3(0.6274, 0.0691, 0.0164),
 		vec3(0.3293, 0.9195, 0.0880),
 		vec3(0.0433, 0.0113, 0.8956));
 
-vec3 agx(vec3 val) {
-	const mat3 agx_mat = mat3(
+// This is an approximation and simplification of EaryChow's AgX implementation that is used by Blender.
+// This code is based off of the script that generates the AgX_Base_sRGB.cube LUT that Blender uses.
+// Source: https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBasesRGB.py
+vec3 tonemap_agx(vec3 color) {
+	const mat3 agx_inset_matrix = mat3(
 			0.856627153315983, 0.137318972929847, 0.11189821299995,
 			0.0951212405381588, 0.761241990602591, 0.0767994186031903,
 			0.0482516061458583, 0.101439036467562, 0.811302368396859);
 
-	const float min_ev = -12.47393;
-	const float max_ev = 4.026069;
+	// Combined inverse AgX outset matrix and linear Rec 2020 to linear sRGB matrices.
+	const mat3 agx_outset_rec2020_to_srgb_matrix = mat3(
+			1.9648846919172409596, -0.29937618452442253746, -0.16440106280678278299,
+			-0.85594737466675834968, 1.3263980951083531115, -0.23819967517076844919,
+			-0.10883731725048386702, -0.02702191058393112346, 1.4025007379775505276);
+
+	// LOG2_MIN      = -10.0
+	// LOG2_MAX      =  +6.5
+	// MIDDLE_GRAY   =  0.18
+	const float min_ev = -12.4739311883324; // log2(pow(2, LOG2_MIN) * MIDDLE_GRAY)
+	const float max_ev = 4.02606881166759; // log2(pow(2, LOG2_MAX) * MIDDLE_GRAY)
 
 	// Do AGX in rec2020 to match Blender.
-	val = LINEAR_SRGB_TO_LINEAR_REC2020 * val;
-	val = max(val, vec3(0.0));
+	color = LINEAR_SRGB_TO_LINEAR_REC2020 * color;
 
-	// Input transform (inset).
-	val = agx_mat * val;
+	// Preventing negative values is required for the AgX inset matrix to behave correctly.
+	// This could also be done before the Rec. 2020 transform, allowing the transform to
+	// be combined with the AgX inset matrix, but doing this causes a loss of color information
+	// that could be correctly interpreted within the Rec. 2020 color space.
+	color = max(color, vec3(0.0));
+
+	color = agx_inset_matrix * color;
 
 	// Log2 space encoding.
-	val = max(val, 1e-10);
-	val = clamp(log2(val), min_ev, max_ev);
-	val = (val - min_ev) / (max_ev - min_ev);
+	color = max(color, 1e-10); // Prevent log2(0.0). Possibly unnecessary.
+	// Must be clamped because agx_blender_default_contrast_approx may not work well with values above 1.0
+	color = clamp(log2(color), min_ev, max_ev);
+	color = (color - min_ev) / (max_ev - min_ev);
 
 	// Apply sigmoid function approximation.
-	val = agx_default_contrast_approx(val);
+	color = agx_default_contrast_approx(color);
 
-	return val;
-}
+	// Convert back to linear before applying outset matrix.
+	color = pow(color, vec3(2.4));
 
-vec3 agx_eotf(vec3 val) {
-	const mat3 agx_mat_out = mat3(
-			1.1271005818144368, -0.1413297634984383, -0.1413297634984383,
-			-0.1106066430966032, 1.1578237022162720, -0.1106066430966029,
-			-0.0164939387178346, -0.0164939387178343, 1.2519364065950405);
+	// Apply outset to make the result more chroma-laden and then go back to linear sRGB.
+	color = agx_outset_rec2020_to_srgb_matrix * color;
 
-	val = agx_mat_out * val;
+	// Simply hard clip instead of Blender's complex lusRGB.compensate_low_side.
+	color = max(color, vec3(0.0));
 
-	// Convert back to linear so we can escape Rec 2020.
-	val = pow(val, vec3(2.4));
-
-	val = LINEAR_REC2020_TO_LINEAR_SRGB * val;
-
-	return val;
-}
-
-// Adapted from https://iolite-engine.com/blog_posts/minimal_agx_implementation
-vec3 tonemap_agx(vec3 color) {
-	color = agx(color);
-	color = agx_eotf(color);
 	return color;
 }
 
