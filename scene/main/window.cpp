@@ -1998,6 +1998,54 @@ bool Window::has_focus() const {
 	return focused;
 }
 
+void Window::start_drag() {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_start_drag(window_id);
+	} else if (embedder) {
+		embedder->_window_start_drag(this);
+	}
+}
+
+void Window::start_resize(DisplayServer::WindowResizeEdge p_edge) {
+	ERR_MAIN_THREAD_GUARD;
+	if (get_flag(FLAG_RESIZE_DISABLED)) {
+		return;
+	}
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_start_resize(p_edge, window_id);
+	} else if (embedder) {
+		switch (p_edge) {
+			case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP_LEFT, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_TOP: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_TOP_RIGHT, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_LEFT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_LEFT, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_RIGHT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_RIGHT, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM_LEFT, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_BOTTOM: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM, this);
+			} break;
+			case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+				embedder->_window_start_resize(Viewport::SUB_WINDOW_RESIZE_BOTTOM_RIGHT, this);
+			} break;
+			default:
+				break;
+		}
+	}
+}
+
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2i());
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
@@ -2887,6 +2935,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
+
+	ClassDB::bind_method(D_METHOD("start_drag"), &Window::start_drag);
+	ClassDB::bind_method(D_METHOD("start_resize", "edge"), &Window::start_resize);
 
 	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);

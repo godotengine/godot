@@ -618,7 +618,7 @@ Point2i DisplayServer::ime_get_selection() const {
 }
 
 String DisplayServer::ime_get_text() const {
-	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
+	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATE not supported by this display server.");
 }
 
 void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -1268,8 +1268,8 @@ Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 	return (Input::CursorShape)singleton->cursor_get_shape();
 }
 
-void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
-	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
+void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hotspot) {
+	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 
 bool DisplayServer::can_create_rendering_device() {
