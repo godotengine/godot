@@ -440,7 +440,7 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	String run_script = "Expand-Archive -LiteralPath '{temp_dir}\\{archive_name}' -DestinationPath '{temp_dir}'\n"
 						"$action = New-ScheduledTaskAction -Execute '{temp_dir}\\{exe_name}' -Argument '{cmd_args}'\n"
 						"$trigger = New-ScheduledTaskTrigger -Once -At 00:00\n"
-						"$settings = New-ScheduledTaskSettingsSet\n"
+						"$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries\n"
 						"$task = New-ScheduledTask -Action $action -Trigger $trigger -Settings $settings\n"
 						"Register-ScheduledTask godot_remote_debug -InputObject $task -Force:$true\n"
 						"Start-ScheduledTask -TaskName godot_remote_debug\n"
