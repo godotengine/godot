@@ -44,8 +44,18 @@ class TextureRect;
 class EditorSceneTabs : public MarginContainer {
 	GDCLASS(EditorSceneTabs, MarginContainer);
 
-	static EditorSceneTabs *singleton;
+	inline static EditorSceneTabs *singleton = nullptr;
 
+public:
+	enum {
+		SCENE_SHOW_IN_FILESYSTEM = 3000, // Prevents conflicts with EditorNode options.
+		SCENE_RUN,
+		SCENE_CLOSE_OTHERS,
+		SCENE_CLOSE_RIGHT,
+		SCENE_CLOSE_ALL,
+	};
+
+private:
 	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;
 
