@@ -2130,7 +2130,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
 
 	frame_list->set_max_columns(0);
-	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
 	frame_list->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
