@@ -567,12 +567,12 @@ in the MSVC debugger.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: master (36035428bc32302a9d7c9ee1ecc833fb8394a2a3, 2024)
+- Version: 3.0.1 (98b8142519d35c13e0e25cfa9fd6e3a271403be6, 2024)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.cpp` and `meshIO.{cpp,h}`
 - `AUTHORS`, `LICENSE`
 
 
