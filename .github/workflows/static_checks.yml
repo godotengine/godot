@@ -13,9 +13,8 @@ jobs:
           fetch-depth: 2
 
       - name: Install APT dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libxml2-utils
+        run: |
+          sudo apt install -y libxml2-utils
 
       - name: Install Python dependencies and general setup
         run: |
