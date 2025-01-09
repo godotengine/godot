@@ -82,7 +82,7 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 }
 
 void FileSystemList::_line_editor_submit(const String &p_text) {
-	if (popup_edit_commited) {
+	if (popup_edit_committed) {
 		return; // Already processed by _text_editor_popup_modal_close
 	}
 
@@ -90,7 +90,7 @@ void FileSystemList::_line_editor_submit(const String &p_text) {
 		return; // ESC pressed, app focus lost, or forced close from code.
 	}
 
-	popup_edit_commited = true; // End edit popup processing.
+	popup_edit_committed = true; // End edit popup processing.
 	popup_editor->hide();
 
 	emit_signal(SNAME("item_edited"));
@@ -139,7 +139,7 @@ bool FileSystemList::edit_selected() {
 	line_editor->set_text(name);
 	line_editor->select(0, name.rfind_char('.'));
 
-	popup_edit_commited = false; // Start edit popup processing.
+	popup_edit_committed = false; // Start edit popup processing.
 	popup_editor->popup();
 	popup_editor->child_controls_changed();
 	line_editor->grab_focus();
@@ -151,7 +151,7 @@ String FileSystemList::get_edit_text() {
 }
 
 void FileSystemList::_text_editor_popup_modal_close() {
-	if (popup_edit_commited) {
+	if (popup_edit_committed) {
 		return; // Already processed by _text_editor_popup_modal_close
 	}
 
@@ -1184,7 +1184,7 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 			return HashSet<String>();
 		}
 
-		// Get a list of all potentional conversion-to targets.
+		// Get a list of all potential conversion-to targets.
 		HashSet<String> current_valid_conversion_to_targets;
 		for (const Ref<EditorResourceConversionPlugin> &E : conversions) {
 			const String what = E->converts_to();

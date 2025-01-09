@@ -1246,7 +1246,8 @@ public:
 		ENV_TONE_MAPPER_LINEAR,
 		ENV_TONE_MAPPER_REINHARD,
 		ENV_TONE_MAPPER_FILMIC,
-		ENV_TONE_MAPPER_ACES
+		ENV_TONE_MAPPER_ACES,
+		ENV_TONE_MAPPER_AGX,
 	};
 
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
@@ -1403,7 +1404,7 @@ public:
 		INSTANCE_VOXEL_GI,
 		INSTANCE_LIGHTMAP,
 		INSTANCE_OCCLUDER,
-		INSTANCE_VISIBLITY_NOTIFIER,
+		INSTANCE_VISIBLITY_NOTIFIER, // TODO: Fix typo in "VISIBILITY" (in 5.0).
 		INSTANCE_FOG_VOLUME,
 		INSTANCE_MAX,
 
