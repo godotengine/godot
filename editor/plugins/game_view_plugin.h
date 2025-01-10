@@ -47,6 +47,7 @@ class GameViewDebugger : public EditorDebuggerPlugin {
 private:
 	Vector<Ref<EditorDebuggerSession>> sessions;
 
+	bool is_feature_enabled = true;
 	int node_type = RuntimeNodeSelect::NODE_TYPE_NONE;
 	bool selection_visible = true;
 	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
@@ -59,6 +60,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_is_feature_enabled(bool p_enabled);
+
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
@@ -95,6 +98,7 @@ class GameView : public VBoxContainer {
 	Ref<GameViewDebugger> debugger;
 	WindowWrapper *window_wrapper = nullptr;
 
+	bool is_feature_enabled = true;
 	int active_sessions = 0;
 	int screen_index_before_start = -1;
 
@@ -163,6 +167,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_is_feature_enabled(bool p_enabled);
+
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
@@ -182,6 +188,7 @@ class GameViewPlugin : public EditorPlugin {
 
 	String last_editor;
 
+	void _feature_profile_changed();
 	void _window_visibility_changed(bool p_visible);
 	void _save_last_editor(const String &p_editor);
 	void _focus_another_editor();
