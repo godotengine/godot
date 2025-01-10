@@ -178,8 +178,13 @@ License: Apache-2.0
 
 Files: ./thirdparty/basis_universal/
 Comment: Basis Universal
-Copyright: 2022, Binomial LLC.
+Copyright: 2019-2024, Binomial LLC.
 License: Apache-2.0
+
+Files: ./thirdparty/betsy/
+Comment: Betsy
+Copyright: 2020-2022, Matias N. Goldberg
+License: Expat
 
 Files: ./thirdparty/brotli/
 Comment: Brotli
@@ -388,6 +393,11 @@ Copyright: 1998-2010, Gilles Vollant
  2009-2010, Mathias Svensson
 License: Zlib
 
+Files: ./thirdparty/misc/bcdec.h
+Comment: bcdec
+Copyright: 2022, Sergii Kudlai
+License: Expat
+
 Files: ./thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
@@ -507,11 +517,6 @@ Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
-
-Files: ./thirdparty/squish/
-Comment: libSquish
-Copyright: 2006, Simon Brown
-License: Expat
 
 Files: ./thirdparty/thorvg/
 Comment: ThorVG
