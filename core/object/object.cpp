@@ -1078,22 +1078,21 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), vformat("Trying to add already existing signal '%s'.", p_signal.name));
-	SignalData s;
-	s.user = p_signal;
-	signal_map[p_signal.name] = s;
+	user_signal_map[p_signal.name] = p_signal;
+	signal_map.insert_new(p_signal.name, SignalData());
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
 	if (!signal_map.has(p_name)) {
 		return false;
 	}
-	return signal_map[p_name].user.name.length() > 0;
+	return user_signal_map[p_name].name.length() > 0;
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
 	SignalData *s = signal_map.getptr(p_name);
 	ERR_FAIL_NULL_MSG(s, "Provided signal does not exist.");
-	ERR_FAIL_COND_MSG(!s->removable, "Signal is not removable (not added with add_user_signal).");
+	ERR_FAIL_COND_MSG(!user_signal_map.has(p_name), "Signal is not removable (not added with add_user_signal).");
 	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 		Object *target = slot_kv.key.get_object();
 		if (likely(target)) {
@@ -1102,6 +1101,7 @@ void Object::_remove_user_signal(const StringName &p_name) {
 	}
 
 	signal_map.erase(p_name);
+	user_signal_map.erase(p_name);
 }
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1252,10 +1252,6 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 	}
 
 	add_user_signal(mi);
-
-	if (signal_map.has(p_name)) {
-		signal_map.getptr(p_name)->removable = true;
-	}
 }
 
 TypedArray<Dictionary> Object::_get_signal_list() const {
@@ -1324,11 +1320,8 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	ClassDB::get_signal_list(get_class_name(), p_signals);
 	//find maybe usersignals?
 
-	for (const KeyValue<StringName, SignalData> &E : signal_map) {
-		if (!E.value.user.name.is_empty()) {
-			//user signal
-			p_signals->push_back(E.value.user);
-		}
+	for (const KeyValue<StringName, MethodInfo> &E : user_signal_map) {
+		p_signals->push_back(E.value);
 	}
 }
 
@@ -1407,8 +1400,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("In Object of type '%s': Attempt to connect nonexistent signal '%s' to callable '%s'.", String(get_class()), p_signal, p_callable));
 
-		signal_map[p_signal] = SignalData();
-		s = &signal_map[p_signal];
+		s = &signal_map.insert_new(p_signal, SignalData())->value;
 	}
 
 	//compare with the base callable, so binds can be ignored
@@ -1438,7 +1430,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	}
 
 	//use callable version as key, so binds can be ignored
-	s->slot_map[*p_callable.get_base_comparator()] = slot;
+	s->slot_map.insert_new(*p_callable.get_base_comparator(), slot);
 
 	return OK;
 }
@@ -2137,10 +2129,8 @@ Object::~Object() {
 	}
 
 	// Drop all connections to the signals of this object.
-	while (signal_map.size()) {
-		// Avoid regular iteration so erasing is safe.
-		KeyValue<StringName, SignalData> &E = *signal_map.begin();
-		SignalData *s = &E.value;
+	for (const KeyValue<StringName, SignalData> &E : signal_map) {
+		const SignalData *s = &E.value;
 
 		for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {
 			Object *target = slot_kv.value.conn.callable.get_object();
@@ -2148,9 +2138,9 @@ Object::~Object() {
 				target->connections.erase(slot_kv.value.cE);
 			}
 		}
-
-		signal_map.erase(E.key);
 	}
+
+	signal_map.reset();
 
 	// Disconnect signals that connect to this object.
 	while (connections.size()) {

@@ -79,7 +79,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		path_cache = p_path;
 
 		if (!path_cache.is_empty()) {
-			ResourceCache::resources[path_cache] = this;
+			ResourceCache::resources.insert_new(path_cache, this);
 		}
 	}
 
@@ -587,13 +587,13 @@ Resource::~Resource() {
 	MutexLock lock(ResourceCache::lock);
 	// Only unregister from the cache if this is the actual resource listed there.
 	// (Other resources can have the same value in `path_cache` if loaded with `CACHE_IGNORE`.)
-	HashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
+	AHashMap<String, Resource *>::Iterator E = ResourceCache::resources.find(path_cache);
 	if (likely(E && E->value == this)) {
 		ResourceCache::resources.remove(E);
 	}
 }
 
-HashMap<String, Resource *> ResourceCache::resources;
+AHashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
 HashMap<String, HashMap<String, String>> ResourceCache::resource_path_cache;
 #endif
