@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OptionButton" inherits="Button" keywords="select" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A button that brings up a dropdown with selectable options when pressed.
+		A button that allows the user to select from a list of options.
 	</brief_description>
 	<description>
-		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+		[OptionButton] is a type of button that allows the user to select from a list of options. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		The [OptionButton]'s type determines how the options are presented to the user.
+		If the [OptionButton]'s [code]type[/code] is [constant DROPDOWN], it brings up a dropdown with selectable items when pressed.
+		If the [OptionButton]'s [code]type[/code] is [constant CAROUSEL], it shows arrows that allow the user to select the next or previous option.
+		If the [OptionButton]'s [code]type[/code] is [constant HYBRID], it shows arrows that allow the user to select the next or previous option and also brings up a dropdown when pressed.
 		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
 	</description>
@@ -226,6 +230,9 @@
 			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
+		<member name="carousel_wraparound" type="bool" setter="set_carousel_wraparound" getter="is_carousel_wraparound" default="true">
+			If [code]false[/code], the [OptionButton] will stop at the first and last option when [code]type[/code] is [constant CAROUSEL] or [constant HYBRID].
+		</member>
 	</members>
 	<signals>
 		<signal name="item_focused">
@@ -242,6 +249,20 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="DROPDOWN" value="0" enum="Type">
+			When pressed, the [OptionButton] displays a dropdown menu with selectable items.
+		</constant>
+		<constant name="HYBRID" value="1" enum="Type">
+			When pressed, the [OptionButton] displays a dropdown menu with selectable items.
+			It also displays arrows on the left and right side that can be clicked to select the previous or next item.
+			Pressing [code]ui_left[/code] or [code]ui_right[/code] while the [OptionButton] is focused will select the previous or next item.
+		</constant>
+		<constant name="CAROUSEL" value="2" enum="Type">
+			The [OptionButton] displays arrows on the left and right side that can be clicked to select the previous or next item.
+			Pressing [code]ui_left[/code] or [code]ui_right[/code] while the [OptionButton] is focused will select the previous or next item.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
 			The horizontal space between the arrow icon and the right edge of the button.
@@ -250,7 +271,37 @@
 			If different than [code]0[/code], the arrow icon will be modulated to the font color.
 		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
-			The arrow icon to be drawn on the right end of the button.
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant DROPDOWN].
+		</theme_item>
+		<theme_item name="right_arrow_normal" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID].
+		</theme_item>
+		<theme_item name="right_arrow_hover" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being hovered.
+		</theme_item>
+		<theme_item name="right_arrow_hover_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being hovered and pressed.
+		</theme_item>
+		<theme_item name="right_arrow_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being pressed.
+		</theme_item>
+		<theme_item name="right_arrow_disabled" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is disabled.
+		</theme_item>
+		<theme_item name="left_arrow_normal" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the left end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID].
+		</theme_item>
+		<theme_item name="left_arrow_hover" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the left end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being hovered.
+		</theme_item>
+		<theme_item name="left_arrow_hover_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the left end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being hovered and pressed.
+		</theme_item>
+		<theme_item name="left_arrow_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the left end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is being pressed.
+		</theme_item>
+		<theme_item name="left_arrow_disabled" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the left end of the button if [code]type[/code] is [constant CAROUSEL] or [constant HYBRID] and it is disabled.
 		</theme_item>
 	</theme_items>
 </class>
