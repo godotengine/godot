@@ -128,20 +128,21 @@ constexpr real_t MAX_FOV = 179;
 
 void ViewportNavigationControl::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!is_connected(SceneStringName(mouse_exited), callable_mp(this, &ViewportNavigationControl::_on_mouse_exited))) {
-				connect(SceneStringName(mouse_exited), callable_mp(this, &ViewportNavigationControl::_on_mouse_exited));
-			}
-			if (!is_connected(SceneStringName(mouse_entered), callable_mp(this, &ViewportNavigationControl::_on_mouse_entered))) {
-				connect(SceneStringName(mouse_entered), callable_mp(this, &ViewportNavigationControl::_on_mouse_entered));
-			}
-		} break;
-
 		case NOTIFICATION_DRAW: {
 			if (viewport != nullptr) {
 				_draw();
 				_update_navigation();
 			}
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			hovered = true;
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			hovered = false;
+			queue_redraw();
 		} break;
 	}
 }
@@ -279,16 +280,6 @@ void ViewportNavigationControl::_update_navigation() {
 	}
 }
 
-void ViewportNavigationControl::_on_mouse_entered() {
-	hovered = true;
-	queue_redraw();
-}
-
-void ViewportNavigationControl::_on_mouse_exited() {
-	hovered = false;
-	queue_redraw();
-}
-
 void ViewportNavigationControl::set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode) {
 	nav_mode = p_nav_mode;
 }
@@ -313,16 +304,17 @@ void ViewportRotationControl::_notification(int p_what) {
 			axis_colors.push_back(get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
 			axis_colors.push_back(get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor)));
 			queue_redraw();
-
-			if (!is_connected(SceneStringName(mouse_exited), callable_mp(this, &ViewportRotationControl::_on_mouse_exited))) {
-				connect(SceneStringName(mouse_exited), callable_mp(this, &ViewportRotationControl::_on_mouse_exited));
-			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
 			if (viewport != nullptr) {
 				_draw();
 			}
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			focused_axis = -2;
+			queue_redraw();
 		} break;
 	}
 }
@@ -518,11 +510,6 @@ void ViewportRotationControl::_update_focus() {
 	if (focused_axis != original_focus) {
 		queue_redraw();
 	}
-}
-
-void ViewportRotationControl::_on_mouse_exited() {
-	focused_axis = -2;
-	queue_redraw();
 }
 
 void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
