@@ -2925,6 +2925,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
+		if (init_screen == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO) {
+			init_screen = DisplayServer::SCREEN_PRIMARY;
+		}
+
 		OS::get_singleton()->benchmark_end_measure("Startup", "Initialize Early Settings");
 	}
 #endif
