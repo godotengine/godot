@@ -1215,6 +1215,13 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="show_emoji_and_symbol_picker" qualifiers="const">
+			<return type="void" />
+			<description>
+				Opens system emoji and symbol picker.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="status_indicator_get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="id" type="int" />
@@ -1940,6 +1947,9 @@
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30" enum="Feature">
 			Native file selection dialog supports MIME types as filters.
+		</constant>
+		<constant name="FEATURE_EMOJI_AND_SYMBOL_PICKER" value="31" enum="Feature">
+			Display server supports system emoji and symbol picker. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
