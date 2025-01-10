@@ -235,7 +235,7 @@ its functionality to IPv4 only.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: git (5380688660a3801aec4b25483366027fe0442d7b, 2024)
+- Version: 2.0 (a43d6925bee49277945cf3e311e4a022ae0c2073, 2024)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -511,14 +511,14 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.44 (f5e92d76973a7a53f517579bc95d61483bf108c0, 2024)
+- Version: 1.6.45 (51f5bd68b9b806d2c92b4318164d28b49357da31, 2024)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
 - All `.c` and `.h` files of the main directory, apart from `example.c` and
   `pngtest.c`
-- `arm/` (minus `filter_neon.S`), `intel/` and `powerpc/` (minus `.editorconfig`) folders
+- `arm/` (minus `filter_neon.S`), `intel/`, `loongarch/`, and `powerpc/` (minus `.editorconfig`) folders
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
 
@@ -569,12 +569,12 @@ in the MSVC debugger.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: master (36035428bc32302a9d7c9ee1ecc833fb8394a2a3, 2024)
+- Version: 3.0.1 (98b8142519d35c13e0e25cfa9fd6e3a271403be6, 2024)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.cpp` and `meshIO.{cpp,h}`
 - `AUTHORS`, `LICENSE`
 
 

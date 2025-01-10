@@ -7955,12 +7955,13 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 			}
 			text.set_brk_flags(autowrap_flags);
 			text.set_width(wrap_at_column);
-		} else {
+			text.invalidate_all_lines();
+			_update_placeholder();
+		} else if (text.get_width() != -1) {
 			text.set_width(-1);
+			text.invalidate_all_lines();
+			_update_placeholder();
 		}
-
-		text.invalidate_all_lines();
-		_update_placeholder();
 	}
 
 	// Update viewport.
