@@ -85,15 +85,15 @@ vec3 tonemap_aces(vec3 color, float p_white) {
 }
 
 // Polynomial approximation of EaryChow's AgX sigmoid curve.
-// In Blender's implementation, numbers could go a little bit over 1.0, so it's best to ensure
-// this behaves the same as Blender's with values up to 1.1. Input values cannot be lower than 0.
+// x must be within the range [0.0, 1.0]
 vec3 agx_default_contrast_approx(vec3 x) {
 	// Generated with Excel trendline
 	// Input data: Generated using python sigmoid with EaryChow's configuration and 57 steps
+	// Additional padding values were added to give correct intersections at 0.0 and 1.0
 	// 6th order, intercept of 0.0 to remove an operation and ensure intersection at 0.0
 	vec3 x2 = x * x;
 	vec3 x4 = x2 * x2;
-	return -0.20687445 * x + 6.80888933 * x2 - 37.60519607 * x2 * x + 93.32681938 * x4 - 95.2780858 * x4 * x + 33.96372259 * x4 * x2;
+	return 0.021 * x + 4.0111 * x2 - 25.682 * x2 * x + 70.359 * x4 - 74.778 * x4 * x + 27.069 * x4 * x2;
 }
 
 const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
@@ -135,7 +135,8 @@ vec3 tonemap_agx(vec3 color) {
 
 	// Log2 space encoding.
 	color = max(color, 1e-10); // Prevent log2(0.0). Possibly unnecessary.
-	// Must be clamped because agx_blender_default_contrast_approx may not work well with values above 1.0
+	// Must be clamped because agx_blender_default_contrast_approx may not work
+	// well with values outside of the range [0.0, 1.0]
 	color = clamp(log2(color), min_ev, max_ev);
 	color = (color - min_ev) / (max_ev - min_ev);
 
