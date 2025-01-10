@@ -1591,20 +1591,20 @@ void Object::disconnect(const StringName &p_signal, const Callable &p_callable) 
 bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, vformat("Cannot disconnect from '%s': the provided callable is null.", p_signal)); // Should use `is_null`, see note in `connect` about the use of `is_valid`.
 
-	SignalData *s = signal_map.getptr(p_signal);
-	if (!s) {
+	SignalData *sd = signal_map.getptr(p_signal);
+	if (sd == nullptr) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal) ||
 				(!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal));
-		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
-	}
-	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
-
-	auto& base_comparator = *p_callable.get_base_comparator();
-	if (!s->slot_map.has(base_comparator)) {
+		ERR_FAIL_COND_V_MSG(!signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 		return false;
 	}
 
-	SignalData::Slot *slot = &s->slot_map[base_comparator];
+	auto& base_comparator = *p_callable.get_base_comparator();
+	SignalData::Slot* slot = sd->slot_map.getptr(base_comparator);
+	if (slot == nullptr) {
+		return false; 
+	}
+
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
@@ -1620,9 +1620,9 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		}
 	}
 
-	s->slot_map.erase(*p_callable.get_base_comparator());
+	sd->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
+	if (sd->slot_map.is_empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
