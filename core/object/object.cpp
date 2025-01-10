@@ -165,7 +165,6 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	return mi;
 }
 
-// This was copied from MethodBind::get_hash() so that the compatibility hashes for virtual and non-virtual methods would be the same.
 uint32_t MethodInfo::get_compatibility_hash() const {
 	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 

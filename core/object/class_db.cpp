@@ -1959,6 +1959,11 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 		ERR_FAIL_V_MSG(nullptr, vformat("Method definition provides more arguments than the method actually has '%s::%s'.", instance_type, mdname));
 	}
 
+	if (p_defcount > p_bind->get_argument_count()) {
+		memdelete(p_bind);
+		ERR_FAIL_V_MSG(nullptr, vformat("Method definition for '%s::%s' provides more default arguments than the method has arguments.", instance_type, mdname));
+	}
+
 	p_bind->set_argument_names(method_name.args);
 
 	if (!p_compatibility) {
