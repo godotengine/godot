@@ -715,6 +715,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
+	value_input->set_emoji_menu_enabled(false);
 	value_input->set_focus_mode(FOCUS_CLICK);
 	value_input_popup->add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);

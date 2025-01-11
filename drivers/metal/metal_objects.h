@@ -850,8 +850,9 @@ public:
 			uint32_t front_reference = 0;
 			uint32_t back_reference = 0;
 			_FORCE_INLINE_ void apply(id<MTLRenderCommandEncoder> __unsafe_unretained p_enc) const {
-				if (!enabled)
+				if (!enabled) {
 					return;
+				}
 				[p_enc setStencilFrontReferenceValue:front_reference backReferenceValue:back_reference];
 			}
 		} stencil;

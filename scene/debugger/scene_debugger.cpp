@@ -39,11 +39,9 @@
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
 #ifndef _3D_DISABLED
-#include "scene/3d/label_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/sprite_3d.h"
+#include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/surface_tool.h"
 #endif // _3D_DISABLED
 #include "scene/gui/popup_menu.h"
@@ -1896,7 +1894,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 		if (ss->intersect_ray(ray_params, result)) {
 			SelectResult res;
 			res.item = Object::cast_to<Node>(result.collider);
-			res.order = -pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().xform(result.position));
+			res.order = -pos.distance_to(result.position);
 
 			// Fetch collision shapes.
 			CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
@@ -1923,40 +1921,23 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	Vector<ObjectID> items = RS::get_singleton()->instances_cull_ray(pos, to, root->get_world_3d()->get_scenario());
 	for (int i = 0; i < items.size(); i++) {
 		Object *obj = ObjectDB::get_instance(items[i]);
-		GeometryInstance3D *geo_instance = nullptr;
-		Ref<TriangleMesh> mesh_collision;
 
-		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(obj);
-		if (mesh_instance) {
-			if (mesh_instance->get_mesh().is_valid()) {
-				geo_instance = mesh_instance;
-				mesh_collision = mesh_instance->get_mesh()->generate_triangle_mesh();
-			}
-		} else {
-			Label3D *label = Object::cast_to<Label3D>(obj);
-			if (label) {
-				geo_instance = label;
-				mesh_collision = label->generate_triangle_mesh();
-			} else {
-				Sprite3D *sprite = Object::cast_to<Sprite3D>(obj);
-				if (sprite) {
-					geo_instance = sprite;
-					mesh_collision = sprite->generate_triangle_mesh();
+		GeometryInstance3D *geo_instance = Object::cast_to<GeometryInstance3D>(obj);
+		if (geo_instance) {
+			Ref<TriangleMesh> mesh_collision = geo_instance->generate_triangle_mesh();
+
+			if (mesh_collision.is_valid()) {
+				Transform3D gt = geo_instance->get_global_transform();
+				Transform3D ai = gt.affine_inverse();
+				Vector3 point, normal;
+				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
+					SelectResult res;
+					res.item = Object::cast_to<Node>(obj);
+					res.order = -pos.distance_to(gt.xform(point));
+					r_items.push_back(res);
+
+					continue;
 				}
-			}
-		}
-
-		if (mesh_collision.is_valid()) {
-			Transform3D gt = geo_instance->get_global_transform();
-			Transform3D ai = gt.affine_inverse();
-			Vector3 point, normal;
-			if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
-				SelectResult res;
-				res.item = Object::cast_to<Node>(obj);
-				res.order = -pos.distance_to(gt.xform(point));
-				r_items.push_back(res);
-
-				continue;
 			}
 		}
 
