@@ -3952,8 +3952,9 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::find_cached_external_parser_for_class(c
 
 Ref<GDScript> GDScriptAnalyzer::get_depended_shallow_script(const String &p_path, Error &r_error) {
 	// To keep a local cache of the parser for resolving external nodes later.
-	parser->get_depended_parser_for(p_path);
-	Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_path, r_error, parser->script_path);
+	const String path = ResourceUID::ensure_path(p_path);
+	parser->get_depended_parser_for(path);
+	Ref<GDScript> scr = GDScriptCache::get_shallow_script(path, r_error, parser->script_path);
 	return scr;
 }
 
