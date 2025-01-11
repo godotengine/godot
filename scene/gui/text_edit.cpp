@@ -3357,6 +3357,22 @@ bool TextEdit::is_context_menu_enabled() const {
 	return context_menu_enabled;
 }
 
+void TextEdit::show_emoji_and_symbol_picker() {
+	_update_ime_window_position();
+	DisplayServer::get_singleton()->show_emoji_and_symbol_picker();
+}
+
+void TextEdit::set_emoji_menu_enabled(bool p_enabled) {
+	if (emoji_menu_enabled != p_enabled) {
+		emoji_menu_enabled = p_enabled;
+		_update_context_menu();
+	}
+}
+
+bool TextEdit::is_emoji_menu_enabled() const {
+	return emoji_menu_enabled;
+}
+
 void TextEdit::set_shortcut_keys_enabled(bool p_enabled) {
 	shortcut_keys_enabled = p_enabled;
 }
@@ -4031,7 +4047,10 @@ void TextEdit::menu_option(int p_option) {
 			if (editable) {
 				insert_text_at_caret(String::chr(0x00AD));
 			}
-		}
+		} break;
+		case MENU_EMOJI_AND_SYMBOL: {
+			show_emoji_and_symbol_picker();
+		} break;
 	}
 }
 
@@ -6583,6 +6602,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enabled"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_emoji_menu_enabled", "enable"), &TextEdit::set_emoji_menu_enabled);
+	ClassDB::bind_method(D_METHOD("is_emoji_menu_enabled"), &TextEdit::is_emoji_menu_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enabled"), &TextEdit::set_shortcut_keys_enabled);
 	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &TextEdit::is_shortcut_keys_enabled);
 
@@ -6674,6 +6696,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_ZWNJ);
 	BIND_ENUM_CONSTANT(MENU_INSERT_WJ);
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
+	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	/* Versioning */
@@ -6982,6 +7005,7 @@ void TextEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emoji_menu_enabled"), "set_emoji_menu_enabled", "is_emoji_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
@@ -7433,6 +7457,11 @@ void TextEdit::_generate_context_menu() {
 	menu_ctl->add_item(ETR("Word Joiner (WJ)"), MENU_INSERT_WJ);
 	menu_ctl->add_item(ETR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+		menu->add_item(ETR("Emoji & Symbols"), MENU_EMOJI_AND_SYMBOL);
+		menu->add_separator();
+	}
+
 	menu->add_item(ETR("Cut"), MENU_CUT);
 	menu->add_item(ETR("Copy"), MENU_COPY);
 	menu->add_item(ETR("Paste"), MENU_PASTE);
@@ -7485,6 +7514,9 @@ void TextEdit::_update_context_menu() {
 		m_menu->set_item_checked(idx, m_checked);  \
 	}
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+		MENU_ITEM_DISABLED(menu, MENU_EMOJI_AND_SYMBOL, !editable || !emoji_menu_enabled)
+	}
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
 	MENU_ITEM_ACTION(menu, MENU_COPY, "ui_copy")
 	MENU_ITEM_ACTION_DISABLED(menu, MENU_PASTE, "ui_paste", !editable)
