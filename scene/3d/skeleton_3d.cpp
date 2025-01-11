@@ -325,6 +325,12 @@ void Skeleton3D::_notification(int p_what) {
 			update_flags = UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			force_update_all_dirty_bones();
+			emit_signal(SceneStringName(skeleton_updated));
+		} break;
+#endif // TOOLS_ENABLED
 		case NOTIFICATION_UPDATE_SKELETON: {
 			// Update bone transforms to apply unprocessed poses.
 			force_update_all_dirty_bones();
