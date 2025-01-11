@@ -92,13 +92,21 @@ void Input::set_mouse_mode(MouseMode p_mode) {
 		return;
 	}
 
+#ifndef WEB_ENABLED
 	// Allow to be set even if overridden, to see if the platform allows the mode.
+	// Web platform being an exception, due to the API for this being async there.
 	set_mouse_mode_func(p_mode);
 	mouse_mode = get_mouse_mode_func();
 
 	if (mouse_mode_override_enabled) {
 		set_mouse_mode_func(mouse_mode_override);
 	}
+#else
+	if (!mouse_mode_override_enabled) {
+		set_mouse_mode_func(p_mode);
+	}
+	mouse_mode = p_mode;
+#endif
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
