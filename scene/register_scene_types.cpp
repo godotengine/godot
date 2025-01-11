@@ -284,6 +284,11 @@
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/soft_body_3d.h"
+#include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
+#include "scene/3d/spring_bone_collision_plane_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
@@ -600,6 +605,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
+	GDREGISTER_CLASS(SpringBoneSimulator3D);
+	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
+	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
+	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
+	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
