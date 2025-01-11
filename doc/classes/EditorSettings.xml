@@ -480,6 +480,15 @@
 		<member name="editors/3d_gizmos/gizmo_colors/skeleton" type="Color" setter="" getter="">
 			The 3D editor gizmo color used for [Skeleton3D] nodes.
 		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/spring_bone_collision" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [SpringBoneCollision3D] nodes.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/spring_bone_inside_collision" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [SpringBoneCollision3D] nodes with inside mode.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_colors/spring_bone_joint" type="Color" setter="" getter="">
+			The 3D editor gizmo color used for [SpringBoneSimulator3D] nodes.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/stream_player_3d" type="Color" setter="" getter="">
 			The 3D editor gizmo color used for [AudioStreamPlayer3D]'s emission angle.
 		</member>
