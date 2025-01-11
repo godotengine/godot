@@ -50,6 +50,8 @@ class NavigationRegion2D : public Node2D {
 
 	void _navigation_polygon_changed();
 
+	Rect2 bounds;
+
 #ifdef DEBUG_ENABLED
 private:
 	RID debug_mesh_rid;
@@ -113,10 +115,13 @@ public:
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
 	bool is_baking() const;
 
+	Rect2 get_bounds() const { return bounds; }
+
 	NavigationRegion2D();
 	~NavigationRegion2D();
 
 private:
+	void _update_bounds();
 	void _region_enter_navigation_map();
 	void _region_exit_navigation_map();
 	void _region_update_transform();

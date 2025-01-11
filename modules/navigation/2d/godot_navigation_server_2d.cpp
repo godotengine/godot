@@ -158,6 +158,13 @@ static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	}
 }
 
+static Rect2 aabb_to_rect2(AABB aabb) {
+	Rect2 rect2;
+	rect2.position = Vector2(aabb.position.x, aabb.position.z);
+	rect2.size = Vector2(aabb.size.x, aabb.size.z);
+	return rect2;
+}
+
 void GodotNavigationServer2D::init() {
 #ifdef CLIPPER2_ENABLED
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
@@ -330,6 +337,11 @@ Vector2 GodotNavigationServer2D::region_get_closest_point(RID p_region, const Ve
 Vector2 GodotNavigationServer2D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
 	Vector3 result = NavigationServer3D::get_singleton()->region_get_random_point(p_region, p_navigation_layers, p_uniformly);
 	return v3_to_v2(result);
+}
+
+Rect2 GodotNavigationServer2D::region_get_bounds(RID p_region) const {
+	AABB bounds = NavigationServer3D::get_singleton()->region_get_bounds(p_region);
+	return aabb_to_rect2(bounds);
 }
 
 RID FORWARD_0(link_create);
