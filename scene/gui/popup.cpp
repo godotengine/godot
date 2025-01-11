@@ -30,6 +30,9 @@
 
 #include "popup.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
+#endif
 #include "scene/gui/panel.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
@@ -221,6 +224,21 @@ Popup::Popup() {
 Popup::~Popup() {
 }
 
+#ifdef TOOLS_ENABLED
+PackedStringArray PopupPanel::get_configuration_warnings() const {
+	PackedStringArray warnings = Popup::get_configuration_warnings();
+
+	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET("display/window/subwindows/embed_subwindows")) {
+		Ref<StyleBoxFlat> sb = theme_cache.panel_style;
+		if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
+			warnings.push_back(RTR("The current theme style has shadows and/or rounded corners for popups, but those won't display correctly if \"display/window/per_pixel_transparency/allowed\" isn't enabled in the Project Settings, nor if it isn't supported."));
+		}
+	}
+
+	return warnings;
+}
+#endif
+
 void PopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
 		if (!get_flag(FLAG_POPUP)) {
@@ -341,15 +359,6 @@ void PopupPanel::_update_child_rects() const {
 
 void PopupPanel::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint() && !DisplayServer::get_singleton()->is_window_transparency_available() && !is_embedded()) {
-				Ref<StyleBoxFlat> sb = theme_cache.panel_style;
-				if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
-					WARN_PRINT_ONCE("The current theme styles PopupPanel to have shadows and/or rounded corners, but those won't display correctly if 'display/window/per_pixel_transparency/allowed' isn't enabled in the Project Settings, nor if it isn't supported.");
-				}
-			}
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 
@@ -358,6 +367,10 @@ void PopupPanel::_notification(int p_what) {
 			}
 
 			_update_child_rects();
+
+#ifdef TOOLS_ENABLED
+			update_configuration_warnings();
+#endif
 		} break;
 
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -410,4 +423,8 @@ PopupPanel::PopupPanel() {
 	panel = memnew(Panel);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	add_child(panel, false, INTERNAL_MODE_FRONT);
+
+#ifdef TOOLS_ENABLED
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp((Node *)this, &Node::update_configuration_warnings));
+#endif
 }
