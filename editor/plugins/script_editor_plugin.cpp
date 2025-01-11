@@ -986,6 +986,15 @@ void ScriptEditor::_copy_script_path() {
 	}
 }
 
+void ScriptEditor::_copy_script_uid() {
+	ScriptEditorBase *se = _get_current_editor();
+	if (se) {
+		Ref<Resource> scr = se->get_edited_resource();
+		ResourceUID::ID uid = ResourceLoader::get_resource_uid(scr->get_path());
+		DisplayServer::get_singleton()->clipboard_set(ResourceUID::get_singleton()->id_to_text(uid));
+	}
+}
+
 void ScriptEditor::_close_other_tabs() {
 	int current_idx = tab_container->get_current_tab();
 	for (int i = tab_container->get_tab_count() - 1; i >= 0; i--) {
@@ -1561,6 +1570,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			case FILE_COPY_PATH: {
 				_copy_script_path();
 			} break;
+			case FILE_COPY_UID: {
+				_copy_script_uid();
+			} break;
 			case SHOW_IN_FILE_SYSTEM: {
 				const Ref<Resource> scr = current->get_edited_resource();
 				String path = scr->get_path();
@@ -1706,17 +1718,19 @@ bool ScriptEditor::_has_script_tab() const {
 
 void ScriptEditor::_prepare_file_menu() {
 	PopupMenu *menu = file_menu->get_popup();
-	const bool current_is_doc = _get_current_editor() == nullptr;
+	ScriptEditorBase *editor = _get_current_editor();
+	const Ref<Resource> res = editor ? editor->get_edited_resource() : Ref<Resource>();
 
 	menu->set_item_disabled(menu->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.is_empty());
 
-	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), current_is_doc);
-	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), res.is_null());
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), res.is_null());
 	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_ALL), !_has_script_tab());
 
-	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), current_is_doc);
-	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), current_is_doc);
-	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), res.is_null());
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), res.is_null() || res->get_path().is_empty());
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_UID), res.is_null() || ResourceLoader::get_resource_uid(res->get_path()) == ResourceUID::INVALID_ID);
+	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), res.is_null());
 
 	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), history_pos <= 0);
 	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), history_pos >= history.size() - 1);
@@ -1726,7 +1740,7 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
 	menu->set_item_disabled(menu->get_item_index(CLOSE_DOCS), !_has_docs_tab());
 
-	menu->set_item_disabled(menu->get_item_index(FILE_RUN), current_is_doc);
+	menu->set_item_disabled(menu->get_item_index(FILE_RUN), res.is_null());
 }
 
 void ScriptEditor::_file_menu_closed() {
@@ -3404,6 +3418,9 @@ void ScriptEditor::_make_script_list_context_menu() {
 			context_menu->add_separator();
 		}
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
+		context_menu->set_item_disabled(-1, se->get_edited_resource()->get_path().is_empty());
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), FILE_COPY_UID);
+		context_menu->set_item_disabled(-1, ResourceLoader::get_resource_uid(se->get_edited_resource()->get_path()) == ResourceUID::INVALID_ID);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
 		context_menu->add_separator();
 	}
@@ -4248,6 +4265,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTRC("Soft Reload Tool Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTRC("Copy Script Path")), FILE_COPY_PATH);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_uid", TTRC("Copy Script UID")), FILE_COPY_UID);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTRC("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
 	file_menu->get_popup()->add_separator();
 
