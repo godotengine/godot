@@ -17,6 +17,13 @@
 		<link title="XrPosef documentation">https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrPosef.html</link>
 	</tutorials>
 	<methods>
+		<method name="action_get_handle">
+			<return type="int" />
+			<param index="0" name="action" type="RID" />
+			<description>
+				Returns the corresponding [code]XrAction[/code] OpenXR handle for the given action RID.
+			</description>
+		</method>
 		<method name="begin_debug_label_region">
 			<return type="void" />
 			<param index="0" name="label_name" type="String" />
@@ -34,6 +41,14 @@
 			<return type="void" />
 			<description>
 				Marks the end of a debug label region. Removes the latest debug label region added by calling [method begin_debug_label_region].
+			</description>
+		</method>
+		<method name="find_action">
+			<return type="RID" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="action_set" type="RID" />
+			<description>
+				Returns the [RID] corresponding to an [code]Action[/code] of a matching name, optionally limited to a specified action set.
 			</description>
 		</method>
 		<method name="get_error_string">
