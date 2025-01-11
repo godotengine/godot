@@ -1,9 +1,8 @@
 """Functions used to generate source files during build time"""
 
 import os.path
-from typing import Optional
 
-from methods import print_error, to_raw_cstring
+from methods import generated_wrapper, print_error, to_raw_cstring
 
 
 class RDHeaderStruct:
@@ -92,61 +91,52 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     return header_data
 
 
-def build_rd_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RDHeaderStruct] = None
-) -> None:
-    header_data = header_data or RDHeaderStruct()
-    include_file_in_rd_header(filename, header_data, 0)
+def build_rd_header(filename: str) -> None:
+    include_file_in_rd_header(filename, header_data := RDHeaderStruct(), 0)
+    out_file = filename + ".gen.h"
+    out_file_class = (
+        os.path.basename(out_file).replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
+    )
 
-    if optional_output_filename is None:
-        out_file = filename + ".gen.h"
-    else:
-        out_file = optional_output_filename
-
-    out_file_base = out_file
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
-    out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
-
-    if header_data.compute_lines:
-        body_parts = [
-            "static const char _compute_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.compute_lines),
-            f'setup(nullptr, nullptr, _compute_code, "{out_file_class}");',
-        ]
-    else:
-        body_parts = [
-            "static const char _vertex_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.vertex_lines),
-            "static const char _fragment_code[] = {\n%s\n\t\t};" % to_raw_cstring(header_data.fragment_lines),
-            f'setup(_vertex_code, _fragment_code, nullptr, "{out_file_class}");',
-        ]
-
-    body_content = "\n\t\t".join(body_parts)
-
-    # Intended curly brackets are doubled so f-string doesn't eat them up.
-    shader_template = f"""/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#pragma once
-
+    with generated_wrapper(out_file) as file:
+        file.write(f"""\
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
 class {out_file_class} : public ShaderRD {{
-
 public:
-
 	{out_file_class}() {{
+""")
 
-		{body_content}
+        if header_data.compute_lines:
+            file.write(f"""\
+		static const char *_vertex_code = nullptr;
+		static const char *_fragment_code = nullptr;
+		static const char _compute_code[] = {{
+{to_raw_cstring(header_data.compute_lines)}
+		}};
+""")
+        else:
+            file.write(f"""\
+		static const char _vertex_code[] = {{
+{to_raw_cstring(header_data.vertex_lines)}
+		}};
+		static const char _fragment_code[] = {{
+{to_raw_cstring(header_data.fragment_lines)}
+		}};
+		static const char *_compute_code = nullptr;
+""")
+
+        file.write(f"""\
+		setup(_vertex_code, _fragment_code, _compute_code, "{out_file_class}");
 	}}
 }};
-"""
-
-    with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
-        fd.write(shader_template)
+""")
 
 
 def build_rd_headers(target, source, env):
     env.NoCache(target)
     for x in source:
-        build_rd_header(filename=str(x))
+        build_rd_header(str(x))
 
 
 class RAWHeaderStruct:
@@ -171,34 +161,18 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
             line = fs.readline()
 
 
-def build_raw_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
-):
-    header_data = header_data or RAWHeaderStruct()
-    include_file_in_raw_header(filename, header_data, 0)
+def build_raw_header(filename: str) -> None:
+    include_file_in_raw_header(filename, header_data := RAWHeaderStruct(), 0)
 
-    if optional_output_filename is None:
-        out_file = filename + ".gen.h"
-    else:
-        out_file = optional_output_filename
-
-    out_file_base = out_file.replace(".glsl.gen.h", "_shader_glsl")
-    out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
-    out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
-
-    shader_template = f"""/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#pragma once
-
-static const char {out_file_base}[] = {{
+    with generated_wrapper(out_file := filename + ".gen.h") as file:
+        file.write(f"""\
+static const char {os.path.basename(out_file).replace(".glsl.gen.h", "_shader_glsl")}[] = {{
 {to_raw_cstring(header_data.code)}
 }};
-"""
-
-    with open(out_file, "w", encoding="utf-8", newline="\n") as f:
-        f.write(shader_template)
+""")
 
 
 def build_raw_headers(target, source, env):
     env.NoCache(target)
     for x in source:
-        build_raw_header(filename=str(x))
+        build_raw_header(str(x))
