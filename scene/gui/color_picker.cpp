@@ -193,19 +193,21 @@ void ColorPicker::init_shaders() {
 
 shader_type canvas_item;
 
+uniform float wheel_radius = 0.42;
+
 void fragment() {
 	float x = UV.x - 0.5;
 	float y = UV.y - 0.5;
 	float a = atan(y, x);
 	x += 0.001;
 	y += 0.001;
-	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > 0.42);
+	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
 	x -= 0.002;
-	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > 0.42);
+	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
 	y -= 0.002;
-	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > 0.42);
+	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
 	x += 0.002;
-	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > 0.42);
+	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
 
 	COLOR = vec4(clamp((abs(fract(((a - TAU) / TAU) + vec3(3.0, 2.0, 1.0) / 3.0) * 6.0 - 3.0) - 1.0), 0.0, 1.0), (b + b2 + b3 + b4) / 4.00);
 }
@@ -1315,70 +1317,46 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 
 	PickerShapeType actual_shape = _get_actual_shape();
 	if (p_which == 0) {
-		Vector<Point2> points;
-		Vector<Color> colors;
-		Vector<Color> colors2;
 		Color col = color;
 		Vector2 center = c->get_size() / 2.0;
 
-		switch (actual_shape) {
-			case SHAPE_HSV_WHEEL: {
-				points.resize(4);
-				colors.resize(4);
-				colors2.resize(4);
-				real_t ring_radius_x = Math_SQRT12 * c->get_size().width * 0.42;
-				real_t ring_radius_y = Math_SQRT12 * c->get_size().height * 0.42;
+		if (actual_shape == SHAPE_HSV_RECTANGLE || actual_shape == SHAPE_HSV_WHEEL) {
+			Vector<Point2> points;
+			Vector<Color> colors;
+			Vector<Color> colors2;
+			points.resize(4);
+			colors.resize(4);
+			colors2.resize(4);
+			if (actual_shape == SHAPE_HSV_RECTANGLE) {
+				points.set(0, Vector2());
+				points.set(1, Vector2(c->get_size().x, 0));
+				points.set(2, c->get_size());
+				points.set(3, Vector2(0, c->get_size().y));
+			} else {
+				real_t ring_radius_x = Math_SQRT12 * c->get_size().width * WHEEL_RADIUS;
+				real_t ring_radius_y = Math_SQRT12 * c->get_size().height * WHEEL_RADIUS;
 
 				points.set(0, center - Vector2(ring_radius_x, ring_radius_y));
 				points.set(1, center + Vector2(ring_radius_x, -ring_radius_y));
 				points.set(2, center + Vector2(ring_radius_x, ring_radius_y));
 				points.set(3, center + Vector2(-ring_radius_x, ring_radius_y));
-				colors.set(0, Color(1, 1, 1, 1));
-				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
-				c->draw_polygon(points, colors);
+			}
+			colors.set(0, Color(1, 1, 1, 1));
+			colors.set(1, Color(1, 1, 1, 1));
+			colors.set(2, Color(0, 0, 0, 1));
+			colors.set(3, Color(0, 0, 0, 1));
+			c->draw_polygon(points, colors);
 
-				col.set_hsv(h, 1, 1);
-				col.a = 0;
-				colors2.set(0, col);
-				col.a = 1;
-				colors2.set(1, col);
-				col.set_hsv(h, 1, 0);
-				colors2.set(2, col);
-				col.a = 0;
-				colors2.set(3, col);
-				c->draw_polygon(points, colors2);
-				break;
-			}
-			case SHAPE_HSV_RECTANGLE: {
-				points.resize(4);
-				colors.resize(4);
-				colors2.resize(4);
-				points.set(0, Vector2());
-				points.set(1, Vector2(c->get_size().x, 0));
-				points.set(2, c->get_size());
-				points.set(3, Vector2(0, c->get_size().y));
-				colors.set(0, Color(1, 1, 1, 1));
-				colors.set(1, Color(1, 1, 1, 1));
-				colors.set(2, Color(0, 0, 0, 1));
-				colors.set(3, Color(0, 0, 0, 1));
-				c->draw_polygon(points, colors);
-				col = color;
-				col.set_hsv(h, 1, 1);
-				col.a = 0;
-				colors2.set(0, col);
-				col.a = 1;
-				colors2.set(1, col);
-				col.set_hsv(h, 1, 0);
-				colors2.set(2, col);
-				col.a = 0;
-				colors2.set(3, col);
-				c->draw_polygon(points, colors2);
-				break;
-			}
-			default: {
-			}
+			col.set_hsv(h, 1, 1);
+			col.a = 0;
+			colors2.set(0, col);
+			col.a = 1;
+			colors2.set(1, col);
+			col.set_hsv(h, 1, 0);
+			colors2.set(2, col);
+			col.a = 0;
+			colors2.set(3, col);
+			c->draw_polygon(points, colors2);
 		}
 
 		int x;
@@ -1393,25 +1371,23 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 			x = center.x + hue_offset.x - (theme_cache.picker_cursor->get_width() / 2);
 			y = center.y + hue_offset.y - (theme_cache.picker_cursor->get_height() / 2);
 		} else {
-			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
-			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
+			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * WHEEL_RADIUS : 0;
+			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * WHEEL_RADIUS : 0;
 
 			Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
 			x = CLAMP(real_size.x * s, 0, real_size.x) + corner_x - (theme_cache.picker_cursor->get_width() / 2);
 			y = CLAMP(real_size.y - real_size.y * v, 0, real_size.y) + corner_y - (theme_cache.picker_cursor->get_height() / 2);
 		}
+		Color _col = color;
+		_col.a = 1.0;
+		c->draw_texture(theme_cache.picker_cursor_bg, Point2(x, y), _col);
 		c->draw_texture(theme_cache.picker_cursor, Point2(x, y));
 
-		col.set_hsv(h, 1, 1);
 		if (actual_shape == SHAPE_HSV_WHEEL) {
-			points.resize(4);
-			double h1 = h - (0.5 / 360);
-			double h2 = h + (0.5 / 360);
-			points.set(0, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU)), center.y + (center.y * Math::sin(h1 * Math_TAU))));
-			points.set(1, Point2(center.x + (center.x * Math::cos(h1 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h1 * Math_TAU) * 0.84)));
-			points.set(2, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU)), center.y + (center.y * Math::sin(h2 * Math_TAU))));
-			points.set(3, Point2(center.x + (center.x * Math::cos(h2 * Math_TAU) * 0.84), center.y + (center.y * Math::sin(h2 * Math_TAU) * 0.84)));
-			c->draw_multiline(points, col.inverted());
+			float _radius = WHEEL_RADIUS * 2.0;
+			_radius += (1.0 - _radius) * 0.5;
+			Point2 pos = center - (theme_cache.picker_cursor->get_size() * 0.5) + Point2(center.x * Math::cos(h * Math_TAU) * _radius, center.y * Math::sin(h * Math_TAU) * _radius);
+			c->draw_texture(theme_cache.picker_cursor, pos);
 		}
 
 	} else if (p_which == 1) {
@@ -2187,6 +2163,7 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, sample_revert);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, overbright_indicator);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
@@ -2337,6 +2314,7 @@ ColorPicker::ColorPicker() {
 
 	wheel_mat.instantiate();
 	wheel_mat->set_shader(wheel_shader);
+	wheel_mat->set_shader_parameter("wheel_radius", WHEEL_RADIUS);
 	circle_mat.instantiate();
 	circle_mat->set_shader(circle_shader);
 
