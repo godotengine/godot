@@ -213,6 +213,19 @@ void RetargetModifier3D::_reset_child_skeletons() {
 	child_skeletons.clear();
 }
 
+#ifdef TOOLS_ENABLED
+void RetargetModifier3D::_force_update_child_skeletons() {
+	for (const RetargetInfo &E : child_skeletons) {
+		Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		if (!c) {
+			continue;
+		}
+		c->force_update_all_dirty_bones();
+		c->emit_signal(SceneStringName(skeleton_updated));
+	}
+}
+#endif // TOOLS_ENABLED
+
 /// General functions
 
 void RetargetModifier3D::add_child_notify(Node *p_child) {
@@ -455,6 +468,7 @@ void RetargetModifier3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_EDITOR_PRE_SAVE: {
 			_reset_child_skeleton_poses();
+			_force_update_child_skeletons();
 		} break;
 #endif // TOOLS_ENABLED
 		case NOTIFICATION_EXIT_TREE: {
