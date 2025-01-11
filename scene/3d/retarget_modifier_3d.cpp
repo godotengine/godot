@@ -452,9 +452,11 @@ void RetargetModifier3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_child_skeletons();
 		} break;
+#ifdef TOOLS_ENABLED
 		case NOTIFICATION_EDITOR_PRE_SAVE: {
 			_reset_child_skeleton_poses();
 		} break;
+#endif // TOOLS_ENABLED
 		case NOTIFICATION_EXIT_TREE: {
 			_reset_child_skeletons();
 		} break;
