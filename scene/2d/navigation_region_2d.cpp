@@ -200,6 +200,9 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 #ifdef DEBUG_ENABLED
 	debug_mesh_dirty = true;
 #endif // DEBUG_ENABLED
+
+	_update_bounds();
+
 	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, p_navigation_polygon);
 
 	if (navigation_polygon.is_valid()) {
@@ -340,6 +343,8 @@ void NavigationRegion2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_baking"), &NavigationRegion2D::is_baking);
 
 	ClassDB::bind_method(D_METHOD("_navigation_polygon_changed"), &NavigationRegion2D::_navigation_polygon_changed);
+
+	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationRegion2D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_polygon", PROPERTY_HINT_RESOURCE_TYPE, "NavigationPolygon"), "set_navigation_polygon", "get_navigation_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
@@ -648,3 +653,26 @@ void NavigationRegion2D::_set_debug_visible(bool p_visible) {
 	}
 }
 #endif // DEBUG_ENABLED
+
+void NavigationRegion2D::_update_bounds() {
+	if (navigation_polygon.is_null()) {
+		bounds = Rect2();
+		return;
+	}
+
+	const Vector<Vector2> &vertices = navigation_polygon->get_vertices();
+	if (vertices.is_empty()) {
+		bounds = Rect2();
+		return;
+	}
+
+	const Transform2D gt = is_inside_tree() ? get_global_transform() : get_transform();
+
+	Rect2 new_bounds;
+	new_bounds.position = gt.xform(vertices[0]);
+
+	for (const Vector2 &vertex : vertices) {
+		new_bounds.expand_to(gt.xform(vertex));
+	}
+	bounds = new_bounds;
+}

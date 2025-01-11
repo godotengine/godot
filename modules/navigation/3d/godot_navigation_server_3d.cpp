@@ -595,6 +595,13 @@ Vector3 GodotNavigationServer3D::region_get_random_point(RID p_region, uint32_t 
 	return region->get_random_point(p_navigation_layers, p_uniformly);
 }
 
+AABB GodotNavigationServer3D::region_get_bounds(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, AABB());
+
+	return region->get_bounds();
+}
+
 RID GodotNavigationServer3D::link_create() {
 	MutexLock lock(operations_mutex);
 
