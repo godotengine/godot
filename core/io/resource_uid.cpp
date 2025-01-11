@@ -151,11 +151,14 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 }
 
 String ResourceUID::get_id_path(ID p_id) const {
+	ERR_FAIL_COND_V_MSG(p_id == INVALID_ID, String(), "Invalid UID.");
 	MutexLock l(mutex);
-	ERR_FAIL_COND_V(!unique_ids.has(p_id), String());
-	const CharString &cs = unique_ids[p_id].cs;
+	const ResourceUID::Cache *cache = unique_ids.getptr(p_id);
+	ERR_FAIL_COND_V_MSG(!cache, String(), vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
+	const CharString &cs = cache->cs;
 	return String::utf8(cs.ptr());
 }
+
 void ResourceUID::remove_id(ID p_id) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
