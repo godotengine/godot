@@ -162,7 +162,6 @@ uniform sampler2D height_field_texture; //texunit:0
 uniform float lifetime;
 uniform bool clear;
 uniform uint total_particles;
-uniform bool use_fractional_delta;
 
 uint hash(uint x) {
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
@@ -276,23 +275,17 @@ void main() {
 
 			if (restart_phase >= prev_system_phase && restart_phase < system_phase) {
 				restart = true;
-				if (use_fractional_delta) {
-					local_delta = (system_phase - restart_phase) * lifetime;
-				}
+				local_delta = (system_phase - restart_phase) * lifetime;
 			}
 
 		} else if (delta > 0.0) {
 			if (restart_phase >= prev_system_phase) {
 				restart = true;
-				if (use_fractional_delta) {
-					local_delta = (1.0 - restart_phase + system_phase) * lifetime;
-				}
+				local_delta = (1.0 - restart_phase + system_phase) * lifetime;
 
 			} else if (restart_phase < system_phase) {
 				restart = true;
-				if (use_fractional_delta) {
-					local_delta = (system_phase - restart_phase) * lifetime;
-				}
+				local_delta = (system_phase - restart_phase) * lifetime;
 			}
 		}
 

@@ -278,10 +278,10 @@ private:
 			uint32_t total_particles;
 			uint32_t trail_size;
 
-			uint32_t use_fractional_delta;
 			uint32_t sub_emitter_mode;
 			uint32_t can_emit;
 			uint32_t trail_pass;
+			uint32_t pad;
 		};
 
 		ParticlesShaderRD shader;
