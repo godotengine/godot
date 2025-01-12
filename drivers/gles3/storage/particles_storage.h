@@ -228,6 +228,7 @@ private:
 		int fixed_fps = 30;
 		bool interpolate = true;
 		bool fractional_delta = false;
+		bool use_physics_step = false;
 		double frame_remainder = 0;
 		real_t collision_base_size = 0.01;
 
@@ -249,7 +250,7 @@ private:
 		}
 	};
 
-	void _particles_process(Particles *p_particles, double p_delta);
+	void _particles_process(Particles *p_particles, double p_delta, bool p_is_final_process = false);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
 	void _particles_allocate_history_buffers(Particles *particles);
@@ -335,6 +336,7 @@ public:
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) override;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) override;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
+	virtual void particles_set_use_physics_step(RID p_particles, bool p_enable) override;
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override;
 	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis, const Vector3 &p_up_axis) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;

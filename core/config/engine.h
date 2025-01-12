@@ -58,6 +58,7 @@ private:
 	uint32_t _frame_delay = 0;
 	uint64_t _frame_ticks = 0;
 	double _process_step = 0;
+	int32_t _physics_steps_this_frame = 0;
 
 	int ips = 60;
 	double physics_jitter_fix = 0.5;
@@ -130,6 +131,7 @@ public:
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }
 	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
+	int32_t get_physics_steps_this_frame() const { return _physics_steps_this_frame; }
 
 	void set_time_scale(double p_scale);
 	double get_time_scale() const;

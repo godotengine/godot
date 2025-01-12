@@ -92,6 +92,7 @@ frame_history;
 #define PARTICLE_FLAG_ACTIVE uint(1)
 #define PARTICLE_FLAG_STARTED uint(2)
 #define PARTICLE_FLAG_TRAILED uint(4)
+#define PARTICLE_FLAG_COMPLETED_FIRST_FRAME uint(8)
 #define PARTICLE_FRAME_MASK uint(0xFFFF)
 #define PARTICLE_FRAME_SHIFT uint(16)
 
@@ -180,10 +181,16 @@ layout(push_constant, std430) uniform Params {
 	bool clear;
 	uint total_particles;
 	uint trail_size;
+
 	bool use_fractional_delta;
 	bool sub_emitter_mode;
 	bool can_emit;
 	bool trail_pass;
+
+	bool use_physics_step;
+	bool is_final_process;
+	uint pad2;
+	uint pad3;
 }
 params;
 
@@ -667,7 +674,14 @@ void main() {
 		}
 	}
 
-	if (particle_active) {
+	// GH-97160
+	// for particles using physics step, do NOT process on the first frame of creation. This keeps the particle from getting ahead of the physics simulation.
+	bool suppress_process_for_first_frame = params.use_physics_step && !bool(PARTICLE.flags & PARTICLE_FLAG_COMPLETED_FIRST_FRAME);
+	if (params.is_final_process) {
+		PARTICLE.flags |= PARTICLE_FLAG_COMPLETED_FIRST_FRAME;
+	}
+
+	if (particle_active && !suppress_process_for_first_frame) {
 #CODE : PROCESS
 	}
 

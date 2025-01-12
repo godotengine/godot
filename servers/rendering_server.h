@@ -765,6 +765,7 @@ public:
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_interpolate(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
+	virtual void particles_set_use_physics_step(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
 
 	enum ParticlesTransformAlign {

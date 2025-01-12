@@ -4426,6 +4426,8 @@ bool Main::iteration() {
 		advance.physics_steps = max_physics_steps;
 	}
 
+	Engine::get_singleton()->_physics_steps_this_frame = advance.physics_steps;
+
 	bool exit = false;
 
 	// process all our active interfaces

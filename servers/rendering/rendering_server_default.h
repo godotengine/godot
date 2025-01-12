@@ -580,6 +580,7 @@ public:
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_interpolate, RID, bool)
 	FUNC2(particles_set_fractional_delta, RID, bool)
+	FUNC2(particles_set_use_physics_step, RID, bool)
 	FUNC1R(bool, particles_is_inactive, RID)
 	FUNC3(particles_set_trails, RID, bool, float)
 	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform3D> &)

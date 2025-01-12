@@ -285,6 +285,13 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 	particles->fractional_delta = p_enable;
 }
 
+void ParticlesStorage::particles_set_use_physics_step(RID p_particles, bool p_enable) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->use_physics_step = p_enable;
+}
+
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	if (p_enable) {
 		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle trails.");
@@ -496,7 +503,7 @@ void ParticlesStorage::particles_set_canvas_sdf_collision(RID p_particles, bool 
 }
 
 // Does one step of processing particles by reading from back_process_buffer and writing to front_process_buffer.
-void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta) {
+void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta, bool p_is_final_process) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
@@ -757,6 +764,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::CLEAR, p_particles->clear, version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::TOTAL_PARTICLES, uint32_t(p_particles->amount), version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::USE_FRACTIONAL_DELTA, p_particles->fractional_delta, version, variant, specialization);
+	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::USE_PHYSICS_STEP, p_particles->use_physics_step, version, variant, specialization);
+	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::IS_FINAL_PROCESS, p_is_final_process, version, variant, specialization);
 
 	p_particles->clear = false;
 
@@ -1103,7 +1112,23 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		if (fixed_fps > 0) {
+		if (particles->use_physics_step) {
+			// run `_process_particles()` the same number of times that physics was updated this frame.
+			// this keeps the particles in sync with the physics simulation. this is important when inheriting a high velocity from the emitter (GH-97160).
+			const int physics_ticks_this_frame = Engine::get_singleton()->get_physics_steps_this_frame();
+			const float frame_time = 1.0 / Engine::get_singleton()->get_physics_ticks_per_second();
+
+			for (int process_tick = 0; process_tick < physics_ticks_this_frame; process_tick++) {
+				_particles_process(particles, frame_time, ((process_tick + 1) >= physics_ticks_this_frame));
+			}
+
+			if (physics_ticks_this_frame > 0) {
+				particles->frame_remainder = 0.0;
+			} else {
+				// interpolation for if the physics simulation is running at a lower tick rate than render
+				particles->frame_remainder += RSG::rasterizer->get_frame_delta_time();
+			}
+		} else if (fixed_fps > 0) {
 			double frame_time;
 			double decr;
 			if (zero_time_scale) {
@@ -1122,7 +1147,8 @@ void ParticlesStorage::update_particles() {
 			double todo = particles->frame_remainder + delta;
 
 			while (todo >= frame_time) {
-				_particles_process(particles, frame_time);
+				const bool is_final_process = ((todo - decr) < frame_time);
+				_particles_process(particles, frame_time, is_final_process);
 				todo -= decr;
 			}
 
@@ -1130,9 +1156,9 @@ void ParticlesStorage::update_particles() {
 
 		} else {
 			if (zero_time_scale) {
-				_particles_process(particles, 0.0);
+				_particles_process(particles, 0.0, true);
 			} else {
-				_particles_process(particles, RSG::rasterizer->get_frame_delta_time());
+				_particles_process(particles, RSG::rasterizer->get_frame_delta_time(), true);
 			}
 		}
 
