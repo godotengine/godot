@@ -253,6 +253,7 @@ class ScriptEditor : public PanelContainer {
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
+		FILE_COPY_UID,
 		FILE_TOOL_RELOAD_SOFT,
 		SEARCH_IN_FILES,
 		REPLACE_IN_FILES,
@@ -399,6 +400,7 @@ class ScriptEditor : public PanelContainer {
 	void _queue_close_tabs();
 
 	void _copy_script_path();
+	void _copy_script_uid();
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
