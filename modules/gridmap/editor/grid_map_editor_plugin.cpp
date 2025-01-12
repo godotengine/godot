@@ -1254,6 +1254,9 @@ void GridMapEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+
+			// Take Preview Size changes into account.
+			update_palette();
 		} break;
 	}
 }
