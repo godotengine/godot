@@ -46,6 +46,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
@@ -384,6 +385,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		OS::get_singleton()->shell_open(p_select);
 	} else if (p_select.begins_with("^")) { // Copy button.
 		DisplayServer::get_singleton()->clipboard_set(p_select.substr(1));
+		EditorToaster::get_singleton()->popup_str(TTR("Code snippet copied to clipboard."), EditorToaster::SEVERITY_INFO);
 	}
 }
 
