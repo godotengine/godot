@@ -80,7 +80,7 @@ bool JoltArea3D::_has_pending_events() const {
 }
 
 void JoltArea3D::_add_to_space() {
-	jolt_shape = build_shape();
+	jolt_shape = build_shapes(true);
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -97,7 +97,7 @@ void JoltArea3D::_add_to_space() {
 		jolt_settings->mCollideKinematicVsNonDynamic = true;
 	}
 
-	jolt_settings->SetShape(build_shape());
+	jolt_settings->SetShape(jolt_shape);
 
 	const JPH::BodyID new_jolt_id = space->add_rigid_body(*this, *jolt_settings);
 	if (new_jolt_id.IsInvalid()) {

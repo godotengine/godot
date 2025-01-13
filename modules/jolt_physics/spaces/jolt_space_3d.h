@@ -54,10 +54,12 @@ class JoltJoint3D;
 class JoltLayers;
 class JoltObject3D;
 class JoltPhysicsDirectSpaceState3D;
+class JoltShapedObject3D;
 
 class JoltSpace3D {
 	SelfList<JoltBody3D>::List body_call_queries_list;
 	SelfList<JoltArea3D>::List area_call_queries_list;
+	SelfList<JoltShapedObject3D>::List needs_optimization_list;
 
 	RID rid;
 
@@ -100,6 +102,8 @@ public:
 
 	JPH::PhysicsSystem &get_physics_system() const { return *physics_system; }
 
+	JPH::TempAllocator &get_temp_allocator() const { return *temp_allocator; }
+
 	JPH::BodyInterface &get_body_iface();
 	const JPH::BodyInterface &get_body_iface() const;
 	const JPH::BodyLockInterface &get_lock_iface() const;
@@ -137,6 +141,9 @@ public:
 	void enqueue_call_queries(SelfList<JoltArea3D> *p_area);
 	void dequeue_call_queries(SelfList<JoltBody3D> *p_body);
 	void dequeue_call_queries(SelfList<JoltArea3D> *p_area);
+
+	void enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
+	void dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object);
 
 	void add_joint(JPH::Constraint *p_jolt_ref);
 	void add_joint(JoltJoint3D *p_joint);
