@@ -155,6 +155,7 @@
 #include "editor/plugins/plugin_config_dialog.h"
 #include "editor/plugins/root_motion_editor_plugin.h"
 #include "editor/plugins/script_text_editor.h"
+#include "editor/plugins/shader_baker_export_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
@@ -166,6 +167,18 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
+
+#ifdef VULKAN_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
+#endif
+
+#ifdef D3D12_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_d3d12.h"
+#endif
+
+#ifdef METAL_ENABLED
+#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_metal.h"
+#endif
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
@@ -8540,6 +8553,29 @@ EditorNode::EditorNode() {
 	dedicated_server_export_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
+
+	Ref<ShaderBakerExportPlugin> shader_baker_export_plugin;
+	shader_baker_export_plugin.instantiate();
+
+#ifdef VULKAN_ENABLED
+	Ref<ShaderBakerExportPluginPlatformVulkan> shader_baker_export_plugin_platform_vulkan;
+	shader_baker_export_plugin_platform_vulkan.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_vulkan);
+#endif
+
+#ifdef D3D12_ENABLED
+	Ref<ShaderBakerExportPluginPlatformD3D12> shader_baker_export_plugin_platform_d3d12;
+	shader_baker_export_plugin_platform_d3d12.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_d3d12);
+#endif
+
+#ifdef METAL_ENABLED
+	Ref<ShaderBakerExportPluginPlatformMetal> shader_baker_export_plugin_platform_metal;
+	shader_baker_export_plugin_platform_metal.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_metal);
+#endif
+
+	EditorExport::get_singleton()->add_export_plugin(shader_baker_export_plugin);
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();

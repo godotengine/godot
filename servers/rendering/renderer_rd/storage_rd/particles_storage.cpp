@@ -1748,6 +1748,10 @@ RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_sou
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> ParticlesStorage::ParticlesShaderData::get_native_shader_and_version() const {
+	return { &ParticlesStorage::get_singleton()->particles_shader.shader, version };
+}
+
 ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {

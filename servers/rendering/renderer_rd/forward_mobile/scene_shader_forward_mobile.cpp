@@ -155,7 +155,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (version.is_null()) {
-		version = SceneShaderForwardMobile::singleton->shader.version_create();
+		version = SceneShaderForwardMobile::singleton->shader.version_create(false);
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
@@ -233,6 +233,15 @@ RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_sour
 		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
 	} else {
 		return RS::ShaderNativeSourceCode();
+	}
+}
+
+Pair<ShaderRD *, RID> SceneShaderForwardMobile::ShaderData::get_native_shader_and_version() const {
+	if (version.is_valid()) {
+		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
+		return { &SceneShaderForwardMobile::singleton->shader, version };
+	} else {
+		return {};
 	}
 }
 
@@ -480,19 +489,19 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 	/* SCENE SHADER */
 
 	{
-		Vector<String> shader_versions;
+		Vector<ShaderRD::VariantDefine> shader_versions;
 		for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
 			const String base_define = ubershader ? "\n#define UBERSHADER\n" : "";
-			shader_versions.push_back(base_define + ""); // SHADER_VERSION_COLOR_PASS
-			shader_versions.push_back(base_define + "\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS_DP
-			shader_versions.push_back(base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n"); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "", true)); // SHADER_VERSION_COLOR_PASS
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define USE_LIGHTMAP\n", true)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", true)); // SHADER_VERSION_SHADOW_PASS, should probably change this to MODE_RENDER_SHADOW because we don't have a depth pass here...
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n#define SHADOW_PASS\n", true)); // SHADER_VERSION_SHADOW_PASS_DP
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_BASE, base_define + "\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n", true)); // SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL
 
 			// Multiview versions of our shaders.
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n"); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n"); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
-			shader_versions.push_back(base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n"); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n", false)); // SHADER_VERSION_COLOR_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define USE_LIGHTMAP\n", false)); // SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW
+			shader_versions.push_back(ShaderRD::VariantDefine(SHADER_GROUP_MULTIVIEW, base_define + "\n#define USE_MULTIVIEW\n#define MODE_RENDER_DEPTH\n#define SHADOW_PASS\n", false)); // SHADER_VERSION_SHADOW_PASS_MULTIVIEW
 		}
 
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
@@ -502,13 +511,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
 		immutable_samplers.push_back(immutable_shadow_sampler);
 		shader.initialize(shader_versions, p_defines, immutable_samplers);
-		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
-			for (uint32_t ubershader = 0; ubershader < 2; ubershader++) {
-				uint32_t base_variant = ubershader ? SHADER_VERSION_MAX : 0;
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
-				shader.set_variant_enabled(base_variant + SHADER_VERSION_SHADOW_PASS_MULTIVIEW, false);
-			}
+
+		if (RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+			shader.enable_group(SHADER_GROUP_MULTIVIEW);
 		}
 	}
 
@@ -714,7 +719,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.instance_uniform_index_variable = "instances.data[draw_call.instance_index].instance_uniforms_ofs";
 
 		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
-		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
+		actions.check_multiview_samplers = true;
 
 		compiler.initialize(actions);
 	}
@@ -824,8 +829,12 @@ uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RS::PipelineSource 
 	return pipeline_compilations[p_source];
 }
 
-bool SceneShaderForwardMobile::is_multiview_enabled() const {
-	return shader.is_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW);
+void SceneShaderForwardMobile::enable_multiview_shader_group() {
+	shader.enable_group(SHADER_GROUP_MULTIVIEW);
+}
+
+bool SceneShaderForwardMobile::is_multiview_shader_group_enabled() const {
+	return shader.is_group_enabled(SHADER_GROUP_MULTIVIEW);
 }
 
 SceneShaderForwardMobile::~SceneShaderForwardMobile() {

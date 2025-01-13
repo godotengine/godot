@@ -168,6 +168,11 @@ RS::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const 
 	return scene_singleton->sky.sky_shader.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> SkyRD::SkyShaderData::get_native_shader_and_version() const {
+	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
+	return { &scene_singleton->sky.sky_shader.shader, version };
+}
+
 SkyRD::SkyShaderData::~SkyShaderData() {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 	ERR_FAIL_NULL(scene_singleton);

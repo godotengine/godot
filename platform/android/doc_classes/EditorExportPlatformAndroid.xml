@@ -613,6 +613,9 @@
 		<member name="screen/support_xlarge" type="bool" setter="" getter="">
 			Indicates whether the application supports extra large screen form-factors.
 		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
 		</member>
