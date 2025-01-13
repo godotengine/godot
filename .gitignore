@@ -18,6 +18,8 @@
 # - Visual Studio specific
 # - OS specific
 
+/vulkansdk-macos*
+
 ###########################
 ### Build configuration ###
 ###########################

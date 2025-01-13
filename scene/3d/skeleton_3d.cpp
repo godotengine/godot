@@ -37,6 +37,48 @@
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
+struct DualQuaternion {
+    Quaternion real; // Real part (Q_r)
+    Quaternion dual; // Dual part (Q_d)
+	Vector3 scale;   // Seperate scale
+
+    // Normalize the dual quaternion
+    void normalize() {
+        // Step 1: Normalize the real part
+        real.normalize();
+
+        // Step 2: Adjust the dual part
+        dual = dual - real * (real.dot(dual));
+    }
+
+    // Constructor from a 3x4 transform matrix
+    static DualQuaternion from_transform_with_scale(const Basis &basis, const Vector3 &translation) {
+        // Step 1: Extract scale factors
+        Vector3 scale(
+            basis.get_column(0).length(),
+            basis.get_column(1).length(),
+            basis.get_column(2).length()
+        );
+
+        // Step 2: Remove scale from the basis to get pure rotation
+        Basis rotation = basis;
+        rotation.set_column(0, basis.get_column(0) / scale.x);
+        rotation.set_column(1, basis.get_column(1) / scale.y);
+        rotation.set_column(2, basis.get_column(2) / scale.z);
+
+        // Step 3: Convert rotation matrix to quaternion
+        Quaternion q_rotation = rotation.get_rotation_quaternion();
+
+        // Step 4: Encode translation into the dual quaternion
+        Quaternion q_translation(0, translation.x, translation.y, translation.z);
+        Quaternion q_dual = q_translation * q_rotation * 0.5;
+
+        // Return the dual quaternion with scale
+        return DualQuaternion{q_rotation, q_dual, scale};
+    }
+};
+
+
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
 		skeleton_node->_make_dirty();
@@ -343,22 +385,24 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-
-					Transform3D Mj = bonesptr[bone_index].pose_global * skin->get_bind_pose(i);
+					//bones[p_bone].global_rest;
+					Transform3D bind_pose = skin->get_bind_pose(i);
+					Transform3D Mj = bonesptr[bone_index].pose_global * bind_pose;
+					Transform3D Mj2 = bonesptr[bone_index].global_rest * bind_pose;
 					Vector3 t = Mj.origin;
 					Quaternion prev_q0, prev_q1;
-					Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
+					//Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
 
 					// This works to keep quaternions stable, basing it off the shortest path between the
 					// previous frame's linear transformation and the new one
 					Quaternion q0 = get_shortest_arc( 
 						Mj.basis.scaled(Mj.basis.get_scale_local().inverse()).get_rotation_quaternion(),
-						Quaternion(dq.rows[0][0], dq.rows[0][1], dq.rows[0][2], dq.rows[1][0])
+						Mj2.basis.scaled(Mj2.basis.get_scale_local().inverse()).get_rotation_quaternion()
 					);
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
 
 					rs->skeleton_bone_set_transform(skeleton, i, Mj);
-					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1);
+					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1, Vector3(1, 1, 1));
 				}
 			}
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);

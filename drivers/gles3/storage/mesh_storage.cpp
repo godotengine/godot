@@ -2242,7 +2242,7 @@ void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const 
 }
 
 
-void MeshStorage::skeleton_bone_set_dq_transform(RID p_skeleton, int p_bone, const Quaternion &real, const Quaternion &dual) {
+void MeshStorage::skeleton_bone_set_dq_transform(RID p_skeleton, int p_bone, const Quaternion &real, const Quaternion &dual, const Vector3 &scale) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
 	ERR_FAIL_NULL(skeleton);
@@ -2259,6 +2259,9 @@ void MeshStorage::skeleton_bone_set_dq_transform(RID p_skeleton, int p_bone, con
 	dataptr[17] = dual.y;
 	dataptr[18] = dual.z;
 	dataptr[19] = dual.w;
+	dataptr[20] = scale.x;
+	dataptr[21] = scale.y;
+	dataptr[22] = scale.z;
 
 	_skeleton_make_dirty(skeleton);
 }

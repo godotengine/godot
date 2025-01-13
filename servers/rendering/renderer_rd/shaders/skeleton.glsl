@@ -356,12 +356,19 @@ void main() {
 		normal = normalize(mquat * vec4(normal, 0.0)).xyz;
 		tangent.xyz = normalize(mquat * vec4(tangent.xyz, 0.0)).xyz;
 
-		float lin_blend = 0.5;
+		float lin_blend = 0.0; // adjust to blend between linear and DQ
 		float quat_blend = 1.0 - lin_blend;
 
 		vertex = vertex * quat_blend + vertex_lin * lin_blend;
 		normal = normal * quat_blend + normal_lin * lin_blend;
 		tangent.xyz = tangent.xyz * quat_blend + tangent_lin * lin_blend;
+
+		mat3 blendS = mat3(
+			vec3(length(mlin[0].xyz), 0, 0),
+			vec3(0, length(mlin[1].xyz), 0),
+			vec3(0, 0, length(mlin[2].xyz))
+		);
+		vertex *= blendS;
 
 	}
 
