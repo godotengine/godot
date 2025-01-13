@@ -776,7 +776,7 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "push_paragraph", 3218895358, 3089306873 },
 		{ "push_list", 4036303897, 3017143144 },
 		{ "push_table", 1125058220, 2623499273 },
-		{ "set_table_column_expand", 4132157579, 2185176273 },
+		{ "set_table_column_expand", 4258957458, 2185176273 },
 #ifdef REAL_T_IS_DOUBLE
 		{ "add_image", 3346058748, 1507062345 },
 		{ "push_dropcap", 981432822, 763534173 },
