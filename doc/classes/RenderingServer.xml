@@ -2935,6 +2935,13 @@
 				Add particle system to list of particle systems that need to be updated. Update will take place on the next frame, or on the next call to [method instances_cull_aabb], [method instances_cull_convex], or [method instances_cull_ray].
 			</description>
 		</method>
+		<method name="particles_request_process_time">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="time" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="particles_restart">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
