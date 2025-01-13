@@ -128,6 +128,7 @@ private:
 	int current_slider_count = SLIDER_COUNT;
 	static const int MODE_BUTTON_COUNT = 3;
 	const float WHEEL_RADIUS = 0.42;
+	const Vector2 PICKER_WINDOW_OFFSET_DECAL = Vector2(28, 28);
 
 	bool slider_theme_modified = true;
 
