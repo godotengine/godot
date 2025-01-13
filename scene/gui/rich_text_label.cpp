@@ -2056,6 +2056,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				int c_index = 0;
 				bool outside;
 
+				selection.double_click = false;
 				selection.drag_attempt = false;
 
 				_find_click(main, b->get_position(), &c_frame, &c_line, &c_item, &c_index, &outside, false);
@@ -2122,6 +2123,13 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 							break;
 						}
 					}
+
+					selection.click_frame = c_frame;
+					selection.click_item = c_item;
+					selection.click_line = c_line;
+					selection.click_char = c_index;
+
+					selection.double_click = true;
 				}
 			} else if (!b->is_pressed()) {
 				if (selection.enabled && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
@@ -2281,7 +2289,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				const Line &l2 = selection.click_frame->lines[selection.click_line];
 				if (l1.char_offset + c_index < l2.char_offset + selection.click_char) {
 					swap = true;
-				} else if (l1.char_offset + c_index == l2.char_offset + selection.click_char) {
+				} else if (l1.char_offset + c_index == l2.char_offset + selection.click_char && !selection.double_click) {
 					deselect();
 					return;
 				}
@@ -2292,6 +2300,29 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 				SWAP(selection.from_line, selection.to_line);
 				SWAP(selection.from_item, selection.to_item);
 				SWAP(selection.from_char, selection.to_char);
+			}
+
+			if (selection.double_click && c_frame) {
+				// Expand the selection to word edges.
+
+				Line *l = &selection.from_frame->lines[selection.from_line];
+				MutexLock lock(l->text_buf->get_mutex());
+				PackedInt32Array words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
+				for (int i = 0; i < words.size(); i = i + 2) {
+					if (selection.from_char > words[i] && selection.from_char < words[i + 1]) {
+						selection.from_char = words[i];
+						break;
+					}
+				}
+				l = &selection.to_frame->lines[selection.to_line];
+				lock = MutexLock(l->text_buf->get_mutex());
+				words = TS->shaped_text_get_word_breaks(l->text_buf->get_rid());
+				for (int i = 0; i < words.size(); i = i + 2) {
+					if (selection.to_char > words[i] && selection.to_char < words[i + 1]) {
+						selection.to_char = words[i + 1];
+						break;
+					}
+				}
 			}
 
 			selection.active = true;
