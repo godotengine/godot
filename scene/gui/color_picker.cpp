@@ -159,7 +159,6 @@ void ColorPicker::_notification(int p_what) {
 			}
 			DisplayServer *ds = DisplayServer::get_singleton();
 			Vector2 ofs = ds->mouse_get_position();
-			picker_window->set_position(ofs - Vector2(28, 28));
 
 			Color c = DisplayServer::get_singleton()->screen_get_pixel(ofs);
 
@@ -171,8 +170,13 @@ void ColorPicker::_notification(int p_what) {
 				picker_window->set_position(ofs - Vector2(28, 28));
 				picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_preview_img));
 			} else {
-				Size2i screen_size = ds->screen_get_size();
-				picker_window->set_position(ofs + Vector2(ofs.x < screen_size.width / 2 ? 8 : -36, ofs.y < screen_size.height / 2 ? 8 : -36));
+				Size2i screen_size = ds->screen_get_size(DisplayServer::SCREEN_WITH_MOUSE_FOCUS);
+				Vector2i screen_position = ds->screen_get_position(DisplayServer::SCREEN_WITH_MOUSE_FOCUS);
+
+				float ofs_decal_x = (ofs.x < screen_position.x + screen_size.width - 51) ? 8 : -36;
+				float ofs_decal_y = (ofs.y < screen_position.y + screen_size.height - 51) ? 8 : -36;
+
+				picker_window->set_position(ofs + Vector2(ofs_decal_x, ofs_decal_y));
 			}
 
 			set_pick_color(c);
@@ -1879,35 +1883,23 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_window->add_child(picker_texture_rect);
 		picker_texture_rect->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_picker_texture_input));
 
-		bool has_feature_exclude_from_capture = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
 		picker_preview = memnew(Panel);
 		picker_preview->set_mouse_filter(MOUSE_FILTER_IGNORE);
-		if (!has_feature_exclude_from_capture) {
-			picker_preview->set_size(Vector2i(28, 28));
-		} else {
-			picker_preview->set_size(Vector2i(55, 72));
-		}
+		picker_preview->set_size(Vector2i(55, 72));
 		picker_window->add_child(picker_preview);
 
 		picker_preview_color = memnew(Panel);
 		picker_preview_color->set_mouse_filter(MOUSE_FILTER_IGNORE);
-		if (!has_feature_exclude_from_capture) {
-			picker_preview_color->set_size(Vector2i(24, 24));
-			picker_preview_color->set_position(Vector2i(2, 2));
-		} else {
-			picker_preview_color->set_size(Vector2i(51, 15));
-			picker_preview_color->set_position(Vector2i(2, 55));
-		}
+		picker_preview_color->set_size(Vector2i(51, 15));
+		picker_preview_color->set_position(Vector2i(2, 55));
 		picker_preview->add_child(picker_preview_color);
 
-		if (has_feature_exclude_from_capture) {
-			picker_texture_zoom = memnew(TextureRect);
-			picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
-			picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
-			picker_texture_zoom->set_position(Vector2i(2, 2));
-			picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-			picker_preview->add_child(picker_texture_zoom);
-		}
+		picker_texture_zoom = memnew(TextureRect);
+		picker_texture_zoom->set_mouse_filter(MOUSE_FILTER_IGNORE);
+		picker_texture_zoom->set_custom_minimum_size(Vector2i(51, 51));
+		picker_texture_zoom->set_position(Vector2i(2, 2));
+		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+		picker_preview->add_child(picker_texture_zoom);
 
 		picker_preview_style_box.instantiate();
 		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
@@ -1923,9 +1915,16 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_window->set_position(Point2i());
 		picker_texture_rect->set_texture(tx);
 
+		Vector2 ofs = picker_window->get_mouse_position();
+		picker_preview->set_position(ofs - Vector2(28, 28));
+
+		Vector2 scale = screen_rect.size / tx->get_image()->get_size();
+		ofs /= scale;
+
 		Ref<AtlasTexture> atlas;
 		atlas.instantiate();
 		atlas->set_atlas(tx);
+		atlas->set_region(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
 		picker_texture_zoom->set_texture(atlas);
 	} else {
 		screen_rect = picker_window->get_parent_rect();
@@ -1951,7 +1950,17 @@ void ColorPicker::_pick_button_pressed_legacy() {
 			target_image->blit_rect(img, Rect2i(Point2i(0, 0), img->get_size()), w->get_position());
 		}
 
-		picker_texture_rect->set_texture(ImageTexture::create_from_image(target_image));
+		Ref<ImageTexture> tx = ImageTexture::create_from_image(target_image);
+		picker_texture_rect->set_texture(tx);
+
+		Vector2 ofs = screen_rect.position - DisplayServer::get_singleton()->mouse_get_position();
+		picker_preview->set_position(ofs - Vector2(28, 28));
+
+		Ref<AtlasTexture> atlas;
+		atlas.instantiate();
+		atlas->set_atlas(tx);
+		atlas->set_region(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
+		picker_texture_zoom->set_texture(atlas);
 	}
 
 	picker_window->set_size(screen_rect.size);
