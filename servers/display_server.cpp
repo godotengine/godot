@@ -723,6 +723,9 @@ Key DisplayServer::keyboard_get_label_from_physical(Key p_keycode) const {
 	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
 }
 
+void DisplayServer::show_emoji_and_symbol_picker() const {
+}
+
 void DisplayServer::force_process_and_drop_events() {
 }
 
@@ -914,7 +917,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_usable_rect", "screen"), &DisplayServer::screen_get_usable_rect, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_dpi", "screen"), &DisplayServer::screen_get_dpi, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_scale", "screen"), &DisplayServer::screen_get_scale, DEFVAL(SCREEN_OF_MAIN_WINDOW));
-	ClassDB::bind_method(D_METHOD("is_touchscreen_available"), &DisplayServer::is_touchscreen_available, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("is_touchscreen_available"), &DisplayServer::is_touchscreen_available);
 	ClassDB::bind_method(D_METHOD("screen_get_max_scale"), &DisplayServer::screen_get_max_scale);
 	ClassDB::bind_method(D_METHOD("screen_get_refresh_rate", "screen"), &DisplayServer::screen_get_refresh_rate, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_pixel", "position"), &DisplayServer::screen_get_pixel);
@@ -1029,6 +1032,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_get_keycode_from_physical", "keycode"), &DisplayServer::keyboard_get_keycode_from_physical);
 	ClassDB::bind_method(D_METHOD("keyboard_get_label_from_physical", "keycode"), &DisplayServer::keyboard_get_label_from_physical);
 
+	ClassDB::bind_method(D_METHOD("show_emoji_and_symbol_picker"), &DisplayServer::show_emoji_and_symbol_picker);
+
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
 
@@ -1086,6 +1091,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
 	BIND_ENUM_CONSTANT(FEATURE_WINDOW_EMBEDDING);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_MIME);
+	BIND_ENUM_CONSTANT(FEATURE_EMOJI_AND_SYMBOL_PICKER);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);

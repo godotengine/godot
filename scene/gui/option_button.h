@@ -145,6 +145,9 @@ public:
 	void set_disable_shortcuts(bool p_disabled);
 
 	void set_popup_pressed_cb(const Callable& p_cb) { cb_popup_pressed = p_cb; }
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
 
 	OptionButton(const String &p_text = String());
 	~OptionButton();

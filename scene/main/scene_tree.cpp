@@ -536,11 +536,11 @@ bool SceneTree::physics_process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 
 	process_timers(p_time, true); //go through timers
-
 	process_tweens(p_time, true);
 
 	flush_transform_notifications();
 
+	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 	_call_idle_callbacks();
 
@@ -581,17 +581,17 @@ bool SceneTree::process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
-	_flush_delete_queue();
-
 	if (unlikely(pending_new_scene)) {
 		_flush_scene_change();
 	}
 
 	process_timers(p_time, false); //go through timers
-
 	process_tweens(p_time, false);
 
-	flush_transform_notifications(); //additional transforms after timers update
+	flush_transform_notifications(); // Additional transforms after timers update.
+
+	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
+	_flush_delete_queue();
 
 	_call_idle_callbacks();
 

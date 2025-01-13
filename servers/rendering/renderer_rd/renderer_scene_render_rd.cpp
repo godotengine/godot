@@ -1228,6 +1228,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
 			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+			render_data.render_region = texture_storage->render_target_get_render_region(rb->get_render_target());
 		}
 	}
 
