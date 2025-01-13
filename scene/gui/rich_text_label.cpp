@@ -1184,8 +1184,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					//Apply fx.
 					if (fade) {
 						float faded_visibility = 1.0f;
-						if (glyphs[i].start >= fade->starting_index) {
-							faded_visibility -= (float)(glyphs[i].start - fade->starting_index) / (float)fade->length;
+						if (l.char_offset + glyphs[i].start >= fade->char_ofs + fade->starting_index) {
+							faded_visibility -= (float)((l.char_offset + glyphs[i].start) - (fade->char_ofs + fade->starting_index)) / (float)fade->length;
 							faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
 						}
 						font_color.a = faded_visibility;
@@ -5331,10 +5331,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("outline_size");
 
 		} else if (bbcode_name == "fade") {
-			int start_index = brk_pos;
+			int start_index = 0;
 			OptionMap::Iterator start_option = bbcode_options.find("start");
 			if (start_option) {
-				start_index += start_option->value.to_int();
+				start_index = start_option->value.to_int();
 			}
 
 			int length = 10;
