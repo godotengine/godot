@@ -98,6 +98,7 @@ jobs:
           cd platform/android/java
           ./gradlew generateGodotEditor
           ./gradlew generateGodotHorizonOSEditor
+          ./gradlew generateGodotPicoOSEditor
           cd ../../..
           ls -l bin/android_editor_builds/
 
