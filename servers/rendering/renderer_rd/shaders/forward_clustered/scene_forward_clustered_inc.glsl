@@ -5,19 +5,8 @@
 #define MAX_VOXEL_GI_INSTANCES 8
 #define MAX_VIEWS 2
 
-#ifndef MOLTENVK_USED
-#if defined(has_GL_KHR_shader_subgroup_ballot) && defined(has_GL_KHR_shader_subgroup_arithmetic)
-
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
-
-#define USE_SUBGROUPS
-#endif
-#endif // MOLTENVK_USED
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
