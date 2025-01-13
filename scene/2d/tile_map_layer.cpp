@@ -1834,7 +1834,7 @@ void TileMapLayer::_bind_methods() {
 
 	// --- Runtime ---
 	ClassDB::bind_method(D_METHOD("update_internals"), &TileMapLayer::update_internals);
-	ClassDB::bind_method(D_METHOD("notify_runtime_tile_data_update"), &TileMapLayer::notify_runtime_tile_data_update, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("notify_runtime_tile_data_update"), &TileMapLayer::notify_runtime_tile_data_update);
 
 	// --- Shortcuts to methods defined in TileSet ---
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMapLayer::map_pattern);

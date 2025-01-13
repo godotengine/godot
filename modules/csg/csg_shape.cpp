@@ -915,6 +915,13 @@ PackedStringArray CSGShape3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+Ref<TriangleMesh> CSGShape3D::generate_triangle_mesh() const {
+	if (root_mesh.is_valid()) {
+		return root_mesh->generate_triangle_mesh();
+	}
+	return Ref<TriangleMesh>();
+}
+
 void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape3D::_update_shape);
 	ClassDB::bind_method(D_METHOD("is_root_shape"), &CSGShape3D::is_root_shape);

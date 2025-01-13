@@ -1106,13 +1106,6 @@ void PopupMenu::_notification(int p_what) {
 			if (system_menu_id != NativeMenu::INVALID_MENU_ID) {
 				bind_global_menu();
 			}
-
-			if (!Engine::get_singleton()->is_editor_hint() && !DisplayServer::get_singleton()->is_window_transparency_available() && !is_embedded()) {
-				Ref<StyleBoxFlat> sb = theme_cache.panel_style;
-				if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
-					WARN_PRINT_ONCE("The current theme styles PopupMenu to have shadows and/or rounded corners, but those won't display correctly if 'display/window/per_pixel_transparency/allowed' isn't enabled in the Project Settings, nor if it isn't supported.");
-				}
-			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1128,6 +1121,10 @@ void PopupMenu::_notification(int p_what) {
 			if (is_visible()) {
 				_update_shadow_offsets();
 			}
+
+#ifdef TOOLS_ENABLED
+			update_configuration_warnings();
+#endif
 
 			[[fallthrough]];
 		}
@@ -2709,6 +2706,21 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 	return items[over].tooltip;
 }
 
+#ifdef TOOLS_ENABLED
+PackedStringArray PopupMenu::get_configuration_warnings() const {
+	PackedStringArray warnings = Popup::get_configuration_warnings();
+
+	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET("display/window/subwindows/embed_subwindows")) {
+		Ref<StyleBoxFlat> sb = theme_cache.panel_style;
+		if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
+			warnings.push_back(RTR("The current theme style has shadows and/or rounded corners for popups, but those won't display correctly if \"display/window/per_pixel_transparency/allowed\" isn't enabled in the Project Settings, nor if it isn't supported."));
+		}
+	}
+
+	return warnings;
+}
+#endif
+
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
 	autohide_areas.push_back(p_area);
 }
@@ -3027,6 +3039,10 @@ PopupMenu::PopupMenu() {
 	add_child(minimum_lifetime_timer, false, INTERNAL_MODE_FRONT);
 
 	property_helper.setup_for_instance(base_property_helper, this);
+
+#ifdef TOOLS_ENABLED
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp((Node *)this, &Node::update_configuration_warnings));
+#endif
 }
 
 PopupMenu::~PopupMenu() {
