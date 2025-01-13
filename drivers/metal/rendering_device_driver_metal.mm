@@ -1682,11 +1682,6 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ShaderBinaryData {
 
 // endregion
 
-String RenderingDeviceDriverMetal::shader_get_binary_cache_key() {
-	static const String cache_key = "Metal-SV" + uitos(SHADER_BINARY_VERSION);
-	return cache_key;
-}
-
 Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta) {
 	using namespace spirv_cross;
 	using spirv_cross::Resource;
