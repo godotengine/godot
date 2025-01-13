@@ -84,15 +84,18 @@ class EditorRunBar : public MarginContainer {
 	void _update_play_buttons();
 
 	void _write_movie_toggled(bool p_enabled);
-	void _quick_run_selected(const String &p_file_path);
+	void _quick_run_selected(const String &p_file_path, int p_id = -1);
 
-	void _play_current_pressed();
-	void _play_custom_pressed();
+	void _play_current_pressed(int p_id = -1);
+	void _play_custom_pressed(int p_id = -1);
 
-	void _run_scene(const String &p_scene_path = "");
+	void _run_scene(const String &p_scene_path = "", const Vector<String> &p_run_args = Vector<String>());
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
 
 	void _profiler_autostart_indicator_pressed();
+
+private:
+	static Vector<String> _get_xr_mode_play_args(int p_xr_mode_id);
 
 protected:
 	void _notification(int p_what);
@@ -105,8 +108,8 @@ public:
 	void recovery_mode_reload_project();
 
 	void play_main_scene(bool p_from_native = false);
-	void play_current_scene(bool p_reload = false);
-	void play_custom_scene(const String &p_custom);
+	void play_current_scene(bool p_reload = false, const Vector<String> &p_play_args = Vector<String>());
+	void play_custom_scene(const String &p_custom, const Vector<String> &p_play_args = Vector<String>());
 
 	void stop_playing();
 	bool is_playing() const;

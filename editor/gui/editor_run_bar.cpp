@@ -44,7 +44,12 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+
+#ifndef _3D_DISABLED
+#include "servers/xr_server.h"
+#endif // _3D_DISABLED
 
 EditorRunBar *EditorRunBar::singleton = nullptr;
 
@@ -162,33 +167,51 @@ void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	}
 }
 
-void EditorRunBar::_quick_run_selected(const String &p_file_path) {
-	play_custom_scene(p_file_path);
+Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
+	Vector<String> play_args;
+	if (p_xr_mode_id == 0) {
+		// Play in regular mode, xr mode off.
+		play_args.push_back("--xr-mode");
+		play_args.push_back("off");
+	} else if (p_xr_mode_id == 1) {
+		// Play in xr mode.
+		play_args.push_back("--xr-mode");
+		play_args.push_back("on");
+	}
+	return play_args;
 }
 
-void EditorRunBar::_play_custom_pressed() {
+void EditorRunBar::_quick_run_selected(const String &p_file_path, int p_id) {
+	play_custom_scene(p_file_path, _get_xr_mode_play_args(p_id));
+}
+
+void EditorRunBar::_play_custom_pressed(int p_id) {
 	if (editor_run.get_status() == EditorRun::STATUS_STOP || current_mode != RunMode::RUN_CUSTOM) {
 		stop_playing();
 
-		EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &EditorRunBar::_quick_run_selected));
+		EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &EditorRunBar::_quick_run_selected).bind(p_id));
 		play_custom_scene_button->set_pressed(false);
 	} else {
+		Vector<String> play_args = _get_xr_mode_play_args(p_id);
+
 		// Reload if already running a custom scene.
 		String last_custom_scene = run_custom_filename; // This is necessary to have a copy of the string.
-		play_custom_scene(last_custom_scene);
+		play_custom_scene(last_custom_scene, play_args);
 	}
 }
 
-void EditorRunBar::_play_current_pressed() {
+void EditorRunBar::_play_current_pressed(int p_id) {
+	Vector<String> play_args = _get_xr_mode_play_args(p_id);
+
 	if (editor_run.get_status() == EditorRun::STATUS_STOP || current_mode != RunMode::RUN_CURRENT) {
-		play_current_scene();
+		play_current_scene(false, play_args);
 	} else {
 		// Reload if already running the current scene.
-		play_current_scene(true);
+		play_current_scene(true, play_args);
 	}
 }
 
-void EditorRunBar::_run_scene(const String &p_scene_path) {
+void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &p_run_args) {
 	ERR_FAIL_COND_MSG(current_mode == RUN_CUSTOM && p_scene_path.is_empty(), "Attempting to run a custom scene with an empty path.");
 
 	if (editor_run.get_status() == EditorRun::STATUS_PLAY) {
@@ -273,7 +296,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path) {
 	}
 
 	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename, write_movie_file);
+	Error error = editor_run.run(run_filename, write_movie_file, p_run_args);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
 		EditorNode::get_singleton()->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
@@ -340,7 +363,7 @@ void EditorRunBar::play_main_scene(bool p_from_native) {
 	}
 }
 
-void EditorRunBar::play_current_scene(bool p_reload) {
+void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_play_args) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
 		return;
@@ -353,13 +376,13 @@ void EditorRunBar::play_current_scene(bool p_reload) {
 
 	current_mode = RunMode::RUN_CURRENT;
 	if (p_reload) {
-		_run_scene(last_current_scene);
+		_run_scene(last_current_scene, p_play_args);
 	} else {
-		_run_scene();
+		_run_scene("", p_play_args);
 	}
 }
 
-void EditorRunBar::play_custom_scene(const String &p_custom) {
+void EditorRunBar::play_custom_scene(const String &p_custom, const Vector<String> &p_play_args) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
 		return;
@@ -368,7 +391,7 @@ void EditorRunBar::play_custom_scene(const String &p_custom) {
 	stop_playing();
 
 	current_mode = RunMode::RUN_CUSTOM;
-	_run_scene(p_custom);
+	_run_scene(p_custom, p_play_args);
 }
 
 void EditorRunBar::stop_playing() {
@@ -563,25 +586,55 @@ EditorRunBar::EditorRunBar() {
 	main_hbox->add_child(run_native);
 	run_native->connect("native_run", callable_mp(this, &EditorRunBar::_run_native));
 
-	play_scene_button = memnew(Button);
+	bool add_play_xr_mode_options = false;
+#ifndef _3D_DISABLED
+	if (OS::get_singleton()->has_feature("xr_editor") &&
+			(XRServer::get_xr_mode() == XRServer::XRMODE_ON ||
+					(XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT && GLOBAL_GET("xr/openxr/enabled")))) {
+		// If this is the XR editor and openxr is enabled, we turn the `play_scene_button` and
+		// `play_custom_scene_button` into MenuButtons to provide the option to start a scene in
+		// either regular mode or XR mode.
+		add_play_xr_mode_options = true;
+	}
+#endif // _3D_DISABLED
+
+	if (add_play_xr_mode_options) {
+		MenuButton *menu_button = memnew(MenuButton);
+		PopupMenu *popup = menu_button->get_popup();
+		popup->add_item(TTRC("Run Scene in Regular Mode"), 0);
+		popup->add_item(TTRC("Run Scene in XR Mode"), 1);
+		popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunBar::_play_current_pressed));
+		play_scene_button = menu_button;
+	} else {
+		play_scene_button = memnew(Button);
+		play_scene_button->set_toggle_mode(true);
+		play_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_current_pressed).bind(-1));
+	}
 	main_hbox->add_child(play_scene_button);
 	play_scene_button->set_theme_type_variation("RunBarButton");
-	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->set_tooltip_text(TTRC("Run the currently edited scene."));
-	play_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_current_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTRC("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
 	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
 
-	play_custom_scene_button = memnew(Button);
+	if (add_play_xr_mode_options) {
+		MenuButton *menu_button = memnew(MenuButton);
+		PopupMenu *popup = menu_button->get_popup();
+		popup->add_item(TTRC("Run in Regular Mode"), 0);
+		popup->add_item(TTRC("Run in XR Mode"), 1);
+		popup->connect(SceneStringName(id_pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed));
+		play_custom_scene_button = menu_button;
+	} else {
+		play_custom_scene_button = memnew(Button);
+		play_custom_scene_button->set_toggle_mode(true);
+		play_custom_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed).bind(-1));
+	}
 	main_hbox->add_child(play_custom_scene_button);
 	play_custom_scene_button->set_theme_type_variation("RunBarButton");
-	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->set_tooltip_text(TTRC("Run a specific scene."));
-	play_custom_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTRC("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
