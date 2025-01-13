@@ -278,3 +278,10 @@ Validate extension JSON: JSON file: Field was added in a way that breaks compati
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/GPUParticles3D/methods/restart': arguments
 
 Added an optional keep_seed parameter to restart particles, to avoid modifying the seed to do particle seeking.
+
+
+GH-101482
+---------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/set_table_column_expand/arguments': size changed value in new API, from 3 to 4.
+
+Added optional "shrink" argument. Compatibility method registered.
