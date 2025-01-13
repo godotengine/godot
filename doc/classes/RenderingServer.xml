@@ -2940,6 +2940,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="time" type="float" />
 			<description>
+				Requests particles to process for extra process time during a single frame.
 			</description>
 		</method>
 		<method name="particles_restart">
