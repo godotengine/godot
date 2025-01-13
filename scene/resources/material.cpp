@@ -682,6 +682,10 @@ void BaseMaterial3D::finish_shaders() {
 }
 
 void BaseMaterial3D::_update_shader() {
+	if (!_is_initialized()) {
+		_mark_ready();
+	}
+
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
 		return; //no update required in the end
@@ -3644,8 +3648,6 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
 	current_key.invalid_key = 1;
-
-	_mark_initialized(callable_mp(this, &BaseMaterial3D::_queue_shader_change), Callable());
 }
 
 BaseMaterial3D::~BaseMaterial3D() {

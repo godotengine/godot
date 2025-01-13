@@ -36,6 +36,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GLSLANG_ENABLED
+#include "modules/glslang/shader_compile.h"
+#endif
 
 #define FORCE_SEPARATE_PRESENT_QUEUE 0
 #define PRINT_FRAMEBUFFER_FORMAT 0
@@ -135,10 +140,6 @@ RenderingDevice *RenderingDevice::get_singleton() {
 	return singleton;
 }
 
-RenderingDevice::ShaderCompileToSPIRVFunction RenderingDevice::compile_to_spirv_function = nullptr;
-RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
-RenderingDevice::ShaderSPIRVGetCacheKeyFunction RenderingDevice::get_spirv_cache_key_function = nullptr;
-
 /***************************/
 /**** ID INFRASTRUCTURE ****/
 /***************************/
@@ -191,36 +192,18 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 /**** SHADER INFRASTRUCTURE ****/
 /*******************************/
 
-void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function) {
-	compile_to_spirv_function = p_function;
-}
-
-void RenderingDevice::shader_set_spirv_cache_function(ShaderCacheFunction p_function) {
-	cache_function = p_function;
-}
-
-void RenderingDevice::shader_set_get_cache_key_function(ShaderSPIRVGetCacheKeyFunction p_function) {
-	get_spirv_cache_key_function = p_function;
-}
-
 Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
-	if (p_allow_cache && cache_function) {
-		Vector<uint8_t> cache = cache_function(p_stage, p_source_code, p_language);
-		if (cache.size()) {
-			return cache;
+	switch (p_language) {
+#ifdef MODULE_GLSLANG_ENABLED
+		case ShaderLanguage::SHADER_LANGUAGE_GLSL: {
+			ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
+			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
+			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
 		}
+#endif
+		default:
+			ERR_FAIL_V_MSG(Vector<uint8_t>(), "Shader language is not supported.");
 	}
-
-	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
-
-	return compile_to_spirv_function(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), p_language, r_error, this);
-}
-
-String RenderingDevice::shader_get_spirv_cache_key() const {
-	if (get_spirv_cache_key_function) {
-		return get_spirv_cache_key_function(this);
-	}
-	return String();
 }
 
 RID RenderingDevice::shader_create_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
@@ -3360,12 +3343,23 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 	return ret;
 }
 
-String RenderingDevice::shader_get_binary_cache_key() const {
-	return driver->shader_get_binary_cache_key();
-}
-
 Vector<uint8_t> RenderingDevice::shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name) {
-	return driver->shader_compile_binary_from_spirv(p_spirv, p_shader_name);
+	ShaderReflection shader_refl;
+	if (reflect_spirv(p_spirv, shader_refl) != OK) {
+		return Vector<uint8_t>();
+	}
+
+	const RenderingShaderContainerFormat &container_format = driver->get_shader_container_format();
+	Ref<RenderingShaderContainer> shader_container = container_format.create_container();
+	ERR_FAIL_COND_V(shader_container.is_null(), Vector<uint8_t>());
+
+	shader_container->set_from_shader_reflection(p_shader_name, shader_refl);
+
+	// Compile shader binary from SPIR-V.
+	bool code_compiled = shader_container->set_code_from_spirv(p_spirv);
+	ERR_FAIL_COND_V_MSG(!code_compiled, Vector<uint8_t>(), vformat("Failed to compile code to native for SPIR-V."));
+
+	return shader_container->to_bytes();
 }
 
 RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
@@ -3379,8 +3373,11 @@ RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader
 RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder, const Vector<PipelineImmutableSampler> &p_immutable_samplers) {
 	_THREAD_SAFE_METHOD_
 
-	ShaderDescription shader_desc;
-	String name;
+	Ref<RenderingShaderContainer> shader_container = driver->get_shader_container_format().create_container();
+	ERR_FAIL_COND_V(shader_container.is_null(), RID());
+
+	bool parsed_container = shader_container->from_bytes(p_shader_binary);
+	ERR_FAIL_COND_V_MSG(!parsed_container, RID(), "Failed to parse shader container from binary.");
 
 	Vector<RDD::ImmutableSampler> driver_immutable_samplers;
 	for (const PipelineImmutableSampler &source_sampler : p_immutable_samplers) {
@@ -3395,7 +3392,8 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 
 		driver_immutable_samplers.append(driver_sampler);
 	}
-	RDD::ShaderID shader_id = driver->shader_create_from_bytecode(p_shader_binary, shader_desc, name, driver_immutable_samplers);
+
+	RDD::ShaderID shader_id = driver->shader_create_from_container(shader_container, driver_immutable_samplers);
 	ERR_FAIL_COND_V(!shader_id, RID());
 
 	// All good, let's create modules.
@@ -3410,8 +3408,9 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 	Shader *shader = shader_owner.get_or_null(id);
 	ERR_FAIL_NULL_V(shader, RID());
 
-	*((ShaderDescription *)shader) = shader_desc; // ShaderDescription bundle.
-	shader->name = name;
+	*((ShaderReflection *)shader) = shader_container->get_shader_reflection();
+	shader->name.clear();
+	shader->name.append_utf8(shader_container->shader_name);
 	shader->driver_id = shader_id;
 	shader->layout_hash = driver->shader_get_layout_hash(shader_id);
 
@@ -3437,7 +3436,7 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 		shader->set_formats.push_back(format);
 	}
 
-	for (ShaderStage stage : shader_desc.stages) {
+	for (ShaderStage stage : shader->stages_vector) {
 		switch (stage) {
 			case SHADER_STAGE_VERTEX:
 				shader->stage_bits.set_flag(RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT);
