@@ -27,6 +27,9 @@
 		<member name="discard_primitives" type="bool" setter="set_discard_primitives" getter="get_discard_primitives" default="false">
 			If [code]true[/code], primitives are discarded immediately before the rasterization stage.
 		</member>
+		<member name="enable_conservative_rasterization" type="bool" setter="set_enable_conservative_rasterization" getter="get_enable_conservative_rasterization" default="false">
+			If [code]true[/code], primitive coverage is over-estimated during rasterization (any fragment containing part of the primitive will be included). May not be supported on all hardware.
+		</member>
 		<member name="enable_depth_clamp" type="bool" setter="set_enable_depth_clamp" getter="get_enable_depth_clamp" default="false">
 			If [code]true[/code], clamps depth values according to the minimum and maximum depth of the associated viewport.
 		</member>

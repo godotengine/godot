@@ -546,6 +546,7 @@ public:
 	RD_SETGET(float, depth_bias_slope_factor)
 	RD_SETGET(float, line_width)
 	RD_SETGET(uint32_t, patch_control_points)
+	RD_SETGET(bool, enable_conservative_rasterization)
 
 protected:
 	static void _bind_methods() {
@@ -560,6 +561,7 @@ protected:
 		RD_BIND(Variant::FLOAT, RDPipelineRasterizationState, depth_bias_slope_factor);
 		RD_BIND(Variant::FLOAT, RDPipelineRasterizationState, line_width);
 		RD_BIND(Variant::INT, RDPipelineRasterizationState, patch_control_points);
+		RD_BIND(Variant::BOOL, RDPipelineRasterizationState, enable_conservative_rasterization);
 	}
 };
 

@@ -513,6 +513,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -4963,6 +4964,17 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	rasterization_state_create_info.depthBiasClamp = p_rasterization_state.depth_bias_clamp;
 	rasterization_state_create_info.depthBiasSlopeFactor = p_rasterization_state.depth_bias_slope_factor;
 	rasterization_state_create_info.lineWidth = p_rasterization_state.line_width;
+
+	VkPipelineRasterizationConservativeStateCreateInfoEXT conservativeStateCreateInfoExt = {};
+	if (p_rasterization_state.enable_conservative_rasterization) {
+		if (enabled_device_extension_names.has(VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME)) {
+			conservativeStateCreateInfoExt.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT;
+			conservativeStateCreateInfoExt.conservativeRasterizationMode = VkConservativeRasterizationModeEXT::VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT;
+			rasterization_state_create_info.pNext = &conservativeStateCreateInfoExt;
+		} else {
+			WARN_PRINT(vformat("enable_conservative_rasterization is true but %s is not available.", VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME));
+		}
+	}
 
 	// Multisample.
 	VkPipelineMultisampleStateCreateInfo multisample_state_create_info = {};
