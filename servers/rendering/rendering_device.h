@@ -927,6 +927,8 @@ public:
 
 	enum StorageBufferUsage {
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
+		STORAGE_BUFFER_USAGE_READONLY = 2,
+		STORAGE_BUFFER_USAGE_WRITEONLY = 4,
 	};
 
 	/*****************/
