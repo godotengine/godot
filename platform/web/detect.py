@@ -98,7 +98,7 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
-    env.Append(LIBEMITTER=library_emitter)
+    env.Append(LIBEMITTER=[library_emitter])
 
     # Validate arch.
     supported_arches = ["wasm32"]
