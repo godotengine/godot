@@ -1226,6 +1226,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 	} else {
 		// Try file remap.
 		// Usually, there's no remap file and FileAccess::exists() is faster than FileAccess::open().
+		new_path = ResourceUID::ensure_path(new_path);
 		if (FileAccess::exists(new_path + ".remap")) {
 			Error err;
 			Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
