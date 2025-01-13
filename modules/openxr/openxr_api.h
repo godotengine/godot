@@ -88,12 +88,10 @@ private:
 	OpenXRInterface *xr_interface = nullptr;
 
 	// layers
-	uint32_t num_layer_properties = 0;
-	XrApiLayerProperties *layer_properties = nullptr;
+	LocalVector<XrApiLayerProperties> layer_properties;
 
 	// extensions
-	uint32_t num_supported_extensions = 0;
-	XrExtensionProperties *supported_extensions = nullptr;
+	LocalVector<XrExtensionProperties> supported_extensions;
 	Vector<CharString> enabled_extensions;
 
 	// composition layer providers
@@ -103,16 +101,13 @@ private:
 	Vector<OpenXRExtensionWrapper *> projection_views_extensions;
 
 	// view configuration
-	uint32_t num_view_configuration_types = 0;
-	XrViewConfigurationType *supported_view_configuration_types = nullptr;
+	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
 
 	// reference spaces
-	uint32_t num_reference_spaces = 0;
-	XrReferenceSpaceType *supported_reference_spaces = nullptr;
+	LocalVector<XrReferenceSpaceType> supported_reference_spaces;
 
 	// swapchains (note these are platform dependent)
-	uint32_t num_swapchain_formats = 0;
-	int64_t *supported_swapchain_formats = nullptr;
+	PackedInt64Array supported_swapchain_formats;
 
 	// system info
 	String runtime_name;
@@ -128,8 +123,7 @@ private:
 	// blend mode
 	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 	XrEnvironmentBlendMode requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-	uint32_t num_supported_environment_blend_modes = 0;
-	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
+	Vector<XrEnvironmentBlendMode> supported_environment_blend_modes;
 	bool emulate_environment_blend_mode_alpha_blend = false;
 
 	// state
@@ -148,8 +142,7 @@ private:
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
 
-	uint32_t view_count = 0;
-	XrViewConfigurationView *view_configuration_views = nullptr;
+	LocalVector<XrViewConfigurationView> view_configuration_views;
 
 	enum OpenXRSwapChainTypes {
 		OPENXR_SWAPCHAIN_COLOR,
@@ -344,10 +337,9 @@ private:
 		uint64_t frame = 0;
 		Rect2i render_region;
 
-		uint32_t view_count = 0;
-		XrView *views = nullptr;
-		XrCompositionLayerProjectionView *projection_views = nullptr;
-		XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
+		LocalVector<XrView> views;
+		LocalVector<XrCompositionLayerProjectionView> projection_views;
+		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool view_pose_valid = false;
 
@@ -590,7 +582,7 @@ public:
 	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 
-	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
+	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }
