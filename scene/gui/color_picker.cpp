@@ -158,24 +158,28 @@ void ColorPicker::_notification(int p_what) {
 				return;
 			}
 			DisplayServer *ds = DisplayServer::get_singleton();
-			Vector2 ofs = ds->mouse_get_position();
-			picker_window->set_position(ofs - Vector2(28, 28));
+			Vector2 offset = ds->mouse_get_position();
 
-			Color c = DisplayServer::get_singleton()->screen_get_pixel(ofs);
+			Color pixel_color = DisplayServer::get_singleton()->screen_get_pixel(offset);
 
-			picker_preview_style_box_color->set_bg_color(c);
-			picker_preview_style_box->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_style_box_color->set_bg_color(pixel_color);
+			picker_preview_style_box->set_bg_color(pixel_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 
 			if (ds->has_feature(DisplayServer::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE)) {
-				Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
-				picker_window->set_position(ofs - Vector2(28, 28));
+				Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(offset.x - 8, offset.y - 8, 17, 17));
+
+				picker_window->set_position(offset - PICKER_WINDOW_OFFSET_DECAL);
 				picker_texture_zoom->set_texture(ImageTexture::create_from_image(zoom_preview_img));
+
 			} else {
 				Size2i screen_size = ds->screen_get_size();
-				picker_window->set_position(ofs + Vector2(ofs.x < screen_size.width / 2 ? 8 : -36, ofs.y < screen_size.height / 2 ? 8 : -36));
+				float offset_decal_x = (offset.x < screen_size.width / 2) ? 8 : -36;
+				float offset_decal_y = (offset.y < screen_size.height / 2) ? 8 : -36;
+
+				picker_window->set_position(offset + Vector2(offset_decal_x, offset_decal_y));
 			}
 
-			set_pick_color(c);
+			set_pick_color(pixel_color);
 		}
 	}
 }
@@ -1975,7 +1979,7 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
 		if (img.is_valid() && !img->is_empty()) {
 			Vector2 ofs = mev->get_position();
-			picker_preview->set_position(ofs - Vector2(28, 28));
+			picker_preview->set_position(ofs - PICKER_WINDOW_OFFSET_DECAL);
 			Vector2 scale = picker_texture_rect->get_size() / img->get_size();
 			ofs /= scale;
 			picker_color = img->get_pixel(ofs.x, ofs.y);
