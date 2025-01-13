@@ -2459,6 +2459,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
+#ifdef TOOLS_ENABLED
+	if (!force_res && project_manager) {
+		// Ensure splash screen size matches the project manager window size
+		// (see `editor/project_manager.cpp` for defaults).
+		window_size.width = ProjectManager::DEFAULT_WINDOW_WIDTH;
+		window_size.height = ProjectManager::DEFAULT_WINDOW_HEIGHT;
+	}
+#endif
+
 	if (use_custom_res) {
 		if (!force_res) {
 			window_size.width = GLOBAL_GET("display/window/size/viewport_width");
@@ -2528,10 +2537,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
+	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
-	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
@@ -2923,6 +2932,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 					init_custom_pos = config->get_value("EditorWindow", "position", Vector2i(0, 0));
 				}
 			}
+		}
+
+		if (init_screen == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO) {
+			init_screen = DisplayServer::SCREEN_PRIMARY;
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Initialize Early Settings");

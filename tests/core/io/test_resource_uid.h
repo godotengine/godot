@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  joypad_macos.h                                                        */
+/*  test_resource_uid.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/input/input.h"
+#ifndef TEST_RESOURCE_UID_H
+#define TEST_RESOURCE_UID_H
 
-#define Key _QKey
-#import <CoreHaptics/CoreHaptics.h>
-#import <GameController/GameController.h>
-#undef Key
+#include "core/io/resource_uid.h"
 
-@interface JoypadMacOSObserver : NSObject
+#include "thirdparty/doctest/doctest.h"
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+#include "tests/test_macros.h"
 
-@end
+namespace TestResourceUID {
 
-API_AVAILABLE(macosx(11))
-@interface RumbleMotor : NSObject
-@property(strong, nonatomic) CHHapticEngine *engine;
-@property(strong, nonatomic) id<CHHapticPatternPlayer> player;
-@end
+TEST_CASE("[ResourceUID] Must encode/decode maximum/minimum UID correctly") {
+	CHECK_MESSAGE(ResourceUID::get_singleton()->id_to_text(0x7fffffffffffffff) == "uid://d4n4ub6itg400", "Maximum UID must encode correctly.");
+	CHECK_MESSAGE(ResourceUID::get_singleton()->text_to_id("uid://d4n4ub6itg400") == 0x7fffffffffffffff, "Maximum UID must decode correctly.");
 
-API_AVAILABLE(macosx(11))
-@interface RumbleContext : NSObject
-// High frequency motor, it's usually the right engine.
-@property(strong, nonatomic) RumbleMotor *weak_motor;
-// Low frequency motor, it's usually the left engine.
-@property(strong, nonatomic) RumbleMotor *strong_motor;
-@end
+	CHECK_MESSAGE(ResourceUID::get_singleton()->id_to_text(0) == "uid://a", "Minimum UID must encode correctly.");
+	CHECK_MESSAGE(ResourceUID::get_singleton()->text_to_id("uid://a") == 0, "Minimum UID must decode correctly.");
+}
 
-// Controller support for macOS begins with macOS 10.9+,
-// however haptics (vibrations) are only supported in macOS 11+.
-@interface Joypad : NSObject
+TEST_CASE("[ResourceUID] Must encode and decode invalid UIDs correctly") {
+	ResourceUID *rid = ResourceUID::get_singleton();
+	CHECK_MESSAGE(rid->id_to_text(-1) == "uid://<invalid>", "Invalid UID -1 must encode correctly.");
+	CHECK_MESSAGE(rid->text_to_id("uid://<invalid>") == -1, "Invalid UID -1 must decode correctly.");
 
-@property(assign, nonatomic) BOOL force_feedback;
-@property(assign, nonatomic) NSInteger ff_effect_timestamp;
-@property(strong, nonatomic) GCController *controller;
-@property(strong, nonatomic) RumbleContext *rumble_context API_AVAILABLE(macosx(11));
+	CHECK_MESSAGE(rid->id_to_text(-2) == rid->id_to_text(-1), "Invalid UID -2 must encode to the same as -1.");
 
-- (instancetype)init;
-- (instancetype)init:(GCController *)controller;
+	CHECK_MESSAGE(rid->text_to_id("dm3rdgs30kfci") == -1, "UID without scheme must decode correctly.");
+}
 
-@end
+TEST_CASE("[ResourceUID] Must encode and decode various UIDs correctly") {
+	ResourceUID *rid = ResourceUID::get_singleton();
+	CHECK_MESSAGE(rid->id_to_text(1) == "uid://b", "UID 1 must encode correctly.");
+	CHECK_MESSAGE(rid->text_to_id("uid://b") == 1, "UID 1 must decode correctly.");
 
-class JoypadMacOS {
-private:
-	JoypadMacOSObserver *observer;
+	CHECK_MESSAGE(rid->id_to_text(8060368642360689600) == "uid://dm3rdgs30kfci", "A normal UID must encode correctly.");
+	CHECK_MESSAGE(rid->text_to_id("uid://dm3rdgs30kfci") == 8060368642360689600, "A normal UID must decode correctly.");
+}
 
-public:
-	JoypadMacOS();
-	~JoypadMacOS();
+} // namespace TestResourceUID
 
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_start(Joypad *p_joypad, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	API_AVAILABLE(macosx(11))
-	void joypad_vibration_stop(Joypad *p_joypad, uint64_t p_timestamp);
-
-	void start_processing();
-	void process_joypads();
-};
+#endif // TEST_RESOURCE_UID_H

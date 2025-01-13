@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  joypad_ios.h                                                          */
+/*  motion_vectors_store.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,23 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import <GameController/GameController.h>
+#ifndef MOTION_VECTORS_STORE_RD_H
+#define MOTION_VECTORS_STORE_RD_H
 
-@interface JoypadIOSObserver : NSObject
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/motion_vectors_store.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering_server.h"
 
-- (void)startObserving;
-- (void)startProcessing;
-- (void)finishObserving;
+namespace RendererRD {
+class MotionVectorsStore {
+	struct PushConstant {
+		float reprojection_matrix[16];
+		float resolution[2];
+		uint32_t pad[2];
+	};
 
-@end
-
-class JoypadIOS {
-private:
-	JoypadIOSObserver *observer;
+	MotionVectorsStoreShaderRD motion_shader;
+	RID shader_version;
+	RID pipeline;
 
 public:
-	JoypadIOS();
-	~JoypadIOS();
+	MotionVectorsStore();
+	~MotionVectorsStore();
 
-	void start_processing();
+	void process(Ref<RenderSceneBuffersRD> p_render_buffers,
+			const Projection &p_current_projection, const Transform3D &p_current_transform,
+			const Projection &p_previous_projection, const Transform3D &p_previous_transform);
 };
+} //namespace RendererRD
+
+#endif // MOTION_VECTORS_STORE_RD_H

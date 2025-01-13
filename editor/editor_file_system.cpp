@@ -843,11 +843,26 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				fs_changed = true;
 
+				const String new_file_path = ia.dir->get_file_path(idx);
+				const ResourceUID::ID existing_id = ResourceLoader::get_resource_uid(new_file_path);
+				if (existing_id != ResourceUID::INVALID_ID) {
+					const String old_path = ResourceUID::get_singleton()->get_id_path(existing_id);
+					if (old_path != new_file_path && FileAccess::exists(old_path)) {
+						const ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id();
+						ResourceUID::get_singleton()->add_id(new_id, new_file_path);
+						ResourceSaver::set_uid(new_file_path, new_id);
+						WARN_PRINT(vformat("Duplicate UID detected for Resource at \"%s\".\nOld Resource path: \"%s\". The new file UID was changed automatically.", new_file_path, old_path));
+					} else {
+						// Re-assign the UID to file, just in case it was pulled from cache.
+						ResourceSaver::set_uid(new_file_path, existing_id);
+					}
+				}
+
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
-					_queue_update_script_class(ia.dir->get_file_path(idx), ia.new_file->type, ia.new_file->script_class_name, ia.new_file->script_class_extends, ia.new_file->script_class_icon_path);
+					_queue_update_script_class(new_file_path, ia.new_file->type, ia.new_file->script_class_name, ia.new_file->script_class_extends, ia.new_file->script_class_icon_path);
 				}
 				if (ia.new_file->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(ia.dir->get_file_path(idx));
+					_queue_update_scene_groups(new_file_path);
 				}
 
 			} break;
@@ -3216,7 +3231,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 }
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
-	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
 	Vector<String> reloads;
 	reloads.append(p_file);
 

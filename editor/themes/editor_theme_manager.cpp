@@ -1767,6 +1767,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_icon("overbright_indicator", "ColorPicker", p_theme->get_icon(SNAME("OverbrightIndicator"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("bar_arrow", "ColorPicker", p_theme->get_icon(SNAME("ColorPickerBarArrow"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("picker_cursor", "ColorPicker", p_theme->get_icon(SNAME("PickerCursor"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("picker_cursor_bg", "ColorPicker", p_theme->get_icon(SNAME("PickerCursorBg"), EditorStringName(EditorIcons)));
 
 		// ColorPickerButton.
 		p_theme->set_icon("bg", "ColorPickerButton", p_theme->get_icon(SNAME("GuiMiniCheckerboard"), EditorStringName(EditorIcons)));
@@ -1788,7 +1789,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 
 		// ProjectTag.
 		{
-			p_theme->set_type_variation("ProjectTag", "Button");
+			p_theme->set_type_variation("ProjectTagButton", "Button");
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
 			tag->set_bg_color(p_config.dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
@@ -1796,21 +1797,21 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(CoreStringName(normal), "ProjectTag", tag);
+			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_hover->duplicate();
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(SceneStringName(hover), "ProjectTag", tag);
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
 			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
 			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
-			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTag", tag);
+			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagButton", tag);
 		}
 	}
 

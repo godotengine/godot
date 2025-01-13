@@ -335,7 +335,7 @@ _hb_coretext_shaper_face_data_destroy (hb_coretext_face_data_t *data)
  * Creates an #hb_face_t face object from the specified
  * CGFontRef.
  *
- * Return value: the new #hb_face_t face object
+ * Return value: (transfer full): The new face object
  *
  * Since: 0.9.10
  */
@@ -344,6 +344,65 @@ hb_coretext_face_create (CGFontRef cg_font)
 {
   hb_face_t *face = hb_face_create_for_tables (_hb_cg_reference_table, CGFontRetain (cg_font), _hb_cg_font_release);
   hb_face_set_get_table_tags_func (face, _hb_cg_get_table_tags, cg_font, nullptr);
+  return face;
+}
+
+/**
+ * hb_coretext_face_create_from_file_or_fail:
+ * @file_name: A font filename
+ * @index: The index of the face within the file
+ *
+ * Creates an #hb_face_t face object from the specified
+ * font file and face index.
+ *
+ * This is similar in functionality to hb_face_create_from_file_or_fail(),
+ * but uses the CoreText library for loading the font file.
+ *
+ * Return value: (transfer full): The new face object, or `NULL` if
+ * no face is found at the specified index or the file cannot be read.
+ *
+ * Since: 10.1.0
+ */
+hb_face_t *
+hb_coretext_face_create_from_file_or_fail (const char   *file_name,
+					   unsigned int  index)
+{
+  auto url = CFURLCreateFromFileSystemRepresentation (nullptr,
+						      (const UInt8 *) file_name,
+						      strlen (file_name),
+						      false);
+  if (unlikely (!url))
+    return nullptr;
+
+  auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromURL (url);
+  if (unlikely (!ct_font_desc_array))
+  {
+    CFRelease (url);
+    return nullptr;
+  }
+  auto ct_font_desc = (CFArrayGetCount (ct_font_desc_array) > index) ?
+		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, index) : nullptr;
+  if (unlikely (!ct_font_desc))
+  {
+	  CFRelease (ct_font_desc_array);
+	  CFRelease (url);
+	  return nullptr;
+  }
+  CFRelease (url);
+  auto ct_font = ct_font_desc ? CTFontCreateWithFontDescriptor (ct_font_desc, 0, nullptr) : nullptr;
+  CFRelease (ct_font_desc_array);
+  if (unlikely (!ct_font))
+    return nullptr;
+
+  auto cg_font = ct_font ? CTFontCopyGraphicsFont (ct_font, nullptr) : nullptr;
+  CFRelease (ct_font);
+  if (unlikely (!cg_font))
+    return nullptr;
+
+  hb_face_t *face = hb_coretext_face_create (cg_font);
+  if (unlikely (hb_face_is_immutable (face)))
+    return nullptr;
+
   return face;
 }
 
@@ -439,7 +498,12 @@ _hb_coretext_shaper_font_data_destroy (hb_coretext_font_data_t *data)
  * Creates an #hb_font_t font object from the specified
  * CTFontRef.
  *
- * Return value: the new #hb_font_t font object
+ * The created font uses the default font functions implemented
+ * navitely by HarfBuzz. If you want to use the CoreText font functions
+ * instead (rarely needed), you can do so by calling
+ * by hb_coretext_font_set_funcs().
+ *
+ * Return value: (transfer full): The new font object
  *
  * Since: 1.7.2
  **/
@@ -459,6 +523,9 @@ hb_coretext_font_create (CTFontRef ct_font)
 
   /* Let there be dragons here... */
   font->data.coretext.cmpexch (nullptr, (hb_coretext_font_data_t *) CFRetain (ct_font));
+
+  // https://github.com/harfbuzz/harfbuzz/pull/4895#issuecomment-2408471254
+  //hb_coretext_font_set_funcs (font);
 
   return font;
 }

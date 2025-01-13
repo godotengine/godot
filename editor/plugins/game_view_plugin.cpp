@@ -34,6 +34,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_command_palette.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -49,6 +50,10 @@
 #include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
+	if (!is_feature_enabled) {
+		return;
+	}
+
 	Array setup_data;
 	Dictionary settings;
 	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
@@ -73,7 +78,15 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 }
 
 void GameViewDebugger::_session_stopped() {
+	if (!is_feature_enabled) {
+		return;
+	}
+
 	emit_signal(SNAME("session_stopped"));
+}
+
+void GameViewDebugger::set_is_feature_enabled(bool p_enabled) {
+	is_feature_enabled = p_enabled;
 }
 
 void GameViewDebugger::set_suspend(bool p_enabled) {
@@ -198,6 +211,9 @@ void GameView::_instance_starting_static(int p_idx, List<String> &r_arguments) {
 }
 
 void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
+	if (!is_feature_enabled) {
+		return;
+	}
 	if (p_idx == 0 && embed_on_play && make_floating_on_play && !window_wrapper->get_window_enabled() && EditorNode::get_singleton()->is_multi_window_enabled()) {
 		window_wrapper->restore_window_from_saved_position(floating_window_rect, floating_window_screen, floating_window_screen_rect);
 	}
@@ -206,6 +222,10 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 }
 
 void GameView::_play_pressed() {
+	if (!is_feature_enabled) {
+		return;
+	}
+
 	OS::ProcessID current_process_id = EditorRunBar::get_singleton()->get_current_process();
 	if (current_process_id == 0) {
 		return;
@@ -231,6 +251,10 @@ void GameView::_play_pressed() {
 }
 
 void GameView::_stop_pressed() {
+	if (!is_feature_enabled) {
+		return;
+	}
+
 	EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(true);
 	embedded_process->reset();
 	_update_ui();
@@ -474,6 +498,10 @@ void GameView::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void GameView::set_is_feature_enabled(bool p_enabled) {
+	is_feature_enabled = p_enabled;
 }
 
 void GameView::set_state(const Dictionary &p_state) {
@@ -801,6 +829,22 @@ void GameViewPlugin::_notification(int p_what) {
 	}
 }
 
+void GameViewPlugin::_feature_profile_changed() {
+	bool is_feature_enabled = true;
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_valid()) {
+		is_feature_enabled = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
+	}
+
+	if (debugger.is_valid()) {
+		debugger->set_is_feature_enabled(is_feature_enabled);
+	}
+
+	if (game_view) {
+		game_view->set_is_feature_enabled(is_feature_enabled);
+	}
+}
+
 void GameViewPlugin::_window_visibility_changed(bool p_visible) {
 	_focus_another_editor();
 }
@@ -834,6 +878,8 @@ GameViewPlugin::GameViewPlugin() {
 	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	window_wrapper->hide();
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_window_visibility_changed));
+
+	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewPlugin::_feature_profile_changed));
 }
 
 GameViewPlugin::~GameViewPlugin() {
