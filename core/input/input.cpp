@@ -1709,28 +1709,40 @@ void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 }
 
 void Input::remove_joy_mapping(const String &p_guid) {
-	int index_removed = 0;
+	int index_removed = -1;
+	int count = 0;
 
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
 			index_removed = i;
 
-			if (i == fallback_mapping) {
+			if (i < fallback_mapping){
+				count++;
+			} else if (i == fallback_mapping) {
 				fallback_mapping = -1;
 				WARN_PRINT_ONCE(vformat("Removed fallback joypad input mapping \"%s\". This could lead to joypads not working as intended.", p_guid));
 			}
 		}
 	}
 
+	if (index_removed == -1) {
+		return; // Not found.
+	}
+
+	if (fallback_mapping > 0){
+		// Fixing the shifted index.
+		fallback_mapping -= count;
+	}
+
 	for (KeyValue<int, Joypad> &E : joy_names) {
 		Joypad &joy = E.value;
 
-		if (joy.uid == p_guid) {
-			_set_joypad_mapping(joy, -1);
+		if (joy.puid == _guid) {
+			_set_joypad_mapping(joy, fallback_mapping);
 		} else if (joy.mapping > index_removed) {
 			// The map_db update offset this joypad's mapping reference, update it:
-			_set_joypad_mapping(joy, map_db[joy.mapping - 1]);
+			_set_joypad_mapping(joy, joy.mapping - 1);
 		}
 	}
 }
