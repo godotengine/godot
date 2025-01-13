@@ -153,7 +153,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	}
 
 	if (version.is_null()) {
-		version = SceneShaderForwardClustered::singleton->shader.version_create();
+		version = SceneShaderForwardClustered::singleton->shader.version_create(false);
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
@@ -219,6 +219,14 @@ RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_s
 		return SceneShaderForwardClustered::singleton->shader.version_get_native_source_code(version);
 	} else {
 		return RS::ShaderNativeSourceCode();
+	}
+}
+
+Pair<ShaderRD *, RID> SceneShaderForwardClustered::ShaderData::get_native_shader_and_version() const {
+	if (version.is_valid()) {
+		return { &SceneShaderForwardClustered::singleton->shader, version };
+	} else {
+		return {};
 	}
 }
 

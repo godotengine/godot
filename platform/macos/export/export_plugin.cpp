@@ -63,6 +63,10 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		ERR_PRINT("Invalid architecture");
 	}
 
+	if (p_preset->get("shader_baker/export")) {
+		r_features->push_back("shader_baker");
+	}
+
 	if (architecture == "universal") {
 		r_features->push_back("x86_64");
 		r_features->push_back("arm64");

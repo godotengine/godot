@@ -789,10 +789,17 @@ public:
 
 	RID sdfgi_ubo;
 
+	enum Group {
+		GROUP_NORMAL,
+		GROUP_VRS
+	};
+
 	enum Mode {
 		MODE_VOXEL_GI,
+		MODE_VOXEL_GI_WITHOUT_SAMPLER,
 		MODE_SDFGI,
 		MODE_COMBINED,
+		MODE_COMBINED_WITHOUT_SAMPLER,
 		MODE_MAX
 	};
 
