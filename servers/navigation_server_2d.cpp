@@ -91,6 +91,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_end);
 	ClassDB::bind_method(D_METHOD("region_get_closest_point", "region", "to_point"), &NavigationServer2D::region_get_closest_point);
 	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer2D::region_get_random_point);
+	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer2D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer2D::link_create);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer2D::link_set_map);
