@@ -28,6 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+// Macros for wrapping multithreaded server calls.
+// - FUNC{n} is a straightforward call w/no return type that takes n arguments (implicitly C given that n is 0).
+// - FUNC{n}R is a call to a method with a return type.
+// - FUNC{n}S is a call to a method that requires synchronization with the main thread.
+// - FUNC{n}C is const, indicating that the method does not mutate internal server state.
+
 #ifndef SERVER_WRAP_MT_COMMON_H
 #define SERVER_WRAP_MT_COMMON_H
 
