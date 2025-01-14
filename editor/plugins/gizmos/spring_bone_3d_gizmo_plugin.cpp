@@ -140,7 +140,7 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				Transform3D parent_global_pose = p_skeleton->get_bone_global_rest(prev_bone);
 				Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 				draw_line(surface_tool, parent_global_pose.origin, global_pose.origin, bone_color);
-				draw_sphere(surface_tool, global_pose.basis, global_pose.origin, p_simulator->get_joint_radius(i, j), bone_color);
+				draw_sphere(surface_tool, global_pose.basis, global_pose.origin, p_simulator->get_joint_radius(i, j - 1), bone_color);
 			}
 			if (j == joint_end && p_simulator->is_end_bone_extended(i) && p_simulator->get_end_bone_length(i) > 0) {
 				Vector3 axis = p_simulator->get_end_bone_axis(current_bone, p_simulator->get_end_bone_direction(i));
@@ -153,7 +153,7 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 				axis = global_pose.xform(axis * p_simulator->get_end_bone_length(i));
 				draw_line(surface_tool, global_pose.origin, axis, bone_color);
-				draw_sphere(surface_tool, global_pose.basis, axis, p_simulator->get_end_bone_tip_radius(i), bone_color);
+				draw_sphere(surface_tool, global_pose.basis, axis, p_simulator->get_joint_radius(i, j), bone_color);
 			} else {
 				bones[0] = current_bone;
 				surface_tool->set_bones(bones);
