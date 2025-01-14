@@ -56,8 +56,6 @@ bool SpringBoneSimulator3D::_set(const StringName &p_path, const Variant &p_valu
 				set_end_bone_direction(which, static_cast<BoneDirection>((int)p_value));
 			} else if (opt == "length") {
 				set_end_bone_length(which, p_value);
-			} else if (opt == "tip_radius") {
-				set_end_bone_tip_radius(which, p_value);
 			} else {
 				return false;
 			}
@@ -178,8 +176,6 @@ bool SpringBoneSimulator3D::_get(const StringName &p_path, Variant &r_ret) const
 				r_ret = (int)get_end_bone_direction(which);
 			} else if (opt == "length") {
 				r_ret = get_end_bone_length(which);
-			} else if (opt == "tip_radius") {
-				r_ret = get_end_bone_tip_radius(which);
 			} else {
 				return false;
 			}
@@ -294,7 +290,6 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "extend_end_bone"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "end_bone/direction", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z,FromParent"));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "end_bone/length", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "end_bone/tip_radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "center_from", PROPERTY_HINT_ENUM, "WorldOrigin,Node,Bone"));
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, path + "center_node"));
 		p_list->push_back(PropertyInfo(Variant::STRING, path + "center_bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint));
@@ -514,17 +509,6 @@ void SpringBoneSimulator3D::set_end_bone_length(int p_index, float p_length) {
 float SpringBoneSimulator3D::get_end_bone_length(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, settings.size(), 0);
 	return settings[p_index]->end_bone_length;
-}
-
-void SpringBoneSimulator3D::set_end_bone_tip_radius(int p_index, float p_radius) {
-	ERR_FAIL_INDEX(p_index, settings.size());
-	settings[p_index]->end_bone_tip_radius = p_radius;
-	_make_joints_dirty(p_index);
-}
-
-float SpringBoneSimulator3D::get_end_bone_tip_radius(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, settings.size(), 0);
-	return settings[p_index]->end_bone_tip_radius;
 }
 
 Vector3 SpringBoneSimulator3D::get_end_bone_axis(int p_end_bone, BoneDirection p_direction) const {
@@ -853,6 +837,9 @@ void SpringBoneSimulator3D::set_joint_radius(int p_index, int p_joint, float p_r
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, joints.size());
 	joints[p_joint]->radius = p_radius;
+#ifdef TOOLS_ENABLED
+	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 float SpringBoneSimulator3D::get_joint_radius(int p_index, int p_joint) const {
@@ -1119,8 +1106,6 @@ void SpringBoneSimulator3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_end_bone_direction", "index"), &SpringBoneSimulator3D::get_end_bone_direction);
 	ClassDB::bind_method(D_METHOD("set_end_bone_length", "index", "length"), &SpringBoneSimulator3D::set_end_bone_length);
 	ClassDB::bind_method(D_METHOD("get_end_bone_length", "index"), &SpringBoneSimulator3D::get_end_bone_length);
-	ClassDB::bind_method(D_METHOD("set_end_bone_tip_radius", "index", "radius"), &SpringBoneSimulator3D::set_end_bone_tip_radius);
-	ClassDB::bind_method(D_METHOD("get_end_bone_tip_radius", "index"), &SpringBoneSimulator3D::get_end_bone_tip_radius);
 
 	ClassDB::bind_method(D_METHOD("set_center_from", "index", "center_from"), &SpringBoneSimulator3D::set_center_from);
 	ClassDB::bind_method(D_METHOD("get_center_from", "index"), &SpringBoneSimulator3D::get_center_from);
