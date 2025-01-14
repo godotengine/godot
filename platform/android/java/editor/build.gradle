@@ -86,7 +86,7 @@ android {
 
         missingDimensionStrategy 'products', 'editor'
         manifestPlaceholders += [
-            editorAppName: "Godot Editor 4",
+            editorAppName: "Godot Engine 4",
             editorBuildSuffix: ""
         ]
     }
