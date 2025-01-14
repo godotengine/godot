@@ -2551,12 +2551,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->set_environment("DISABLE_RTSS_LAYER", "1"); // GH-57937.
 		OS::get_singleton()->set_environment("DISABLE_VKBASALT", "1");
 		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_reshade_1", "1"); // GH-70849.
+		OS::get_singleton()->set_environment("VK_LAYER_bandicam_helper_DEBUG_1", "1"); // GH-101480.
+		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_bandicam_helper_1", "1"); // GH-101480.
 	} else {
 		// Re-allow using Vulkan overlays, disabled while using the editor.
 		OS::get_singleton()->unset_environment("DISABLE_MANGOHUD");
 		OS::get_singleton()->unset_environment("DISABLE_RTSS_LAYER");
 		OS::get_singleton()->unset_environment("DISABLE_VKBASALT");
 		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_reshade_1");
+		OS::get_singleton()->unset_environment("VK_LAYER_bandicam_helper_DEBUG_1");
+		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_bandicam_helper_1");
 	}
 #endif
 
