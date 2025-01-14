@@ -209,6 +209,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_IME:
+		case FEATURE_WINDOW_DRAG:
 		case FEATURE_CLIPBOARD_PRIMARY: {
 			return true;
 		} break;
