@@ -5904,24 +5904,49 @@ void VisualShaderEditor::_varying_create() {
 	add_varying_dialog->hide();
 }
 
-void VisualShaderEditor::_varying_name_changed(const String &p_name) {
-	if (!p_name.is_valid_ascii_identifier()) {
-		varying_error_label->show();
-		varying_error_label->set_text(TTR("Invalid name for varying."));
-		add_varying_dialog->get_ok_button()->set_disabled(true);
-		return;
+void VisualShaderEditor::_varying_validate() {
+	bool has_error = false;
+	String error;
+	String varname = varying_name->get_text();
+
+	if (!varname.is_valid_ascii_identifier()) {
+		error += TTR("Invalid name for varying.");
+		has_error = true;
+	} else if (visual_shader->has_varying(varname)) {
+		error += TTR("Varying with that name is already exist.");
+		has_error = true;
 	}
-	if (visual_shader->has_varying(p_name)) {
-		varying_error_label->show();
-		varying_error_label->set_text(TTR("Varying with that name is already exist."));
-		add_varying_dialog->get_ok_button()->set_disabled(true);
-		return;
+
+	if (varying_type->get_selected() == 6 && varying_mode->get_selected() == VisualShader::VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
+		if (has_error) {
+			error += "\n";
+		}
+		error += vformat(TTR("Boolean type cannot be used with `%s` varying mode."), "Vertex -> [Fragment, Light]");
+		has_error = true;
 	}
-	if (varying_error_label->is_visible()) {
+
+	if (has_error) {
+		varying_error_label->show();
+		varying_error_label->set_text(error);
+		add_varying_dialog->get_ok_button()->set_disabled(true);
+	} else {
 		varying_error_label->hide();
-		add_varying_dialog->set_size(Size2(add_varying_dialog->get_size().x, 0));
+		varying_error_label->set_text("");
+		add_varying_dialog->get_ok_button()->set_disabled(false);
 	}
-	add_varying_dialog->get_ok_button()->set_disabled(false);
+	add_varying_dialog->reset_size();
+}
+
+void VisualShaderEditor::_varying_type_changed(int p_index) {
+	_varying_validate();
+}
+
+void VisualShaderEditor::_varying_mode_changed(int p_index) {
+	_varying_validate();
+}
+
+void VisualShaderEditor::_varying_name_changed(const String &p_name) {
+	_varying_validate();
 }
 
 void VisualShaderEditor::_varying_deleted() {
@@ -6794,6 +6819,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_type->add_item("Vector4");
 		varying_type->add_item("Boolean");
 		varying_type->add_item("Transform");
+		varying_type->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_type_changed));
 
 		varying_name = memnew(LineEdit);
 		hb->add_child(varying_name);
@@ -6806,6 +6832,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		hb->add_child(varying_mode);
 		varying_mode->add_item("Vertex -> [Fragment, Light]");
 		varying_mode->add_item("Fragment -> Light");
+		varying_mode->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_mode_changed));
 
 		varying_error_label = memnew(Label);
 		vb->add_child(varying_error_label);

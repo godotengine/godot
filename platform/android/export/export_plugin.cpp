@@ -1917,6 +1917,21 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 					}
 				}
 			}
+		} else if (p_name == "package/show_in_android_tv") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("package/show_in_android_tv")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\".");
+			}
+		} else if (p_name == "package/show_as_launcher_app") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("package/show_as_launcher_app")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\".");
+			}
+		} else if (p_name == "package/show_in_app_library") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (!bool(p_preset->get("package/show_in_app_library")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to disable \"Show In App Library\".");
+			}
 		}
 	}
 	return String();
@@ -2283,15 +2298,31 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
-	args.push_back("-n");
-	args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
+
+	// Going with implicit launch first based on the LAUNCHER category and the app's package.
+	args.push_back("-c");
+	args.push_back("android.intent.category.LAUNCHER");
+	args.push_back(get_package_name(package_name));
 
 	output.clear();
 	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 	print_verbose(output);
-	if (err || rv != 0) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
-		CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+	if (err || rv != 0 || output.contains("Error: Activity not started")) {
+		// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
+		const String component_name = get_package_name(package_name) + "/com.godot.game.GodotApp";
+		print_line("Implicit launch failed.. Trying explicit launch using", component_name);
+		args.erase(get_package_name(package_name));
+		args.push_back("-n");
+		args.push_back(component_name);
+
+		output.clear();
+		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+		print_verbose(output);
+
+		if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+		}
 	}
 
 	CLEANUP_AND_RETURN(OK);

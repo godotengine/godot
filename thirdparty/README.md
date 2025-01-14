@@ -245,6 +245,7 @@ Files extracted from upstream source:
   Dither.{cpp,hpp} ForceInline.hpp Math.hpp ProcessCommon.hpp ProcessRGB.{cpp,hpp}
   ProcessDxtc.{cpp,hpp} Tables.{cpp,hpp} Vector.hpp
   ```
+- The files `DecodeRGB.{cpp.hpp}` are based on the code from the original repository.
 - `AUTHORS.txt` and `LICENSE.txt`
 
 ## fonts
