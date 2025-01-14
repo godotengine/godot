@@ -126,13 +126,6 @@
 				Returns the end bone name of the bone chain.
 			</description>
 		</method>
-		<method name="get_end_bone_tip_radius" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="index" type="int" />
-			<description>
-				Returns the end bone tip radius of the bone chain when [method is_end_bone_extended] is [code]true[/code].
-			</description>
-		</method>
 		<method name="get_exclude_collision_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
@@ -421,14 +414,6 @@
 				[b]Note:[/b] End bone must be the root bone or a child of the root bone. If they are the same, the tail must be extended by [method set_extend_end_bone] to jiggle the bone.
 			</description>
 		</method>
-		<method name="set_end_bone_tip_radius">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<param index="1" name="radius" type="float" />
-			<description>
-				Sets the end bone tip radius of the bone chain when [method is_end_bone_extended] is [code]true[/code].
-			</description>
-		</method>
 		<method name="set_exclude_collision_count">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
@@ -452,6 +437,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], the end bone is extended to have the tail.
+				The extended tail config is allocated to the last element in the joint list.
+				In other words, if you set [param enabled] is [code]false[/code], the config of last element in the joint list has no effect in the simulated result.
 			</description>
 		</method>
 		<method name="set_gravity">

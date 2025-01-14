@@ -181,8 +181,6 @@ public:
 	BoneDirection get_end_bone_direction(int p_index) const;
 	void set_end_bone_length(int p_index, float p_length);
 	float get_end_bone_length(int p_index) const;
-	void set_end_bone_tip_radius(int p_index, float p_radius);
-	float get_end_bone_tip_radius(int p_index) const;
 	Vector3 get_end_bone_axis(int p_end_bone, BoneDirection p_direction) const; // Helper.
 
 	void set_center_from(int p_index, CenterFrom p_center_from);
