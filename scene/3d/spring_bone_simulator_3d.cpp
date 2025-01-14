@@ -853,6 +853,9 @@ void SpringBoneSimulator3D::set_joint_radius(int p_index, int p_joint, float p_r
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, joints.size());
 	joints[p_joint]->radius = p_radius;
+#ifdef TOOLS_ENABLED
+	update_gizmos();
+#endif // TOOLS_ENABLED
 }
 
 float SpringBoneSimulator3D::get_joint_radius(int p_index, int p_joint) const {
