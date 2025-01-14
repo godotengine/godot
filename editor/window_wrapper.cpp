@@ -336,6 +336,7 @@ WindowWrapper::WindowWrapper() {
 	}
 
 	window = memnew(Window);
+	window_id = window->get_instance_id();
 	window->set_wrap_controls(true);
 
 	add_child(window);
@@ -352,6 +353,12 @@ WindowWrapper::WindowWrapper() {
 	window->add_child(window_background);
 
 	ProgressDialog::get_singleton()->add_host_window(window);
+}
+
+WindowWrapper::~WindowWrapper() {
+	if (ObjectDB::get_instance(window_id)) {
+		ProgressDialog::get_singleton()->remove_host_window(window);
+	}
 }
 
 // ScreenSelect
