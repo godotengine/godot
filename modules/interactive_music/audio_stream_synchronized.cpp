@@ -342,6 +342,7 @@ bool AudioStreamPlaybackSynchronized::is_playing() const {
 }
 
 void AudioStreamPlaybackSynchronized::_update_playback_instances() {
+	AudioServer::get_singleton()->lock();
 	for (int i = 0; i < stream->stream_count; i++) {
 		playbacks[i].unref();
 
@@ -349,4 +350,5 @@ void AudioStreamPlaybackSynchronized::_update_playback_instances() {
 			playbacks[i] = stream->audio_streams[i]->instantiate_playback();
 		}
 	}
+	AudioServer::get_singleton()->unlock();
 }
