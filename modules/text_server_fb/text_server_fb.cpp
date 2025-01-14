@@ -3727,8 +3727,13 @@ double TextServerFallback::_shaped_text_fit_to_width(const RID &p_shaped, double
 
 	double justification_width;
 	if (p_jst_flags.has_flag(JUSTIFICATION_CONSTRAIN_ELLIPSIS)) {
-		if (sd->overrun_trim_data.trim_pos >= 0) {
-			end_pos = sd->overrun_trim_data.trim_pos;
+		if (sd->overrun_trim_data.left_trim_pos >= 0) {
+			start_pos = sd->overrun_trim_data.left_trim_pos;
+		}
+		if (sd->overrun_trim_data.right_trim_pos >= 0) {
+			end_pos = sd->overrun_trim_data.right_trim_pos;
+		}
+		if (sd->overrun_trim_data.left_trim_pos >= 0 || sd->overrun_trim_data.right_trim_pos >= 0) {
 			justification_width = sd->width_trimmed;
 		} else {
 			return Math::ceil(sd->width);
@@ -4098,7 +4103,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 	return f;
 }
 
-void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
+void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags, TextOverrunDirection p_direction) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped_line);
 	ERR_FAIL_NULL_MSG(sd, "ShapedTextDataFallback invalid.");
 
@@ -4118,8 +4123,10 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
 	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
-		sd->overrun_trim_data.trim_pos = -1;
-		sd->overrun_trim_data.ellipsis_pos = -1;
+		sd->overrun_trim_data.left_trim_pos = -1;
+		sd->overrun_trim_data.left_ellipsis_pos = -1;
+		sd->overrun_trim_data.right_trim_pos = -1;
+		sd->overrun_trim_data.right_ellipsis_pos = -1;
 		return;
 	}
 
@@ -4211,55 +4218,125 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	int ell_min_characters = 6;
 	double width = sd->width;
 
-	int trim_pos = 0;
-	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
-
-	int last_valid_cut = 0;
-	bool found = false;
+	int left_trim_pos = -1;
+	int right_trim_pos = -1;
+	int left_ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
+	int right_ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
 
 	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
-		trim_pos = -1;
-		ellipsis_pos = sd_size;
+		left_trim_pos = -1;
+		left_ellipsis_pos = 0;
+		right_trim_pos = -1;
+		right_ellipsis_pos = sd_size;
 	} else {
-		for (int i = sd_size - 1; i != -1; i--) {
-			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
+		int left_ptr = sd_size - 1;
+		int right_ptr = 0;
 
-			if (sd_glyphs[i].count > 0) {
-				bool above_min_char_threshold = (i >= ell_min_characters);
+		float min_pos = 0.0;
+		float max_pos = p_width;
 
-				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
-					if (cut_per_word && above_min_char_threshold) {
-						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
-							last_valid_cut = i;
-							found = true;
+		float left_pos = p_width;
+		float right_pos = 0.0;
+
+		if (p_direction == OVERRUN_TRIM_START) { // Left.
+			left_ptr = sd_size - 1;
+			right_ptr = sd_size;
+		} else if (p_direction == OVERRUN_TRIM_END) { // Right.
+			left_ptr = 0;
+			right_ptr = 0;
+		} else if (p_direction == OVERRUN_TRIM_BOTH) {
+			left_ptr = sd_size / 2;
+			right_ptr = sd_size / 2;
+			min_pos = -p_width / 2.0;
+			max_pos = p_width / 2.0;
+			left_pos = 0.0;
+			right_pos = 0.0;
+		}
+
+		int left_count = 0;
+		int right_count = 0;
+
+		int left_last_valid_cut = 0;
+		int right_last_valid_cut = 0;
+		bool left_found = false;
+		bool right_found = false;
+
+		while (left_ptr > 0 || right_ptr < sd_size - 1) {
+			if (left_ptr > 0) {
+				if (sd_glyphs[left_ptr].count > 0) {
+					bool above_min_char_threshold = left_count >= ell_min_characters;
+					left_pos -= sd_glyphs[left_ptr].advance * sd_glyphs[left_ptr].repeat;
+					if (left_pos - (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= min_pos) {
+						if (cut_per_word && above_min_char_threshold) {
+							if ((sd_glyphs[left_ptr].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+								left_last_valid_cut = left_ptr;
+								left_found = true;
+							}
+						} else {
+							left_last_valid_cut = left_ptr;
+							left_found = true;
 						}
-					} else {
-						last_valid_cut = i;
-						found = true;
-					}
-					if (found) {
-						trim_pos = last_valid_cut;
+						if (left_found) {
+							left_trim_pos = left_last_valid_cut;
 
-						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
-							ellipsis_pos = trim_pos;
+							if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && left_pos - ellipsis_width <= min_pos) {
+								left_ellipsis_pos = left_trim_pos;
+							}
+							left_ptr = 0;
 						}
-						break;
 					}
+					left_count++;
+					left_ptr--;
+				}
+			}
+			if (right_ptr < sd_size - 1) {
+				if (sd_glyphs[right_ptr].count > 0) {
+					bool above_min_char_threshold = right_count >= ell_min_characters;
+
+					right_pos += sd_glyphs[right_ptr].advance * sd_glyphs[right_ptr].repeat;
+					if (right_pos + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) >= max_pos) {
+						if (cut_per_word && above_min_char_threshold) {
+							if ((sd_glyphs[right_ptr].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+								right_last_valid_cut = right_ptr;
+								right_found = true;
+							}
+						} else {
+							right_last_valid_cut = right_ptr;
+							right_found = true;
+						}
+						if (right_found) {
+							right_trim_pos = right_last_valid_cut;
+
+							if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && right_pos + ellipsis_width >= max_pos) {
+								right_ellipsis_pos = right_trim_pos;
+							}
+							right_ptr = sd_size - 1;
+						}
+					}
+					right_count++;
+					right_ptr++;
 				}
 			}
 		}
 	}
 
-	sd->overrun_trim_data.trim_pos = trim_pos;
-	sd->overrun_trim_data.ellipsis_pos = ellipsis_pos;
-	if (trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
-		sd->overrun_trim_data.ellipsis_pos = 0;
+	sd->overrun_trim_data.el_dir = p_direction;
+
+	sd->overrun_trim_data.left_trim_pos = left_trim_pos;
+	sd->overrun_trim_data.left_ellipsis_pos = left_ellipsis_pos;
+	if (left_trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+		sd->overrun_trim_data.left_ellipsis_pos = 0;
+	}
+	sd->overrun_trim_data.right_trim_pos = right_trim_pos;
+	sd->overrun_trim_data.right_ellipsis_pos = right_ellipsis_pos;
+	if (right_trim_pos == 0 && enforce_ellipsis && add_ellipsis) {
+		sd->overrun_trim_data.right_ellipsis_pos = 0;
 	}
 
-	if ((trim_pos >= 0 && sd->width > p_width) || enforce_ellipsis) {
-		if (add_ellipsis && (ellipsis_pos > 0 || enforce_ellipsis)) {
+	if (((left_trim_pos >= 0 || right_trim_pos >= 0) && sd->width > p_width) || enforce_ellipsis) {
+		if (add_ellipsis && ((left_ellipsis_pos > 0 || right_ellipsis_pos > 0) || enforce_ellipsis)) {
 			// Insert an additional space when cutting word bound for aesthetics.
-			if (cut_per_word && (ellipsis_pos > 0)) {
+			if (cut_per_word && (left_ellipsis_pos > 0 || right_ellipsis_pos > 0)) {
 				Glyph gl;
 				gl.count = 1;
 				gl.advance = whitespace_adv.x;
@@ -4286,24 +4363,32 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 		}
 
 		sd->text_trimmed = true;
-		sd->width_trimmed = width + ((ellipsis_pos != -1) ? ellipsis_width : 0);
+		sd->width_trimmed = width + (left_trim_pos >= 0 ? ellipsis_width : 0) + (right_trim_pos >= 0 ? ellipsis_width : 0);
 	}
 }
 
-int64_t TextServerFallback::_shaped_text_get_trim_pos(const RID &p_shaped) const {
+int64_t TextServerFallback::_shaped_text_get_trim_pos(const RID &p_shaped, bool p_left) const {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V_MSG(sd, -1, "ShapedTextDataFallback invalid.");
 
 	MutexLock lock(sd->mutex);
-	return sd->overrun_trim_data.trim_pos;
+	if (p_left) {
+		return sd->overrun_trim_data.left_trim_pos;
+	} else {
+		return sd->overrun_trim_data.right_trim_pos;
+	}
 }
 
-int64_t TextServerFallback::_shaped_text_get_ellipsis_pos(const RID &p_shaped) const {
+int64_t TextServerFallback::_shaped_text_get_ellipsis_pos(const RID &p_shaped, bool p_left) const {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_NULL_V_MSG(sd, -1, "ShapedTextDataFallback invalid.");
 
 	MutexLock lock(sd->mutex);
-	return sd->overrun_trim_data.ellipsis_pos;
+	if (p_left) {
+		return sd->overrun_trim_data.left_ellipsis_pos;
+	} else {
+		return sd->overrun_trim_data.right_ellipsis_pos;
+	}
 }
 
 const Glyph *TextServerFallback::_shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const {
@@ -4320,6 +4405,14 @@ int64_t TextServerFallback::_shaped_text_get_ellipsis_glyph_count(const RID &p_s
 
 	MutexLock lock(sd->mutex);
 	return sd->overrun_trim_data.ellipsis_glyph_buf.size();
+}
+
+TextServer::TextOverrunDirection TextServerFallback::_shaped_text_get_ellipsis_direction(const RID &p_shaped) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V_MSG(sd, OVERRUN_TRIM_END, "ShapedTextDataFallback invalid.");
+
+	MutexLock lock(sd->mutex);
+	return sd->overrun_trim_data.el_dir;
 }
 
 bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {

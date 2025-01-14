@@ -51,6 +51,7 @@ private:
 
 	mutable bool lines_dirty = true;
 
+	TextServer::TextOverrunDirection ellipsis_direction = TextServer::OVERRUN_TRIM_END;
 	float line_spacing = 0.0;
 	float width = -1.0;
 	int max_lines_visible = -1;
@@ -75,6 +76,9 @@ public:
 	RID get_dropcap_rid() const;
 
 	void clear();
+
+	void set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction);
+	TextServer::TextOverrunDirection get_ellipsis_direction() const;
 
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;

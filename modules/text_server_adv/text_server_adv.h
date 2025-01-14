@@ -456,8 +456,11 @@ class TextServerAdvanced : public TextServerExtension {
 
 	// Shaped text cache data.
 	struct TrimData {
-		int trim_pos = -1;
-		int ellipsis_pos = -1;
+		TextServer::TextOverrunDirection el_dir = OVERRUN_TRIM_END;
+		int left_trim_pos = -1;
+		int left_ellipsis_pos = -1;
+		int right_trim_pos = -1;
+		int right_ellipsis_pos = -1;
 		Vector<Glyph> ellipsis_glyph_buf;
 	};
 
@@ -972,12 +975,13 @@ public:
 	MODBIND1R(bool, shaped_text_update_breaks, const RID &);
 	MODBIND1R(bool, shaped_text_update_justification_ops, const RID &);
 
-	MODBIND1RC(int64_t, shaped_text_get_trim_pos, const RID &);
-	MODBIND1RC(int64_t, shaped_text_get_ellipsis_pos, const RID &);
+	MODBIND2RC(int64_t, shaped_text_get_trim_pos, const RID &, bool);
+	MODBIND2RC(int64_t, shaped_text_get_ellipsis_pos, const RID &, bool);
 	MODBIND1RC(const Glyph *, shaped_text_get_ellipsis_glyphs, const RID &);
 	MODBIND1RC(int64_t, shaped_text_get_ellipsis_glyph_count, const RID &);
+	MODBIND1RC(TextServer::TextOverrunDirection, shaped_text_get_ellipsis_direction, const RID &);
 
-	MODBIND3(shaped_text_overrun_trim_to_width, const RID &, double, BitField<TextServer::TextOverrunFlag>);
+	MODBIND4(shaped_text_overrun_trim_to_width, const RID &, double, BitField<TextServer::TextOverrunFlag>, TextServer::TextOverrunDirection);
 
 	MODBIND1RC(bool, shaped_text_is_ready, const RID &);
 

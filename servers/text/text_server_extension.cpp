@@ -293,12 +293,13 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_get_line_breaks, "shaped", "width", "start", "break_flags");
 	GDVIRTUAL_BIND(_shaped_text_get_word_breaks, "shaped", "grapheme_flags", "skip_grapheme_flags");
 
-	GDVIRTUAL_BIND(_shaped_text_get_trim_pos, "shaped");
-	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_pos, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_trim_pos, "shaped", "left");
+	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_pos, "shaped", "left");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_glyph_count, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_glyphs, "shaped");
+	GDVIRTUAL_BIND(_shaped_text_get_ellipsis_direction, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_overrun_trim_to_width, "shaped", "width", "trim_flags");
+	GDVIRTUAL_BIND(_shaped_text_overrun_trim_to_width, "shaped", "width", "trim_flags", "direction");
 
 	GDVIRTUAL_BIND(_shaped_text_get_objects, "shaped");
 	GDVIRTUAL_BIND(_shaped_text_get_object_rect, "shaped", "key");
@@ -1299,15 +1300,15 @@ PackedInt32Array TextServerExtension::shaped_text_get_word_breaks(const RID &p_s
 	return TextServer::shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, p_skip_grapheme_flags);
 }
 
-int64_t TextServerExtension::shaped_text_get_trim_pos(const RID &p_shaped) const {
+int64_t TextServerExtension::shaped_text_get_trim_pos(const RID &p_shaped, bool p_left) const {
 	int64_t ret = -1;
-	GDVIRTUAL_CALL(_shaped_text_get_trim_pos, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_trim_pos, p_shaped, p_left, ret);
 	return ret;
 }
 
-int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped) const {
+int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped, bool p_left) const {
 	int64_t ret = -1;
-	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_pos, p_shaped, ret);
+	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_pos, p_shaped, p_left, ret);
 	return ret;
 }
 
@@ -1323,8 +1324,14 @@ int64_t TextServerExtension::shaped_text_get_ellipsis_glyph_count(const RID &p_s
 	return ret;
 }
 
-void TextServerExtension::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
-	GDVIRTUAL_CALL(_shaped_text_overrun_trim_to_width, p_shaped_line, p_width, p_trim_flags);
+TextServer::TextOverrunDirection TextServerExtension::shaped_text_get_ellipsis_direction(const RID &p_shaped) const {
+	TextOverrunDirection ret = OVERRUN_TRIM_END;
+	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_direction, p_shaped, ret);
+	return ret;
+}
+
+void TextServerExtension::shaped_text_overrun_trim_to_width(const RID &p_shaped_line, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags, TextOverrunDirection p_direction) {
+	GDVIRTUAL_CALL(_shaped_text_overrun_trim_to_width, p_shaped_line, p_width, p_trim_flags, p_direction);
 }
 
 Array TextServerExtension::shaped_text_get_objects(const RID &p_shaped) const {

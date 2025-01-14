@@ -1369,6 +1369,13 @@
 				Returns dominant direction of in the range of text.
 			</description>
 		</method>
+		<method name="shaped_text_get_ellipsis_direction" qualifiers="const">
+			<return type="int" enum="TextServer.TextOverrunDirection" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns ellipsis/text clipping direction.
+			</description>
+		</method>
 		<method name="shaped_text_get_ellipsis_glyph_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
@@ -1386,6 +1393,7 @@
 		<method name="shaped_text_get_ellipsis_pos" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="left" type="bool" default="false" />
 			<description>
 				Returns position of the ellipsis.
 			</description>
@@ -1534,6 +1542,7 @@
 		<method name="shaped_text_get_trim_pos" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="left" type="bool" default="false" />
 			<description>
 				Returns the position of the overrun trim.
 			</description>
@@ -1619,6 +1628,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" default="0" />
 			<param index="2" name="overrun_trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" default="0" />
+			<param index="3" name="direction" type="int" enum="TextServer.TextOverrunDirection" default="2" />
 			<description>
 				Trims text if it exceeds the given width.
 			</description>
@@ -1992,6 +2002,15 @@
 		</constant>
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
 			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
+		</constant>
+		<constant name="OVERRUN_TRIM_START" value="0" enum="TextOverrunDirection">
+			Is set, text is trimmed from the beginning of the string.
+		</constant>
+		<constant name="OVERRUN_TRIM_BOTH" value="1" enum="TextOverrunDirection">
+			Is set, text is trimmed from both the beginning and the end of the string.
+		</constant>
+		<constant name="OVERRUN_TRIM_END" value="2" enum="TextOverrunDirection">
+			Is set, text is trimmed from the end of the string.
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.

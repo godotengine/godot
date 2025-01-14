@@ -71,6 +71,21 @@ BitField<TextServer::JustificationFlag> Label::get_justification_flags() const {
 	return jst_flags;
 }
 
+void Label::set_ellipsis_direction(TextServer::TextOverrunDirection p_ellipsis_direction) {
+	if (ellipsis_direction == p_ellipsis_direction) {
+		return;
+	}
+
+	ellipsis_direction = p_ellipsis_direction;
+	text_dirty = true;
+
+	queue_redraw();
+}
+
+TextServer::TextOverrunDirection Label::get_ellipsis_direction() const {
+	return ellipsis_direction;
+}
+
 void Label::set_uppercase(bool p_uppercase) {
 	if (uppercase == p_uppercase) {
 		return;
@@ -280,12 +295,12 @@ void Label::_shape() const {
 							TS->shaped_text_fit_to_width(para.lines_rid[i], width, line_jst_flags);
 						} else if (i == (visible_lines - line_index - 1)) {
 							TS->shaped_text_set_custom_ellipsis(para.lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-							TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags);
+							TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags, ellipsis_direction);
 						}
 					}
 				} else if (lines_hidden && (visible_lines - line_index - 1 >= 0) && (visible_lines - line_index - 1) < para.lines_rid.size()) {
 					TS->shaped_text_set_custom_ellipsis(para.lines_rid[visible_lines - line_index - 1], (el_char.length() > 0) ? el_char[0] : 0x2026);
-					TS->shaped_text_overrun_trim_to_width(para.lines_rid[visible_lines - line_index - 1], width, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(para.lines_rid[visible_lines - line_index - 1], width, overrun_flags, ellipsis_direction);
 				}
 			} else {
 				// Autowrap disabled.
@@ -310,11 +325,11 @@ void Label::_shape() const {
 						TS->shaped_text_fit_to_width(para.lines_rid[i], width, line_jst_flags);
 						overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 						TS->shaped_text_set_custom_ellipsis(para.lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-						TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags);
+						TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags, ellipsis_direction);
 						TS->shaped_text_fit_to_width(para.lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 					} else {
 						TS->shaped_text_set_custom_ellipsis(para.lines_rid[i], (el_char.length() > 0) ? el_char[0] : 0x2026);
-						TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags);
+						TS->shaped_text_overrun_trim_to_width(para.lines_rid[i], width, overrun_flags, ellipsis_direction);
 					}
 				}
 			}
@@ -704,7 +719,6 @@ void Label::_notification(int p_what) {
 					if (end <= 0) {
 						break;
 					}
-					bool rtl = (TS->shaped_text_get_inferred_direction(para.text_rid) == TextServer::DIRECTION_RTL);
 					for (int i = start; i < end; i++) {
 						RID line_rid = para.lines_rid[i];
 						Vector2 line_offset = _get_line_rect(p, i).position;
@@ -719,11 +733,18 @@ void Label::_notification(int p_what) {
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(line_rid);
 						int gl_size = TS->shaped_text_get_glyph_count(line_rid);
 
-						int ellipsis_pos = TS->shaped_text_get_ellipsis_pos(line_rid);
-						int trim_pos = TS->shaped_text_get_trim_pos(line_rid);
+						int left_ellipsis_pos = TS->shaped_text_get_ellipsis_pos(line_rid, true);
+						int left_trim_pos = TS->shaped_text_get_trim_pos(line_rid, true);
+						int right_ellipsis_pos = TS->shaped_text_get_ellipsis_pos(line_rid, false);
+						int right_trim_pos = TS->shaped_text_get_trim_pos(line_rid, false);
 
 						const Glyph *ellipsis_glyphs = TS->shaped_text_get_ellipsis_glyphs(line_rid);
 						int ellipsis_gl_size = TS->shaped_text_get_ellipsis_glyph_count(line_rid);
+
+						bool is_rtl = TS->shaped_text_get_inferred_direction(line_rid) == TextServer::DIRECTION_RTL;
+						TextServer::TextOverrunDirection el_dir = TS->shaped_text_get_ellipsis_direction(line_rid);
+						bool left = ((el_dir == TextServer::OVERRUN_TRIM_END) && is_rtl) || ((el_dir == TextServer::OVERRUN_TRIM_START) && !is_rtl) || (el_dir == TextServer::OVERRUN_TRIM_BOTH);
+						bool right = ((el_dir == TextServer::OVERRUN_TRIM_START) && is_rtl) || ((el_dir == TextServer::OVERRUN_TRIM_END) && !is_rtl) || (el_dir == TextServer::OVERRUN_TRIM_BOTH);
 
 						ofs.y += asc;
 
@@ -740,7 +761,7 @@ void Label::_notification(int p_what) {
 							processed_glyphs_step = processed_glyphs;
 							Vector2 offset_step = ofs;
 							// Draw RTL ellipsis string when necessary.
-							if (rtl && ellipsis_pos >= 0) {
+							if (left && left_ellipsis_pos >= 0) {
 								for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
@@ -761,15 +782,14 @@ void Label::_notification(int p_what) {
 							// Draw main text.
 							for (int j = 0; j < gl_size; j++) {
 								// Trim when necessary.
-								if (trim_pos >= 0) {
-									if (rtl) {
-										if (j < trim_pos) {
-											continue;
-										}
-									} else {
-										if (j >= trim_pos) {
-											break;
-										}
+								if (left && (left_trim_pos >= 0)) {
+									if (j < left_trim_pos) {
+										continue;
+									}
+								}
+								if (right && (right_trim_pos >= 0)) {
+									if (j >= right_trim_pos) {
+										break;
 									}
 								}
 								for (int k = 0; k < glyphs[j].repeat; k++) {
@@ -788,7 +808,7 @@ void Label::_notification(int p_what) {
 								}
 							}
 							// Draw LTR ellipsis string when necessary.
-							if (!rtl && ellipsis_pos >= 0) {
+							if (right && right_ellipsis_pos >= 0) {
 								for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
@@ -1299,6 +1319,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &Label::set_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &Label::get_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("set_ellipsis_direction", "ellipsis_direction"), &Label::set_ellipsis_direction);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_direction"), &Label::get_ellipsis_direction);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &Label::get_line_height, DEFVAL(-1));
@@ -1333,6 +1355,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ellipsis_direction", PROPERTY_HINT_ENUM, "Start,Both,End"), "set_ellipsis_direction", "get_ellipsis_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 

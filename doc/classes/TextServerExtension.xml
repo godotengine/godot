@@ -1493,6 +1493,14 @@
 				Returns dominant direction of in the range of text.
 			</description>
 		</method>
+		<method name="_shaped_text_get_ellipsis_direction" qualifiers="virtual const">
+			<return type="int" enum="TextServer.TextOverrunDirection" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				[b]Optional.[/b]
+				Returns ellipsis/text clipping direction.
+			</description>
+		</method>
 		<method name="_shaped_text_get_ellipsis_glyph_count" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
@@ -1512,6 +1520,7 @@
 		<method name="_shaped_text_get_ellipsis_pos" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="left" type="bool" />
 			<description>
 				[b]Required.[/b]
 				Returns position of the ellipsis.
@@ -1678,6 +1687,7 @@
 		<method name="_shaped_text_get_trim_pos" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="left" type="bool" />
 			<description>
 				[b]Required.[/b]
 				Returns the position of the overrun trim.
@@ -1766,6 +1776,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
 			<param index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" />
+			<param index="3" name="direction" type="int" enum="TextServer.TextOverrunDirection" />
 			<description>
 				[b]Optional.[/b]
 				Trims text if it exceeds the given width.

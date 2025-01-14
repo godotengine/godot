@@ -202,6 +202,13 @@
 				Returns custom font size used to draw text in the column [param column].
 			</description>
 		</method>
+		<method name="get_ellipsis_direction" qualifiers="const">
+			<return type="int" enum="TextServer.TextOverrunDirection" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns ellipsis/text clipping direction.
+			</description>
+		</method>
 		<method name="get_expand_right" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
@@ -657,6 +664,14 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], the given [param column] is editable.
+			</description>
+		</method>
+		<method name="set_ellipsis_direction">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="ellipsis_direction" type="int" enum="TextServer.TextOverrunDirection" />
+			<description>
+				Sets ellipsis/text clipping direction.
 			</description>
 		</method>
 		<method name="set_expand_right">

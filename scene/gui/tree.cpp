@@ -433,6 +433,24 @@ TextServer::OverrunBehavior TreeItem::get_text_overrun_behavior(int p_column) co
 	return cells[p_column].text_buf->get_text_overrun_behavior();
 }
 
+void TreeItem::set_ellipsis_direction(int p_column, TextServer::TextOverrunDirection p_ellipsis_direction) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].text_buf->get_ellipsis_direction() == p_ellipsis_direction) {
+		return;
+	}
+
+	cells.write[p_column].text_buf->set_ellipsis_direction(p_ellipsis_direction);
+	cells.write[p_column].dirty = true;
+	cells.write[p_column].cached_minimum_size_dirty = true;
+	_changed_notify(p_column);
+}
+
+TextServer::TextOverrunDirection TreeItem::get_ellipsis_direction(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::OVERRUN_TRIM_END);
+	return cells[p_column].text_buf->get_ellipsis_direction();
+}
+
 void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -1696,6 +1714,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "column", "overrun_behavior"), &TreeItem::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior", "column"), &TreeItem::get_text_overrun_behavior);
+
+	ClassDB::bind_method(D_METHOD("set_ellipsis_direction", "column", "ellipsis_direction"), &TreeItem::set_ellipsis_direction);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_direction", "column"), &TreeItem::get_ellipsis_direction);
 
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "column", "parser"), &TreeItem::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override", "column"), &TreeItem::get_structured_text_bidi_override);

@@ -34,8 +34,27 @@ PackedInt32Array TextServer::_shaped_text_get_word_breaks_bind_compat_90732(cons
 	return shaped_text_get_word_breaks(p_shaped, p_grapheme_flags, 0);
 }
 
+int64_t TextServer::_shaped_text_get_trim_pos_bind_compat_99236(const RID &p_shaped) const {
+	bool is_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+
+	return shaped_text_get_trim_pos(p_shaped, is_rtl);
+}
+
+int64_t TextServer::_shaped_text_get_ellipsis_pos_bind_compat_99236(const RID &p_shaped) const {
+	bool is_rtl = shaped_text_get_inferred_direction(p_shaped) == DIRECTION_RTL;
+
+	return shaped_text_get_ellipsis_pos(p_shaped, is_rtl);
+}
+
+void TextServer::_shaped_text_overrun_trim_to_width_bind_compat_99236(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) {
+	shaped_text_overrun_trim_to_width(p_shaped, p_width, p_trim_flags, OVERRUN_TRIM_END);
+}
+
 void TextServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::_shaped_text_get_word_breaks_bind_compat_90732, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::_shaped_text_get_trim_pos_bind_compat_99236);
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::_shaped_text_get_ellipsis_pos_bind_compat_99236);
+	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::_shaped_text_overrun_trim_to_width_bind_compat_99236, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIM));
 }
 
 #endif

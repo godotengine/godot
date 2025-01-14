@@ -277,6 +277,9 @@
 		<member name="ellipsis_char" type="String" setter="set_ellipsis_char" getter="get_ellipsis_char" default="&quot;…&quot;">
 			Ellipsis character used for text clipping.
 		</member>
+		<member name="ellipsis_direction" type="int" setter="set_ellipsis_direction" getter="get_ellipsis_direction" enum="TextServer.TextOverrunDirection" default="2">
+			Ellipsis/text clipping direction.
+		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
 		</member>
