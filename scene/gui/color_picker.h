@@ -331,6 +331,10 @@ private:
 	void _block_input_on_popup_show();
 	void _enable_input_on_popup_hide();
 
+	// Native color picking.
+	void _pick_button_pressed_native();
+	void _native_cb(bool p_status, const Color &p_color);
+
 	// Legacy color picking.
 	void _pick_button_pressed_legacy();
 	void _picker_texture_input(const Ref<InputEvent> &p_event);
