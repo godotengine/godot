@@ -41,7 +41,7 @@
 #endif
 
 // Macros for wrapping multithreaded server calls.
-// - FUNC{n} is a straightforward call with no return type that takes n arguments (implicitly C given that n is 0).
+// - FUNC{n} is a straightforward call with no return type that takes n arguments.
 // - FUNC{n}R is a call to a method with a return type.
 // - FUNC{n}S is a call to a method that requires synchronization with the main thread.
 // - FUNC{n}C is const, indicating that the method does not mutate internal server state.
