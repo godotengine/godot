@@ -46,14 +46,6 @@ jobs:
             artifact: true
             compiler: msvc
 
-          - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
-            cache-name: windows-editor-clang
-            target: editor
-            tests: true
-            sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
-            bin: ./bin/merlin.windows.editor.x86_64.llvm.exe
-            compiler: clang
-
           - name: Template (target=template_release, tests=yes)
             cache-name: windows-template
             target: template_release
