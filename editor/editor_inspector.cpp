@@ -2395,6 +2395,7 @@ void EditorInspectorArray::_setup() {
 
 	Ref<Font> numbers_font;
 	int numbers_min_w = 0;
+	bool unresizable = is_const || read_only;
 
 	if (numbered) {
 		numbers_font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
@@ -2491,15 +2492,17 @@ void EditorInspectorArray::_setup() {
 		ae.vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 		ae.hbox->add_child(ae.vbox);
 
-		ae.erase = memnew(Button);
-		ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-		ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
-		ae.erase->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
-		ae.hbox->add_child(ae.erase);
+		if (!unresizable) {
+			ae.erase = memnew(Button);
+			ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			ae.erase->set_v_size_flags(SIZE_SHRINK_CENTER);
+			ae.erase->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_remove_item).bind(element_position));
+			ae.hbox->add_child(ae.erase);
+		}
 	}
 
 	// Hide/show the add button.
-	add_button->set_visible(page == max_page);
+	add_button->set_visible(page == max_page && !unresizable);
 
 	// Add paginator if there's more than 1 page.
 	if (max_page > 0) {
@@ -2617,12 +2620,13 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
+void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
 	array_element_prefix = p_array_element_prefix;
 	page = p_page;
 	movable = p_movable;
+	is_const = p_is_const;
 	page_length = p_page_length;
 	numbered = p_numbered;
 
@@ -2631,12 +2635,13 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, co
 	_setup();
 }
 
-void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
+void EditorInspectorArray::setup_with_count_property(Object *p_object, const String &p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text, const String &p_swap_method) {
 	count_property = p_count_property;
 	mode = MODE_USE_COUNT_PROPERTY;
 	array_element_prefix = p_array_element_prefix;
 	page = p_page;
 	movable = p_movable;
+	is_const = p_is_const;
 	page_length = p_page_length;
 	numbered = p_numbered;
 	swap_method = p_swap_method;
@@ -3472,6 +3477,7 @@ void EditorInspector::update_tree() {
 
 			int page_size = 5;
 			bool movable = true;
+			bool is_const = false;
 			bool numbered = false;
 			bool foldable = use_folding;
 			String add_button_text = TTR("Add Element");
@@ -3483,6 +3489,8 @@ void EditorInspector::update_tree() {
 					add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
 				} else if (class_name_components[i] == "static") {
 					movable = false;
+				} else if (class_name_components[i] == "const") {
+					is_const = true;
 				} else if (class_name_components[i] == "numbered") {
 					numbered = true;
 				} else if (class_name_components[i] == "unfoldable") {
@@ -3509,7 +3517,7 @@ void EditorInspector::update_tree() {
 					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 
-					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, numbered, page_size, add_button_text, swap_method);
+					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, is_const, numbered, page_size, add_button_text, swap_method);
 					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
 				}
 			}

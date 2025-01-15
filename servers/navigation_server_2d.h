@@ -154,6 +154,7 @@ public:
 
 	virtual Vector2 region_get_closest_point(RID p_region, const Vector2 &p_point) const = 0;
 	virtual Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
+	virtual Rect2 region_get_bounds(RID p_region) const = 0;
 
 	/// Creates a new link between positions in the nav map.
 	virtual RID link_create() = 0;
