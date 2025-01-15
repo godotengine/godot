@@ -41,6 +41,7 @@ jobs:
             api-compat: true
             artifact: true
             compiler: msvc
+            cache-limit: 2
 
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
@@ -107,6 +108,14 @@ jobs:
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
           scons-cache-limit: ${{ matrix.cache-limit }}
+
+      - name: Generate Glue Code
+        if: ${{ matrix.cache-name == 'windows-editor-mono' }}
+        run: ./bin/godot.windows.editor.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue
+
+      - name: Build GodotSharp
+        if: ${{ matrix.cache-name == 'windows-editor-mono' }}
+        run: python modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
