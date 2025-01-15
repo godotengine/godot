@@ -1747,7 +1747,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	if (!p_dir) {
 		return; //none
 	}
-	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
+	p_file->store_line("::" + p_dir->get_path() + "::" + String::num_int64(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
 		const EditorFileSystemDirectory::FileInfo *file_info = p_dir->files[i];
