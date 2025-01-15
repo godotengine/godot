@@ -164,6 +164,9 @@ uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer
 		id<MTLBuffer> obj = rid::get(p_buffer);
 		return obj.gpuAddress;
 	} else {
+#if DEV_ENABLED
+		WARN_PRINT_ONCE("buffer_get_device_address is not supported on this OS version.");
+#endif
 		return 0;
 	}
 }
@@ -355,7 +358,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 
 	// Check if it is a linear format for atomic operations and therefore needs a buffer,
 	// as generally Metal does not support atomic operations on textures.
-	bool needs_buffer = is_linear || (p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D && flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && (p_format.format == DATA_FORMAT_R32_UINT || p_format.format == DATA_FORMAT_R32_SINT));
+	bool needs_buffer = is_linear || (p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D && flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && (p_format.format == DATA_FORMAT_R32_UINT || p_format.format == DATA_FORMAT_R32_SINT || p_format.format == DATA_FORMAT_R32G32_UINT || p_format.format == DATA_FORMAT_R32G32_SINT));
 
 	id<MTLTexture> obj = nil;
 	if (needs_buffer) {
@@ -2033,10 +2036,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 	CompilerMSL::Options msl_options{};
 	msl_options.set_msl_version(version_major, version_minor);
-	if (version_major == 3 && version_minor >= 1) {
-		// TODO(sgc): Restrict to Metal 3.0 for now, until bugs in SPIRV-cross image atomics are resolved.
-		msl_options.set_msl_version(3, 0);
-	}
 	bin_data.msl_version = msl_options.msl_version;
 #if TARGET_OS_OSX
 	msl_options.platform = CompilerMSL::Options::macOS;
@@ -2063,9 +2062,9 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 		msl_options.argument_buffers = false;
 		bin_data.set_uses_argument_buffers(false);
 	}
-
-	msl_options.force_active_argument_buffer_resources = true; // Same as MoltenVK when using argument buffers.
-	// msl_options.pad_argument_buffer_resources = true; // Same as MoltenVK when using argument buffers.
+	msl_options.force_active_argument_buffer_resources = true;
+	// We can't use this, as we have to add the descriptor sets via compiler.add_msl_resource_binding.
+	// msl_options.pad_argument_buffer_resources = true;
 	msl_options.texture_buffer_native = true; // Enable texture buffer support.
 	msl_options.use_framebuffer_fetch_subpasses = false;
 	msl_options.pad_fragment_output_components = true;
@@ -4036,7 +4035,7 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
-			return false;
+			return device_properties->features.supports_gpu_address;
 		case SUPPORTS_METALFX_SPATIAL:
 			return device_properties->features.metal_fx_spatial;
 		case SUPPORTS_METALFX_TEMPORAL:
