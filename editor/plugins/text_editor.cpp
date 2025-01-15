@@ -302,6 +302,7 @@ void TextEditor::convert_indent() {
 
 void TextEditor::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
+	edited_file_data.last_modified_time = FileAccess::get_modified_time(edited_file_data.path);
 }
 
 void TextEditor::goto_line(int p_line, int p_column) {
