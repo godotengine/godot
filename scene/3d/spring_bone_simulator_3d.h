@@ -163,6 +163,9 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	void _validate_rotation_axes(Skeleton3D *p_skeleton) const;
+	void _validate_rotation_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const;
+
 public:
 	// Setting.
 	void set_root_bone_name(int p_index, const String &p_bone_name);

@@ -926,6 +926,10 @@ void SpringBoneSimulator3D::set_joint_rotation_axis(int p_index, int p_joint, Ro
 	Vector<SpringBone3DJointSetting *> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, joints.size());
 	joints[p_joint]->rotation_axis = p_axis;
+	Skeleton3D *sk = get_skeleton();
+	if (sk) {
+		_validate_rotation_axis(sk, p_index, p_joint);
+	}
 }
 
 SpringBoneSimulator3D::RotationAxis SpringBoneSimulator3D::get_joint_rotation_axis(int p_index, int p_joint) const {
@@ -1237,6 +1241,35 @@ void SpringBoneSimulator3D::remove_child_notify(Node *p_child) {
 	}
 }
 
+void SpringBoneSimulator3D::_validate_rotation_axes(Skeleton3D *p_skeleton) const {
+	for (int i = 0; i < settings.size(); i++) {
+		for (int j = 0; j < settings[i]->joints.size(); j++) {
+			_validate_rotation_axis(p_skeleton, i, j);
+		}
+	}
+}
+
+void SpringBoneSimulator3D::_validate_rotation_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const {
+	RotationAxis axis = settings[p_index]->joints[p_joint]->rotation_axis;
+	if (axis == ROTATION_AXIS_ALL) {
+		return;
+	}
+	Vector3 rot = get_vector_from_axis(static_cast<Vector3::Axis>((int)axis));
+	Vector3 fwd;
+	if (p_joint < settings[p_index]->joints.size() - 1) {
+		fwd = p_skeleton->get_bone_rest(settings[p_index]->joints[p_joint + 1]->bone).origin;
+	} else if (settings[p_index]->extend_end_bone) {
+		fwd = get_end_bone_axis(settings[p_index]->end_bone, settings[p_index]->end_bone_direction);
+		if (fwd.is_zero_approx()) {
+			return;
+		}
+	}
+	fwd.normalize();
+	if (Math::is_equal_approx(Math::absf(rot.dot(fwd)), 1.0f)) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + " Joint: " + itos(p_joint) + ": Rotation axis and forward vectors are colinear. This is not advised as it may cause unwanted rotation.");
+	}
+}
+
 void SpringBoneSimulator3D::_find_collisions() {
 	if (!collisions_dirty) {
 		return;
@@ -1407,6 +1440,10 @@ void SpringBoneSimulator3D::_update_joints() {
 		settings[i]->joints_dirty = false;
 	}
 	joints_dirty = false;
+	Skeleton3D *sk = get_skeleton();
+	if (sk) {
+		_validate_rotation_axes(sk);
+	}
 #ifdef TOOLS_ENABLED
 	update_gizmos();
 #endif // TOOLS_ENABLED
