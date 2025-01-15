@@ -106,7 +106,7 @@ MFXSpatialContext *MFXSpatialEffect::create_context(CreateParams p_params) const
 	PixelFormats &pf = rdd->get_pixel_formats();
 	id<MTLDevice> dev = rdd->get_device();
 
-	MTLFXSpatialScalerDescriptor *desc = [MTLFXSpatialScalerDescriptor new];
+	MTLFXSpatialScalerDescriptor *desc = [get_MTLFXSpatialScalerDescriptor() new];
 	desc.inputWidth = (NSUInteger)p_params.input_size.width;
 	desc.inputHeight = (NSUInteger)p_params.input_size.height;
 
@@ -142,7 +142,7 @@ MFXTemporalContext *MFXTemporalEffect::create_context(CreateParams p_params) con
 	PixelFormats &pf = rdd->get_pixel_formats();
 	id<MTLDevice> dev = rdd->get_device();
 
-	MTLFXTemporalScalerDescriptor *desc = [MTLFXTemporalScalerDescriptor new];
+	MTLFXTemporalScalerDescriptor *desc = [get_MTLFXTemporalScalerDescriptor() new];
 	desc.inputWidth = (NSUInteger)p_params.input_size.width;
 	desc.inputHeight = (NSUInteger)p_params.input_size.height;
 

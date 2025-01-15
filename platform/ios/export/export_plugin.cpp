@@ -2445,6 +2445,8 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		if (!_archive_has_arm64(sim_lib_path, &cputype, &cpusubtype) && _archive_has_arm64(dev_lib_path) && FileAccess::exists(dev_lib_path)) {
 			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("ARM64 simulator library, generating from device library."));
 
+			tmp_app_path->make_dir_recursive(dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64_x86_64-simulator"));
+
 			Vector<String> tmp_lib_files;
 			Vector<Vector2i> tmp_lib_cputypes;
 			// Extract/copy simulator lib.

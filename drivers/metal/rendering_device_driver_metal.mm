@@ -60,11 +60,46 @@
 
 #import <Metal/MTLTexture.h>
 #import <Metal/Metal.h>
+#import <dlfcn.h>
 #import <os/log.h>
 #import <os/signpost.h>
 #import <spirv.hpp>
 #import <spirv_msl.hpp>
 #import <spirv_parser.hpp>
+
+#pragma mark - MetalFX dynamic loading
+
+static void *metalfx_handle = nullptr;
+
+void *get_MetalFX() {
+	if (!metalfx_handle) {
+		metalfx_handle = dlopen("/System/Library/Frameworks/MetalFX.framework/MetalFX", RTLD_LAZY);
+	}
+	return metalfx_handle;
+}
+
+Class get_MTLFXSpatialScalerDescriptor() {
+	static Class cls = nil;
+	if (!cls) {
+		cls = (__bridge Class)dlsym(get_MetalFX(), "OBJC_CLASS_$_MTLFXSpatialScalerDescriptor");
+	}
+	return cls;
+}
+
+Class get_MTLFXTemporalScalerDescriptor() {
+	static Class cls = nil;
+	if (!cls) {
+		cls = (__bridge Class)dlsym(get_MetalFX(), "OBJC_CLASS_$_MTLFXTemporalScalerDescriptor");
+	}
+	return cls;
+}
+
+void unload_MetalFX() {
+	if (metalfx_handle) {
+		dlclose(metalfx_handle);
+		metalfx_handle = nullptr;
+	}
+}
 
 #pragma mark - Logging
 
@@ -4094,6 +4129,8 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 	for (KeyValue<SHA256Digest, ShaderCacheEntry *> &kv : _shader_cache) {
 		memdelete(kv.value);
 	}
+
+	unload_MetalFX();
 }
 
 #pragma mark - Initialization

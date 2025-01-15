@@ -50,6 +50,8 @@
 
 #import "metal_device_properties.h"
 
+#import "rendering_device_driver_metal.h"
+
 #import <Metal/Metal.h>
 #import <MetalFX/MetalFX.h>
 #import <spirv_cross.hpp>
@@ -121,8 +123,10 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	}
 
 	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-		features.metal_fx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:p_device];
-		features.metal_fx_temporal = [MTLFXTemporalScalerDescriptor supportsDevice:p_device];
+		if (get_MetalFX()) {
+			features.metal_fx_spatial = [get_MTLFXSpatialScalerDescriptor() supportsDevice:p_device];
+			features.metal_fx_temporal = [get_MTLFXTemporalScalerDescriptor() supportsDevice:p_device];
+		}
 	}
 
 	MTLCompileOptions *opts = [MTLCompileOptions new];
@@ -311,13 +315,15 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	limits.maxDrawIndexedIndexValue = std::numeric_limits<uint32_t>::max() - 1;
 
+	// Defaults taken from macOS 14+
+	limits.temporalScalerInputContentMinScale = 1.0;
+	limits.temporalScalerInputContentMaxScale = 3.0;
+
 	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
-		limits.temporalScalerInputContentMinScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMinScaleForDevice:p_device];
-		limits.temporalScalerInputContentMaxScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMaxScaleForDevice:p_device];
-	} else {
-		// Defaults taken from macOS 14+
-		limits.temporalScalerInputContentMinScale = 1.0;
-		limits.temporalScalerInputContentMaxScale = 3.0;
+		if (get_MetalFX()) {
+			limits.temporalScalerInputContentMinScale = (double)[get_MTLFXTemporalScalerDescriptor() supportedInputContentMinScaleForDevice:p_device];
+			limits.temporalScalerInputContentMaxScale = (double)[get_MTLFXTemporalScalerDescriptor() supportedInputContentMaxScaleForDevice:p_device];
+		}
 	}
 }
 

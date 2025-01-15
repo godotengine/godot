@@ -44,6 +44,17 @@
 #endif
 #endif
 
+#ifdef __OBJC__
+
+#pragma mark - MetalFX dynamic loading
+
+void *get_MetalFX();
+Class get_MTLFXSpatialScalerDescriptor();
+Class get_MTLFXTemporalScalerDescriptor();
+void unload_MetalFX();
+
+#endif
+
 class RenderingContextDriverMetal;
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMetal : public RenderingDeviceDriver {
