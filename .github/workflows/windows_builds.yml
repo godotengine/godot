@@ -98,7 +98,6 @@ jobs:
       - name: Install Mono
         run: |
           choco install mono -y
-          choco install msbuild -y
 
       - name: Download Direct3D 12 SDK components
         run: python ./misc/scripts/install_d3d12_sdk_windows.py
