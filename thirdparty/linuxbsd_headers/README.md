@@ -35,13 +35,6 @@ Patches in the `patches` directory should be re-applied after updates.
 - License: MIT
 
 
-## linux
-
-- Upstream: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-- Version: 5.15
-- License: GPL-2
-
-
 ## pulse
 
 - Upstream: http://pulseaudio.org/
