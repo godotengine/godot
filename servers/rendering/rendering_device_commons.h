@@ -43,6 +43,8 @@ class RenderingDeviceCommons : public Object {
 	// with RenderingDeviceDriver.
 	////////////////////////////////////////////
 public:
+	static const bool command_pool_reset_enabled = true;
+
 	/*****************/
 	/**** GENERIC ****/
 	/*****************/
@@ -359,6 +361,22 @@ public:
 		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
 		TEXTURE_USAGE_INPUT_ATTACHMENT_BIT = (1 << 9),
 		TEXTURE_USAGE_VRS_ATTACHMENT_BIT = (1 << 10),
+		// When set, the texture is not backed by actual memory. It only ever lives in the cache.
+		// This is particularly useful for:
+		//	1. Depth/stencil buffers that are not needed after producing the colour output.
+		//	2. MSAA surfaces that are immediately resolved (i.e. its raw content isn't needed).
+		//
+		// This flag heavily improves performance & saves memory on TBDR GPUs (e.g. mobile).
+		// On Desktop this flag won't save memory but it still instructs the render graph that data will
+		// be discarded aggressively which may still improve some performance.
+		//
+		// It is not valid to perform copies from/to this texture, since it doesn't occupy actual RAM.
+		// It is also not valid to sample from this texture except using subpasses or via read/write
+		// pixel shader extensions (e.g. VK_EXT_rasterization_order_attachment_access).
+		//
+		// Try to set this bit as much as possible. If you set it, validation doesn't complain
+		// and it works fine on mobile, then go ahead.
+		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
 	};
 
 	struct TextureFormat {
@@ -373,6 +391,7 @@ public:
 		uint32_t usage_bits = 0;
 		Vector<DataFormat> shareable_formats;
 		bool is_resolve_buffer = false;
+		bool is_discardable = false;
 
 		bool operator==(const TextureFormat &b) const {
 			if (format != b.format) {
@@ -394,6 +413,10 @@ public:
 			} else if (usage_bits != b.usage_bits) {
 				return false;
 			} else if (shareable_formats != b.shareable_formats) {
+				return false;
+			} else if (is_resolve_buffer != b.is_resolve_buffer) {
+				return false;
+			} else if (is_discardable != b.is_discardable) {
 				return false;
 			} else {
 				return true;
@@ -572,7 +595,7 @@ public:
 		RENDER_PRIMITIVE_TRIANGLES,
 		RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY,
 		RENDER_PRIMITIVE_TRIANGLE_STRIPS,
-		RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY,
+		RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY, // TODO: Fix typo in "ADJACENCY" (in 5.0).
 		RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX,
 		RENDER_PRIMITIVE_TESSELATION_PATCH,
 		RENDER_PRIMITIVE_MAX
@@ -850,14 +873,19 @@ public:
 		LIMIT_VRS_TEXEL_HEIGHT,
 		LIMIT_VRS_MAX_FRAGMENT_WIDTH,
 		LIMIT_VRS_MAX_FRAGMENT_HEIGHT,
+		LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE,
+		LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE,
 	};
 
 	enum Features {
 		SUPPORTS_MULTIVIEW,
 		SUPPORTS_FSR_HALF_FLOAT,
 		SUPPORTS_ATTACHMENT_VRS,
-		// If not supported, a fragment shader with only side effets (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
+		SUPPORTS_METALFX_SPATIAL,
+		SUPPORTS_METALFX_TEMPORAL,
+		// If not supported, a fragment shader with only side effects (i.e., writes  to buffers, but doesn't output to attachments), may be optimized down to no-op by the GPU driver.
 		SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS,
+		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 	};
 
 	enum SubgroupOperations {

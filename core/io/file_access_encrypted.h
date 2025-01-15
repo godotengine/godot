@@ -37,7 +37,7 @@
 
 class FileAccessEncrypted : public FileAccess {
 public:
-	enum Mode {
+	enum Mode : int32_t {
 		MODE_READ,
 		MODE_WRITE_AES256,
 		MODE_MAX
@@ -82,7 +82,7 @@ public:
 
 	virtual Error resize(int64_t p_length) override { return ERR_UNAVAILABLE; }
 	virtual void flush() override;
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 

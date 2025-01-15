@@ -32,19 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
-#include "core/os/os.h"
 #include "scene/resources/image_texture.h"
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4127)
-#endif
-
 #include "thirdparty/misc/yuv2rgb.h"
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);

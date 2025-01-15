@@ -41,8 +41,10 @@
 #include "editor/project_manager/project_tag.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
@@ -350,7 +352,7 @@ const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
 // Helpers.
 
 bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
-	return p_feature.contains(".") && p_feature.substr(0, 3).is_numeric();
+	return p_feature.contains_char('.') && p_feature.substr(0, 3).is_numeric();
 }
 
 // Notifications.
@@ -358,7 +360,7 @@ bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
 void ProjectList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
-			// Load icons as a coroutine to speed up launch when you have hundreds of projects
+			// Load icons as a coroutine to speed up launch when you have hundreds of projects.
 			if (_icon_load_index < _projects.size()) {
 				Item &item = _projects.write[_icon_load_index];
 				if (item.control->should_load_project_icon()) {
@@ -366,10 +368,59 @@ void ProjectList::_notification(int p_what) {
 				}
 				_icon_load_index++;
 
+				// Scan directories in thread to avoid blocking the window.
+			} else if (scan_data && scan_data->scan_in_progress.is_set()) {
+				// Wait for the thread.
 			} else {
 				set_process(false);
+				if (scan_data) {
+					_scan_finished();
+				}
 			}
 		} break;
+	}
+}
+
+// Projects scan.
+
+void ProjectList::_scan_thread(void *p_scan_data) {
+	ScanData *scan_data = static_cast<ScanData *>(p_scan_data);
+
+	for (const String &base_path : scan_data->paths_to_scan) {
+		print_verbose(vformat("Scanning for projects in \"%s\".", base_path));
+		_scan_folder_recursive(base_path, &scan_data->found_projects, scan_data->scan_in_progress);
+
+		if (!scan_data->scan_in_progress.is_set()) {
+			print_verbose("Scan aborted.");
+			break;
+		}
+	}
+	print_verbose(vformat("Found %d project(s).", scan_data->found_projects.size()));
+	scan_data->scan_in_progress.clear();
+}
+
+void ProjectList::_scan_finished() {
+	if (scan_data->scan_in_progress.is_set()) {
+		// Abort scanning.
+		scan_data->scan_in_progress.clear();
+	}
+
+	scan_data->thread->wait_to_finish();
+	memdelete(scan_data->thread);
+	if (scan_progress) {
+		scan_progress->hide();
+	}
+
+	for (const String &E : scan_data->found_projects) {
+		add_project(E, false);
+	}
+	memdelete(scan_data);
+	scan_data = nullptr;
+
+	save_config();
+
+	if (ProjectManager::get_singleton()->is_initialized()) {
+		update_project_list();
 	}
 }
 
@@ -417,14 +468,16 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
 	bool missing = false;
+	bool recovery_mode = false;
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error cf_err = cf->load(conf);
 
 	int config_version = 0;
+	String cf_project_name;
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
-		String cf_project_name = cf->get_value("application", "config/name", "");
+		cf_project_name = cf->get_value("application", "config/name", "");
 		if (!cf_project_name.is_empty()) {
 			project_name = cf_project_name.xml_unescape();
 		}
@@ -438,8 +491,19 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 
 	const String description = cf->get_value("application", "config/description", "");
 	const PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
-	const String icon = cf->get_value("application", "config/icon", "");
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
+
+	String icon = cf->get_value("application", "config/icon", "");
+	if (icon.begins_with("uid://")) {
+		Error err;
+		Ref<FileAccess> file = FileAccess::open(p_path.path_join(".godot/uid_cache.bin"), FileAccess::READ, &err);
+		if (err == OK) {
+			icon = ResourceUID::get_path_from_cache(file, icon);
+			if (icon.is_empty()) {
+				WARN_PRINT(vformat("Could not load icon from UID for project at path \"%s\". Make sure UID cache exists.", p_path));
+			}
+		}
+	}
 
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
@@ -486,7 +550,29 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		ProjectManager::get_singleton()->add_new_tag(tag);
 	}
 
-	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	// We can't use OS::get_user_dir() because it attempts to load paths from the current loaded project through ProjectSettings,
+	// while here we're parsing project files externally. Therefore, we have to replicate its behavior.
+	String user_dir;
+	if (!cf_project_name.is_empty()) {
+		String appname = OS::get_singleton()->get_safe_dir_name(cf_project_name);
+		bool use_custom_dir = cf->get_value("application", "config/use_custom_user_dir", false);
+		if (use_custom_dir) {
+			String custom_dir = OS::get_singleton()->get_safe_dir_name(cf->get_value("application", "config/custom_user_dir_name", ""), true);
+			if (custom_dir.is_empty()) {
+				custom_dir = appname;
+			}
+			user_dir = custom_dir;
+		} else {
+			user_dir = OS::get_singleton()->get_godot_dir_name().path_join("app_userdata").path_join(appname);
+		}
+	} else {
+		user_dir = OS::get_singleton()->get_godot_dir_name().path_join("app_userdata").path_join("[unnamed project]");
+	}
+
+	String recovery_mode_lock_file = OS::get_singleton()->get_user_data_dir(user_dir).path_join(".recovery_mode_lock");
+	recovery_mode = FileAccess::exists(recovery_mode_lock_file);
+
+	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, recovery_mode, config_version);
 }
 
 void ProjectList::_update_icons_async() {
@@ -581,7 +667,7 @@ void ProjectList::sort_projects() {
 		bool item_visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
-			if (search_term.contains("/")) {
+			if (search_term.contains_char('/')) {
 				// Search path will match the whole path
 				search_path = item.path;
 			} else {
@@ -624,25 +710,39 @@ void ProjectList::find_projects(const String &p_path) {
 }
 
 void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
-	List<String> projects;
+	if (!scan_progress && is_inside_tree()) {
+		scan_progress = memnew(AcceptDialog);
+		scan_progress->set_title(TTR("Scanning"));
+		scan_progress->set_ok_button_text(TTR("Cancel"));
 
-	for (int i = 0; i < p_paths.size(); i++) {
-		const String &base_path = p_paths.get(i);
-		print_verbose(vformat("Scanning for projects in \"%s\".", base_path));
+		VBoxContainer *vb = memnew(VBoxContainer);
+		scan_progress->add_child(vb);
 
-		_scan_folder_recursive(base_path, &projects);
-		print_verbose(vformat("Found %d project(s).", projects.size()));
+		Label *label = memnew(Label);
+		label->set_text(TTR("Scanning for projects..."));
+		vb->add_child(label);
+
+		ProgressBar *progress = memnew(ProgressBar);
+		progress->set_indeterminate(true);
+		vb->add_child(progress);
+
+		add_child(scan_progress);
+		scan_progress->connect(SceneStringName(confirmed), callable_mp(this, &ProjectList::_scan_finished));
+		scan_progress->connect("canceled", callable_mp(this, &ProjectList::_scan_finished));
 	}
 
-	for (const String &E : projects) {
-		add_project(E, false);
-	}
+	scan_data = memnew(ScanData);
+	scan_data->paths_to_scan = p_paths;
+	scan_data->scan_in_progress.set();
 
-	save_config();
+	scan_data->thread = memnew(Thread);
+	scan_data->thread->start(_scan_thread, scan_data);
 
-	if (ProjectManager::get_singleton()->is_initialized()) {
-		update_project_list();
+	if (scan_progress) {
+		scan_progress->reset_size();
+		scan_progress->popup_centered();
 	}
+	set_process(true);
 }
 
 void ProjectList::load_project_list() {
@@ -656,7 +756,11 @@ void ProjectList::load_project_list() {
 	}
 }
 
-void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_projects) {
+void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_projects, const SafeFlag &p_scan_active) {
+	if (!p_scan_active.is_set()) {
+		return;
+	}
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error error = da->change_dir(p_path);
 	ERR_FAIL_COND_MSG(error != OK, vformat("Failed to open the path \"%s\" for scanning (code %d).", p_path, error));
@@ -664,8 +768,12 @@ void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_p
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {
+		if (!p_scan_active.is_set()) {
+			return;
+		}
+
 		if (da->current_is_dir() && n[0] != '.') {
-			_scan_folder_recursive(da->get_current_dir().path_join(n), r_projects);
+			_scan_folder_recursive(da->get_current_dir().path_join(n), r_projects, p_scan_active);
 		} else if (n == "project.godot") {
 			r_projects->push_back(da->get_current_dir());
 		}

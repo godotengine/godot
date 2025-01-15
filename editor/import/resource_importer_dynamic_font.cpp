@@ -36,8 +36,6 @@
 #include "scene/resources/font.h"
 #include "servers/text_server.h"
 
-#include "modules/modules_enabled.gen.h" // For freetype.
-
 String ResourceImporterDynamicFont::get_importer_name() const {
 	return "font_data_dynamic";
 }
@@ -48,7 +46,6 @@ String ResourceImporterDynamicFont::get_visible_name() const {
 
 void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *p_extensions) const {
 	if (p_extensions) {
-#ifdef MODULE_FREETYPE_ENABLED
 		p_extensions->push_back("ttf");
 		p_extensions->push_back("ttc");
 		p_extensions->push_back("otf");
@@ -57,7 +54,6 @@ void ResourceImporterDynamicFont::get_recognized_extensions(List<String> *p_exte
 		p_extensions->push_back("woff2");
 		p_extensions->push_back("pfb");
 		p_extensions->push_back("pfm");
-#endif
 	}
 }
 
@@ -83,6 +79,9 @@ bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, co
 		return false;
 	}
 	if (p_option == "subpixel_positioning" && bool(p_options["multichannel_signed_distance_field"])) {
+		return false;
+	}
+	if (p_option == "keep_rounding_remainders" && bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
 	}
 	return true;
@@ -119,6 +118,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::NIL, "Fallbacks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));
@@ -156,6 +156,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	bool allow_system_fallback = p_options["allow_system_fallback"];
 	int hinting = p_options["hinting"];
 	int subpixel_positioning = p_options["subpixel_positioning"];
+	bool keep_rounding_remainders = p_options["keep_rounding_remainders"];
 	real_t oversampling = p_options["oversampling"];
 	Array fallbacks = p_options["fallbacks"];
 
@@ -213,6 +214,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 		}
 	}
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
+	font->set_keep_rounding_remainders(keep_rounding_remainders);
 
 	Dictionary langs = p_options["language_support"];
 	for (int i = 0; i < langs.size(); i++) {

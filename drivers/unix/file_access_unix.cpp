@@ -46,10 +46,18 @@
 #include <stdlib.h>
 #endif
 
-void FileAccessUnix::check_errors() const {
+void FileAccessUnix::check_errors(bool p_write) const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	if (feof(f)) {
+	last_error = OK;
+	if (ferror(f)) {
+		if (p_write) {
+			last_error = ERR_FILE_CANT_WRITE;
+		} else {
+			last_error = ERR_FILE_CANT_READ;
+		}
+	}
+	if (!p_write && feof(f)) {
 		last_error = ERR_FILE_EOF;
 	}
 }
@@ -217,7 +225,6 @@ String FileAccessUnix::get_real_path() const {
 void FileAccessUnix::seek(uint64_t p_position) {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	last_error = OK;
 	if (fseeko(f, p_position, SEEK_SET)) {
 		check_errors();
 	}
@@ -256,7 +263,7 @@ uint64_t FileAccessUnix::get_length() const {
 }
 
 bool FileAccessUnix::eof_reached() const {
-	return last_error == ERR_FILE_EOF;
+	return feof(f);
 }
 
 uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
@@ -295,25 +302,25 @@ void FileAccessUnix::flush() {
 	fflush(f);
 }
 
-void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+bool FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, false, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	bool res = fwrite(p_src, 1, p_length, f) == p_length;
+	check_errors(true);
+	return res;
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
-	int err;
 	struct stat st = {};
-	String filename = fix_path(p_path);
+	const CharString filename_utf8 = fix_path(p_path).utf8();
 
 	// Does the name exist at all?
-	err = stat(filename.utf8().get_data(), &st);
-	if (err) {
+	if (stat(filename_utf8.get_data(), &st)) {
 		return false;
 	}
 
 	// See if we have access to the file
-	if (access(filename.utf8().get_data(), F_OK)) {
+	if (access(filename_utf8.get_data(), F_OK)) {
 		return false;
 	}
 
@@ -434,7 +441,7 @@ void FileAccessUnix::close() {
 	_close();
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
+FileAccessUnix::CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
 	_close();

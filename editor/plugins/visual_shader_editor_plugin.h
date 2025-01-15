@@ -398,7 +398,7 @@ class VisualShaderEditor : public ShaderEditor {
 		bool highend = false;
 		bool is_custom = false;
 		bool is_native = false;
-		int temp_idx = 0;
+		mutable int temp_idx = 0;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
 			name = p_name;
@@ -595,6 +595,9 @@ class VisualShaderEditor : public ShaderEditor {
 	void _member_cancel();
 
 	void _varying_create();
+	void _varying_validate();
+	void _varying_type_changed(int p_index);
+	void _varying_mode_changed(int p_index);
 	void _varying_name_changed(const String &p_name);
 	void _varying_deleted();
 	void _varying_selected();

@@ -34,6 +34,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 
+#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+
 void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 	if (lightmap) {
 		LightmapGI::BakeError err = LightmapGI::BAKE_ERROR_OK;
@@ -152,7 +154,7 @@ EditorProgress *LightmapGIEditorPlugin::tmp_progress = nullptr;
 
 bool LightmapGIEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
 	if (!tmp_progress) {
-		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, false));
+		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, true));
 		ERR_FAIL_NULL_V(tmp_progress, false);
 	}
 	return tmp_progress->step(p_description, p_progress * 1000, p_refresh);
@@ -178,7 +180,7 @@ void LightmapGIEditorPlugin::_bind_methods() {
 
 LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	bake = memnew(Button);
-	bake->set_theme_type_variation("FlatButton");
+	bake->set_theme_type_variation(SceneStringName(FlatButton));
 	// TODO: Rework this as a dedicated toolbar control so we can hook into theme changes and update it
 	// when the editor theme updates.
 	bake->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Bake"), EditorStringName(EditorIcons)));

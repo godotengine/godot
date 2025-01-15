@@ -36,6 +36,8 @@
 class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
+	StringName backward = "backward"; // Only used by pingpong animation.
+
 	StringName animation;
 
 	bool advance_on_start = false;
@@ -56,6 +58,7 @@ public:
 	};
 
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual NodeTimeInfo get_node_time_info() const override; // Wrapper of get_parameter().
 
@@ -83,7 +86,7 @@ public:
 	void set_timeline_length(double p_length);
 	double get_timeline_length() const;
 
-	void set_stretch_time_scale(bool p_strech_time_scale);
+	void set_stretch_time_scale(bool p_stretch_time_scale);
 	bool is_stretching_time_scale() const;
 
 	void set_start_offset(double p_offset);
@@ -100,7 +103,6 @@ protected:
 
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
-	bool backward = false; // Only used by pingpong animation.
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
@@ -302,6 +304,10 @@ class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
 	StringName seek_pos_request = PNAME("seek_request");
+	bool explicit_elapse = true;
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -310,6 +316,9 @@ public:
 	virtual String get_caption() const override;
 
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+
+	void set_explicit_elapse(bool p_enable);
+	bool is_explicit_elapse() const;
 
 	AnimationNodeTimeSeek();
 };
@@ -322,7 +331,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 		bool break_loop_at_end = false;
 		bool reset = true;
 	};
-	Vector<InputData> input_data;
+	LocalVector<InputData> input_data;
 
 	StringName prev_xfading = "prev_xfading";
 	StringName prev_index = "prev_index";

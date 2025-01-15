@@ -132,11 +132,9 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("physics_2d/active_objects"),
 		PNAME("physics_2d/collision_pairs"),
 		PNAME("physics_2d/islands"),
-#ifndef _3D_DISABLED
 		PNAME("physics_3d/active_objects"),
 		PNAME("physics_3d/collision_pairs"),
 		PNAME("physics_3d/islands"),
-#endif // _3D_DISABLED
 		PNAME("audio/driver/output_latency"),
 		PNAME("navigation/active_maps"),
 		PNAME("navigation/regions"),
@@ -154,6 +152,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("pipeline/compilations_draw"),
 		PNAME("pipeline/compilations_specialization"),
 	};
+	static_assert((sizeof(names) / sizeof(const char *)) == MONITOR_MAX);
 
 	return names[p_monitor];
 }
@@ -280,12 +279,15 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#ifndef _3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#endif // _3D_DISABLED
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -298,6 +300,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 
 	};
+	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
 
 	return types[p_monitor];
 }

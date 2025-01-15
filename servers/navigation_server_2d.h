@@ -91,7 +91,7 @@ public:
 	virtual real_t map_get_link_connection_radius(RID p_map) const = 0;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const = 0;
+	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) = 0;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const = 0;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const = 0;
@@ -103,6 +103,9 @@ public:
 
 	virtual void map_force_update(RID p_map) = 0;
 	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
+
+	virtual void map_set_use_async_iterations(RID p_map, bool p_enabled) = 0;
+	virtual bool map_get_use_async_iterations(RID p_map) const = 0;
 
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
@@ -151,6 +154,7 @@ public:
 
 	virtual Vector2 region_get_closest_point(RID p_region, const Vector2 &p_point) const = 0;
 	virtual Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
+	virtual Rect2 region_get_bounds(RID p_region) const = 0;
 
 	/// Creates a new link between positions in the nav map.
 	virtual RID link_create() = 0;
@@ -293,7 +297,7 @@ public:
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
 	/// Returns a customized navigation path using a query parameters object
-	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const = 0;
+	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result, const Callable &p_callback = Callable()) = 0;
 
 	virtual void init() = 0;
 	virtual void sync() = 0;
@@ -318,6 +322,14 @@ public:
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
 
+protected:
+#ifndef DISABLE_DEPRECATED
+	Vector<Vector2> _map_get_path_bind_compat_100129(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
+	void _query_path_bind_compat_100129(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
+	static void _bind_compatibility_methods();
+#endif
+
+public:
 #ifdef DEBUG_ENABLED
 	void set_debug_navigation_enabled(bool p_enabled);
 	bool get_debug_navigation_enabled() const;

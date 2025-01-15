@@ -45,8 +45,15 @@ fun isHorizonOSDevice(): Boolean {
 }
 
 /**
+ * Returns true if running on PICO OS.
+ */
+fun isPicoOSDevice(): Boolean {
+	return ("Pico".equals(Build.BRAND, true))
+}
+
+/**
  * Returns true if running on a native Android XR device.
  */
 fun isNativeXRDevice(): Boolean {
-	return isHorizonOSDevice()
+	return isHorizonOSDevice() || isPicoOSDevice()
 }

@@ -32,7 +32,6 @@
 #define JAVA_GODOT_WRAPPER_H
 
 #include "java_godot_view_wrapper.h"
-#include "string_android.h"
 
 #include "core/math/color.h"
 #include "core/templates/list.h"
@@ -57,9 +56,11 @@ private:
 	jmethodID _is_dark_mode_supported = nullptr;
 	jmethodID _is_dark_mode = nullptr;
 	jmethodID _get_accent_color = nullptr;
+	jmethodID _get_base_color = nullptr;
 	jmethodID _get_clipboard = nullptr;
 	jmethodID _set_clipboard = nullptr;
 	jmethodID _has_clipboard = nullptr;
+	jmethodID _show_dialog = nullptr;
 	jmethodID _show_input_dialog = nullptr;
 	jmethodID _show_file_picker = nullptr;
 	jmethodID _request_permission = nullptr;
@@ -102,12 +103,14 @@ public:
 	bool is_dark_mode_supported();
 	bool is_dark_mode();
 	Color get_accent_color();
+	Color get_base_color();
 	bool has_get_clipboard();
 	String get_clipboard();
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
 	bool has_has_clipboard();
 	bool has_clipboard();
+	Error show_dialog(const String &p_title, const String &p_description, const Vector<String> &p_buttons);
 	Error show_input_dialog(const String &p_title, const String &p_message, const String &p_existing_text);
 	Error show_file_picker(const String &p_current_directory, const String &p_filename, int p_mode, const Vector<String> &p_filters);
 	bool request_permission(const String &p_name);

@@ -33,6 +33,8 @@
 
 #include "core/os/os.h"
 
+typedef void (*EditorRunInstanceStarting)(int p_index, List<String> &r_arguments);
+
 class EditorRun {
 public:
 	enum Status {
@@ -48,16 +50,19 @@ private:
 	String running_scene;
 
 public:
+	inline static EditorRunInstanceStarting instance_starting_callback = nullptr;
+
 	Status get_status() const;
 	String get_running_scene() const;
 
-	Error run(const String &p_scene, const String &p_write_movie = "");
+	Error run(const String &p_scene, const String &p_write_movie = "", const Vector<String> &p_run_args = Vector<String>());
 	void run_native_notify() { status = STATUS_PLAY; }
 	void stop();
 
 	void stop_child_process(OS::ProcessID p_pid);
 	bool has_child_process(OS::ProcessID p_pid) const;
 	int get_child_process_count() const { return pids.size(); }
+	OS::ProcessID get_current_process() const;
 
 	EditorRun();
 };

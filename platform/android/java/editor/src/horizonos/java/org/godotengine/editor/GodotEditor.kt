@@ -43,6 +43,19 @@ open class GodotEditor : BaseGodotEditor() {
 	companion object {
 		private val TAG = GodotEditor::class.java.simpleName
 
+		/** Default behavior, means we check project settings **/
+		private const val XR_MODE_DEFAULT = "default"
+
+		/**
+		 * Ignore project settings, OpenXR is disabled
+		 */
+		private const val XR_MODE_OFF = "off"
+
+		/**
+		 * Ignore project settings, OpenXR is enabled
+		 */
+		private const val XR_MODE_ON = "on"
+
 		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
 
 		internal val USE_SCENE_PERMISSIONS = listOf("com.oculus.permission.USE_SCENE", "horizonos.permission.USE_SCENE")
@@ -58,15 +71,14 @@ open class GodotEditor : BaseGodotEditor() {
 
 	override fun retrieveEditorWindowInfo(args: Array<String>): EditorWindowInfo {
 		var hasEditor = false
-		var xrModeOn = false
+		var xrMode = XR_MODE_DEFAULT
 
 		var i = 0
 		while (i < args.size) {
 			when (args[i++]) {
 				EDITOR_ARG, EDITOR_ARG_SHORT, EDITOR_PROJECT_MANAGER_ARG, EDITOR_PROJECT_MANAGER_ARG_SHORT -> hasEditor = true
 				XR_MODE_ARG -> {
-					val argValue = args[i++]
-					xrModeOn = xrModeOn || ("on" == argValue)
+					xrMode = args[i++]
 				}
 			}
 		}
@@ -74,7 +86,8 @@ open class GodotEditor : BaseGodotEditor() {
 		return if (hasEditor) {
 			EDITOR_MAIN_INFO
 		} else {
-			val openxrEnabled = GodotLib.getGlobal("xr/openxr/enabled").toBoolean()
+			val openxrEnabled = xrMode == XR_MODE_ON ||
+				(xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())
 			if (openxrEnabled && isNativeXRDevice()) {
 				XR_RUN_GAME_INFO
 			} else {

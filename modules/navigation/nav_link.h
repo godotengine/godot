@@ -31,8 +31,22 @@
 #ifndef NAV_LINK_H
 #define NAV_LINK_H
 
+#include "3d/nav_base_iteration_3d.h"
 #include "nav_base.h"
 #include "nav_utils.h"
+
+struct NavLinkIteration : NavBaseIteration {
+	bool bidirectional = true;
+	Vector3 start_position;
+	Vector3 end_position;
+	LocalVector<gd::Polygon> navmesh_polygons;
+
+	Vector3 get_start_position() const { return start_position; }
+	Vector3 get_end_position() const { return end_position; }
+	bool is_bidirectional() const { return bidirectional; }
+};
+
+#include "core/templates/self_list.h"
 
 class NavLink : public NavBase {
 	NavMap *map = nullptr;
@@ -43,10 +57,11 @@ class NavLink : public NavBase {
 
 	bool link_dirty = true;
 
+	SelfList<NavLink> sync_dirty_request_list_element;
+
 public:
-	NavLink() {
-		type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
-	}
+	NavLink();
+	~NavLink();
 
 	void set_map(NavMap *p_map);
 	NavMap *get_map() const {
@@ -71,7 +86,12 @@ public:
 		return end_position;
 	}
 
-	bool check_dirty();
+	bool is_dirty() const;
+	void sync();
+	void request_sync();
+	void cancel_sync_request();
+
+	void get_iteration_update(NavLinkIteration &r_iteration);
 };
 
 #endif // NAV_LINK_H

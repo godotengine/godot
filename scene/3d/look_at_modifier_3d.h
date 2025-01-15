@@ -38,15 +38,6 @@ class LookAtModifier3D : public SkeletonModifier3D {
 	GDCLASS(LookAtModifier3D, SkeletonModifier3D);
 
 public:
-	enum BoneAxis {
-		BONE_AXIS_PLUS_X,
-		BONE_AXIS_MINUS_X,
-		BONE_AXIS_PLUS_Y,
-		BONE_AXIS_MINUS_Y,
-		BONE_AXIS_PLUS_Z,
-		BONE_AXIS_MINUS_Z,
-	};
-
 	enum OriginFrom {
 		ORIGIN_FROM_SELF,
 		ORIGIN_FROM_SPECIFIC_BONE,
@@ -54,7 +45,8 @@ public:
 	};
 
 private:
-	int bone = 0;
+	String bone_name;
+	int bone = -1;
 
 	Vector3 forward_vector;
 	Vector3 forward_vector_nrm;
@@ -64,6 +56,7 @@ private:
 	bool use_secondary_rotation = true;
 
 	OriginFrom origin_from = ORIGIN_FROM_SELF;
+	String origin_bone_name;
 	int origin_bone = -1;
 	NodePath origin_external_node;
 
@@ -102,11 +95,6 @@ private:
 	float remaining = 0;
 	float time_step = 1.0;
 
-	Vector3 get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis) const;
-	Vector3 get_vector_from_bone_axis(const BoneAxis &p_axis) const;
-	Vector3 get_vector_from_axis(const Vector3::Axis &p_axis) const;
-	Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis) const;
-	Vector2 get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) const;
 	float remap_damped(float p_from, float p_to, float p_damp_threshold, float p_value) const;
 	double get_bspline_y(const Vector2 &p_from, const Vector2 &p_control, const Vector2 &p_to, double p_x) const;
 	bool is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, Vector3::Axis p_flipping_axis, Vector3::Axis p_check_axis, bool p_check_plane = false) const;
@@ -123,6 +111,8 @@ protected:
 	virtual void _process_modification() override;
 
 public:
+	void set_bone_name(const String &p_bone_name);
+	String get_bone_name() const;
 	void set_bone(int p_bone);
 	int get_bone() const;
 
@@ -135,6 +125,8 @@ public:
 
 	void set_origin_from(OriginFrom p_origin_from);
 	OriginFrom get_origin_from() const;
+	void set_origin_bone_name(const String &p_bone_name);
+	String get_origin_bone_name() const;
 	void set_origin_bone(int p_bone);
 	int get_origin_bone() const;
 	void set_origin_external_node(const NodePath &p_external_node);
@@ -191,9 +183,12 @@ public:
 	float get_interpolation_remaining() const;
 	bool is_interpolating() const;
 	bool is_target_within_limitation() const;
+
+	static Vector3::Axis get_secondary_rotation_axis(BoneAxis p_forward_axis, Vector3::Axis p_primary_rotation_axis);
+	static Vector3 get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis);
+	static Vector2 get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis);
 };
 
-VARIANT_ENUM_CAST(LookAtModifier3D::BoneAxis);
 VARIANT_ENUM_CAST(LookAtModifier3D::OriginFrom);
 
 #endif // LOOK_AT_MODIFIER_3D_H
