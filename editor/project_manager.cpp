@@ -149,7 +149,7 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 
 // Main layout.
 
-void ProjectManager::_update_size_limits() {
+void ProjectManager::_update_size_limits(bool p_custom_res) {
 	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
 	const Size2 default_size = Size2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) * EDSCALE;
 
@@ -159,20 +159,21 @@ void ProjectManager::_update_size_limits() {
 		// Calling Window methods this early doesn't sync properties with DS.
 		w->set_min_size(minimum_size);
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
-		if (DisplayServer::get_singleton()->window_get_size() == default_size) {
+		if (!p_custom_res) {
 			// Only set window size if it currently matches the default, which is defined in `main/main.cpp`.
 			// This allows CLI arguments to override the window size.
 			w->set_size(default_size);
 			DisplayServer::get_singleton()->window_set_size(default_size);
 		}
 	}
+	Size2 real_size = DisplayServer::get_singleton()->window_get_size();
 
 	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
 	if (screen_rect.size != Vector2i()) {
 		// Center the window on the screen.
 		Vector2i window_position;
-		window_position.x = screen_rect.position.x + (screen_rect.size.x - default_size.x) / 2;
-		window_position.y = screen_rect.position.y + (screen_rect.size.y - default_size.y) / 2;
+		window_position.x = screen_rect.position.x + (screen_rect.size.x - real_size.x) / 2;
+		window_position.y = screen_rect.position.y + (screen_rect.size.y - real_size.y) / 2;
 		DisplayServer::get_singleton()->window_set_position(window_position);
 
 		// Limit popup menus to prevent unusably long lists.
@@ -1158,7 +1159,7 @@ void ProjectManager::_titlebar_resized() {
 
 // Object methods.
 
-ProjectManager::ProjectManager() {
+ProjectManager::ProjectManager(bool p_custom_res) {
 	singleton = this;
 
 	set_translation_domain("godot.editor");
@@ -1746,7 +1747,7 @@ ProjectManager::ProjectManager() {
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
-	_update_size_limits();
+	_update_size_limits(p_custom_res);
 }
 
 ProjectManager::~ProjectManager() {
