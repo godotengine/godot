@@ -35,6 +35,13 @@ Patches in the `patches` directory should be re-applied after updates.
 - License: MIT
 
 
+## linux
+
+- Upstream: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+- Version: 5.15
+- License: GPL-2
+
+
 ## pulse
 
 - Upstream: http://pulseaudio.org/
@@ -66,7 +73,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## X11
 
 - Upstream: https://x.org/wiki/
-- Version: 
+- Version:
   * Xcursor: 1.2.0
   * Xext: 1.3.5
   * Xinerama: 1.1.4

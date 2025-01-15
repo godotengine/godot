@@ -32,12 +32,7 @@
 
 #ifdef WAYLAND_ENABLED
 
-#ifdef __FreeBSD__
-#include <dev/evdev/input-event-codes.h>
-#else
-// Assume Linux.
-#include <linux/input-event-codes.h>
-#endif
+#include "thirdparty/linuxbsd_headers/linux/input-event-codes.h"
 
 // For the actual polling thread.
 #include <poll.h>
