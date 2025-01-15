@@ -28,7 +28,7 @@ jobs:
             bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: msvc
             cache-limit: 2
-            
+
           - name: Editor w/ Mono (target=editor)
             cache-name: windows-editor-mono
             target: editor
@@ -41,7 +41,7 @@ jobs:
             api-compat: true
             artifact: true
             compiler: msvc
-            
+
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
             target: editor
