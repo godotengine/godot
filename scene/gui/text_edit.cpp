@@ -1675,6 +1675,10 @@ void TextEdit::_notification(int p_what) {
 				drag_caret_force_displayed = false;
 				queue_redraw();
 			}
+			if (hovered_gutter != Vector2i(-1, -1)) {
+				hovered_gutter = Vector2i(-1, -1);
+				queue_redraw();
+			}
 		} break;
 	}
 }
@@ -1843,18 +1847,18 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				int col = pos.x;
 
 				// Gutters.
+				Vector2i current_hovered_gutter = _get_hovered_gutter(mpos);
+				if (current_hovered_gutter != hovered_gutter) {
+					hovered_gutter = current_hovered_gutter;
+					queue_redraw();
+				}
+				if (hovered_gutter != Vector2i(-1, -1)) {
+					emit_signal(SNAME("gutter_clicked"), hovered_gutter.y, hovered_gutter.x);
+					return;
+				}
 				int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
-				for (int i = 0; i < gutters.size(); i++) {
-					if (!gutters[i].draw || gutters[i].width <= 0) {
-						continue;
-					}
-
-					if (mpos.x >= left_margin && mpos.x <= left_margin + gutters[i].width) {
-						emit_signal(SNAME("gutter_clicked"), line, i);
-						return;
-					}
-
-					left_margin += gutters[i].width;
+				if (mpos.x < left_margin + gutters_width + gutter_padding) {
+					return;
 				}
 
 				// Minimap.
@@ -2066,27 +2070,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		// Check if user is hovering a different gutter, and update if yes.
-		Vector2i current_hovered_gutter = Vector2i(-1, -1);
-
-		int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
-		if (mpos.x <= left_margin + gutters_width + gutter_padding) {
-			int hovered_row = get_line_column_at_pos(mpos).y;
-			for (int i = 0; i < gutters.size(); i++) {
-				if (!gutters[i].draw || gutters[i].width <= 0) {
-					continue;
-				}
-
-				if (mpos.x >= left_margin && mpos.x < left_margin + gutters[i].width) {
-					// We are in this gutter i's horizontal area.
-					current_hovered_gutter = Vector2i(i, hovered_row);
-					break;
-				}
-
-				left_margin += gutters[i].width;
-			}
-		}
-
+		// Update hovered gutter.
+		Vector2i current_hovered_gutter = _get_hovered_gutter(mpos);
 		if (current_hovered_gutter != hovered_gutter) {
 			hovered_gutter = current_hovered_gutter;
 			queue_redraw();
@@ -3115,24 +3100,16 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
-	Point2i pos = get_line_column_at_pos(p_pos);
-	int row = pos.y;
-
-	int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
-	int gutter = left_margin + gutters_width;
-	if (p_pos.x < gutter) {
-		for (int i = 0; i < gutters.size(); i++) {
-			if (!gutters[i].draw) {
-				continue;
-			}
-
-			if (p_pos.x >= left_margin && p_pos.x < left_margin + gutters[i].width) {
-				if (gutters[i].clickable || is_line_gutter_clickable(row, i)) {
-					return CURSOR_POINTING_HAND;
-				}
-			}
-			left_margin += gutters[i].width;
+	Vector2i current_hovered_gutter = _get_hovered_gutter(p_pos);
+	if (current_hovered_gutter != Vector2i(-1, -1)) {
+		if (gutters[current_hovered_gutter.x].clickable || is_line_gutter_clickable(current_hovered_gutter.y, current_hovered_gutter.x)) {
+			return CURSOR_POINTING_HAND;
+		} else {
+			return CURSOR_ARROW;
 		}
+	}
+	int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
+	if (p_pos.x < left_margin + gutters_width + gutter_padding) {
 		return CURSOR_ARROW;
 	}
 
@@ -8321,7 +8298,33 @@ void TextEdit::_update_gutter_width() {
 	if (gutters_width > 0) {
 		gutter_padding = 2;
 	}
+	if (get_viewport()) {
+		hovered_gutter = _get_hovered_gutter(get_local_mouse_position());
+	}
 	queue_redraw();
+}
+
+Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
+	int left_margin = theme_cache.style_normal->get_margin(SIDE_LEFT);
+	if (p_mouse_pos.x > left_margin + gutters_width + gutter_padding) {
+		return Vector2i(-1, -1);
+	}
+	int hovered_row = get_line_column_at_pos(p_mouse_pos, false).y;
+	if (hovered_row == -1) {
+		return Vector2i(-1, -1);
+	}
+	for (int i = 0; i < gutters.size(); i++) {
+		if (!gutters[i].draw || gutters[i].width <= 0) {
+			continue;
+		}
+
+		if (p_mouse_pos.x >= left_margin && p_mouse_pos.x < left_margin + gutters[i].width) {
+			return Vector2i(i, hovered_row);
+		}
+
+		left_margin += gutters[i].width;
+	}
+	return Vector2i(-1, -1);
 }
 
 /* Syntax highlighting. */
