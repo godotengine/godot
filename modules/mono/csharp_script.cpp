@@ -187,8 +187,8 @@ void CSharpLanguage::finalize() {
 	finalized = true;
 }
 
-void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
-	static const char *_reserved_words[] = {
+Vector<String> CSharpLanguage::get_reserved_words() const {
+	static const Vector<String> ret = {
 		// Reserved keywords
 		"abstract",
 		"as",
@@ -298,15 +298,9 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 		"when",
 		"where",
 		"yield",
-		nullptr
 	};
 
-	const char **w = _reserved_words;
-
-	while (*w) {
-		p_words->push_back(*w);
-		w++;
-	}
+	return ret;
 }
 
 bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
@@ -329,21 +323,30 @@ bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
 			p_keyword == "while";
 }
 
-void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("//"); // single-line comment
-	p_delimiters->push_back("/* */"); // delimited comment
+Vector<String> CSharpLanguage::get_comment_delimiters() const {
+	static const Vector<String> delimiters = {
+		"//", // single-line comment
+		"/* */" // delimited comment
+	};
+	return delimiters;
 }
 
-void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("///"); // single-line doc comment
-	p_delimiters->push_back("/** */"); // delimited doc comment
+Vector<String> CSharpLanguage::get_doc_comment_delimiters() const {
+	static const Vector<String> delimiters = {
+		"///", // single-line doc comment
+		"/** */" // delimited doc comment
+	};
+	return delimiters;
 }
 
-void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("' '"); // character literal
-	p_delimiters->push_back("\" \""); // regular string literal
-	p_delimiters->push_back("@\" \""); // verbatim string literal
+Vector<String> CSharpLanguage::get_string_delimiters() const {
+	static const Vector<String> delimiters = {
+		"' '", // character literal
+		"\" \"", // regular string literal
+		"@\" \"" // verbatim string literal
+	};
 	// Generic string highlighting suffices as a workaround for now.
+	return delimiters;
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
@@ -387,9 +390,7 @@ Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(co
 
 String CSharpLanguage::validate_path(const String &p_path) const {
 	String class_name = p_path.get_file().get_basename();
-	List<String> keywords;
-	get_reserved_words(&keywords);
-	if (keywords.find(class_name)) {
+	if (get_reserved_words().has(class_name)) {
 		return RTR("Class name can't be a reserved keyword");
 	}
 	if (!TS->is_valid_identifier(class_name)) {

@@ -2731,9 +2731,9 @@ void GDScriptLanguage::frame() {
 }
 
 /* EDITOR FUNCTIONS */
-void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
+Vector<String> GDScriptLanguage::get_reserved_words() const {
 	// Please keep alphabetical order within categories.
-	static const char *_reserved_words[] = {
+	static const Vector<String> ret = {
 		// Control flow.
 		"break",
 		"continue",
@@ -2786,15 +2786,9 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"preload",
 		// Types (highlighter uses type color instead).
 		"void",
-		nullptr,
 	};
 
-	const char **w = _reserved_words;
-
-	while (*w) {
-		p_words->push_back(*w);
-		w++;
-	}
+	return ret;
 }
 
 bool GDScriptLanguage::is_control_flow_keyword(const String &p_keyword) const {

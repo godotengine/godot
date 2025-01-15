@@ -746,9 +746,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	int space_indent_size = 4;
 	// Get meta delimiter
 	String meta_delimiter;
-	List<String> comment_delimiters;
-	p_language->get_comment_delimiters(&comment_delimiters);
-	for (const String &script_delimiter : comment_delimiters) {
+	for (const String &script_delimiter : p_language->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;
 			break;
