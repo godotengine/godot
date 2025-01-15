@@ -1307,12 +1307,10 @@ bool DisplayServer::can_create_rendering_device() {
 	}
 #endif
 #ifdef METAL_ENABLED
-	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
-		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
-		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+	if (__builtin_available(macOS 11.0, iOS 14.0, *)) {
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverMetal);
+		}
 	}
 #endif
 

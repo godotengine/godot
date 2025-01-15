@@ -51,29 +51,26 @@ MFXSpatialEffect::~MFXSpatialEffect() {
 }
 
 void MFXSpatialEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+		obj->end();
 
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
-	obj->end();
+		id<MTLTexture> src_texture = rid::get(p_userdata->src);
+		id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
 
-	id<MTLTexture> src_texture = rid::get(p_userdata->src);
-	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
+		__block id<MTLFXSpatialScaler> scaler = p_userdata->ctx.scaler;
+		scaler.colorTexture = src_texture;
+		scaler.outputTexture = dst_texture;
+		[scaler encodeToCommandBuffer:obj->get_command_buffer()];
+		// TODO(sgc): add API to retain objects until the command buffer completes
+		[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+			// This block retains a reference to the scaler until the command buffer.
+			// completes.
+			scaler = nil;
+		}];
 
-	__block id<MTLFXSpatialScaler> scaler = p_userdata->ctx.scaler;
-	scaler.colorTexture = src_texture;
-	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
-
-	CallbackArgs::free(&p_userdata);
-
-#pragma clang diagnostic pop
+		CallbackArgs::free(&p_userdata);
+	}
 }
 
 void MFXSpatialEffect::ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) {
@@ -99,30 +96,29 @@ void MFXSpatialEffect::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 MFXSpatialContext *MFXSpatialEffect::create_context(CreateParams p_params) const {
 	DEV_ASSERT(RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL));
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
+		PixelFormats &pf = rdd->get_pixel_formats();
+		id<MTLDevice> dev = rdd->get_device();
 
-	RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
-	PixelFormats &pf = rdd->get_pixel_formats();
-	id<MTLDevice> dev = rdd->get_device();
+		MTLFXSpatialScalerDescriptor *desc = [get_MTLFXSpatialScalerDescriptor() new];
+		desc.inputWidth = (NSUInteger)p_params.input_size.width;
+		desc.inputHeight = (NSUInteger)p_params.input_size.height;
 
-	MTLFXSpatialScalerDescriptor *desc = [MTLFXSpatialScalerDescriptor new];
-	desc.inputWidth = (NSUInteger)p_params.input_size.width;
-	desc.inputHeight = (NSUInteger)p_params.input_size.height;
+		desc.outputWidth = (NSUInteger)p_params.output_size.width;
+		desc.outputHeight = (NSUInteger)p_params.output_size.height;
 
-	desc.outputWidth = (NSUInteger)p_params.output_size.width;
-	desc.outputHeight = (NSUInteger)p_params.output_size.height;
+		desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
+		desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
+		desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModeLinear;
+		id<MTLFXSpatialScaler> scaler = [desc newSpatialScalerWithDevice:dev];
+		MFXSpatialContext *context = memnew(MFXSpatialContext);
+		context->scaler = scaler;
 
-	desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
-	desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
-	desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModeLinear;
-	id<MTLFXSpatialScaler> scaler = [desc newSpatialScalerWithDevice:dev];
-	MFXSpatialContext *context = memnew(MFXSpatialContext);
-	context->scaler = scaler;
-
-#pragma clang diagnostic pop
-
-	return context;
+		return context;
+	} else {
+		return nullptr;
+	}
 }
 
 #pragma mark - Temporal Scaler
@@ -135,38 +131,37 @@ MFXTemporalEffect::~MFXTemporalEffect() {}
 MFXTemporalContext *MFXTemporalEffect::create_context(CreateParams p_params) const {
 	DEV_ASSERT(RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL));
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
+		PixelFormats &pf = rdd->get_pixel_formats();
+		id<MTLDevice> dev = rdd->get_device();
 
-	RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
-	PixelFormats &pf = rdd->get_pixel_formats();
-	id<MTLDevice> dev = rdd->get_device();
+		MTLFXTemporalScalerDescriptor *desc = [get_MTLFXTemporalScalerDescriptor() new];
+		desc.inputWidth = (NSUInteger)p_params.input_size.width;
+		desc.inputHeight = (NSUInteger)p_params.input_size.height;
 
-	MTLFXTemporalScalerDescriptor *desc = [MTLFXTemporalScalerDescriptor new];
-	desc.inputWidth = (NSUInteger)p_params.input_size.width;
-	desc.inputHeight = (NSUInteger)p_params.input_size.height;
+		desc.outputWidth = (NSUInteger)p_params.output_size.width;
+		desc.outputHeight = (NSUInteger)p_params.output_size.height;
 
-	desc.outputWidth = (NSUInteger)p_params.output_size.width;
-	desc.outputHeight = (NSUInteger)p_params.output_size.height;
+		desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
+		desc.depthTextureFormat = pf.getMTLPixelFormat(p_params.depth_format);
+		desc.motionTextureFormat = pf.getMTLPixelFormat(p_params.motion_format);
+		desc.autoExposureEnabled = NO;
 
-	desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
-	desc.depthTextureFormat = pf.getMTLPixelFormat(p_params.depth_format);
-	desc.motionTextureFormat = pf.getMTLPixelFormat(p_params.motion_format);
-	desc.autoExposureEnabled = NO;
+		desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
 
-	desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
+		id<MTLFXTemporalScaler> scaler = [desc newTemporalScalerWithDevice:dev];
+		MFXTemporalContext *context = memnew(MFXTemporalContext);
+		context->scaler = scaler;
 
-	id<MTLFXTemporalScaler> scaler = [desc newTemporalScalerWithDevice:dev];
-	MFXTemporalContext *context = memnew(MFXTemporalContext);
-	context->scaler = scaler;
+		scaler.motionVectorScaleX = p_params.motion_vector_scale.x;
+		scaler.motionVectorScaleY = p_params.motion_vector_scale.y;
+		scaler.depthReversed = true; // Godot uses reverse Z per https://github.com/godotengine/godot/pull/88328
 
-	scaler.motionVectorScaleX = p_params.motion_vector_scale.x;
-	scaler.motionVectorScaleY = p_params.motion_vector_scale.y;
-	scaler.depthReversed = true; // Godot uses reverse Z per https://github.com/godotengine/godot/pull/88328
-
-#pragma clang diagnostic pop
-
-	return context;
+		return context;
+	} else {
+		return nullptr;
+	}
 }
 
 void MFXTemporalEffect::process(RendererRD::MFXTemporalContext *p_ctx, RendererRD::MFXTemporalEffect::Params p_params) {
@@ -189,37 +184,34 @@ void MFXTemporalEffect::process(RendererRD::MFXTemporalContext *p_ctx, RendererR
 }
 
 void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+		obj->end();
 
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
-	obj->end();
+		id<MTLTexture> src_texture = rid::get(p_userdata->src);
+		id<MTLTexture> depth = rid::get(p_userdata->depth);
+		id<MTLTexture> motion = rid::get(p_userdata->motion);
+		id<MTLTexture> exposure = rid::get(p_userdata->exposure);
 
-	id<MTLTexture> src_texture = rid::get(p_userdata->src);
-	id<MTLTexture> depth = rid::get(p_userdata->depth);
-	id<MTLTexture> motion = rid::get(p_userdata->motion);
-	id<MTLTexture> exposure = rid::get(p_userdata->exposure);
+		id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
 
-	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
+		__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
+		scaler.reset = p_userdata->reset;
+		scaler.colorTexture = src_texture;
+		scaler.depthTexture = depth;
+		scaler.motionTexture = motion;
+		scaler.exposureTexture = exposure;
+		scaler.jitterOffsetX = p_userdata->jitter_offset.x;
+		scaler.jitterOffsetY = p_userdata->jitter_offset.y;
+		scaler.outputTexture = dst_texture;
+		[scaler encodeToCommandBuffer:obj->get_command_buffer()];
+		// TODO(sgc): add API to retain objects until the command buffer completes
+		[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+			// This block retains a reference to the scaler until the command buffer.
+			// completes.
+			scaler = nil;
+		}];
 
-	__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
-	scaler.reset = p_userdata->reset;
-	scaler.colorTexture = src_texture;
-	scaler.depthTexture = depth;
-	scaler.motionTexture = motion;
-	scaler.exposureTexture = exposure;
-	scaler.jitterOffsetX = p_userdata->jitter_offset.x;
-	scaler.jitterOffsetY = p_userdata->jitter_offset.y;
-	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
-
-	CallbackArgs::free(&p_userdata);
-
-#pragma clang diagnostic pop
+		CallbackArgs::free(&p_userdata);
+	}
 }

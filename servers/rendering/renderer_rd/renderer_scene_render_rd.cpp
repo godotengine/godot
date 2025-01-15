@@ -437,7 +437,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			spatial_upscaler = fsr;
 		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 #if METAL_ENABLED
-			spatial_upscaler = mfx_spatial;
+			if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
+				spatial_upscaler = mfx_spatial;
+			}
 #endif
 		}
 	}

@@ -1750,7 +1750,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			break;
 		case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 #ifdef METAL_ENABLED
-			scale_type = SCALE_MFX;
+			if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
+				scale_type = SCALE_MFX;
+			} else {
+				scale_type = SCALE_NONE;
+			}
 #else
 			scale_type = SCALE_NONE;
 #endif
