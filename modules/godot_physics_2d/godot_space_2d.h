@@ -49,6 +49,7 @@ public:
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override;
 	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override;
 	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override;
+	virtual int complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) override;
 
 	GodotPhysicsDirectSpaceState2D() {}
 };

@@ -133,6 +133,7 @@ protected:
 	GDVIRTUAL10R_REQUIRED(bool, _cast_motion, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>)
 	GDVIRTUAL10R_REQUIRED(bool, _collide_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<Vector3>, int, GDExtensionPtr<int>)
 	GDVIRTUAL8R_REQUIRED(bool, _rest_info, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>)
+	GDVIRTUAL9R_REQUIRED(int, _complete_rest_info, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>, int)
 	GDVIRTUAL2RC_REQUIRED(Vector3, _get_closest_point_to_object_volume, RID, const Vector3 &)
 
 public:
@@ -178,7 +179,13 @@ public:
 		exclude = nullptr;
 		return ret;
 	}
-
+	virtual int complete_rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_infos, int p_result_max) override {
+		exclude = &p_parameters.exclude;
+		int ret = 0;
+		GDVIRTUAL_CALL(_complete_rest_info, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_infos, p_result_max, ret);
+		exclude = nullptr;
+		return ret;
+	}
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const override {
 		Vector3 ret;
 		GDVIRTUAL_CALL(_get_closest_point_to_object_volume, p_object, p_point, ret);
