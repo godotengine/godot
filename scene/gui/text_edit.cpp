@@ -6065,7 +6065,7 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 
 	// Get position of the start of caret.
 	if (has_ime_text() && ime_selection.x != 0) {
-		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
+		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret) + ime_selection.x);
 	} else {
 		caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 	}
@@ -6073,9 +6073,9 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 	// Get position of the end of caret.
 	if (has_ime_text()) {
 		if (ime_selection.y > 0) {
-			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
+			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret) + ime_selection.x + ime_selection.y);
 		} else {
-			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.size(), get_caret_line(p_caret), get_caret_column(p_caret));
+			caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.length(), get_caret_line(p_caret), get_caret_column(p_caret) + ime_text.length());
 		}
 	} else {
 		caret_pos.y = caret_pos.x;
@@ -6117,7 +6117,7 @@ void TextEdit::center_viewport_to_caret(int p_caret) {
 
 		// Get position of the start of caret.
 		if (has_ime_text() && ime_selection.x != 0) {
-			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret));
+			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x, get_caret_line(p_caret), get_caret_column(p_caret) + ime_selection.x);
 		} else {
 			caret_pos.x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 		}
@@ -6125,9 +6125,9 @@ void TextEdit::center_viewport_to_caret(int p_caret) {
 		// Get position of the end of caret.
 		if (has_ime_text()) {
 			if (ime_selection.y > 0) {
-				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret));
+				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_selection.x + ime_selection.y, get_caret_line(p_caret), get_caret_column(p_caret) + ime_selection.x + ime_selection.y);
 			} else {
-				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.size(), get_caret_line(p_caret), get_caret_column(p_caret));
+				caret_pos.y = _get_column_x_offset_for_line(get_caret_column(p_caret) + ime_text.length(), get_caret_line(p_caret), get_caret_column(p_caret) + ime_text.length());
 			}
 		} else {
 			caret_pos.y = caret_pos.x;
