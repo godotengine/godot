@@ -93,7 +93,7 @@ struct VariantCaster<const T &> {
 	template <>                                                              \
 	struct PtrToArg<m_enum> {                                                \
 		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {            \
-			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));        \
+			return *reinterpret_cast<const m_enum *>(p_ptr);                 \
 		}                                                                    \
 		typedef int64_t EncodeT;                                             \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
