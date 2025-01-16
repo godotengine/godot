@@ -72,6 +72,7 @@ public:
 		Vector3 prev_tail;
 		Vector3 current_tail;
 		Vector3 forward_vector;
+		Quaternion prev_rot;
 		float length = 0.0;
 	};
 
@@ -267,7 +268,7 @@ public:
 
 	// Helper.
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
-	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to);
+	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
 	static Vector3 snap_position_to_plane(const Transform3D &p_rest, RotationAxis p_axis, const Vector3 &p_position);
 	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
 

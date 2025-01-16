@@ -1520,6 +1520,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
 			setting->joints[i]->verlet->forward_vector = axis.normalized();
 			setting->joints[i]->verlet->length = axis.length();
+			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
 		} else if (setting->extend_end_bone && setting->end_bone_length > 0) {
 			Vector3 axis = get_end_bone_axis(setting->end_bone, setting->end_bone_direction);
 			if (axis.is_zero_approx()) {
@@ -1530,6 +1531,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->length = setting->end_bone_length;
 			setting->joints[i]->verlet->current_tail = setting->cached_center.xform(p_skeleton->get_bone_global_pose(setting->joints[i]->bone).xform(axis * setting->end_bone_length));
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
+			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
 		}
 	}
 	setting->simulation_dirty = false;
@@ -1592,10 +1594,13 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		verlet->prev_tail = verlet->current_tail;
 		verlet->current_tail = next_tail;
 
-		// Apply rotation.
+		// Convert position to rotation.
 		Vector3 from = current_rot.xform(verlet->forward_vector);
 		Vector3 to = p_inverted_center_transform.basis.xform(next_tail - current_origin).normalized();
-		Quaternion from_to = get_from_to_rotation(from, to);
+		Quaternion from_to = get_from_to_rotation(from, to, verlet->prev_rot);
+		verlet->prev_rot = from_to;
+
+		// Apply rotation.
 		from_to *= current_rot;
 		from_to = get_local_pose_rotation(p_skeleton, p_joints[i]->bone, from_to);
 		p_skeleton->set_bone_pose_rotation(p_joints[i]->bone, from_to);
@@ -1610,10 +1615,13 @@ Quaternion SpringBoneSimulator3D::get_local_pose_rotation(Skeleton3D *p_skeleton
 	return p_skeleton->get_bone_global_pose(parent).basis.orthonormalized().inverse() * p_global_pose_rotation;
 }
 
-Quaternion SpringBoneSimulator3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to) {
+Quaternion SpringBoneSimulator3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot) {
+	if (Math::is_equal_approx((float)p_from.dot(p_to), -1.0f)) {
+		return p_prev_rot; // For preventing to glitch, checking dot for detecting flip is more accurate than checking cross.
+	}
 	Vector3 axis = p_from.cross(p_to);
 	if (axis.is_zero_approx()) {
-		return Quaternion(0, 0, 0, 1);
+		return p_prev_rot;
 	}
 	float angle = p_from.angle_to(p_to);
 	if (Math::is_zero_approx(angle)) {
