@@ -34,8 +34,44 @@
 #include "core/io/json.h"
 #endif // DEV_ENABLED
 #include "core/math/geometry_2d.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
 
 #include <manifold/manifold.h>
+
+Callable CSGShape3D::_navmesh_source_geometry_parsing_callback;
+RID CSGShape3D::_navmesh_source_geometry_parser;
+
+void CSGShape3D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&CSGShape3D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer3D::get_singleton()->source_geometry_parser_create();
+		NavigationServer3D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void CSGShape3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	CSGShape3D *csgshape3d = Object::cast_to<CSGShape3D>(p_node);
+
+	if (csgshape3d == nullptr) {
+		return;
+	}
+
+	NavigationMesh::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+	uint32_t parsed_collision_mask = p_navigation_mesh->get_collision_mask();
+
+	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS && csgshape3d->is_using_collision() && (csgshape3d->get_collision_layer() & parsed_collision_mask)) || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
+		Array meshes = csgshape3d->get_meshes();
+		if (!meshes.is_empty()) {
+			Ref<Mesh> mesh = meshes[1];
+			if (mesh.is_valid()) {
+				p_source_geometry_data->add_mesh(mesh, csgshape3d->get_global_transform());
+			}
+		}
+	}
+}
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
