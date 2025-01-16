@@ -612,7 +612,13 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 }
 
 void ProjectManager::_open_selected_projects_check_recovery_mode() {
-	ProjectList::Item project = project_list->get_selected_projects()[0];
+	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
+
+	if (selected_projects.is_empty()) {
+		return;
+	}
+
+	const ProjectList::Item &project = selected_projects[0];
 	if (project.missing) {
 		return;
 	}
