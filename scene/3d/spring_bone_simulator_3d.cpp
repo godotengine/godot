@@ -302,7 +302,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "stiffness/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "drag/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "drag/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, path + "gravity/value", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "gravity/damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, path + "gravity/direction"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "joint_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Joints," + path + "joints/,static,const"));
@@ -314,7 +314,7 @@ void SpringBoneSimulator3D::_get_property_list(List<PropertyInfo> *p_list) const
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "stiffness", PROPERTY_HINT_RANGE, "0,4,0.01,or_greater"));
 			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "drag", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "gravity", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, joint_path + "gravity", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater,or_less,suffix:m/s"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, joint_path + "gravity_direction"));
 		}
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "enable_all_child_collisions"));
