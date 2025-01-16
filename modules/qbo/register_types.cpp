@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_node.h                                                           */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,87 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "register_types.h"
 
-#include "../gltf_defines.h"
+#include "qbo_document.h"
 
-#include "core/io/resource.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "modules/qbo/editor/editor_scene_importer_qbo.h"
+static void _editor_init() {
+	Ref<EditorSceneFormatImporterQBO> import_qbo;
+	import_qbo.instantiate();
+	ResourceImporterScene::add_scene_importer(import_qbo);
+}
+#endif // TOOLS_ENABLED
 
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
-	friend class GLTFDocument;
-	friend class SkinTool;
-	friend class FBXDocument;
-	friend class QBODocument;
+void initialize_qbo_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(QBODocument);
+	}
 
-private:
-	String original_name;
-	GLTFNodeIndex parent = -1;
-	int height = -1;
-	Transform3D transform;
-	GLTFMeshIndex mesh = -1;
-	GLTFCameraIndex camera = -1;
-	GLTFSkinIndex skin = -1;
-	GLTFSkeletonIndex skeleton = -1;
-	bool joint = false;
-	bool visible = true;
-	Vector<int> children;
-	GLTFLightIndex light = -1;
-	Dictionary additional_data;
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		// Editor-specific API.
+		ClassDB::APIType prev_api = ClassDB::get_current_api();
+		ClassDB::set_current_api(ClassDB::API_EDITOR);
 
-protected:
-	static void _bind_methods();
+		GDREGISTER_CLASS(EditorSceneFormatImporterQBO);
 
-public:
-	String get_original_name();
-	void set_original_name(const String &p_name);
+		ClassDB::set_current_api(prev_api);
+		EditorNode::add_init_callback(_editor_init);
+	}
+#endif // TOOLS_ENABLED
+}
 
-	GLTFNodeIndex get_parent();
-	void set_parent(GLTFNodeIndex p_parent);
-
-	int get_height();
-	void set_height(int p_height);
-
-	Transform3D get_xform();
-	void set_xform(const Transform3D &p_xform);
-
-	Transform3D get_rest_xform();
-	void set_rest_xform(const Transform3D &p_rest_xform);
-
-	GLTFMeshIndex get_mesh();
-	void set_mesh(GLTFMeshIndex p_mesh);
-
-	GLTFCameraIndex get_camera();
-	void set_camera(GLTFCameraIndex p_camera);
-
-	GLTFSkinIndex get_skin();
-	void set_skin(GLTFSkinIndex p_skin);
-
-	GLTFSkeletonIndex get_skeleton();
-	void set_skeleton(GLTFSkeletonIndex p_skeleton);
-
-	Vector3 get_position();
-	void set_position(const Vector3 &p_position);
-
-	Quaternion get_rotation();
-	void set_rotation(const Quaternion &p_rotation);
-
-	Vector3 get_scale();
-	void set_scale(const Vector3 &p_scale);
-
-	Vector<int> get_children();
-	void set_children(const Vector<int> &p_children);
-	void append_child_index(int p_child_index);
-
-	GLTFLightIndex get_light();
-	void set_light(GLTFLightIndex p_light);
-
-	bool get_visible();
-	void set_visible(bool p_visible);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	bool has_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
-};
+void uninitialize_qbo_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_node.h                                                           */
+/*  editor_scene_importer_qbo.cpp                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,87 +28,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "editor_scene_importer_qbo.h"
 
-#include "../gltf_defines.h"
+#ifdef TOOLS_ENABLED
 
-#include "core/io/resource.h"
+#include "modules/qbo/qbo_document.h"
 
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
-	friend class GLTFDocument;
-	friend class SkinTool;
-	friend class FBXDocument;
-	friend class QBODocument;
+void EditorSceneFormatImporterQBO::get_extensions(List<String> *r_extensions) const {
+	r_extensions->push_back("qbo");
+}
 
-private:
-	String original_name;
-	GLTFNodeIndex parent = -1;
-	int height = -1;
-	Transform3D transform;
-	GLTFMeshIndex mesh = -1;
-	GLTFCameraIndex camera = -1;
-	GLTFSkinIndex skin = -1;
-	GLTFSkeletonIndex skeleton = -1;
-	bool joint = false;
-	bool visible = true;
-	Vector<int> children;
-	GLTFLightIndex light = -1;
-	Dictionary additional_data;
+Node *EditorSceneFormatImporterQBO::import_scene(const String &p_path, uint32_t p_flags,
+		const HashMap<StringName, Variant> &p_options,
+		List<String> *r_missing_deps, Error *r_err) {
+	Ref<QBODocument> gltf;
+	gltf.instantiate();
+	Ref<GLTFState> state;
+	state.instantiate();
+	if (p_options.has("gltf/naming_version")) {
+		int naming_version = p_options["gltf/naming_version"];
+		gltf->set_naming_version(naming_version);
+	}
+	if (p_options.has("gltf/embedded_image_handling")) {
+		int32_t enum_option = p_options["gltf/embedded_image_handling"];
+		state->set_handle_binary_image(enum_option);
+	}
+	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
+		state->set_import_as_skeleton_bones(true);
+	}
+	if (p_options.has(SNAME("extract_path"))) {
+		state->set_extract_path(p_options["extract_path"]);
+	}
+	state->set_bake_fps(p_options["animation/fps"]);
+	Error err = gltf->append_from_file(p_path, state, p_flags);
+	if (err != OK) {
+		if (r_err) {
+			*r_err = err;
+		}
+		return nullptr;
+	}
+	if (p_options.has("animation/import")) {
+		state->set_create_animations(bool(p_options["animation/import"]));
+	}
 
-protected:
-	static void _bind_methods();
+	return gltf->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
+}
 
-public:
-	String get_original_name();
-	void set_original_name(const String &p_name);
-
-	GLTFNodeIndex get_parent();
-	void set_parent(GLTFNodeIndex p_parent);
-
-	int get_height();
-	void set_height(int p_height);
-
-	Transform3D get_xform();
-	void set_xform(const Transform3D &p_xform);
-
-	Transform3D get_rest_xform();
-	void set_rest_xform(const Transform3D &p_rest_xform);
-
-	GLTFMeshIndex get_mesh();
-	void set_mesh(GLTFMeshIndex p_mesh);
-
-	GLTFCameraIndex get_camera();
-	void set_camera(GLTFCameraIndex p_camera);
-
-	GLTFSkinIndex get_skin();
-	void set_skin(GLTFSkinIndex p_skin);
-
-	GLTFSkeletonIndex get_skeleton();
-	void set_skeleton(GLTFSkeletonIndex p_skeleton);
-
-	Vector3 get_position();
-	void set_position(const Vector3 &p_position);
-
-	Quaternion get_rotation();
-	void set_rotation(const Quaternion &p_rotation);
-
-	Vector3 get_scale();
-	void set_scale(const Vector3 &p_scale);
-
-	Vector<int> get_children();
-	void set_children(const Vector<int> &p_children);
-	void append_child_index(int p_child_index);
-
-	GLTFLightIndex get_light();
-	void set_light(GLTFLightIndex p_light);
-
-	bool get_visible();
-	void set_visible(bool p_visible);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	bool has_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-
-	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
-};
+#endif // TOOLS_ENABLED
