@@ -1039,6 +1039,9 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 if env["compiledb"]:
     env.Tool("compilation_db")
     env.Alias("compiledb", env.CompilationDatabase())
+    env.NoCache(env.CompilationDatabase())
+    if not env["verbose"]:
+        env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
 
 if env["ninja"]:
     if env.scons_version < (4, 2, 0):
