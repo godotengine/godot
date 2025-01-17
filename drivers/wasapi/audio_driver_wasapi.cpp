@@ -800,10 +800,10 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 								for (unsigned int j = 0; j < last_chan; j++) {
 									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
 								}
-								int32_t l = ad->samples_in.write[write_ofs++];
-								int32_t r = ad->samples_in.write[write_ofs++];
-								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
+								int32_t left = ad->samples_in.write[write_ofs++];
+								int32_t right = ad->samples_in.write[write_ofs++];
+								int32_t channel = (int32_t)(((int64_t)left + (int64_t)right) / 2);
+								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, channel);
 							}
 						} else {
 							for (unsigned int i = 0; i < write_frames; i++) {
@@ -906,45 +906,45 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					// fixme: Only works for floating point atm
 					for (UINT32 j = 0; j < num_frames_available; j++) {
-						int32_t l = 0;
-						int32_t r = 0;
+						int32_t left = 0;
+						int32_t right = 0;
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-							l = r = 0;
+							left = right = 0;
 						} else {
 							if (ad->audio_input.channels == 2) {
-								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
-								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
+								left = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
+								right = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
 							} else if (ad->audio_input.channels == 1) {
-								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+								left = right = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
 							} else if (ad->audio_input.channels >= 2) {
 								int channels = ad->audio_input.channels;
 								for (int ch = 0; ch < channels - 1; ch++) {
 									int32_t sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + ch);
 									if (ch % 2 == 0) {
-										r += sample;
+										right += sample;
 									} else {
-										l += sample;
+										left += sample;
 									}
 								}
 								int32_t last_sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + (channels - 1));
-								r += last_sample;
+								right += last_sample;
 								if (channels % 2 != 0) {
-									l += last_sample;
-									l /= ((channels + 1) / 2);
-									r /= ((channels + 1) / 2);
+									left += last_sample;
+									left /= ((channels + 1) / 2);
+									right /= ((channels + 1) / 2);
 								} else {
-									l /= (channels / 2);
-									r /= (channels / 2);
+									left /= (channels / 2);
+									right /= (channels / 2);
 								}
 							} else {
-								l = r = 0;
+								left = right = 0;
 								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
 							}
 						}
 
-						ad->input_buffer_write(l);
-						ad->input_buffer_write(r);
+						ad->input_buffer_write(left);
+						ad->input_buffer_write(right);
 					}
 
 					read_frames += num_frames_available;
