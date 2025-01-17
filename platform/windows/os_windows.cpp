@@ -2346,7 +2346,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
-void OS_Windows::alloc_console() {
+void OS_Windows::_alloc_console() {
 	AllocConsole();
 }
 
