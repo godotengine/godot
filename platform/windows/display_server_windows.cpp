@@ -3051,8 +3051,14 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 		buttons.push_back(s.utf16());
 	}
 
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
 	config.pszWindowTitle = (LPCWSTR)(title.get_data());
 	config.pszContent = (LPCWSTR)(message.get_data());
+	config.hwndParent = windows[window_id].hWnd;
 
 	const int button_count = buttons.size();
 	config.cButtons = button_count;
@@ -3061,7 +3067,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
 	if (tbuttons) {
 		for (int i = 0; i < button_count; i++) {
-			tbuttons[i].nButtonID = i;
+			tbuttons[i].nButtonID = i + 100;
 			tbuttons[i].pszButtonText = (LPCWSTR)(buttons[i].get_data());
 		}
 	}
@@ -3078,7 +3084,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
 			if (p_callback.is_valid()) {
-				Variant button = button_pressed;
+				Variant button = button_pressed - 100;
 				const Variant *args[1] = { &button };
 				Variant ret;
 				Callable::CallError ce;
@@ -3228,7 +3234,7 @@ Error DisplayServerWindows::dialog_input_text(String p_title, String p_descripti
 		WCHAR font[13]; // must be "MS Shell Dlg"
 	} template_base = {
 		1, 0xFFFF, 0, 0,
-		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION,
 		3, 0, 0, 20, 20, L"", L"#32770", L"", 8, FW_NORMAL, 0, DEFAULT_CHARSET, L"MS Shell Dlg"
 	};
 
