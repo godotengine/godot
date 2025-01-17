@@ -13,6 +13,7 @@ jobs:
   godot-cpp-tests:
     runs-on: ubuntu-24.04
     name: Build and test Godot CPP
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
