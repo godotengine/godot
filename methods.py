@@ -847,8 +847,9 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
                 except OSError:
                     print_error(f'Failed to remove cache file "{file}"; skipping.')
                     count -= 1
-            if verbose:
+            if verbose and count:
                 print_info(f"Purged {count} file{'s' if count else ''} from cache.")
+            break
 
 
 def prepare_cache(env) -> None:
