@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FFILibrary" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="bind_method" qualifiers="vararg">
+			<return type="Variant" />
+			<description>
+				Registers native function and returns [Callable].
+				Argument [code skip-lint]0[/code] should contain either [enum FFIType] value or registered structure [StringName], describing function return type.
+				Argument [code skip-lint]1[/code] should contain [StringName] with the function name.
+				Arguments [code skip-lint]2..n[/code] should contain either [enum FFIType] values or registered structure [StringName]s, describing function argument types.
+			</description>
+		</method>
+		<method name="bind_struct" qualifiers="vararg">
+			<return type="Variant" />
+			<description>
+				Registers native structure type and return [code]true[/code] if successful.
+				Argument [code skip-lint]0[/code] should contain [StringName] with the structure name.
+				Arguments [code skip-lint]1..n[/code] should contain either [enum FFIType] values or registered structure [StringName]s, describing structure element types.
+			</description>
+		</method>
+		<method name="get_method" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [Callable] for the previously registered native function.
+			</description>
+		</method>
+		<method name="get_struct_offsets" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns structure element offsets.
+			</description>
+		</method>
+		<method name="get_struct_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns structure size.
+			</description>
+		</method>
+		<method name="is_opened" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if library is open.
+			</description>
+		</method>
+		<method name="open">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="abi" type="int" enum="FFILibrary.FFIABI" default="0" />
+			<description>
+				Opens dynamic library.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="ABI_DEFAULT" value="0" enum="FFIABI">
+			Default system ABI, based on current architecture and platform.
+		</constant>
+		<constant name="ABI_SYSV" value="1" enum="FFIABI">
+			System-V ABI.
+		</constant>
+		<constant name="ABI_VFP" value="2" enum="FFIABI">
+			ARM32 VFP ABI.
+		</constant>
+		<constant name="ABI_WIN64" value="3" enum="FFIABI">
+			x86_64 Windows MSVC ABI.
+		</constant>
+		<constant name="ABI_GNUW64" value="4" enum="FFIABI">
+			x86_64 Windows GNU ABI.
+		</constant>
+		<constant name="ABI_UNIX64" value="5" enum="FFIABI">
+			x86_64 Unix ABI.
+		</constant>
+		<constant name="ABI_STDCALL" value="6" enum="FFIABI">
+			x86_32 stdcall ABI.
+		</constant>
+		<constant name="ABI_THISCALL" value="7" enum="FFIABI">
+			x86_32 thiscall ABI.
+		</constant>
+		<constant name="ABI_FASTCALL" value="8" enum="FFIABI">
+			x86_32 fastcall ABI.
+		</constant>
+		<constant name="ABI_MS_CDECL" value="9" enum="FFIABI">
+			x86_32 cdecl ABI.
+		</constant>
+		<constant name="ABI_PASCAL" value="10" enum="FFIABI">
+			x86_32 Borland Pascal ABI.
+		</constant>
+		<constant name="ABI_REGISTER" value="11" enum="FFIABI">
+			x86_32 Delphi and Free Pascal ABI.
+		</constant>
+		<constant name="TYPE_VOID" value="0" enum="FFIType">
+			This cannot be used for argument types, only for return values.
+		</constant>
+		<constant name="TYPE_UINT8" value="1" enum="FFIType">
+			An unsigned, 8-bit integer type.
+		</constant>
+		<constant name="TYPE_SINT8" value="2" enum="FFIType">
+			A signed, 8-bit integer type.
+		</constant>
+		<constant name="TYPE_UINT16" value="3" enum="FFIType">
+			An unsigned, 16-bit integer type.
+		</constant>
+		<constant name="TYPE_SINT16" value="4" enum="FFIType">
+			A signed, 16-bit integer type.
+		</constant>
+		<constant name="TYPE_UINT32" value="5" enum="FFIType">
+			An unsigned, 32-bit integer type.
+		</constant>
+		<constant name="TYPE_SINT32" value="6" enum="FFIType">
+			A signed, 32-bit integer type.
+		</constant>
+		<constant name="TYPE_UINT64" value="7" enum="FFIType">
+			An unsigned, 64-bit integer type.
+		</constant>
+		<constant name="TYPE_SINT64" value="8" enum="FFIType">
+			A signed, 64-bit integer type.
+		</constant>
+		<constant name="TYPE_FLOAT" value="9" enum="FFIType">
+			The C [code skip-lint]float[/code] type.
+		</constant>
+		<constant name="TYPE_DOUBLE" value="10" enum="FFIType">
+			The C [code skip-lint]double[/code] type.
+		</constant>
+		<constant name="TYPE_UCHAR" value="11" enum="FFIType">
+			The C [code skip-lint]unsigned char[/code] type.
+		</constant>
+		<constant name="TYPE_SCHAR" value="12" enum="FFIType">
+			The C [code skip-lint]signed char[/code] type.
+		</constant>
+		<constant name="TYPE_USHORT" value="13" enum="FFIType">
+			The C [code skip-lint]unsigned short[/code] type.
+		</constant>
+		<constant name="TYPE_SSHORT" value="14" enum="FFIType">
+			The C [code skip-lint]short[/code] type.
+		</constant>
+		<constant name="TYPE_UINT" value="15" enum="FFIType">
+			The C [code skip-lint]unsigned int[/code] type.
+		</constant>
+		<constant name="TYPE_SINT" value="16" enum="FFIType">
+			The C [code skip-lint]int[/code] type.
+		</constant>
+		<constant name="TYPE_ULONG" value="17" enum="FFIType">
+			The C [code skip-lint]unsigned long[/code] type.
+		</constant>
+		<constant name="TYPE_SLONG" value="18" enum="FFIType">
+			The C [code skip-lint]long[/code] type.
+		</constant>
+		<constant name="TYPE_POINTER" value="19" enum="FFIType">
+			A opaque [code skip-lint]void *[/code] pointer.
+		</constant>
+	</constants>
+</class>

@@ -486,6 +486,20 @@
 				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
 			</description>
 		</method>
+		<method name="unsafe_from_ptr">
+			<return type="void" />
+			<param index="0" name="ptr" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				Resizes array and copies data for the unsafe pointer.
+			</description>
+		</method>
+		<method name="unsafe_get_ptr">
+			<return type="int" />
+			<description>
+				Returns unsafe raw pointer to the array data.
+			</description>
+		</method>
 	</methods>
 	<operators>
 		<operator name="operator !=">

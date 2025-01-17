@@ -476,6 +476,19 @@ They are marked with `/* GODOT start */` and `/* GODOT end */`
 comments and a patch is provided in the `patches` folder.
 
 
+## libffi
+
+- Upstream: https://github.com/libffi/libffi/
+- Version: 3.4.4 (f24180be1367f942824365b131ae894b9c769c7d, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `LICENSE`
+- `include/*`
+- `src/*` and subfolders for supported architectures.
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
