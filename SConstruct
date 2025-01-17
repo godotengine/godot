@@ -107,22 +107,10 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-custom_tools = ["default"]
-
-platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
-
-if platform_arg == "android":
-    custom_tools = ["clang", "clang++", "as", "ar", "link"]
-elif platform_arg == "web":
-    # Use generic POSIX build toolchain for Emscripten.
-    custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
-elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
-    custom_tools = ["mingw"]
-
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env = Environment(tools=custom_tools)
+env = Environment()
 env.PrependENVPath("PATH", os.getenv("PATH"))
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
@@ -168,11 +156,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-if env.scons_version >= (4, 3):
-    opts.Add(["platform", "p"], "Target platform (%s)" % "|".join(platform_list), "")
-else:
-    opts.Add("platform", "Target platform (%s)" % "|".join(platform_list), "")
-    opts.Add("p", "Alias for 'platform'", "")
+opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
 opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
@@ -312,10 +296,7 @@ if env["import_env_vars"]:
 
 # Platform selection: validate input, and add options.
 
-if env.scons_version < (4, 3) and not env["platform"]:
-    env["platform"] = env["p"]
-
-if env["platform"] == "":
+if not env["platform"]:
     # Missing `platform` argument, try to detect platform automatically
     if (
         sys.platform.startswith("linux")
@@ -330,7 +311,7 @@ if env["platform"] == "":
     elif sys.platform == "win32":
         env["platform"] = "windows"
 
-    if env["platform"] != "":
+    if env["platform"]:
         print(f'Automatically detected platform: {env["platform"]}')
 
 # Deprecated aliases kept for compatibility.
@@ -352,12 +333,27 @@ if env["platform"] not in platform_list:
 
     if env["platform"] == "list":
         print(text)
-    elif env["platform"] == "":
+    elif not env["platform"]:
         print_error("Could not detect platform automatically.\n" + text)
     else:
         print_error(f'Invalid target platform "{env["platform"]}".\n' + text)
 
     Exit(0 if env["platform"] == "list" else 255)
+
+
+# FIXME: Tool assignment happening at this stage is a direct consequence of getting the platform logic AFTER the SCons
+# environment was already been constructed. Fixing this would require a broader refactor where all options are setup
+# ahead of time with native validator/converter functions.
+custom_tools = []
+if env["platform"] == "android":
+    custom_tools += ["clang", "clang++", "as", "ar", "link"]
+elif env["platform"] == "web":
+    custom_tools += ["cc", "c++", "ar", "link", "textfile", "zip"]
+elif env["platform"] == "windows" and methods.get_cmdline_bool("use_mingw", False):
+    custom_tools += ["mingw"]
+for tool in custom_tools:
+    env.Tool(tool)
+
 
 # Add platform-specific options.
 if env["platform"] in platform_opts:
@@ -587,7 +583,7 @@ if env["dev_mode"]:
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
     env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-    if platform_arg == "android":
+    if env["platform"] == "android":
         env["swappy"] = methods.get_cmdline_bool("swappy", True)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
     env["lto"] = ARGUMENTS.get("lto", "auto")
