@@ -34,6 +34,8 @@
 # building them into the Godot binary, you may remove the corresponding
 # license details from this file.
 
+#testing what it looks like when I make a change
+
 -----------------------------------------------------------------------
 
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
