@@ -3024,7 +3024,7 @@ bool EditorFileSystem::_copy_directory(const String &p_from, const String &p_to,
 	for (String F = old_dir->_get_next(); !F.is_empty(); F = old_dir->_get_next()) {
 		if (old_dir->current_is_dir()) {
 			success = _copy_directory(p_from.path_join(F), p_to.path_join(F), p_files) && success;
-		} else if (F.get_extension() != "import") {
+		} else if (F.get_extension() != "import" && F.get_extension() != "uid") {
 			CopiedFile copy;
 			copy.from = p_from.path_join(F);
 			copy.to = p_to.path_join(F);
