@@ -1053,7 +1053,9 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	project_features = _trim_to_supported_features(project_features);
+	is_changed = true;
 	set_setting("application/config/features", project_features);
+	is_changed = false;
 #endif // TOOLS_ENABLED
 
 	RBSet<_VCSort> vclist;
