@@ -423,12 +423,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
 	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
 
-	bool valid_dbg_specifier = false;
-	bool valid_rel_specifier = false;
-	Variant provisioning_profile_specifier_dbg_variant = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_IOS_PROFILE_SPECIFIER_DEBUG, &valid_dbg_specifier);
+	String provisioning_profile_specifier_dbg = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_IOS_PROFILE_SPECIFIER_DEBUG).operator String();
+	bool valid_dbg_specifier = !provisioning_profile_specifier_dbg.is_empty();
 	dbg_manual |= valid_dbg_specifier;
 
-	Variant provisioning_profile_specifier_rel_variant = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_IOS_PROFILE_SPECIFIER_RELEASE, &valid_rel_specifier);
+	String provisioning_profile_specifier_rel = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_IOS_PROFILE_SPECIFIER_RELEASE).operator String();
+	bool valid_rel_specifier = !provisioning_profile_specifier_rel.is_empty();
 	rel_manual |= valid_rel_specifier;
 
 	String str;
@@ -466,13 +466,11 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier_debug")) {
-			String specifier = provisioning_profile_specifier_dbg_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_dbg_variant : "";
-			strnew += lines[i].replace("$provisioning_profile_specifier_debug", specifier) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_specifier_debug", provisioning_profile_specifier_dbg) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier_release")) {
-			String specifier = provisioning_profile_specifier_rel_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_rel_variant : "";
-			strnew += lines[i].replace("$provisioning_profile_specifier_release", specifier) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_specifier_release", provisioning_profile_specifier_rel) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier")) {
-			String specifier = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
+			String specifier = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
 			strnew += lines[i].replace("$provisioning_profile_specifier", specifier) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_uuid_release")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE)) + "\n";
@@ -491,11 +489,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
 			}
 		} else if (lines[i].contains("$provisioning_profile_uuid")) {
-			bool valid = false;
-			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG, &valid) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE, &valid);
-			if (!valid || uuid.is_empty()) {
-				Variant variant = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
-				valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
+			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE);
+			if (uuid.is_empty()) {
+				Variant variant = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
+				bool valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
 				uuid = valid ? variant : "";
 			}
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
