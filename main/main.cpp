@@ -1708,8 +1708,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing write-movie argument, aborting.\n");
 				goto error;
 			}
+#if defined(WINDOWS_ENABLED) && !defined(WINDOWS_SUBSYSTEM_CONSOLE)
 		} else if (arg == "--force-console") {
-			OS::get_singleton()->alloc_console();
+			OS::get_singleton()->_alloc_console();
+#endif
 		} else if (arg == "--disable-vsync") {
 			disable_vsync = true;
 		} else if (arg == "--print-fps") {
