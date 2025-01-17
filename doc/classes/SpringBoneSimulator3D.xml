@@ -447,7 +447,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="gravity" type="float" />
 			<description>
-				Sets the gravity amount of the bone chain.
+				Sets the gravity amount of the bone chain. This value is not an acceleration, but a constant velocity of movement in [method set_gravity_direction].
 				If [param gravity] is not [code]0[/code], the modified pose will not return to the original pose since it is always affected by gravity.
 				The value is scaled by [method set_gravity_damping_curve] and cached in each joint setting in the joint list.
 			</description>
@@ -465,7 +465,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="gravity_direction" type="Vector3" />
 			<description>
-				Sets the gravity direction of the bone chain.
+				Sets the gravity direction of the bone chain. This value is internally normalized and then multiplied by [method set_gravity].
 				The value is cached in each joint setting in the joint list.
 			</description>
 		</method>
