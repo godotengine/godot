@@ -1223,10 +1223,12 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::IMEUpdateEventMessage> ime_update_msg = msg;
 		if (ime_update_msg.is_valid()) {
-			ime_text = ime_update_msg->text;
-			ime_selection = ime_update_msg->selection;
+			if (ime_text != ime_update_msg->text || ime_selection != ime_update_msg->selection) {
+				ime_text = ime_update_msg->text;
+				ime_selection = ime_update_msg->selection;
 
-			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			}
 		}
 	}
 
