@@ -458,13 +458,13 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 			}
 
 			err = U_ZERO_ERROR;
+			icu_data_loaded = true;
 		}
 
 		u_init(&err);
 		if (U_FAILURE(err)) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
 		}
-		icu_data_loaded = true;
 	}
 #endif
 	return true;
