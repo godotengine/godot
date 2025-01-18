@@ -700,6 +700,8 @@ void JoltArea3D::call_queries() {
 }
 
 void JoltArea3D::post_step(float p_step, JPH::Body &p_jolt_body) {
+	JoltShapedObject3D::post_step(p_step, p_jolt_body);
+
 	if (_has_pending_events()) {
 		_enqueue_call_queries();
 	}
