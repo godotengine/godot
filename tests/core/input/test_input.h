@@ -34,80 +34,8 @@
 #include "tests/test_macros.h"
 
 namespace TestInput {
-TEST_CASE("[Input] Correctly removes keys from keyset when modifier pushed first") {
-	InputMap *map = memnew(InputMap);
-	Input *input = memnew(Input);
 
-	input->set_use_accumulated_input(false);
-
-	// Press "shift"
-	// modifier is not set when pressed
-	InputEventKey *shift = memnew(InputEventKey());
-	shift->set_keycode(Key::SHIFT);
-	shift->set_pressed(true);
-	input->parse_input_event(shift);
-
-	// Press "_"
-	InputEventKey *underscore = memnew(InputEventKey());
-	underscore->set_pressed(true);
-	underscore->set_shift_pressed(true);
-	underscore->set_keycode(Key::UNDERSCORE);
-	input->parse_input_event(underscore);
-	CHECK(input->is_anything_pressed());
-
-	// Release "shift"
-	// Modifier is set when released
-	InputEventKey *shift_release = memnew(InputEventKey());
-	shift_release->set_keycode(Key::SHIFT);
-	shift_release->set_shift_pressed(true);
-	shift_release->set_pressed(false);
-	input->parse_input_event(shift_release);
-	CHECK_FALSE(input->is_anything_pressed());
-	memdelete(input);
-	memdelete(map);
-}
-
-TEST_CASE("[Input] Correctly removes keys from keyset when modifier pushed second") {
-	InputMap *map = memnew(InputMap);
-	Input *input = memnew(Input);
-
-	input->set_use_accumulated_input(false);
-
-	// Press "-"
-	InputEventKey *minus = memnew(InputEventKey());
-	minus->set_pressed(true);
-	minus->set_keycode(Key::MINUS);
-	input->parse_input_event(minus);
-
-	// Press "shift"
-	// modifier is not set when pressed
-	InputEventKey *shift = memnew(InputEventKey());
-	shift->set_keycode(Key::SHIFT);
-	shift->set_pressed(true);
-	input->parse_input_event(shift);
-
-	// Release "_"
-	InputEventKey *underscore = memnew(InputEventKey());
-	underscore->set_pressed(false);
-	underscore->set_shift_pressed(true);
-	underscore->set_keycode(Key::UNDERSCORE);
-	input->parse_input_event(underscore);
-
-	CHECK(input->is_anything_pressed());
-
-	// Release "shift"
-	// Modifier is set when released
-	InputEventKey *shift_release = memnew(InputEventKey());
-	shift_release->set_keycode(Key::SHIFT);
-	shift_release->set_shift_pressed(true);
-	shift_release->set_pressed(false);
-	input->parse_input_event(shift_release);
-	CHECK_FALSE(input->is_anything_pressed());
-	memdelete(input);
-	memdelete(map);
-}
-
-TEST_CASE("[Input] Correctly removes modifier from keyset") {
+TEST_CASE("[Input] Correctly removes keys from physical keyset") {
 	InputMap *map = memnew(InputMap);
 	Input *input = memnew(Input);
 
@@ -115,7 +43,7 @@ TEST_CASE("[Input] Correctly removes modifier from keyset") {
 	InputEventKey *shift = memnew(InputEventKey);
 
 	// Press "shift"
-	shift->set_keycode(Key::SHIFT);
+	shift->set_physical_keycode(Key::SHIFT);
 	shift->set_pressed(true);
 	input->parse_input_event(shift);
 
@@ -123,7 +51,7 @@ TEST_CASE("[Input] Correctly removes modifier from keyset") {
 
 	// Release "shift"
 	InputEventKey *shift_release = memnew(InputEventKey());
-	shift_release->set_keycode(Key::SHIFT);
+	shift_release->set_physical_keycode(Key::SHIFT);
 	shift_release->set_shift_pressed(true);
 	shift_release->set_pressed(false);
 	input->parse_input_event(shift_release);

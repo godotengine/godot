@@ -295,7 +295,7 @@ bool Input::is_anything_pressed() const {
 		return false;
 	}
 
-	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+	if (!physical_keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
 		return true;
 	}
 
@@ -315,7 +315,7 @@ bool Input::is_anything_pressed_except_mouse() const {
 		return false;
 	}
 
-	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
+	if (!physical_keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
 		return true;
 	}
 
@@ -676,19 +676,6 @@ Vector3 Input::get_gyroscope() const {
 	return gyroscope;
 }
 
-void Input::remove_modifiers(Ref<InputEventKey> k) {
-	Vector<Key> keys_to_remove = Vector<Key>();
-	for (const Key &key : keys_pressed) {
-		Key mod = key & k->get_modifiers_mask();
-		if (mod != Key::NONE) {
-			keys_to_remove.push_back(key);
-		}
-	}
-	for (const Key &key : keys_to_remove) {
-		keys_pressed.erase(key);
-	}
-}
-
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
@@ -704,15 +691,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {
 		if (k->is_pressed()) {
-			keys_pressed.insert(k->get_keycode_with_modifiers());
+			keys_pressed.insert(k->get_keycode());
 		} else {
-			if (k->get_modifiers_mask() > 0) {
-				keys_pressed.erase(k->get_keycode());
-				remove_modifiers(k);
-
-			} else {
-				keys_pressed.erase(k->get_keycode_with_modifiers());
-			}
+			keys_pressed.erase(k->get_keycode());
 		}
 	}
 	if (k.is_valid() && !k->is_echo() && k->get_physical_keycode() != Key::NONE) {
