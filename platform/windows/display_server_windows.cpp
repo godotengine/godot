@@ -4690,7 +4690,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
+						// Make sure to check the latest key state since
+						// we're in the middle of the message queue.
+						if (GetAsyncKeyState(VK_SHIFT) < 0) {
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
