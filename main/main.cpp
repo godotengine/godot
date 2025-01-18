@@ -579,6 +579,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--force-console", "Force creation of console window on Windows.\n");
 	print_help_option("", "Does not spawn a child process, unlike the console executable. Allows for viewing Godot logs when debugging a C# project with Visual Studio.\n");
 #endif
+
 	print_help_title("Display options");
 	print_help_option("-f, --fullscreen", "Request fullscreen mode.\n");
 	print_help_option("-m, --maximized", "Request a maximized window.\n");
