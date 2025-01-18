@@ -616,6 +616,7 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Remove duplicates/unwanted parameters.
 	List<String>::Element *E = r_arguments.front();
+	List<String>::Element *user_args_element = nullptr;
 	while (E) {
 		List<String>::Element *N = E->next();
 
@@ -629,23 +630,26 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 			}
 		} else if (E->get() == "-f" || E->get() == "--fullscreen" || E->get() == "-m" || E->get() == "--maximized" || E->get() == "-t" || E->get() == "-always-on-top") {
 			r_arguments.erase(E);
+		} else if (E->get() == "--" || E->get() == "++") {
+			user_args_element = E;
+			break;
 		}
 
 		E = N;
 	}
 
 	// Add the editor window's native ID so the started game can directly set it as its parent.
-	r_arguments.push_back("--wid");
-	r_arguments.push_back(itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
+	List<String>::Element *N = r_arguments.insert_before(user_args_element, "--wid");
+	N = r_arguments.insert_after(N, itos(DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, get_window()->get_window_id())));
 
 	// Be sure to have the correct window size in the embedded_process control.
 	_update_embed_window_size();
 
 	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
-	r_arguments.push_back("--position");
-	r_arguments.push_back(itos(rect.position.x) + "," + itos(rect.position.y));
-	r_arguments.push_back("--resolution");
-	r_arguments.push_back(itos(rect.size.x) + "x" + itos(rect.size.y));
+	N = r_arguments.insert_after(N, "--position");
+	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
+	N = r_arguments.insert_after(N, "--resolution");
+	r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
 }
 
 void GameView::_window_before_closing() {
