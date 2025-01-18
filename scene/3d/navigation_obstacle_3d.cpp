@@ -116,7 +116,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 			set_physics_process_internal(false);
 			_update_map(RID());
 #ifdef DEBUG_ENABLED
-			_update_debug();
+			_clear_debug();
 #endif // DEBUG_ENABLED
 		} break;
 
@@ -708,5 +708,16 @@ void NavigationObstacle3D::_update_static_obstacle_debug() {
 		rs->instance_set_scenario(static_obstacle_debug_instance_rid, get_world_3d()->get_scenario());
 		rs->instance_set_visible(static_obstacle_debug_instance_rid, is_visible_in_tree());
 	}
+}
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+void NavigationObstacle3D::_clear_debug() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	rs->mesh_clear(fake_agent_radius_debug_mesh_rid);
+	rs->mesh_clear(static_obstacle_debug_mesh_rid);
+	rs->instance_set_scenario(fake_agent_radius_debug_instance_rid, RID());
+	rs->instance_set_scenario(static_obstacle_debug_instance_rid, RID());
 }
 #endif // DEBUG_ENABLED
