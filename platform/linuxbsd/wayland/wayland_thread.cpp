@@ -4119,6 +4119,7 @@ void WaylandThread::selection_set_text(const String &p_text) {
 
 	if (registry.wl_data_device_manager == nullptr) {
 		DEBUG_LOG_WAYLAND_THREAD("Couldn't set selection, wl_data_device_manager global not available.");
+		return;
 	}
 
 	if (ss == nullptr) {
@@ -4246,6 +4247,11 @@ void WaylandThread::primary_set_text(const String &p_text) {
 		return;
 	}
 
+	if (ss->wp_primary_selection_device == nullptr) {
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set primary selection, seat doesn't have wp_primary_selection_device.");
+		return;
+	}
+
 	ss->primary_data = p_text.to_utf8_buffer();
 
 	if (ss->wp_primary_selection_source == nullptr) {
@@ -4253,10 +4259,10 @@ void WaylandThread::primary_set_text(const String &p_text) {
 		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
 		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain;charset=utf-8");
 		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
-	}
 
-	// TODO: Implement a good way of getting the latest serial from the user.
-	zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+		// TODO: Implement a good way of getting the latest serial from the user.
+		zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+	}
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
