@@ -43,8 +43,8 @@ static Callable _generate_callable(JNIEnv *p_env, jlong p_object_id, jstring p_m
 
 	int count = p_env->GetArrayLength(p_parameters);
 
-	Variant *args = (Variant *)alloca(sizeof(Variant) * count);
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * count);
+	Variant *args = ALLOCA_ARRAY(Variant, count);
+	const Variant **argptrs = ALLOCA_ARRAY(const Variant *, count);
 
 	for (int i = 0; i < count; i++) {
 		jobject jobj = p_env->GetObjectArrayElement(p_parameters, i);
@@ -74,8 +74,8 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_variant_Callable_nativeCall
 
 	int count = p_env->GetArrayLength(p_parameters);
 
-	Variant *args = (Variant *)alloca(sizeof(Variant) * count);
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * count);
+	Variant *args = ALLOCA_ARRAY(Variant, count);
+	const Variant **argptrs = ALLOCA_ARRAY(const Variant *, count);
 
 	for (int i = 0; i < count; i++) {
 		jobject jobj = p_env->GetObjectArrayElement(p_parameters, i);

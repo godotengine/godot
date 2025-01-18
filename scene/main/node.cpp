@@ -1499,7 +1499,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			uint32_t cn_length = cn.length();
 			uint32_t c_chars = String::num_characters(c);
 			uint32_t len = 2 + cn_length + c_chars;
-			char32_t *str = (char32_t *)alloca(sizeof(char32_t) * (len + 1));
+			char32_t *str = ALLOCA_ARRAY(char32_t, len + 1);
 			uint32_t idx = 0;
 			str[idx++] = '@';
 			for (uint32_t i = 0; i < cn_length; i++) {
@@ -2056,8 +2056,8 @@ bool Node::is_greater_than(const Node *p_node) const {
 
 	_update_children_cache();
 
-	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
-	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
+	int *this_stack = ALLOCA_ARRAY(int, data.depth);
+	int *that_stack = ALLOCA_ARRAY(int, p_node->data.depth);
 
 	const Node *n = this;
 

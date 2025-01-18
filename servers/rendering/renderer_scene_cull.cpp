@@ -4215,7 +4215,7 @@ void RendererSceneCull::update() {
 	//optimize bvhs
 
 	uint32_t rid_count = scenario_owner.get_rid_count();
-	RID *rids = (RID *)alloca(sizeof(RID) * rid_count);
+	RID *rids = ALLOCA_ARRAY(RID, rid_count);
 	scenario_owner.fill_owned_buffer(rids);
 	for (uint32_t i = 0; i < rid_count; i++) {
 		Scenario *s = scenario_owner.get_or_null(rids[i]);

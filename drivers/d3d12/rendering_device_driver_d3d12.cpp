@@ -6086,7 +6086,7 @@ void RenderingDeviceDriverD3D12::end_segment() {
 void RenderingDeviceDriverD3D12::_set_object_name(ID3D12Object *p_object, String p_object_name) {
 	ERR_FAIL_NULL(p_object);
 	int name_len = p_object_name.size();
-	WCHAR *name_w = (WCHAR *)alloca(sizeof(WCHAR) * (name_len + 1));
+	WCHAR *name_w = ALLOCA_ARRAY(WCHAR, name_len + 1);
 	MultiByteToWideChar(CP_UTF8, 0, p_object_name.utf8().get_data(), -1, name_w, name_len);
 	p_object->SetName(name_w);
 }

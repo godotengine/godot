@@ -123,8 +123,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 
 	int count = env->GetArrayLength(j_signal_params);
 
-	Variant *variant_params = (Variant *)alloca(sizeof(Variant) * count);
-	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * count);
+	Variant *variant_params = ALLOCA_ARRAY(Variant, count);
+	const Variant **args = ALLOCA_ARRAY(const Variant *, count);
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);

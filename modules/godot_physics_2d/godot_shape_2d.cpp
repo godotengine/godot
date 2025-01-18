@@ -669,7 +669,7 @@ bool GodotConcavePolygonShape2D::intersect_segment(const Vector2 &p_begin, const
 		return false;
 	}
 
-	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
+	uint32_t *stack = ALLOCA_ARRAY(uint32_t, bvh_depth);
 
 	enum {
 		TEST_AABB_BIT = 0,
@@ -901,7 +901,7 @@ Variant GodotConcavePolygonShape2D::get_data() const {
 }
 
 void GodotConcavePolygonShape2D::cull(const Rect2 &p_local_aabb, QueryCallback p_callback, void *p_userdata) const {
-	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * bvh_depth);
+	uint32_t *stack = ALLOCA_ARRAY(uint32_t, bvh_depth);
 
 	enum {
 		TEST_AABB_BIT = 0,

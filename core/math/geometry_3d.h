@@ -472,7 +472,7 @@ public:
 			return polygon;
 		}
 
-		int *location_cache = (int *)alloca(sizeof(int) * polygon.size());
+		int *location_cache = ALLOCA_ARRAY(int, polygon.size());
 		int inside_count = 0;
 		int outside_count = 0;
 

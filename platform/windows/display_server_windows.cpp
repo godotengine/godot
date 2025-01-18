@@ -3064,7 +3064,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	config.cButtons = button_count;
 
 	// No dynamic stack array size :(
-	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
+	TASKDIALOG_BUTTON *tbuttons = ALLOCA_ARRAY(TASKDIALOG_BUTTON, button_count);
 	if (tbuttons) {
 		for (int i = 0; i < button_count; i++) {
 			tbuttons[i].nButtonID = i + 100;

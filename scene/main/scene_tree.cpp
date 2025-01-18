@@ -208,7 +208,7 @@ void SceneTree::_flush_ugc() {
 	while (unique_group_calls.size()) {
 		HashMap<UGCall, Vector<Variant>, UGCall>::Iterator E = unique_group_calls.begin();
 
-		const Variant **argptrs = (const Variant **)alloca(E->value.size() * sizeof(Variant *));
+		const Variant **argptrs = ALLOCA_ARRAY(const Variant *, E->value.size());
 
 		for (int i = 0; i < E->value.size(); i++) {
 			argptrs[i] = &E->value[i];

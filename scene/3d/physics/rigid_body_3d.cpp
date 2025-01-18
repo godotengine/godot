@@ -190,9 +190,9 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 			}
 		}
 
-		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(p_state->get_contact_count() * sizeof(_RigidBodyInOut));
+		_RigidBodyInOut *toadd = ALLOCA_ARRAY(_RigidBodyInOut, p_state->get_contact_count());
 		int toadd_count = 0;
-		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
+		RigidBody3D_RemoveAction *toremove = ALLOCA_ARRAY(RigidBody3D_RemoveAction, rc);
 		int toremove_count = 0;
 
 		//put the ones to add

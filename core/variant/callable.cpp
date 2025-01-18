@@ -74,7 +74,7 @@ Variant Callable::callv(const Array &p_arguments) const {
 	int argcount = p_arguments.size();
 	const Variant **argptrs = nullptr;
 	if (argcount) {
-		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		argptrs = ALLOCA_ARRAY(const Variant *, argcount);
 		for (int i = 0; i < argcount; i++) {
 			argptrs[i] = &p_arguments[i];
 		}
@@ -103,7 +103,7 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 #endif
 
 		int argcount = p_argcount + 2;
-		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		const Variant **argptrs = ALLOCA_ARRAY(const Variant *, argcount);
 		const Variant args[2] = { p_id, method };
 
 		argptrs[0] = &args[0];

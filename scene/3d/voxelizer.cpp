@@ -817,9 +817,9 @@ Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
-	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
-	int *v = reinterpret_cast<int *>(&(d[n]));
-	float *z = reinterpret_cast<float *>(&v[n]);
+	float *d = ALLOCA_ARRAY(float, n);
+	int *v = ALLOCA_ARRAY(int, n);
+	float *z = ALLOCA_ARRAY(float, n + 1);
 
 	int k = 0;
 	v[0] = 0;

@@ -1061,7 +1061,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	SIZE_T attr_list_size = 0;
 	InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
-	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+	pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)ALLOCA(attr_list_size);
 	if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
@@ -1157,7 +1157,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 		SIZE_T attr_list_size = 0;
 		InitializeProcThreadAttributeList(nullptr, 1, 0, &attr_list_size);
-		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)alloca(attr_list_size);
+		pi.si.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)ALLOCA(attr_list_size);
 		if (!InitializeProcThreadAttributeList(pi.si.lpAttributeList, 1, 0, &attr_list_size)) {
 			CloseHandle(pipe[0]); // Cleanup pipe handles.
 			CloseHandle(pipe[1]);

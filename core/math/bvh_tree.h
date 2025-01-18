@@ -79,6 +79,7 @@
 
 // really just a namespace
 struct BVHCommon {
+	static constexpr size_t ALLOCA_STACK_SIZE = 128;
 	// these could possibly also be the same constant,
 	// although this may be useful for debugging.
 	// or use zero for invalid and +1 based indices.
@@ -109,15 +110,13 @@ struct BVHHandle {
 template <typename T>
 class BVH_IterativeInfo {
 public:
-	constexpr static const size_t ALLOCA_STACK_SIZE = 128;
-
 	int32_t depth = 1;
-	int32_t threshold = ALLOCA_STACK_SIZE - 2;
+	int32_t threshold = BVHCommon::ALLOCA_STACK_SIZE - 2;
 	T *stack;
 	//only used in rare occasions when you run out of alloca memory
 	// because tree is too unbalanced.
 	LocalVector<T> aux_stack;
-	int32_t get_alloca_stacksize() const { return ALLOCA_STACK_SIZE * sizeof(T); }
+	int32_t get_alloca_stacksize() const { return BVHCommon::ALLOCA_STACK_SIZE * sizeof(T); }
 
 	T *get_first() const {
 		return &stack[0];
@@ -138,7 +137,7 @@ public:
 	T *request() {
 		if (depth > threshold) {
 			if (aux_stack.is_empty()) {
-				aux_stack.resize(ALLOCA_STACK_SIZE * 2);
+				aux_stack.resize(BVHCommon::ALLOCA_STACK_SIZE * 2);
 				memcpy(aux_stack.ptr(), stack, get_alloca_stacksize());
 			} else {
 				aux_stack.resize(aux_stack.size() * 2);

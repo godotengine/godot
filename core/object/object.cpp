@@ -777,7 +777,7 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	const Variant **argptrs = nullptr;
 
 	if (p_args.size() > 0) {
-		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
+		argptrs = ALLOCA_ARRAY(const Variant *, p_args.size());
 		for (int i = 0; i < p_args.size(); i++) {
 			argptrs[i] = &p_args[i];
 		}
@@ -1185,8 +1185,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	// Ensure that disconnecting the signal or even deleting the object
 	// will not affect the signal calling.
-	Callable *slot_callables = (Callable *)alloca(sizeof(Callable) * s->slot_map.size());
-	uint32_t *slot_flags = (uint32_t *)alloca(sizeof(uint32_t) * s->slot_map.size());
+	Callable *slot_callables = ALLOCA_ARRAY(Callable, s->slot_map.size());
+	uint32_t *slot_flags = ALLOCA_ARRAY(uint32_t, s->slot_map.size());
 	uint32_t slot_count = 0;
 
 	for (const KeyValue<Callable, SignalData::Slot> &slot_kv : s->slot_map) {

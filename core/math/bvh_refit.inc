@@ -109,7 +109,7 @@ void refit_branch(uint32_t p_node_id) {
 
 	// alloca must allocate the stack from this function, it cannot be allocated in the
 	// helper class
-	ii.stack = (RefitParams *)alloca(ii.get_alloca_stacksize());
+	ii.stack = ALLOCA_ARRAY(RefitParams, BVHCommon::ALLOCA_STACK_SIZE);
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;

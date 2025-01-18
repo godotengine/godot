@@ -98,7 +98,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 
 	if (captures_amount > 0) {
 		const int total_argcount = p_argcount + captures_amount;
-		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
+		const Variant **args = ALLOCA_ARRAY(const Variant *, total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
 			args[i] = &captures[i];
 			if (captures[i].get_type() == Variant::OBJECT) {
@@ -230,7 +230,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 
 	if (captures_amount > 0) {
 		const int total_argcount = p_argcount + captures_amount;
-		const Variant **args = (const Variant **)alloca(sizeof(Variant *) * total_argcount);
+		const Variant **args = ALLOCA_ARRAY(const Variant *, total_argcount);
 		for (int i = 0; i < captures_amount; i++) {
 			args[i] = &captures[i];
 			if (captures[i].get_type() == Variant::OBJECT) {

@@ -209,7 +209,7 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error) {
 	const Variant **argptrs = nullptr;
 	if (p_argcount) {
-		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_argcount);
+		argptrs = ALLOCA_ARRAY(const Variant *, p_argcount);
 		for (int i = 0; i < p_argcount; i++) {
 			argptrs[i] = &p_args[i];
 		}

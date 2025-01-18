@@ -73,7 +73,7 @@ uint32_t VariantParser::StreamFile::_read_buffer(char32_t *p_buffer, uint32_t p_
 	// The buffer is assumed to include at least one character (for null terminator)
 	ERR_FAIL_COND_V(!p_num_chars, 0);
 
-	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
+	uint8_t *temp = ALLOCA_ARRAY(uint8_t, p_num_chars);
 	uint64_t num_read = f->get_buffer(temp, p_num_chars);
 	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
 

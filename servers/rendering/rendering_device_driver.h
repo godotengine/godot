@@ -82,11 +82,6 @@ public:
 			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
 };
 
-// These utilities help drivers avoid allocations.
-#define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
-#define ALLOCA_ARRAY(m_type, m_count) ((m_type *)ALLOCA(sizeof(m_type) * (m_count)))
-#define ALLOCA_SINGLE(m_type) ALLOCA_ARRAY(m_type, 1)
-
 // This helps forwarding certain arrays to the API with confidence.
 #define ARRAYS_COMPATIBLE(m_type_a, m_type_b) (sizeof(m_type_a) == sizeof(m_type_b) && alignof(m_type_a) == alignof(m_type_b))
 // This is used when you also need to ensure structured types are compatible field-by-field.

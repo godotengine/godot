@@ -231,7 +231,7 @@ void EditorCommandPalette::remove_command(String p_key_name) {
 void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, Vector<Variant> arguments, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
 
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * arguments.size());
+	const Variant **argptrs = ALLOCA_ARRAY(const Variant *, arguments.size());
 	for (int i = 0; i < arguments.size(); i++) {
 		argptrs[i] = &arguments[i];
 	}

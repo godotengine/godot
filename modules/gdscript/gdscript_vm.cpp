@@ -547,7 +547,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		// Add 3 here for self, class, and nil.
 		alloca_size = sizeof(Variant *) * 3 + sizeof(Variant *) * _instruction_args_size + sizeof(Variant) * _stack_size;
 
-		uint8_t *aptr = (uint8_t *)alloca(alloca_size);
+		uint8_t *aptr = ALLOCA_ARRAY(uint8_t, alloca_size);
 		stack = (Variant *)aptr;
 
 		for (int i = 0; i < p_argcount; i++) {

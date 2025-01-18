@@ -164,7 +164,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	jvalue *argv = nullptr;
 
 	if (method->param_types.size()) {
-		argv = (jvalue *)alloca(sizeof(jvalue) * method->param_types.size());
+		argv = ALLOCA_ARRAY(jvalue, method->param_types.size());
 	}
 
 	List<jobject> to_free;

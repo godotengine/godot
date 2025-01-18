@@ -156,7 +156,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	const NodeData *nd = &nodes[0];
 
-	Node **ret_nodes = (Node **)alloca(sizeof(Node *) * nc);
+	Node **ret_nodes = ALLOCA_ARRAY(Node *, nc);
 
 	bool gen_node_path_cache = p_edit_state != GEN_EDIT_STATE_DISABLED && node_path_cache.is_empty();
 
@@ -598,7 +598,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 			}
 
-			const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * binds.size());
+			const Variant **argptrs = ALLOCA_ARRAY(const Variant *, binds.size());
 			for (int j = 0; j < binds.size(); j++) {
 				argptrs[j] = &binds[j];
 			}

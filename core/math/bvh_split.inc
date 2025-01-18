@@ -200,7 +200,7 @@ uint32_t split_leaf_complex(uint32_t p_node_id, const BVHABB_CLASS &p_added_item
 	BVH_ASSERT(_nodes[p_node_id].is_leaf());
 
 	// first create child leaf nodes
-	uint32_t *child_ids = (uint32_t *)alloca(sizeof(uint32_t) * MAX_CHILDREN);
+	uint32_t *child_ids = ALLOCA_ARRAY(uint32_t, MAX_CHILDREN);
 
 	for (int n = 0; n < MAX_CHILDREN; n++) {
 		// create node children
@@ -232,11 +232,11 @@ uint32_t split_leaf_complex(uint32_t p_node_id, const BVHABB_CLASS &p_added_item
 	int max_children = orig_leaf.num_items + 1; // plus 1 for the wildcard .. the item being added
 	//CRASH_COND(max_children > MAX_CHILDREN);
 
-	uint16_t *group_a = (uint16_t *)alloca(sizeof(uint16_t) * max_children);
-	uint16_t *group_b = (uint16_t *)alloca(sizeof(uint16_t) * max_children);
+	uint16_t *group_a = ALLOCA_ARRAY(uint16_t, max_children);
+	uint16_t *group_b = ALLOCA_ARRAY(uint16_t, max_children);
 
 	// we are copying the ABBs. This is ugly, but we need one extra for the inserted item...
-	BVHABB_CLASS *temp_bounds = (BVHABB_CLASS *)alloca(sizeof(BVHABB_CLASS) * max_children);
+	BVHABB_CLASS *temp_bounds = ALLOCA_ARRAY(BVHABB_CLASS, max_children);
 
 	int num_a = max_children;
 	int num_b = 0;

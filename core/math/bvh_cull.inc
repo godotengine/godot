@@ -212,7 +212,7 @@ bool _cull_segment_iterative(uint32_t p_node_id, CullParams &r_params) {
 
 	// alloca must allocate the stack from this function, it cannot be allocated in the
 	// helper class
-	ii.stack = (CullSegParams *)alloca(ii.get_alloca_stacksize());
+	ii.stack = ALLOCA_ARRAY(CullSegParams, BVHCommon::ALLOCA_STACK_SIZE);
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
@@ -273,7 +273,7 @@ bool _cull_point_iterative(uint32_t p_node_id, CullParams &r_params) {
 
 	// alloca must allocate the stack from this function, it cannot be allocated in the
 	// helper class
-	ii.stack = (CullPointParams *)alloca(ii.get_alloca_stacksize());
+	ii.stack = ALLOCA_ARRAY(CullPointParams, BVHCommon::ALLOCA_STACK_SIZE);
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
@@ -335,7 +335,7 @@ bool _cull_aabb_iterative(uint32_t p_node_id, CullParams &r_params, bool p_fully
 
 	// alloca must allocate the stack from this function, it cannot be allocated in the
 	// helper class
-	ii.stack = (CullAABBParams *)alloca(ii.get_alloca_stacksize());
+	ii.stack = ALLOCA_ARRAY(CullAABBParams, BVHCommon::ALLOCA_STACK_SIZE);
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
@@ -438,7 +438,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 
 	// alloca must allocate the stack from this function, it cannot be allocated in the
 	// helper class
-	ii.stack = (CullConvexParams *)alloca(ii.get_alloca_stacksize());
+	ii.stack = ALLOCA_ARRAY(CullConvexParams, BVHCommon::ALLOCA_STACK_SIZE);
 
 	// seed the stack
 	ii.get_first()->node_id = p_node_id;
@@ -446,7 +446,7 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 
 	// preallocate these as a once off to be reused
 	uint32_t max_planes = r_params.hull.num_planes;
-	uint32_t *plane_ids = (uint32_t *)alloca(sizeof(uint32_t) * max_planes);
+	uint32_t *plane_ids = ALLOCA_ARRAY(uint32_t, max_planes);
 
 	CullConvexParams ccp;
 

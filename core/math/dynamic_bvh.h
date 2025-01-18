@@ -328,7 +328,7 @@ void DynamicBVH::aabb_query(const AABB &p_box, QueryResult &r_result) {
 	volume.min = p_box.position;
 	volume.max = p_box.position + p_box.size;
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = ALLOCA_ARRAY(const Node *, ALLOCA_STACK_SIZE);
 	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;
@@ -381,7 +381,7 @@ void DynamicBVH::convex_query(const Plane *p_planes, int p_plane_count, const Ve
 		}
 	}
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = ALLOCA_ARRAY(const Node *, ALLOCA_STACK_SIZE);
 	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;
@@ -435,7 +435,7 @@ void DynamicBVH::ray_query(const Vector3 &p_from, const Vector3 &p_to, QueryResu
 
 	Vector3 bounds[2];
 
-	const Node **alloca_stack = (const Node **)alloca(ALLOCA_STACK_SIZE * sizeof(const Node *));
+	const Node **alloca_stack = ALLOCA_ARRAY(const Node *, ALLOCA_STACK_SIZE);
 	const Node **stack = alloca_stack;
 	stack[0] = bvh_root;
 	int32_t depth = 1;

@@ -417,7 +417,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			}
 
 			child_item_count = ci->ysort_children_count + 1;
-			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
+			child_items = ALLOCA_ARRAY(Item *, child_item_count);
 
 			ci->ysort_xform = Transform2D();
 			ci->ysort_modulate = Color(1, 1, 1, 1);

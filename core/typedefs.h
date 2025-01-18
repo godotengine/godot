@@ -316,4 +316,9 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
+// Convenience macros for common `alloca` calls.
+#define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
+#define ALLOCA_ARRAY(m_type, m_count) reinterpret_cast<m_type *>((m_count != 0) ? alloca(sizeof(m_type) * (m_count)) : nullptr)
+#define ALLOCA_SINGLE(m_type) reinterpret_cast<m_type *>(alloca(sizeof(m_type)))
+
 #endif // TYPEDEFS_H

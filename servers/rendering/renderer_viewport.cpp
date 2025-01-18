@@ -1534,7 +1534,7 @@ void RendererViewport::viewport_set_sdf_oversize_and_scale(RID p_viewport, RS::V
 RID RendererViewport::viewport_find_from_screen_attachment(DisplayServer::WindowID p_id) const {
 	RID *rids = nullptr;
 	uint32_t rid_count = viewport_owner.get_rid_count();
-	rids = (RID *)alloca(sizeof(RID) * rid_count);
+	rids = ALLOCA_ARRAY(RID, rid_count);
 	viewport_owner.fill_owned_buffer(rids);
 	for (uint32_t i = 0; i < rid_count; i++) {
 		Viewport *viewport = viewport_owner.get_or_null(rids[i]);

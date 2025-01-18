@@ -816,7 +816,7 @@ bool MethodTweener::step(double &r_delta) {
 	} else {
 		current_val = final_val;
 	}
-	const Variant **argptr = (const Variant **)alloca(sizeof(Variant *));
+	const Variant **argptr = ALLOCA_SINGLE(const Variant *);
 	argptr[0] = &current_val;
 
 	Variant result;

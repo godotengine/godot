@@ -632,7 +632,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	} else {
 		group->tasks_used = p_tasks;
-		tasks_posted = (Task **)alloca(sizeof(Task *) * p_tasks);
+		tasks_posted = ALLOCA_ARRAY(Task *, p_tasks);
 		for (int i = 0; i < p_tasks; i++) {
 			Task *task = task_allocator.alloc();
 			task->native_group_func = p_func;

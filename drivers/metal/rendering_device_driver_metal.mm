@@ -3301,7 +3301,7 @@ RenderingDeviceDriverMetal::Result<id<MTLFunction>> RenderingDeviceDriverMetal::
 	}
 
 	// Initialize an array of integers representing the indexes of p_specialization_constants
-	uint32_t *indexes = (uint32_t *)alloca(p_specialization_constants.size() * sizeof(uint32_t));
+	uint32_t *indexes = ALLOCA_ARRAY(uint32_t, p_specialization_constants.size());
 	for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
 		indexes[i] = i;
 	}

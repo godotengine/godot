@@ -124,7 +124,7 @@ public:
 			validated_call_func(method_userdata, extension_instance, reinterpret_cast<GDExtensionConstVariantPtr *>(p_args), (GDExtensionVariantPtr)r_ret);
 		} else {
 			// If not provided, go via ptrcall, which is faster than resorting to regular call.
-			const void **argptrs = (const void **)alloca(argument_count * sizeof(void *));
+			const void **argptrs = ALLOCA_ARRAY(const void *, argument_count);
 			for (uint32_t i = 0; i < argument_count; i++) {
 				argptrs[i] = VariantInternal::get_opaque_pointer(p_args[i]);
 			}

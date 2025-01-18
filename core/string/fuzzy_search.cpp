@@ -175,7 +175,7 @@ void FuzzySearchResult::score_token_match(FuzzyTokenMatch &p_match, bool p_case_
 
 void FuzzySearchResult::maybe_apply_score_bonus() {
 	// This adds a small bonus to results which match tokens in the same order they appear in the query.
-	int *token_range_starts = (int *)alloca(sizeof(int) * token_matches.size());
+	int *token_range_starts = ALLOCA_ARRAY(int, token_matches.size());
 
 	for (const FuzzyTokenMatch &match : token_matches) {
 		token_range_starts[match.token_idx] = match.interval.x;
