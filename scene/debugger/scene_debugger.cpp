@@ -1547,23 +1547,27 @@ void RuntimeNodeSelect::_select_node(Node *p_node) {
 
 			selected_node = p_node;
 
-			sbox_3d_instance = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
-			sbox_3d_instance_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			if (sbox_3d_mesh.is_valid()) {
+				sbox_3d_instance = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
+				sbox_3d_instance_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), node_3d->get_world_3d()->get_scenario());
+				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance, RS::SHADOW_CASTING_SETTING_OFF);
+				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_ofs, RS::SHADOW_CASTING_SETTING_OFF);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			}
 
-			sbox_3d_instance_xray = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
-			sbox_3d_instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray_ofs, RS::SHADOW_CASTING_SETTING_OFF);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-			RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			if (sbox_3d_mesh_xray.is_valid()) {
+				sbox_3d_instance_xray = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
+				sbox_3d_instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), node_3d->get_world_3d()->get_scenario());
+				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray, RS::SHADOW_CASTING_SETTING_OFF);
+				RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sbox_3d_instance_xray_ofs, RS::SHADOW_CASTING_SETTING_OFF);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+				RS::get_singleton()->instance_geometry_set_flag(sbox_3d_instance_xray_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			}
 		}
 #endif // _3D_DISABLED
 	}
