@@ -220,7 +220,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
-			return true;
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
 		} break;
 #endif
 
@@ -282,10 +282,13 @@ void DisplayServerWayland::tts_stop() {
 #ifdef DBUS_ENABLED
 
 bool DisplayServerWayland::is_dark_mode_supported() const {
-	return portal_desktop->is_supported();
+	return portal_desktop && portal_desktop->is_supported() && portal_desktop->is_settings_supported();
 }
 
 bool DisplayServerWayland::is_dark_mode() const {
+	if (!is_dark_mode_supported()) {
+		return false;
+	}
 	switch (portal_desktop->get_appearance_color_scheme()) {
 		case 1:
 			// Prefers dark theme.
