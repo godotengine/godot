@@ -1085,7 +1085,6 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
-	assign_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
