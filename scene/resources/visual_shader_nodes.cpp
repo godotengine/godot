@@ -7261,7 +7261,7 @@ String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader:
 		normal = p_input_vars[0];
 	}
 	if (p_input_vars[1].is_empty()) {
-		if (p_mode == Shader::MODE_SPATIAL) {
+		if (p_mode == Shader::MODE_SPATIAL && !p_for_preview) {
 			view = "VIEW";
 		} else {
 			view = "vec3(0.0)";
