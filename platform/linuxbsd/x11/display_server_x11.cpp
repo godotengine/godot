@@ -137,30 +137,40 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
-#ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG_FILE:
-		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-		case FEATURE_NATIVE_DIALOG_FILE_MIME:
-#endif
-		//case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
 		case FEATURE_KEEP_SCREEN_ON:
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
-		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_WINDOW_EMBEDDING:
-		case FEATURE_WINDOW_DRAG:
+		case FEATURE_WINDOW_DRAG: {
 			return true;
-		case FEATURE_SCREEN_CAPTURE:
+		} break;
+
+		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
+		} break;
+#endif
+		case FEATURE_SCREEN_CAPTURE: {
 			return !xwayland;
+		} break;
+
+#ifdef SPEECHD_ENABLED
+		case FEATURE_TEXT_TO_SPEECH: {
+			return true;
+		} break;
+#endif
+
 		default: {
+			return false;
 		}
 	}
-
-	return false;
 }
 
 String DisplayServerX11::get_name() const {
@@ -368,10 +378,13 @@ void DisplayServerX11::tts_stop() {
 #ifdef DBUS_ENABLED
 
 bool DisplayServerX11::is_dark_mode_supported() const {
-	return portal_desktop->is_supported();
+	return portal_desktop && portal_desktop->is_supported() && portal_desktop->is_settings_supported();
 }
 
 bool DisplayServerX11::is_dark_mode() const {
+	if (!is_dark_mode_supported()) {
+		return false;
+	}
 	switch (portal_desktop->get_appearance_color_scheme()) {
 		case 1:
 			// Prefers dark theme.
