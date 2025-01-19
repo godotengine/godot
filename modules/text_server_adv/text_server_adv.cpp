@@ -4867,8 +4867,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							gl.index = index;
 							gl.advance = w;
 						}
-						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index >= 0 && gl.span_index < span_size) {
-							Variant key = p_sd->spans[gl.span_index].embedded_key;
+						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + p_new_sd->first_span >= 0 && gl.span_index + p_new_sd->first_span < span_size) {
+							Variant key = p_sd->spans[gl.span_index + p_new_sd->first_span].embedded_key;
 							if (key != Variant()) {
 								ShapedTextDataAdvanced::EmbeddedObject obj = p_sd->objects[key];
 								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
