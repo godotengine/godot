@@ -82,6 +82,7 @@ public:
 	Rect2i get_screen_embedded_window_rect();
 	bool is_embedding_in_progress();
 	bool is_embedding_completed();
+	int get_embedded_pid() const;
 
 	EmbeddedProcess();
 	~EmbeddedProcess();

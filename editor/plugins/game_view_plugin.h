@@ -40,6 +40,7 @@
 class EmbeddedProcess;
 class VSeparator;
 class WindowWrapper;
+class ScriptEditorDebugger;
 
 class GameViewDebugger : public EditorDebuggerPlugin {
 	GDCLASS(GameViewDebugger, EditorDebuggerPlugin);
@@ -101,6 +102,7 @@ class GameView : public VBoxContainer {
 	bool is_feature_enabled = true;
 	int active_sessions = 0;
 	int screen_index_before_start = -1;
+	ScriptEditorDebugger *embedded_script_debugger = nullptr;
 
 	bool embed_on_play = true;
 	bool make_floating_on_play = true;
@@ -162,6 +164,9 @@ class GameView : public VBoxContainer {
 
 	void _window_before_closing();
 	void _update_floating_window_settings();
+	void _attach_script_debugger();
+	void _detach_script_debugger();
+	void _remote_window_title_changed(String title);
 
 protected:
 	void _notification(int p_what);
