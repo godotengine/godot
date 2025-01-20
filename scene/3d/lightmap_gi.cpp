@@ -1491,11 +1491,17 @@ void LightmapGI::_notification(int p_what) {
 								"%s (%s): The directional lightmap textures are stored in a format that isn't supported anymore. Please bake lightmaps again to make lightmaps display from this node again.",
 								get_light_data()->get_path(), get_name()));
 
+				if (last_owner && last_owner != get_owner()) {
+					light_data->clear_users();
+				}
+
 				_assign_lightmaps();
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			last_owner = get_owner();
+
 			if (light_data.is_valid()) {
 				_clear_lightmaps();
 			}
