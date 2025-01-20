@@ -37,15 +37,27 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/style_box_flat.h"
 
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+			button_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+			if (get_theme_color(SNAME("base_color"), EditorStringName(Editor)) != Color(0, 0, 0)) {
+				stylebox_shadow_left->set_border_color(get_theme_color(SNAME("dark_color_1")) * Color(1, 1, 1, EditorThemeManager::is_dark_theme() ? 0.4 : 0.3));
+				stylebox_shadow_right->set_border_color(get_theme_color(SNAME("dark_color_1")) * Color(1, 1, 1, EditorThemeManager::is_dark_theme() ? 0.4 : 0.3));
+			} else {
+				stylebox_shadow_left->set_border_color(Color(0.3, 0.3, 0.3, 0.45));
+				stylebox_shadow_right->set_border_color(Color(0.3, 0.3, 0.3, 0.45));
+			}
 		} break;
 	}
 }
@@ -53,7 +65,7 @@ void EditorBottomPanel::_notification(int p_what) {
 void EditorBottomPanel::_switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock) {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].control == p_control) {
-			_switch_to_item(p_visible, i, p_ignore_lock);
+			callable_mp(this, &EditorBottomPanel::_switch_to_item).call_deferred(p_visible, i, p_ignore_lock);
 			return;
 		}
 	}
@@ -62,7 +74,12 @@ void EditorBottomPanel::_switch_by_control(bool p_visible, Control *p_control, b
 void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
+	if (get_tree()->is_connected("process_frame", callable_mp(this, &EditorBottomPanel::_focus_pressed_button))) {
+		get_tree()->disconnect("process_frame", callable_mp(this, &EditorBottomPanel::_focus_pressed_button));
+	}
+
 	if (items[p_idx].control->is_visible() == p_visible) {
+		get_tree()->connect("process_frame", callable_mp(this, &EditorBottomPanel::_focus_pressed_button).bind(items[p_idx].button->get_instance_id()), CONNECT_ONE_SHOT);
 		return;
 	}
 
@@ -84,7 +101,7 @@ void EditorBottomPanel::_switch_to_item(bool p_visible, int p_idx, bool p_ignore
 		} else {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
 		}
-
+		get_tree()->connect("process_frame", callable_mp(this, &EditorBottomPanel::_focus_pressed_button).bind(items[p_idx].button->get_instance_id()), CONNECT_ONE_SHOT);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
 		pin_button->show();
@@ -125,6 +142,92 @@ bool EditorBottomPanel::_button_drag_hover(const Vector2 &, const Variant &, But
 	return false;
 }
 
+void EditorBottomPanel::_focus_pressed_button(ObjectID btn_id) {
+	Object *btn_instance = ObjectDB::get_instance(btn_id);
+	if (!btn_instance) {
+		return;
+	}
+	button_sc->ensure_control_visible(Object::cast_to<Button>(btn_instance));
+}
+
+void EditorBottomPanel::_add_item_to_popup() {
+	button_popup_menu->clear();
+	for (int i = 0; i < button_hbox->get_child_count(); i++) {
+		Button *btn = Object::cast_to<Button>(button_hbox->get_child(i));
+		if (!btn->is_visible()) {
+			continue;
+		}
+		button_popup_menu->add_item(btn->get_text());
+		button_popup_menu->set_item_metadata(button_popup_menu->get_item_count() - 1, btn->get_index());
+	}
+}
+
+void EditorBottomPanel::_popup_position() {
+	if (button_popup_menu->is_visible()) {
+		button_popup_menu->hide();
+		return;
+	}
+	button_popup_menu->reset_size();
+	Vector2 popup_pos = button_menu->get_screen_rect().position - Vector2(0, button_popup_menu->get_size().y);
+	if (is_layout_rtl()) {
+		popup_pos.x -= button_popup_menu->get_size().x - button_menu->get_size().x;
+	}
+	button_popup_menu->set_position(popup_pos);
+	button_popup_menu->popup();
+}
+
+void EditorBottomPanel::_popup_item_pressed(int p_idx) {
+	Button *btn = Object::cast_to<Button>(button_hbox->get_child(button_popup_menu->get_item_metadata(p_idx)));
+	btn->emit_signal(SceneStringName(toggled), true);
+}
+
+void EditorBottomPanel::_set_button_sc_controls() {
+	if (button_hbox->get_size().x < button_sc->get_size().x) {
+		button_menu->set_visible(false);
+		shadow_spacer->set_visible(false);
+		shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+		shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+	} else {
+		button_menu->set_visible(true);
+		shadow_spacer->set_visible(true);
+		if (is_layout_rtl()) {
+			if (button_sc->get_h_scroll_bar()->get_value() + 3 >= button_sc->get_h_scroll_bar()->get_max() - button_sc->get_size().x) {
+				shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+			} else {
+				shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_left);
+			}
+			if (button_sc->get_h_scroll_bar()->get_value() == 0) {
+				shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+			} else {
+				shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_right);
+			}
+		} else {
+			if (button_sc->get_h_scroll_bar()->get_value() == 0) {
+				shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+			} else {
+				shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_left);
+			}
+			if (button_sc->get_h_scroll_bar()->get_value() + 3 >= button_sc->get_h_scroll_bar()->get_max() - button_sc->get_size().x) {
+				shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_empty);
+			} else {
+				shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_right);
+			}
+		}
+	}
+}
+
+void EditorBottomPanel::_sc_input(const Ref<InputEvent> &p_gui_input) {
+	Ref<InputEventMouseButton> mb = p_gui_input;
+
+	if (mb.is_valid()) {
+		if (mb->is_pressed()) {
+			if ((mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_alt_pressed()) || (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_alt_pressed())) {
+				mb->set_factor(mb->get_factor() * 7);
+			}
+		}
+	}
+}
+
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
 	int selected_item_idx = -1;
 	for (int i = 0; i < items.size(); i++) {
@@ -162,7 +265,7 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
 	Button *tb = memnew(Button);
 	tb->set_theme_type_variation("BottomPanelButton");
-	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item, true));
+	tb->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_switch_by_control).bind(p_item, true), CONNECT_DEFERRED);
 	tb->set_drag_forwarding(Callable(), callable_mp(this, &EditorBottomPanel::_button_drag_hover).bind(tb, p_item), Callable());
 	tb->set_text(p_text);
 	tb->set_shortcut(p_shortcut);
@@ -259,9 +362,62 @@ EditorBottomPanel::EditorBottomPanel() {
 	bottom_hbox->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the "Expand Bottom Dock" icon.
 	item_vbox->add_child(bottom_hbox);
 
+	button_tab_bar_hbox = memnew(HBoxContainer);
+	button_tab_bar_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	button_tab_bar_hbox->add_theme_constant_override("separation", 0);
+	bottom_hbox->add_child(button_tab_bar_hbox);
+
+	button_menu = memnew(Button);
+	button_menu->set_theme_type_variation("FlatMenuButton");
+	button_menu->set_toggle_mode(true);
+	button_menu->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	button_menu->set_tooltip_text(TTR("List all options."));
+	button_menu->connect(SceneStringName(pressed), callable_mp(this, &EditorBottomPanel::_popup_position));
+	button_tab_bar_hbox->add_child(button_menu);
+
+	button_popup_menu = memnew(PopupMenu);
+	add_child(button_popup_menu);
+	button_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorBottomPanel::_popup_item_pressed));
+	button_popup_menu->connect("popup_hide", callable_mp((BaseButton *)button_menu, &BaseButton::set_pressed).bind(false));
+	button_popup_menu->connect("about_to_popup", callable_mp((BaseButton *)button_menu, &BaseButton::set_pressed).bind(true));
+
+	shadow_spacer = memnew(Control);
+	shadow_spacer->set_custom_minimum_size(Size2(2 * EDSCALE, 0));
+	button_tab_bar_hbox->add_child(shadow_spacer);
+
+	stylebox_shadow_empty.instantiate();
+	stylebox_shadow_left.instantiate();
+	stylebox_shadow_left->set_draw_center(false);
+	stylebox_shadow_left->set_border_blend(true);
+	stylebox_shadow_left->set_border_width_all(0);
+	stylebox_shadow_right = stylebox_shadow_left->duplicate();
+	stylebox_shadow_left->set_border_width(Side::SIDE_LEFT, 3 * EDSCALE);
+	stylebox_shadow_left->set_expand_margin(Side::SIDE_LEFT, 1);
+	stylebox_shadow_right->set_border_width(Side::SIDE_RIGHT, 3 * EDSCALE);
+	stylebox_shadow_right->set_expand_margin(Side::SIDE_RIGHT, 1);
+
+	shadow_panel_left = memnew(Panel);
+	shadow_panel_left->set_custom_minimum_size(Size2(4 * EDSCALE, 0));
+	shadow_panel_left->add_theme_style_override(SceneStringName(panel), stylebox_shadow_left);
+	button_tab_bar_hbox->add_child(shadow_panel_left);
+
+	button_sc = memnew(ScrollContainer);
+	button_sc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	button_sc->set_follow_focus(true);
+	button_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_SHOW_NEVER);
+	button_sc->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	button_sc->connect(SceneStringName(draw), callable_mp(this, &EditorBottomPanel::_set_button_sc_controls));
+	button_sc->connect(SceneStringName(gui_input), callable_mp(this, &EditorBottomPanel::_sc_input));
+	button_tab_bar_hbox->add_child(button_sc);
+
 	button_hbox = memnew(HBoxContainer);
-	button_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	bottom_hbox->add_child(button_hbox);
+	button_sc->add_child(button_hbox);
+	button_hbox->connect(SceneStringName(resized), callable_mp(this, &EditorBottomPanel::_add_item_to_popup));
+
+	shadow_panel_right = memnew(Panel);
+	shadow_panel_right->set_custom_minimum_size(Size2(4 * EDSCALE, 0));
+	shadow_panel_right->add_theme_style_override(SceneStringName(panel), stylebox_shadow_right);
+	button_tab_bar_hbox->add_child(shadow_panel_right);
 
 	editor_toaster = memnew(EditorToaster);
 	bottom_hbox->add_child(editor_toaster);
