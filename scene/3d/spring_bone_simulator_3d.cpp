@@ -1357,12 +1357,12 @@ void SpringBoneSimulator3D::_make_collisions_dirty() {
 
 void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 	_make_joints_dirty(p_index);
-	set_joint_count(p_index, 0);
 
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone;
 	int root_bone = settings[p_index]->root_bone;
 	if (!sk || current_bone < 0 || root_bone < 0) {
+		set_joint_count(p_index, 0);
 		return;
 	}
 
@@ -1375,7 +1375,11 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 		}
 		current_bone = sk->get_bone_parent(current_bone);
 	}
-	ERR_FAIL_COND_EDMSG(!valid, "End bone must be the same as or a child of root bone.");
+
+	if (!valid) {
+		set_joint_count(p_index, 0);
+		ERR_FAIL_EDMSG("End bone must be the same as or a child of root bone.");
+	}
 
 	Vector<int> new_joints;
 	current_bone = settings[p_index]->end_bone;
@@ -1401,6 +1405,7 @@ void SpringBoneSimulator3D::_update_joints() {
 			continue;
 		}
 		if (settings[i]->individual_config) {
+			settings[i]->simulation_dirty = true;
 			settings[i]->joints_dirty = false;
 			continue; // Abort.
 		}
