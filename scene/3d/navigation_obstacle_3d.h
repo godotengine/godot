@@ -74,6 +74,7 @@ private:
 	void _update_debug();
 	void _update_fake_agent_radius_debug();
 	void _update_static_obstacle_debug();
+	void _clear_debug();
 #endif // DEBUG_ENABLED
 
 protected:
