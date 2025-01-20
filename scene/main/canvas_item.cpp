@@ -605,6 +605,24 @@ void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void CanvasItem::set_use_identity_transform(bool p_enable) {
+	// Prevent sending item transforms to RenderingServer when using global coordinates.
+	_set_use_identity_transform(p_enable);
+
+	// Let RenderingServer know not to concatenate the parent transform during the render.
+	RenderingServer::get_singleton()->canvas_item_set_ignore_parent_transform(get_canvas_item(), p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// Make sure item is using identity transform in server.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), Transform2D());
+		} else {
+			// Make sure item transform is up to date in server if switching identity transform off.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), get_transform());
+		}
+	}
+}
+
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	ERR_MAIN_THREAD_GUARD;
 	if (p_size_changed) {
