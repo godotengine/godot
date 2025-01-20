@@ -1174,6 +1174,7 @@ void DisplayServerWayland::process_events() {
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
+				Input::get_singleton()->release_pressed_events();
 			}
 		}
 
