@@ -933,12 +933,14 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+#ifndef ANDROID_ENABLED
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
 		_zoom_to(zoom_factor * powf(magnify_gesture->get_factor(), 0.25f));
 		accept_event();
 		return;
 	}
+#endif
 
 	Ref<InputEventKey> k = p_event;
 
