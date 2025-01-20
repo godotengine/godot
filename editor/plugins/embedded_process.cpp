@@ -145,6 +145,10 @@ bool EmbeddedProcess::is_embedding_completed() {
 	return embedding_completed;
 }
 
+int EmbeddedProcess::get_embedded_pid() const {
+	return current_process_id;
+}
+
 void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	if (!window) {
 		return;
