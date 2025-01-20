@@ -85,6 +85,7 @@ public:
 
 	void set_window_title(const String &p_title);
 	void set_margins_enabled(bool p_enabled);
+	Size2 get_margins_size();
 	void grab_window_focus();
 
 	void set_override_close_request(bool p_enabled);
