@@ -122,6 +122,7 @@ extern void godot_js_display_cursor_lock_set(int p_lock);
 extern int godot_js_display_cursor_is_locked();
 
 // Display listeners
+extern void godot_js_display_cursor_lock_cb(void (*p_callback)(int p_lock));
 extern void godot_js_display_fullscreen_cb(void (*p_callback)(int p_fullscreen));
 extern void godot_js_display_window_blur_cb(void (*p_callback)());
 extern void godot_js_display_notification_cb(void (*p_callback)(int p_notification), int p_enter, int p_exit, int p_in, int p_out);

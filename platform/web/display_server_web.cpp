@@ -67,6 +67,22 @@ bool DisplayServerWeb::check_size_force_redraw() {
 	return size_changed;
 }
 
+void DisplayServerWeb::cursor_lock_set_callback(int p_lock) {
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(DisplayServerWeb::_cursor_lock_set_callback).call_deferred(p_lock);
+		return;
+	}
+#endif
+
+	_cursor_lock_set_callback(p_lock);
+}
+
+void DisplayServerWeb::_cursor_lock_set_callback(int p_lock) {
+	Input::get_singleton()->notification(MainLoop::NOTIFICATION_INPUT_ASYNC_MOUSE_MODE_UPDATED);
+	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_INPUT_ASYNC_MOUSE_MODE_UPDATED);
+}
+
 void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
@@ -581,6 +597,10 @@ DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+bool DisplayServerWeb::mouse_is_mode_async() const {
+	return true;
+}
+
 Point2i DisplayServerWeb::mouse_get_position() const {
 	return Input::get_singleton()->get_mouse_position();
 }
@@ -1089,6 +1109,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_set_ime_cb(&DisplayServerWeb::ime_callback, &DisplayServerWeb::key_callback, key_event.code, key_event.key);
 
 	// JS Display interface (js/libs/library_godot_display.js)
+	godot_js_display_cursor_lock_cb(&DisplayServerWeb::cursor_lock_set_callback);
 	godot_js_display_fullscreen_cb(&DisplayServerWeb::fullscreen_change_callback);
 	godot_js_display_window_blur_cb(&DisplayServerWeb::window_blur_callback);
 	godot_js_display_notification_cb(&DisplayServerWeb::send_window_event_callback,

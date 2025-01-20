@@ -111,6 +111,8 @@ private:
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
 	// events
+	WASM_EXPORT static void cursor_lock_set_callback(int p_lock);
+	static void _cursor_lock_set_callback(int p_lock);
 	WASM_EXPORT static void fullscreen_change_callback(int p_fullscreen);
 	static void _fullscreen_change_callback(int p_fullscreen);
 	WASM_EXPORT static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
@@ -184,6 +186,7 @@ public:
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual bool mouse_is_mode_async() const override;
 	virtual Point2i mouse_get_position() const override;
 
 	// ime

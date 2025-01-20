@@ -1273,6 +1273,10 @@
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when the [TextServer] is changed.
 		</constant>
+		<constant name="NOTIFICATION_INPUT_ASYNC_MOUSE_MODE_UPDATED" value="2019">
+			Notification received from the OS when the [Input] mouse mode changed.
+			[b]Note:[/b] See [method DisplayServer.mouse_is_mode_async].
+		</constant>
 		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
 			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
 		</constant>

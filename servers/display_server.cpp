@@ -501,6 +501,10 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+bool DisplayServer::mouse_is_mode_async() const {
+	return false;
+}
+
 void DisplayServer::warp_mouse(const Point2i &p_position) {
 }
 
@@ -892,6 +896,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
+	ClassDB::bind_method(D_METHOD("mouse_is_mode_async"), &DisplayServer::mouse_is_mode_async);
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &DisplayServer::warp_mouse);
 	ClassDB::bind_method(D_METHOD("mouse_get_position"), &DisplayServer::mouse_get_position);
@@ -1266,6 +1271,10 @@ Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());
 }
 
+bool DisplayServer::_input_is_mouse_mode_async() {
+	return singleton->mouse_is_mode_async();
+}
+
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
@@ -1347,6 +1356,7 @@ DisplayServer::DisplayServer() {
 	singleton = this;
 	Input::set_mouse_mode_func = _input_set_mouse_mode;
 	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::is_mouse_mode_async_func = _input_is_mouse_mode_async;
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;

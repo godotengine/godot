@@ -1033,6 +1033,13 @@
 				Returns the mouse cursor's current position in screen coordinates.
 			</description>
 		</method>
+		<method name="mouse_is_mode_async" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns if the current platform has its mouse mode set asynchronously.
+				[b]Note:[/b] Currently, the Web platform is the only one returning [code]true[/code].
+			</description>
+		</method>
 		<method name="mouse_set_mode">
 			<return type="void" />
 			<param index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode" />

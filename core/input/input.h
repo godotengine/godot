@@ -106,6 +106,8 @@ private:
 	bool disable_input = false;
 
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_async = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_async_overriden = false;
 	bool mouse_mode_override_enabled = false;
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 
@@ -255,6 +257,7 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
+	void _update_mouse_mode();
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -268,6 +271,7 @@ private:
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
+	static bool (*is_mouse_mode_async_func)();
 	static void (*warp_mouse_func)(const Vector2 &p_position);
 
 	static CursorShape (*get_current_cursor_shape_func)();
@@ -282,10 +286,12 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
+	bool is_mouse_mode_async() const;
 	void set_mouse_mode_override_enabled(bool p_enabled);
 	void set_mouse_mode_override(MouseMode p_mode);
 

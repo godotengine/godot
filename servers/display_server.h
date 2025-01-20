@@ -98,6 +98,7 @@ public:
 private:
 	static void _input_set_mouse_mode(Input::MouseMode p_mode);
 	static Input::MouseMode _input_get_mouse_mode();
+	static bool _input_is_mouse_mode_async();
 	static void _input_warp(const Vector2 &p_to_pos);
 	static Input::CursorShape _input_get_current_cursor_shape();
 	static void _input_set_custom_mouse_cursor_func(const Ref<Resource> &, Input::CursorShape, const Vector2 &p_hotspot);
@@ -284,6 +285,7 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode);
 	virtual MouseMode mouse_get_mode() const;
+	virtual bool mouse_is_mode_async() const;
 
 	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;

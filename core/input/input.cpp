@@ -77,6 +77,7 @@ Input *Input::singleton = nullptr;
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
+bool (*Input::is_mouse_mode_async_func)() = nullptr;
 void (*Input::warp_mouse_func)(const Vector2 &p_position) = nullptr;
 Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
 void (*Input::set_custom_mouse_cursor_func)(const Ref<Resource> &, Input::CursorShape, const Vector2 &) = nullptr;
@@ -92,10 +93,20 @@ void Input::set_mouse_mode(MouseMode p_mode) {
 		return;
 	}
 
+	if (is_mouse_mode_async()) {
+		if (mouse_mode_override_enabled) {
+			mouse_mode_async = p_mode;
+			mouse_mode_async_overriden = true;
+			set_mouse_mode_func(mouse_mode_override);
+		} else {
+			set_mouse_mode_func(p_mode);
+		}
+		return;
+	}
+
 	// Allow to be set even if overridden, to see if the platform allows the mode.
 	set_mouse_mode_func(p_mode);
 	mouse_mode = get_mouse_mode_func();
-
 	if (mouse_mode_override_enabled) {
 		set_mouse_mode_func(mouse_mode_override);
 	}
@@ -103,6 +114,10 @@ void Input::set_mouse_mode(MouseMode p_mode) {
 
 Input::MouseMode Input::get_mouse_mode() const {
 	return mouse_mode;
+}
+
+bool Input::is_mouse_mode_async() const {
+	return is_mouse_mode_async_func();
 }
 
 void Input::set_mouse_mode_override_enabled(bool p_enabled) {
@@ -116,7 +131,12 @@ void Input::set_mouse_mode_override_enabled(bool p_enabled) {
 		set_mouse_mode_func(mouse_mode_override);
 		mouse_mode_override = get_mouse_mode_func();
 	} else {
-		set_mouse_mode_func(mouse_mode);
+		if (is_mouse_mode_async() && mouse_mode_async_overriden) {
+			set_mouse_mode_func(mouse_mode_async);
+			mouse_mode_async_overriden = false;
+		} else {
+			set_mouse_mode_func(mouse_mode);
+		}
 	}
 }
 
@@ -130,6 +150,14 @@ void Input::set_mouse_mode_override(MouseMode p_mode) {
 	if (mouse_mode_override_enabled) {
 		set_mouse_mode_func(p_mode);
 		mouse_mode_override = get_mouse_mode_func();
+	}
+}
+
+void Input::_notification(int p_what) {
+	switch (p_what) {
+		case MainLoop::NOTIFICATION_INPUT_ASYNC_MOUSE_MODE_UPDATED: {
+			_update_mouse_mode();
+		} break;
 	}
 }
 
@@ -1417,6 +1445,10 @@ void Input::_update_action_cache(const StringName &p_action_name, ActionState &r
 		r_action_state.cache.strength = MAX(r_action_state.cache.strength, r_action_state.api_strength);
 		r_action_state.cache.raw_strength = MAX(r_action_state.cache.raw_strength, r_action_state.api_strength); // Use the strength as raw_strength for API-pressed states.
 	}
+}
+
+void Input::_update_mouse_mode() {
+	mouse_mode = get_mouse_mode_func();
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {

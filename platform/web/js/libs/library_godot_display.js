@@ -688,6 +688,21 @@ const GodotDisplay = {
 	/*
 	 * Listeners
 	 */
+	godot_js_display_cursor_lock_cb__proxy: 'sync',
+	godot_js_display_cursor_lock_cb__sig: 'vi',
+	godot_js_display_cursor_lock_cb: function (p_callback) {
+		const canvas = GodotConfig.canvas;
+		const callback = GodotRuntime.get_func(p_callback);
+		function on_pointer_lock_change() {
+			if (document.pointerLockElement === canvas) {
+				callback(1);
+				return;
+			}
+			callback(0);
+		}
+		GodotEventListeners.add(document, 'pointerlockchange', on_pointer_lock_change, false);
+	},
+
 	godot_js_display_fullscreen_cb__proxy: 'sync',
 	godot_js_display_fullscreen_cb__sig: 'vi',
 	godot_js_display_fullscreen_cb: function (callback) {
