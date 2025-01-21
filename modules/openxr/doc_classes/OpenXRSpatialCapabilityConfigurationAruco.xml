@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationAruco" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for Aruca markers.
+	</brief_description>
+	<description>
+		Configuration header for Aruca markers. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect Aruca markers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="aruco_dict" type="int" setter="set_aruco_dict" getter="get_aruco_dict" enum="OpenXRSpatialCapabilityConfigurationAruco.XrSpatialMarkerArucoDictEXT" default="1">
+			Dictionary to use to decode aruco markers.
+			[b]Note:[/b] Must be set before using this configuration to create a spatial context.
+		</member>
+	</members>
+	<constants>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_4X4_50_EXT" value="1" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_4X4_100_EXT" value="2" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_4X4_250_EXT" value="3" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_4X4_1000_EXT" value="4" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_5X5_50_EXT" value="5" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_5X5_100_EXT" value="6" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_5X5_250_EXT" value="7" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_5X5_1000_EXT" value="8" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_6X6_50_EXT" value="9" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_6X6_100_EXT" value="10" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_6X6_250_EXT" value="11" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_6X6_1000_EXT" value="12" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_7X7_50_EXT" value="13" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_7X7_100_EXT" value="14" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_7X7_250_EXT" value="15" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_7X7_1000_EXT" value="16" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_ARUCO_DICT_MAX_ENUM_EXT" value="2147483647" enum="XrSpatialMarkerArucoDictEXT">
+		</constant>
+	</constants>
+</class>
