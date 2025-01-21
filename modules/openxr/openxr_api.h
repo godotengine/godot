@@ -430,6 +430,7 @@ public:
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
+	XrPosef pose_from_transform(const Transform3D &p_transform);
 
 	// helper method to get a valid Transform3D from an openxr space location
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);

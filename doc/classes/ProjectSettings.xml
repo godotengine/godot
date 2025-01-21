@@ -3466,6 +3466,44 @@
 			If [code]true[/code] we enable the render model extension if available.
 			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
 		</member>
+		<member name="xr/openxr/extensions/spatial_entity/april_tag_dict" type="int" setter="" getter="" default="&quot;3&quot;">
+			The April Tag marker types the built-in marker tracking is set to recognize (if April Tag marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/aruco_dict" type="int" setter="" getter="" default="&quot;15&quot;">
+			The ArUco marker types the built-in marker tracking is set to recognize (if ArUco marker tracking is available and enabled).
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling anchors. Godot will query (persistent) anchors and manage [OpenXRAnchorTracker] instances for you. If disabled you'll need to create your own spatial and persistence context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that spatial anchors are supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling marker tracking. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling plane detection. Godot will query detected planes (walls, floors, ceilings, etc.) and manage [OpenXRPlaneTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that plane tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_marker_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the marker tracking extension is requested. If supported, you will be able to query information about markers detected by the XR runtime, e.g. QR codes, aruca markers and april tags.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and marker tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_persistent_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the persistent anchors extension is requested. If supported, you will be able to store spatial anchors and they will be restored on application startup.
+			[b]Note:[/b] This requires that the OpenXR spatial entities, spatial anchors, and spatial persistence extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] and [member xr/openxr/extensions/spatial_entity/enable_spatial_anchors] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_plane_tracking" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the plane tracking extension is requested. If supported, you will be able to query information about planes detected by the XR runtime, e.g. walls, floors, etc.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and plane tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enable_spatial_anchors" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial anchors extension is requested. If supported, you will be able to register anchor locations in the real world that the XR runtime will adjust as needed and/or potentially share with other headsets.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and spatial anchors extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the spatial entity extension is requested. If supported, you will be able to access spatial information about the real environment around you. What information is available is dependent on additional extensions.
+			[b]Note:[/b] This requires that the OpenXR spatial entities extension is supported by the XR runtime. If not supported this setting will be ignored.
+		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.
 		</member>
