@@ -193,11 +193,19 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 
 // Sets up an `InputEventKey` and returns whether it has any meaningful value.
 bool WaylandThread::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
-	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(p_ss.xkb_state, p_keycode));
+	// NOTE: xkbcommon's API really encourages to apply the modifier state but we
+	// only want a "plain" symbol so that we can convert it into a godot keycode.
+	const xkb_keysym_t *syms = nullptr;
+	int num_sys = xkb_keymap_key_get_syms_by_level(p_ss.xkb_keymap, p_keycode, p_ss.current_layout_index, 0, &syms);
+
 	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
 	KeyLocation key_location = KeyMappingXKB::get_location(p_keycode);
 	uint32_t unicode = xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode);
+
+	Key keycode = Key::NONE;
+	if (num_sys > 0 && syms) {
+		keycode = KeyMappingXKB::get_keycode(syms[0]);
+	}
 
 	if (keycode == Key::NONE) {
 		keycode = physical_keycode;
