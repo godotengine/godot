@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialEntityTracker" inherits="XRPositionalTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for Positional trackers managed by OpenXRs spatial entity extensions.
+	</brief_description>
+	<description>
+		These are trackers created and managed by OpenXRs spatial entity extensions that give access to specific data related to OpenXRs spatial entities. They will always be of type [code]TRACKER_ANCHOR[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="entity" type="RID" setter="set_entity" getter="get_entity" default="RID()">
+			The spatial entity associated with this tracker.
+		</member>
+		<member name="spatial_tracking_state" type="int" setter="set_spatial_tracking_state" getter="get_spatial_tracking_state" enum="OpenXRSpatialEntityTracker.XrSpatialEntityTrackingStateEXT" default="2">
+			The spatial tracking state for this tracker.
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="8" />
+	</members>
+	<signals>
+		<signal name="spatial_tracking_state_changed">
+			<param index="0" name="spatial_tracking_state" type="int" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="XR_SPATIAL_ENTITY_TRACKING_STATE_STOPPED_EXT" value="1" enum="XrSpatialEntityTrackingStateEXT">
+			This anchor has stopped tracking.
+		</constant>
+		<constant name="XR_SPATIAL_ENTITY_TRACKING_STATE_PAUSED_EXT" value="2" enum="XrSpatialEntityTrackingStateEXT">
+			Tracking is currently paused.
+		</constant>
+		<constant name="XR_SPATIAL_ENTITY_TRACKING_STATE_TRACKING_EXT" value="3" enum="XrSpatialEntityTrackingStateEXT">
+			Anchor is currently being tracked.
+		</constant>
+		<constant name="XR_SPATIAL_ENTITY_TRACKING_STATE_MAX_ENUM_EXT" value="2147483647" enum="XrSpatialEntityTrackingStateEXT">
+			Maximum tracking state value. Do not use for looping!
+		</constant>
+	</constants>
+</class>
