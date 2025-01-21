@@ -31,6 +31,7 @@
 #include "cpu_particles_2d.h"
 #include "cpu_particles_2d.compat.inc"
 
+#include "core/math/random_number_generator.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
@@ -769,22 +770,22 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			}
 
 			p.seed = seed + uint32_t(i) + i + cycle;
-			uint32_t _seed = p.seed;
+			rng->set_seed(p.seed);
 
-			p.angle_rand = rand_from_seed(_seed);
-			p.scale_rand = rand_from_seed(_seed);
-			p.hue_rot_rand = rand_from_seed(_seed);
-			p.anim_offset_rand = rand_from_seed(_seed);
+			p.angle_rand = rng->randf();
+			p.scale_rand = rng->randf();
+			p.hue_rot_rand = rng->randf();
+			p.anim_offset_rand = rng->randf();
 
 			if (color_initial_ramp.is_valid()) {
-				p.start_color_rand = color_initial_ramp->get_color_at_offset(rand_from_seed(_seed));
+				p.start_color_rand = color_initial_ramp->get_color_at_offset(rng->randf());
 			} else {
 				p.start_color_rand = Color(1, 1, 1, 1);
 			}
 
-			real_t angle1_rad = direction.angle() + Math::deg_to_rad((rand_from_seed(_seed) * 2.0 - 1.0) * spread);
+			real_t angle1_rad = direction.angle() + Math::deg_to_rad((rng->randf() * 2.0 - 1.0) * spread);
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
-			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], (real_t)rand_from_seed(_seed));
+			p.velocity = rot * Math::lerp(parameters_min[PARAM_INITIAL_LINEAR_VELOCITY], parameters_max[PARAM_INITIAL_LINEAR_VELOCITY], rng->randf());
 
 			real_t base_angle = tex_angle * Math::lerp(parameters_min[PARAM_ANGLE], parameters_max[PARAM_ANGLE], p.angle_rand);
 			p.rotation = Math::deg_to_rad(base_angle);
@@ -792,7 +793,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
 			p.custom[2] = tex_anim_offset * Math::lerp(parameters_min[PARAM_ANIM_OFFSET], parameters_max[PARAM_ANIM_OFFSET], p.anim_offset_rand);
-			p.custom[3] = (1.0 - rand_from_seed(_seed) * lifetime_randomness);
+			p.custom[3] = (1.0 - rng->randf() * lifetime_randomness);
 			p.transform = Transform2D();
 			p.time = 0;
 			p.lifetime = lifetime * p.custom[3];
@@ -803,17 +804,17 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					real_t t = Math_TAU * rand_from_seed(_seed);
-					real_t radius = emission_sphere_radius * rand_from_seed(_seed);
+					real_t t = Math_TAU * rng->randf();
+					real_t radius = emission_sphere_radius * rng->randf();
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_SPHERE_SURFACE: {
-					real_t s = rand_from_seed(_seed), t = Math_TAU * rand_from_seed(_seed);
+					real_t s = rng->randf(), t = Math_TAU * rng->randf();
 					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_RECTANGLE: {
-					p.transform[2] = Vector2(rand_from_seed(_seed) * 2.0 - 1.0, rand_from_seed(_seed) * 2.0 - 1.0) * emission_rect_extents;
+					p.transform[2] = Vector2(rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0) * emission_rect_extents;
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
@@ -1522,6 +1523,8 @@ CPUParticles2D::CPUParticles2D() {
 	set_emitting(true);
 	set_amount(8);
 	set_use_local_coordinates(false);
+
+	rng.instantiate();
 
 	set_param_min(PARAM_INITIAL_LINEAR_VELOCITY, 0);
 	set_param_min(PARAM_ANGULAR_VELOCITY, 0);
