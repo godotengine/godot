@@ -1525,7 +1525,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
 			setting->joints[i]->verlet->forward_vector = axis.normalized();
 			setting->joints[i]->verlet->length = axis.length();
-			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		} else if (setting->extend_end_bone && setting->end_bone_length > 0) {
 			Vector3 axis = get_end_bone_axis(setting->end_bone, setting->end_bone_direction);
 			if (axis.is_zero_approx()) {
@@ -1536,7 +1536,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->length = setting->end_bone_length;
 			setting->joints[i]->verlet->current_tail = setting->cached_center.xform(p_skeleton->get_bone_global_pose(setting->joints[i]->bone).xform(axis * setting->end_bone_length));
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
-			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		}
 	}
 	setting->simulation_dirty = false;
@@ -1602,8 +1602,8 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		// Convert position to rotation.
 		Vector3 from = current_rot.xform(verlet->forward_vector);
 		Vector3 to = p_inverted_center_transform.basis.xform(next_tail - current_origin).normalized();
-		Quaternion from_to = get_from_to_rotation(from, to, verlet->prev_rot);
-		verlet->prev_rot = from_to;
+		Quaternion from_to = get_from_to_rotation(from, to, verlet->current_rot);
+		verlet->current_rot = from_to;
 
 		// Apply rotation.
 		from_to *= current_rot;

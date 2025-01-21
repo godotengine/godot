@@ -72,7 +72,7 @@ public:
 		Vector3 prev_tail;
 		Vector3 current_tail;
 		Vector3 forward_vector;
-		Quaternion prev_rot;
+		Quaternion current_rot;
 		float length = 0.0;
 	};
 
@@ -104,7 +104,6 @@ public:
 		bool extend_end_bone = false;
 		BoneDirection end_bone_direction = BONE_DIRECTION_FROM_PARENT;
 		float end_bone_length = 0.0;
-		float end_bone_tip_radius = 0.02;
 
 		CenterFrom center_from = CENTER_FROM_WORLD_ORIGIN;
 		NodePath center_node;
