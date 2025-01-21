@@ -33,6 +33,8 @@
 
 #include "scene/2d/node_2d.h"
 
+class RandomNumberGenerator;
+
 class CPUParticles2D : public Node2D {
 private:
 	GDCLASS(CPUParticles2D, Node2D);
@@ -178,6 +180,8 @@ private:
 	bool split_scale = false;
 
 	Vector2 gravity = Vector2(0, 980);
+
+	Ref<RandomNumberGenerator> rng;
 
 	void _update_internal();
 	void _particles_process(double p_delta);
