@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentData" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing OpenXR spatial entity component data.
+	</brief_description>
+	<description>
+		Object for storing OpenXR spatial entity component data.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_component_type" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Return the component type for the component we store data for.
+			</description>
+		</method>
+		<method name="_get_structure_data" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="next" type="int" />
+			<description>
+				Return a pointer to the structure data that will be submitted along with the snapshot query. This pointer must remain valid as long as this object is instantiated.
+			</description>
+		</method>
+		<method name="_set_capacity" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="capacity" type="int" />
+			<description>
+				Set the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
+			</description>
+		</method>
+		<method name="set_capacity">
+			<return type="void" />
+			<param index="0" name="capacity" type="int" />
+			<description>
+				Set the expected capacity as provided by the spatial entities query system. Buffers should be initialized with the correct storage.
+			</description>
+		</method>
+	</methods>
+</class>

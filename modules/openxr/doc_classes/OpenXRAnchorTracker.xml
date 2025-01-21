@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRAnchorTracker" inherits="OpenXRSpatialEntityTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Positional tracker for our spatial entity anchor extension.
+	</brief_description>
+	<description>
+		Positional tracker for our OpenXR spatial entity anchor extension, it tracks a user defined location in real space and maps it to our virtual space.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="has_uuid" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a non-zero UUID is set.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="uuid" type="String" setter="set_uuid" getter="get_uuid" default="&quot;&quot;">
+			The UUID provided for persistent anchors.
+		</member>
+	</members>
+	<signals>
+		<signal name="uuid_changed">
+			<description>
+				Emitted when the UUID for this anchor was changed.
+			</description>
+		</signal>
+	</signals>
+</class>
