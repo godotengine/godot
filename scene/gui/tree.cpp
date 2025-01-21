@@ -3682,15 +3682,6 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
-		if (selected_item) {
-			//bring up editor if possible
-			if (!edit_selected()) {
-				emit_signal(SNAME("item_activated"));
-				incr_search.clear();
-			}
-		}
-		accept_event();
 	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
@@ -3702,6 +3693,15 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} else if (selected_item->is_selectable(selected_col)) {
 				selected_item->select(selected_col);
 				emit_signal(SNAME("multi_selected"), selected_item, selected_col, true);
+			}
+		}
+		accept_event();
+	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+		if (selected_item) {
+			//bring up editor if possible
+			if (!edit_selected()) {
+				emit_signal(SNAME("item_activated"));
+				incr_search.clear();
 			}
 		}
 		accept_event();
