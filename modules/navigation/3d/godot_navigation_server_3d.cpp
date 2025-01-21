@@ -96,8 +96,7 @@ void GodotNavigationServer3D::add_command(SetCommand3D *command) {
 
 TypedArray<RID> GodotNavigationServer3D::get_maps() const {
 	TypedArray<RID> all_map_rids;
-	List<RID> maps_owned;
-	map_owner.get_owned_list(&maps_owned);
+	LocalVector<RID> maps_owned = map_owner.get_owned_list();
 	if (maps_owned.size()) {
 		for (const RID &E : maps_owned) {
 			all_map_rids.push_back(E);
