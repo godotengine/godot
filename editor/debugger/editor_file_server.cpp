@@ -31,7 +31,6 @@
 #include "editor_file_server.h"
 
 #include "../editor_settings.h"
-#include "core/io/marshalls.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export_platform.h"
 
@@ -80,7 +79,7 @@ void EditorFileServer::_scan_files_changed(EditorFileSystemDirectory *efd, const
 					_add_file(remapped_path, mt, files_to_send, cached_files);
 				} else if (remap.begins_with("path.")) {
 					String feature = remap.get_slice(".", 1);
-					if (p_tags.find(feature) != -1) {
+					if (p_tags.has(feature)) {
 						String remapped_path = cf->get_value("remap", remap);
 						uint64_t mt = FileAccess::get_modified_time(remapped_path);
 						_add_file(remapped_path, mt, files_to_send, cached_files);
@@ -98,7 +97,7 @@ void EditorFileServer::_scan_files_changed(EditorFileSystemDirectory *efd, const
 	}
 }
 
-static void _add_custom_file(const String f, HashMap<String, uint64_t> &files_to_send, HashMap<String, uint64_t> &cached_files) {
+static void _add_custom_file(const String &f, HashMap<String, uint64_t> &files_to_send, HashMap<String, uint64_t> &cached_files) {
 	if (!FileAccess::exists(f)) {
 		return;
 	}
@@ -271,9 +270,6 @@ void EditorFileServer::stop() {
 
 EditorFileServer::EditorFileServer() {
 	server.instantiate();
-
-	EDITOR_DEF("filesystem/file_server/port", 6010);
-	EDITOR_DEF("filesystem/file_server/password", "");
 }
 
 EditorFileServer::~EditorFileServer() {

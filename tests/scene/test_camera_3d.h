@@ -65,17 +65,17 @@ TEST_CASE("[SceneTree][Camera3D] Getters and setters") {
 	}
 
 	SUBCASE("Camera frustum properties") {
-		constexpr float near = 0.2f;
-		constexpr float far = 995.0f;
+		constexpr float depth_near = 0.2f;
+		constexpr float depth_far = 995.0f;
 		constexpr float fov = 120.0f;
 		constexpr float size = 7.0f;
 		constexpr float h_offset = 1.1f;
 		constexpr float v_offset = -1.6f;
 		const Vector2 frustum_offset(5, 7);
-		test_camera->set_near(near);
-		CHECK(test_camera->get_near() == near);
-		test_camera->set_far(far);
-		CHECK(test_camera->get_far() == far);
+		test_camera->set_near(depth_near);
+		CHECK(test_camera->get_near() == depth_near);
+		test_camera->set_far(depth_far);
+		CHECK(test_camera->get_far() == depth_far);
 		test_camera->set_fov(fov);
 		CHECK(test_camera->get_fov() == fov);
 		test_camera->set_size(size);
@@ -231,10 +231,13 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			test_camera->set_orthogonal(5.0f, 0.5f, 1000.0f);
 			// Center.
 			CHECK(test_camera->project_position(Vector2(200, 100), 0.5f).is_equal_approx(Vector3(0, 0, -0.5f)));
+			CHECK(test_camera->project_position(Vector2(200, 100), test_camera->get_far()).is_equal_approx(Vector3(0, 0, -test_camera->get_far())));
 			// Top left.
 			CHECK(test_camera->project_position(Vector2(0, 0), 1.5f).is_equal_approx(Vector3(-5.0f, 2.5f, -1.5f)));
+			CHECK(test_camera->project_position(Vector2(0, 0), test_camera->get_near()).is_equal_approx(Vector3(-5.0f, 2.5f, -test_camera->get_near())));
 			// Bottom right.
 			CHECK(test_camera->project_position(Vector2(400, 200), 5.0f).is_equal_approx(Vector3(5.0f, -2.5f, -5.0f)));
+			CHECK(test_camera->project_position(Vector2(400, 200), test_camera->get_far()).is_equal_approx(Vector3(5.0f, -2.5f, -test_camera->get_far())));
 		}
 
 		SUBCASE("Perspective projection") {
@@ -242,12 +245,15 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			// Center.
 			CHECK(test_camera->project_position(Vector2(200, 100), 0.5f).is_equal_approx(Vector3(0, 0, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(200, 100), 100.0f).is_equal_approx(Vector3(0, 0, -100.0f)));
+			CHECK(test_camera->project_position(Vector2(200, 100), test_camera->get_far()).is_equal_approx(Vector3(0, 0, -1.0f) * test_camera->get_far()));
 			// 3/4th way to Top left.
 			CHECK(test_camera->project_position(Vector2(100, 50), 0.5f).is_equal_approx(Vector3(-SQRT3 * 0.5f, SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(100, 50), 1.0f).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(100, 50), test_camera->get_near()).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f) * test_camera->get_near()));
 			// 3/4th way to Bottom right.
 			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(300, 150), test_camera->get_far()).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f) * test_camera->get_far()));
 		}
 	}
 

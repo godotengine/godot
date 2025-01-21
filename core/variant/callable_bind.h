@@ -53,8 +53,10 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const override;
+	virtual int get_unbound_arguments_count() const override;
 	Callable get_callable() { return callable; }
 	Vector<Variant> get_binds() { return binds; }
 
@@ -81,8 +83,10 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
+	virtual int get_argument_count(bool &r_is_valid) const override;
 	virtual int get_bound_arguments_count() const override;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const override;
+	virtual int get_unbound_arguments_count() const override;
 
 	Callable get_callable() { return callable; }
 	int get_unbinds() { return argcount; }

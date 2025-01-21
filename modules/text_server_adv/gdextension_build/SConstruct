@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import atexit
-import os
-import sys
+# ruff: noqa: F821
+
 import methods
-import time
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -12,8 +10,6 @@ import time
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-
-time_at_start = time.time()
 
 env = SConscript("./godot-cpp/SConstruct")
 env.__class__.disable_warnings = methods.disable_warnings
@@ -29,9 +25,6 @@ opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", Fa
 
 opts.Update(env)
 
-if not env["verbose"]:
-    methods.no_verbose(sys, env)
-
 if env["platform"] == "windows" and not env["use_mingw"]:
     env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
 
@@ -43,8 +36,8 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
     thirdparty_tvg_sources = [
         # common
-        "src/common/tvgBezier.cpp",
         "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
         "src/common/tvgMath.cpp",
         "src/common/tvgStr.cpp",
         # SVG parser
@@ -55,6 +48,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
         "src/loaders/svg/tvgSvgUtil.cpp",
         "src/loaders/svg/tvgXmlParser.cpp",
         "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
         "src/loaders/external_png/tvgPngLoader.cpp",
         "src/loaders/jpg/tvgJpgd.cpp",
         "src/loaders/jpg/tvgJpgLoader.cpp",
@@ -99,6 +93,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
             "../../../thirdparty/thorvg/src/loaders/raw",
             "../../../thirdparty/thorvg/src/loaders/external_png",
             "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
         ]
     )
 
@@ -128,29 +123,35 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     thirdparty_msdfgen_dir = "../../../thirdparty/msdfgen/"
     thirdparty_msdfgen_sources = [
         "core/Contour.cpp",
+        "core/DistanceMapping.cpp",
         "core/EdgeHolder.cpp",
         "core/MSDFErrorCorrection.cpp",
         "core/Projection.cpp",
         "core/Scanline.cpp",
         "core/Shape.cpp",
-        "core/SignedDistance.cpp",
-        "core/Vector2.cpp",
         "core/contour-combiners.cpp",
         "core/edge-coloring.cpp",
         "core/edge-segments.cpp",
         "core/edge-selectors.cpp",
         "core/equation-solver.cpp",
+        # "core/export-svg.cpp",
         "core/msdf-error-correction.cpp",
         "core/msdfgen.cpp",
         "core/rasterization.cpp",
         "core/render-sdf.cpp",
+        # "core/save-bmp.cpp",
+        # "core/save-fl32.cpp",
+        # "core/save-rgba.cpp",
+        # "core/save-tiff.cpp",
         "core/sdf-error-estimation.cpp",
         "core/shape-description.cpp",
     ]
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
     env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
@@ -303,7 +304,8 @@ thirdparty_harfbuzz_sources = [
     # "src/hb-cairo-utils.cc",
     # "src/hb-cairo.cc",
     "src/hb-common.cc",
-    # "src/hb-coretext.cc",
+    # "src/hb-coretext-font.cc",
+    # "src/hb-coretext-shape.cc",
     # "src/hb-directwrite.cc",
     "src/hb-draw.cc",
     "src/hb-face-builder.cc",
@@ -357,6 +359,7 @@ thirdparty_harfbuzz_sources = [
     "src/hb-subset-cff1.cc",
     "src/hb-subset-cff2.cc",
     "src/hb-subset-input.cc",
+    "src/hb-subset-instancer-iup.cc",
     "src/hb-subset-instancer-solver.cc",
     "src/hb-subset-plan.cc",
     "src/hb-subset-repacker.cc",
@@ -364,6 +367,7 @@ thirdparty_harfbuzz_sources = [
     "src/hb-ucd.cc",
     "src/hb-unicode.cc",
     # "src/hb-uniscribe.cc",
+    "src/OT/Var/VARC/VARC.cc",
 ]
 
 if env["freetype_enabled"]:
@@ -394,6 +398,7 @@ if env["platform"] == "android" or env["platform"] == "linuxbsd":
 
 env_harfbuzz.Append(
     CCFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
         "-DU_HAVE_LIB_SUFFIX=1",
         "-DU_LIB_SUFFIX_C_NAME=_godot",
         "-DHAVE_ICU_BUILTIN",
@@ -692,17 +697,15 @@ thirdparty_icu_sources = [
 ]
 thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
 
-icu_data_name = "icudt74l.dat"
-
 if env["static_icu_data"]:
-    env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name)
+    env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat")
     env_icu.Command(
-        "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/" + icu_data_name, methods.make_icu_data
+        "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat", methods.make_icu_data
     )
     env.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
     env.Append(CPPPATH=["../../../thirdparty/icu4c/"])
 else:
-    thirdparty_sources += ["../icu_data/icudata_stub.cpp"]
+    thirdparty_icu_sources += ["../icu_data/icudata_stub.cpp"]
 
 env_icu.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
 env_icu.Append(
@@ -720,14 +723,13 @@ env_icu.Append(
         "-DU_ENABLE_DYLOAD=0",
         "-DU_HAVE_LIB_SUFFIX=1",
         "-DU_LIB_SUFFIX_C_NAME=_godot",
-        "-DICU_DATA_NAME=" + icu_data_name,
     ]
 )
 env.Append(
     CXXFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
         "-DU_HAVE_LIB_SUFFIX=1",
         "-DU_LIB_SUFFIX_C_NAME=_godot",
-        "-DICU_DATA_NAME=" + icu_data_name,
     ]
 )
 env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
@@ -761,11 +763,4 @@ else:
 
 Default(library)
 
-
-def print_elapsed_time():
-    elapsed_time_sec = round(time.time() - time_at_start, 3)
-    time_ms = round((elapsed_time_sec % 1) * 1000)
-    print("[Time elapsed: {}.{:03}]".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time_sec)), time_ms))
-
-
-atexit.register(print_elapsed_time)
+methods.prepare_timer()

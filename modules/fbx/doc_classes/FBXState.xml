@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FBXState" inherits="GLTFState" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+		The FBXState handles the state data imported from FBX files.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="allow_geometry_helper_nodes" type="bool" setter="set_allow_geometry_helper_nodes" getter="get_allow_geometry_helper_nodes" default="false">
+			If [code]true[/code], the import process used auxiliary nodes called geometry helper nodes. These nodes help preserve the pivots and transformations of the original 3D model during import.
+		</member>
+	</members>
+</class>

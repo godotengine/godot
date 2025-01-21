@@ -28,7 +28,7 @@ extern "C" {
 // This must be the same value as cSliceDescFlagsFrameIsIFrame so we can just
 // invert the bit when passing back & forth. As FrameIsIFrame is within
 // a C namespace it can't easily be accessed from a c header.
-enum bu_image_flags__bits_e { eBUImageIsPframe = 0x02 };
+enum bu_image_flags__bits_e { ETC1S_P_FRAME = 0x02 };
 
 typedef uint32_t buFlags;
 

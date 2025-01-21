@@ -31,10 +31,9 @@
 #include "editor_preview_plugins.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access_memory.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -76,7 +75,7 @@ void post_process_preview(Ref<Image> p_image) {
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D");
+	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
@@ -85,19 +84,57 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 
 Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Image> img;
-	Ref<AtlasTexture> atex = p_from;
-	if (atex.is_valid()) {
-		Ref<Texture2D> tex = atex->get_atlas();
-		if (!tex.is_valid()) {
+
+	Ref<AtlasTexture> tex_atlas = p_from;
+	Ref<Texture3D> tex_3d = p_from;
+	Ref<TextureLayered> tex_lyr = p_from;
+
+	if (tex_atlas.is_valid()) {
+		Ref<Texture2D> tex = tex_atlas->get_atlas();
+		if (tex.is_null()) {
 			return Ref<Texture2D>();
 		}
 
 		Ref<Image> atlas = tex->get_image();
-		if (!atlas.is_valid()) {
+		if (atlas.is_null()) {
 			return Ref<Texture2D>();
 		}
 
-		img = atlas->get_region(atex->get_region());
+		if (!tex_atlas->get_region().has_area()) {
+			return Ref<Texture2D>();
+		}
+
+		img = atlas->get_region(tex_atlas->get_region());
+
+	} else if (tex_3d.is_valid()) {
+		if (tex_3d->get_depth() == 0) {
+			return Ref<Texture2D>();
+		}
+
+		Vector<Ref<Image>> data = tex_3d->get_data();
+		if (data.size() != tex_3d->get_depth()) {
+			return Ref<Texture2D>();
+		}
+
+		// Use the middle slice for the thumbnail.
+		const int mid_depth = (tex_3d->get_depth() - 1) / 2;
+		if (!data.is_empty() && data[mid_depth].is_valid()) {
+			img = data[mid_depth]->duplicate();
+		}
+
+	} else if (tex_lyr.is_valid()) {
+		if (tex_lyr->get_layers() == 0) {
+			return Ref<Texture2D>();
+		}
+
+		// Use the middle slice for the thumbnail.
+		const int mid_layer = (tex_lyr->get_layers() - 1) / 2;
+
+		Ref<Image> data = tex_lyr->get_layer_data(mid_layer);
+		if (data.is_valid()) {
+			img = data->duplicate();
+		}
+
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
@@ -111,6 +148,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	if (img.is_null() || img->is_empty()) {
 		return Ref<Texture2D>();
 	}
+
 	p_metadata["dimensions"] = img->get_size();
 
 	img->clear_mipmaps();
@@ -130,7 +168,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	if (new_size.y > p_size.y) {
 		new_size = Vector2(new_size.x * p_size.y / new_size.y, p_size.y);
 	}
-	Vector2i new_size_i(MAX(1, (int)new_size.x), MAX(1, (int)new_size.y));
+	Vector2i new_size_i = Vector2i(new_size).maxi(1);
 	img->resize(new_size_i.x, new_size_i.y, Image::INTERPOLATE_CUBIC);
 	post_process_preview(img);
 
@@ -285,18 +323,8 @@ EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
 
 //////////////////////////////////////////////////////////////////
 
-void EditorMaterialPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_preview_done));
-}
-
-void EditorMaterialPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorMaterialPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
@@ -314,14 +342,12 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-		preview_done.wait();
+		draw_requester.request_and_wait(viewport);
 
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
 
-		ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
+		ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
 
 		img->convert(Image::FORMAT_RGBA8);
 		int thumbnail_size = MAX(p_size.x, p_size.y);
@@ -464,6 +490,17 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
 
+Ref<Texture2D> EditorScriptPreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const {
+	Error err;
+	String code = FileAccess::get_file_as_string(p_path, &err);
+	if (err != OK) {
+		return Ref<Texture2D>();
+	}
+
+	ScriptLanguage *lang = ScriptServer::get_language_for_extension(p_path.get_extension());
+	return _generate_from_source_code(lang, code, p_size, p_metadata);
+}
+
 Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Script> scr = p_from;
 	if (scr.is_null()) {
@@ -471,18 +508,24 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code.is_empty()) {
+	return _generate_from_source_code(scr->get_language(), code, p_size, p_metadata);
+}
+
+Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const ScriptLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const {
+	if (p_source_code.is_empty()) {
 		return Ref<Texture2D>();
 	}
 
 	List<String> kwors;
-	scr->get_language()->get_reserved_words(&kwors);
+	if (p_language) {
+		p_language->get_reserved_words(&kwors);
+	}
 
 	HashSet<String> control_flow_keywords;
 	HashSet<String> keywords;
 
 	for (const String &E : kwors) {
-		if (scr->get_language()->is_control_flow_keyword(E)) {
+		if (p_language && p_language->is_control_flow_keyword(E)) {
 			control_flow_keywords.insert(E);
 		} else {
 			keywords.insert(E);
@@ -505,7 +548,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
 	}
-	bg_color.a = MAX(bg_color.a, 0.2); // some background
+	bg_color.a = MAX(bg_color.a, 0.2); // Ensure we have some background, regardless of the text editor setting.
 
 	img->fill(bg_color);
 
@@ -519,14 +562,14 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	bool in_keyword = false;
 	bool in_comment = false;
 	bool in_doc_comment = false;
-	for (int i = 0; i < code.length(); i++) {
-		char32_t c = code[i];
+	for (int i = 0; i < p_source_code.length(); i++) {
+		char32_t c = p_source_code[i];
 		if (c > 32) {
 			if (col < thumbnail_size) {
 				Color color = text_color;
 
 				if (c == '#') {
-					if (i < code.length() - 1 && code[i + 1] == '#') {
+					if (i < p_source_code.length() - 1 && p_source_code[i + 1] == '#') {
 						in_doc_comment = true;
 					} else {
 						in_comment = true;
@@ -539,17 +582,17 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 					color = doc_comment_color;
 				} else {
 					if (is_symbol(c)) {
-						//make symbol a little visible
+						// Make symbol a little visible.
 						color = symbol_color;
 						in_control_flow_keyword = false;
 						in_keyword = false;
 					} else if (!prev_is_text && is_ascii_identifier_char(c)) {
 						int pos = i;
 
-						while (is_ascii_identifier_char(code[pos])) {
+						while (is_ascii_identifier_char(p_source_code[pos])) {
 							pos++;
 						}
-						String word = code.substr(i, pos - i);
+						String word = p_source_code.substr(i, pos - i);
 						if (control_flow_keywords.has(word)) {
 							in_control_flow_keyword = true;
 						} else if (keywords.has(word)) {
@@ -649,11 +692,11 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 		}
 
 		for (int j = from; j < to; j++) {
-			max = MAX(max, frames[j].l);
-			max = MAX(max, frames[j].r);
+			max = MAX(max, frames[j].left);
+			max = MAX(max, frames[j].right);
 
-			min = MIN(min, frames[j].l);
-			min = MIN(min, frames[j].r);
+			min = MIN(min, frames[j].left);
+			min = MIN(min, frames[j].right);
 		}
 
 		int pfrom = CLAMP((min * 0.5 + 0.5) * h / 2, 0, h / 2) + h / 4;
@@ -673,6 +716,8 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 		}
 	}
 
+	p_metadata["length"] = stream->get_length();
+
 	//post_process_preview(img);
 
 	Ref<Image> image = Image::create_from_data(w, h, false, Image::FORMAT_RGB8, img);
@@ -684,18 +729,8 @@ EditorAudioStreamPreviewPlugin::EditorAudioStreamPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorMeshPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_preview_done));
-}
-
-void EditorMeshPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorMeshPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
@@ -726,9 +761,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 	xform.origin.z -= rot_aabb.size.z * 2;
 	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-	preview_done.wait();
+	draw_requester.request_and_wait(viewport);
 
 	Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
@@ -805,18 +838,8 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-void EditorFontPreviewPlugin::_generate_frame_started() {
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
-	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_preview_done));
-}
-
-void EditorFontPreviewPlugin::_preview_done() {
-	preview_done.post();
-}
-
 void EditorFontPreviewPlugin::abort() {
-	preview_done.post();
+	draw_requester.abort();
 }
 
 bool EditorFontPreviewPlugin::handles(const String &p_type) const {
@@ -848,9 +871,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
 	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
-
-	preview_done.wait();
+	draw_requester.request_and_wait(viewport);
 
 	RS::get_singleton()->canvas_item_clear(canvas_item);
 

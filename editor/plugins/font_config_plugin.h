@@ -31,10 +31,9 @@
 #ifndef FONT_CONFIG_PLUGIN_H
 #define FONT_CONFIG_PLUGIN_H
 
-#include "core/io/marshalls.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_array_dict.h"
+#include "editor/plugins/editor_plugin.h"
 
 /*************************************************************************/
 
@@ -46,13 +45,12 @@ class EditorPropertyFontMetaObject : public RefCounted {
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	static void _bind_methods();
 
 public:
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
 
-	EditorPropertyFontMetaObject(){};
+	EditorPropertyFontMetaObject() {}
 };
 
 /*************************************************************************/
@@ -76,7 +74,7 @@ public:
 	void set_defaults(const Dictionary &p_dict);
 	Dictionary get_defaults();
 
-	EditorPropertyFontOTObject(){};
+	EditorPropertyFontOTObject() {}
 };
 
 /*************************************************************************/
@@ -104,11 +102,11 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, const String &p_key);
 	void _add_menu();
 	void _add_script(int p_option);
@@ -139,12 +137,11 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 public:
@@ -189,11 +186,11 @@ class EditorPropertyOTFeatures : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _remove(Object *p_button, int p_key);
 	void _add_menu();
 	void _add_feature(int p_option);
@@ -226,6 +223,8 @@ protected:
 
 	Ref<Font> prev_font;
 
+	void _preview_changed();
+
 public:
 	virtual Size2 get_minimum_size() const override;
 
@@ -256,7 +255,7 @@ protected:
 	virtual void _add_element() override;
 
 	void _add_font(int p_option);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 public:
 	EditorPropertyFontNamesArray();
@@ -280,7 +279,7 @@ class FontEditorPlugin : public EditorPlugin {
 public:
 	FontEditorPlugin();
 
-	virtual String get_name() const override { return "Font"; }
+	virtual String get_plugin_name() const override { return "Font"; }
 };
 
 #endif // FONT_CONFIG_PLUGIN_H

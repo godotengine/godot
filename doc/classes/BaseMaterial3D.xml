@@ -57,19 +57,19 @@
 		</method>
 	</methods>
 	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)">
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color(1, 1, 1, 1)" keywords="albedo_colour, diffuse_color, diffuse_colour">
 			The material's base color.
 			[b]Note:[/b] If [member detail_enabled] is [code]true[/code] and a [member detail_albedo] texture is specified, [member albedo_color] will [i]not[/i] modulate the detail texture. This can be used to color partial areas of a material by not specifying an albedo texture and using a transparent [member detail_albedo] texture instead.
 		</member>
-		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		<member name="albedo_texture" type="Texture2D" setter="set_texture" getter="get_texture" keywords="diffuse_texture">
 			Texture to multiply by [member albedo_color]. Used for basic texturing of objects.
 			If the texture appears unexpectedly too dark or too bright, check [member albedo_texture_force_srgb].
 		</member>
-		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_force_srgb" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			If [code]true[/code], forces a conversion of the [member albedo_texture] from sRGB color space to linear color space. See also [member vertex_color_is_srgb].
 			This should only be enabled when needed (typically when using a [ViewportTexture] as [member albedo_texture]). If [member albedo_texture_force_srgb] is [code]true[/code] when it shouldn't be, the texture will appear to be too dark. If [member albedo_texture_force_srgb] is [code]false[/code] when it shouldn't be, the texture will appear to be too bright.
 		</member>
-		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false">
+		<member name="albedo_texture_msdf" type="bool" setter="set_flag" getter="get_flag" default="false" keywords="diffuse_texture_force_srgb">
 			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
@@ -81,14 +81,14 @@
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
 		</member>
-		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" keywords="alpha_test_threshold">
 			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold].
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" default="0.0">
 			The strength of the anisotropy effect. This is multiplied by [member anisotropy_flowmap]'s alpha channel if a texture is defined there and the texture contains an alpha channel.
 		</member>
 		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], anisotropy is enabled. Anisotropy changes the shape of the specular blob and aligns it to tangent space. This is useful for brushed aluminium and hair reflections.
+			If [code]true[/code], anisotropy is enabled. Anisotropy changes the shape of the specular blob and aligns it to tangent space. This is useful for brushed aluminum and hair reflections.
 			[b]Note:[/b] Mesh tangents are needed for anisotropy to work. If the mesh does not contain tangents, the anisotropy effect will appear broken.
 			[b]Note:[/b] Material anisotropy should not to be confused with anisotropic texture filtering, which can be enabled by setting [member texture_filter] to [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC].
 		</member>
@@ -315,6 +315,7 @@
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
+			[b]Note:[/b] Refraction is implemented using the screen texture. Only opaque materials will appear in the refraction, since transparent materials do not appear in the screen texture.
 		</member>
 		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction" default="0.05">
 			The strength of the refraction effect.
@@ -349,7 +350,6 @@
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
 			Sets whether the shading takes place, per-pixel, per-vertex or unshaded. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel. Unshaded rendering is the fastest, but disables all interactions with lights.
-			[b]Note:[/b] Setting the shading mode vertex shading currently has no effect, as vertex shading is not implemented yet.
 		</member>
 		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
@@ -533,7 +533,7 @@
 		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
 			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
 		</constant>
-		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
+		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency" keywords="TRANSPARENCY_ALPHA_TEST">
 			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
@@ -552,7 +552,7 @@
 			The object will be shaded per pixel. Useful for realistic shading effects.
 		</constant>
 		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
-			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality. Not implemented yet (this mode will act like [constant SHADING_MODE_PER_PIXEL]).
+			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
 		</constant>
 		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
 			Represents the size of the [enum ShadingMode] enum.
@@ -607,6 +607,9 @@
 		</constant>
 		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
 			The color of the object is multiplied by the background.
+		</constant>
+		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
+			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
 			Disables Alpha AntiAliasing for the material.

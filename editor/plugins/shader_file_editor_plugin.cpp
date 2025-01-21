@@ -30,18 +30,14 @@
 
 #include "shader_file_editor_plugin.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"
-#include "servers/rendering/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -62,7 +58,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 		if (bytecode->get_stage_bytecode(RD::ShaderStage(i)).is_empty() && bytecode->get_stage_compile_error(RD::ShaderStage(i)) == String()) {
-			stages[i]->set_icon(Ref<Texture2D>());
+			stages[i]->set_button_icon(Ref<Texture2D>());
 			continue;
 		}
 
@@ -72,7 +68,7 @@ void ShaderFileEditor::_version_selected(int p_option) {
 		} else {
 			icon = get_editor_theme_icon(SNAME("ImportCheck"));
 		}
-		stages[i]->set_icon(icon);
+		stages[i]->set_button_icon(icon);
 
 		if (first_found == -1) {
 			first_found = i;
@@ -217,9 +213,6 @@ void ShaderFileEditor::_editor_settings_changed() {
 	}
 }
 
-void ShaderFileEditor::_bind_methods() {
-}
-
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
@@ -256,9 +249,10 @@ ShaderFileEditor::ShaderFileEditor() {
 	add_child(main_hs);
 
 	versions = memnew(ItemList);
-	versions->set_auto_translate(false);
-	versions->connect("item_selected", callable_mp(this, &ShaderFileEditor::_version_selected));
+	versions->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	versions->connect(SceneStringName(item_selected), callable_mp(this, &ShaderFileEditor::_version_selected));
 	versions->set_custom_minimum_size(Size2i(200 * EDSCALE, 0));
+	versions->set_theme_type_variation("TreeSecondary");
 	main_hs->add_child(versions);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -285,7 +279,7 @@ ShaderFileEditor::ShaderFileEditor() {
 		stage_hb->add_child(button);
 		stages[i] = button;
 		button->set_button_group(bg);
-		button->connect("pressed", callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
+		button->connect(SceneStringName(pressed), callable_mp(this, &ShaderFileEditor::_version_selected).bind(i));
 	}
 
 	error_text = memnew(RichTextLabel);
@@ -308,12 +302,12 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(shader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(shader_editor);
 
 	} else {
 		button->hide();
 		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 	}
 }
@@ -322,7 +316,7 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
 
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("ShaderFile"), shader_editor);
+	button = EditorNode::get_bottom_panel()->add_item(TTR("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
 	button->hide();
 }
 

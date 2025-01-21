@@ -32,8 +32,6 @@
 #include "font.compat.inc"
 
 #include "core/io/image_loader.h"
-#include "core/io/resource_loader.h"
-#include "core/string/translation.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/resources/image_texture.h"
@@ -51,7 +49,7 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
 	// Output.
-	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("find_variation", "variation_coordinates", "face_index", "strength", "transform", "spacing_top", "spacing_bottom", "spacing_space", "spacing_glyph", "baseline_offset"), &Font::find_variation, DEFVAL(0), DEFVAL(0.0), DEFVAL(Transform2D()), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("get_rids"), &Font::get_rids);
 
 	// Font metrics.
@@ -102,23 +100,24 @@ void Font::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
 
-void Font::_update_rids_fb(const Ref<Font> &p_f, int p_depth) const {
+void Font::_update_rids_fb(const Font *p_f, int p_depth) const {
 	ERR_FAIL_COND(p_depth > MAX_FALLBACK_DEPTH);
-	if (p_f.is_valid()) {
+	if (p_f != nullptr) {
 		RID rid = p_f->_get_rid();
 		if (rid.is_valid()) {
 			rids.push_back(rid);
 		}
 		const TypedArray<Font> &_fallbacks = p_f->get_fallbacks();
 		for (int i = 0; i < _fallbacks.size(); i++) {
-			_update_rids_fb(_fallbacks[i], p_depth + 1);
+			Ref<Font> fb_font = _fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), p_depth + 1);
 		}
 	}
 }
 
 void Font::_update_rids() const {
 	rids.clear();
-	_update_rids_fb(const_cast<Font *>(this), 0);
+	_update_rids_fb(this, 0);
 	dirty_rids = false;
 }
 
@@ -145,6 +144,25 @@ bool Font::_is_cyclic(const Ref<Font> &p_f, int p_depth) const {
 		if (_is_cyclic(f, p_depth + 1)) {
 			return true;
 		}
+	}
+	return false;
+}
+
+bool Font::_is_base_cyclic(const Ref<Font> &p_f, int p_depth) const {
+	ERR_FAIL_COND_V(p_depth > MAX_FALLBACK_DEPTH, true);
+	if (p_f.is_null()) {
+		return false;
+	}
+	if (p_f == this) {
+		return true;
+	}
+	Ref<FontVariation> fv = p_f;
+	if (fv.is_valid()) {
+		return _is_base_cyclic(fv->get_base_font(), p_depth + 1);
+	}
+	Ref<SystemFont> fs = p_f;
+	if (fs.is_valid()) {
+		return _is_base_cyclic(fs->get_base_font(), p_depth + 1);
 	}
 	return false;
 }
@@ -288,6 +306,7 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -315,6 +334,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -335,6 +355,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -369,6 +390,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -396,6 +418,7 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
+		buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
 		cache.insert(key, buffer);
 	}
@@ -430,6 +453,7 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
+		lines_buffer->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 		cache_wrap.insert(key, lines_buffer);
 	}
 
@@ -570,6 +594,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
 			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
 			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
+			TS->font_set_disable_embedded_bitmaps(cache[p_cache_index], disable_embedded_bitmaps);
 			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
 			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
 			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
@@ -579,6 +604,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
+			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
 			TS->font_set_oversampling(cache[p_cache_index], oversampling);
 		}
 	}
@@ -621,13 +647,13 @@ void FontFile::_convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			wa[ofs_dst + 1] = r[ofs_src + 3];
 		}
 	}
-	Ref<Image> img_r = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_r));
+	Ref<Image> img_r = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_r));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 0, img_r);
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 1, img_g);
-	Ref<Image> img_b = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_b));
+	Ref<Image> img_b = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_b));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 2, img_b);
-	Ref<Image> img_a = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_a));
+	Ref<Image> img_a = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_a));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 3, img_a);
 }
 
@@ -712,22 +738,22 @@ void FontFile::_convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz) 
 			}
 		}
 	}
-	Ref<Image> img_r = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_r));
+	Ref<Image> img_r = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_r));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 0, img_r);
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 1, img_g);
-	Ref<Image> img_b = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_b));
+	Ref<Image> img_b = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_b));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 2, img_b);
-	Ref<Image> img_a = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_a));
+	Ref<Image> img_a = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_a));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page * 4 + 3, img_a);
 
-	Ref<Image> img_ro = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_ro));
+	Ref<Image> img_ro = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_ro));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 0, img_ro);
-	Ref<Image> img_go = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_go));
+	Ref<Image> img_go = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_go));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 1, img_go);
-	Ref<Image> img_bo = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_bo));
+	Ref<Image> img_bo = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_bo));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 2, img_bo);
-	Ref<Image> img_ao = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_ao));
+	Ref<Image> img_ao = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_ao));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page * 4 + 3, img_ao);
 }
 
@@ -780,10 +806,10 @@ void FontFile::_convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz) {
 			}
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_RGBA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_RGBA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page, img_g);
 
-	Ref<Image> img_o = memnew(Image(w, h, 0, Image::FORMAT_RGBA8, imgdata_o));
+	Ref<Image> img_o = memnew(Image(w, h, false, Image::FORMAT_RGBA8, imgdata_o));
 	set_texture_image(0, Vector2i(p_sz, 1), p_page, img_o);
 }
 
@@ -812,7 +838,7 @@ void FontFile::_convert_mono_8bit(Ref<Image> &p_source, int p_page, int p_ch, in
 			wg[ofs_dst + 1] = r[ofs_src + p_ch];
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, p_ol), p_page, img_g);
 }
 
@@ -852,10 +878,10 @@ void FontFile::_convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, in
 			}
 		}
 	}
-	Ref<Image> img_g = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_g));
+	Ref<Image> img_g = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_g));
 	set_texture_image(0, Vector2i(p_sz, 0), p_page, img_g);
 
-	Ref<Image> img_o = memnew(Image(w, h, 0, Image::FORMAT_LA8, imgdata_o));
+	Ref<Image> img_o = memnew(Image(w, h, false, Image::FORMAT_LA8, imgdata_o));
 	set_texture_image(0, Vector2i(p_sz, p_ol), p_page, img_o);
 }
 
@@ -874,6 +900,9 @@ void FontFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &FontFile::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &FontFile::get_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &FontFile::set_disable_embedded_bitmaps);
+	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &FontFile::get_disable_embedded_bitmaps);
 
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &FontFile::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &FontFile::get_generate_mipmaps);
@@ -905,6 +934,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &FontFile::set_subpixel_positioning);
 	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &FontFile::get_subpixel_positioning);
 
+	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &FontFile::set_keep_rounding_remainders);
+	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &FontFile::get_keep_rounding_remainders);
+
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &FontFile::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &FontFile::get_oversampling);
 
@@ -927,6 +959,9 @@ void FontFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_extra_spacing", "cache_index", "spacing", "value"), &FontFile::set_extra_spacing);
 	ClassDB::bind_method(D_METHOD("get_extra_spacing", "cache_index", "spacing"), &FontFile::get_extra_spacing);
+
+	ClassDB::bind_method(D_METHOD("set_extra_baseline_offset", "cache_index", "baseline_offset"), &FontFile::set_extra_baseline_offset);
+	ClassDB::bind_method(D_METHOD("get_extra_baseline_offset", "cache_index"), &FontFile::get_extra_baseline_offset);
 
 	ClassDB::bind_method(D_METHOD("set_face_index", "cache_index", "face_index"), &FontFile::set_face_index);
 	ClassDB::bind_method(D_METHOD("get_face_index", "cache_index"), &FontFile::get_face_index);
@@ -1003,6 +1038,7 @@ void FontFile::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_name", "get_font_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "style_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style_name", "get_font_style_name");
@@ -1011,6 +1047,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25", PROPERTY_USAGE_STORAGE), "set_font_stretch", "get_font_stretch");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
@@ -1061,7 +1098,7 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		Array textures = p_value;
 		for (int i = 0; i < textures.size(); i++) {
 			Ref<ImageTexture> tex = textures[i];
-			ERR_CONTINUE(!tex.is_valid());
+			ERR_CONTINUE(tex.is_null());
 			set_texture_image(0, Vector2i(16, 0), i, tex->get_image());
 		}
 	} else if (tokens.size() == 1 && tokens[0] == "chars") {
@@ -1150,6 +1187,9 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
 			set_extra_spacing(cache_index, TextServer::SPACING_GLYPH, p_value);
+			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
+			set_extra_baseline_offset(cache_index, p_value);
 			return true;
 		}
 		if (tokens.size() >= 5) {
@@ -1242,6 +1282,9 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (tokens.size() == 3 && tokens[2] == "spacing_glyph") {
 			r_ret = get_extra_spacing(cache_index, TextServer::SPACING_GLYPH);
 			return true;
+		} else if (tokens.size() == 3 && tokens[2] == "baseline_offset") {
+			r_ret = get_extra_baseline_offset(cache_index);
+			return true;
 		}
 		if (tokens.size() >= 5) {
 			Vector2i sz = Vector2i(tokens[2].to_int(), tokens[3].to_int());
@@ -1317,6 +1360,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_bottom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "baseline_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
 		for (int j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];
@@ -1332,7 +1376,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 			int tx_cnt = get_texture_count(i, sz);
 			for (int k = 0; k < tx_cnt; k++) {
 				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE));
 			}
 			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {
@@ -1365,11 +1409,13 @@ void FontFile::reset_state() {
 
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+	keep_rounding_remainders = true;
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
@@ -1395,10 +1441,15 @@ static const char32_t _oem_to_unicode[][129] = {
 };
 
 Error FontFile::load_bitmap_font(const String &p_path) {
+	return _load_bitmap_font(p_path, nullptr);
+}
+
+Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_files) {
 	reset_state();
 
 	antialiasing = TextServer::FONT_ANTIALIASING_NONE;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	msdf = false;
 	force_autohinter = false;
 	allow_system_fallback = true;
@@ -1436,8 +1487,8 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
-					base_size = f->get_16();
-					if (base_size <= 0) {
+					base_size = ABS(static_cast<int16_t>(f->get_16()));
+					if (base_size == 0) {
 						base_size = 16;
 					}
 					uint8_t flags = f->get_8();
@@ -1535,6 +1586,9 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 								img.instantiate();
 								Error err = ImageLoader::load_image(file, img);
 								ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+								if (r_image_files) {
+									r_image_files->push_back(file);
+								}
 
 								if (packed) {
 									if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
@@ -1685,7 +1739,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 		while (true) {
 			String line = f->get_line();
 
-			int delimiter = line.find(" ");
+			int delimiter = line.find_char(' ');
 			String type = line.substr(0, delimiter);
 			int pos = delimiter + 1;
 			HashMap<String, String> keys;
@@ -1695,7 +1749,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 			}
 
 			while (pos < line.size()) {
-				int eq = line.find("=", pos);
+				int eq = line.find_char('=', pos);
 				if (eq == -1) {
 					break;
 				}
@@ -1703,14 +1757,14 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 				int end = -1;
 				String value;
 				if (line[eq + 1] == '"') {
-					end = line.find("\"", eq + 2);
+					end = line.find_char('"', eq + 2);
 					if (end == -1) {
 						break;
 					}
 					value = line.substr(eq + 2, end - 1 - eq - 1);
 					pos = end + 1;
 				} else {
-					end = line.find(" ", eq + 1);
+					end = line.find_char(' ', eq + 1);
 					if (end == -1) {
 						end = line.size();
 					}
@@ -1727,7 +1781,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 
 			if (type == "info") {
 				if (keys.has("size")) {
-					base_size = keys["size"].to_int();
+					base_size = ABS(keys["size"].to_int());
+					if (base_size == 0) {
+						base_size = 16;
+					}
 				}
 				if (keys.has("outline")) {
 					outline = keys["outline"].to_int();
@@ -1826,6 +1883,10 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 						img.instantiate();
 						Error err = ImageLoader::load_image(file, img);
 						ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_READ, vformat("Can't load font texture: %s.", file));
+						if (r_image_files) {
+							r_image_files->push_back(file);
+						}
+
 						if (packed) {
 							if (ch[3] == 0) { // 4 x 8 bit monochrome, no outline
 								outline = 0;
@@ -2028,9 +2089,8 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 
 PackedByteArray FontFile::get_data() const {
 	if (unlikely((size_t)data.size() != data_size)) {
-		PackedByteArray *data_w = const_cast<PackedByteArray *>(&data);
-		data_w->resize(data_size);
-		memcpy(data_w->ptrw(), data_ptr, data_size);
+		data.resize(data_size);
+		memcpy(data.ptrw(), data_ptr, data_size);
 	}
 	return data;
 }
@@ -2073,6 +2133,21 @@ void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 
 TextServer::FontAntialiasing FontFile::get_antialiasing() const {
 	return antialiasing;
+}
+
+void FontFile::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
+	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
+		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_disable_embedded_bitmaps(cache[i], disable_embedded_bitmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::get_disable_embedded_bitmaps() const {
+	return disable_embedded_bitmaps;
 }
 
 void FontFile::set_generate_mipmaps(bool p_generate_mipmaps) {
@@ -2225,6 +2300,21 @@ TextServer::SubpixelPositioning FontFile::get_subpixel_positioning() const {
 	return subpixel_positioning;
 }
 
+void FontFile::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
+	if (keep_rounding_remainders != p_keep_rounding_remainders) {
+		keep_rounding_remainders = p_keep_rounding_remainders;
+		for (int i = 0; i < cache.size(); i++) {
+			_ensure_rid(i);
+			TS->font_set_keep_rounding_remainders(cache[i], keep_rounding_remainders);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::get_keep_rounding_remainders() const {
+	return keep_rounding_remainders;
+}
+
 void FontFile::set_oversampling(real_t p_oversampling) {
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
@@ -2240,7 +2330,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2256,6 +2346,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_BOTTOM) == p_spacing_bottom);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_SPACE) == p_spacing_space);
 			match_linked = match_linked && (TS->font_get_spacing(cache[i], TextServer::SPACING_GLYPH) == p_spacing_glyph);
+			match_linked = match_linked && (TS->font_get_baseline_offset(cache[i]) == p_baseline_offset);
 			for (const Variant *V = supported_coords.next(nullptr); V && match; V = supported_coords.next(V)) {
 				const Vector3 &def = supported_coords[*V];
 
@@ -2299,6 +2390,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
 	} else {
 		_ensure_rid(idx);
 		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
@@ -2309,6 +2401,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_GLYPH, p_spacing_glyph);
+		TS->font_set_baseline_offset(cache[idx], p_baseline_offset);
 	}
 	return cache[idx];
 }
@@ -2401,6 +2494,18 @@ int64_t FontFile::get_extra_spacing(int p_cache_index, TextServer::SpacingType p
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
 	_ensure_rid(p_cache_index);
 	return TS->font_get_spacing(cache[p_cache_index], p_spacing);
+}
+
+float FontFile::get_extra_baseline_offset(int p_cache_index) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
+	_ensure_rid(p_cache_index);
+	return TS->font_get_baseline_offset(cache[p_cache_index]);
+}
+
+void FontFile::set_extra_baseline_offset(int p_cache_index, float p_baseline_offset) {
+	ERR_FAIL_COND(p_cache_index < 0);
+	_ensure_rid(p_cache_index);
+	TS->font_set_baseline_offset(cache[p_cache_index], p_baseline_offset);
 }
 
 void FontFile::set_face_index(int p_cache_index, int64_t p_index) {
@@ -2731,6 +2836,9 @@ void FontVariation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_spacing", "spacing", "value"), &FontVariation::set_spacing);
 
+	ClassDB::bind_method(D_METHOD("set_baseline_offset", "baseline_offset"), &FontVariation::set_baseline_offset);
+	ClassDB::bind_method(D_METHOD("get_baseline_offset"), &FontVariation::get_baseline_offset);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_base_font", "get_base_font");
 
 	ADD_GROUP("Variation", "variation_");
@@ -2747,6 +2855,9 @@ void FontVariation::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_space", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_SPACE);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_top", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "spacing_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_spacing", "get_spacing", TextServer::SPACING_BOTTOM);
+
+	ADD_GROUP("Baseline", "baseline_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baseline_offset", PROPERTY_HINT_RANGE, "-2,2,0.005"), "set_baseline_offset", "get_baseline_offset");
 }
 
 void FontVariation::_update_rids() const {
@@ -2761,10 +2872,11 @@ void FontVariation::_update_rids() const {
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
 		for (int i = 0; i < base_fallbacks.size(); i++) {
-			_update_rids_fb(base_fallbacks[i], 0);
+			Ref<Font> fb_font = base_fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), 0);
 		}
 	} else {
-		_update_rids_fb(const_cast<FontVariation *>(this), 0);
+		_update_rids_fb(this, 0);
 	}
 	dirty_rids = false;
 }
@@ -2786,6 +2898,7 @@ void FontVariation::reset_state() {
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		extra_spacing[i] = 0;
 	}
+	baseline_offset = 0.0;
 
 	Font::reset_state();
 }
@@ -2810,7 +2923,7 @@ Ref<Font> FontVariation::get_base_font() const {
 
 Ref<Font> FontVariation::_get_base_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids));
+		theme_font->disconnect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids));
 		theme_font.unref();
 	}
 
@@ -2819,11 +2932,16 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	Vector<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}
@@ -2834,22 +2952,22 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 			}
 
 			Ref<Font> f = theme->get_font(theme_name, E);
-			if (f == this) {
+			if (_is_base_cyclic(f, 0)) {
 				continue;
 			}
 			if (f.is_valid()) {
 				theme_font = f;
-				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+				theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
 	}
 
 	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
-	if (f != this) {
+	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}
@@ -2925,10 +3043,21 @@ int FontVariation::get_spacing(TextServer::SpacingType p_spacing) const {
 	return extra_spacing[p_spacing];
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
+void FontVariation::set_baseline_offset(float p_baseline_offset) {
+	if (baseline_offset != p_baseline_offset) {
+		baseline_offset = p_baseline_offset;
+		_invalidate_rids();
+	}
+}
+
+float FontVariation::get_baseline_offset() const {
+	return baseline_offset;
+}
+
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
+		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 	}
 	return RID();
 }
@@ -2936,7 +3065,7 @@ RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int
 RID FontVariation::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH]);
+		return f->find_variation(variation.opentype, variation.face_index, variation.embolden, variation.transform, extra_spacing[TextServer::SPACING_TOP], extra_spacing[TextServer::SPACING_BOTTOM], extra_spacing[TextServer::SPACING_SPACE], extra_spacing[TextServer::SPACING_GLYPH], baseline_offset);
 	}
 	return RID();
 }
@@ -2958,6 +3087,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiasing", "antialiasing"), &SystemFont::set_antialiasing);
 	ClassDB::bind_method(D_METHOD("get_antialiasing"), &SystemFont::get_antialiasing);
 
+	ClassDB::bind_method(D_METHOD("set_disable_embedded_bitmaps", "disable_embedded_bitmaps"), &SystemFont::set_disable_embedded_bitmaps);
+	ClassDB::bind_method(D_METHOD("get_disable_embedded_bitmaps"), &SystemFont::get_disable_embedded_bitmaps);
+
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &SystemFont::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &SystemFont::get_generate_mipmaps);
 
@@ -2972,6 +3104,9 @@ void SystemFont::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_subpixel_positioning", "subpixel_positioning"), &SystemFont::set_subpixel_positioning);
 	ClassDB::bind_method(D_METHOD("get_subpixel_positioning"), &SystemFont::get_subpixel_positioning);
+
+	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &SystemFont::set_keep_rounding_remainders);
+	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &SystemFont::get_keep_rounding_remainders);
 
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
@@ -2999,10 +3134,12 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_stretch", PROPERTY_HINT_RANGE, "50,200,25"), "set_font_stretch", "get_font_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_STORAGE), "set_antialiasing", "get_antialiasing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "get_generate_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), "set_disable_embedded_bitmaps", "get_disable_embedded_bitmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
@@ -3021,10 +3158,11 @@ void SystemFont::_update_rids() const {
 
 		const TypedArray<Font> &base_fallbacks = f->get_fallbacks();
 		for (int i = 0; i < base_fallbacks.size(); i++) {
-			_update_rids_fb(base_fallbacks[i], 0);
+			Ref<Font> fb_font = base_fallbacks[i];
+			_update_rids_fb(fb_font.ptr(), 0);
 		}
 	} else {
-		_update_rids_fb(const_cast<SystemFont *>(this), 0);
+		_update_rids_fb(this, 0);
 	}
 	dirty_rids = false;
 }
@@ -3035,7 +3173,7 @@ void SystemFont::_update_base_font() {
 		base_font.unref();
 	}
 
-	face_indeces.clear();
+	face_indices.clear();
 	ftr_weight = 0;
 	ftr_stretch = 0;
 	ftr_italic = 0;
@@ -3073,17 +3211,17 @@ void SystemFont::_update_base_font() {
 				score += 30;
 			}
 			if (score > best_score) {
-				face_indeces.clear();
+				face_indices.clear();
 			}
 			if (score >= best_score) {
 				best_score = score;
-				face_indeces.push_back(i);
+				face_indices.push_back(i);
 			}
 		}
-		if (face_indeces.is_empty()) {
-			face_indeces.push_back(0);
+		if (face_indices.is_empty()) {
+			face_indices.push_back(0);
 		}
-		file->set_face_index(0, face_indeces[0]);
+		file->set_face_index(0, face_indices[0]);
 
 		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
 		if (best_score != 150) {
@@ -3102,10 +3240,12 @@ void SystemFont::_update_base_font() {
 		// Apply font rendering settings.
 		file->set_antialiasing(antialiasing);
 		file->set_generate_mipmaps(mipmaps);
+		file->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
 		file->set_force_autohinter(force_autohinter);
 		file->set_allow_system_fallback(allow_system_fallback);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
+		file->set_keep_rounding_remainders(keep_rounding_remainders);
 		file->set_multichannel_signed_distance_field(msdf);
 		file->set_msdf_pixel_range(msdf_pixel_range);
 		file->set_msdf_size(msdf_size);
@@ -3121,7 +3261,6 @@ void SystemFont::_update_base_font() {
 	}
 
 	_invalidate_rids();
-	notify_property_list_changed();
 }
 
 void SystemFont::reset_state() {
@@ -3136,7 +3275,7 @@ void SystemFont::reset_state() {
 	}
 
 	names.clear();
-	face_indeces.clear();
+	face_indices.clear();
 	ftr_weight = 0;
 	ftr_stretch = 0;
 	ftr_italic = 0;
@@ -3145,10 +3284,12 @@ void SystemFont::reset_state() {
 	stretch = 100;
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
+	disable_embedded_bitmaps = true;
 	force_autohinter = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+	keep_rounding_remainders = true;
 	oversampling = 0.f;
 	msdf = false;
 
@@ -3157,7 +3298,7 @@ void SystemFont::reset_state() {
 
 Ref<Font> SystemFont::_get_base_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids));
+		theme_font->disconnect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids));
 		theme_font.unref();
 	}
 
@@ -3166,8 +3307,8 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
 	for (const Ref<Theme> &theme : global_context->get_themes()) {
@@ -3181,22 +3322,22 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 			}
 
 			Ref<Font> f = theme->get_font(theme_name, E);
-			if (f == this) {
+			if (_is_base_cyclic(f, 0)) {
 				continue;
 			}
 			if (f.is_valid()) {
 				theme_font = f;
-				theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+				theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 			}
 			return f;
 		}
 	}
 
 	Ref<Font> f = global_context->get_fallback_theme()->get_font(theme_name, StringName());
-	if (f != this) {
+	if (!_is_base_cyclic(f, 0)) {
 		if (f.is_valid()) {
 			theme_font = f;
-			theme_font->connect_changed(callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			theme_font->connect_changed(callable_mp(static_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
 		}
 		return f;
 	}
@@ -3216,6 +3357,20 @@ void SystemFont::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 
 TextServer::FontAntialiasing SystemFont::get_antialiasing() const {
 	return antialiasing;
+}
+
+void SystemFont::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
+	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
+		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
+		if (base_font.is_valid()) {
+			base_font->set_disable_embedded_bitmaps(disable_embedded_bitmaps);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_disable_embedded_bitmaps() const {
+	return disable_embedded_bitmaps;
 }
 
 void SystemFont::set_generate_mipmaps(bool p_generate_mipmaps) {
@@ -3286,6 +3441,20 @@ void SystemFont::set_subpixel_positioning(TextServer::SubpixelPositioning p_subp
 
 TextServer::SubpixelPositioning SystemFont::get_subpixel_positioning() const {
 	return subpixel_positioning;
+}
+
+void SystemFont::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
+	if (keep_rounding_remainders != p_keep_rounding_remainders) {
+		keep_rounding_remainders = p_keep_rounding_remainders;
+		if (base_font.is_valid()) {
+			base_font->set_keep_rounding_remainders(keep_rounding_remainders);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_keep_rounding_remainders() const {
+	return keep_rounding_remainders;
 }
 
 void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
@@ -3396,7 +3565,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;
@@ -3410,11 +3579,11 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 			var[TS->name_to_tag("italic")] = ftr_italic;
 		}
 
-		if (!face_indeces.is_empty()) {
-			int face_index = CLAMP(p_face_index, 0, face_indeces.size() - 1);
-			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
+		if (!face_indices.is_empty()) {
+			int face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
+			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 		} else {
-			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph);
+			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 		}
 	}
 	return RID();
@@ -3423,7 +3592,7 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 RID SystemFont::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		if (!face_indeces.is_empty()) {
+		if (!face_indices.is_empty()) {
 			Dictionary var;
 			if (ftr_weight > 0) {
 				var[TS->name_to_tag("weight")] = ftr_weight;
@@ -3434,7 +3603,7 @@ RID SystemFont::_get_rid() const {
 			if (ftr_italic > 0) {
 				var[TS->name_to_tag("italic")] = ftr_italic;
 			}
-			return f->find_variation(var, face_indeces[0]);
+			return f->find_variation(var, face_indices[0]);
 		} else {
 			return f->_get_rid();
 		}
@@ -3443,7 +3612,7 @@ RID SystemFont::_get_rid() const {
 }
 
 int64_t SystemFont::get_face_count() const {
-	return face_indeces.size();
+	return face_indices.size();
 }
 
 SystemFont::SystemFont() {

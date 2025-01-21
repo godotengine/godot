@@ -89,13 +89,13 @@
 				var rect = Rect2(0, 0, 5, 2)
 
 				rect = rect.expand(Vector2(10, 0)) # rect is Rect2(0, 0, 10, 2)
-				rect = rect.expand(Vector2(-5, 5)) # rect is Rect2(-5, 0, 10, 5)
+				rect = rect.expand(Vector2(-5, 5)) # rect is Rect2(-5, 0, 15, 5)
 				[/gdscript]
 				[csharp]
 				var rect = new Rect2(0, 0, 5, 2);
 
 				rect = rect.Expand(new Vector2(10, 0)); // rect is Rect2(0, 0, 10, 2)
-				rect = rect.Expand(new Vector2(-5, 5)); // rect is Rect2(-5, 0, 10, 5)
+				rect = rect.Expand(new Vector2(-5, 5)); // rect is Rect2(-5, 0, 15, 5)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -110,6 +110,13 @@
 			<return type="Vector2" />
 			<description>
 				Returns the center point of the rectangle. This is the same as [code]position + (size / 2.0)[/code].
+			</description>
+		</method>
+		<method name="get_support" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="direction" type="Vector2" />
+			<description>
+				Returns the vertex's position of this rect that's the farthest in the given direction. This point is commonly known as the support point in collision detection algorithms.
 			</description>
 		</method>
 		<method name="grow" qualifiers="const">

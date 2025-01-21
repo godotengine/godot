@@ -69,6 +69,7 @@ public:
 		MENU_INSERT_ZWNJ,
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
+		MENU_EMOJI_AND_SYMBOL,
 		MENU_MAX
 	};
 
@@ -86,11 +87,14 @@ public:
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
+	bool editing = false;
+	bool keep_editing_on_text_submit = false;
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
 
 	bool alt_start = false;
+	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
 
 	String undo_text;
@@ -109,6 +113,7 @@ private:
 	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = true;
+	bool emoji_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
@@ -205,6 +210,9 @@ private:
 		float base_scale = 1.0;
 	} theme_cache;
 
+	void _close_ime_window();
+	void _update_ime_window_position();
+
 	void _clear_undo_stack();
 	void _clear_redo();
 	void _create_undo_state();
@@ -243,6 +251,7 @@ private:
 	void _move_caret_end(bool p_select);
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
+	void _texture_changed();
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -257,6 +266,16 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	void edit();
+	void unedit();
+	bool is_editing() const;
+	void set_keep_editing_on_text_submit(bool p_enabled);
+	bool is_editing_kept_on_text_submit() const;
+
+	bool has_ime_text() const;
+	void cancel_ime();
+	void apply_ime();
+
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
 
@@ -271,6 +290,11 @@ public:
 	bool is_context_menu_enabled();
 	PopupMenu *get_menu() const;
 	bool is_menu_visible() const;
+
+	void show_emoji_and_symbol_picker();
+
+	void set_emoji_menu_enabled(bool p_enabled);
+	bool is_emoji_menu_enabled() const;
 
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();

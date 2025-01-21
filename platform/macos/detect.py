@@ -1,12 +1,16 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang
-from platform_methods import detect_arch
-
 from typing import TYPE_CHECKING
 
+from methods import detect_darwin_sdk_path, get_compiler_version, is_apple_clang, print_error, print_warning
+from platform_methods import detect_arch, detect_mvk, validate_arch
+
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
+
+# To match other platforms
+STACK_SIZE = 8388608
+STACK_SIZE_SANITIZERS = 30 * 1024 * 1024
 
 
 def get_name():
@@ -33,6 +37,12 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
+        (
+            "bundle_sign_identity",
+            "The 'Full Name', 'Common Name' or SHA-1 hash of the signing identity used to sign editor .app bundle.",
+            "-",
+        ),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -47,69 +57,18 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", detect_arch()),
-        ("use_volk", False),
-    ]
+    return {
+        "arch": detect_arch(),
+        "use_volk": False,
+        "metal": True,
+        "supported": ["metal", "mono"],
+    }
 
 
-def get_mvk_sdk_path():
-    def int_or_zero(i):
-        try:
-            return int(i)
-        except:
-            return 0
-
-    def ver_parse(a):
-        return [int_or_zero(i) for i in a.split(".")]
-
-    dirname = os.path.expanduser("~/VulkanSDK")
-    if not os.path.exists(dirname):
-        return ""
-
-    ver_num = ver_parse("0.0.0.0")
-    files = os.listdir(dirname)
-    lib_name_out = dirname
-    for file in files:
-        if os.path.isdir(os.path.join(dirname, file)):
-            ver_comp = ver_parse(file)
-            if ver_comp > ver_num:
-                # Try new SDK location.
-                lib_name = os.path.join(
-                    os.path.join(dirname, file), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                )
-                if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                    ver_num = ver_comp
-                    lib_name_out = lib_name
-                else:
-                    # Try old SDK location.
-                    lib_name = os.path.join(
-                        os.path.join(dirname, file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    )
-                    if os.path.isfile(os.path.join(lib_name, "libMoltenVK.a")):
-                        ver_num = ver_comp
-                        lib_name_out = lib_name
-
-    return lib_name_out
-
-
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
-    if env["arch"] not in supported_arches:
-        print(
-            'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit()
-
-    ## Build type
-
-    if env["target"] == "template_release":
-        if env["arch"] != "arm64":
-            env.Prepend(CCFLAGS=["-msse2"])
-    elif env.dev_build:
-        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Compiler configuration
 
@@ -129,18 +88,25 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+    env.Append(CCFLAGS=["-fobjc-arc"])
+
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
     cc_version_minor = cc_version["apple_minor"]
-    vanilla = is_vanilla_clang(env)
 
     # Workaround for Xcode 15 linker bug.
-    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
+    if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    if env.dev_build:
+        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
-    if not "osxcross" in env:  # regular native build
+    ccache_path = os.environ.get("CCACHE", "")
+    if ccache_path != "":
+        ccache_path = ccache_path + " "
+
+    if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -150,8 +116,8 @@ def configure(env: "Environment"):
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
         else:
-            env["CC"] = "clang"
-            env["CXX"] = "clang++"
+            env["CC"] = ccache_path + "clang"
+            env["CXX"] = ccache_path + "clang++"
 
         detect_darwin_sdk_path("macos", env)
         env.Append(CCFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
@@ -164,15 +130,8 @@ def configure(env: "Environment"):
         else:
             basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
-        ccache_path = os.environ.get("CCACHE")
-        if ccache_path is None:
-            env["CC"] = basecmd + "cc"
-            env["CXX"] = basecmd + "c++"
-        else:
-            # there aren't any ccache wrappers available for macOS cross-compile,
-            # to enable caching we need to prepend the path to the ccache binary
-            env["CC"] = ccache_path + " " + basecmd + "cc"
-            env["CXX"] = ccache_path + " " + basecmd + "c++"
+        env["CC"] = ccache_path + basecmd + "cc"
+        env["CXX"] = ccache_path + basecmd + "c++"
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
@@ -213,6 +172,10 @@ def configure(env: "Environment"):
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
+        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE_SANITIZERS)])
+    else:
+        env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
+
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -241,7 +204,9 @@ def configure(env: "Environment"):
             "-framework",
             "IOKit",
             "-framework",
-            "ForceFeedback",
+            "GameController",
+            "-framework",
+            "CoreHaptics",
             "-framework",
             "CoreVideo",
             "-framework",
@@ -252,6 +217,8 @@ def configure(env: "Environment"):
             "QuartzCore",
             "-framework",
             "Security",
+            "-framework",
+            "UniformTypeIdentifiers",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
@@ -268,38 +235,42 @@ def configure(env: "Environment"):
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])
 
+    if env["metal"] and env["arch"] != "arm64":
+        print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
+        env["metal"] = False
+
+    extra_frameworks = set()
+
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        extra_frameworks.add("Metal")
+        extra_frameworks.add("MetalKit")
+        extra_frameworks.add("MetalFX")
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        env.Append(LINKFLAGS=["-framework", "Metal", "-framework", "IOSurface"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        extra_frameworks.add("Metal")
+        extra_frameworks.add("IOSurface")
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
-            mvk_found = False
 
-            mvk_list = [get_mvk_sdk_path(), "/opt/homebrew/lib", "/usr/local/homebrew/lib", "/opt/local/lib"]
-            if env["vulkan_sdk_path"] != "":
-                mvk_list.insert(0, os.path.expanduser(env["vulkan_sdk_path"]))
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "macOS/lib/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-                mvk_list.insert(
-                    0,
-                    os.path.join(
-                        os.path.expanduser(env["vulkan_sdk_path"]), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/"
-                    ),
-                )
-
-            for mvk_path in mvk_list:
-                if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
-                    mvk_found = True
-                    print("MoltenVK found at: " + mvk_path)
-                    env.Append(LINKFLAGS=["-L" + mvk_path])
+            mvk_path = ""
+            arch_variants = ["macos-arm64_x86_64", "macos-" + env["arch"]]
+            for arch in arch_variants:
+                mvk_path = detect_mvk(env, arch)
+                if mvk_path != "":
+                    mvk_path = os.path.join(mvk_path, arch)
                     break
 
-            if not mvk_found:
-                print(
+            if mvk_path != "":
+                env.Append(LINKFLAGS=["-L" + mvk_path])
+            else:
+                print_error(
                     "MoltenVK SDK installation directory not found, use 'vulkan_sdk_path' SCons parameter to specify SDK path."
                 )
                 sys.exit(255)
+
+    if len(extra_frameworks) > 0:
+        frameworks = [item for key in extra_frameworks for item in ["-framework", key]]
+        env.Append(LINKFLAGS=frameworks)

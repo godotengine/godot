@@ -31,7 +31,6 @@
 #include "polygon_3d_editor_plugin.h"
 
 #include "core/input/input.h"
-#include "core/io/file_access.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
@@ -41,13 +40,12 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/gui/separator.h"
 
 void Polygon3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			button_create->set_icon(get_editor_theme_icon(SNAME("Edit")));
-			button_edit->set_icon(get_editor_theme_icon(SNAME("MovePoint")));
+			button_create->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+			button_edit->set_button_icon(get_editor_theme_icon(SNAME("MovePoint")));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed", callable_mp(this, &Polygon3DEditor::_node_removed));
 
@@ -334,9 +332,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 			}
 
 			if (!snap_ignore && Node3DEditor::get_singleton()->is_snap_enabled()) {
-				cpoint = cpoint.snapped(Vector2(
-						Node3DEditor::get_singleton()->get_translate_snap(),
-						Node3DEditor::get_singleton()->get_translate_snap()));
+				cpoint = cpoint.snappedf(Node3DEditor::get_singleton()->get_translate_snap());
 			}
 			edited_point_pos = cpoint;
 
@@ -364,7 +360,7 @@ PackedVector2Array Polygon3DEditor::_get_polygon() {
 	return PackedVector2Array(obj->call("get_polygon"));
 }
 
-void Polygon3DEditor::_set_polygon(PackedVector2Array p_poly) {
+void Polygon3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
 	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
 	obj->call("set_polygon", p_poly);
@@ -538,15 +534,15 @@ Polygon3DEditor::Polygon3DEditor() {
 	node = nullptr;
 
 	button_create = memnew(Button);
-	button_create->set_theme_type_variation("FlatButton");
+	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	add_child(button_create);
-	button_create->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
+	button_create->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
-	button_edit->set_theme_type_variation("FlatButton");
+	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
 	add_child(button_edit);
-	button_edit->connect("pressed", callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
+	button_edit->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
 
 	mode = MODE_EDIT;
@@ -556,7 +552,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	imgeom->set_mesh(imesh);
 	imgeom->set_transform(Transform3D(Basis(), Vector3(0, 0, 0.00001)));
 
-	line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	line_material.instantiate();
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
@@ -564,7 +560,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
-	handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	handle_material.instantiate();
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
 	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);

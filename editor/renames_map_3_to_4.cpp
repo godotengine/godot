@@ -642,7 +642,6 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "_SetEditorDescription", "SetEditorDescription" }, // Node
 	{ "_SetPlaying", "SetPlaying" }, // AnimatedSprite3D
 	{ "_ToplevelRaiseSelf", "_TopLevelRaiseSelf" }, // CanvasItem
-	{ "_UpdateWrapAt", "_UpdateWrapAtColumn" }, // TextEdit
 	{ "AddCancel", "AddCancelButton" }, // AcceptDialog
 	{ "AddCentralForce", "AddConstantCentralForce" }, //RigidBody2D
 	{ "AddChildBelowNode", "AddSibling" }, // Node
@@ -1047,7 +1046,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	// make sure to add it to the C# rename map too.
 
 	// Too common words, users may use these names for variables or in comments.
-	// { "bg", "panel" }, // Theme
+	// { "bg", SceneStringName(panel) }, // Theme
 	// { "alt", "alt_pressed" }, // InputEventWithModifiers
 	// { "command", "command_pressed" }, // InputEventWithModifiers
 	// { "control", "ctrl_pressed" }, // InputEventWithModifiers
@@ -1355,7 +1354,6 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "rendering/quality/shading/force_lambert_over_burley", "rendering/shading/overrides/force_lambert_over_burley" },
 	{ "rendering/quality/shading/force_lambert_over_burley.mobile", "rendering/shading/overrides/force_lambert_over_burley.mobile" },
 	{ "rendering/quality/shading/force_vertex_shading", "rendering/shading/overrides/force_vertex_shading" },
-	{ "rendering/quality/shading/force_vertex_shading.mobile", "rendering/shading/overrides/force_vertex_shading.mobile" },
 	{ "rendering/quality/shadow_atlas/quadrant_0_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
 	{ "rendering/quality/shadow_atlas/quadrant_1_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
 	{ "rendering/quality/shadow_atlas/quadrant_2_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
@@ -1401,7 +1399,6 @@ const char *RenamesMap3To4::project_godot_renames[][2] = {
 	{ "quality/shading/force_lambert_over_burley", "shading/overrides/force_lambert_over_burley" },
 	{ "quality/shading/force_lambert_over_burley.mobile", "shading/overrides/force_lambert_over_burley.mobile" },
 	{ "quality/shading/force_vertex_shading", "shading/overrides/force_vertex_shading" },
-	{ "quality/shading/force_vertex_shading.mobile", "shading/overrides/force_vertex_shading.mobile" },
 	{ "quality/shadow_atlas/quadrant_0_subdiv", "lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
 	{ "quality/shadow_atlas/quadrant_1_subdiv", "lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
 	{ "quality/shadow_atlas/quadrant_2_subdiv", "lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
@@ -1515,11 +1512,10 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "DynamicFontData", "FontFile" },
 	{ "EditorNavigationMeshGenerator", "NavigationMeshGenerator" },
 	{ "EditorSceneImporter", "EditorSceneFormatImporter" },
-	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX" },
+	{ "EditorSceneImporterFBX", "EditorSceneFormatImporterFBX2GLTF" },
 	{ "EditorSceneImporterGLTF", "EditorSceneFormatImporterGLTF" },
 	{ "EditorSpatialGizmo", "EditorNode3DGizmo" },
 	{ "EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin" },
-	{ "ExternalTexture", "ImageTexture" },
 	{ "GIProbe", "VoxelGI" },
 	{ "GIProbeData", "VoxelGIData" },
 	{ "Generic6DOFJoint", "Generic6DOFJoint3D" },

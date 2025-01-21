@@ -33,14 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
-#include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
-#include "editor/plugins/script_editor_plugin.h"
-#include "editor/themes/editor_scale.h"
+#include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorSelectionHistory::cleanup_history() {
@@ -48,7 +46,7 @@ void EditorSelectionHistory::cleanup_history() {
 		bool fail = false;
 
 		for (int j = 0; j < history[i].path.size(); j++) {
-			if (!history[i].path[j].ref.is_null()) {
+			if (history[i].path[j].ref.is_valid()) {
 				// If the node is a MultiNodeEdit node, examine it and see if anything is missing from it.
 				Ref<MultiNodeEdit> multi_node_edit = history[i].path[j].ref;
 				if (multi_node_edit.is_valid()) {
@@ -139,6 +137,16 @@ void EditorSelectionHistory::add_object(ObjectID p_object, const String &p_prope
 
 	history.push_back(h);
 	current_elem_idx++;
+}
+
+void EditorSelectionHistory::replace_object(ObjectID p_old_object, ObjectID p_new_object) {
+	for (HistoryElement &element : history) {
+		for (int index = 0; index < element.path.size(); index++) {
+			if (element.path[index].object == p_old_object) {
+				element.path.write[index].object = p_new_object;
+			}
+		}
+	}
 }
 
 int EditorSelectionHistory::get_history_len() {
@@ -266,9 +274,9 @@ Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	return sub_plugins;
 }
 
-EditorPlugin *EditorData::get_editor_by_name(String p_name) {
+EditorPlugin *EditorData::get_editor_by_name(const String &p_name) {
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (editor_plugins[i]->get_name() == p_name) {
+		if (editor_plugins[i]->get_plugin_name() == p_name) {
 			return editor_plugins[i];
 		}
 	}
@@ -307,7 +315,7 @@ Dictionary EditorData::get_editor_plugin_states() const {
 		if (state.is_empty()) {
 			continue;
 		}
-		metadata[editor_plugins[i]->get_name()] = state;
+		metadata[editor_plugins[i]->get_plugin_name()] = state;
 	}
 
 	return metadata;
@@ -335,7 +343,7 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 		String name = E->get();
 		int idx = -1;
 		for (int i = 0; i < editor_plugins.size(); i++) {
-			if (editor_plugins[i]->get_name() == name) {
+			if (editor_plugins[i]->get_plugin_name() == name) {
 				idx = i;
 				break;
 			}
@@ -534,6 +542,7 @@ Variant EditorData::instantiate_custom_type(const String &p_type, const String &
 				if (n) {
 					n->set_name(p_type);
 				}
+				n->set_meta(SceneStringName(_custom_type_script), script);
 				((Object *)ob)->set_script(script);
 				return ob;
 			}
@@ -649,7 +658,9 @@ void EditorData::remove_scene(int p_idx) {
 		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
-	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
+	if (undo_redo_manager->has_history(edited_scene[p_idx].history_id)) { // Might not exist if scene failed to load.
+		undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
+	}
 	edited_scene.remove_at(p_idx);
 }
 
@@ -719,12 +730,9 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		}
 
 		new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-
-		memdelete(edited_scene[p_idx].root);
-		edited_scene.write[p_idx].root = new_scene;
-		if (!new_scene->get_scene_file_path().is_empty()) {
-			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();
-		}
+		Node *old_root = edited_scene[p_idx].root;
+		EditorNode::get_singleton()->set_edited_scene(new_scene);
+		memdelete(old_root);
 		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
@@ -830,9 +838,9 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 		return Ref<Script>();
 	}
 	Ref<Script> s = edited_scene[p_idx].root->get_script();
-	if (!s.is_valid() && edited_scene[p_idx].root->get_child_count()) {
+	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (!s.is_valid() && n && n->get_scene_file_path().is_empty()) {
+		while (s.is_null() && n && n->get_scene_file_path().is_empty()) {
 			s = n->get_script();
 			n = n->get_parent();
 		}
@@ -996,6 +1004,7 @@ Variant EditorData::script_class_instance(const String &p_class) {
 			// Store in a variant to initialize the refcount if needed.
 			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
 			if (obj) {
+				Object::cast_to<Object>(obj)->set_meta(SceneStringName(_custom_type_script), script);
 				obj.operator Object *()->set_script(script);
 			}
 			return obj;
@@ -1218,7 +1227,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node] = meta;
 
-	p_node->connect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
+	p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed).bind(p_node), CONNECT_ONE_SHOT);
 }
 
 void EditorSelection::remove_node(Node *p_node) {
@@ -1235,7 +1244,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	}
 	selection.erase(p_node);
 
-	p_node->disconnect("tree_exiting", callable_mp(this, &EditorSelection::_node_removed));
+	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));
 }
 
 bool EditorSelection::is_selected(Node *p_node) const {

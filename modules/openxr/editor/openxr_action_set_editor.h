@@ -87,7 +87,7 @@ protected:
 	void _do_remove_action_editor(OpenXRActionEditor *p_action_editor);
 
 public:
-	Ref<OpenXRActionSet> get_action_set() { return action_set; };
+	Ref<OpenXRActionSet> get_action_set() { return action_set; }
 	void set_focus_on_entry();
 
 	void remove_all_actions();

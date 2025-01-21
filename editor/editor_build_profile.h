@@ -31,13 +31,9 @@
 #ifndef EDITOR_BUILD_PROFILE_H
 #define EDITOR_BUILD_PROFILE_H
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
 class EditorBuildProfile : public RefCounted {
@@ -57,7 +53,7 @@ public:
 		BUILD_OPTION_TEXT_SERVER_ADVANCED,
 		BUILD_OPTION_DYNAMIC_FONTS,
 		BUILD_OPTION_WOFF2_FONTS,
-		BUILD_OPTION_GRPAHITE_FONTS,
+		BUILD_OPTION_GRAPHITE_FONTS,
 		BUILD_OPTION_MSDFGEN,
 		BUILD_OPTION_MAX,
 	};
@@ -150,6 +146,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 
 	void _profile_action(int p_action);
 	void _action_confirm();
+	void _hide_requested();
 
 	void _update_edited_profile();
 	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);

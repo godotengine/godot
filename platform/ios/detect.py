@@ -1,11 +1,12 @@
 import os
 import sys
-from methods import detect_darwin_sdk_path
-
 from typing import TYPE_CHECKING
 
+from methods import detect_darwin_sdk_path, print_error, print_warning
+from platform_methods import validate_arch
+
 if TYPE_CHECKING:
-    from SCons import Environment
+    from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_name():
@@ -23,6 +24,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
+        ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
@@ -31,6 +33,7 @@ def get_opts():
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),
         ("ios_triple", "Triple for ios toolchain", ""),
+        BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
 
@@ -45,22 +48,20 @@ def get_doc_path():
 
 
 def get_flags():
-    return [
-        ("arch", "arm64"),  # Default for convenience.
-        ("target", "template_debug"),
-        ("use_volk", False),
-    ]
+    return {
+        "arch": "arm64",
+        "target": "template_debug",
+        "use_volk": False,
+        "metal": True,
+        "supported": ["metal", "mono"],
+        "builtin_pcre2_with_jit": False,
+    }
 
 
-def configure(env: "Environment"):
+def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
-    if env["arch"] not in supported_arches:
-        print(
-            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit()
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     ## LTO
 
@@ -114,7 +115,7 @@ def configure(env: "Environment"):
 
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
-            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+            print_error("Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
             sys.exit(255)
 
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
@@ -129,14 +130,13 @@ def configure(env: "Environment"):
     elif env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
-                "-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"
+                "-fobjc-arc -arch arm64 -fmessage-length=0"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
                 " -isysroot $IOS_SDK_PATH".split()
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
-        env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
@@ -151,8 +151,23 @@ def configure(env: "Environment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
+    if env["metal"] and env["arch"] != "arm64":
+        print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
+        env["metal"] = False
+
+    if env["metal"]:
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.Prepend(
+            CPPPATH=[
+                "$IOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$IOS_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
+                "$IOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
+            ]
+        )
+        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

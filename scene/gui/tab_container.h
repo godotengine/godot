@@ -56,7 +56,9 @@ private:
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
 	bool drag_to_rearrange_enabled = false;
-	int setup_current_tab = -1;
+	// Set the default setup current tab to be an invalid index.
+	int setup_current_tab = -2;
+	bool updating_visibility = false;
 
 	struct ThemeCache {
 		int side_margin = 0;
@@ -99,6 +101,7 @@ private:
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
 	void _repaint();
+	void _refresh_tab_indices();
 	void _refresh_tab_names();
 	void _update_margins();
 	void _on_mouse_exited();
@@ -108,6 +111,7 @@ private:
 	void _on_tab_selected(int p_tab);
 	void _on_tab_button_pressed(int p_tab);
 	void _on_active_tab_rearranged(int p_tab);
+	void _on_tab_visibility_changed(Control *p_child);
 
 	Variant _get_drag_data_fw(const Point2 &p_point, Control *p_from_control);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from_control) const;
@@ -151,8 +155,14 @@ public:
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
+	void set_tab_tooltip(int p_tab, const String &p_tooltip);
+	String get_tab_tooltip(int p_tab) const;
+
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
+
+	void set_tab_icon_max_width(int p_tab, int p_width);
+	int get_tab_icon_max_width(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;
@@ -173,6 +183,9 @@ public:
 
 	bool select_previous_available();
 	bool select_next_available();
+
+	void set_deselect_enabled(bool p_enabled);
+	bool get_deselect_enabled() const;
 
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;

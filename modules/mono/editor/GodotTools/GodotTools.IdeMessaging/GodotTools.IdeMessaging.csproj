@@ -1,16 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{92600954-25F0-4291-8E11-1FEE9FC4BE20}</ProjectGuid>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
     <PackageId>GodotTools.IdeMessaging</PackageId>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>Godot Engine contributors</Authors>
     <Company />
     <PackageTags>godot</PackageTags>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/GodotTools/GodotTools.IdeMessaging</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
     <Description>
 This library enables communication with the Godot Engine editor (the version with .NET support).
 It's intended for use in IDEs/editors plugins for a better experience working with Godot C# projects.

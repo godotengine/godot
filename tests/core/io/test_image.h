@@ -35,6 +35,9 @@
 #include "core/os/os.h"
 
 #include "tests/test_utils.h"
+
+#include "modules/modules_enabled.gen.h"
+
 #include "thirdparty/doctest/doctest.h"
 
 namespace TestImage {
@@ -78,8 +81,8 @@ TEST_CASE("[Image] Instantiation") {
 
 TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
-	const String save_path_png = OS::get_singleton()->get_cache_path().path_join("image.png");
-	const String save_path_exr = OS::get_singleton()->get_cache_path().path_join("image.exr");
+	const String save_path_png = TestUtils::get_temp_path("image.png");
+	const String save_path_exr = TestUtils::get_temp_path("image.exr");
 
 	// Save PNG
 	Error err;
@@ -88,11 +91,14 @@ TEST_CASE("[Image] Saving and loading") {
 			err == OK,
 			"The image should be saved successfully as a .png file.");
 
+	// Only available on editor builds.
+#ifdef TOOLS_ENABLED
 	// Save EXR
 	err = image->save_exr(save_path_exr, false);
 	CHECK_MESSAGE(
 			err == OK,
 			"The image should be saved successfully as an .exr file.");
+#endif // TOOLS_ENABLED
 
 	// Load using load()
 	Ref<Image> image_load = memnew(Image());
@@ -104,43 +110,49 @@ TEST_CASE("[Image] Saving and loading") {
 			image->get_data() == image_load->get_data(),
 			"The loaded image should have the same data as the one that got saved.");
 
+#ifdef MODULE_BMP_ENABLED
 	// Load BMP
 	Ref<Image> image_bmp = memnew(Image());
 	Ref<FileAccess> f_bmp = FileAccess::open(TestUtils::get_data_path("images/icon.bmp"), FileAccess::READ, &err);
-	REQUIRE(!f_bmp.is_null());
+	REQUIRE(f_bmp.is_valid());
 	PackedByteArray data_bmp;
 	data_bmp.resize(f_bmp->get_length() + 1);
 	f_bmp->get_buffer(data_bmp.ptrw(), f_bmp->get_length());
 	CHECK_MESSAGE(
 			image_bmp->load_bmp_from_buffer(data_bmp) == OK,
 			"The BMP image should load successfully.");
+#endif // MODULE_BMP_ENABLED
 
+#ifdef MODULE_JPG_ENABLED
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);
-	REQUIRE(!f_jpg.is_null());
+	REQUIRE(f_jpg.is_valid());
 	PackedByteArray data_jpg;
 	data_jpg.resize(f_jpg->get_length() + 1);
 	f_jpg->get_buffer(data_jpg.ptrw(), f_jpg->get_length());
 	CHECK_MESSAGE(
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
+#endif // MODULE_JPG_ENABLED
 
+#ifdef MODULE_WEBP_ENABLED
 	// Load WebP
 	Ref<Image> image_webp = memnew(Image());
 	Ref<FileAccess> f_webp = FileAccess::open(TestUtils::get_data_path("images/icon.webp"), FileAccess::READ, &err);
-	REQUIRE(!f_webp.is_null());
+	REQUIRE(f_webp.is_valid());
 	PackedByteArray data_webp;
 	data_webp.resize(f_webp->get_length() + 1);
 	f_webp->get_buffer(data_webp.ptrw(), f_webp->get_length());
 	CHECK_MESSAGE(
 			image_webp->load_webp_from_buffer(data_webp) == OK,
 			"The WebP image should load successfully.");
+#endif // MODULE_WEBP_ENABLED
 
 	// Load PNG
 	Ref<Image> image_png = memnew(Image());
 	Ref<FileAccess> f_png = FileAccess::open(TestUtils::get_data_path("images/icon.png"), FileAccess::READ, &err);
-	REQUIRE(!f_png.is_null());
+	REQUIRE(f_png.is_valid());
 	PackedByteArray data_png;
 	data_png.resize(f_png->get_length() + 1);
 	f_png->get_buffer(data_png.ptrw(), f_png->get_length());
@@ -148,16 +160,18 @@ TEST_CASE("[Image] Saving and loading") {
 			image_png->load_png_from_buffer(data_png) == OK,
 			"The PNG image should load successfully.");
 
+#ifdef MODULE_TGA_ENABLED
 	// Load TGA
 	Ref<Image> image_tga = memnew(Image());
 	Ref<FileAccess> f_tga = FileAccess::open(TestUtils::get_data_path("images/icon.tga"), FileAccess::READ, &err);
-	REQUIRE(!f_tga.is_null());
+	REQUIRE(f_tga.is_valid());
 	PackedByteArray data_tga;
 	data_tga.resize(f_tga->get_length() + 1);
 	f_tga->get_buffer(data_tga.ptrw(), f_tga->get_length());
 	CHECK_MESSAGE(
 			image_tga->load_tga_from_buffer(data_tga) == OK,
 			"The TGA image should load successfully.");
+#endif // MODULE_TGA_ENABLED
 }
 
 TEST_CASE("[Image] Basic getters") {
@@ -342,8 +356,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		uint8_t *data_ptr = data.ptrw();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i++) {
@@ -365,8 +379,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		const uint8_t *data_ptr = data.ptr();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image_bytes->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i++) {
@@ -389,8 +403,8 @@ TEST_CASE("[Image] Custom mipmaps") {
 		const uint8_t *data_ptr = data.ptr();
 
 		for (int mip = 0; mip < mipmaps; mip++) {
-			int mip_offset = 0;
-			int mip_size = 0;
+			int64_t mip_offset = 0;
+			int64_t mip_size = 0;
 			image_rgbaf->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
 
 			for (int i = 0; i < mip_size; i += 4) {
@@ -417,12 +431,15 @@ TEST_CASE("[Image] Convert image") {
 
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 	PackedByteArray image_data = image->get_data();
+	ERR_PRINT_OFF;
 	image->convert((Image::Format)-1);
+	ERR_PRINT_ON;
 	CHECK_MESSAGE(image->get_data() == image_data, "Image conversion to invalid type (-1) should not alter image.");
-
 	Ref<Image> image2 = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 	image_data = image2->get_data();
+	ERR_PRINT_OFF;
 	image2->convert((Image::Format)(Image::FORMAT_MAX + 1));
+	ERR_PRINT_ON;
 	CHECK_MESSAGE(image2->get_data() == image_data, "Image conversion to invalid type (Image::FORMAT_MAX + 1) should not alter image.");
 }
 

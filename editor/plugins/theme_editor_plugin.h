@@ -31,7 +31,7 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
@@ -303,6 +303,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _update_add_type_options(const String &p_filter = "");
 
 	void _add_type_filter_cbk(const String &p_value);
+	void _type_filter_input(const Ref<InputEvent> &p_event);
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
@@ -321,7 +322,7 @@ public:
 	ThemeTypeDialog();
 };
 
-// Custom `Label` needed to use `EditorHelpTooltip` to display theme item documentation.
+// Custom `Label` needed to use `EditorHelpBit` to display theme item documentation.
 class ThemeItemLabel : public Label {
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 };
@@ -373,7 +374,7 @@ class ThemeTypeEditor : public MarginContainer {
 	VBoxContainer *_create_item_list(Theme::DataType p_data_type);
 	void _update_type_list();
 	void _update_type_list_debounced();
-	HashMap<StringName, bool> _get_type_items(String p_type_name, void (Theme::*get_list_func)(const StringName &, List<StringName> *) const, bool include_default);
+	HashMap<StringName, bool> _get_type_items(String p_type_name, Theme::DataType p_type, bool p_include_default);
 	HBoxContainer *_create_property_control(Theme::DataType p_data_type, String p_item_name, bool p_editable);
 	void _add_focusable(Control *p_control);
 	void _update_type_items();
@@ -444,6 +445,7 @@ class ThemeEditor : public VBoxContainer {
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
 	void _theme_close_button_cbk();
+	void _scene_closed(const String &p_path);
 
 	void _add_preview_button_cbk();
 	void _preview_scene_dialog_cbk(const String &p_path);
@@ -461,6 +463,9 @@ public:
 	void edit(const Ref<Theme> &p_theme);
 	Ref<Theme> get_edited_theme();
 
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
 	ThemeEditor();
 };
 
@@ -471,7 +476,7 @@ class ThemeEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "Theme"; }
+	virtual String get_plugin_name() const override { return "Theme"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

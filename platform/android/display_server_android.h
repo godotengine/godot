@@ -34,7 +34,7 @@
 #include "servers/display_server.h"
 
 #if defined(RD_ENABLED)
-class ApiContextRD;
+class RenderingContextDriver;
 class RenderingDevice;
 #endif
 
@@ -73,9 +73,10 @@ class DisplayServerAndroid : public DisplayServer {
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 
 #if defined(RD_ENABLED)
-	ApiContextRD *context_rd = nullptr;
+	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
+	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
 
@@ -83,6 +84,13 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable rect_changed_callback;
+
+	Callable system_theme_changed;
+
+	Callable dialog_callback;
+	Callable input_dialog_callback;
+
+	Callable file_picker_callback;
 
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 
@@ -103,12 +111,27 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
+	void emit_system_theme_changed();
+
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual bool clipboard_has() const override;
+
+	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
+	void emit_dialog_callback(int p_button_index);
+
+	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
+	void emit_input_dialog_callback(String p_text);
+
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, const FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+	void emit_file_picker_callback(bool p_ok, const Vector<String> &p_selected_paths);
+
+	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
 
 	virtual TypedArray<Rect2> get_display_cutouts() const override;
 	virtual Rect2i get_display_safe_area() const override;
@@ -132,6 +155,7 @@ public:
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;
 	virtual int virtual_keyboard_get_height() const override;
+	virtual bool has_hardware_keyboard() const override;
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -205,7 +229,7 @@ public:
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
-	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
@@ -222,7 +246,7 @@ public:
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
-	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();
 };
 

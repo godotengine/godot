@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_fbx = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/ufbx/"
+thirdparty_sources = [thirdparty_dir + "ufbx.c"]
+
+env_fbx.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_fbx.Clone()
+env_thirdparty.disable_warnings()
+
+env_thirdparty.Append(
+    CPPDEFINES=[
+        "UFBX_NO_SUBDIVISION",
+        "UFBX_NO_TESSELLATION",
+        "UFBX_NO_GEOMETRY_CACHE",
+        "UFBX_NO_SCENE_EVALUATION",
+        "UFBX_NO_INDEX_GENERATION",
+        "UFBX_NO_SKINNING_EVALUATION",
+        "UFBX_NO_FORMAT_OBJ",
+    ]
+)
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_fbx.add_source_files(module_obj, "*.cpp")
+env_fbx.add_source_files(module_obj, "structures/*.cpp")
+
+if env.editor_build:
+    env_fbx.add_source_files(module_obj, "editor/*.cpp")
+
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

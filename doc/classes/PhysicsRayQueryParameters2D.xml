@@ -36,6 +36,7 @@
 		</member>
 		<member name="exclude" type="RID[]" setter="set_exclude" getter="get_exclude" default="[]">
 			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then assign it to the property again.
 		</member>
 		<member name="from" type="Vector2" setter="set_from" getter="get_from" default="Vector2(0, 0)">
 			The starting point of the ray being queried for, in global coordinates.

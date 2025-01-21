@@ -36,7 +36,7 @@
 #include "../gltf_document.h"
 #include "editor_scene_exporter_gltf_settings.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorFileDialog;
 class EditorInspector;
@@ -52,7 +52,7 @@ class SceneExporterGLTFPlugin : public EditorPlugin {
 	void _export_scene_as_gltf(const String &p_file_path);
 
 public:
-	virtual String get_name() const override;
+	virtual String get_plugin_name() const override;
 	bool has_main_screen() const override;
 	SceneExporterGLTFPlugin();
 };

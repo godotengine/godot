@@ -74,6 +74,7 @@ private:
 	void _update_light_visibility();
 
 	virtual void owner_changed_notify() override;
+	virtual void _physics_interpolated_changed() override;
 
 protected:
 	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
@@ -159,9 +160,12 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Rect2 get_anchorable_rect() const override;
 

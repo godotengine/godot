@@ -34,6 +34,7 @@
 #include "../util.h"
 #include "core/math/quaternion.h"
 #include "openxr_extension_wrapper.h"
+#include "servers/xr/xr_hand_tracker.h"
 
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
 public:
@@ -47,11 +48,13 @@ public:
 		OPENXR_SOURCE_UNKNOWN,
 		OPENXR_SOURCE_UNOBSTRUCTED,
 		OPENXR_SOURCE_CONTROLLER,
+		OPENXR_SOURCE_NOT_TRACKED,
 		OPENXR_SOURCE_MAX
 	};
 
 	struct HandTracker {
 		bool is_initialized = false;
+		Ref<XRHandTracker> godot_tracker;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
 		HandTrackedSource source = OPENXR_SOURCE_UNKNOWN;
 
@@ -108,6 +111,8 @@ private:
 	bool hand_tracking_ext = false;
 	bool hand_motion_range_ext = false;
 	bool hand_tracking_source_ext = false;
+	bool unobstructed_data_source = false;
+	bool controller_data_source = false;
 
 	// functions
 	void cleanup_hand_tracking();

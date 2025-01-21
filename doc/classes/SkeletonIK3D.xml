@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonIK3D" inherits="Node" is_deprecated="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonIK3D" inherits="SkeletonModifier3D" deprecated="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position.
 	</brief_description>
 	<description>
-		SkeletonIK3D is used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position. A typical scenario for IK in games is to place a character's feet on the ground or a character's hands on a currently held object. SkeletonIK uses FabrikInverseKinematic internally to solve the bone chain and applies the results to the [Skeleton3D] [code]bones_global_pose_override[/code] property for all affected bones in the chain. If fully applied, this overwrites any bone transform from [Animation]s or bone custom poses set by users. The applied amount can be controlled with the [member interpolation] property.
+		SkeletonIK3D is used to rotate all bones of a [Skeleton3D] bone chain a way that places the end bone at a desired 3D position. A typical scenario for IK in games is to place a character's feet on the ground or a character's hands on a currently held object. SkeletonIK uses FabrikInverseKinematic internally to solve the bone chain and applies the results to the [Skeleton3D] [code]bones_global_pose_override[/code] property for all affected bones in the chain. If fully applied, this overwrites any bone transform from [Animation]s or bone custom poses set by users. The applied amount can be controlled with the [member SkeletonModifier3D.influence] property.
 		[codeblock]
 		# Apply IK effect automatically on every new frame (not the current)
 		skeleton_ik_node.start()
@@ -16,24 +16,22 @@
 		skeleton_ik_node.stop()
 
 		# Apply full IK effect
-		skeleton_ik_node.set_interpolation(1.0)
+		skeleton_ik_node.set_influence(1.0)
 
 		# Apply half IK effect
-		skeleton_ik_node.set_interpolation(0.5)
+		skeleton_ik_node.set_influence(0.5)
 
 		# Apply zero IK effect (a value at or below 0.01 also removes bones_global_pose_override on Skeleton)
-		skeleton_ik_node.set_interpolation(0.0)
+		skeleton_ik_node.set_influence(0.0)
 		[/codeblock]
-		[i]Deprecated.[/i] This class is deprecated, and might be removed in a future release.
 	</description>
 	<tutorials>
-		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
 	</tutorials>
 	<methods>
 		<method name="get_parent_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
-				Returns the parent [Skeleton3D] Node that was present when SkeletonIK entered the [SceneTree]. Returns null if the parent node was not a [Skeleton3D] Node when SkeletonIK3D entered the [SceneTree].
+				Returns the parent [Skeleton3D] node that was present when SkeletonIK entered the scene tree. Returns [code]null[/code] if the parent node was not a [Skeleton3D] node when SkeletonIK3D entered the scene tree.
 			</description>
 		</method>
 		<method name="is_running">
@@ -57,8 +55,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="interpolation" type="float" setter="set_interpolation" getter="get_interpolation" default="1.0">
-			Interpolation value for how much the IK results are applied to the current skeleton bone chain. A value of [code]1.0[/code] will overwrite all skeleton bone transforms completely while a value of [code]0.0[/code] will visually disable the SkeletonIK. A value at or below [code]0.01[/code] also calls [method Skeleton3D.clear_bones_global_pose_override].
+		<member name="interpolation" type="float" setter="set_interpolation" getter="get_interpolation" deprecated="Use [member SkeletonModifier3D.influence] instead.">
+			Interpolation value for how much the IK results are applied to the current skeleton bone chain. A value of [code]1.0[/code] will overwrite all skeleton bone transforms completely while a value of [code]0.0[/code] will visually disable the SkeletonIK.
 		</member>
 		<member name="magnet" type="Vector3" setter="set_magnet_position" getter="get_magnet_position" default="Vector3(0, 0, 0)">
 			Secondary target position (first is [member target] property or [member target_node]) for the IK chain. Use magnet position (pole target) to control the bending of the IK chain. Only works if the bone chain has more than 2 bones. The middle chain bone position will be linearly interpolated with the magnet position.

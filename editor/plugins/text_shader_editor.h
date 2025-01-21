@@ -32,8 +32,8 @@
 #define TEXT_SHADER_EDITOR_H
 
 #include "editor/code_editor.h"
+#include "editor/plugins/shader/shader_editor.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -104,8 +104,8 @@ public:
 	ShaderTextEditor();
 };
 
-class TextShaderEditor : public MarginContainer {
-	GDCLASS(TextShaderEditor, MarginContainer);
+class TextShaderEditor : public ShaderEditor {
+	GDCLASS(TextShaderEditor, ShaderEditor);
 
 	enum {
 		EDIT_UNDO,
@@ -134,6 +134,7 @@ class TextShaderEditor : public MarginContainer {
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
 		HELP_DOCS,
+		EDIT_EMOJI_AND_SYMBOL,
 	};
 
 	MenuButton *edit_menu = nullptr;
@@ -144,18 +145,20 @@ class TextShaderEditor : public MarginContainer {
 	RichTextLabel *warnings_panel = nullptr;
 	uint64_t idle = 0;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
 
-	ShaderTextEditor *shader_editor = nullptr;
+	ShaderTextEditor *code_editor = nullptr;
 	bool compilation_success = true;
 
 	void _menu_option(int p_option);
+	void _prepare_edit_menu();
 	mutable Ref<Shader> shader;
 	mutable Ref<ShaderInclude> shader_inc;
 
 	void _editor_settings_changed();
+	void _apply_editor_settings();
 	void _project_settings_changed();
 
 	void _check_for_external_edit();
@@ -163,7 +166,7 @@ class TextShaderEditor : public MarginContainer {
 	void _reload_shader_include_from_disk();
 	void _reload();
 	void _show_warnings_panel(bool p_show);
-	void _warning_clicked(Variant p_line);
+	void _warning_clicked(const Variant &p_line);
 	void _update_warnings(bool p_validate);
 
 	void _script_validated(bool p_valid) {
@@ -174,6 +177,7 @@ class TextShaderEditor : public MarginContainer {
 	uint32_t dependencies_version = 0xFFFFFFFF;
 
 	bool trim_trailing_whitespace_on_save;
+	bool trim_final_newlines_on_save;
 
 protected:
 	void _notification(int p_what);
@@ -185,18 +189,23 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
+	virtual void edit_shader(const Ref<Shader> &p_shader) override;
+	virtual void edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) override;
+
+	virtual void apply_shaders() override;
+	virtual bool is_unsaved() const override;
+	virtual void save_external_data(const String &p_str = "") override;
+	virtual void validate_script() override;
+
 	bool was_compilation_successful() const { return compilation_success; }
 	bool get_trim_trailing_whitespace_on_save() const { return trim_trailing_whitespace_on_save; }
-	void apply_shaders();
+	bool get_trim_final_newlines_on_save() const { return trim_final_newlines_on_save; }
 	void ensure_select_current();
-	void edit(const Ref<Shader> &p_shader);
-	void edit(const Ref<ShaderInclude> &p_shader_inc);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void save_external_data(const String &p_str = "");
 	void trim_trailing_whitespace();
-	void validate_script();
-	bool is_unsaved() const;
+	void trim_final_newlines();
 	void tag_saved_version();
+	ShaderTextEditor *get_code_editor() { return code_editor; }
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 

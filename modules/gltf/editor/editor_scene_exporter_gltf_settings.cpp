@@ -34,12 +34,12 @@ const uint32_t PROP_EDITOR_SCRIPT_VAR = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_S
 
 bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Variant &p_value) {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _set_extension_setting(name_str, p_value);
 	}
 	if (p_name == StringName("image_format")) {
 		_document->set_image_format(p_value);
-		emit_signal("property_list_changed");
+		emit_signal(CoreStringName(property_list_changed));
 		return true;
 	}
 	if (p_name == StringName("lossy_quality")) {
@@ -55,7 +55,7 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 
 bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _get_extension_setting(name_str, r_ret);
 	}
 	if (p_name == StringName("image_format")) {
@@ -77,11 +77,16 @@ void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_l
 	for (PropertyInfo prop : _property_list) {
 		if (prop.name == "lossy_quality") {
 			String image_format = get("image_format");
-			bool is_image_format_lossy = image_format == "JPEG" || image_format.findn("Lossy") != -1;
+			bool is_image_format_lossy = image_format == "JPEG" || image_format.containsn("Lossy");
 			prop.usage = is_image_format_lossy ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
 		}
 		p_list->push_back(prop);
 	}
+}
+
+void EditorSceneExporterGLTFSettings::_on_extension_property_list_changed() {
+	generate_property_list(_document);
+	emit_signal(CoreStringName(property_list_changed));
 }
 
 bool EditorSceneExporterGLTFSettings::_set_extension_setting(const String &p_name_str, const Variant &p_value) {
@@ -124,12 +129,16 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 }
 
 // Run this before popping up the export settings, because the extensions may have changed.
-void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document) {
+void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document, Node *p_root) {
 	_property_list.clear();
 	_document = p_document;
 	String image_format_hint_string = "None,PNG,JPEG";
 	// Add properties from all document extensions.
 	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
+		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
+		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {
+			extension->connect(CoreStringName(property_list_changed), on_prop_changed);
+		}
 		const String config_prefix = get_friendly_config_prefix(extension);
 		_config_name_to_extension_map[config_prefix] = extension;
 		// If the extension allows saving in different image formats, add to the enum.
@@ -173,4 +182,16 @@ void EditorSceneExporterGLTFSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_copyright"), &EditorSceneExporterGLTFSettings::get_copyright);
 	ClassDB::bind_method(D_METHOD("set_copyright", "copyright"), &EditorSceneExporterGLTFSettings::set_copyright);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "copyright", PROPERTY_HINT_PLACEHOLDER_TEXT, "Example: 2014 Godette"), "set_copyright", "get_copyright");
+
+	ClassDB::bind_method(D_METHOD("get_bake_fps"), &EditorSceneExporterGLTFSettings::get_bake_fps);
+	ClassDB::bind_method(D_METHOD("set_bake_fps", "bake_fps"), &EditorSceneExporterGLTFSettings::set_bake_fps);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_fps"), "set_bake_fps", "get_bake_fps");
+}
+
+double EditorSceneExporterGLTFSettings::get_bake_fps() const {
+	return _bake_fps;
+}
+
+void EditorSceneExporterGLTFSettings::set_bake_fps(const double p_bake_fps) {
+	_bake_fps = p_bake_fps;
 }

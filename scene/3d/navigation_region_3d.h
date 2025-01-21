@@ -51,6 +51,8 @@ class NavigationRegion3D : public Node3D {
 
 	void _navigation_mesh_changed();
 
+	AABB bounds;
+
 #ifdef DEBUG_ENABLED
 	RID debug_instance;
 	RID debug_edge_connections_instance;
@@ -61,6 +63,7 @@ private:
 	void _update_debug_mesh();
 	void _update_debug_edge_connections_mesh();
 	void _navigation_map_changed(RID p_map);
+	void _navigation_debug_changed();
 #endif // DEBUG_ENABLED
 
 protected:
@@ -105,13 +108,17 @@ public:
 	/// sets the new navigation mesh and emits a signal
 	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_navigation_mesh);
+	bool is_baking() const;
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	AABB get_bounds() const { return bounds; }
 
 	NavigationRegion3D();
 	~NavigationRegion3D();
 
 private:
+	void _update_bounds();
 	void _region_enter_navigation_map();
 	void _region_exit_navigation_map();
 	void _region_update_transform();

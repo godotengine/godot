@@ -30,11 +30,9 @@
 
 #include "gradient_texture_2d_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
@@ -42,7 +40,7 @@
 
 Point2 GradientTexture2DEdit::_get_handle_pos(const Handle p_handle) {
 	// Get the handle's mouse position in pixels relative to offset.
-	return (p_handle == HANDLE_FROM ? texture->get_fill_from() : texture->get_fill_to()).clamp(Vector2(), Vector2(1, 1)) * size;
+	return (p_handle == HANDLE_FROM ? texture->get_fill_from() : texture->get_fill_to()).clampf(0, 1) * size;
 }
 
 GradientTexture2DEdit::Handle GradientTexture2DEdit::get_handle_at(const Vector2 &p_pos) {
@@ -112,9 +110,9 @@ void GradientTexture2DEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		Vector2 new_pos = (mpos / size).clamp(Vector2(0, 0), Vector2(1, 1));
+		Vector2 new_pos = (mpos / size).clampf(0, 1);
 		if (snap_enabled || mm->is_command_or_control_pressed()) {
-			new_pos = new_pos.snapped(Vector2(1.0 / snap_count, 1.0 / snap_count));
+			new_pos = new_pos.snappedf(1.0 / snap_count);
 		}
 
 		// Allow to snap to an axis with Shift.
@@ -213,7 +211,7 @@ void GradientTexture2DEdit::_draw() {
 	}
 
 	// Draw handles.
-	const Color focus_modulate = Color(0.5, 1, 2);
+	const Color focus_modulate = Color(0.4, 1, 1);
 	bool modulate_handle_from = grabbed == HANDLE_FROM || hovered == HANDLE_FROM;
 	bool modulate_handle_to = grabbed == HANDLE_TO || hovered == HANDLE_TO;
 	draw_texture(fill_from_icon, (_get_handle_pos(HANDLE_FROM) - handle_size / 2).round(), modulate_handle_from ? focus_modulate : Color(1, 1, 1));
@@ -262,8 +260,8 @@ void GradientTexture2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			reverse_button->set_button_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 		} break;
 		case NOTIFICATION_READY: {
 			if (texture.is_valid()) {
@@ -282,7 +280,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	reverse_button = memnew(Button);
 	reverse_button->set_tooltip_text(TTR("Swap Gradient Fill Points"));
 	toolbar->add_child(reverse_button);
-	reverse_button->connect("pressed", callable_mp(this, &GradientTexture2DEditor::_reverse_button_pressed));
+	reverse_button->connect(SceneStringName(pressed), callable_mp(this, &GradientTexture2DEditor::_reverse_button_pressed));
 
 	toolbar->add_child(memnew(VSeparator));
 
@@ -290,7 +288,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));
 
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);
@@ -298,7 +296,7 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientTexture2DEditor::_set_snap_count));
 
 	texture_editor_rect = memnew(GradientTexture2DEdit);
 	add_child(texture_editor_rect);

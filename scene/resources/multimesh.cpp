@@ -195,6 +195,9 @@ Vector<Color> MultiMesh::_get_custom_data_array() const {
 #endif // DISABLE_DEPRECATED
 
 void MultiMesh::set_buffer(const Vector<float> &p_buffer) {
+	if (instance_count == 0) {
+		return;
+	}
 	RS::get_singleton()->multimesh_set_buffer(multimesh, p_buffer);
 }
 
@@ -202,9 +205,13 @@ Vector<float> MultiMesh::get_buffer() const {
 	return RS::get_singleton()->multimesh_get_buffer(multimesh);
 }
 
+void MultiMesh::set_buffer_interpolated(const Vector<float> &p_buffer_curr, const Vector<float> &p_buffer_prev) {
+	RS::get_singleton()->multimesh_set_buffer_interpolated(multimesh, p_buffer_curr, p_buffer_prev);
+}
+
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	mesh = p_mesh;
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
 	} else {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, RID());
@@ -234,6 +241,11 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 
 int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
+}
+
+void MultiMesh::set_physics_interpolation_quality(PhysicsInterpolationQuality p_quality) {
+	_physics_interpolation_quality = p_quality;
+	RenderingServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (RS::MultimeshPhysicsInterpolationQuality)p_quality);
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_transform) {
@@ -267,6 +279,24 @@ void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_d
 
 Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
+}
+
+void MultiMesh::reset_instance_physics_interpolation(int p_instance) {
+	RenderingServer::get_singleton()->multimesh_instance_reset_physics_interpolation(multimesh, p_instance);
+}
+
+void MultiMesh::set_physics_interpolated(bool p_interpolated) {
+	RenderingServer::get_singleton()->multimesh_set_physics_interpolated(multimesh, p_interpolated);
+}
+
+void MultiMesh::set_custom_aabb(const AABB &p_custom) {
+	custom_aabb = p_custom;
+	RS::get_singleton()->multimesh_set_custom_aabb(multimesh, custom_aabb);
+	emit_changed();
+}
+
+AABB MultiMesh::get_custom_aabb() const {
+	return custom_aabb;
 }
 
 AABB MultiMesh::get_aabb() const {
@@ -318,6 +348,8 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_count"), &MultiMesh::get_instance_count);
 	ClassDB::bind_method(D_METHOD("set_visible_instance_count", "count"), &MultiMesh::set_visible_instance_count);
 	ClassDB::bind_method(D_METHOD("get_visible_instance_count"), &MultiMesh::get_visible_instance_count);
+	ClassDB::bind_method(D_METHOD("set_physics_interpolation_quality", "quality"), &MultiMesh::set_physics_interpolation_quality);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_quality"), &MultiMesh::get_physics_interpolation_quality);
 	ClassDB::bind_method(D_METHOD("set_instance_transform", "instance", "transform"), &MultiMesh::set_instance_transform);
 	ClassDB::bind_method(D_METHOD("set_instance_transform_2d", "instance", "transform"), &MultiMesh::set_instance_transform_2d);
 	ClassDB::bind_method(D_METHOD("get_instance_transform", "instance"), &MultiMesh::get_instance_transform);
@@ -326,14 +358,20 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("reset_instance_physics_interpolation", "instance"), &MultiMesh::reset_instance_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &MultiMesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &MultiMesh::get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_buffer"), &MultiMesh::get_buffer);
 	ClassDB::bind_method(D_METHOD("set_buffer", "buffer"), &MultiMesh::set_buffer);
 
+	ClassDB::bind_method(D_METHOD("set_buffer_interpolated", "buffer_curr", "buffer_prev"), &MultiMesh::set_buffer_interpolated);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_format", PROPERTY_HINT_ENUM, "2D,3D"), "set_transform_format", "get_transform_format");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_colors"), "set_use_colors", "is_using_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_custom_data"), "set_use_custom_data", "is_using_custom_data");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count", "get_visible_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
@@ -356,8 +394,14 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_custom_data_array", "_get_custom_data_array");
 #endif
 
+	ADD_GROUP("Physics Interpolation", "physics_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_quality", PROPERTY_HINT_ENUM, "Fast,High"), "set_physics_interpolation_quality", "get_physics_interpolation_quality");
+
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(TRANSFORM_3D);
+
+	BIND_ENUM_CONSTANT(INTERP_QUALITY_FAST);
+	BIND_ENUM_CONSTANT(INTERP_QUALITY_HIGH);
 }
 
 MultiMesh::MultiMesh() {

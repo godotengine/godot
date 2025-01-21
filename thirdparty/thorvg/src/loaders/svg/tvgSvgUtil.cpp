@@ -47,7 +47,6 @@ size_t svgUtilURLDecode(const char *src, char** dst)
     if (length == 0) return 0;
 
     char* decoded = (char*)malloc(sizeof(char) * length + 1);
-    decoded[length] = '\0';
 
     char a, b;
     int idx =0;
@@ -64,7 +63,9 @@ size_t svgUtilURLDecode(const char *src, char** dst)
             decoded[idx++] = *src++;
         }
     }
+    decoded[idx] = '\0';
 
     *dst = decoded;
-    return length + 1;
+    return idx + 1;
 }
+

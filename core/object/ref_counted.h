@@ -53,28 +53,34 @@ public:
 	~RefCounted() {}
 };
 
-template <class T>
+template <typename T>
 class Ref {
 	T *reference = nullptr;
 
-	void ref(const Ref &p_from) {
-		if (p_from.reference == reference) {
+	_FORCE_INLINE_ void ref(const Ref &p_from) {
+		ref_pointer<false>(p_from.reference);
+	}
+
+	template <bool Init>
+	_FORCE_INLINE_ void ref_pointer(T *p_refcounted) {
+		if (p_refcounted == reference) {
 			return;
 		}
 
-		unref();
-
-		reference = p_from.reference;
+		// This will go out of scope and get unref'd.
+		Ref cleanup_ref;
+		cleanup_ref.reference = reference;
+		reference = p_refcounted;
 		if (reference) {
-			reference->reference();
-		}
-	}
-
-	void ref_pointer(T *p_ref) {
-		ERR_FAIL_NULL(p_ref);
-
-		if (p_ref->init_ref()) {
-			reference = p_ref;
+			if constexpr (Init) {
+				if (!reference->init_ref()) {
+					reference = nullptr;
+				}
+			} else {
+				if (!reference->reference()) {
+					reference = nullptr;
+				}
+			}
 		}
 	}
 
@@ -86,6 +92,11 @@ public:
 	_FORCE_INLINE_ bool operator!=(const T *p_ptr) const {
 		return reference != p_ptr;
 	}
+#ifdef STRICT_CHECKS
+	// Delete these to prevent raw comparisons with `nullptr`.
+	bool operator==(std::nullptr_t) const = delete;
+	bool operator!=(std::nullptr_t) const = delete;
+#endif // STRICT_CHECKS
 
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 		return reference < p_r.reference;
@@ -117,17 +128,13 @@ public:
 		ref(p_from);
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
-		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
-		if (!refb) {
-			unref();
-			return;
-		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = nullptr;
+		ref_pointer<false>(Object::cast_to<T>(p_from.ptr()));
+	}
+
+	void operator=(T *p_from) {
+		ref_pointer<true>(p_from);
 	}
 
 	void operator=(const Variant &p_variant) {
@@ -137,65 +144,33 @@ public:
 			return;
 		}
 
-		unref();
-
-		if (!object) {
-			return;
-		}
-
-		T *r = Object::cast_to<T>(object);
-		if (r && r->reference()) {
-			reference = r;
-		}
+		ref_pointer<false>(Object::cast_to<T>(object));
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	void reference_ptr(T_Other *p_ptr) {
 		if (reference == p_ptr) {
 			return;
 		}
-		unref();
 
-		T *r = Object::cast_to<T>(p_ptr);
-		if (r) {
-			ref_pointer(r);
-		}
+		ref_pointer<true>(Object::cast_to<T>(p_ptr));
 	}
 
 	Ref(const Ref &p_from) {
-		ref(p_from);
+		this->operator=(p_from);
 	}
 
-	template <class T_Other>
+	template <typename T_Other>
 	Ref(const Ref<T_Other> &p_from) {
-		RefCounted *refb = const_cast<RefCounted *>(static_cast<const RefCounted *>(p_from.ptr()));
-		if (!refb) {
-			unref();
-			return;
-		}
-		Ref r;
-		r.reference = Object::cast_to<T>(refb);
-		ref(r);
-		r.reference = nullptr;
+		this->operator=(p_from);
 	}
 
-	Ref(T *p_reference) {
-		if (p_reference) {
-			ref_pointer(p_reference);
-		}
+	Ref(T *p_from) {
+		this->operator=(p_from);
 	}
 
-	Ref(const Variant &p_variant) {
-		Object *object = p_variant.get_validated_object();
-
-		if (!object) {
-			return;
-		}
-
-		T *r = Object::cast_to<T>(object);
-		if (r && r->reference()) {
-			reference = r;
-		}
+	Ref(const Variant &p_from) {
+		this->operator=(p_from);
 	}
 
 	inline bool is_valid() const { return reference != nullptr; }
@@ -212,11 +187,12 @@ public:
 		reference = nullptr;
 	}
 
-	void instantiate() {
-		ref(memnew(T));
+	template <typename... VarArgs>
+	void instantiate(VarArgs... p_params) {
+		ref(memnew(T(p_params...)));
 	}
 
-	Ref() {}
+	Ref() = default;
 
 	~Ref() {
 		unref();
@@ -239,14 +215,14 @@ public:
 	WeakRef() {}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
 			return Ref<T>();
 		}
 		// p_ptr points to a RefCounted object
-		return Ref<T>(const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)));
+		return Ref<T>(*reinterpret_cast<T *const *>(p_ptr));
 	}
 
 	typedef Ref<T> EncodeT;
@@ -257,7 +233,7 @@ struct PtrToArg<Ref<T>> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct PtrToArg<const Ref<T> &> {
 	typedef Ref<T> EncodeT;
 
@@ -270,7 +246,7 @@ struct PtrToArg<const Ref<T> &> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct GetTypeInfo<Ref<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
@@ -280,7 +256,7 @@ struct GetTypeInfo<Ref<T>> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct GetTypeInfo<const Ref<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
@@ -290,16 +266,16 @@ struct GetTypeInfo<const Ref<T> &> {
 	}
 };
 
-template <class T>
+template <typename T>
 struct VariantInternalAccessor<Ref<T>> {
 	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
 
-template <class T>
+template <typename T>
 struct VariantInternalAccessor<const Ref<T> &> {
 	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
 
 #endif // REF_COUNTED_H

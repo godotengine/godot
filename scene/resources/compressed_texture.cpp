@@ -245,7 +245,7 @@ Ref<Image> CompressedTexture2D::get_image() const {
 }
 
 bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
-	if (!alpha_cache.is_valid()) {
+	if (alpha_cache.is_null()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
 			if (img->is_compressed()) { //must decompress, if compressed
@@ -808,6 +808,7 @@ RID CompressedTextureLayered::get_rid() const {
 
 Ref<Image> CompressedTextureLayered::get_layer_data(int p_layer) const {
 	if (texture.is_valid()) {
+		ERR_FAIL_INDEX_V(p_layer, get_layers(), Ref<Image>());
 		return RS::get_singleton()->texture_2d_layer_get(texture, p_layer);
 	} else {
 		return Ref<Image>();

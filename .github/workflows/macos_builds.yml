@@ -6,16 +6,13 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-macos
-  cancel-in-progress: true
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
 
 jobs:
   build-macos:
-    runs-on: "macos-latest"
+    runs-on: macos-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -24,40 +21,64 @@ jobs:
             cache-name: macos-editor
             target: editor
             tests: true
-            bin: "./bin/godot.macos.editor.x86_64"
+            bin: ./bin/godot.macos.editor.universal
+            cache-limit: 1
 
-          - name: Template (target=template_release)
+          - name: Template (target=template_release, tests=yes)
             cache-name: macos-template
             target: template_release
-            tests: false
+            tests: true
             sconsflags: debug_symbols=no
+            bin: ./bin/godot.macos.template_release.universal
+            cache-limit: 1
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Setup Vulkan SDK
         run: |
           sh misc/scripts/install_vulkan_sdk_macos.sh
 
-      - name: Compilation
+      - name: Compilation (x86_64)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} arch=x86_64
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+          scons-cache-limit: 0 # Only cap on second run to avoid purging unnecessarily
+
+      - name: Compilation (arm64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
+          platform: macos
+          target: ${{ matrix.target }}
+          tests: ${{ matrix.tests }}
+          scons-cache-limit: ${{ matrix.cache-limit }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Prepare artifact
         run: |
+          lipo -create ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64 -output ./bin/godot.macos.${{ matrix.target }}.universal
+          rm ./bin/godot.macos.${{ matrix.target }}.x86_64 ./bin/godot.macos.${{ matrix.target }}.arm64
           strip bin/godot.*
           chmod +x bin/godot.*
 
@@ -66,9 +87,8 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
-      # Execute unit tests for the editor
       - name: Unit tests
-        if: ${{ matrix.tests }}
+        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help

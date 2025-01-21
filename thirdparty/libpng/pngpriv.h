@@ -1,7 +1,6 @@
-
 /* pngpriv.h - private declarations for use inside libpng
  *
- * Copyright (c) 2018-2023 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -36,7 +35,7 @@
  * still required (as of 2011-05-02.)
  */
 #ifndef _POSIX_SOURCE
-# define _POSIX_SOURCE 1 /* Just the POSIX 1003.1 and C89 APIs */
+#  define _POSIX_SOURCE 1 /* Just the POSIX 1003.1 and C89 APIs */
 #endif
 
 #ifndef PNG_VERSION_INFO_ONLY
@@ -140,47 +139,6 @@
     * callbacks to do this.
     */
 #  define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_neon
-
-   /* By default the 'intrinsics' code in arm/filter_neon_intrinsics.c is used
-    * if possible - if __ARM_NEON__ is set and the compiler version is not known
-    * to be broken.  This is controlled by PNG_ARM_NEON_IMPLEMENTATION which can
-    * be:
-    *
-    *    1  The intrinsics code (the default with __ARM_NEON__)
-    *    2  The hand coded assembler (the default without __ARM_NEON__)
-    *
-    * It is possible to set PNG_ARM_NEON_IMPLEMENTATION in CPPFLAGS, however
-    * this is *NOT* supported and may cease to work even after a minor revision
-    * to libpng.  It *is* valid to do this for testing purposes, e.g. speed
-    * testing or a new compiler, but the results should be communicated to the
-    * libpng implementation list for incorporation in the next minor release.
-    */
-#  ifndef PNG_ARM_NEON_IMPLEMENTATION
-#     if defined(__ARM_NEON__) || defined(__ARM_NEON)
-#        if defined(__clang__)
-            /* At present it is unknown by the libpng developers which versions
-             * of clang support the intrinsics, however some or perhaps all
-             * versions do not work with the assembler so this may be
-             * irrelevant, so just use the default (do nothing here.)
-             */
-#        elif defined(__GNUC__)
-            /* GCC 4.5.4 NEON support is known to be broken.  4.6.3 is known to
-             * work, so if this *is* GCC, or G++, look for a version >4.5
-             */
-#           if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
-#              define PNG_ARM_NEON_IMPLEMENTATION 2
-#           endif /* no GNUC support */
-#        endif /* __GNUC__ */
-#     else /* !defined __ARM_NEON__ */
-         /* The 'intrinsics' code simply won't compile without this -mfpu=neon:
-          */
-#        if !defined(__aarch64__) && !defined(_M_ARM64)
-            /* The assembler code currently does not work on ARM64 */
-#          define PNG_ARM_NEON_IMPLEMENTATION 2
-#        endif /* __aarch64__ */
-#     endif /* __ARM_NEON__ */
-#  endif /* !PNG_ARM_NEON_IMPLEMENTATION */
-
 #  ifndef PNG_ARM_NEON_IMPLEMENTATION
       /* Use the intrinsics code by default. */
 #     define PNG_ARM_NEON_IMPLEMENTATION 1
@@ -190,10 +148,24 @@
 #endif /* PNG_ARM_NEON_OPT > 0 */
 
 #ifndef PNG_MIPS_MSA_OPT
-#  if defined(__mips_msa) && (__mips_isa_rev >= 5) && defined(PNG_ALIGNED_MEMORY_SUPPORTED)
+#  if defined(__mips_msa) && (__mips_isa_rev >= 5) && \
+   defined(PNG_ALIGNED_MEMORY_SUPPORTED)
 #     define PNG_MIPS_MSA_OPT 2
 #  else
 #     define PNG_MIPS_MSA_OPT 0
+#  endif
+#endif
+
+#ifndef PNG_MIPS_MMI_OPT
+#  ifdef PNG_MIPS_MMI
+#    if defined(__mips_loongson_mmi) && (_MIPS_SIM == _ABI64) && \
+     defined(PNG_ALIGNED_MEMORY_SUPPORTED)
+#       define PNG_MIPS_MMI_OPT 1
+#    else
+#       define PNG_MIPS_MMI_OPT 0
+#    endif
+#  else
+#    define PNG_MIPS_MMI_OPT 0
 #  endif
 #endif
 
@@ -205,13 +177,21 @@
 #  endif
 #endif
 
+#ifndef PNG_LOONGARCH_LSX_OPT
+#  if defined(__loongarch_sx)
+#     define PNG_LOONGARCH_LSX_OPT 1
+#  else
+#     define PNG_LOONGARCH_LSX_OPT 0
+#  endif
+#endif
+
 #ifndef PNG_INTEL_SSE_OPT
 #   ifdef PNG_INTEL_SSE
       /* Only check for SSE if the build configuration has been modified to
        * enable SSE optimizations.  This means that these optimizations will
        * be off by default.  See contrib/intel for more details.
        */
-#     if defined(__SSE4_1__) || defined(__AVX__) || defined(__SSSE3__) || \
+#      if defined(__SSE4_1__) || defined(__AVX__) || defined(__SSSE3__) || \
        defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
        (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 #         define PNG_INTEL_SSE_OPT 1
@@ -248,7 +228,6 @@
 #endif
 
 #if PNG_MIPS_MSA_OPT > 0
-#  define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_msa
 #  ifndef PNG_MIPS_MSA_IMPLEMENTATION
 #     if defined(__mips_msa)
 #        if defined(__clang__)
@@ -264,10 +243,27 @@
 
 #  ifndef PNG_MIPS_MSA_IMPLEMENTATION
 #     define PNG_MIPS_MSA_IMPLEMENTATION 1
+#     define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_mips
 #  endif
 #else
 #  define PNG_MIPS_MSA_IMPLEMENTATION 0
 #endif /* PNG_MIPS_MSA_OPT > 0 */
+
+#if PNG_MIPS_MMI_OPT > 0
+#  ifndef PNG_MIPS_MMI_IMPLEMENTATION
+#     if defined(__mips_loongson_mmi) && (_MIPS_SIM == _ABI64)
+#        define PNG_MIPS_MMI_IMPLEMENTATION 2
+#     else /* !defined __mips_loongson_mmi  || _MIPS_SIM != _ABI64 */
+#        define PNG_MIPS_MMI_IMPLEMENTATION 0
+#     endif /* __mips_loongson_mmi  && _MIPS_SIM == _ABI64 */
+#  endif /* !PNG_MIPS_MMI_IMPLEMENTATION */
+
+#   if PNG_MIPS_MMI_IMPLEMENTATION > 0
+#      define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_mips
+#   endif
+#else
+#   define PNG_MIPS_MMI_IMPLEMENTATION 0
+#endif /* PNG_MIPS_MMI_OPT > 0 */
 
 #if PNG_POWERPC_VSX_OPT > 0
 #  define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_vsx
@@ -276,6 +272,12 @@
 #  define PNG_POWERPC_VSX_IMPLEMENTATION 0
 #endif
 
+#if PNG_LOONGARCH_LSX_OPT > 0
+#   define PNG_FILTER_OPTIMIZATIONS png_init_filter_functions_lsx
+#   define PNG_LOONGARCH_LSX_IMPLEMENTATION 1
+#else
+#   define PNG_LOONGARCH_LSX_IMPLEMENTATION 0
+#endif
 
 /* Is this a build of a DLL where compilation of the object modules requires
  * different preprocessor settings to those required for a simple library?  If
@@ -514,18 +516,8 @@
     */
 #  include <float.h>
 
-#  if (defined(__MWERKS__) && defined(macintosh)) || defined(applec) || \
-    defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)
-   /* We need to check that <math.h> hasn't already been included earlier
-    * as it seems it doesn't agree with <fp.h>, yet we should really use
-    * <fp.h> if possible.
-    */
-#    if !defined(__MATH_H__) && !defined(__MATH_H) && !defined(__cmath__)
-#      include <fp.h>
-#    endif
-#  else
-#    include <math.h>
-#  endif
+#  include <math.h>
+
 #  if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
    /* Amiga SAS/C: We must include builtin FPU functions when compiling using
     * MATH=68881
@@ -842,6 +834,7 @@
 #define png_PLTE PNG_U32( 80,  76,  84,  69)
 #define png_bKGD PNG_U32( 98,  75,  71,  68)
 #define png_cHRM PNG_U32( 99,  72,  82,  77)
+#define png_cICP PNG_U32( 99,  73,  67,  80)
 #define png_eXIf PNG_U32(101,  88,  73, 102) /* registered July 2017 */
 #define png_fRAc PNG_U32(102,  82,  65,  99) /* registered, not defined */
 #define png_gAMA PNG_U32(103,  65,  77,  65)
@@ -1138,6 +1131,12 @@ PNG_INTERNAL_FUNCTION(void,png_write_cHRM_fixed,(png_structrp png_ptr,
    /* The xy value must have been previously validated */
 #endif
 
+#ifdef PNG_WRITE_cICP_SUPPORTED
+PNG_INTERNAL_FUNCTION(void,png_write_cICP,(png_structrp png_ptr,
+    png_byte colour_primaries, png_byte transfer_function,
+    png_byte matrix_coefficients, png_byte video_full_range_flag), PNG_EMPTY);
+#endif
+
 #ifdef PNG_WRITE_sRGB_SUPPORTED
 PNG_INTERNAL_FUNCTION(void,png_write_sRGB,(png_structrp png_ptr,
     int intent),PNG_EMPTY);
@@ -1306,7 +1305,7 @@ PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth4_neon,(png_row_infop
     row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 #endif
 
-#if PNG_MIPS_MSA_OPT > 0
+#if PNG_MIPS_MSA_IMPLEMENTATION == 1
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_up_msa,(png_row_infop row_info,
     png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_sub3_msa,(png_row_infop
@@ -1320,6 +1319,23 @@ PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg4_msa,(png_row_infop
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth3_msa,(png_row_infop
     row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth4_msa,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+#endif
+
+#if PNG_MIPS_MMI_IMPLEMENTATION > 0
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_up_mmi,(png_row_infop row_info,
+    png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_sub3_mmi,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_sub4_mmi,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg3_mmi,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg4_mmi,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth3_mmi,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth4_mmi,(png_row_infop
     row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 #endif
 
@@ -1352,6 +1368,23 @@ PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg4_sse2,(png_row_infop
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth3_sse2,(png_row_infop
     row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth4_sse2,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+#endif
+
+#if PNG_LOONGARCH_LSX_IMPLEMENTATION == 1
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_up_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_sub3_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_sub4_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg3_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_avg4_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth3_lsx,(png_row_infop
+    row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
+PNG_INTERNAL_FUNCTION(void,png_read_filter_row_paeth4_lsx,(png_row_infop
     row_info, png_bytep row, png_const_bytep prev_row),PNG_EMPTY);
 #endif
 
@@ -1445,6 +1478,11 @@ PNG_INTERNAL_FUNCTION(void,png_handle_bKGD,(png_structrp png_ptr,
 #ifdef PNG_READ_cHRM_SUPPORTED
 PNG_INTERNAL_FUNCTION(void,png_handle_cHRM,(png_structrp png_ptr,
     png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
+#endif
+
+#ifdef PNG_READ_cICP_SUPPORTED
+PNG_INTERNAL_FUNCTION(void,png_handle_cICP,(png_structrp png_ptr,
+        png_inforp info_ptr, png_uint_32 length),PNG_EMPTY);
 #endif
 
 #ifdef PNG_READ_eXIf_SUPPORTED
@@ -2094,15 +2132,25 @@ PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_neon,
    (png_structp png_ptr, unsigned int bpp), PNG_EMPTY);
 #endif
 
-#if PNG_MIPS_MSA_OPT > 0
-PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_msa,
+#if PNG_MIPS_MSA_IMPLEMENTATION == 1
+PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_mips,
    (png_structp png_ptr, unsigned int bpp), PNG_EMPTY);
 #endif
+
+#  if PNG_MIPS_MMI_IMPLEMENTATION > 0
+PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_mips,
+   (png_structp png_ptr, unsigned int bpp), PNG_EMPTY);
+#  endif
 
 #  if PNG_INTEL_SSE_IMPLEMENTATION > 0
 PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_sse2,
    (png_structp png_ptr, unsigned int bpp), PNG_EMPTY);
 #  endif
+#endif
+
+#if PNG_LOONGARCH_LSX_OPT > 0
+PNG_INTERNAL_FUNCTION(void, png_init_filter_functions_lsx,
+    (png_structp png_ptr, unsigned int bpp), PNG_EMPTY);
 #endif
 
 PNG_INTERNAL_FUNCTION(png_uint_32, png_check_keyword, (png_structrp png_ptr,

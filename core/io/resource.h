@@ -40,11 +40,15 @@
 
 class Node;
 
-#define RES_BASE_EXTENSION(m_ext)                                                                                   \
-public:                                                                                                             \
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
-	virtual String get_base_extension() const override { return m_ext; }                                            \
-                                                                                                                    \
+#define RES_BASE_EXTENSION(m_ext)                                        \
+public:                                                                  \
+	static void register_custom_data_to_otdb() {                         \
+		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
+	}                                                                    \
+	virtual String get_base_extension() const override {                 \
+		return m_ext;                                                    \
+	}                                                                    \
+                                                                         \
 private:
 
 class Resource : public RefCounted {
@@ -87,6 +91,11 @@ protected:
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
 
+	GDVIRTUAL0RC(RID, _get_rid);
+
+	GDVIRTUAL1C(_set_path_cache, String);
+	GDVIRTUAL0(_reset_state);
+
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 	static void (*_update_configuration_warning)(); //used by editor
@@ -106,9 +115,10 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
-	void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
+	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
 
+	static void seed_scene_unique_id(uint32_t p_seed);
 	static String generate_scene_unique_id();
 	void set_scene_unique_id(const String &p_id);
 	String get_scene_unique_id() const;
@@ -125,7 +135,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 
-	uint32_t hash_edited_version() const;
+	virtual uint32_t hash_edited_version_for_preview() const;
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
@@ -142,11 +152,9 @@ public:
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
-#ifdef TOOLS_ENABLED
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 	void set_id_for_path(const String &p_path, const String &p_id);
 	String get_id_for_path(const String &p_path) const;
-#endif
 
 	Resource();
 	~Resource();

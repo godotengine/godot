@@ -204,6 +204,7 @@ struct IndexSubtable
   {
     TRACE_SANITIZE (this);
     if (!u.header.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.header.indexFormat)
     {
     case 1: return_trace (u.format1.sanitize (c, glyph_count));
@@ -378,6 +379,7 @@ struct IndexSubtableRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  firstGlyphIndex <= lastGlyphIndex &&
 		  offsetToSubtable.sanitize (c, base, lastGlyphIndex - firstGlyphIndex + 1));
   }
@@ -635,6 +637,7 @@ struct BitmapSizeTable
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  indexSubtableArrayOffset.sanitize (c, base, numberOfIndexSubtables) &&
 		  horizontal.sanitize (c) &&
 		  vertical.sanitize (c));
@@ -738,7 +741,9 @@ struct CBLC
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  likely (version.major == 2 || version.major == 3) &&
+		  hb_barrier () &&
 		  sizeTables.sanitize (c, this));
   }
 
@@ -975,6 +980,7 @@ struct CBDT
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  likely (version.major == 2 || version.major == 3));
   }
 

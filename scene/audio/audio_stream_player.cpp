@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_stream_player.h"
+#include "audio_stream_player.compat.inc"
 
 #include "scene/audio/audio_stream_player_internal.h"
 #include "servers/audio/audio_stream.h"
@@ -58,6 +59,7 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 }
 
 void AudioStreamPlayer::set_volume_db(float p_volume) {
+	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
 	internal->volume_db = p_volume;
 
 	Vector<AudioFrame> volume_vector = _get_volume_vector();
@@ -68,6 +70,14 @@ void AudioStreamPlayer::set_volume_db(float p_volume) {
 
 float AudioStreamPlayer::get_volume_db() const {
 	return internal->volume_db;
+}
+
+void AudioStreamPlayer::set_volume_linear(float p_volume) {
+	set_volume_db(Math::linear_to_db(p_volume));
+}
+
+float AudioStreamPlayer::get_volume_linear() const {
+	return Math::db_to_linear(get_volume_db());
 }
 
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
@@ -93,6 +103,16 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	}
 	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
 	internal->ensure_playback_limit();
+
+	// Sample handling.
+	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
+		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
+		sample_playback->offset = p_from_pos;
+		sample_playback->volume_vector = _get_volume_vector();
+		sample_playback->bus = get_bus();
+
+		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+	}
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
@@ -100,7 +120,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 }
 
 void AudioStreamPlayer::stop() {
-	internal->stop();
+	internal->stop_basic();
 }
 
 bool AudioStreamPlayer::is_playing() const {
@@ -126,7 +146,7 @@ void AudioStreamPlayer::set_autoplay(bool p_enable) {
 	internal->autoplay = p_enable;
 }
 
-bool AudioStreamPlayer::is_autoplay_enabled() {
+bool AudioStreamPlayer::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 
@@ -140,10 +160,6 @@ AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
 
 void AudioStreamPlayer::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
-}
-
-bool AudioStreamPlayer::_is_active() const {
-	return internal->is_active();
 }
 
 void AudioStreamPlayer::set_stream_paused(bool p_pause) {
@@ -203,12 +219,23 @@ Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
 	return internal->get_stream_playback();
 }
 
+AudioServer::PlaybackType AudioStreamPlayer::get_playback_type() const {
+	return internal->get_playback_type();
+}
+
+void AudioStreamPlayer::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+	internal->set_playback_type(p_playback_type);
+}
+
 void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer::get_stream);
 
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer::get_volume_db);
+
+	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer::set_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer::get_volume_linear);
 
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);
@@ -229,8 +256,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mix_target", "mix_target"), &AudioStreamPlayer::set_mix_target);
 	ClassDB::bind_method(D_METHOD("get_mix_target"), &AudioStreamPlayer::get_mix_target);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioStreamPlayer::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_active"), &AudioStreamPlayer::_is_active);
+	ClassDB::bind_method(D_METHOD("set_playing", "enable"), &AudioStreamPlayer::_set_playing);
 
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
@@ -241,15 +267,20 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
+	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer::set_playback_type);
+	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer::get_playback_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -259,7 +290,7 @@ void AudioStreamPlayer::_bind_methods() {
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {
-	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer::play), false));
+	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer::play), callable_mp(this, &AudioStreamPlayer::stop), false));
 }
 
 AudioStreamPlayer::~AudioStreamPlayer() {

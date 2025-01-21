@@ -37,31 +37,43 @@
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
 #include "scene/main/timer.h"
 
-class GotoLineDialog : public ConfirmationDialog {
-	GDCLASS(GotoLineDialog, ConfirmationDialog);
+class MenuButton;
+class CodeTextEditor;
+class LineEdit;
 
-	Label *line_label = nullptr;
-	LineEdit *line = nullptr;
+class GotoLinePopup : public PopupPanel {
+	GDCLASS(GotoLinePopup, PopupPanel);
 
-	CodeEdit *text_editor = nullptr;
+	Variant original_state;
+	LineEdit *line_input = nullptr;
+	CodeTextEditor *text_editor = nullptr;
 
-	virtual void ok_pressed() override;
+	void _goto_line();
+	void _submit();
+
+protected:
+	void _notification(int p_what);
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 public:
-	void popup_find_line(CodeEdit *p_edit);
-	int get_line() const;
+	void popup_find_line(CodeTextEditor *p_text_editor);
 
-	GotoLineDialog();
+	GotoLinePopup();
 };
-
-class CodeTextEditor;
 
 class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
+	enum SearchMode {
+		SEARCH_CURRENT,
+		SEARCH_NEXT,
+		SEARCH_PREV,
+	};
+
+	Button *toggle_replace_button = nullptr;
 	LineEdit *search_text = nullptr;
 	Label *matches_label = nullptr;
 	Button *find_prev = nullptr;
@@ -92,18 +104,20 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode = false;
 	bool preserve_cursor = false;
 
-	void _get_search_from(int &r_line, int &r_col, bool p_is_searching_next = false);
+	void _get_search_from(int &r_line, int &r_col, SearchMode p_search_mode);
 	void _update_results_count();
-	void _update_matches_label();
+	void _update_matches_display();
 
-	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
+	void _show_search(bool p_with_replace, bool p_show_only);
 	void _hide_bar(bool p_force_focus = false);
+	void _update_toggle_replace_button(bool p_replace_visible);
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
 	void _search_text_changed(const String &p_text);
 	void _search_text_submitted(const String &p_text);
 	void _replace_text_submitted(const String &p_text);
+	void _toggle_replace_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -153,47 +167,51 @@ class CodeTextEditor : public VBoxContainer {
 	HBoxContainer *status_bar = nullptr;
 
 	Button *toggle_scripts_button = nullptr;
+	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
+	MenuButton *zoom_button = nullptr;
 	Label *line_and_col_txt = nullptr;
+	Label *indentation_txt = nullptr;
 
 	Label *info = nullptr;
 	Timer *idle = nullptr;
+	float idle_time = 0.0f;
+	float idle_time_with_errors = 0.0f;
 	bool code_complete_enabled = true;
 	Timer *code_complete_timer = nullptr;
 	int code_complete_timer_line = 0;
 
-	Timer *font_resize_timer = nullptr;
-	int font_resize_val;
-	real_t font_size;
+	float zoom_factor = 1.0f;
 
 	Label *error = nullptr;
 	int error_line;
 	int error_column;
 
-	void _on_settings_change();
-	void _apply_settings_change();
+	bool preview_navigation_change = false;
+	Dictionary previous_state;
 
 	void _update_text_editor_theme();
+	void _update_font_ligatures();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
-	void _font_resize_timeout();
-	bool _add_font_size(int p_delta);
 
 	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
-	void _zoom_in();
-	void _zoom_out();
-	void _zoom_changed();
-	void _reset_zoom();
 
 	Color completion_font_color;
 	Color completion_string_color;
+	Color completion_string_name_color;
+	Color completion_node_path_color;
 	Color completion_comment_color;
 	Color completion_doc_comment_color;
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud = nullptr;
+
+	void _zoom_in();
+	void _zoom_out();
+	void _zoom_to(float p_zoom_factor);
 
 	void _error_button_pressed();
 	void _warning_button_pressed();
@@ -201,12 +219,9 @@ class CodeTextEditor : public VBoxContainer {
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
-	void _update_status_bar_theme();
+	void _zoom_popup_id_pressed(int p_idx);
 
 	void _toggle_scripts_pressed();
-
-	int _get_affected_lines_from(int p_caret);
-	int _get_affected_lines_to(int p_caret);
 
 protected:
 	virtual void _load_theme_settings() {}
@@ -225,6 +240,7 @@ protected:
 
 public:
 	void trim_trailing_whitespace();
+	void trim_final_newlines();
 	void insert_final_newline();
 
 	enum CaseStyle {
@@ -234,24 +250,26 @@ public:
 	};
 	void convert_case(CaseStyle p_case);
 
-	void move_lines_up();
-	void move_lines_down();
-	void delete_lines();
-	void duplicate_selection();
+	void set_indent_using_spaces(bool p_use_spaces);
 
 	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
 	/// by adding or removing comment delimiter
 	void toggle_inline_comment(const String &delimiter);
 
-	void goto_line(int p_line);
+	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
 	Variant get_navigation_state();
+	Variant get_previous_state();
+	void store_previous_state();
+
+	bool is_previewing_navigation_change() const;
+	void set_preview_navigation_change(bool p_preview);
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
@@ -273,10 +291,14 @@ public:
 	void goto_prev_bookmark();
 	void remove_all_bookmarks();
 
+	void set_zoom_factor(float p_zoom_factor);
+	float get_zoom_factor();
+
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	void validate_script();
 
+	void set_toggle_list_control(Control *p_control);
 	void show_toggle_scripts_button();
 	void update_toggle_scripts_button();
 

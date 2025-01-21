@@ -278,7 +278,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	return m;
 }
 
-float Basis::get_uniform_scale() const {
+real_t Basis::get_uniform_scale() const {
 	return (rows[0].length() + rows[1].length() + rows[2].length()) / 3.0f;
 }
 
@@ -293,7 +293,7 @@ Vector3 Basis::get_scale_abs() const {
 			Vector3(rows[0][2], rows[1][2], rows[2][2]).length());
 }
 
-Vector3 Basis::get_scale_local() const {
+Vector3 Basis::get_scale_global() const {
 	real_t det_sign = SIGN(determinant());
 	return det_sign * Vector3(rows[0].length(), rows[1].length(), rows[2].length());
 }
@@ -685,7 +685,7 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 			*this = zmat * ymat * xmat;
 		} break;
 		default: {
-			ERR_FAIL_MSG("Invalid order parameter for set_euler(vec3,order)");
+			ERR_FAIL_MSG("Invalid Euler order parameter.");
 		}
 	}
 }
@@ -722,7 +722,7 @@ Basis::operator String() const {
 
 Quaternion Basis::get_quaternion() const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quaternion(), "Basis " + operator String() + " must be normalized in order to be casted to a Quaternion. Use get_rotation_quaternion() or call orthonormalized() if the Basis contains linearly independent vectors.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;
@@ -849,7 +849,7 @@ void Basis::set_quaternion(const Quaternion &p_quaternion) {
 void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_angle) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 " + p_axis.operator String() + " must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 	real_t cosine = Math::cos(p_angle);
@@ -907,7 +907,7 @@ void Basis::_set_diagonal(const Vector3 &p_diag) {
 	rows[2][2] = p_diag.z;
 }
 
-Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::lerp(const Basis &p_to, real_t p_weight) const {
 	Basis b;
 	b.rows[0] = rows[0].lerp(p_to.rows[0], p_weight);
 	b.rows[1] = rows[1].lerp(p_to.rows[1], p_weight);
@@ -916,7 +916,7 @@ Basis Basis::lerp(const Basis &p_to, const real_t &p_weight) const {
 	return b;
 }
 
-Basis Basis::slerp(const Basis &p_to, const real_t &p_weight) const {
+Basis Basis::slerp(const Basis &p_to, real_t p_weight) const {
 	//consider scale
 	Quaternion from(*this);
 	Quaternion to(p_to);
@@ -1049,9 +1049,10 @@ Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up, bool p_use
 		v_z = -v_z;
 	}
 	Vector3 v_x = p_up.cross(v_z);
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V_MSG(v_x.is_zero_approx(), Basis(), "The target vector and up vector can't be parallel to each other.");
-#endif
+	if (v_x.is_zero_approx()) {
+		WARN_PRINT("Target and up vectors are colinear. This is not advised as it may cause unwanted rotation around local Z axis.");
+		v_x = p_up.get_any_perpendicular(); // Vectors are almost parallel.
+	}
 	v_x.normalize();
 	Vector3 v_y = v_z.cross(v_x);
 

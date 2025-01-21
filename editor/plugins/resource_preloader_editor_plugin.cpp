@@ -30,12 +30,13 @@
 
 #include "resource_preloader_editor_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 
@@ -43,7 +44,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			load->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			load->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
 }
@@ -88,8 +89,8 @@ void ResourcePreloaderEditor::_load_pressed() {
 	file->clear_filters();
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("", &extensions);
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i]);
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension);
 	}
 
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
@@ -111,7 +112,7 @@ void ResourcePreloaderEditor::_item_edited() {
 			return;
 		}
 
-		if (new_name.is_empty() || new_name.contains("\\") || new_name.contains("/") || preloader->has_resource(new_name)) {
+		if (new_name.is_empty() || new_name.contains_char('\\') || new_name.contains_char('/') || preloader->has_resource(new_name)) {
 			s->set_text(0, old_name);
 			return;
 		}
@@ -141,7 +142,7 @@ void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
 
 void ResourcePreloaderEditor::_paste_pressed() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
-	if (!r.is_valid()) {
+	if (r.is_null()) {
 		dialog->set_text(TTR("Resource clipboard is empty!"));
 		dialog->set_title(TTR("Error!"));
 		dialog->set_ok_button_text(TTR("Close"));
@@ -260,7 +261,7 @@ Variant ResourcePreloaderEditor::get_drag_data_fw(const Point2 &p_point, Control
 	String name = ti->get_metadata(0);
 
 	Ref<Resource> res = preloader->get_resource(name);
-	if (!res.is_valid()) {
+	if (res.is_null()) {
 		return Variant();
 	}
 
@@ -367,6 +368,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	tree = memnew(Tree);
 	tree->connect("button_clicked", callable_mp(this, &ResourcePreloaderEditor::_cell_button_pressed));
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_clip_content(0, true);
@@ -382,8 +384,8 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	dialog = memnew(AcceptDialog);
 	add_child(dialog);
 
-	load->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
-	paste->connect("pressed", callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	load->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
+	paste->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
 	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
 	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;
@@ -406,11 +408,11 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//preloader_editor->show();
 		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(preloader_editor);
+		EditorNode::get_bottom_panel()->make_item_visible(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
 		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
+			EditorNode::get_bottom_panel()->hide_bottom_panel();
 		}
 		button->hide();
 		//preloader_editor->hide();
@@ -422,7 +424,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item("ResourcePreloader", preloader_editor);
+	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")));
 	button->hide();
 }
 

@@ -31,7 +31,6 @@
 #ifndef AUDIO_STREAM_MP3_H
 #define AUDIO_STREAM_MP3_H
 
-#include "core/io/resource_loader.h"
 #include "servers/audio/audio_stream.h"
 
 #include <minimp3_ex.h>
@@ -49,7 +48,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 
 	bool looping_override = false;
 	bool looping = false;
-	mp3dec_ex_t *mp3d = nullptr;
+	mp3dec_ex_t mp3d = {};
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
@@ -57,6 +56,9 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	friend class AudioStreamMP3;
 
 	Ref<AudioStreamMP3> mp3_stream;
+
+	bool _is_sample = false;
+	Ref<AudioSamplePlayback> sample_playback;
 
 protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames) override;
@@ -74,6 +76,11 @@ public:
 
 	virtual void tag_used_streams() override;
 
+	virtual void set_is_sample(bool p_is_sample) override;
+	virtual bool get_is_sample() const override;
+	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
+	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
+
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
 
@@ -88,7 +95,7 @@ class AudioStreamMP3 : public AudioStream {
 
 	friend class AudioStreamPlaybackMP3;
 
-	PackedByteArray data;
+	LocalVector<uint8_t> data;
 	uint32_t data_len = 0;
 
 	float sample_rate = 1.0;
@@ -106,6 +113,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<AudioStreamMP3> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+	static Ref<AudioStreamMP3> load_from_file(const String &p_path);
+
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 
@@ -130,6 +140,11 @@ public:
 	virtual double get_length() const override;
 
 	virtual bool is_monophonic() const override;
+
+	virtual bool can_be_sampled() const override {
+		return true;
+	}
+	virtual Ref<AudioSample> generate_sample() const override;
 
 	virtual void get_parameter_list(List<Parameter> *r_parameters) override;
 

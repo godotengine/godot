@@ -45,7 +45,7 @@ enum WebXRInputEvent {
 };
 
 typedef void (*GodotWebXRSupportedCallback)(char *p_session_mode, int p_supported);
-typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type);
+typedef void (*GodotWebXRStartedCallback)(char *p_reference_space_type, char *p_enabled_features, char *p_environment_blend_mode);
 typedef void (*GodotWebXREndedCallback)();
 typedef void (*GodotWebXRFailedCallback)(char *p_message);
 typedef void (*GodotWebXRInputEventCallback)(int p_event_type, int p_input_source_id);
@@ -85,7 +85,10 @@ extern bool godot_webxr_update_input_source(
 		int *r_button_count,
 		float *r_buttons,
 		int *r_axes_count,
-		float *r_axes);
+		float *r_axes,
+		int *r_has_hand_data,
+		float *r_hand_joints,
+		float *r_hand_radii);
 
 extern char *godot_webxr_get_visibility_state();
 extern int godot_webxr_get_bounds_geometry(float **r_points);

@@ -14,7 +14,7 @@
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
 		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="get_id" qualifiers="const">

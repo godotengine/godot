@@ -59,15 +59,18 @@ void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int
 }
 
 Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_options) {
+	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(ready_state != STATE_CLOSED, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
+
 	_clear();
 
 	String host;
 	String path;
 	String scheme;
+	String fragment;
 	int port = 0;
-	Error err = p_url.parse_url(scheme, host, port, path);
+	Error err = p_url.parse_url(scheme, host, port, path, fragment);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Invalid URL: " + p_url);
 
 	if (scheme.is_empty()) {
@@ -90,7 +93,7 @@ Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_option
 	requested_url = scheme + host;
 
 	if (port && ((scheme == "ws://" && port != 80) || (scheme == "wss://" && port != 443))) {
-		requested_url += ":" + String::num(port);
+		requested_url += ":" + String::num_int64(port);
 	}
 
 	if (!path.is_empty()) {

@@ -32,11 +32,8 @@
 #define CORE_BIND_H
 
 #include "core/debugger/engine_profiler.h"
-#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -63,15 +60,17 @@ public:
 	};
 
 	enum CacheMode {
-		CACHE_MODE_IGNORE, // Resource and subresources do not use path cache, no path is set into resource.
-		CACHE_MODE_REUSE, // Resource and subresources use patch cache, reuse existing loaded resources instead of loading from disk when available.
-		CACHE_MODE_REPLACE, // Resource and subresource use path cache, but replace existing loaded resources when available with information from disk.
+		CACHE_MODE_IGNORE,
+		CACHE_MODE_REUSE,
+		CACHE_MODE_REPLACE,
+		CACHE_MODE_IGNORE_DEEP,
+		CACHE_MODE_REPLACE_DEEP,
 	};
 
 	static ResourceLoader *get_singleton() { return singleton; }
 
 	Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = Array());
+	ThreadLoadStatus load_threaded_get_status(const String &p_path, Array r_progress = ClassDB::default_array_arg);
 	Ref<Resource> load_threaded_get(const String &p_path);
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
@@ -81,8 +80,11 @@ public:
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
+	Ref<Resource> get_cached_ref(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
+
+	Vector<String> list_directory(const String &p_directory);
 
 	ResourceLoader() { singleton = this; }
 };
@@ -113,6 +115,8 @@ public:
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
 
+	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
+
 	ResourceSaver() { singleton = this; }
 };
 
@@ -125,11 +129,30 @@ protected:
 	static void _bind_methods();
 	static OS *singleton;
 
+#ifndef DISABLE_DEPRECATED
+	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
+
+	String _read_string_from_stdin_bind_compat_91201();
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
 		RENDERING_DRIVER_D3D12,
+		RENDERING_DRIVER_METAL,
+	};
+
+	PackedByteArray get_entropy(int p_bytes);
+	String get_system_ca_certificates();
+
+	enum StdHandleType {
+		STD_HANDLE_INVALID,
+		STD_HANDLE_CONSOLE,
+		STD_HANDLE_FILE,
+		STD_HANDLE_PIPE,
+		STD_HANDLE_UNKNOWN,
 	};
 
 	virtual PackedStringArray get_connected_midi_inputs();
@@ -152,15 +175,23 @@ public:
 	String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const;
 	String get_executable_path() const;
-	String read_string_from_stdin();
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
+
+	String read_string_from_stdin(int64_t p_buffer_size = 1024);
+	PackedByteArray read_buffer_from_stdin(int64_t p_buffer_size = 1024);
+	StdHandleType get_stdin_type() const;
+	StdHandleType get_stdout_type() const;
+	StdHandleType get_stderr_type() const;
+
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = ClassDB::default_array_arg, bool p_read_stderr = false, bool p_open_console = false);
+	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
-	Error shell_open(String p_uri);
-	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
+	Error shell_open(const String &p_uri);
+	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
+	int get_process_exit_code(int p_pid) const;
 	int get_process_id() const;
 
 	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
@@ -175,6 +206,7 @@ public:
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
+	String get_version_alias() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
@@ -229,6 +261,7 @@ public:
 	String get_config_dir() const;
 	String get_data_dir() const;
 	String get_cache_dir() const;
+	String get_temp_dir() const;
 
 	Error set_thread_name(const String &p_name);
 	::Thread::ID get_thread_caller_id() const;
@@ -308,6 +341,8 @@ public:
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
+	TypedArray<Point2i> bresenham_line(const Point2i &p_from, const Point2i &p_to);
+
 	Geometry2D() { singleton = this; }
 };
 
@@ -382,12 +417,17 @@ class Semaphore : public RefCounted {
 	GDCLASS(Semaphore, RefCounted);
 	::Semaphore semaphore;
 
+protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	void _post_bind_compat_93605();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 public:
 	void wait();
 	bool try_wait();
-	void post();
+	void post(int p_count = 1);
 };
 
 class Thread : public RefCounted {
@@ -427,6 +467,14 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum APIType {
+		API_CORE,
+		API_EDITOR,
+		API_EXTENSION,
+		API_EDITOR_EXTENSION,
+		API_NONE,
+	};
+
 	PackedStringArray get_class_list() const;
 	PackedStringArray get_inheriters_from_class(const StringName &p_class) const;
 	StringName get_parent_class(const StringName &p_class) const;
@@ -435,17 +483,25 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
+	APIType class_get_api_type(const StringName &p_class) const;
 	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
 	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property);
+	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property);
 	Variant class_get_property(Object *p_object, const StringName &p_property) const;
 	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
+	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
+
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
+	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	Variant class_call_static(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error);
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -456,7 +512,13 @@ public:
 	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
+	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+
 	bool is_class_enabled(const StringName &p_class) const;
+
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	ClassDB() {}
 	~ClassDB() {}
@@ -522,13 +584,20 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
+	bool is_embedded_in_editor() const;
+
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
+
+	void set_print_to_stdout(bool p_enabled);
+	bool is_printing_to_stdout() const;
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	Engine() { singleton = this; }
 };
@@ -560,8 +629,24 @@ public:
 	bool has_capture(const StringName &p_name);
 
 	void send_message(const String &p_msg, const Array &p_data);
+	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
+	void script_debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+
+	void line_poll();
+
+	void set_lines_left(int p_lines);
+	int get_lines_left() const;
+
+	void set_depth(int p_depth);
+	int get_depth() const;
+
+	bool is_breakpoint(int p_line, const StringName &p_source) const;
+	bool is_skipping_breakpoints() const;
+	void insert_breakpoint(int p_line, const StringName &p_source);
+	void remove_breakpoint(int p_line, const StringName &p_source);
+	void clear_breakpoints();
 
 	EngineDebugger() { singleton = this; }
 	~EngineDebugger();
@@ -576,11 +661,14 @@ VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
 VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
+VARIANT_ENUM_CAST(core_bind::OS::StdHandleType);
 
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
 VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
 
 VARIANT_ENUM_CAST(core_bind::Thread::Priority);
+
+VARIANT_ENUM_CAST(core_bind::special::ClassDB::APIType);
 
 #endif // CORE_BIND_H

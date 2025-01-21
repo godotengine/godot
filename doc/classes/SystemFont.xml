@@ -19,6 +19,9 @@
 		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
 			Font anti-aliasing mode.
 		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
 		<member name="font_italic" type="bool" setter="set_font_italic" getter="get_font_italic" default="false">
 			If set to [code]true[/code], italic or oblique font is preferred.
 		</member>
@@ -39,6 +42,9 @@
 		</member>
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
 			Font hinting mode.
+		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="set_keep_rounding_remainders" getter="get_keep_rounding_remainders" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
 		</member>
 		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
 			The width of the range around the shape between the minimum and maximum representable signed distance. If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline. The default [member msdf_pixel_range] value of [code]16[/code] allows outline sizes up to [code]8[/code] to look correct.

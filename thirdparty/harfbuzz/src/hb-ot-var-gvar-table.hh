@@ -101,10 +101,14 @@ struct glyph_variations_t
         continue;
       }
 
+      bool is_composite_glyph = false;
+      is_composite_glyph = plan->composite_new_gids.has (new_gid);
+
       if (!p->decompile_tuple_variations (all_contour_points->length, true /* is_gvar */,
                                           iterator, &(plan->axes_old_index_tag_map),
                                           shared_indices, shared_tuples,
-                                          tuple_vars /* OUT */))
+                                          tuple_vars, /* OUT */
+                                          is_composite_glyph))
         return false;
       glyph_variations.push (std::move (tuple_vars));
     }
@@ -114,13 +118,15 @@ struct glyph_variations_t
   bool instantiate (const hb_subset_plan_t *plan)
   {
     unsigned count = plan->new_to_old_gid_list.length;
+    bool iup_optimize = false;
+    iup_optimize = plan->flags & HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS;
     for (unsigned i = 0; i < count; i++)
     {
       hb_codepoint_t new_gid = plan->new_to_old_gid_list[i].first;
       contour_point_vector_t *all_points;
       if (!plan->new_gid_contour_points_map.has (new_gid, &all_points))
         return false;
-      if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, all_points))
+      if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, all_points, iup_optimize))
         return false;
     }
     return true;
@@ -296,7 +302,9 @@ struct gvar
   bool sanitize_shallow (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_struct (this) && (version.major == 1) &&
+    return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
+		  (version.major == 1) &&
 		  sharedTuples.sanitize (c, this, axisCount * sharedTupleCount) &&
 		  (is_long_offset () ?
 		     c->check_array (get_long_offset_array (), c->get_num_glyphs () + 1) :
@@ -338,7 +346,8 @@ struct gvar
                   const glyph_variations_t& glyph_vars,
                   Iterator it,
                   unsigned axis_count,
-                  unsigned num_glyphs) const
+                  unsigned num_glyphs,
+                  bool force_long_offsets) const
   {
     TRACE_SERIALIZE (this);
     gvar *out = c->allocate_min<gvar> ();
@@ -350,7 +359,10 @@ struct gvar
     out->glyphCountX = hb_min (0xFFFFu, num_glyphs);
 
     unsigned glyph_var_data_size = glyph_vars.compiled_byte_size ();
-    bool long_offset = glyph_var_data_size & ~0xFFFFu;
+    /* According to the spec: If the short format (Offset16) is used for offsets,
+     * the value stored is the offset divided by 2, so the maximum data size should
+     * be 2 * 0xFFFFu, which is 0x1FFFEu */
+    bool long_offset = glyph_var_data_size > 0x1FFFEu || force_long_offsets;
     out->flags = long_offset ? 1 : 0;
 
     HBUINT8 *glyph_var_data_offsets = c->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
@@ -391,7 +403,12 @@ struct gvar
     unsigned axis_count = c->plan->axes_index_map.get_population ();
     unsigned num_glyphs = c->plan->num_output_glyphs ();
     auto it = hb_iter (c->plan->new_to_old_gid_list);
-    return_trace (serialize (c->serializer, glyph_vars, it, axis_count, num_glyphs));
+
+    bool force_long_offsets = false;
+#ifdef HB_EXPERIMENTAL_API
+    force_long_offsets = c->plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS;
+#endif
+    return_trace (serialize (c->serializer, glyph_vars, it, axis_count, num_glyphs, force_long_offsets));
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -426,7 +443,13 @@ struct gvar
       subset_data_size += get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
     }
 
-    bool long_offset = subset_data_size & ~0xFFFFu;
+    /* According to the spec: If the short format (Offset16) is used for offsets,
+     * the value stored is the offset divided by 2, so the maximum data size should
+     * be 2 * 0xFFFFu, which is 0x1FFFEu */
+    bool long_offset = subset_data_size > 0x1FFFEu;
+#ifdef HB_EXPERIMENTAL_API
+    long_offset = long_offset || (c->plan->flags & HB_SUBSET_FLAGS_IFTB_REQUIREMENTS);
+#endif
     out->flags = long_offset ? 1 : 0;
 
     HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
@@ -444,6 +467,8 @@ struct gvar
       hb_memcpy (tuples, this+sharedTuples, shared_tuple_size);
     }
 
+    /* This ordering relative to the shared tuples array, which puts the glyphVariationData
+       last in the table, is required when HB_SUBSET_FLAGS_IFTB_REQUIREMENTS is set */
     char *subset_data = c->serializer->allocate_size<char> (subset_data_size, false);
     if (!subset_data) return_trace (false);
     out->dataZ = subset_data - (char *) out;
@@ -521,7 +546,7 @@ struct gvar
   unsigned get_offset (unsigned glyph_count, unsigned i) const
   {
     if (unlikely (i > glyph_count)) return 0;
-    _hb_compiler_memory_r_barrier ();
+    hb_barrier ();
     return is_long_offset () ? get_long_offset_array ()[i] : get_short_offset_array ()[i] * 2;
   }
 
@@ -599,7 +624,7 @@ struct gvar
 
     public:
     bool apply_deltas_to_points (hb_codepoint_t glyph,
-				 hb_array_t<int> coords,
+				 hb_array_t<const int> coords,
 				 const hb_array_t<contour_point_t> points,
 				 bool phantom_only = false) const
     {
@@ -654,16 +679,16 @@ struct gvar
 
 	bool has_private_points = iterator.current_tuple->has_private_points ();
 	if (has_private_points &&
-	    !GlyphVariationData::unpack_points (p, private_indices, end))
+	    !GlyphVariationData::decompile_points (p, private_indices, end))
 	  return false;
 	const hb_array_t<unsigned int> &indices = has_private_points ? private_indices : shared_indices;
 
 	bool apply_to_all = (indices.length == 0);
 	unsigned int num_deltas = apply_to_all ? points.length : indices.length;
 	if (unlikely (!x_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::unpack_deltas (p, x_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end))) return false;
 	if (unlikely (!y_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::unpack_deltas (p, y_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, y_deltas, end))) return false;
 
 	if (!apply_to_all)
 	{

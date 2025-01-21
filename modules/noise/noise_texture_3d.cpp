@@ -142,6 +142,8 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 		return TypedArray<Image>();
 	}
 
+	ERR_FAIL_COND_V_MSG((int64_t)width * height * depth > Image::MAX_PIXELS, TypedArray<Image>(), "The NoiseTexture3D is too big, consider lowering its width, height, or depth.");
+
 	Vector<Ref<Image>> images;
 
 	if (seamless) {
@@ -185,6 +187,9 @@ Ref<Image> NoiseTexture3D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 
 void NoiseTexture3D::_update_texture() {
 	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
 	if (first_time) {
 		use_thread = false;
 		first_time = false;
@@ -327,6 +332,10 @@ int NoiseTexture3D::get_height() const {
 
 int NoiseTexture3D::get_depth() const {
 	return depth;
+}
+
+bool NoiseTexture3D::has_mipmaps() const {
+	return false;
 }
 
 RID NoiseTexture3D::get_rid() const {

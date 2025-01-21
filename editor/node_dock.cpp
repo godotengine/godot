@@ -30,8 +30,8 @@
 
 #include "node_dock.h"
 
+#include "core/io/config_file.h"
 #include "editor/connections_dialog.h"
-#include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 
 void NodeDock::show_groups() {
@@ -48,42 +48,42 @@ void NodeDock::show_connections() {
 	connections->show();
 }
 
-void NodeDock::_bind_methods() {
+void NodeDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "dock_node_current_tab", int(groups_button->is_pressed()));
+}
+
+void NodeDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	const int current_tab = p_layout->get_value(p_section, "dock_node_current_tab", 0);
+	if (current_tab == 0) {
+		show_connections();
+	} else if (current_tab == 1) {
+		show_groups();
+	}
 }
 
 void NodeDock::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			connections_button->set_icon(get_editor_theme_icon(SNAME("Signals")));
-			groups_button->set_icon(get_editor_theme_icon(SNAME("Groups")));
+			connections_button->set_button_icon(get_editor_theme_icon(SNAME("Signals")));
+			groups_button->set_button_icon(get_editor_theme_icon(SNAME("Groups")));
 		} break;
 	}
 }
 
-NodeDock *NodeDock::singleton = nullptr;
+void NodeDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &NodeDock::_save_layout_to_config);
+	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &NodeDock::_load_layout_from_config);
+}
 
 void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::_on_node_tree_exited() {
-	set_node(nullptr);
-}
-
 void NodeDock::set_node(Node *p_node) {
-	if (last_valid_node) {
-		last_valid_node->disconnect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
-		last_valid_node = nullptr;
-	}
-
 	connections->set_node(p_node);
 	groups->set_current(p_node);
 
 	if (p_node) {
-		last_valid_node = p_node;
-		last_valid_node->connect("tree_exited", callable_mp(this, &NodeDock::_on_node_tree_exited));
-
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {
@@ -100,10 +100,6 @@ void NodeDock::set_node(Node *p_node) {
 	}
 }
 
-void NodeDock::restore_last_valid_node() {
-	set_node(last_valid_node);
-}
-
 NodeDock::NodeDock() {
 	singleton = this;
 
@@ -113,24 +109,24 @@ NodeDock::NodeDock() {
 	mode_hb->hide();
 
 	connections_button = memnew(Button);
-	connections_button->set_theme_type_variation("FlatButton");
+	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
 	connections_button->set_text(TTR("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
-	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
+	connections_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(Button);
-	groups_button->set_theme_type_variation("FlatButton");
+	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
 	groups_button->set_text(TTR("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
-	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
+	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
 	connections = memnew(ConnectionsDock);
 	add_child(connections);

@@ -34,6 +34,7 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
+#include "core/string/translation_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/import/resource_importer_csv_translation.h"
@@ -129,6 +130,7 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
 }
 
+#ifdef TOOLS_ENABLED
 TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") {
 	Ref<Translation> translation = memnew(Translation);
 	translation->set_locale("fr");
@@ -150,7 +152,6 @@ TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") 
 	CHECK(messages.size() == 0);
 }
 
-#ifdef TOOLS_ENABLED
 TEST_CASE("[TranslationCSV] CSV import") {
 	Ref<ResourceImporterCSVTranslation> import_csv_translation = memnew(ResourceImporterCSVTranslation);
 
@@ -160,7 +161,7 @@ TEST_CASE("[TranslationCSV] CSV import") {
 
 	List<String> gen_files;
 
-	Error result = import_csv_translation->import(TestUtils::get_data_path("translations.csv"),
+	Error result = import_csv_translation->import(0, TestUtils::get_data_path("translations.csv"),
 			"", options, nullptr, &gen_files);
 	CHECK(result == OK);
 	CHECK(gen_files.size() == 4);

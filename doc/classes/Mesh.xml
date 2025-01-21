@@ -4,13 +4,13 @@
 		A [Resource] that contains vertex array-based geometry.
 	</brief_description>
 	<description>
-		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials. The maximum number of surfaces per mesh is [constant RenderingServer.MAX_MESH_SURFACES].
 	</description>
 	<tutorials>
-		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
 		<method name="_get_aabb" qualifiers="virtual const">
@@ -223,6 +223,7 @@
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 			[PackedVector3Array] of vertex normals.
+			[b]Note:[/b] The array has to consist of normal vectors, otherwise they will be normalized by the engine, potentially causing visual discrepancies.
 		</constant>
 		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
 			[PackedFloat32Array] of vertex tangents. Each element in groups of 4 floats, first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
@@ -237,16 +238,16 @@
 			[PackedVector2Array] for second UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
-			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
-			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
-			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
-			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.

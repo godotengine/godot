@@ -40,11 +40,13 @@ class TestProjectSettingsInternalsAccessor {
 public:
 	static String &resource_path() {
 		return ProjectSettings::get_singleton()->resource_path;
-	};
+	}
 };
 
 namespace TestProjectSettings {
 
+// TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
+#ifdef TOOLS_ENABLED
 TEST_CASE("[ProjectSettings] Get existing setting") {
 	CHECK(ProjectSettings::get_singleton()->has_setting("application/config/name"));
 
@@ -64,6 +66,7 @@ TEST_CASE("[ProjectSettings] Default value is ignored if setting exists") {
 	String name = variant;
 	CHECK_EQ(name, "GDScript Integration Test Suite");
 }
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[ProjectSettings] Non existing setting is null") {
 	CHECK_FALSE(ProjectSettings::get_singleton()->has_setting("not_existing_setting"));
@@ -123,10 +126,9 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("path\\.\\filename"), "res://path/filename");
 #endif
 
-	// FIXME?: These checks pass, but that doesn't seems correct
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "res://filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "res://path/filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "res://path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "../filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "../path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "../path/filename");
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/filename"), "/testroot/filename");
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/path/filename"), "/testroot/path/filename");

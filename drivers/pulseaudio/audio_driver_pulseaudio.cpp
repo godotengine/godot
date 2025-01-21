@@ -183,7 +183,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	// If there is a specified output device, check that it is really present
 	if (output_device_name != "Default") {
 		PackedStringArray list = get_output_device_list();
-		if (list.find(output_device_name) == -1) {
+		if (!list.has(output_device_name)) {
 			output_device_name = "Default";
 			new_output_device = "Default";
 		}
@@ -695,7 +695,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	// If there is a specified input device, check that it is really present
 	if (input_device_name != "Default") {
 		PackedStringArray list = get_input_device_list();
-		if (list.find(input_device_name) == -1) {
+		if (!list.has(input_device_name)) {
 			input_device_name = "Default";
 			new_input_device = "Default";
 		}

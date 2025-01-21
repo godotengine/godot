@@ -1806,6 +1806,14 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse back.");
 }
 
+TEST_CASE("[Variant] Writer key sorting") {
+	Dictionary d = build_dictionary(StringName("C"), 3, "A", 1, StringName("B"), 2, "D", 4);
+	String d_str;
+	VariantWriter::write_to_string(d, d_str);
+
+	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
+}
+
 TEST_CASE("[Variant] Writer recursive dictionary") {
 	// There is no way to accurately represent a recursive dictionary,
 	// the only thing we can do is make sure the writer doesn't blow up
@@ -2033,6 +2041,10 @@ TEST_CASE("[Variant] Identity comparison") {
 	Variant packed_color_array = PackedColorArray();
 	CHECK(packed_color_array.identity_compare(packed_color_array));
 	CHECK_FALSE(packed_color_array.identity_compare(PackedColorArray()));
+
+	Variant packed_vector4_array = PackedVector4Array();
+	CHECK(packed_vector4_array.identity_compare(packed_vector4_array));
+	CHECK_FALSE(packed_vector4_array.identity_compare(PackedVector4Array()));
 
 	Variant packed_float32_array = PackedFloat32Array();
 	CHECK(packed_float32_array.identity_compare(packed_float32_array));

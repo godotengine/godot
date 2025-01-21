@@ -140,7 +140,7 @@ TEST_CASE("[Color] Conversion methods") {
 			cyan.to_rgba64() == 0x0000'ffff'ffff'ffff,
 			"The returned 64-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			String(cyan) == "(0, 1, 1, 1)",
+			String(cyan) == "(0.0, 1.0, 1.0, 1.0)",
 			"The string representation should match the expected value.");
 }
 
@@ -160,6 +160,12 @@ TEST_CASE("[Color] Linear <-> sRGB conversion") {
 	CHECK_MESSAGE(
 			color_srgb.srgb_to_linear().is_equal_approx(Color(0.35, 0.5, 0.6, 0.7)),
 			"The sRGB color converted back to linear color space should match the expected value.");
+	CHECK_MESSAGE(
+			Color(1.0, 1.0, 1.0, 1.0).srgb_to_linear() == (Color(1.0, 1.0, 1.0, 1.0)),
+			"White converted from sRGB to linear should remain white.");
+	CHECK_MESSAGE(
+			Color(1.0, 1.0, 1.0, 1.0).linear_to_srgb() == (Color(1.0, 1.0, 1.0, 1.0)),
+			"White converted from linear to sRGB should remain white.");
 }
 
 TEST_CASE("[Color] Named colors") {

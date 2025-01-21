@@ -66,7 +66,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
 	for (const String &E : ext) {
-		search->add_filter("*" + E);
+		search->add_filter("*." + E);
 	}
 	search->popup_file_dialog();
 }
@@ -237,15 +237,13 @@ void DependencyEditor::edit(const String &p_path) {
 	}
 }
 
-void DependencyEditor::_bind_methods() {
-}
-
 DependencyEditor::DependencyEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_name(TTR("Dependencies"));
 	add_child(vb);
 
 	tree = memnew(Tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
@@ -265,7 +263,7 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
+	fixdeps->connect(SceneStringName(pressed), callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 
@@ -326,7 +324,7 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 		EditorNode::get_singleton()->load_resource(fpath);
 	}
 	hide();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 }
 
 void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -350,9 +348,6 @@ void DependencyEditorOwners::_file_option(int p_option) {
 			}
 		} break;
 	}
-}
-
-void DependencyEditorOwners::_bind_methods() {
 }
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
@@ -395,10 +390,10 @@ void DependencyEditorOwners::show(const String &p_path) {
 DependencyEditorOwners::DependencyEditorOwners() {
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
+	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
-	owners->set_auto_translate(false);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
@@ -476,7 +471,7 @@ void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<R
 			for (int j = 0; j < remap_keys.size(); j++) {
 				PackedStringArray remapped_files = remaps[remap_keys[j]];
 				for (int k = 0; k < remapped_files.size(); k++) {
-					int splitter_pos = remapped_files[k].rfind(":");
+					int splitter_pos = remapped_files[k].rfind_char(':');
 					String res_path = remapped_files[k].substr(0, splitter_pos);
 					if (res_path == path) {
 						String locale_name = remapped_files[k].substr(splitter_pos + 1);
@@ -532,6 +527,20 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 	}
 }
 
+void DependencyRemoveDialog::_show_files_to_delete_list() {
+	files_to_delete_list->clear();
+
+	for (const String &s : dirs_to_delete) {
+		String t = s.trim_prefix("res://");
+		files_to_delete_list->add_item(t, Ref<Texture2D>(), false);
+	}
+
+	for (const String &s : files_to_delete) {
+		String t = s.trim_prefix("res://");
+		files_to_delete_list->add_item(t, Ref<Texture2D>(), false);
+	}
+}
+
 void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<String> &p_files) {
 	all_remove_files.clear();
 	dirs_to_delete.clear();
@@ -548,21 +557,24 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 		files_to_delete.push_back(p_files[i]);
 	}
 
+	_show_files_to_delete_list();
+
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
 	_find_localization_remaps_of_removed_files(removed_deps);
 	removed_deps.sort();
 	if (removed_deps.is_empty()) {
-		owners->hide();
+		vb_owners->hide();
 		text->set_text(TTR("Remove the selected files from the project? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 		reset_size();
 		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);
-		owners->show();
+		vb_owners->show();
 		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 		popup_centered(Size2(500, 350));
 	}
+
 	EditorFileSystem::get_singleton()->scan_changes();
 }
 
@@ -577,42 +589,47 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 	}
 
-	for (int i = 0; i < files_to_delete.size(); ++i) {
+	bool project_settings_modified = false;
+	for (const String &file : files_to_delete) {
 		// If the file we are deleting for e.g. the main scene, default environment,
 		// or audio bus layout, we must clear its definition in Project Settings.
-		if (files_to_delete[i] == String(GLOBAL_GET("application/config/icon"))) {
+		if (file == ResourceUID::ensure_path(GLOBAL_GET("application/config/icon"))) {
 			ProjectSettings::get_singleton()->set("application/config/icon", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/run/main_scene"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"))) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("application/boot_splash/image"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("application/boot_splash/image"))) {
 			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
 			ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
 			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("gui/theme/custom_font"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom_font"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
-		}
-		if (files_to_delete[i] == String(GLOBAL_GET("audio/buses/default_bus_layout"))) {
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"))) {
 			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
+			project_settings_modified = true;
 		}
 
-		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
+		const String path = OS::get_singleton()->get_resource_dir() + file.replace_first("res://", "/");
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
-			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
+			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + file + "\n");
 		} else {
-			emit_signal(SNAME("file_removed"), files_to_delete[i]);
+			emit_signal(SNAME("file_removed"), file);
 		}
+	}
+	if (project_settings_modified) {
+		ProjectSettings::get_singleton()->save();
 	}
 
 	if (dirs_to_delete.size() == 0) {
@@ -641,11 +658,11 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	for (int i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
-			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
+			if (!dirs_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		} else {
-			if (files_to_delete.find(previous_favorites[i]) < 0) {
+			if (!files_to_delete.has(previous_favorites[i])) {
 				new_favorites.push_back(previous_favorites[i]);
 			}
 		}
@@ -666,14 +683,38 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	set_ok_button_text(TTR("Remove"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(vb);
 
 	text = memnew(Label);
 	vb->add_child(text);
 
+	Label *files_to_delete_label = memnew(Label);
+	files_to_delete_label->set_theme_type_variation("HeaderSmall");
+	files_to_delete_label->set_text(TTR("Files to be deleted:"));
+	vb->add_child(files_to_delete_label);
+
+	files_to_delete_list = memnew(ItemList);
+	files_to_delete_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	files_to_delete_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files_to_delete_list->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	vb->add_child(files_to_delete_list);
+
+	vb_owners = memnew(VBoxContainer);
+	vb_owners->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vb_owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(vb_owners);
+
+	Label *owners_label = memnew(Label);
+	owners_label->set_theme_type_variation("HeaderSmall");
+	owners_label->set_text(TTR("Dependencies of files to be deleted:"));
+	vb_owners->add_child(owners_label);
+
 	owners = memnew(Tree);
+	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_hide_root(true);
-	vb->add_child(owners);
+	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
+	vb_owners->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
@@ -724,6 +765,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	add_child(vb);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -862,9 +904,6 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_
 	dep_edit->edit(path);
 }
 
-void OrphanResourcesDialog::_bind_methods() {
-}
-
 OrphanResourcesDialog::OrphanResourcesDialog() {
 	set_title(TTR("Orphan Resource Explorer"));
 	delete_confirm = memnew(ConfirmationDialog);
@@ -872,13 +911,14 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
+	delete_confirm->connect(SceneStringName(confirmed), callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
 	files = memnew(Tree);
+	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_columns(2);
 	files->set_column_titles_visible(true);
 	files->set_column_custom_minimum_width(1, 100 * EDSCALE);

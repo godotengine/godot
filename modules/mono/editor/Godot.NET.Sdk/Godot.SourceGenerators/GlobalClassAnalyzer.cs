@@ -1,15 +1,13 @@
 using System.Collections.Immutable;
 using System.Linq;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Godot.SourceGenerators
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class GlobalClassAnalyzer : DiagnosticAnalyzer
+    public sealed class GlobalClassAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(
@@ -23,20 +21,30 @@ namespace Godot.SourceGenerators
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ClassDeclaration);
         }
 
-        private void AnalyzeNode(SyntaxNodeAnalysisContext context)
+        private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
-            var typeClassDecl = (ClassDeclarationSyntax)context.Node;
-
             // Return if not a type symbol or the type is not a global class.
             if (context.ContainingSymbol is not INamedTypeSymbol typeSymbol ||
                 !typeSymbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotGlobalClassAttribute() ?? false))
                 return;
 
             if (typeSymbol.IsGenericType)
-                Common.ReportGlobalClassMustNotBeGeneric(context, typeClassDecl, typeSymbol);
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.GlobalClassMustNotBeGenericRule,
+                    typeSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    typeSymbol.ToDisplayString()
+                ));
+            }
 
             if (!typeSymbol.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
-                Common.ReportGlobalClassMustDeriveFromGodotObject(context, typeClassDecl, typeSymbol);
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Common.GlobalClassMustDeriveFromGodotObjectRule,
+                    typeSymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                    typeSymbol.ToDisplayString()
+                ));
+            }
         }
     }
 }

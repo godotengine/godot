@@ -48,26 +48,32 @@ lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 	lsp::Position res;
 
 	// Special case: `line = 0` -> root class (range covers everything).
-	if (this->line <= 0) {
+	if (line <= 0) {
 		return res;
 	}
 	// Special case: `line = p_lines.size() + 1` -> root class (range covers everything).
-	if (this->line >= p_lines.size() + 1) {
+	if (line >= p_lines.size() + 1) {
 		res.line = p_lines.size();
 		return res;
 	}
-	res.line = this->line - 1;
+	res.line = line - 1;
+
+	// Special case: `column = 0` -> Starts at beginning of line.
+	if (column <= 0) {
+		return res;
+	}
+
 	// Note: character outside of `pos_line.length()-1` is valid.
-	res.character = this->column - 1;
+	res.character = column - 1;
 
 	String pos_line = p_lines[res.line];
-	if (pos_line.contains("\t")) {
+	if (pos_line.contains_char('\t')) {
 		int tab_size = get_indent_size();
 
 		int in_col = 1;
 		int res_char = 0;
 
-		while (res_char < pos_line.size() && in_col < this->column) {
+		while (res_char < pos_line.size() && in_col < column) {
 			if (pos_line[res_char] == '\t') {
 				in_col += tab_size;
 				res_char++;
@@ -191,7 +197,7 @@ void ExtendGDScriptParser::update_symbols() {
 void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	document_links.clear();
 
-	GDScriptTokenizer scr_tokenizer;
+	GDScriptTokenizerText scr_tokenizer;
 	Ref<FileAccess> fs = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	scr_tokenizer.set_source_code(p_code);
 	while (true) {
@@ -211,7 +217,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 					String value = const_val;
 					lsp::DocumentLink link;
 					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
-					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp(this->lines);
+					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp(lines);
 					document_links.push_back(link);
 				}
 			}
@@ -222,7 +228,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 lsp::Range ExtendGDScriptParser::range_of_node(const GDScriptParser::Node *p_node) const {
 	GodotPosition start(p_node->start_line, p_node->start_column);
 	GodotPosition end(p_node->end_line, p_node->end_column);
-	return GodotRange(start, end).to_lsp(this->lines);
+	return GodotRange(start, end).to_lsp(lines);
 }
 
 void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol) {
@@ -238,9 +244,12 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.kind = lsp::SymbolKind::Class;
 	r_symbol.deprecated = false;
 	r_symbol.range = range_of_node(p_class);
-	r_symbol.range.start.line = MAX(r_symbol.range.start.line, 0);
 	if (p_class->identifier) {
 		r_symbol.selectionRange = range_of_node(p_class->identifier);
+	} else {
+		// No meaningful `selectionRange`, but we must ensure that it is inside of `range`.
+		r_symbol.selectionRange.start = r_symbol.range.start;
+		r_symbol.selectionRange.end = r_symbol.range.start;
 	}
 	r_symbol.detail = "class " + r_symbol.name;
 	{
@@ -394,8 +403,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = lsp::SymbolKind::EnumMember;
 				symbol.deprecated = false;
-				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(this->lines);
-				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(this->lines);
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(lines);
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(lines);
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = m.enum_value.doc_data.description;
 				symbol.uri = uri;
@@ -430,8 +439,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					child.name = value.identifier->name;
 					child.kind = lsp::SymbolKind::EnumMember;
 					child.deprecated = false;
-					child.range.start = GodotPosition(value.line, value.leftmost_column).to_lsp(this->lines);
-					child.range.end = GodotPosition(value.line, value.rightmost_column).to_lsp(this->lines);
+					child.range.start = GodotPosition(value.line, value.leftmost_column).to_lsp(lines);
+					child.range.end = GodotPosition(value.line, value.rightmost_column).to_lsp(lines);
 					child.selectionRange = range_of_node(value.identifier);
 					child.documentation = value.doc_data.description;
 					child.uri = uri;
@@ -510,7 +519,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	node_stack.push_back(p_func->body);
 
 	while (!node_stack.is_empty()) {
-		GDScriptParser::Node *node = node_stack[0];
+		GDScriptParser::Node *node = node_stack.front()->get();
 		node_stack.pop_front();
 
 		switch (node->type) {

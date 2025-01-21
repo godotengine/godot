@@ -30,7 +30,9 @@
 
 #include "history_dock.h"
 
+#include "core/io/config_file.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
@@ -171,6 +173,17 @@ void HistoryDock::refresh_version() {
 	action_list->set_current(idx);
 }
 
+void HistoryDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "dock_history_include_scene", current_scene_checkbox->is_pressed());
+	p_layout->set_value(p_section, "dock_history_include_global", global_history_checkbox->is_pressed());
+}
+
+void HistoryDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	current_scene_checkbox->set_pressed_no_signal(p_layout->get_value(p_section, "dock_history_include_scene", true));
+	global_history_checkbox->set_pressed_no_signal(p_layout->get_value(p_section, "dock_history_include_global", true));
+	refresh_history();
+}
+
 void HistoryDock::seek_history(int p_index) {
 	bool include_scene = current_scene_checkbox->is_pressed();
 	bool include_global = global_history_checkbox->is_pressed();
@@ -219,6 +232,11 @@ void HistoryDock::_notification(int p_notification) {
 	}
 }
 
+void HistoryDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &HistoryDock::_save_layout_to_config);
+	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &HistoryDock::_load_layout_from_config);
+}
+
 HistoryDock::HistoryDock() {
 	set_name("History");
 
@@ -232,24 +250,22 @@ HistoryDock::HistoryDock() {
 	current_scene_checkbox = memnew(CheckBox);
 	mode_hb->add_child(current_scene_checkbox);
 	current_scene_checkbox->set_flat(true);
-	current_scene_checkbox->set_pressed(true);
 	current_scene_checkbox->set_text(TTR("Scene"));
 	current_scene_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_scene_checkbox->set_clip_text(true);
-	current_scene_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
+	current_scene_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	global_history_checkbox = memnew(CheckBox);
 	mode_hb->add_child(global_history_checkbox);
 	global_history_checkbox->set_flat(true);
-	global_history_checkbox->set_pressed(true);
 	global_history_checkbox->set_text(TTR("Global"));
 	global_history_checkbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	global_history_checkbox->set_clip_text(true);
-	global_history_checkbox->connect("toggled", callable_mp(this, &HistoryDock::refresh_history).unbind(1));
+	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	action_list = memnew(ItemList);
-	action_list->set_auto_translate(false);
+	action_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(action_list);
 	action_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list->connect("item_selected", callable_mp(this, &HistoryDock::seek_history));
+	action_list->connect(SceneStringName(item_selected), callable_mp(this, &HistoryDock::seek_history));
 }

@@ -1,36 +1,39 @@
 name: Build Godot
 description: Build Godot with the provided options.
+
 inputs:
   target:
     description: Build target (editor, template_release, template_debug).
-    default: "editor"
+    default: editor
   tests:
     description: Unit tests.
     default: false
+    required: false
   platform:
     description: Target platform.
     required: false
   sconsflags:
+    description: Additional SCons flags.
     default: ""
+    required: false
   scons-cache:
-    description: The scons cache path.
-    default: "${{ github.workspace }}/.scons-cache/"
+    description: The SCons cache path.
+    default: ${{ github.workspace }}/.scons_cache/
   scons-cache-limit:
-    description: The scons cache size limit.
+    description: The SCons cache size limit.
     # actions/cache has 10 GiB limit, and GitHub runners have a 14 GiB disk.
     # Limit to 7 GiB to avoid having the extracted cache fill the disk.
-    default: 7168
+    default: 7
+
 runs:
-  using: "composite"
+  using: composite
   steps:
-    - name: Scons Build
+    - name: SCons Build
       shell: sh
       env:
-          SCONSFLAGS: ${{ inputs.sconsflags }}
-          SCONS_CACHE: ${{ inputs.scons-cache }}
-          SCONS_CACHE_LIMIT: ${{ inputs.scons-cache-limit }}
+        SCONSFLAGS: ${{ inputs.sconsflags }}
       run: |
-        echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
+        echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}" cache_limit=${{ inputs.scons-cache-limit }}
 
         if [ "${{ inputs.target }}" != "editor" ]; then
           # Ensure we don't include editor code in export template builds.
@@ -44,5 +47,5 @@ runs:
           export BUILD_NAME="gh"
         fi
 
-        scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }}
+        scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}" cache_limit=${{ inputs.scons-cache-limit }}
         ls -l bin/

@@ -58,7 +58,7 @@ void StyleBoxPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			grid_preview->set_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
+			grid_preview->set_button_icon(get_editor_theme_icon(SNAME("StyleBoxGrid")));
 		} break;
 		case NOTIFICATION_DRAW: {
 			_redraw();
@@ -113,7 +113,7 @@ StyleBoxPreview::StyleBoxPreview() {
 	// This theme variation works better than the normal theme because there's no focus highlight.
 	grid_preview->set_theme_type_variation("PreviewLightButton");
 	grid_preview->set_toggle_mode(true);
-	grid_preview->connect("toggled", callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
+	grid_preview->connect(SceneStringName(toggled), callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
 	grid_preview->set_pressed(grid_preview_enabled);
 	add_child(grid_preview);
 }

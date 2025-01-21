@@ -2,7 +2,7 @@ using Godot;
 
 // This works because it inherits from GodotObject.
 [GlobalClass]
-public partial class CustomGlobalClass1 : GodotObject 
+public partial class CustomGlobalClass1 : GodotObject
 {
 
 }
@@ -15,8 +15,8 @@ public partial class CustomGlobalClass2 : Node
 }
 
 // This raises a GD0401 diagnostic error: global classes must inherit from GodotObject
-{|GD0401:[GlobalClass]
-public partial class CustomGlobalClass3 
+[GlobalClass]
+public partial class {|GD0401:CustomGlobalClass3|}
 {
 
-}|}
+}

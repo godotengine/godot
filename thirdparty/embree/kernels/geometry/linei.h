@@ -457,6 +457,9 @@ namespace embree
     p1 = lerp(a1,b1,vfloat4(ftime));
     pL = lerp(aL,bL,vfloat4(ftime));
     pR = lerp(aR,bR,vfloat4(ftime));
+
+    pL = select(vboolf4(leftExists), pL, Vec4vf4(inf));
+    pR = select(vboolf4(rightExists), pR, Vec4vf4(inf));
   }
 
 #if defined(__AVX__)
@@ -647,6 +650,9 @@ namespace embree
     p1 = lerp(a1,b1,vfloat8(ftime));
     pL = lerp(aL,bL,vfloat8(ftime));
     pR = lerp(aR,bR,vfloat8(ftime));
+    
+    pL = select(vboolf4(leftExists), pL, Vec4vf8(inf));
+    pR = select(vboolf4(rightExists), pR, Vec4vf8(inf));
   }
 
   template<>

@@ -54,6 +54,8 @@
 // of these is set, they will override the values set in the credentials file.
 const String ENV_IOS_PROFILE_UUID_DEBUG = "GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG";
 const String ENV_IOS_PROFILE_UUID_RELEASE = "GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE";
+const String ENV_IOS_PROFILE_SPECIFIER_DEBUG = "GODOT_IOS_PROFILE_SPECIFIER_DEBUG";
+const String ENV_IOS_PROFILE_SPECIFIER_RELEASE = "GODOT_IOS_PROFILE_SPECIFIER_RELEASE";
 
 class EditorExportPlatformIOS : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
@@ -81,9 +83,11 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 #ifdef MACOS_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+	SafeFlag has_runnable_preset;
 
 	static bool _check_xcode_install();
 	static void _check_for_changes_poll_thread(void *ud);
+	void _update_preset_status();
 #endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -133,6 +137,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Vector<ExportArchitecture> _get_supported_architectures() const;
 	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset) const;
 
+	bool _archive_has_arm64(const String &p_path, uint32_t *r_cputype = nullptr, uint32_t *r_cpusubtype = nullptr) const;
+	int _archive_convert_to_simulator(const String &p_path) const;
 	void _check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const;
 	Error _convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const;
 
@@ -142,7 +148,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug);
 
-	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_oneclick);
+	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
@@ -151,6 +157,8 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+
+	void _notification(int p_what);
 
 public:
 	virtual String get_name() const override { return "iOS"; }
@@ -163,7 +171,7 @@ public:
 	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 
 	virtual bool poll_export() override {
 		bool dc = devices_changed.is_set();
@@ -196,7 +204,7 @@ public:
 		return list;
 	}
 
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

@@ -31,50 +31,13 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/gdextension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "scene/2d/animated_sprite_2d.h"
-#include "scene/2d/area_2d.h"
-#include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/audio_stream_player_2d.h"
-#include "scene/2d/back_buffer_copy.h"
-#include "scene/2d/camera_2d.h"
-#include "scene/2d/canvas_group.h"
-#include "scene/2d/canvas_modulate.h"
-#include "scene/2d/collision_polygon_2d.h"
-#include "scene/2d/collision_shape_2d.h"
-#include "scene/2d/cpu_particles_2d.h"
-#include "scene/2d/gpu_particles_2d.h"
-#include "scene/2d/joint_2d.h"
-#include "scene/2d/light_2d.h"
-#include "scene/2d/light_occluder_2d.h"
-#include "scene/2d/line_2d.h"
-#include "scene/2d/marker_2d.h"
-#include "scene/2d/mesh_instance_2d.h"
-#include "scene/2d/multimesh_instance_2d.h"
-#include "scene/2d/navigation_agent_2d.h"
-#include "scene/2d/navigation_link_2d.h"
-#include "scene/2d/navigation_obstacle_2d.h"
-#include "scene/2d/navigation_region_2d.h"
-#include "scene/2d/parallax_background.h"
-#include "scene/2d/parallax_layer.h"
-#include "scene/2d/path_2d.h"
-#include "scene/2d/physical_bone_2d.h"
-#include "scene/2d/physics_body_2d.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/2d/ray_cast_2d.h"
-#include "scene/2d/remote_transform_2d.h"
-#include "scene/2d/shape_cast_2d.h"
-#include "scene/2d/skeleton_2d.h"
-#include "scene/2d/sprite_2d.h"
-#include "scene/2d/tile_map.h"
-#include "scene/2d/touch_screen_button.h"
-#include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/animation/animation_blend_space_1d.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_mixer.h"
+#include "scene/animation/animation_node_extension.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree.h"
@@ -95,6 +58,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
@@ -136,6 +100,8 @@
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/shader_globals_override.h"
+#include "scene/main/status_indicator.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -146,24 +112,18 @@
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/bone_map.h"
-#include "scene/resources/box_shape_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/camera_texture.h"
-#include "scene/resources/capsule_shape_2d.h"
-#include "scene/resources/capsule_shape_3d.h"
-#include "scene/resources/circle_shape_2d.h"
+#include "scene/resources/canvas_item_material.h"
+#include "scene/resources/color_palette.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
-#include "scene/resources/concave_polygon_shape_2d.h"
-#include "scene/resources/concave_polygon_shape_3d.h"
-#include "scene/resources/convex_polygon_shape_2d.h"
-#include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/curve_texture.h"
-#include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/gradient_texture.h"
-#include "scene/resources/height_map_shape_3d.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/label_settings.h"
@@ -172,81 +132,120 @@
 #include "scene/resources/mesh_texture.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_2d.h"
-#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/placeholder_textures.h"
-#include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/primitive_meshes.h"
-#include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/separation_ray_shape_2d.h"
-#include "scene/resources/separation_ray_shape_3d.h"
 #include "scene/resources/shader_include.h"
-#include "scene/resources/skeleton_modification_2d.h"
-#include "scene/resources/skeleton_modification_2d_ccdik.h"
-#include "scene/resources/skeleton_modification_2d_fabrik.h"
-#include "scene/resources/skeleton_modification_2d_jiggle.h"
-#include "scene/resources/skeleton_modification_2d_lookat.h"
-#include "scene/resources/skeleton_modification_2d_physicalbones.h"
-#include "scene/resources/skeleton_modification_2d_stackholder.h"
-#include "scene/resources/skeleton_modification_2d_twoboneik.h"
-#include "scene/resources/skeleton_modification_stack_2d.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/sky_material.h"
-#include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/syntax_highlighter.h"
-#include "scene/resources/text_file.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/theme.h"
-#include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/resources/world_2d.h"
-#include "scene/resources/world_3d.h"
-#include "scene/resources/world_boundary_shape_2d.h"
-#include "scene/resources/world_boundary_shape_3d.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
-#include "scene/main/shader_globals_override.h"
+// 2D
+#include "scene/2d/animated_sprite_2d.h"
+#include "scene/2d/audio_listener_2d.h"
+#include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/back_buffer_copy.h"
+#include "scene/2d/camera_2d.h"
+#include "scene/2d/canvas_group.h"
+#include "scene/2d/canvas_modulate.h"
+#include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/2d/light_2d.h"
+#include "scene/2d/light_occluder_2d.h"
+#include "scene/2d/line_2d.h"
+#include "scene/2d/marker_2d.h"
+#include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/multimesh_instance_2d.h"
+#include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_link_2d.h"
+#include "scene/2d/navigation_obstacle_2d.h"
+#include "scene/2d/navigation_region_2d.h"
+#include "scene/2d/parallax_2d.h"
+#include "scene/2d/parallax_background.h"
+#include "scene/2d/parallax_layer.h"
+#include "scene/2d/path_2d.h"
+#include "scene/2d/physics/animatable_body_2d.h"
+#include "scene/2d/physics/area_2d.h"
+#include "scene/2d/physics/character_body_2d.h"
+#include "scene/2d/physics/collision_polygon_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
+#include "scene/2d/physics/joints/damped_spring_joint_2d.h"
+#include "scene/2d/physics/joints/groove_joint_2d.h"
+#include "scene/2d/physics/joints/joint_2d.h"
+#include "scene/2d/physics/joints/pin_joint_2d.h"
+#include "scene/2d/physics/kinematic_collision_2d.h"
+#include "scene/2d/physics/physical_bone_2d.h"
+#include "scene/2d/physics/physics_body_2d.h"
+#include "scene/2d/physics/ray_cast_2d.h"
+#include "scene/2d/physics/rigid_body_2d.h"
+#include "scene/2d/physics/shape_cast_2d.h"
+#include "scene/2d/physics/static_body_2d.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/2d/remote_transform_2d.h"
+#include "scene/2d/skeleton_2d.h"
+#include "scene/2d/sprite_2d.h"
+#include "scene/2d/tile_map.h"
+#include "scene/2d/tile_map_layer.h"
+#include "scene/2d/touch_screen_button.h"
+#include "scene/2d/visible_on_screen_notifier_2d.h"
+#include "scene/resources/2d/capsule_shape_2d.h"
+#include "scene/resources/2d/circle_shape_2d.h"
+#include "scene/resources/2d/concave_polygon_shape_2d.h"
+#include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
+#include "scene/resources/2d/polygon_path_finder.h"
+#include "scene/resources/2d/rectangle_shape_2d.h"
+#include "scene/resources/2d/segment_shape_2d.h"
+#include "scene/resources/2d/separation_ray_shape_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_ccdik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_fabrik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_jiggle.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_lookat.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_physicalbones.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_stackholder.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
+#include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
+#include "scene/resources/2d/tile_set.h"
+#include "scene/resources/2d/world_boundary_shape_2d.h"
 
 #ifndef _3D_DISABLED
-#include "scene/3d/area_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/collision_polygon_3d.h"
-#include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/joint_3d.h"
 #include "scene/3d/label_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -257,26 +256,64 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/path_3d.h"
-#include "scene/3d/physics_body_3d.h"
-#include "scene/3d/ray_cast_3d.h"
+#include "scene/3d/physical_bone_simulator_3d.h"
+#include "scene/3d/physics/animatable_body_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/character_body_3d.h"
+#include "scene/3d/physics/collision_polygon_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/joints/cone_twist_joint_3d.h"
+#include "scene/3d/physics/joints/generic_6dof_joint_3d.h"
+#include "scene/3d/physics/joints/hinge_joint_3d.h"
+#include "scene/3d/physics/joints/joint_3d.h"
+#include "scene/3d/physics/joints/pin_joint_3d.h"
+#include "scene/3d/physics/joints/slider_joint_3d.h"
+#include "scene/3d/physics/kinematic_collision_3d.h"
+#include "scene/3d/physics/physical_bone_3d.h"
+#include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/physics/ray_cast_3d.h"
+#include "scene/3d/physics/rigid_body_3d.h"
+#include "scene/3d/physics/shape_cast_3d.h"
+#include "scene/3d/physics/spring_arm_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/physics/vehicle_body_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
-#include "scene/3d/shape_cast_3d.h"
+#include "scene/3d/retarget_modifier_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_ik_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/soft_body_3d.h"
-#include "scene/3d/spring_arm_3d.h"
+#include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
+#include "scene/3d/spring_bone_collision_plane_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
-#include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
+#include "scene/3d/xr_body_modifier_3d.h"
+#include "scene/3d/xr_face_modifier_3d.h"
+#include "scene/3d/xr_hand_modifier_3d.h"
 #include "scene/3d/xr_nodes.h"
 #include "scene/animation/root_motion_view.h"
-#include "scene/resources/environment.h"
-#include "scene/resources/fog_material.h"
-#include "scene/resources/importer_mesh.h"
-#include "scene/resources/mesh_library.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/capsule_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "scene/resources/3d/convex_polygon_shape_3d.h"
+#include "scene/resources/3d/cylinder_shape_3d.h"
+#include "scene/resources/3d/fog_material.h"
+#include "scene/resources/3d/height_map_shape_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/3d/mesh_library.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sky_material.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
 #endif // _3D_DISABLED
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -340,6 +377,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
 
+	GDREGISTER_VIRTUAL_CLASS(CompositorEffect);
+
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerAPI);
@@ -351,6 +390,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CanvasModulate);
 	GDREGISTER_CLASS(ResourcePreloader);
 	GDREGISTER_CLASS(Window);
+
+	GDREGISTER_CLASS(StatusIndicator);
 
 	/* REGISTER GUI */
 
@@ -371,8 +412,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VSlider);
 	GDREGISTER_CLASS(Popup);
 	GDREGISTER_CLASS(PopupPanel);
-	GDREGISTER_CLASS(MenuBar);
-	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(CheckBox);
 	GDREGISTER_CLASS(CheckButton);
 	GDREGISTER_CLASS(LinkButton);
@@ -427,6 +466,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeHighlighter);
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
+	GDREGISTER_CLASS(MenuBar);
+	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
@@ -445,6 +486,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(GraphElement);
 	GDREGISTER_CLASS(GraphNode);
+	GDREGISTER_CLASS(GraphFrame);
 	GDREGISTER_CLASS(GraphEdit);
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -467,6 +509,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(IntervalTweener);
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
+	GDREGISTER_CLASS(SubtweenTweener);
 
 	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
 	GDREGISTER_CLASS(AnimationPlayer);
@@ -478,6 +521,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeBlendSpace2D);
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
+	GDREGISTER_VIRTUAL_CLASS(AnimationNodeExtension);
+
+	GDREGISTER_INTERNAL_CLASS(AnimationNodeStartState);
+	GDREGISTER_INTERNAL_CLASS(AnimationNodeEndState);
 
 	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
@@ -512,10 +559,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
 	GDREGISTER_CLASS(XRCamera3D);
-	GDREGISTER_ABSTRACT_CLASS(XRNode3D);
+	GDREGISTER_CLASS(XRNode3D);
 	GDREGISTER_CLASS(XRController3D);
 	GDREGISTER_CLASS(XRAnchor3D);
 	GDREGISTER_CLASS(XROrigin3D);
+	GDREGISTER_CLASS(XRBodyModifier3D);
+	GDREGISTER_CLASS(XRHandModifier3D);
+	GDREGISTER_CLASS(XRFaceModifier3D);
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
 	GDREGISTER_ABSTRACT_CLASS(Occluder3D);
@@ -553,6 +603,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
+	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
+	GDREGISTER_CLASS(RetargetModifier3D);
+	GDREGISTER_CLASS(SpringBoneSimulator3D);
+	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
+	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
+	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
+	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -565,11 +622,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CharacterBody3D);
 	GDREGISTER_CLASS(SpringArm3D);
 
+	GDREGISTER_CLASS(PhysicalBoneSimulator3D);
 	GDREGISTER_CLASS(PhysicalBone3D);
 	GDREGISTER_CLASS(SoftBody3D);
 
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
+	GDREGISTER_CLASS(LookAtModifier3D);
 
 	GDREGISTER_CLASS(VehicleBody3D);
 	GDREGISTER_CLASS(VehicleWheel3D);
@@ -618,7 +677,10 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeGroupBase);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeConstant);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVectorBase);
-	GDREGISTER_CLASS(VisualShaderNodeComment);
+	GDREGISTER_CLASS(VisualShaderNodeFrame);
+#ifndef DISABLE_DEPRECATED
+	GDREGISTER_CLASS(VisualShaderNodeComment); // Deprecated, just for compatibility.
+#endif
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeUIntConstant);
@@ -703,6 +765,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
+	GDREGISTER_CLASS(VisualShaderNodeReroute);
 
 	GDREGISTER_CLASS(VisualShaderNodeSDFToScreenUV);
 	GDREGISTER_CLASS(VisualShaderNodeScreenUVToSDF);
@@ -783,6 +846,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileMapPattern);
 	GDREGISTER_CLASS(TileData);
 	GDREGISTER_CLASS(TileMap);
+	GDREGISTER_CLASS(TileMapLayer);
+	GDREGISTER_CLASS(Parallax2D);
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
 	GDREGISTER_CLASS(TouchScreenButton);
@@ -819,6 +884,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MeshDataTool);
 
 #ifndef _3D_DISABLED
+	GDREGISTER_CLASS(AudioStreamPlayer3D);
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
@@ -842,6 +908,7 @@ void register_scene_types() {
 	BaseMaterial3D::init_shaders();
 
 	GDREGISTER_CLASS(MeshLibrary);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -855,12 +922,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+	GDREGISTER_CLASS(World3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
 
 	GDREGISTER_CLASS(PhysicsMaterial);
-	GDREGISTER_CLASS(World3D);
+	GDREGISTER_CLASS(Compositor);
 	GDREGISTER_CLASS(Environment);
 	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);
 	GDREGISTER_CLASS(CameraAttributesPhysical);
@@ -880,6 +948,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GradientTexture2D);
 	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
+	GDREGISTER_CLASS(ExternalTexture);
 	GDREGISTER_VIRTUAL_CLASS(TextureLayered);
 	GDREGISTER_ABSTRACT_CLASS(ImageTextureLayered);
 	GDREGISTER_VIRTUAL_CLASS(Texture3D);
@@ -914,6 +983,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FontFile);
 	GDREGISTER_CLASS(FontVariation);
 	GDREGISTER_CLASS(SystemFont);
+	GDREGISTER_CLASS(ColorPalette);
 
 	GDREGISTER_CLASS(Curve);
 
@@ -929,7 +999,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(StyleBoxLine);
 	GDREGISTER_CLASS(Theme);
 
-	GDREGISTER_CLASS(PolygonPathFinder);
 	GDREGISTER_CLASS(BitMap);
 	GDREGISTER_CLASS(Gradient);
 
@@ -940,16 +1009,13 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(AudioStreamPlayer);
-	GDREGISTER_CLASS(AudioStreamPlayer2D);
-#ifndef _3D_DISABLED
-	GDREGISTER_CLASS(AudioStreamPlayer3D);
-#endif
 	GDREGISTER_CLASS(AudioStreamWAV);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
 	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
 
 	OS::get_singleton()->yield(); // may take time to init
 
+	GDREGISTER_CLASS(AudioStreamPlayer2D);
 	GDREGISTER_ABSTRACT_CLASS(Shape2D);
 	GDREGISTER_CLASS(WorldBoundaryShape2D);
 	GDREGISTER_CLASS(SegmentShape2D);
@@ -962,15 +1028,33 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
 	GDREGISTER_CLASS(PathFollow2D);
+	GDREGISTER_CLASS(PolygonPathFinder);
 
 	GDREGISTER_CLASS(NavigationMesh);
 	GDREGISTER_CLASS(NavigationMeshSourceGeometryData2D);
-	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
 	GDREGISTER_CLASS(NavigationLink2D);
+
+	OS::get_singleton()->yield(); // may take time to init
+
+	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance2D::navmesh_parse_init();
+	MultiMeshInstance2D::navmesh_parse_init();
+	NavigationObstacle2D::navmesh_parse_init();
+	Polygon2D::navmesh_parse_init();
+	TileMap::navmesh_parse_init();
+	TileMapLayer::navmesh_parse_init();
+	StaticBody2D::navmesh_parse_init();
+#ifndef _3D_DISABLED
+	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance3D::navmesh_parse_init();
+	MultiMeshInstance3D::navmesh_parse_init();
+	NavigationObstacle3D::navmesh_parse_init();
+	StaticBody3D::navmesh_parse_init();
+#endif
 
 	OS::get_singleton()->yield(); // may take time to init
 

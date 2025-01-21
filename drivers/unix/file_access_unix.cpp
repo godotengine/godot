@@ -41,10 +41,23 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void FileAccessUnix::check_errors() const {
+#if defined(TOOLS_ENABLED)
+#include <limits.h>
+#include <stdlib.h>
+#endif
+
+void FileAccessUnix::check_errors(bool p_write) const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	if (feof(f)) {
+	last_error = OK;
+	if (ferror(f)) {
+		if (p_write) {
+			last_error = ERR_FILE_CANT_WRITE;
+		} else {
+			last_error = ERR_FILE_CANT_READ;
+		}
+	}
+	if (!p_write && feof(f)) {
 		last_error = ERR_FILE_EOF;
 	}
 }
@@ -87,6 +100,22 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		}
 	}
 
+#if defined(TOOLS_ENABLED)
+	if (p_mode_flags & READ) {
+		String real_path = get_real_path();
+		if (real_path != path) {
+			// Don't warn on symlinks, since they can be used to simply share addons on multiple projects.
+			if (real_path.to_lower() == path.to_lower()) {
+				// The File system is case insensitive, but other platforms can be sensitive to it
+				// To ease cross-platform development, we issue a warning if users try to access
+				// a file using the wrong case (which *works* on Windows and macOS, but won't on other
+				// platforms).
+				WARN_PRINT(vformat("Case mismatch opening requested file '%s', stored as '%s' in the filesystem. This file will not open when exported to other case-sensitive platforms.", path, real_path));
+			}
+		}
+	}
+#endif
+
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		save_path = path;
 		// Create a temporary file in the same directory as the target file.
@@ -97,7 +126,7 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
-		fchmod(fd, 0666);
+		fchmod(fd, 0644);
 		path = String::utf8(cs.ptr());
 
 		f = fdopen(fd, mode_string);
@@ -173,10 +202,29 @@ String FileAccessUnix::get_path_absolute() const {
 	return path;
 }
 
+#if defined(TOOLS_ENABLED)
+String FileAccessUnix::get_real_path() const {
+	char *resolved_path = ::realpath(path.utf8().get_data(), nullptr);
+
+	if (!resolved_path) {
+		return path;
+	}
+
+	String result;
+	Error parse_ok = result.parse_utf8(resolved_path);
+	::free(resolved_path);
+
+	if (parse_ok != OK) {
+		return path;
+	}
+
+	return result.simplify_path();
+}
+#endif
+
 void FileAccessUnix::seek(uint64_t p_position) {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 
-	last_error = OK;
 	if (fseeko(f, p_position, SEEK_SET)) {
 		check_errors();
 	}
@@ -215,70 +263,16 @@ uint64_t FileAccessUnix::get_length() const {
 }
 
 bool FileAccessUnix::eof_reached() const {
-	return last_error == ERR_FILE_EOF;
-}
-
-uint8_t FileAccessUnix::get_8() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-	uint8_t b;
-	if (fread(&b, 1, 1, f) == 0) {
-		check_errors();
-		b = '\0';
-	}
-	return b;
-}
-
-uint16_t FileAccessUnix::get_16() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint16_t b = 0;
-	if (fread(&b, 1, 2, f) != 2) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP16(b);
-	}
-
-	return b;
-}
-
-uint32_t FileAccessUnix::get_32() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint32_t b = 0;
-	if (fread(&b, 1, 4, f) != 4) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP32(b);
-	}
-
-	return b;
-}
-
-uint64_t FileAccessUnix::get_64() const {
-	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
-
-	uint64_t b = 0;
-	if (fread(&b, 1, 8, f) != 8) {
-		check_errors();
-	}
-
-	if (big_endian) {
-		b = BSWAP64(b);
-	}
-
-	return b;
+	return feof(f);
 }
 
 uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_NULL_V_MSG(f, -1, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
+
 	return read;
 }
 
@@ -286,65 +280,47 @@ Error FileAccessUnix::get_error() const {
 	return last_error;
 }
 
+Error FileAccessUnix::resize(int64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, FAILED, "File must be opened before use.");
+	int res = ::ftruncate(fileno(f), p_length);
+	switch (res) {
+		case 0:
+			return OK;
+		case EBADF:
+			return ERR_FILE_CANT_OPEN;
+		case EFBIG:
+			return ERR_OUT_OF_MEMORY;
+		case EINVAL:
+			return ERR_INVALID_PARAMETER;
+		default:
+			return FAILED;
+	}
+}
+
 void FileAccessUnix::flush() {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
 	fflush(f);
 }
 
-void FileAccessUnix::store_8(uint8_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
-}
-
-void FileAccessUnix::store_16(uint16_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP16(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 2, f) != 2);
-}
-
-void FileAccessUnix::store_32(uint32_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP32(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 4, f) != 4);
-}
-
-void FileAccessUnix::store_64(uint64_t p_dest) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-
-	if (big_endian) {
-		p_dest = BSWAP64(p_dest);
-	}
-
-	ERR_FAIL_COND(fwrite(&p_dest, 1, 8, f) != 8);
-}
-
-void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
+bool FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_NULL_V_MSG(f, false, "File must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	bool res = fwrite(p_src, 1, p_length, f) == p_length;
+	check_errors(true);
+	return res;
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
-	int err;
 	struct stat st = {};
-	String filename = fix_path(p_path);
+	const CharString filename_utf8 = fix_path(p_path).utf8();
 
 	// Does the name exist at all?
-	err = stat(filename.utf8().get_data(), &st);
-	if (err) {
+	if (stat(filename_utf8.get_data(), &st)) {
 		return false;
 	}
 
 	// See if we have access to the file
-	if (access(filename.utf8().get_data(), F_OK)) {
+	if (access(filename_utf8.get_data(), F_OK)) {
 		return false;
 	}
 
@@ -366,7 +342,6 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return status.st_mtime;
 	} else {
-		print_verbose("Failed to get modified time for: " + p_file + "");
 		return 0;
 	}
 }
@@ -395,7 +370,7 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, BitField<FileA
 }
 
 bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};
@@ -409,7 +384,7 @@ bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
 }
 
 Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	String file = fix_path(p_file);
 
 	struct stat st = {};
@@ -466,7 +441,7 @@ void FileAccessUnix::close() {
 	_close();
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
+FileAccessUnix::CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
 	_close();

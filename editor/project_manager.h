@@ -38,14 +38,19 @@ class CheckBox;
 class EditorAbout;
 class EditorAssetLibrary;
 class EditorFileDialog;
+class EditorTitleBar;
 class HFlowContainer;
 class LineEdit;
-class LinkButton;
+class MarginContainer;
 class OptionButton;
 class PanelContainer;
+class PopupMenu;
 class ProjectDialog;
 class ProjectList;
+class QuickSettingsDialog;
+class RichTextLabel;
 class TabContainer;
+class VBoxContainer;
 
 class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
@@ -63,52 +68,93 @@ class ProjectManager : public Control {
 
 	// Main layout.
 
-	void _update_size_limits();
+	Ref<Theme> theme;
 
+	void _update_size_limits(bool p_custom_res);
+	void _update_theme(bool p_skip_creation = false);
+	void _titlebar_resized();
+
+	MarginContainer *root_container = nullptr;
 	Panel *background_panel = nullptr;
-	Button *about_btn = nullptr;
-	LinkButton *version_btn = nullptr;
+	VBoxContainer *main_vbox = nullptr;
 
-	ConfirmationDialog *open_templates = nullptr;
-	EditorAbout *about = nullptr;
+	EditorTitleBar *title_bar = nullptr;
+	Control *left_menu_spacer = nullptr;
+	Control *left_spacer = nullptr;
+	Control *right_menu_spacer = nullptr;
+	Control *right_spacer = nullptr;
+	Button *title_bar_logo = nullptr;
+	HBoxContainer *main_view_toggles = nullptr;
+	Button *quick_settings_button = nullptr;
 
-	void _show_about();
-	void _version_button_pressed();
+	enum MainViewTab {
+		MAIN_VIEW_PROJECTS,
+		MAIN_VIEW_ASSETLIB,
+		MAIN_VIEW_MAX
+	};
 
-	TabContainer *tabs = nullptr;
+	MainViewTab current_main_view = MAIN_VIEW_PROJECTS;
+	HashMap<MainViewTab, Control *> main_view_map;
+	HashMap<MainViewTab, Button *> main_view_toggle_map;
+
+	PanelContainer *main_view_container = nullptr;
+	Ref<ButtonGroup> main_view_toggles_group;
+
+	Button *_add_main_view(MainViewTab p_id, const String &p_name, const Ref<Texture2D> &p_icon, Control *p_view_control);
+	void _set_main_view_icon(MainViewTab p_id, const Ref<Texture2D> &p_icon);
+	void _select_main_view(int p_id);
+
 	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
-	void _on_tab_changed(int p_tab);
-	void _open_asset_library();
+	EditorAbout *about_dialog = nullptr;
+
+	void _show_about();
+	void _open_asset_library_confirmed();
+
+	AcceptDialog *error_dialog = nullptr;
+
+	void _show_error(const String &p_message, const Size2 &p_min_size = Size2());
+	void _dim_window();
 
 	// Quick settings.
 
-	OptionButton *language_btn = nullptr;
-	ConfirmationDialog *restart_required_dialog = nullptr;
+	QuickSettingsDialog *quick_settings_dialog = nullptr;
 
-	void _language_selected(int p_id);
-	void _restart_confirm();
-	void _dim_window();
+	void _show_quick_settings();
+	void _restart_confirmed();
 
 	// Project list.
 
-	ProjectList *_project_list = nullptr;
+	VBoxContainer *empty_list_placeholder = nullptr;
+	Button *empty_list_create_project = nullptr;
+	Button *empty_list_import_project = nullptr;
+	Button *empty_list_open_assetlib = nullptr;
+	Label *empty_list_online_warning = nullptr;
+
+	void _update_list_placeholder();
+
+	ProjectList *project_list = nullptr;
+	bool initialized = false;
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
 	OptionButton *filter_option = nullptr;
-	PanelContainer *search_panel = nullptr;
+	PanelContainer *project_list_panel = nullptr;
 
 	Button *create_btn = nullptr;
 	Button *import_btn = nullptr;
 	Button *scan_btn = nullptr;
 	Button *open_btn = nullptr;
+	Button *open_options_btn = nullptr;
 	Button *run_btn = nullptr;
 	Button *rename_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
+
+	HBoxContainer *open_btn_container = nullptr;
+	PopupMenu *open_options_popup = nullptr;
 
 	EditorFileDialog *scan_dir = nullptr;
 
@@ -120,18 +166,17 @@ class ProjectManager : public Control {
 	ConfirmationDialog *erase_missing_ask = nullptr;
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
+	ConfirmationDialog *open_recovery_mode_ask = nullptr;
 
-	HBoxContainer *settings_hb = nullptr;
-
-	AcceptDialog *run_error_diag = nullptr;
-	AcceptDialog *dialog_error = nullptr;
-	ProjectDialog *npdialog = nullptr;
+	ProjectDialog *project_dialog = nullptr;
 
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();
 	void _open_selected_projects();
-	void _open_selected_projects_ask();
+	void _open_selected_projects_with_migration();
+	void _open_selected_projects_check_warnings();
+	void _open_selected_projects_check_recovery_mode();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
@@ -142,9 +187,14 @@ class ProjectManager : public Control {
 	void _erase_project_confirm();
 	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
+	void _open_options_popup();
+	void _open_recovery_mode_ask(bool manual = false);
 
-	void _on_project_created(const String &dir);
+	void _on_project_created(const String &dir, bool edit);
 	void _on_projects_updated();
+	void _on_open_options_selected(int p_option);
+	void _on_recovery_mode_popup_open_normal();
+	void _on_recovery_mode_popup_open_recovery();
 
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);
@@ -179,6 +229,12 @@ class ProjectManager : public Control {
 	ConfirmationDialog *ask_update_settings = nullptr;
 	Button *full_convert_button = nullptr;
 
+	String version_convert_feature;
+	bool open_in_recovery_mode = false;
+
+#ifndef DISABLE_DEPRECATED
+	void _minor_project_migrate();
+#endif
 	void _full_convert_button_pressed();
 	void _perform_full_project_conversion();
 
@@ -194,15 +250,19 @@ protected:
 public:
 	static ProjectManager *get_singleton() { return singleton; }
 
+	static constexpr int DEFAULT_WINDOW_WIDTH = 1152;
+	static constexpr int DEFAULT_WINDOW_HEIGHT = 800;
+
 	// Project list.
 
+	bool is_initialized() const { return initialized; }
 	LineEdit *get_search_box();
 
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
 
-	ProjectManager();
+	ProjectManager(bool p_custom_res);
 	~ProjectManager();
 };
 

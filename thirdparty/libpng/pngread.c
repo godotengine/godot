@@ -1,7 +1,6 @@
-
 /* pngread.c - read a PNG file
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -173,6 +172,11 @@ png_read_info(png_structrp png_ptr, png_inforp info_ptr)
 #ifdef PNG_READ_cHRM_SUPPORTED
       else if (chunk_name == png_cHRM)
          png_handle_cHRM(png_ptr, info_ptr, length);
+#endif
+
+#ifdef PNG_READ_cICP_SUPPORTED
+      else if (chunk_name == png_cICP)
+         png_handle_cICP(png_ptr, info_ptr, length);
 #endif
 
 #ifdef PNG_READ_eXIf_SUPPORTED
@@ -568,7 +572,11 @@ png_read_row(png_structrp png_ptr, png_bytep row, png_bytep dsp_row)
 #endif
 
 #ifdef PNG_READ_TRANSFORMS_SUPPORTED
-   if (png_ptr->transformations)
+   if (png_ptr->transformations
+#     ifdef PNG_CHECK_FOR_INVALID_INDEX_SUPPORTED
+         || png_ptr->num_palette_max >= 0
+#     endif
+      )
       png_do_read_transformations(png_ptr, &row_info);
 #endif
 
@@ -785,7 +793,7 @@ png_read_end(png_structrp png_ptr, png_inforp info_ptr)
 #ifdef PNG_READ_CHECK_FOR_INVALID_INDEX_SUPPORTED
    /* Report invalid palette index; added at libng-1.5.10 */
    if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
-       png_ptr->num_palette_max > png_ptr->num_palette)
+       png_ptr->num_palette_max >= png_ptr->num_palette)
       png_benign_error(png_ptr, "Read palette index exceeding num_palette");
 #endif
 
@@ -846,6 +854,11 @@ png_read_end(png_structrp png_ptr, png_inforp info_ptr)
 #ifdef PNG_READ_cHRM_SUPPORTED
       else if (chunk_name == png_cHRM)
          png_handle_cHRM(png_ptr, info_ptr, length);
+#endif
+
+#ifdef PNG_READ_cICP_SUPPORTED
+      else if (chunk_name == png_cICP)
+         png_handle_cICP(png_ptr, info_ptr, length);
 #endif
 
 #ifdef PNG_READ_eXIf_SUPPORTED
@@ -1049,6 +1062,8 @@ void PNGAPI
 png_read_png(png_structrp png_ptr, png_inforp info_ptr,
     int transforms, voidp params)
 {
+   png_debug(1, "in png_read_png");
+
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 

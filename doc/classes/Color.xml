@@ -4,22 +4,22 @@
 		A color represented in RGBA format.
 	</brief_description>
 	<description>
-		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 16-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
+		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 32-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
 		Colors can be created in various ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
 	<tutorials>
-		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
-		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/2767</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Color">
 			<return type="Color" />
 			<description>
 				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
-				[b]Note:[/b] in C#, constructs an empty color with all of its components set to [code]0.0[/code] (transparent black).
+				[b]Note:[/b] In C#, this constructs a [Color] with all of its components set to [code]0.0[/code] (transparent black).
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -177,11 +177,27 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="from_rgba8" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="r8" type="int" />
+			<param index="1" name="g8" type="int" />
+			<param index="2" name="b8" type="int" />
+			<param index="3" name="a8" type="int" default="255" />
+			<description>
+				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
+				[codeblock]
+				var red = Color.from_rgba8(255, 0, 0)             # Same as Color(1, 0, 0).
+				var dark_blue = Color.from_rgba8(0, 0, 51)        # Same as Color(0, 0, 0.2).
+				var my_color = Color.from_rgba8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
+				[/codeblock]
+				[b]Note:[/b] Due to the lower precision of [method from_rgba8] compared to the standard [Color] constructor, a color created with [method from_rgba8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method is_equal_approx] for comparisons to avoid issues with floating-point precision error.
+			</description>
+		</method>
 		<method name="from_rgbe9995" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="rgbe" type="int" />
 			<description>
-				Decodes a [Color] from a RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
+				Decodes a [Color] from an RGBE9995 format integer. See [constant Image.FORMAT_RGBE9995].
 			</description>
 		</method>
 		<method name="from_string" qualifiers="static">
@@ -190,6 +206,7 @@
 			<param index="1" name="default" type="Color" />
 			<description>
 				Creates a [Color] from the given string, which can be either an HTML color code or a named color (case-insensitive). Returns [param default] if the color cannot be inferred from the string.
+				If you want to create a color from String in a constant expression, use the equivalent constructor instead (i.e. [code]Color("color string")[/code]).
 			</description>
 		</method>
 		<method name="get_luminance" qualifiers="const">
@@ -203,7 +220,7 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel).
+				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel). This method is the inverse of [method to_rgba32].
 				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRGGBBAA"[/code]).
 				[codeblocks]
 				[gdscript]
@@ -217,13 +234,14 @@
 				var my_color = new Color(0xbbefd2a4);
 				[/csharp]
 				[/codeblocks]
+				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
 			</description>
 		</method>
 		<method name="hex64" qualifiers="static">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel).
+				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel). This method is the inverse of [method to_rgba64].
 				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRRRGGGGBBBBAAAA"[/code]).
 			</description>
 		</method>
@@ -299,7 +317,7 @@
 				Returns [code]true[/code] if this color and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
-		<method name="lerp" qualifiers="const">
+		<method name="lerp" qualifiers="const" keywords="interpolate">
 			<return type="Color" />
 			<param index="0" name="to" type="Color" />
 			<param index="1" name="weight" type="float" />
@@ -441,7 +459,7 @@
 		<method name="to_rgba32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format.
+				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format. This method is the inverse of [method hex].
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -457,7 +475,7 @@
 		<method name="to_rgba64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format.
+				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format. This method is the inverse of [method hex64].
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -492,6 +510,15 @@
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+			The OKHSL hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
+			The OKHSL lightness of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_s" type="float" setter="" getter="" default="0.0">
+			The OKHSL saturation of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
 			The color's red component, typically on the range of 0 to 1.

@@ -1,7 +1,6 @@
-
 /* pngrutil.c - utilities to read a PNG file
  *
- * Copyright (c) 2018-2022 Cosmin Truta
+ * Copyright (c) 2018-2024 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -18,6 +17,21 @@
 
 #ifdef PNG_READ_SUPPORTED
 
+#ifdef PNG_READ_INTERLACING_SUPPORTED
+/* Arrays to facilitate interlacing - use pass (0 - 6) as index. */
+
+/* Start of interlace block */
+static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
+/* Offset to next interlace block */
+static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
+/* Start of interlace block in the y direction */
+static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
+/* Offset to next interlace block in the y direction */
+static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
+
+/* TODO: Move these arrays to a common utility module to avoid duplication. */
+#endif
+
 png_uint_32 PNGAPI
 png_get_uint_31(png_const_structrp png_ptr, png_const_bytep buf)
 {
@@ -26,7 +40,7 @@ png_get_uint_31(png_const_structrp png_ptr, png_const_bytep buf)
    if (uval > PNG_UINT_31_MAX)
       png_error(png_ptr, "PNG unsigned integer out of range");
 
-   return (uval);
+   return uval;
 }
 
 #if defined(PNG_READ_gAMA_SUPPORTED) || defined(PNG_READ_cHRM_SUPPORTED)
@@ -140,7 +154,7 @@ png_read_sig(png_structrp png_ptr, png_inforp info_ptr)
    if (png_sig_cmp(info_ptr->signature, num_checked, num_to_check) != 0)
    {
       if (num_checked < 4 &&
-          png_sig_cmp(info_ptr->signature, num_checked, num_to_check - 4))
+          png_sig_cmp(info_ptr->signature, num_checked, num_to_check - 4) != 0)
          png_error(png_ptr, "Not a PNG file");
       else
          png_error(png_ptr, "PNG file corrupted by ASCII conversion");
@@ -171,7 +185,7 @@ png_read_chunk_header(png_structrp png_ptr)
    /* Put the chunk name into png_ptr->chunk_name. */
    png_ptr->chunk_name = PNG_CHUNK_FROM_STRING(buf+4);
 
-   png_debug2(0, "Reading %lx chunk, length = %lu",
+   png_debug2(0, "Reading chunk typeid = 0x%lx, length = %lu",
        (unsigned long)png_ptr->chunk_name, (unsigned long)length);
 
    /* Reset the crc and run it over the chunk name. */
@@ -238,10 +252,10 @@ png_crc_finish(png_structrp png_ptr, png_uint_32 skip)
       else
          png_chunk_error(png_ptr, "CRC error");
 
-      return (1);
+      return 1;
    }
 
-   return (0);
+   return 0;
 }
 
 /* Compare the CRC stored in the PNG file with that calculated by libpng from
@@ -277,11 +291,11 @@ png_crc_error(png_structrp png_ptr)
    if (need_crc != 0)
    {
       crc = png_get_uint_32(crc_bytes);
-      return ((int)(crc != png_ptr->crc));
+      return crc != png_ptr->crc;
    }
 
    else
-      return (0);
+      return 0;
 }
 
 #if defined(PNG_READ_iCCP_SUPPORTED) || defined(PNG_READ_iTXt_SUPPORTED) ||\
@@ -421,8 +435,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
             png_ptr->flags |= PNG_FLAG_ZSTREAM_INITIALIZED;
       }
 
-#if ZLIB_VERNUM >= 0x1290 && \
-   defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_IGNORE_ADLER32)
+#ifdef PNG_DISABLE_ADLER32_CHECK_SUPPORTED
       if (((png_ptr->options >> PNG_IGNORE_ADLER32) & 3) == PNG_OPTION_ON)
          /* Turn off validation of the ADLER32 checksum in IDAT chunks */
          ret = inflateValidate(&png_ptr->zstream, 0);
@@ -2030,6 +2043,47 @@ png_handle_bKGD(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    }
 
    png_set_bKGD(png_ptr, info_ptr, &background);
+}
+#endif
+
+#ifdef PNG_READ_cICP_SUPPORTED
+void /* PRIVATE */
+png_handle_cICP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
+{
+   png_byte buf[4];
+
+   png_debug(1, "in png_handle_cICP");
+
+   if ((png_ptr->mode & PNG_HAVE_IHDR) == 0)
+      png_chunk_error(png_ptr, "missing IHDR");
+
+   else if ((png_ptr->mode & (PNG_HAVE_IDAT|PNG_HAVE_PLTE)) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "out of place");
+      return;
+   }
+
+   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_cICP) != 0)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "duplicate");
+      return;
+   }
+
+   else if (length != 4)
+   {
+      png_crc_finish(png_ptr, length);
+      png_chunk_benign_error(png_ptr, "invalid");
+      return;
+   }
+
+   png_crc_read(png_ptr, buf, 4);
+
+   if (png_crc_finish(png_ptr, 0) != 0)
+      return;
+
+   png_set_cICP(png_ptr, info_ptr, buf[0], buf[1],  buf[2], buf[3]);
 }
 #endif
 
@@ -3685,10 +3739,6 @@ void /* PRIVATE */
 png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
     png_uint_32 transformations /* Because these may affect the byte layout */)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-   /* Offset to next interlace block */
-   static const unsigned int png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
    png_debug(1, "in png_do_read_interlace");
    if (row != NULL && row_info != NULL)
    {
@@ -4326,20 +4376,6 @@ png_read_finish_IDAT(png_structrp png_ptr)
 void /* PRIVATE */
 png_read_finish_row(png_structrp png_ptr)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-
-   /* Start of interlace block */
-   static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* Offset to next interlace block */
-   static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* Start of interlace block in the y direction */
-   static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* Offset to next interlace block in the y direction */
-   static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-
    png_debug(1, "in png_read_finish_row");
    png_ptr->row_number++;
    if (png_ptr->row_number < png_ptr->num_rows)
@@ -4391,20 +4427,6 @@ png_read_finish_row(png_structrp png_ptr)
 void /* PRIVATE */
 png_read_start_row(png_structrp png_ptr)
 {
-   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
-
-   /* Start of interlace block */
-   static const png_byte png_pass_start[7] = {0, 4, 0, 2, 0, 1, 0};
-
-   /* Offset to next interlace block */
-   static const png_byte png_pass_inc[7] = {8, 8, 4, 4, 2, 2, 1};
-
-   /* Start of interlace block in the y direction */
-   static const png_byte png_pass_ystart[7] = {0, 0, 4, 0, 2, 0, 1};
-
-   /* Offset to next interlace block in the y direction */
-   static const png_byte png_pass_yinc[7] = {8, 8, 8, 4, 4, 2, 2};
-
    unsigned int max_pixel_depth;
    size_t row_bytes;
 

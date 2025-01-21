@@ -40,14 +40,14 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/export/lipo.h"
+#include "editor/export/macho.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -77,33 +77,125 @@ struct IconInfo {
 };
 
 static const IconInfo icon_infos[] = {
-	// Home screen on iPhone
-	{ PNAME("icons/iphone_120x120"), "iphone", "Icon-120.png", "120", "2x", "60x60", false },
-	{ PNAME("icons/iphone_120x120"), "iphone", "Icon-120.png", "120", "3x", "40x40", false },
-	{ PNAME("icons/iphone_180x180"), "iphone", "Icon-180.png", "180", "3x", "60x60", false },
+	// Settings on iPhone, iPad Pro, iPad, iPad mini
+	{ PNAME("icons/settings_58x58"), "universal", "Icon-58", "58", "2x", "29x29", false },
+	{ PNAME("icons/settings_87x87"), "universal", "Icon-87", "87", "3x", "29x29", false },
 
-	// Home screen on iPad
-	{ PNAME("icons/ipad_76x76"), "ipad", "Icon-76.png", "76", "1x", "76x76", false },
-	{ PNAME("icons/ipad_152x152"), "ipad", "Icon-152.png", "152", "2x", "76x76", false },
-	{ PNAME("icons/ipad_167x167"), "ipad", "Icon-167.png", "167", "2x", "83.5x83.5", false },
+	// Notifications on iPhone, iPad Pro, iPad, iPad mini
+	{ PNAME("icons/notification_40x40"), "universal", "Icon-40", "40", "2x", "20x20", false },
+	{ PNAME("icons/notification_60x60"), "universal", "Icon-60", "60", "3x", "20x20", false },
+	{ PNAME("icons/notification_76x76"), "universal", "Icon-76", "76", "2x", "38x38", false },
+	{ PNAME("icons/notification_114x114"), "universal", "Icon-114", "114", "3x", "38x38", false },
+
+	// Spotlight on iPhone, iPad Pro, iPad, iPad mini
+	{ PNAME("icons/spotlight_80x80"), "universal", "Icon-80", "80", "2x", "40x40", false },
+	{ PNAME("icons/spotlight_120x120"), "universal", "Icon-120", "120", "3x", "40x40", false },
+
+	// Home Screen on iPhone
+	{ PNAME("icons/iphone_120x120"), "universal", "Icon-120-1", "120", "2x", "60x60", false },
+	{ PNAME("icons/iphone_180x180"), "universal", "Icon-180", "180", "3x", "60x60", false },
+
+	// Home Screen on iPad Pro
+	{ PNAME("icons/ipad_167x167"), "universal", "Icon-167", "167", "2x", "83.5x83.5", false },
+
+	// Home Screen on iPad, iPad mini
+	{ PNAME("icons/ipad_152x152"), "universal", "Icon-152", "152", "2x", "76x76", false },
+
+	{ PNAME("icons/ios_128x128"), "universal", "Icon-128", "128", "2x", "64x64", false },
+	{ PNAME("icons/ios_192x192"), "universal", "Icon-192", "192", "3x", "64x64", false },
+
+	{ PNAME("icons/ios_136x136"), "universal", "Icon-136", "136", "2x", "68x68", false },
 
 	// App Store
-	{ PNAME("icons/app_store_1024x1024"), "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024", true },
+	{ PNAME("icons/app_store_1024x1024"), "universal", "Icon-1024", "1024", "1x", "1024x1024", true },
+};
 
-	// Spotlight
-	{ PNAME("icons/spotlight_40x40"), "ipad", "Icon-40.png", "40", "1x", "40x40", false },
-	{ PNAME("icons/spotlight_80x80"), "iphone", "Icon-80.png", "80", "2x", "40x40", false },
-	{ PNAME("icons/spotlight_80x80"), "ipad", "Icon-80.png", "80", "2x", "40x40", false },
+struct APIAccessInfo {
+	String prop_name;
+	String type_name;
+	Vector<String> prop_flag_value;
+	Vector<String> prop_flag_name;
+	int default_value;
+};
 
-	// Settings
-	{ PNAME("icons/settings_58x58"), "iphone", "Icon-58.png", "58", "2x", "29x29", false },
-	{ PNAME("icons/settings_58x58"), "ipad", "Icon-58.png", "58", "2x", "29x29", false },
-	{ PNAME("icons/settings_87x87"), "iphone", "Icon-87.png", "87", "3x", "29x29", false },
+static const APIAccessInfo api_info[] = {
+	{ "file_timestamp",
+			"NSPrivacyAccessedAPICategoryFileTimestamp",
+			{ "DDA9.1", "C617.1", "3B52.1" },
+			{ "Display to user on-device:", "Inside app or group container", "Files provided to app by user" },
+			3 },
+	{ "system_boot_time",
+			"NSPrivacyAccessedAPICategorySystemBootTime",
+			{ "35F9.1", "8FFB.1", "3D61.1" },
+			{ "Measure time on-device", "Calculate absolute event timestamps", "User-initiated bug report" },
+			1 },
+	{ "disk_space",
+			"NSPrivacyAccessedAPICategoryDiskSpace",
+			{ "E174.1", "85F4.1", "7D9E.1", "B728.1" },
+			{ "Write or delete file on-device", "Display to user on-device", "User-initiated bug report", "Health research app" },
+			3 },
+	{ "active_keyboard",
+			"NSPrivacyAccessedAPICategoryActiveKeyboards",
+			{ "3EC4.1", "54BD.1" },
+			{ "Custom keyboard app on-device", "Customize UI on-device:2" },
+			0 },
+	{ "user_defaults",
+			"NSPrivacyAccessedAPICategoryUserDefaults",
+			{ "1C8F.1", "AC6B.1", "CA92.1" },
+			{ "Access info from same App Group", "Access managed app configuration", "Access info from same app" },
+			0 }
+};
 
-	// Notification
-	{ PNAME("icons/notification_40x40"), "iphone", "Icon-40.png", "40", "2x", "20x20", false },
-	{ PNAME("icons/notification_40x40"), "ipad", "Icon-40.png", "40", "2x", "20x20", false },
-	{ PNAME("icons/notification_60x60"), "iphone", "Icon-60.png", "60", "3x", "20x20", false }
+struct DataCollectionInfo {
+	String prop_name;
+	String type_name;
+};
+
+static const DataCollectionInfo data_collect_type_info[] = {
+	{ "name", "NSPrivacyCollectedDataTypeName" },
+	{ "email_address", "NSPrivacyCollectedDataTypeEmailAddress" },
+	{ "phone_number", "NSPrivacyCollectedDataTypePhoneNumber" },
+	{ "physical_address", "NSPrivacyCollectedDataTypePhysicalAddress" },
+	{ "other_contact_info", "NSPrivacyCollectedDataTypeOtherUserContactInfo" },
+	{ "health", "NSPrivacyCollectedDataTypeHealth" },
+	{ "fitness", "NSPrivacyCollectedDataTypeFitness" },
+	{ "payment_info", "NSPrivacyCollectedDataTypePaymentInfo" },
+	{ "credit_info", "NSPrivacyCollectedDataTypeCreditInfo" },
+	{ "other_financial_info", "NSPrivacyCollectedDataTypeOtherFinancialInfo" },
+	{ "precise_location", "NSPrivacyCollectedDataTypePreciseLocation" },
+	{ "coarse_location", "NSPrivacyCollectedDataTypeCoarseLocation" },
+	{ "sensitive_info", "NSPrivacyCollectedDataTypeSensitiveInfo" },
+	{ "contacts", "NSPrivacyCollectedDataTypeContacts" },
+	{ "emails_or_text_messages", "NSPrivacyCollectedDataTypeEmailsOrTextMessages" },
+	{ "photos_or_videos", "NSPrivacyCollectedDataTypePhotosorVideos" },
+	{ "audio_data", "NSPrivacyCollectedDataTypeAudioData" },
+	{ "gameplay_content", "NSPrivacyCollectedDataTypeGameplayContent" },
+	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
+	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
+	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
+	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
+	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
+	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
+	{ "product_interaction", "NSPrivacyCollectedDataTypeProductInteraction" },
+	{ "advertising_data", "NSPrivacyCollectedDataTypeAdvertisingData" },
+	{ "other_usage_data", "NSPrivacyCollectedDataTypeOtherUsageData" },
+	{ "crash_data", "NSPrivacyCollectedDataTypeCrashData" },
+	{ "performance_data", "NSPrivacyCollectedDataTypePerformanceData" },
+	{ "other_diagnostic_data", "NSPrivacyCollectedDataTypeOtherDiagnosticData" },
+	{ "environment_scanning", "NSPrivacyCollectedDataTypeEnvironmentScanning" },
+	{ "hands", "NSPrivacyCollectedDataTypeHands" },
+	{ "head", "NSPrivacyCollectedDataTypeHead" },
+	{ "other_data_types", "NSPrivacyCollectedDataTypeOtherDataTypes" },
+};
+
+static const DataCollectionInfo data_collect_purpose_info[] = {
+	{ "Analytics", "NSPrivacyCollectedDataTypePurposeAnalytics" },
+	{ "App Functionality", "NSPrivacyCollectedDataTypePurposeAppFunctionality" },
+	{ "Developer Advertising", "NSPrivacyCollectedDataTypePurposeDeveloperAdvertising" },
+	{ "Third-party Advertising", "NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising" },
+	{ "Product Personalization", "NSPrivacyCollectedDataTypePurposeProductPersonalization" },
+	{ "Other", "NSPrivacyCollectedDataTypePurposeOther" },
 };
 
 String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
@@ -119,12 +211,59 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid Identifier:") + " " + pn_err;
 			}
+		} else if (p_name == "privacy/file_timestamp_access_reasons") {
+			int access = p_preset->get("privacy/file_timestamp_access_reasons");
+			if (access == 0) {
+				return TTR("At least one file timestamp access reason should be selected.");
+			}
+		} else if (p_name == "privacy/disk_space_access_reasons") {
+			int access = p_preset->get("privacy/disk_space_access_reasons");
+			if (access == 0) {
+				return TTR("At least one disk space access reason should be selected.");
+			}
+		} else if (p_name == "privacy/system_boot_time_access_reasons") {
+			int access = p_preset->get("privacy/system_boot_time_access_reasons");
+			if (access == 0) {
+				return TTR("At least one system boot time access reason should be selected.");
+			}
 		}
 	}
 	return String();
 }
 
+void EditorExportPlatformIOS::_notification(int p_what) {
+#ifdef MACOS_ENABLED
+	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		if (EditorExport::get_singleton()) {
+			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformIOS::_update_preset_status));
+		}
+	}
+#endif
+}
+
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	// Hide unsupported .NET embedding option.
+	if (p_option == "dotnet/embed_build_outputs") {
+		return false;
+	}
+
+	if (p_preset == nullptr) {
+		return true;
+	}
+
+	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
+	if (p_option.begins_with("privacy") ||
+			p_option == "application/generate_simulator_library_if_missing" ||
+			(p_option.begins_with("icons/") && !p_option.begins_with("icons/icon") && !p_option.begins_with("icons/app_store")) ||
+			p_option == "custom_template/debug" ||
+			p_option == "custom_template/release" ||
+			p_option == "application/additional_plist_content" ||
+			p_option == "application/delete_old_export_files_unconditionally" ||
+			p_option == "application/icon_interpolation" ||
+			p_option == "application/signature") {
+		return advanced_options_enabled;
+	}
+
 	return true;
 }
 
@@ -139,11 +278,13 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), "", false, true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_debug", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 1));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Distribution"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_specifier_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, ""), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_specifier_release", PROPERTY_HINT_PLACEHOLDER_TEXT, ""), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_release", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 0));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
@@ -153,6 +294,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
+	// TODO(sgc): set to iOS 14.0 for Metal
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "12.0"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
@@ -160,6 +302,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/generate_simulator_library_if_missing"), true));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -190,10 +334,15 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	plugins_changed.clear();
 	plugins = found_plugins;
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/increased_memory_limit"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/game_center"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/push_notifications", PROPERTY_HINT_ENUM, "Disabled,Production,Development"), "Disabled"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/push_notifications"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_a12"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "capabilities/additional"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_files_app"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_itunes_sharing"), false));
@@ -205,11 +354,48 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
+	for (uint64_t i = 0; i < sizeof(api_info) / sizeof(api_info[0]); ++i) {
+		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
+		String hint;
+		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
+			if (j != 0) {
+				hint += ",";
+			}
+			hint += vformat("%s - %s:%d", api_info[i].prop_flag_value[j], api_info[i].prop_flag_name[j], (1 << j));
+		}
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, prop_name, PROPERTY_HINT_FLAGS, hint), api_info[i].default_value));
+	}
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "privacy/tracking_enabled"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "privacy/tracking_domains"), Vector<String>()));
+
+	{
+		String hint;
+		for (uint64_t i = 0; i < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++i) {
+			if (i != 0) {
+				hint += ",";
+			}
+			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
+		}
+		for (uint64_t i = 0; i < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++i) {
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::INT, vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[i].prop_name), PROPERTY_HINT_FLAGS, hint), 0));
+		}
+	}
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_dark", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+
 	HashSet<String> used_names;
 	for (uint64_t i = 0; i < sizeof(icon_infos) / sizeof(icon_infos[0]); ++i) {
 		if (!used_names.has(icon_infos[i].preset_key)) {
 			used_names.insert(icon_infos[i].preset_key);
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, icon_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_dark", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_tinted", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
 		}
 	}
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
@@ -236,70 +422,94 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
 	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
 	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
+
+	bool valid_dbg_specifier = false;
+	bool valid_rel_specifier = false;
+	Variant provisioning_profile_specifier_dbg_variant = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_IOS_PROFILE_SPECIFIER_DEBUG, &valid_dbg_specifier);
+	dbg_manual |= valid_dbg_specifier;
+
+	Variant provisioning_profile_specifier_rel_variant = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_IOS_PROFILE_SPECIFIER_RELEASE, &valid_rel_specifier);
+	rel_manual |= valid_rel_specifier;
+
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
-		if (lines[i].find("$binary") != -1) {
+		if (lines[i].contains("$binary")) {
 			strnew += lines[i].replace("$binary", p_config.binary_name) + "\n";
-		} else if (lines[i].find("$modules_buildfile") != -1) {
+		} else if (lines[i].contains("$modules_buildfile")) {
 			strnew += lines[i].replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
-		} else if (lines[i].find("$modules_fileref") != -1) {
+		} else if (lines[i].contains("$modules_fileref")) {
 			strnew += lines[i].replace("$modules_fileref", p_config.modules_fileref) + "\n";
-		} else if (lines[i].find("$modules_buildphase") != -1) {
+		} else if (lines[i].contains("$modules_buildphase")) {
 			strnew += lines[i].replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
-		} else if (lines[i].find("$modules_buildgrp") != -1) {
+		} else if (lines[i].contains("$modules_buildgrp")) {
 			strnew += lines[i].replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
-		} else if (lines[i].find("$name") != -1) {
+		} else if (lines[i].contains("$name")) {
 			strnew += lines[i].replace("$name", p_config.pkg_name) + "\n";
-		} else if (lines[i].find("$bundle_identifier") != -1) {
+		} else if (lines[i].contains("$bundle_identifier")) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
-		} else if (lines[i].find("$short_version") != -1) {
+		} else if (lines[i].contains("$short_version")) {
 			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
-		} else if (lines[i].find("$version") != -1) {
+		} else if (lines[i].contains("$version")) {
 			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
-		} else if (lines[i].find("$min_version") != -1) {
+		} else if (lines[i].contains("$min_version")) {
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_ios_version")) + "\n";
-		} else if (lines[i].find("$signature") != -1) {
+		} else if (lines[i].contains("$signature")) {
 			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
-		} else if (lines[i].find("$team_id") != -1) {
+		} else if (lines[i].contains("$team_id")) {
 			strnew += lines[i].replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
-		} else if (lines[i].find("$default_build_config") != -1) {
+		} else if (lines[i].contains("$default_build_config")) {
 			strnew += lines[i].replace("$default_build_config", p_debug ? "Debug" : "Release") + "\n";
-		} else if (lines[i].find("$export_method") != -1) {
+		} else if (lines[i].contains("$export_method")) {
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_release") != -1) {
+		} else if (lines[i].contains("$provisioning_profile_specifier_debug")) {
+			String specifier = provisioning_profile_specifier_dbg_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_dbg_variant : "";
+			strnew += lines[i].replace("$provisioning_profile_specifier_debug", specifier) + "\n";
+		} else if (lines[i].contains("$provisioning_profile_specifier_release")) {
+			String specifier = provisioning_profile_specifier_rel_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_rel_variant : "";
+			strnew += lines[i].replace("$provisioning_profile_specifier_release", specifier) + "\n";
+		} else if (lines[i].contains("$provisioning_profile_specifier")) {
+			String specifier = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
+			strnew += lines[i].replace("$provisioning_profile_specifier", specifier) + "\n";
+		} else if (lines[i].contains("$provisioning_profile_uuid_release")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE)) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_debug") != -1) {
+		} else if (lines[i].contains("$provisioning_profile_uuid_debug")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG)) + "\n";
-		} else if (lines[i].find("$code_sign_style_debug") != -1) {
+		} else if (lines[i].contains("$code_sign_style_debug")) {
 			if (dbg_manual) {
 				strnew += lines[i].replace("$code_sign_style_debug", "Manual") + "\n";
 			} else {
 				strnew += lines[i].replace("$code_sign_style_debug", "Automatic") + "\n";
 			}
-		} else if (lines[i].find("$code_sign_style_release") != -1) {
+		} else if (lines[i].contains("$code_sign_style_release")) {
 			if (rel_manual) {
 				strnew += lines[i].replace("$code_sign_style_release", "Manual") + "\n";
 			} else {
 				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
 			}
-		} else if (lines[i].find("$provisioning_profile_uuid") != -1) {
-			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE);
+		} else if (lines[i].contains("$provisioning_profile_uuid")) {
+			bool valid = false;
+			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG, &valid) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE, &valid);
+			if (!valid || uuid.is_empty()) {
+				Variant variant = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
+				valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
+				uuid = valid ? variant : "";
+			}
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
-		} else if (lines[i].find("$code_sign_identity_debug") != -1) {
+		} else if (lines[i].contains("$code_sign_identity_debug")) {
 			strnew += lines[i].replace("$code_sign_identity_debug", dbg_sign_id) + "\n";
-		} else if (lines[i].find("$code_sign_identity_release") != -1) {
+		} else if (lines[i].contains("$code_sign_identity_release")) {
 			strnew += lines[i].replace("$code_sign_identity_release", rel_sign_id) + "\n";
-		} else if (lines[i].find("$additional_plist_content") != -1) {
+		} else if (lines[i].contains("$additional_plist_content")) {
 			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
-		} else if (lines[i].find("$godot_archs") != -1) {
+		} else if (lines[i].contains("$godot_archs")) {
 			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
-		} else if (lines[i].find("$linker_flags") != -1) {
+		} else if (lines[i].contains("$linker_flags")) {
 			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
-		} else if (lines[i].find("$targeted_device_family") != -1) {
+		} else if (lines[i].contains("$targeted_device_family")) {
 			String xcode_value;
 			switch ((int)p_preset->get("application/targeted_device_family")) {
 				case 0: // iPhone
@@ -313,16 +523,27 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 					break;
 			}
 			strnew += lines[i].replace("$targeted_device_family", xcode_value) + "\n";
-		} else if (lines[i].find("$cpp_code") != -1) {
+		} else if (lines[i].contains("$cpp_code")) {
 			strnew += lines[i].replace("$cpp_code", p_config.cpp_code) + "\n";
-		} else if (lines[i].find("$docs_in_place") != -1) {
+		} else if (lines[i].contains("$docs_in_place")) {
 			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$docs_sharing") != -1) {
+		} else if (lines[i].contains("$docs_sharing")) {
 			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$entitlements_push_notifications") != -1) {
-			bool is_on = p_preset->get("capabilities/push_notifications");
-			strnew += lines[i].replace("$entitlements_push_notifications", is_on ? "<key>aps-environment</key><string>development</string>" : "") + "\n";
-		} else if (lines[i].find("$required_device_capabilities") != -1) {
+		} else if (lines[i].contains("$entitlements_full")) {
+			String entitlements;
+			if ((String)p_preset->get("entitlements/push_notifications") != "Disabled") {
+				entitlements += "<key>aps-environment</key>\n<string>" + p_preset->get("entitlements/push_notifications").operator String().to_lower() + "</string>" + "\n";
+			}
+			if ((bool)p_preset->get("entitlements/game_center")) {
+				entitlements += "<key>com.apple.developer.game-center</key>\n<true/>\n";
+			}
+			if ((bool)p_preset->get("entitlements/increased_memory_limit")) {
+				entitlements += "<key>com.apple.developer.kernel.increased-memory-limit</key>\n<true/>\n";
+			}
+			entitlements += p_preset->get("entitlements/additional").operator String() + "\n";
+
+			strnew += lines[i].replace("$entitlements_full", entitlements);
+		} else if (lines[i].contains("$required_device_capabilities")) {
 			String capabilities;
 
 			// I've removed armv7 as we can run on 64bit only devices
@@ -342,9 +563,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			for (int idx = 0; idx < capabilities_list.size(); idx++) {
 				capabilities += "<string>" + capabilities_list[idx] + "</string>\n";
 			}
+			for (const String &cap : p_preset->get("capabilities/additional").operator PackedStringArray()) {
+				capabilities += "<string>" + cap + "</string>\n";
+			}
 
 			strnew += lines[i].replace("$required_device_capabilities", capabilities);
-		} else if (lines[i].find("$interface_orientations") != -1) {
+		} else if (lines[i].contains("$interface_orientations")) {
 			String orientations;
 			const DisplayServer::ScreenOrientation screen_orientation =
 					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
@@ -382,31 +606,73 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$interface_orientations", orientations);
-		} else if (lines[i].find("$camera_usage_description") != -1) {
+		} else if (lines[i].contains("$ipad_interface_orientations")) {
+			String orientations;
+			const DisplayServer::ScreenOrientation screen_orientation =
+					DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation")));
+
+			switch (screen_orientation) {
+				case DisplayServer::SCREEN_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					break;
+				case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+					// Allow both landscape orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+					// Allow both portrait orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+				case DisplayServer::SCREEN_SENSOR:
+					// Allow all screen orientations depending on sensor direction.
+					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+					break;
+			}
+
+			strnew += lines[i].replace("$ipad_interface_orientations", orientations);
+		} else if (lines[i].contains("$camera_usage_description")) {
 			String description = p_preset->get("privacy/camera_usage_description");
 			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
-		} else if (lines[i].find("$microphone_usage_description") != -1) {
+		} else if (lines[i].contains("$microphone_usage_description")) {
 			String description = p_preset->get("privacy/microphone_usage_description");
 			strnew += lines[i].replace("$microphone_usage_description", description) + "\n";
-		} else if (lines[i].find("$photolibrary_usage_description") != -1) {
+		} else if (lines[i].contains("$photolibrary_usage_description")) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
-		} else if (lines[i].find("$plist_launch_screen_name") != -1) {
+		} else if (lines[i].contains("$plist_launch_screen_name")) {
 			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_file_reference") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_file_reference")) {
 			String value = "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };";
 			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_copy_files") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_copy_files")) {
 			String value = "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */,";
 			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_build_phase") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_build_phase")) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */,";
 			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
-		} else if (lines[i].find("$pbx_launch_screen_build_reference") != -1) {
+		} else if (lines[i].contains("$pbx_launch_screen_build_reference")) {
 			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
-		} else if (lines[i].find("$launch_screen_image_mode") != -1) {
+#ifndef DISABLE_DEPRECATED
+		} else if (lines[i].contains("$pbx_launch_image_usage_setting")) {
+			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
+#endif
+		} else if (lines[i].contains("$launch_screen_image_mode")) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 			String value;
 
@@ -423,7 +689,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 
 			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
-		} else if (lines[i].find("$launch_screen_background_color") != -1) {
+		} else if (lines[i].contains("$launch_screen_background_color")) {
 			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : GLOBAL_GET("application/boot_splash/bg_color");
 			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
@@ -436,7 +702,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String value = value_format.format(value_dictionary, "$_");
 
 			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
-		} else if (lines[i].find("$pbx_locale_file_reference") != -1) {
+		} else if (lines[i].contains("$pbx_locale_file_reference")) {
 			String locale_files;
 			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
@@ -455,7 +721,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
-		} else if (lines[i].find("$pbx_locale_build_reference") != -1) {
+		} else if (lines[i].contains("$pbx_locale_build_reference")) {
 			String locale_files;
 			Vector<String> translations = GLOBAL_GET("internationalization/locale/translations");
 			if (translations.size() > 0) {
@@ -474,10 +740,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
-		} else if (lines[i].find("$swift_runtime_migration") != -1) {
+		} else if (lines[i].contains("$swift_runtime_migration")) {
 			String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
 			strnew += lines[i].replace("$swift_runtime_migration", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_build_settings") != -1) {
+		} else if (lines[i].contains("$swift_runtime_build_settings")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      CLANG_ENABLE_MODULES = YES;
                      SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
@@ -485,24 +751,105 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
                      )";
 			value = value.replace("$binary", p_config.binary_name);
 			strnew += lines[i].replace("$swift_runtime_build_settings", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_fileref") != -1) {
+		} else if (lines[i].contains("$swift_runtime_fileref")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
                      90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
                      )";
 			strnew += lines[i].replace("$swift_runtime_fileref", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_binary_files") != -1) {
+		} else if (lines[i].contains("$swift_runtime_binary_files")) {
 			String value = !p_config.use_swift_runtime ? "" : R"(
                      90B4C2AA2680BC560039117A /* dummy.h */,
                      90B4C2B52680C7E90039117A /* dummy.swift */,
                      )";
 			strnew += lines[i].replace("$swift_runtime_binary_files", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_buildfile") != -1) {
+		} else if (lines[i].contains("$swift_runtime_buildfile")) {
 			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
 			strnew += lines[i].replace("$swift_runtime_buildfile", value) + "\n";
-		} else if (lines[i].find("$swift_runtime_build_phase") != -1) {
+		} else if (lines[i].contains("$swift_runtime_build_phase")) {
 			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
 			strnew += lines[i].replace("$swift_runtime_build_phase", value) + "\n";
+		} else if (lines[i].contains("$priv_collection")) {
+			bool section_opened = false;
+			for (uint64_t j = 0; j < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++j) {
+				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
+				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
+				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
+				int purposes = p_preset->get(vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[j].prop_name));
+				if (data_collected) {
+					if (!section_opened) {
+						section_opened = true;
+						strnew += "\t<key>NSPrivacyCollectedDataTypes</key>\n";
+						strnew += "\t<array>\n";
+					}
+					strnew += "\t\t<dict>\n";
+					strnew += "\t\t\t<key>NSPrivacyCollectedDataType</key>\n";
+					strnew += vformat("\t\t\t<string>%s</string>\n", data_collect_type_info[j].type_name);
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n";
+					if (linked) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n";
+					if (tracking) {
+						strnew += "\t\t\t\t<true/>\n";
+					} else {
+						strnew += "\t\t\t\t<false/>\n";
+					}
+					if (purposes != 0) {
+						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
+						strnew += "\t\t\t\t<array>\n";
+						for (uint64_t k = 0; k < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++k) {
+							if (purposes & (1 << k)) {
+								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
+							}
+						}
+						strnew += "\t\t\t\t</array>\n";
+					}
+					strnew += "\t\t\t</dict>\n";
+				}
+			}
+			if (section_opened) {
+				strnew += "\t</array>\n";
+			}
+		} else if (lines[i].contains("$priv_tracking")) {
+			bool tracking = p_preset->get("privacy/tracking_enabled");
+			strnew += "\t<key>NSPrivacyTracking</key>\n";
+			if (tracking) {
+				strnew += "\t<true/>\n";
+			} else {
+				strnew += "\t<false/>\n";
+			}
+			Vector<String> tracking_domains = p_preset->get("privacy/tracking_domains");
+			if (!tracking_domains.is_empty()) {
+				strnew += "\t<key>NSPrivacyTrackingDomains</key>\n";
+				strnew += "\t<array>\n";
+				for (const String &E : tracking_domains) {
+					strnew += "\t\t<string>" + E + "</string>\n";
+				}
+				strnew += "\t</array>\n";
+			}
+		} else if (lines[i].contains("$priv_api_types")) {
+			strnew += "\t<array>\n";
+			for (uint64_t j = 0; j < sizeof(api_info) / sizeof(api_info[0]); ++j) {
+				int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
+				if (api_access != 0) {
+					strnew += "\t\t<dict>\n";
+					strnew += "\t\t\t<key>NSPrivacyAccessedAPITypeReasons</key>\n";
+					strnew += "\t\t\t<array>\n";
+					for (int k = 0; k < api_info[j].prop_flag_value.size(); k++) {
+						if (api_access & (1 << k)) {
+							strnew += vformat("\t\t\t\t<string>%s</string>\n", api_info[j].prop_flag_value[k]);
+						}
+					}
+					strnew += "\t\t\t</array>\n";
+					strnew += "\t\t\t<key>NSPrivacyAccessedAPIType</key>\n";
+					strnew += vformat("\t\t\t<string>%s</string>\n", api_info[j].type_name);
+					strnew += "\t\t</dict>\n";
+				}
+			}
+			strnew += "\t</array>\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -597,72 +944,127 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 
 	Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
 
-	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
-		IconInfo info = icon_infos[i];
-		int side_size = String(info.actual_size_side).to_int();
-		String icon_path = p_preset->get(info.preset_key);
-		if (icon_path.length() == 0) {
-			// Resize main app icon
-			icon_path = GLOBAL_GET("application/config/icon");
-			Ref<Image> img = memnew(Image);
-			Error err = ImageLoader::load_image(icon_path, img);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
-				return ERR_UNCONFIGURED;
-			} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
-				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
-				Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
-				new_img->fill(boot_bg_color);
-				_blend_and_rotate(new_img, img, false);
-				err = new_img->save_png(p_iconset_dir + info.export_name);
-			} else {
-				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
-				err = img->save_png(p_iconset_dir + info.export_name);
-			}
-			if (err) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
-				return err;
-			}
-		} else {
-			// Load custom icon and resize if required
-			Ref<Image> img = memnew(Image);
-			Error err = ImageLoader::load_image(icon_path, img);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
-				return ERR_UNCONFIGURED;
-			} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
-				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
-				Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
-				new_img->fill(boot_bg_color);
-				_blend_and_rotate(new_img, img, false);
-				err = new_img->save_png(p_iconset_dir + info.export_name);
-			} else if (img->get_width() != side_size || img->get_height() != side_size) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s): '%s' has incorrect size %s and was automatically resized to %s.", info.preset_key, icon_path, img->get_size(), Vector2i(side_size, side_size)));
-				img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
-				err = img->save_png(p_iconset_dir + info.export_name);
-			} else {
-				err = da->copy(icon_path, p_iconset_dir + info.export_name);
-			}
+	enum IconColorMode {
+		ICON_NORMAL,
+		ICON_DARK,
+		ICON_TINTED,
+		ICON_MAX,
+	};
 
-			if (err) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
-				return err;
+	bool first_icon = true;
+	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
+		for (int color_mode = ICON_NORMAL; color_mode < ICON_MAX; color_mode++) {
+			IconInfo info = icon_infos[i];
+			int side_size = String(info.actual_size_side).to_int();
+			String key = info.preset_key;
+			String exp_name = info.export_name;
+			if (color_mode == ICON_DARK) {
+				key += "_dark";
+				exp_name += "_dark";
+			} else if (color_mode == ICON_TINTED) {
+				key += "_tinted";
+				exp_name += "_tinted";
 			}
+			exp_name += ".png";
+			String icon_path = p_preset->get(key);
+			bool resize_waning = true;
+			if (icon_path.is_empty()) {
+				// Load and resize base icon.
+				key = "icons/icon_1024x1024";
+				if (color_mode == ICON_DARK) {
+					key += "_dark";
+				} else if (color_mode == ICON_TINTED) {
+					key += "_tinted";
+				}
+				icon_path = p_preset->get(key);
+				resize_waning = false;
+			}
+			if (icon_path.is_empty()) {
+				if (color_mode != ICON_NORMAL) {
+					continue;
+				}
+				// Resize main app icon.
+				icon_path = GLOBAL_GET("application/config/icon");
+				Ref<Image> img = memnew(Image);
+				Error err = ImageLoader::load_image(icon_path, img);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
+					return ERR_UNCONFIGURED;
+				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
+					new_img->fill(boot_bg_color);
+					_blend_and_rotate(new_img, img, false);
+					err = new_img->save_png(p_iconset_dir + exp_name);
+				} else {
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					err = img->save_png(p_iconset_dir + exp_name);
+				}
+				if (err) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
+					return err;
+				}
+			} else {
+				// Load custom icon and resize if required.
+				Ref<Image> img = memnew(Image);
+				Error err = ImageLoader::load_image(icon_path, img);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
+					return ERR_UNCONFIGURED;
+				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
+					if (resize_waning) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
+					}
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
+					new_img->fill(boot_bg_color);
+					_blend_and_rotate(new_img, img, false);
+					err = new_img->save_png(p_iconset_dir + exp_name);
+				} else if (img->get_width() != side_size || img->get_height() != side_size) {
+					if (resize_waning) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s): '%s' has incorrect size %s and was automatically resized to %s.", info.preset_key, icon_path, img->get_size(), Vector2i(side_size, side_size)));
+					}
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					err = img->save_png(p_iconset_dir + exp_name);
+				} else if (!icon_path.ends_with(".png")) {
+					err = img->save_png(p_iconset_dir + exp_name);
+				} else {
+					err = da->copy(icon_path, p_iconset_dir + exp_name);
+				}
+
+				if (err) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
+					return err;
+				}
+			}
+			sizes += String(info.actual_size_side) + "\n";
+			if (first_icon) {
+				first_icon = false;
+			} else {
+				json_description += ",";
+			}
+			json_description += String("{");
+			if (color_mode != ICON_NORMAL) {
+				json_description += String("\"appearances\":[{");
+				json_description += String("\"appearance\":\"luminosity\",");
+				if (color_mode == ICON_DARK) {
+					json_description += String("\"value\":\"dark\"");
+				} else if (color_mode == ICON_TINTED) {
+					json_description += String("\"value\":\"tinted\"");
+				}
+				json_description += String("}],");
+			}
+			json_description += String("\"idiom\":") + "\"" + info.idiom + "\",";
+			json_description += String("\"platform\":\"ios\",");
+			json_description += String("\"size\":") + "\"" + info.unscaled_size + "\",";
+			if (String(info.scale) != "1x") {
+				json_description += String("\"scale\":") + "\"" + info.scale + "\",";
+			}
+			json_description += String("\"filename\":") + "\"" + exp_name + "\"";
+			json_description += String("}");
 		}
-		sizes += String(info.actual_size_side) + "\n";
-		if (i > 0) {
-			json_description += ",";
-		}
-		json_description += String("{");
-		json_description += String("\"idiom\":") + "\"" + info.idiom + "\",";
-		json_description += String("\"size\":") + "\"" + info.unscaled_size + "\",";
-		json_description += String("\"scale\":") + "\"" + info.scale + "\",";
-		json_description += String("\"filename\":") + "\"" + info.export_name + "\"";
-		json_description += String("}");
 	}
-	json_description += "]}";
+	json_description += "],\"info\":{\"author\":\"xcode\",\"version\":1}}";
 
 	Ref<FileAccess> json_file = FileAccess::open(p_iconset_dir + "Contents.json", FileAccess::WRITE);
 	if (json_file.is_null()) {
@@ -731,7 +1133,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		}
 
 		if (splash.is_null()) {
-			splash = Ref<Image>(memnew(Image(boot_splash_png)));
+			splash.instantiate(boot_splash_png);
 		}
 
 		// Using same image for both @2x and @3x
@@ -867,6 +1269,167 @@ struct ExportLibsData {
 	Vector<String> lib_paths;
 	String dest_dir;
 };
+
+bool EditorExportPlatformIOS::_archive_has_arm64(const String &p_path, uint32_t *r_cputype, uint32_t *r_cpusubtype) const {
+	bool has_arm64_image = false;
+	if (FileAccess::exists(p_path)) {
+		if (LipO::is_lipo(p_path)) {
+			// LipO.
+			Ref<LipO> lipo;
+			lipo.instantiate();
+			if (lipo->open_file(p_path)) {
+				for (int i = 0; i < lipo->get_arch_count(); i++) {
+					if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
+						has_arm64_image = true;
+						break;
+					}
+				}
+			}
+			lipo->close();
+		} else {
+			// Single architecture archive.
+			Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ);
+			if (sim_f.is_valid()) {
+				char magic[9] = {};
+				sim_f->get_buffer((uint8_t *)&magic[0], 8);
+				if (String(magic) == String("!<arch>\n")) {
+					while (!sim_f->eof_reached()) {
+						// Read file metadata.
+						char name_short[17] = {};
+						char size_short[11] = {};
+						sim_f->get_buffer((uint8_t *)&name_short[0], 16);
+						sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
+						sim_f->get_buffer((uint8_t *)&size_short[0], 10);
+						sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
+
+						int64_t file_size = String(size_short).to_int();
+						int64_t next_off = sim_f->get_position() + file_size;
+
+						String name = String(name_short); // Skip extended name.
+						if (name.is_empty() || file_size == 0) {
+							break;
+						}
+						if (name.begins_with("#1/")) {
+							int64_t name_len = String(name_short).replace("#1/", "").to_int();
+							sim_f->seek(sim_f->get_position() + name_len);
+						}
+
+						// Read file content.
+						uint32_t obj_magic = sim_f->get_32();
+
+						bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
+						if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+							uint32_t cputype = sim_f->get_32();
+							uint32_t cpusubtype = sim_f->get_32();
+							if (swap) {
+								cputype = BSWAP32(cputype);
+								cpusubtype = BSWAP32(cpusubtype);
+							}
+							if (r_cputype) {
+								*r_cputype = cputype;
+							}
+							if (r_cpusubtype) {
+								*r_cpusubtype = cpusubtype;
+							}
+							if (cputype == 0x100000c && cpusubtype == 0) {
+								has_arm64_image = true;
+							}
+							break;
+						}
+						sim_f->seek(next_off);
+					}
+				}
+				sim_f->close();
+			}
+		}
+	}
+	return has_arm64_image;
+}
+
+int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path) const {
+	int commands_patched = 0;
+	Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (sim_f.is_valid()) {
+		char magic[9] = {};
+		sim_f->get_buffer((uint8_t *)&magic[0], 8);
+		if (String(magic) == String("!<arch>\n")) {
+			while (!sim_f->eof_reached()) {
+				// Read file metadata.
+				char name_short[17] = {};
+				char size_short[11] = {};
+				sim_f->get_buffer((uint8_t *)&name_short[0], 16);
+				sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
+				sim_f->get_buffer((uint8_t *)&size_short[0], 10);
+				sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
+
+				int64_t file_size = String(size_short).to_int();
+				int64_t next_off = sim_f->get_position() + file_size;
+
+				String name = String(name_short); // Skip extended name.
+				if (name.is_empty() || file_size == 0) {
+					break;
+				}
+				if (name.begins_with("#1/")) {
+					int64_t name_len = String(name_short).replace("#1/", "").to_int();
+					sim_f->seek(sim_f->get_position() + name_len);
+				}
+
+				// Read file content.
+				uint32_t obj_magic = sim_f->get_32();
+
+				bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
+				if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+					uint32_t cputype = sim_f->get_32();
+					uint32_t cpusubtype = sim_f->get_32();
+					uint32_t filetype = sim_f->get_32();
+					uint32_t ncmds = sim_f->get_32();
+					sim_f->get_32(); // Commands total size.
+					sim_f->get_32(); // Commands flags.
+					if (obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+						sim_f->get_32(); // Reserved, 64-bit only.
+					}
+					if (swap) {
+						ncmds = BSWAP32(ncmds);
+						cputype = BSWAP32(cputype);
+						cpusubtype = BSWAP32(cpusubtype);
+						filetype = BSWAP32(filetype);
+					}
+					if (cputype == 0x100000C && cpusubtype == 0 && filetype == 1) {
+						// ARM64, object file.
+						for (uint32_t i = 0; i < ncmds; i++) {
+							int64_t cmdofs = sim_f->get_position();
+							uint32_t cmdid = sim_f->get_32();
+							uint32_t cmdsize = sim_f->get_32();
+							if (swap) {
+								cmdid = BSWAP32(cmdid);
+								cmdsize = BSWAP32(cmdsize);
+							}
+							if (cmdid == MachO::LoadCommandID::LC_BUILD_VERSION) {
+								int64_t platform = sim_f->get_32();
+								if (swap) {
+									platform = BSWAP32(platform);
+								}
+								if (platform == MachO::PlatformID::PLATFORM_IOS) {
+									sim_f->seek(cmdofs + 4 + 4);
+									uint32_t new_id = MachO::PlatformID::PLATFORM_IOSSIMULATOR;
+									if (swap) {
+										new_id = BSWAP32(new_id);
+									}
+									sim_f->store_32(new_id);
+									commands_patched++;
+								}
+							}
+							sim_f->seek(cmdofs + cmdsize);
+						}
+					}
+				}
+				sim_f->seek(next_off);
+			}
+		}
+		sim_f->close();
+	}
+	return commands_patched;
+}
 
 void EditorExportPlatformIOS::_check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const {
 	Ref<PList> plist;
@@ -1007,6 +1570,12 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 
 		// Creating Info.plist
 		{
+			String lib_clean_name = file_name;
+			for (int i = 0; i < lib_clean_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
+					lib_clean_name[i] = '-';
+				}
+			}
 			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
 									   "<plist version=\"1.0\">\n"
@@ -1014,7 +1583,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "    <key>CFBundleShortVersionString</key>\n"
 									   "    <string>1.0</string>\n"
 									   "    <key>CFBundleIdentifier</key>\n"
-									   "    <string>$id.framework.$name</string>\n"
+									   "    <string>$id.framework.$cl_name</string>\n"
 									   "    <key>CFBundleName</key>\n"
 									   "    <string>$name</string>\n"
 									   "    <key>CFBundleExecutable</key>\n"
@@ -1032,7 +1601,7 @@ Error EditorExportPlatformIOS::_convert_to_framework(const String &p_source, con
 									   "  </dict>\n"
 									   "</plist>";
 
-			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name);
+			String info_plist = info_plist_format.replace("$id", p_id).replace("$name", file_name).replace("$cl_name", lib_clean_name);
 
 			Ref<FileAccess> f = FileAccess::open(p_destination.path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
@@ -1069,12 +1638,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 
 		String type;
 		if (asset.exported_path.ends_with(".framework")) {
-			int total_libs = 0;
-			int static_libs = 0;
-			int dylibs = 0;
-			int frameworks = 0;
-			_check_xcframework_content(p_out_dir.path_join(asset.exported_path), total_libs, static_libs, dylibs, frameworks);
-			if (asset.should_embed && (static_libs != total_libs)) {
+			if (asset.should_embed) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";
@@ -1082,7 +1646,12 @@ void EditorExportPlatformIOS::_add_assets_to_project(const String &p_out_dir, co
 
 			type = "wrapper.framework";
 		} else if (asset.exported_path.ends_with(".xcframework")) {
-			if (asset.should_embed) {
+			int total_libs = 0;
+			int static_libs = 0;
+			int dylibs = 0;
+			int frameworks = 0;
+			_check_xcframework_content(p_out_dir.path_join(asset.exported_path), total_libs, static_libs, dylibs, frameworks);
+			if (asset.should_embed && static_libs != total_libs) {
 				additional_asset_info_format += "$framework_id = {isa = PBXBuildFile; fileRef = $ref_id; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };\n";
 				framework_id = (++current_id).str();
 				pbx_embeded_frameworks += framework_id + ",\n";
@@ -1176,7 +1745,7 @@ Error EditorExportPlatformIOS::_copy_asset(const Ref<EditorExportPreset> &p_pres
 
 		asset_path = asset_path.path_join(framework_name);
 		destination_dir = p_out_dir.path_join(asset_path);
-		destination = destination_dir.path_join(file_name);
+		destination = destination_dir;
 
 		// Convert to framework and copy.
 		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
@@ -1296,7 +1865,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const Ref<EditorExportP
 		if (asset.begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, asset, nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
-		} else if (ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
+		} else if (asset.is_absolute_path() && ProjectSettings::get_singleton()->localize_path(asset).begins_with("res://")) {
 			Error err = _copy_asset(p_preset, p_out_dir, ProjectSettings::get_singleton()->localize_path(asset), nullptr, p_is_framework, p_should_embed, r_exported_assets);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {
@@ -1564,11 +2133,11 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
 }
 
-Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_oneclick) {
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
@@ -1607,19 +2176,72 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	}
 
 	{
+		bool delete_old = p_preset->get("application/delete_old_export_files_unconditionally");
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (da.is_valid()) {
 			String current_dir = da->get_current_dir();
 
-			// remove leftovers from last export so they don't interfere
-			// in case some files are no longer needed
+			// Remove leftovers from last export so they don't interfere in case some files are no longer needed.
 			if (da->change_dir(binary_dir + ".xcodeproj") == OK) {
-				da->erase_contents_recursive();
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "xcshareddata" || n == "project.xcworkspace") {
+									expected_files++;
+								}
+							} else {
+								if (n == "project.pbxproj") {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s.xcodeproj\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
 			}
-			if (da->change_dir(binary_dir) == OK) {
-				da->erase_contents_recursive();
-			}
+			da->change_dir(current_dir);
 
+			if (da->change_dir(binary_dir) == OK) {
+				// Check directory content before deleting.
+				int expected_files = 0;
+				int total_files = 0;
+				if (!delete_old) {
+					da->list_dir_begin();
+					for (String n = da->get_next(); !n.is_empty(); n = da->get_next()) {
+						if (!n.begins_with(".")) { // Ignore ".", ".." and hidden files.
+							if (da->current_is_dir()) {
+								if (n == "dylibs" || n == "Images.xcassets" || n.ends_with(".lproj") || n == "godot-publish-dotnet" || n.ends_with(".xcframework") || n.ends_with(".framework")) {
+									expected_files++;
+								}
+							} else {
+								if (n == binary_name + "-Info.plist" || n == binary_name + ".entitlements" || n == "Launch Screen.storyboard" || n == "export_options.plist" || n.begins_with("dummy.") || n.ends_with(".gdip")) {
+									expected_files++;
+								}
+							}
+							total_files++;
+						}
+					}
+					da->list_dir_end();
+				}
+				if ((total_files == 0) || (expected_files >= Math::floor(total_files * 0.8))) {
+					da->erase_contents_recursive();
+				} else {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unexpected files found in the export destination directory \"%s\", delete it manually or select another destination."), binary_dir));
+					return ERR_CANT_CREATE;
+				}
+			}
 			da->change_dir(current_dir);
 
 			if (!da->dir_exists(binary_dir)) {
@@ -1669,6 +2291,7 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
 	files_to_parse.insert("godot_ios/godot_ios.entitlements");
 	files_to_parse.insert("godot_ios/Launch Screen.storyboard");
+	files_to_parse.insert("PrivacyInfo.xcprivacy");
 
 	IOSConfigData config_data = {
 		pkg_name,
@@ -1804,13 +2427,87 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		ret = unzGoToNextFile(src_pkg_zip);
 	}
 
-	/* we're done with our source zip */
+	// We're done with our source zip.
 	unzClose(src_pkg_zip);
 
 	if (!found_library) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template library '%s' not found. It might be missing from your template archive."), library_to_use));
 		return ERR_FILE_NOT_FOUND;
 	}
+
+	// Check and generate missing ARM64 simulator library.
+	if (p_preset->get("application/generate_simulator_library_if_missing").operator bool()) {
+		String sim_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64_x86_64-simulator").path_join("libgodot.a");
+		String dev_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64").path_join("libgodot.a");
+		String tmp_lib_path = EditorPaths::get_singleton()->get_temp_dir().path_join(binary_name + "_lipo_");
+		uint32_t cputype = 0;
+		uint32_t cpusubtype = 0;
+		if (!_archive_has_arm64(sim_lib_path, &cputype, &cpusubtype) && _archive_has_arm64(dev_lib_path) && FileAccess::exists(dev_lib_path)) {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("ARM64 simulator library, generating from device library."));
+
+			Vector<String> tmp_lib_files;
+			Vector<Vector2i> tmp_lib_cputypes;
+			// Extract/copy simulator lib.
+			if (FileAccess::exists(sim_lib_path)) {
+				if (LipO::is_lipo(sim_lib_path)) {
+					Ref<LipO> lipo;
+					lipo.instantiate();
+					if (lipo->open_file(sim_lib_path)) {
+						for (int i = 0; i < lipo->get_arch_count(); i++) {
+							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+							lipo->extract_arch(i, f_name);
+							tmp_lib_files.push_back(f_name);
+							tmp_lib_cputypes.push_back(Vector2i(lipo->get_arch_cputype(i), lipo->get_arch_cpusubtype(i)));
+						}
+					}
+				} else {
+					const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+					tmp_app_path->copy(sim_lib_path, f_name);
+					tmp_lib_files.push_back(f_name);
+					tmp_lib_cputypes.push_back(Vector2i(cputype, cpusubtype));
+				}
+			}
+			// Copy device lib.
+			if (LipO::is_lipo(dev_lib_path)) {
+				Ref<LipO> lipo;
+				lipo.instantiate();
+				if (lipo->open_file(dev_lib_path)) {
+					for (int i = 0; i < lipo->get_arch_count(); i++) {
+						if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
+							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+							lipo->extract_arch(i, f_name);
+							tmp_lib_files.push_back(f_name);
+							tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
+							break;
+						}
+					}
+				}
+			} else {
+				const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+				tmp_app_path->copy(dev_lib_path, f_name);
+				tmp_lib_files.push_back(f_name);
+				tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
+			}
+
+			// Patch device lib.
+			int patch_count = _archive_convert_to_simulator(tmp_lib_path + itos(tmp_lib_files.size() - 1));
+			if (patch_count == 0) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Unable to generate ARM64 simulator library."));
+			} else {
+				// Repack.
+				Ref<LipO> lipo;
+				lipo.instantiate();
+				lipo->create_file(sim_lib_path, tmp_lib_files, tmp_lib_cputypes);
+			}
+
+			// Cleanup.
+			for (const String &E : tmp_lib_files) {
+				tmp_app_path->remove(E);
+			}
+		}
+	}
+
+	// Generate translations files.
 
 	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
@@ -2076,6 +2773,13 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 		}
 	}
 
+	if (GLOBAL_GET("rendering/rendering_device/driver.ios") == "metal") {
+		float version = p_preset->get("application/min_ios_version").operator String().to_float();
+		if (version < 14.0) {
+			err += TTR("Metal renderer require iOS 14+.") + "\n";
+		}
+	}
+
 	if (!err.is_empty()) {
 		r_error = err;
 	}
@@ -2228,7 +2932,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String idepl = EDITOR_GET("export/ios/ios_deploy");
-		if (!idepl.is_empty()) {
+		if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
 			String devices;
 			List<String> args;
 			args.push_back("-c");
@@ -2266,7 +2970,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		}
 
 		// Enum simulators.
-		if (_check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
+		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
 			{
 				String devices;
 				List<String> args;
@@ -2304,7 +3008,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 			}
 
 			// Enum simulators.
-			{
+			if (ea->has_runnable_preset.is_set()) {
 				String devices;
 				List<String> args;
 				args.push_back("simctl");
@@ -2373,9 +3077,29 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 		}
 	}
 }
+
+void EditorExportPlatformIOS::_update_preset_status() {
+	const int preset_count = EditorExport::get_singleton()->get_export_preset_count();
+	bool has_runnable = false;
+
+	for (int i = 0; i < preset_count; i++) {
+		const Ref<EditorExportPreset> &preset = EditorExport::get_singleton()->get_export_preset(i);
+		if (preset->get_platform() == this && preset->is_runnable()) {
+			has_runnable = true;
+			break;
+		}
+	}
+
+	if (has_runnable) {
+		has_runnable_preset.set();
+	} else {
+		has_runnable_preset.clear();
+	}
+	devices_changed.set();
+}
 #endif
 
-Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 #ifdef MACOS_ENABLED
 	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
@@ -2393,19 +3117,19 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	String id = "tmpexport." + uitos(OS::get_singleton()->get_unix_time());
 
 	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + EditorPaths::get_singleton()->get_cache_dir() + "'.");
-	filesystem_da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir().path_join(id));
-	String tmp_export_path = EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.ipa");
+	ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + EditorPaths::get_singleton()->get_temp_dir() + "'.");
+	filesystem_da->make_dir_recursive(EditorPaths::get_singleton()->get_temp_dir().path_join(id));
+	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.ipa");
 
-#define CLEANUP_AND_RETURN(m_err)                                                                           \
-	{                                                                                                       \
-		if (filesystem_da->change_dir(EditorPaths::get_singleton()->get_cache_dir().path_join(id)) == OK) { \
-			filesystem_da->erase_contents_recursive();                                                      \
-			filesystem_da->change_dir("..");                                                                \
-			filesystem_da->remove(id);                                                                      \
-		}                                                                                                   \
-		return m_err;                                                                                       \
-	}                                                                                                       \
+#define CLEANUP_AND_RETURN(m_err)                                                                          \
+	{                                                                                                      \
+		if (filesystem_da->change_dir(EditorPaths::get_singleton()->get_temp_dir().path_join(id)) == OK) { \
+			filesystem_da->erase_contents_recursive();                                                     \
+			filesystem_da->change_dir("..");                                                               \
+			filesystem_da->remove(id);                                                                     \
+		}                                                                                                  \
+		return m_err;                                                                                      \
+	}                                                                                                      \
 	((void)0)
 
 	Device dev = devices[p_device];
@@ -2421,11 +3145,11 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	String host = EDITOR_GET("network/debug/remote_host");
 	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
 
-	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)) {
 		host = "localhost";
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
 		int port = EDITOR_GET("filesystem/file_server/port");
 		String passwd = EDITOR_GET("filesystem/file_server/password");
 		cmd_args_list.push_back("--remote-fs");
@@ -2436,10 +3160,10 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		}
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG)) {
 		cmd_args_list.push_back("--remote-debug");
 
-		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
+		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num_int64(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
@@ -2458,11 +3182,11 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		}
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_VIEW_COLLISIONS)) {
 		cmd_args_list.push_back("--debug-collisions");
 	}
 
-	if (p_debug_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
+	if (p_debug_flags.has_flag(DEBUG_FLAG_VIEW_NAVIGATION)) {
 		cmd_args_list.push_back("--debug-navigation");
 	}
 
@@ -2475,7 +3199,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			args.push_back("simctl");
 			args.push_back("install");
 			args.push_back(dev.id);
-			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
 
 			String log;
 			int ec;
@@ -2528,7 +3252,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			args.push_back(dev.id);
 			args.push_back("--justlaunch");
 			args.push_back("--bundle");
-			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
 			String app_args;
 			for (const String &E : cmd_args_list) {
 				app_args += E + " ";
@@ -2567,7 +3291,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			args.push_back("app");
 			args.push_back("-d");
 			args.push_back(dev.id);
-			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
 
 			String log;
 			int ec;
@@ -2623,7 +3347,6 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -2632,11 +3355,11 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 
 		ImageLoaderSVG::create_image_from_string(img, _ios_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		plugins_changed.set();
 		devices_changed.set();
 #ifdef MACOS_ENABLED
+		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}

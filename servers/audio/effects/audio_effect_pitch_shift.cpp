@@ -286,6 +286,11 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 /* clang-format on */
 
 void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
+	// Avoid distortion by skipping processing if pitch_scale is 1.0.
+	if (Math::is_equal_approx(base->pitch_scale, 1.0f)) {
+		return;
+	}
+
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float *in_l = (float *)p_src_frames;
@@ -355,13 +360,4 @@ void AudioEffectPitchShift::_bind_methods() {
 	BIND_ENUM_CONSTANT(FFT_SIZE_2048);
 	BIND_ENUM_CONSTANT(FFT_SIZE_4096);
 	BIND_ENUM_CONSTANT(FFT_SIZE_MAX);
-}
-
-AudioEffectPitchShift::AudioEffectPitchShift() {
-	pitch_scale = 1.0;
-	oversampling = 4;
-	fft_size = FFT_SIZE_2048;
-	wet = 0.0;
-	dry = 0.0;
-	filter = false;
 }

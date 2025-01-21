@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerPeer" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiplayerPeer" inherits="PacketPeer" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract class for specialized [PacketPeer]s used by the [MultiplayerAPI].
 	</brief_description>
@@ -10,7 +10,6 @@
 	</description>
 	<tutorials>
 		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
-		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>
 		<method name="close">
@@ -66,7 +65,7 @@
 		<method name="is_server_relay_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the server can act as a relay in the current configuration (i.e. if the higher level [MultiplayerAPI] should notify connected clients of other peers, and implement a relay protocol to allow communication between them).
+				Returns [code]true[/code] if the server can act as a relay in the current configuration. That is, if the higher level [MultiplayerAPI] should notify connected clients of other peers, and implement a relay protocol to allow communication between them.
 			</description>
 		</method>
 		<method name="poll">

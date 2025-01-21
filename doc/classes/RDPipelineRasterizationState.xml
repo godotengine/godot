@@ -13,17 +13,22 @@
 			The cull mode to use when drawing polygons, which determines whether front faces or backfaces are hidden.
 		</member>
 		<member name="depth_bias_clamp" type="float" setter="set_depth_bias_clamp" getter="get_depth_bias_clamp" default="0.0">
+			A limit for how much each depth value can be offset. If negative, it serves as a minimum value, but if positive, it serves as a maximum value.
 		</member>
 		<member name="depth_bias_constant_factor" type="float" setter="set_depth_bias_constant_factor" getter="get_depth_bias_constant_factor" default="0.0">
+			A constant offset added to each depth value. Applied after [member depth_bias_slope_factor].
 		</member>
 		<member name="depth_bias_enabled" type="bool" setter="set_depth_bias_enabled" getter="get_depth_bias_enabled" default="false">
+			If [code]true[/code], each generated depth value will by offset by some amount. The specific amount is generated per polygon based on the values of [member depth_bias_slope_factor] and [member depth_bias_constant_factor].
 		</member>
 		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor" default="0.0">
+			A constant scale applied to the slope of each polygons' depth. Applied before [member depth_bias_constant_factor].
 		</member>
 		<member name="discard_primitives" type="bool" setter="set_discard_primitives" getter="get_discard_primitives" default="false">
 			If [code]true[/code], primitives are discarded immediately before the rasterization stage.
 		</member>
 		<member name="enable_depth_clamp" type="bool" setter="set_enable_depth_clamp" getter="get_enable_depth_clamp" default="false">
+			If [code]true[/code], clamps depth values according to the minimum and maximum depth of the associated viewport.
 		</member>
 		<member name="front_face" type="int" setter="set_front_face" getter="get_front_face" enum="RenderingDevice.PolygonFrontFace" default="0">
 			The winding order to use to determine which face of a triangle is considered its front face.

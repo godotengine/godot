@@ -74,9 +74,10 @@ TEST_CASE("[SpriteFrames] Animation addition, list getter, renaming, removal, an
 			sname_list.size() == test_names.size(),
 			"StringName List getter returned list of expected size");
 
-	for (int i = 0; i < test_names.size(); i++) {
+	int idx = 0;
+	for (List<StringName>::ConstIterator itr = sname_list.begin(); itr != sname_list.end(); ++itr, ++idx) {
 		CHECK_MESSAGE(
-				sname_list[i] == StringName(test_names[i]),
+				*itr == StringName(test_names[idx]),
 				"StringName List getter returned expected values");
 	}
 

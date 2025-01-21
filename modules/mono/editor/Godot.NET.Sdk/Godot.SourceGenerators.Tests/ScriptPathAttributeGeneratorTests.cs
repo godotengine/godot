@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,9 +48,33 @@ public class ScriptPathAttributeGeneratorTests
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "Generic.cs" },
-            new string[] { "Generic_ScriptPath.generated.cs" }
+            new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
         );
-        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic" }));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>" }));
+        await verifier.RunAsync();
+    }
+
+    [Fact]
+    public async void GenericMultipleClassesSameName()
+    {
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+            Array.Empty<string>(),
+            new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
+        );
+        verifier.TestState.Sources.Add(("Generic.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "Generic.GD0003.cs"))));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>", "global::Generic<,>", "global::Generic" }));
+        await verifier.RunAsync();
+    }
+
+    [Fact]
+    public async void NamespaceMultipleClassesSameName()
+    {
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+            Array.Empty<string>(),
+            new string[] { "NamespaceA.SameName_ScriptPath.generated.cs" }
+        );
+        verifier.TestState.Sources.Add(("SameName.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "SameName.GD0003.cs"))));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::NamespaceA.SameName", "global::NamespaceB.SameName" }));
         await verifier.RunAsync();
     }
 }

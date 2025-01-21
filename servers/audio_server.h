@@ -42,9 +42,11 @@
 #include <atomic>
 
 class AudioDriverDummy;
+class AudioSample;
 class AudioStream;
 class AudioStreamWAV;
 class AudioStreamPlayback;
+class AudioSamplePlayback;
 
 class AudioDriver {
 	static AudioDriver *singleton;
@@ -52,8 +54,8 @@ class AudioDriver {
 	uint64_t _last_mix_frames = 0;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks = 0;
-	uint64_t prof_time = 0;
+	SafeNumeric<uint64_t> prof_ticks;
+	SafeNumeric<uint64_t> prof_time;
 #endif
 
 protected:
@@ -69,8 +71,8 @@ protected:
 	int _get_configured_mix_rate();
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks.set(OS::get_singleton()->get_ticks_usec()); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get()); }
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}
@@ -97,6 +99,7 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
+	virtual int get_input_mix_rate() const { return get_mix_rate(); }
 	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual float get_latency() { return 0; }
 
@@ -125,9 +128,32 @@ public:
 	unsigned int get_input_size() { return input_size; }
 
 #ifdef DEBUG_ENABLED
-	uint64_t get_profiling_time() const { return prof_time; }
-	void reset_profiling_time() { prof_time = 0; }
+	uint64_t get_profiling_time() const { return prof_time.get(); }
+	void reset_profiling_time() { prof_time.set(0); }
 #endif
+
+	// Samples handling.
+	virtual bool is_stream_registered_as_sample(const Ref<AudioStream> &p_stream) const {
+		return false;
+	}
+	virtual void register_sample(const Ref<AudioSample> &p_sample) {}
+	virtual void unregister_sample(const Ref<AudioSample> &p_sample) {}
+	virtual void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
+	virtual void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {}
+	virtual void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {}
+	virtual bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) { return false; }
+	virtual double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) { return false; }
+	virtual void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f) {}
+	virtual void set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {}
+
+	virtual void set_sample_bus_count(int p_count) {}
+	virtual void remove_sample_bus(int p_bus) {}
+	virtual void add_sample_bus(int p_at_pos = -1) {}
+	virtual void move_sample_bus(int p_bus, int p_to_pos) {}
+	virtual void set_sample_bus_send(int p_bus, const StringName &p_send) {}
+	virtual void set_sample_bus_volume_db(int p_bus, float p_volume_db) {}
+	virtual void set_sample_bus_solo(int p_bus, bool p_enable) {}
+	virtual void set_sample_bus_mute(int p_bus, bool p_enable) {}
 
 	AudioDriver() {}
 	virtual ~AudioDriver() {}
@@ -166,6 +192,13 @@ public:
 		SPEAKER_SURROUND_71,
 	};
 
+	enum PlaybackType {
+		PLAYBACK_TYPE_DEFAULT,
+		PLAYBACK_TYPE_STREAM,
+		PLAYBACK_TYPE_SAMPLE,
+		PLAYBACK_TYPE_MAX
+	};
+
 	enum {
 		AUDIO_DATA_INVALID_ID = -1,
 		MAX_CHANNELS_PER_BUS = 4,
@@ -183,7 +216,7 @@ private:
 	uint64_t mix_count = 0;
 	uint64_t mix_frames = 0;
 #ifdef DEBUG_ENABLED
-	uint64_t prof_time = 0;
+	SafeNumeric<uint64_t> prof_time;
 #endif
 
 	float channel_disable_threshold_db = 0.0f;
@@ -238,6 +271,14 @@ private:
 	};
 
 	struct AudioStreamPlaybackListNode {
+		// The state machine for audio stream playbacks is as follows:
+		// 1. The playback is created and added to the playback list in the playing state.
+		// 2. The playback is (maybe) paused, and the state is set to FADE_OUT_TO_PAUSE.
+		// 2.1. The playback is mixed after being paused, and the audio server thread atomically sets the state to PAUSED after performing a brief fade-out.
+		// 3. The playback is (maybe) deleted, and the state is set to FADE_OUT_TO_DELETION.
+		// 3.1. The playback is mixed after being deleted, and the audio server thread atomically sets the state to AWAITING_DELETION after performing a brief fade-out.
+		// 		NOTE: The playback is not deallocated at this time because allocation and deallocation are not realtime-safe.
+		// 4. The playback is removed and deallocated on the main thread using the SafeList maybe_cleanup method.
 		enum PlaybackState {
 			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
 			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
@@ -265,6 +306,8 @@ private:
 
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
+	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
 
 	// TODO document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
@@ -297,6 +340,8 @@ private:
 
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
+
+	LocalVector<Ref<AudioSamplePlayback>> sample_playback_list;
 
 protected:
 	static void _bind_methods();
@@ -338,6 +383,9 @@ public:
 
 	void set_bus_volume_db(int p_bus, float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
+
+	void set_bus_volume_linear(int p_bus, float p_volume_linear);
+	float get_bus_volume_linear(int p_bus) const;
 
 	void set_bus_send(int p_bus, const StringName &p_send);
 	StringName get_bus_send(int p_bus) const;
@@ -391,6 +439,8 @@ public:
 	uint64_t get_mix_count() const;
 	uint64_t get_mixed_frames() const;
 
+	String get_driver_name() const;
+
 	void notify_listener_changed();
 
 	virtual void init();
@@ -405,6 +455,7 @@ public:
 
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual float get_mix_rate() const;
+	virtual float get_input_mix_rate() const;
 
 	virtual float read_output_peak_db() const;
 
@@ -436,11 +487,30 @@ public:
 
 	void set_enable_tagging_used_audio_streams(bool p_enable);
 
+#ifdef TOOLS_ENABLED
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
+
+	PlaybackType get_default_playback_type() const;
+
+	bool is_stream_registered_as_sample(const Ref<AudioStream> &p_stream);
+	void register_stream_as_sample(const Ref<AudioStream> &p_stream);
+	void unregister_stream_as_sample(const Ref<AudioStream> &p_stream);
+	void register_sample(const Ref<AudioSample> &p_sample);
+	void unregister_sample(const Ref<AudioSample> &p_sample);
+	void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
+	void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
+	void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused);
+	bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback);
+	double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback);
+	void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f);
+
 	AudioServer();
 	virtual ~AudioServer();
 };
 
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
+VARIANT_ENUM_CAST(AudioServer::PlaybackType)
 
 class AudioBusLayout : public Resource {
 	GDCLASS(AudioBusLayout, Resource);

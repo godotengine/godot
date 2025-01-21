@@ -458,6 +458,9 @@ ktxTexture1_constructFromStdioStream(ktxTexture1* This, FILE* stdioStream,
  * @memberof ktxTexture1 @private
  * @brief Construct a ktxTexture1 from a named KTX file.
  *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
+ *
  * See ktxTextureInt_constructFromStream for details.
  *
  * @param[in] This pointer to a ktxTextureInt-sized block of memory to
@@ -484,7 +487,7 @@ ktxTexture1_constructFromNamedFile(ktxTexture1* This,
     if (This == NULL || filename == NULL)
         return KTX_INVALID_VALUE;
 
-    file = fopen(filename, "rb");
+    file = ktxFOpenUTF8(filename, "rb");
     if (!file)
        return KTX_FILE_OPEN_FAILED;
 
@@ -614,7 +617,7 @@ ktxTexture1_Create(ktxTextureCreateInfo* createInfo,
  * @~English
  * @brief Create a ktxTexture1 from a stdio stream reading from a KTX source.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * stdio stream is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -673,13 +676,16 @@ ktxTexture1_CreateFromStdioStream(FILE* stdioStream,
     return result;
 }
 
-/*
+/**
  * @memberof ktxTexture1
  * @~English
  * @brief Create a ktxTexture1 from a named KTX file.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * file is written to the location pointed at by @p newTex.
+ *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
  * if the ktxTexture1 is ultimately to be uploaded to OpenGL or Vulkan. This
@@ -700,7 +706,7 @@ ktxTexture1_CreateFromStdioStream(FILE* stdioStream,
  * @exception KTX_FILE_OPEN_FAILED The file could not be opened.
  * @exception KTX_INVALID_VALUE @p filename is @c NULL.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture1_CreateFromNamedFile(const char* const filename,
@@ -731,7 +737,7 @@ ktxTexture1_CreateFromNamedFile(const char* const filename,
  * @~English
  * @brief Create a ktxTexture1 from KTX-formatted data in memory.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * serialized KTX data is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -753,7 +759,7 @@ ktxTexture1_CreateFromNamedFile(const char* const filename,
  *
  * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
@@ -784,7 +790,7 @@ ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
  * @~English
  * @brief Create a ktxTexture1 from KTX-formatted data from a `ktxStream`.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * serialized KTX data is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -796,19 +802,17 @@ ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
  * provided solely to enable implementation of the @e libktx v1 API on top of
  * ktxTexture1.
  *
- * @param[in] stream pointer to the stream to read KTX data from.
+ * @param[in] pStream pointer to the stream to read KTX data from.
  * @param[in] createFlags bitmask requesting specific actions during creation.
  * @param[in,out] newTex  pointer to a location in which store the address of
  *                        the newly created texture.
  *
  * @return      KTX_SUCCESS on success, other KTX_* enum values on error.
  *
- * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
- *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
-ktxTexture1_CreateFromStream(ktxStream* stream,
+ktxTexture1_CreateFromStream(ktxStream* pStream,
                              ktxTextureCreateFlags createFlags,
                              ktxTexture1** newTex)
 {
@@ -820,7 +824,7 @@ ktxTexture1_CreateFromStream(ktxStream* stream,
     if (tex == NULL)
         return KTX_OUT_OF_MEMORY;
 
-    result = ktxTexture1_constructFromStream(tex, stream, createFlags);
+    result = ktxTexture1_constructFromStream(tex, pStream, createFlags);
     if (result == KTX_SUCCESS)
         *newTex = (ktxTexture1*)tex;
     else {
@@ -1044,9 +1048,9 @@ ktxTexture1_glTypeSize(ktxTexture1* This)
  * @~English
  * @brief Iterate over the mip levels in a ktxTexture1 object.
  *
- * This is almost identical to ktxTexture_IterateLevelFaces(). The difference is
- * that the blocks of image data for non-array cube maps include all faces of
- * a mip level.
+ * This is almost identical to @ref ktxTexture::ktxTexture_IterateLevelFaces
+ * "ktxTexture_IterateLevelFaces". The difference is that the blocks of image
+ * data for non-array cube maps include all faces of a mip level.
  *
  * This function works even if @p This->pData == 0 so it can be used to
  * obtain offsets and sizes for each level by callers who have loaded the data
@@ -1114,11 +1118,12 @@ ktxTexture1_IterateLevels(ktxTexture1* This, PFNKTXITERCB iterCb, void* userdata
  * @brief Iterate over the images in a ktxTexture1 object while loading the
  *        image data.
  *
- * This operates similarly to ktxTexture_IterateLevelFaces() except that it
- * loads the images from the ktxTexture1's source to a temporary buffer
- * while iterating. The callback function must copy the image data if it
- * wishes to preserve it as the temporary buffer is reused for each level and
- * is freed when this function exits.
+ * This operates similarly to @ref ktxTexture::ktxTexture_IterateLevelFaces
+ * "ktxTexture_IterateLevelFaces" except that it loads the images from the
+ * ktxTexture1's source to a temporary buffer while iterating. The callback
+ * function must copy the image data if it wishes to preserve it as the
+ * temporary buffer is reused for each level and is freed when this function
+ * exits.
  *
  * This function is helpful for reducing memory usage when uploading the data
  * to a graphics API.

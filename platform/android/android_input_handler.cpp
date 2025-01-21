@@ -124,12 +124,13 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev->set_physical_keycode(physical_keycode);
 	ev->set_key_label(fix_key_label(p_key_label, keycode));
 	ev->set_unicode(fix_unicode(unicode));
+	ev->set_location(godot_location_from_android_code(p_physical_keycode));
 	ev->set_pressed(p_pressed);
 	ev->set_echo(p_echo);
 
 	_set_key_modifier_state(ev, keycode);
 
-	if (p_physical_keycode == AKEYCODE_BACK) {
+	if (p_physical_keycode == AKEYCODE_BACK && p_pressed) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
 			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
 		}
@@ -175,6 +176,8 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			for (int i = 0; i < p_points.size(); i++) {
 				touch.write[i].id = p_points[i].id;
 				touch.write[i].pos = p_points[i].pos;
+				touch.write[i].pressure = p_points[i].pressure;
+				touch.write[i].tilt = p_points[i].tilt;
 			}
 
 			//send touch
@@ -206,6 +209,9 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 				ev->set_index(touch[i].id);
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
+				ev->set_relative_screen_position(ev->get_relative());
+				ev->set_pressure(p_points[idx].pressure);
+				ev->set_tilt(p_points[idx].tilt);
 				Input::get_singleton()->parse_input_event(ev);
 				touch.write[i].pos = p_points[idx].pos;
 			}
@@ -305,6 +311,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			ev->set_position(p_event_pos);
 			ev->set_global_position(p_event_pos);
 			ev->set_relative(p_event_pos - hover_prev_pos);
+			ev->set_relative_screen_position(ev->get_relative());
 			Input::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_event_pos;
 		} break;
@@ -341,10 +348,12 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 				ev->set_position(hover_prev_pos);
 				ev->set_global_position(hover_prev_pos);
 				ev->set_relative(p_event_pos);
+				ev->set_relative_screen_position(p_event_pos);
 			} else {
 				ev->set_position(p_event_pos);
 				ev->set_global_position(p_event_pos);
 				ev->set_relative(p_event_pos - hover_prev_pos);
+				ev->set_relative_screen_position(ev->get_relative());
 				mouse_event_info.pos = p_event_pos;
 				hover_prev_pos = p_event_pos;
 			}

@@ -31,13 +31,14 @@
 #ifndef PATH_3D_EDITOR_PLUGIN_H
 #define PATH_3D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 
 class HBoxContainer;
 class MenuButton;
+class ConfirmationDialog;
 
 class Path3DGizmo : public EditorNode3DGizmo {
 	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
@@ -63,6 +64,8 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	// Cache information of secondary handles.
 	Vector<HandleInfo> _secondary_handles_info;
 
+	void _update_transform_gizmo();
+
 public:
 	virtual String get_handle_name(int p_id, bool p_secondary) const override;
 	virtual Variant get_handle_value(int p_id, bool p_secondary) const override;
@@ -78,11 +81,25 @@ class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	float disk_size = 0.8;
 
+	// Locking basis is meant to ensure a predictable behavior during translation of the curve points in "local space transform mode".
+	// Without the locking, the gizmo/point, in "local space transform mode", wouldn't follow a straight path and would curve and twitch in an unpredictable way.
+	HashMap<int, Basis> transformation_locked_basis;
+
 protected:
 	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
 
 public:
+	virtual bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
+
+	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
+
+	virtual int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
+	virtual Vector<int> subgizmos_intersect_frustum(const EditorNode3DGizmo *p_gizmo, const Camera3D *p_camera, const Vector<Plane> &p_frustum) const override;
+	virtual Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
+	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel = false) override;
+
 	int get_priority() const override;
 	Path3DGizmoPlugin(float p_disk_size);
 };
@@ -90,13 +107,25 @@ public:
 class Path3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path3DEditorPlugin, EditorPlugin);
 
+	friend class Path3DGizmo;
+	friend class Path3DGizmoPlugin;
+
+	Ref<Path3DGizmoPlugin> path_3d_gizmo_plugin;
+
 	HBoxContainer *topmenu_bar = nullptr;
+
+	HBoxContainer *toolbar = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
-	Button *curve_close = nullptr;
+	Button *curve_closed = nullptr;
+	Button *curve_clear_points = nullptr;
 	MenuButton *handle_menu = nullptr;
+
+	Button *create_curve_button = nullptr;
+	ConfirmationDialog *clear_points_dialog = nullptr;
 
 	float disk_size = 0.8;
 
@@ -104,6 +133,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_EDIT_CURVE,
+		MODE_EDIT_TILT,
 		MODE_DELETE,
 		ACTION_CLOSE
 	};
@@ -111,13 +141,20 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Path3D *path = nullptr;
 
 	void _update_theme();
+	void _update_toolbar();
 
 	void _mode_changed(int p_mode);
-	void _close_curve();
+	void _toggle_closed_curve();
 	void _handle_option_pressed(int p_option);
 	bool handle_clicked = false;
-	bool mirror_handle_angle;
-	bool mirror_handle_length;
+	bool mirror_handle_angle = true;
+	bool mirror_handle_length = true;
+
+	void _create_curve();
+	void _confirm_clear_points();
+	void _clear_points();
+	void _clear_curve_points();
+	void _restore_curve_points(const PackedVector3Array &p_points);
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -125,16 +162,15 @@ class Path3DEditorPlugin : public EditorPlugin {
 	};
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	Path3D *get_edited_path() { return path; }
 
-	static Path3DEditorPlugin *singleton;
+	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const override { return "Path3D"; }
+	virtual String get_plugin_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -146,7 +182,6 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
-	~Path3DEditorPlugin();
 };
 
 #endif // PATH_3D_EDITOR_PLUGIN_H

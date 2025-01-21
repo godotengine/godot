@@ -31,8 +31,6 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
-#include "core/math/math_funcs.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -41,9 +39,15 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
@@ -201,17 +205,17 @@ void ThemeEditorPreview::_notification(int p_what) {
 				set_process(true);
 			}
 
-			connect("visibility_changed", callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
 		} break;
 
 		case NOTIFICATION_READY: {
-			List<Ref<Theme>> preview_themes;
+			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
 
 			theme_cache.preview_picker_overlay = get_theme_stylebox(SNAME("preview_picker_overlay"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_overlay_color = get_theme_color(SNAME("preview_picker_overlay_color"), SNAME("ThemeEditor"));
@@ -240,10 +244,10 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_button = memnew(Button);
 	preview_toolbar->add_child(picker_button);
-	picker_button->set_theme_type_variation("FlatButton");
+	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
-	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
+	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
 	preview_body->set_custom_minimum_size(Size2(480, 0) * EDSCALE);
@@ -279,9 +283,9 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	picker_overlay = memnew(Control);
 	add_preview_overlay(picker_overlay);
-	picker_overlay->connect("draw", callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
-	picker_overlay->connect("gui_input", callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
-	picker_overlay->connect("mouse_exited", callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
+	picker_overlay->connect(SceneStringName(draw), callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
+	picker_overlay->connect(SceneStringName(gui_input), callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
+	picker_overlay->connect(SceneStringName(mouse_exited), callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
 }
 
 void DefaultThemeEditorPreview::_notification(int p_what) {
@@ -353,9 +357,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
-	test_menu_button->get_popup()->add_child(test_submenu);
-	test_submenu->set_name("SubMenu");
-	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "SubMenu");
+	test_menu_button->get_popup()->add_submenu_node_item(TTR("Submenu"), test_submenu);
 	test_submenu->add_item(TTR("Subitem 1"));
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
@@ -491,7 +493,7 @@ void SceneThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			reload_scene_button->set_icon(get_editor_theme_icon(SNAME("Reload")));
+			reload_scene_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 		} break;
 	}
 }
@@ -533,5 +535,5 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 	reload_scene_button->set_flat(true);
 	reload_scene_button->set_tooltip_text(TTR("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
-	reload_scene_button->connect("pressed", callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
+	reload_scene_button->connect(SceneStringName(pressed), callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

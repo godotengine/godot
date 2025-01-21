@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,6 +12,7 @@ using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
+using System.Globalization;
 
 namespace GodotTools.Export
 {
@@ -73,7 +75,19 @@ namespace GodotTools.Export
             };
         }
 
-        private string _maybeLastExportError;
+        private void AddExceptionMessage(EditorExportPlatform platform, Exception exception)
+        {
+            string? exceptionMessage = exception.Message;
+            if (string.IsNullOrEmpty(exceptionMessage))
+            {
+                exceptionMessage = $"Exception thrown: {exception.GetType().Name}";
+            }
+
+            platform.AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", exceptionMessage);
+
+            // We also print exceptions as we receive them to stderr.
+            Console.Error.WriteLine(exception);
+        }
 
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
@@ -87,6 +101,13 @@ namespace GodotTools.Export
                 throw new ArgumentException(
                     $"Resource of type {Internal.CSharpLanguageType} has an invalid file extension: {path}",
                     nameof(path));
+
+            if (!ProjectContainsDotNet())
+            {
+                GetExportPlatform().AddMessage(EditorExportPlatform.ExportMessageType.Error, "Export .NET Project", $"This project contains C# files but no solution file was found at the following path: {GodotSharpDirs.ProjectSlnPath}\n" +
+                    "A solution file is required for projects with C# files. Please ensure that the solution file exists in the specified location and try again.");
+                throw new InvalidOperationException($"{path} is a C# file but no solution file exists.");
+            }
 
             // TODO: What if the source file is not part of the game's C# project?
 
@@ -115,16 +136,7 @@ namespace GodotTools.Export
             }
             catch (Exception e)
             {
-                _maybeLastExportError = e.Message;
-
-                // 'maybeLastExportError' cannot be null or empty if there was an error, so we
-                // must consider the possibility of exceptions being thrown without a message.
-                if (string.IsNullOrEmpty(_maybeLastExportError))
-                    _maybeLastExportError = $"Exception thrown: {e.GetType().Name}";
-
-                GD.PushError($"Failed to export project: {_maybeLastExportError}");
-                Console.Error.WriteLine(e);
-                // TODO: Do something on error once _ExportBegin supports failing.
+                AddExceptionMessage(GetExportPlatform(), e);
             }
         }
 
@@ -135,7 +147,9 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
-            if (!DeterminePlatformFromFeatures(features, out string platform))
+            string osName = GetExportPlatform().GetOsName();
+
+            if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
@@ -200,7 +214,7 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android;
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
 
             foreach (PublishConfig config in targets)
             {
@@ -231,7 +245,6 @@ namespace GodotTools.Export
                     {
                         publishOutputDir = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, "godot-publish-dotnet",
                             $"{buildConfig}-{runtimeIdentifier}");
-
                     }
 
                     outputPaths.Add(publishOutputDir);
@@ -276,7 +289,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Exclude dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -296,7 +309,7 @@ namespace GodotTools.Export
                             if (platform == OS.Platforms.iOS)
                             {
                                 // Don't recurse into dsym folders.
-                                return !dir.EndsWith(".dsym", StringComparison.InvariantCultureIgnoreCase);
+                                return !dir.EndsWith(".dsym", StringComparison.OrdinalIgnoreCase);
                             }
 
                             return true;
@@ -308,17 +321,51 @@ namespace GodotTools.Export
                             {
                                 if (embedBuildResults)
                                 {
+                                    if (platform == OS.Platforms.Android)
+                                    {
+                                        string fileName = Path.GetFileName(path);
+
+                                        if (fileName.EndsWith(".jar"))
+                                        {
+                                            // We exclude jar files from the export since they should
+                                            // already be included in the Godot templates, adding them
+                                            // again would cause conflicts.
+                                            return;
+                                        }
+
+                                        if (IsSharedObject(fileName))
+                                        {
+                                            AddSharedObject(path, tags: new string[] { arch },
+                                                Path.Join(projectDataDirName,
+                                                    Path.GetRelativePath(publishOutputDir,
+                                                        Path.GetDirectoryName(path)!)));
+
+                                            return;
+                                        }
+
+                                        static bool IsSharedObject(string fileName)
+                                        {
+                                            if (fileName.EndsWith(".so") || fileName.EndsWith(".a")
+                                             || fileName.EndsWith(".dex"))
+                                            {
+                                                return true;
+                                            }
+
+                                            return false;
+                                        }
+                                    }
+
                                     string filePath = SanitizeSlashes(Path.GetRelativePath(publishOutputDir, path));
                                     byte[] fileData = File.ReadAllBytes(path);
                                     string hash = Convert.ToBase64String(SHA512.HashData(fileData));
 
-                                    manifest.Append($"{filePath}\t{hash}\n");
+                                    manifest.Append(CultureInfo.InvariantCulture, $"{filePath}\t{hash}\n");
 
                                     AddFile($"res://.godot/mono/publish/{arch}/{filePath}", fileData, false);
                                 }
                                 else
                                 {
-                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat"))
+                                    if (platform == OS.Platforms.iOS && path.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
                                     {
                                         AddIosBundleFile(path);
                                     }
@@ -327,7 +374,7 @@ namespace GodotTools.Export
                                         AddSharedObject(path, tags: null,
                                             Path.Join(projectDataDirName,
                                                 Path.GetRelativePath(publishOutputDir,
-                                                    Path.GetDirectoryName(path))));
+                                                    Path.GetDirectoryName(path)!)));
                                     }
                                 }
                             }
@@ -346,24 +393,23 @@ namespace GodotTools.Export
                 if (outputPaths.Count > 2)
                 {
                     // lipo the simulator binaries together
-                    // TODO: Move this to the native lipo implementation we have in the macos export plugin.
-                    var lipoArgs = new List<string>();
-                    lipoArgs.Add("-create");
-                    lipoArgs.AddRange(outputPaths.Skip(1).Select(x => Path.Combine(x, $"{GodotSharpDirs.ProjectAssemblyName}.dylib")));
-                    lipoArgs.Add("-output");
-                    lipoArgs.Add(Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib"));
 
-                    int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
-                    if (lipoExitCode != 0)
-                        throw new InvalidOperationException($"Command 'lipo' exited with code: {lipoExitCode}.");
+                    string outputPath = Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib");
+                    string[] files = outputPaths
+                        .Skip(1)
+                        .Select(path => Path.Combine(path, $"{GodotSharpDirs.ProjectAssemblyName}.dylib"))
+                        .ToArray();
+
+                    if (!Internal.LipOCreateFile(outputPath, files))
+                    {
+                        throw new InvalidOperationException($"Failed to 'lipo' simulator binaries.");
+                    }
 
                     outputPaths.RemoveRange(2, outputPaths.Count - 2);
                 }
 
-                var xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig,
-                    $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
-                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths,
-                        Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, xcFrameworkPath)))
+                string xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
+                if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths, xcFrameworkPath))
                 {
                     throw new InvalidOperationException("Failed to generate xcframework.");
                 }
@@ -389,10 +435,10 @@ namespace GodotTools.Export
                 if (filterDir(dir))
                 {
                     addEntry(dir, false);
-                }
-                else if (recurseDir(dir))
-                {
-                    RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    if (recurseDir(dir))
+                    {
+                        RecursePublishContents(dir, filterDir, filterFile, recurseDir, addEntry);
+                    }
                 }
             }
         }
@@ -437,25 +483,22 @@ namespace GodotTools.Export
                 Directory.Delete(folder, recursive: true);
             }
             _tempFolders.Clear();
-
-            // TODO: The following is just a workaround until the export plugins can be made to abort with errors
-
-            // We check for empty as well, because it's set to empty after hot-reloading
-            if (!string.IsNullOrEmpty(_maybeLastExportError))
-            {
-                string lastExportError = _maybeLastExportError;
-                _maybeLastExportError = null;
-
-                GodotSharpEditor.Instance.ShowErrorDialog(lastExportError, "Failed to export C# project");
-            }
         }
 
-        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
+        /// <summary>
+        /// Tries to determine the platform from the export preset's platform OS name.
+        /// </summary>
+        /// <param name="osName">Name of the export operating system.</param>
+        /// <param name="platform">Platform name for the recognized supported platform.</param>
+        /// <returns>
+        /// <see langword="true"/> when the platform OS name is recognized as a supported platform,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        private static bool TryDeterminePlatformFromOSName(string osName, [NotNullWhen(true)] out string? platform)
         {
-            foreach (var feature in features)
+            if (OS.PlatformFeatureMap.TryGetValue(osName, out platform))
             {
-                if (OS.PlatformFeatureMap.TryGetValue(feature, out platform))
-                    return true;
+                return true;
             }
 
             platform = null;

@@ -33,6 +33,7 @@
 
 #include "groups_editor.h"
 
+class ConfigFile;
 class ConnectionsDock;
 
 class NodeDock : public VBoxContainer {
@@ -47,22 +48,22 @@ class NodeDock : public VBoxContainer {
 	HBoxContainer *mode_hb = nullptr;
 
 	Label *select_a_node = nullptr;
-	Node *last_valid_node = nullptr;
+
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 private:
-	static NodeDock *singleton;
+	inline static NodeDock *singleton = nullptr;
 
 public:
 	static NodeDock *get_singleton() { return singleton; }
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
-	void _on_node_tree_exited();
+	static void _bind_methods();
 
 public:
 	void set_node(Node *p_node);
-	void restore_last_valid_node();
 
 	void show_groups();
 	void show_connections();

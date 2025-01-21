@@ -34,14 +34,12 @@
 #include "../gdscript_compiler.h"
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
+#include "../gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_pack.h"
-#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "scene/resources/packed_scene.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -50,7 +48,7 @@
 namespace GDScriptTests {
 
 static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) {
-	GDScriptTokenizer tokenizer;
+	GDScriptTokenizerText tokenizer;
 	tokenizer.set_source_code(p_code);
 
 	int tab_size = 4;
@@ -107,6 +105,53 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 	print_line(current.get_name()); // Should be EOF
 }
 
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines);
+
+static void test_tokenizer_buffer(const String &p_code, const Vector<String> &p_lines) {
+	Vector<uint8_t> binary = GDScriptTokenizerBuffer::parse_code_string(p_code, GDScriptTokenizerBuffer::COMPRESS_NONE);
+	test_tokenizer_buffer(binary, p_lines);
+}
+
+static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<String> &p_lines) {
+	GDScriptTokenizerBuffer tokenizer;
+	tokenizer.set_code_buffer(p_buffer);
+
+	int tab_size = 4;
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
+	}
+#endif // TOOLS_ENABLED
+	String tab = String(" ").repeat(tab_size);
+
+	GDScriptTokenizer::Token current = tokenizer.scan();
+	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
+		StringBuilder token;
+		token += " --> "; // Padding for line number.
+
+		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
+			print_line(vformat("%04d %s", l, p_lines[l - 1]).replace("\t", tab));
+		}
+
+		token += current.get_name();
+
+		if (current.type == GDScriptTokenizer::Token::ERROR || current.type == GDScriptTokenizer::Token::LITERAL || current.type == GDScriptTokenizer::Token::IDENTIFIER || current.type == GDScriptTokenizer::Token::ANNOTATION) {
+			token += "(";
+			token += Variant::get_type_name(current.literal.get_type());
+			token += ") ";
+			token += current.literal;
+		}
+
+		print_line(token.as_string());
+
+		print_line("-------------------------------------------------------");
+
+		current = tokenizer.scan();
+	}
+
+	print_line(current.get_name()); // Should be EOF
+}
+
 static void test_parser(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
 	GDScriptParser parser;
 	Error err = parser.parse(p_code, p_script_path, false);
@@ -119,7 +164,7 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	}
 
 	GDScriptAnalyzer analyzer(&parser);
-	analyzer.analyze();
+	err = analyzer.analyze();
 
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
@@ -134,32 +179,57 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 #endif
 }
 
-static void recursively_disassemble_functions(const Ref<GDScript> script, const Vector<String> &p_lines) {
-	for (const KeyValue<StringName, GDScriptFunction *> &E : script->get_member_functions()) {
-		const GDScriptFunction *func = E.value;
+static void disassemble_function(const GDScriptFunction *p_func, const Vector<String> &p_lines) {
+	ERR_FAIL_NULL(p_func);
 
-		const MethodInfo &mi = func->get_method_info();
-		String signature = "Disassembling " + mi.name + "(";
-		for (int i = 0; i < mi.arguments.size(); i++) {
-			if (i > 0) {
-				signature += ", ";
-			}
-			signature += mi.arguments[i].name;
+	String arg_string;
+	bool is_first_arg = true;
+	for (const PropertyInfo &arg_info : p_func->get_method_info().arguments) {
+		if (!is_first_arg) {
+			arg_string += ", ";
 		}
-		print_line(signature + ")");
-#ifdef TOOLS_ENABLED
-		func->disassemble(p_lines);
-#endif
-		print_line("");
-		print_line("");
+		arg_string += arg_info.name;
+		is_first_arg = false;
 	}
 
-	for (const KeyValue<StringName, Ref<GDScript>> &F : script->get_subclasses()) {
-		const Ref<GDScript> inner_script = F.value;
-		print_line("");
-		print_line(vformat("Inner Class: %s", inner_script->get_local_name()));
-		print_line("");
-		recursively_disassemble_functions(inner_script, p_lines);
+	print_line(vformat("Function %s(%s)", p_func->get_name(), arg_string));
+#ifdef TOOLS_ENABLED
+	p_func->disassemble(p_lines);
+#endif
+	print_line("");
+	print_line("");
+}
+
+static void recursively_disassemble_functions(const Ref<GDScript> p_script, const Vector<String> &p_lines) {
+	print_line(vformat("Class %s", p_script->get_fully_qualified_name()));
+	print_line("");
+	print_line("");
+
+	const GDScriptFunction *implicit_initializer = p_script->get_implicit_initializer();
+	if (implicit_initializer != nullptr) {
+		disassemble_function(implicit_initializer, p_lines);
+	}
+
+	const GDScriptFunction *implicit_ready = p_script->get_implicit_ready();
+	if (implicit_ready != nullptr) {
+		disassemble_function(implicit_ready, p_lines);
+	}
+
+	const GDScriptFunction *static_initializer = p_script->get_static_initializer();
+	if (static_initializer != nullptr) {
+		disassemble_function(static_initializer, p_lines);
+	}
+
+	for (const KeyValue<GDScriptFunction *, GDScript::LambdaInfo> &E : p_script->get_lambda_info()) {
+		disassemble_function(E.key, p_lines);
+	}
+
+	for (const KeyValue<StringName, GDScriptFunction *> &E : p_script->get_member_functions()) {
+		disassemble_function(E.value, p_lines);
+	}
+
+	for (const KeyValue<StringName, Ref<GDScript>> &E : p_script->get_subclasses()) {
+		recursively_disassemble_functions(E.value, p_lines);
 	}
 }
 
@@ -212,7 +282,7 @@ void test(TestType p_type) {
 	}
 
 	String test = cmdlargs.back()->get();
-	if (!test.ends_with(".gd")) {
+	if (!test.ends_with(".gd") && !test.ends_with(".gdc")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
 		return;
 	}
@@ -254,6 +324,13 @@ void test(TestType p_type) {
 	switch (p_type) {
 		case TEST_TOKENIZER:
 			test_tokenizer(code, lines);
+			break;
+		case TEST_TOKENIZER_BUFFER:
+			if (test.ends_with(".gdc")) {
+				test_tokenizer_buffer(buf, lines);
+			} else {
+				test_tokenizer_buffer(code, lines);
+			}
 			break;
 		case TEST_PARSER:
 			test_parser(code, test, lines);

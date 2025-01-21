@@ -33,6 +33,7 @@
 
 #include "core/io/resource.h"
 
+class GLTFObjectModelProperty;
 class Light3D;
 
 // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual
@@ -51,8 +52,11 @@ private:
 	float range = INFINITY;
 	float inner_cone_angle = 0.0f;
 	float outer_cone_angle = Math_TAU / 8.0f;
+	Dictionary additional_data;
 
 public:
+	static void set_cone_inner_attenuation_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop);
+
 	Color get_color();
 	void set_color(Color p_color);
 
@@ -76,6 +80,9 @@ public:
 
 	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
 	Dictionary to_dictionary() const;
+
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
 #endif // GLTF_LIGHT_H

@@ -36,6 +36,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/control.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
 EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
@@ -63,7 +64,7 @@ float EditorCommandPalette::_score_path(const String &p_search, const String &p_
 }
 
 void EditorCommandPalette::_update_command_search(const String &search_text) {
-	ERR_FAIL_COND(commands.size() == 0);
+	ERR_FAIL_COND(commands.is_empty());
 
 	HashMap<String, TreeItem *> sections;
 	TreeItem *first_section = nullptr;
@@ -139,7 +140,7 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 		ti->set_metadata(0, entries[i].key_name);
 		ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
 		ti->set_text(1, shortcut_text);
-		Color c = get_theme_color(SNAME("font_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5);
+		Color c = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.5);
 		ti->set_custom_color(1, c);
 	}
 
@@ -182,18 +183,13 @@ void EditorCommandPalette::_notification(int p_what) {
 	}
 }
 
-void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-			} break;
-			default:
-				break;
+void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			command_search_box->accept_event();
 		}
 	}
 }
@@ -341,15 +337,15 @@ EditorCommandPalette *EditorCommandPalette::get_singleton() {
 
 EditorCommandPalette::EditorCommandPalette() {
 	set_hide_on_ok(false);
-	connect("confirmed", callable_mp(this, &EditorCommandPalette::_confirmed));
+	connect(SceneStringName(confirmed), callable_mp(this, &EditorCommandPalette::_confirmed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
 
 	command_search_box = memnew(LineEdit);
 	command_search_box->set_placeholder(TTR("Filter Commands"));
-	command_search_box->connect("gui_input", callable_mp(this, &EditorCommandPalette::_sbox_input));
-	command_search_box->connect("text_changed", callable_mp(this, &EditorCommandPalette::_update_command_search));
+	command_search_box->connect(SceneStringName(gui_input), callable_mp(this, &EditorCommandPalette::_sbox_input));
+	command_search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorCommandPalette::_update_command_search));
 	command_search_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	command_search_box->set_clear_button_enabled(true);
 	MarginContainer *margin_container_csb = memnew(MarginContainer);
@@ -359,7 +355,7 @@ EditorCommandPalette::EditorCommandPalette() {
 
 	search_options = memnew(Tree);
 	search_options->connect("item_activated", callable_mp(this, &EditorCommandPalette::_confirmed));
-	search_options->connect("item_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
+	search_options->connect(SceneStringName(item_selected), callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(false));
 	search_options->connect("nothing_selected", callable_mp((BaseButton *)get_ok_button(), &BaseButton::set_disabled).bind(true));
 	search_options->create_item();
 	search_options->set_hide_root(true);

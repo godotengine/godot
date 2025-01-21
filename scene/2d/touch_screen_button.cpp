@@ -30,19 +30,18 @@
 
 #include "touch_screen_button.h"
 
-#include "scene/main/window.h"
-#include "scene/scene_string_names.h"
+#include "scene/main/viewport.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
 		return;
 	}
 	if (texture_normal.is_valid()) {
-		texture_normal->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		texture_normal->disconnect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	texture_normal = p_texture;
 	if (texture_normal.is_valid()) {
-		texture_normal->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
+		texture_normal->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
 	}
 	queue_redraw();
 }
@@ -56,11 +55,11 @@ void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pres
 		return;
 	}
 	if (texture_pressed.is_valid()) {
-		texture_pressed->disconnect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		texture_pressed->disconnect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	texture_pressed = p_texture_pressed;
 	if (texture_pressed.is_valid()) {
-		texture_pressed->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
+		texture_pressed->connect(CoreStringName(changed), callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
 	}
 	queue_redraw();
 }
@@ -186,6 +185,7 @@ void TouchScreenButton::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_pressed()) {
 				_release();
@@ -306,7 +306,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		get_viewport()->push_input(iea, true);
 	}
 
-	emit_signal(SNAME("pressed"));
+	emit_signal(SceneStringName(pressed));
 	queue_redraw();
 }
 
@@ -330,7 +330,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 TouchScreenButton::_edit_get_rect() const {
 	if (texture_normal.is_null()) {
 		return CanvasItem::_edit_get_rect();
@@ -340,9 +340,9 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 }
 
 bool TouchScreenButton::_edit_use_rect() const {
-	return !texture_normal.is_null();
+	return texture_normal.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 TouchScreenButton::get_anchorable_rect() const {
 	if (texture_normal.is_null()) {
@@ -371,10 +371,10 @@ bool TouchScreenButton::is_passby_press_enabled() const {
 
 #ifndef DISABLE_DEPRECATED
 bool TouchScreenButton::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == SNAME("normal")) { // Compatibility with Godot 3.x.
+	if (p_name == CoreStringName(normal)) { // Compatibility with Godot 3.x.
 		set_texture_normal(p_value);
 		return true;
-	} else if (p_name == SNAME("pressed")) { // Compatibility with Godot 3.x.
+	} else if (p_name == SceneStringName(pressed)) { // Compatibility with Godot 3.x.
 		set_texture_pressed(p_value);
 		return true;
 	}
@@ -430,6 +430,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
+	unit_rect.instantiate();
 	unit_rect->set_size(Vector2(1, 1));
 }

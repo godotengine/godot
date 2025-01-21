@@ -162,7 +162,39 @@ Vector<String> OS_Android::get_granted_permissions() const {
 	return godot_java->get_granted_permissions();
 }
 
-Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+bool OS_Android::copy_dynamic_library(const String &p_library_path, const String &p_target_dir, String *r_copy_path) {
+	if (!FileAccess::exists(p_library_path)) {
+		return false;
+	}
+
+	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_library_path);
+	if (da_ref.is_null()) {
+		return false;
+	}
+
+	String copy_path = p_target_dir.path_join(p_library_path.get_file());
+	bool copy_exists = FileAccess::exists(copy_path);
+	if (copy_exists) {
+		print_verbose("Deleting existing library copy " + copy_path);
+		if (da_ref->remove(copy_path) != OK) {
+			print_verbose("Unable to delete " + copy_path);
+		}
+	}
+
+	print_verbose("Copying " + p_library_path + " to " + p_target_dir);
+	Error create_dir_result = da_ref->make_dir_recursive(p_target_dir);
+	if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
+		copy_exists = da_ref->copy(p_library_path, copy_path) == OK;
+	}
+
+	if (copy_exists && r_copy_path != nullptr) {
+		*r_copy_path = copy_path;
+	}
+
+	return copy_exists;
+}
+
+Error OS_Android::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path;
 	bool so_file_exists = true;
 	if (!FileAccess::exists(path)) {
@@ -172,24 +204,32 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	if (!p_library_handle && so_file_exists) {
-		// The library may be on the sdcard and thus inaccessible. Try to copy it to the internal
-		// directory.
-		uint64_t so_modified_time = FileAccess::get_modified_time(p_path);
-		String dynamic_library_path = get_dynamic_libraries_path().path_join(String::num_uint64(so_modified_time));
-		String internal_path = dynamic_library_path.path_join(p_path.get_file());
+		// The library (and its dependencies) may be on the sdcard and thus inaccessible.
+		// Try to copy to the internal directory for access.
+		const String dynamic_library_path = get_dynamic_libraries_path();
 
-		bool internal_so_file_exists = FileAccess::exists(internal_path);
-		if (!internal_so_file_exists) {
-			Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
-			if (da_ref.is_valid()) {
-				Error create_dir_result = da_ref->make_dir_recursive(dynamic_library_path);
-				if (create_dir_result == OK || create_dir_result == ERR_ALREADY_EXISTS) {
-					internal_so_file_exists = da_ref->copy(path, internal_path) == OK;
+		if (p_data != nullptr && p_data->library_dependencies != nullptr && !p_data->library_dependencies->is_empty()) {
+			// Copy the library dependencies
+			print_verbose("Copying library dependencies..");
+			for (const String &library_dependency_path : *p_data->library_dependencies) {
+				String internal_library_dependency_path;
+				if (!copy_dynamic_library(library_dependency_path, dynamic_library_path.path_join(library_dependency_path.get_base_dir()), &internal_library_dependency_path)) {
+					ERR_PRINT(vformat("Unable to copy library dependency %s", library_dependency_path));
+				} else {
+					void *lib_dependency_handle = dlopen(internal_library_dependency_path.utf8().get_data(), RTLD_NOW);
+					if (!lib_dependency_handle) {
+						ERR_PRINT(vformat("Can't open dynamic library dependency: %s. Error: %s.", internal_library_dependency_path, dlerror()));
+					}
 				}
 			}
 		}
 
+		String internal_path;
+		print_verbose("Copying library " + p_path);
+		const bool internal_so_file_exists = copy_dynamic_library(p_path, dynamic_library_path.path_join(p_path.get_base_dir()), &internal_path);
+
 		if (internal_so_file_exists) {
+			print_verbose("Opening library " + internal_path);
 			p_library_handle = dlopen(internal_path.utf8().get_data(), RTLD_NOW);
 			if (p_library_handle) {
 				path = internal_path;
@@ -199,8 +239,8 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -324,15 +364,21 @@ void OS_Android::main_loop_end() {
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+	}
 	audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+	}
 	audio_driver_android.set_pause(false);
 }
 
-Error OS_Android::shell_open(String p_uri) {
+Error OS_Android::shell_open(const String &p_uri) {
 	return godot_io_java->open_uri(p_uri);
 }
 
@@ -367,10 +413,10 @@ String OS_Android::get_model_name() const {
 }
 
 String OS_Android::get_data_path() const {
-	return get_user_data_dir();
+	return OS::get_user_data_dir();
 }
 
-void OS_Android::_load_system_font_config() {
+void OS_Android::_load_system_font_config() const {
 	font_aliases.clear();
 	fonts.clear();
 	font_names.clear();
@@ -495,7 +541,7 @@ void OS_Android::_load_system_font_config() {
 
 Vector<String> OS_Android::get_system_fonts() const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	Vector<String> ret;
 	for (const String &E : font_names) {
@@ -506,7 +552,7 @@ Vector<String> OS_Android::get_system_fonts() const {
 
 Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {
@@ -540,11 +586,11 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		}
 		if (score > best_score) {
 			best_score = score;
-			if (ret.find(root.path_join(E->get().filename)) < 0) {
+			if (!ret.has(root.path_join(E->get().filename))) {
 				ret.insert(0, root.path_join(E->get().filename));
 			}
 		} else if (score == best_score || E->get().script.is_empty()) {
-			if (ret.find(root.path_join(E->get().filename)) < 0) {
+			if (!ret.has(root.path_join(E->get().filename))) {
 				ret.push_back(root.path_join(E->get().filename));
 			}
 		}
@@ -558,7 +604,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 
 String OS_Android::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
 	if (!font_config_loaded) {
-		const_cast<OS_Android *>(this)->_load_system_font_config();
+		_load_system_font_config();
 	}
 	String font_name = p_font_name.to_lower();
 	if (font_aliases.has(font_name)) {
@@ -601,12 +647,12 @@ String OS_Android::get_executable_path() const {
 	return OS::get_executable_path();
 }
 
-String OS_Android::get_user_data_dir() const {
+String OS_Android::get_user_data_dir(const String &p_user_dir) const {
 	if (!data_dir_cache.is_empty()) {
 		return data_dir_cache;
 	}
 
-	String data_dir = godot_io_java->get_user_data_dir();
+	String data_dir = godot_io_java->get_user_data_dir(p_user_dir);
 	if (!data_dir.is_empty()) {
 		data_dir_cache = _remove_symlink(data_dir);
 		return data_dir_cache;
@@ -627,6 +673,19 @@ String OS_Android::get_cache_path() const {
 	if (!cache_dir.is_empty()) {
 		cache_dir_cache = _remove_symlink(cache_dir);
 		return cache_dir_cache;
+	}
+	return ".";
+}
+
+String OS_Android::get_temp_path() const {
+	if (!temp_dir_cache.is_empty()) {
+		return temp_dir_cache;
+	}
+
+	String temp_dir = godot_io_java->get_temp_dir();
+	if (!temp_dir.is_empty()) {
+		temp_dir_cache = _remove_symlink(temp_dir);
+		return temp_dir_cache;
 	}
 	return ".";
 }
@@ -700,12 +759,12 @@ ANativeWindow *OS_Android::get_native_window() const {
 #endif
 }
 
-void OS_Android::vibrate_handheld(int p_duration_ms) {
-	godot_java->vibrate(p_duration_ms);
+void OS_Android::vibrate_handheld(int p_duration_ms, float p_amplitude) {
+	godot_java->vibrate(p_duration_ms, p_amplitude);
 }
 
 String OS_Android::get_config_path() const {
-	return get_user_data_dir().path_join("config");
+	return OS::get_user_data_dir().path_join("config");
 }
 
 void OS_Android::benchmark_begin_measure(const String &p_context, const String &p_what) {
@@ -729,7 +788,21 @@ void OS_Android::benchmark_dump() {
 #endif
 }
 
+#ifdef TOOLS_ENABLED
+Error OS_Android::sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password) {
+	return godot_java->sign_apk(p_input_path, p_output_path, p_keystore_path, p_keystore_user, p_keystore_password);
+}
+
+Error OS_Android::verify_apk(const String &p_apk_path) {
+	return godot_java->verify_apk(p_apk_path);
+}
+#endif
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
+	if (p_feature == "macos" || p_feature == "web_ios" || p_feature == "web_macos" || p_feature == "windows") {
+		return false;
+	}
+
 	if (p_feature == "system_fonts") {
 		return true;
 	}
@@ -803,6 +876,9 @@ Error OS_Android::create_process(const String &p_path, const List<String> &p_arg
 
 Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
 	int instance_id = godot_java->create_new_godot_instance(p_arguments);
+	if (instance_id == -1) {
+		return FAILED;
+	}
 	if (r_child_id) {
 		*r_child_id = instance_id;
 	}
@@ -821,7 +897,7 @@ String OS_Android::get_system_ca_certificates() {
 }
 
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
-	r_project_path = get_user_data_dir();
+	r_project_path = OS::get_user_data_dir();
 	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
 	if (err == OK) {
 		remote_fs_dir = r_project_path;

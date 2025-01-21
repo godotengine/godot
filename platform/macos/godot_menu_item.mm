@@ -31,4 +31,18 @@
 #include "godot_menu_item.h"
 
 @implementation GodotMenuItem
+
+- (id)init {
+	self = [super init];
+
+	self->callback = Callable();
+	self->key_callback = Callable();
+	self->checkable_type = GlobalMenuCheckType::CHECKABLE_TYPE_NONE;
+	self->checked = false;
+	self->max_states = 0;
+	self->state = 0;
+
+	return self;
+}
+
 @end

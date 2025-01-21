@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMeshSourceGeometryData2D" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMeshSourceGeometryData2D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Container for parsed source geometry data used in navigation mesh baking.
 	</brief_description>
@@ -16,11 +16,33 @@
 				Adds the outline points of a shape as obstructed area.
 			</description>
 		</method>
+		<method name="add_projected_obstruction">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector2Array" />
+			<param index="1" name="carve" type="bool" />
+			<description>
+				Adds a projected obstruction shape to the source geometry. If [param carve] is [code]true[/code] the carved shape will not be affected by additional offsets (e.g. agent radius) of the navigation mesh baking process.
+			</description>
+		</method>
 		<method name="add_traversable_outline">
 			<return type="void" />
 			<param index="0" name="shape_outline" type="PackedVector2Array" />
 			<description>
 				Adds the outline points of a shape as traversable area.
+			</description>
+		</method>
+		<method name="append_obstruction_outlines">
+			<return type="void" />
+			<param index="0" name="obstruction_outlines" type="PackedVector2Array[]" />
+			<description>
+				Appends another array of [param obstruction_outlines] at the end of the existing obstruction outlines array.
+			</description>
+		</method>
+		<method name="append_traversable_outlines">
+			<return type="void" />
+			<param index="0" name="traversable_outlines" type="PackedVector2Array[]" />
+			<description>
+				Appends another array of [param traversable_outlines] at the end of the existing traversable outlines array.
 			</description>
 		</method>
 		<method name="clear">
@@ -29,10 +51,30 @@
 				Clears the internal data.
 			</description>
 		</method>
+		<method name="clear_projected_obstructions">
+			<return type="void" />
+			<description>
+				Clears all projected obstructions.
+			</description>
+		</method>
+		<method name="get_bounds">
+			<return type="Rect2" />
+			<description>
+				Returns an axis-aligned bounding box that covers all the stored geometry data. The bounds are calculated when calling this function with the result cached until further geometry changes are made.
+			</description>
+		</method>
 		<method name="get_obstruction_outlines" qualifiers="const">
 			<return type="PackedVector2Array[]" />
 			<description>
 				Returns all the obstructed area outlines arrays.
+			</description>
+		</method>
+		<method name="get_projected_obstructions" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the projected obstructions as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
+				- [code]vertices[/code] - A [PackedFloat32Array] that defines the outline points of the projected shape.
+				- [code]carve[/code] - A [bool] that defines how the projected shape affects the navigation mesh baking. If [code]true[/code] the projected shape will not be affected by addition offsets, e.g. agent radius.
 			</description>
 		</method>
 		<method name="get_traversable_outlines" qualifiers="const">
@@ -47,11 +89,31 @@
 				Returns [code]true[/code] when parsed source geometry data exists.
 			</description>
 		</method>
+		<method name="merge">
+			<return type="void" />
+			<param index="0" name="other_geometry" type="NavigationMeshSourceGeometryData2D" />
+			<description>
+				Adds the geometry data of another [NavigationMeshSourceGeometryData2D] to the navigation mesh baking data.
+			</description>
+		</method>
 		<method name="set_obstruction_outlines">
 			<return type="void" />
 			<param index="0" name="obstruction_outlines" type="PackedVector2Array[]" />
 			<description>
 				Sets all the obstructed area outlines arrays.
+			</description>
+		</method>
+		<method name="set_projected_obstructions">
+			<return type="void" />
+			<param index="0" name="projected_obstructions" type="Array" />
+			<description>
+				Sets the projected obstructions with an Array of Dictionaries with the following key value pairs:
+				[codeblocks]
+				[gdscript]
+				"vertices" : PackedFloat32Array
+				"carve" : bool
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_traversable_outlines">

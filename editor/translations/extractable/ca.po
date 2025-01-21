@@ -1,0 +1,118 @@
+# Catalan translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-01-16 18:10+0000\n"
+"Last-Translator: bene toff <benetoffix@gmail.com>\n"
+"Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ca/>\n"
+"Language: ca\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Network"
+msgstr "Xarxa"
+
+msgid "Open"
+msgstr "Obre"
+
+msgid "Select Current Folder"
+msgstr "Selecciona el Directori Actual"
+
+msgid "Select This Folder"
+msgstr "Seleccionar aquest Directori"
+
+msgid "All Recognized"
+msgstr "Tots Reconeguts"
+
+msgid "Open a File"
+msgstr "Obre un Fitxer"
+
+msgid "Open File(s)"
+msgstr "Obre Fitxer(s)"
+
+msgid "Open a Directory"
+msgstr "Obre un Directori"
+
+msgid "Open a File or Directory"
+msgstr "Obre un Fitxer o Directori"
+
+msgid "Save"
+msgstr "Desa"
+
+msgid "Save a File"
+msgstr "Desa un Fitxer"
+
+msgid "Go to previous folder."
+msgstr "Anar al directori anterior."
+
+msgid "Go to next folder."
+msgstr "Anar al directori següent."
+
+msgid "Go to parent folder."
+msgstr "Anar al directori pare."
+
+msgid "Path:"
+msgstr "Camí:"
+
+msgid "Refresh files."
+msgstr "Actualitzar fitxers."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Commutar visibilitat dels fitxers ocults."
+
+msgid "Directories & Files:"
+msgstr "Directoris i Fitxers:"
+
+msgid "File:"
+msgstr "Fitxer:"
+
+msgid "Create Folder"
+msgstr "Crea un Directori"
+
+msgid "Name:"
+msgstr "Nom:"
+
+msgid "Could not create folder."
+msgstr "No s'ha pogut crear el directori."
+
+msgid "Zoom Out"
+msgstr "Allunya"
+
+msgid "Zoom Reset"
+msgstr "Restablir zoom"
+
+msgid "Zoom In"
+msgstr "Apropa"
+
+msgid "Cut"
+msgstr "Talla"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Paste"
+msgstr "Enganxa"
+
+msgid "Select All"
+msgstr "Selecciona-ho Tot"
+
+msgid "Clear"
+msgstr "Neteja"
+
+msgid "Undo"
+msgstr "Desfés"
+
+msgid "Redo"
+msgstr "Refés"
+
+msgid "(Other)"
+msgstr "(Altres)"

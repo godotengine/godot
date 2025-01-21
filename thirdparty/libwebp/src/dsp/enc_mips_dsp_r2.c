@@ -20,8 +20,8 @@
 #include "src/enc/cost_enc.h"
 #include "src/enc/vp8i_enc.h"
 
-static const int kC1 = 20091 + (1 << 16);
-static const int kC2 = 35468;
+static const int kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int kC2 = WEBP_TRANSFORM_AC3_C2;
 
 // O - output
 // I - input (macro doesn't change it)

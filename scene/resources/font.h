@@ -33,7 +33,6 @@
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
 
@@ -97,18 +96,19 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids_fb(const Font *p_f, int p_depth) const;
 	virtual void _update_rids() const;
-	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
-
 	virtual void reset_state() override;
 
 #ifndef DISABLE_DEPRECATED
 	RID _find_variation_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
+	RID _find_variation_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
 	static void _bind_compatibility_methods();
 #endif
 
 public:
+	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
+	virtual bool _is_base_cyclic(const Ref<Font> &p_f, int p_depth) const;
 	virtual void _invalidate_rids();
 
 	static constexpr int DEFAULT_FONT_SIZE = 16;
@@ -118,8 +118,8 @@ public:
 	virtual TypedArray<Font> get_fallbacks() const;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const { return RID(); };
-	virtual RID _get_rid() const { return RID(); };
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const { return RID(); }
+	virtual RID _get_rid() const { return RID(); }
 	virtual TypedArray<RID> get_rids() const;
 
 	// Font metrics.
@@ -136,7 +136,7 @@ public:
 	virtual int get_font_weight() const;
 	virtual int get_font_stretch() const;
 
-	virtual int get_spacing(TextServer::SpacingType p_spacing) const { return 0; };
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const { return 0; }
 	virtual Dictionary get_opentype_features() const;
 
 	// Drawing string.
@@ -182,10 +182,11 @@ class FontFile : public Font {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
-	PackedByteArray data;
+	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
+	bool disable_embedded_bitmaps = true;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
 	int msdf_size = 48;
@@ -195,6 +196,7 @@ class FontFile : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 
 #ifndef DISABLE_DEPRECATED
@@ -225,6 +227,8 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	Error _load_bitmap_font(const String &p_path, List<String> *r_image_files);
+
 	Error load_bitmap_font(const String &p_path);
 	Error load_dynamic_font(const String &p_path);
 
@@ -242,6 +246,9 @@ public:
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
+	virtual bool get_disable_embedded_bitmaps() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
@@ -273,11 +280,14 @@ public:
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
+
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
 
 	// Cache.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
 	virtual RID _get_rid() const override;
 
 	virtual int get_cache_count() const;
@@ -299,6 +309,9 @@ public:
 
 	virtual void set_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing, int64_t p_value);
 	virtual int64_t get_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing) const;
+
+	virtual float get_extra_baseline_offset(int p_cache_index) const;
+	virtual void set_extra_baseline_offset(int p_cache_index, float p_baseline_offset);
 
 	virtual void set_face_index(int p_cache_index, int64_t p_index);
 	virtual int64_t get_face_index(int p_cache_index) const;
@@ -400,6 +413,7 @@ class FontVariation : public Font {
 	Variation variation;
 	Dictionary opentype_features;
 	int extra_spacing[TextServer::SPACING_MAX];
+	float baseline_offset = 0.0;
 
 protected:
 	static void _bind_methods();
@@ -431,8 +445,11 @@ public:
 	virtual void set_spacing(TextServer::SpacingType p_spacing, int p_value);
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
+	virtual float get_baseline_offset() const;
+	virtual void set_baseline_offset(float p_baseline_offset);
+
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
 	virtual RID _get_rid() const override;
 
 	FontVariation();
@@ -454,17 +471,19 @@ class SystemFont : public Font {
 	mutable Ref<Font> theme_font;
 
 	Ref<FontFile> base_font;
-	Vector<int> face_indeces;
+	Vector<int> face_indices;
 	int ftr_weight = 0;
 	int ftr_stretch = 0;
 	int ftr_italic = 0;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
+	bool disable_embedded_bitmaps = true;
 	bool force_autohinter = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
@@ -479,10 +498,14 @@ protected:
 	virtual void reset_state() override;
 
 public:
+	virtual Ref<Font> get_base_font() const { return base_font; }
 	virtual Ref<Font> _get_base_font_or_default() const;
 
 	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
 	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps);
+	virtual bool get_disable_embedded_bitmaps() const;
 
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
@@ -498,6 +521,9 @@ public:
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
@@ -525,7 +551,7 @@ public:
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
 	virtual RID _get_rid() const override;
 
 	int64_t get_face_count() const override;

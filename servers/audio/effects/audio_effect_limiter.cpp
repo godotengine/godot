@@ -41,8 +41,8 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 	float scmult = Math::abs((ceildb - sc) / (peakdb - sc));
 
 	for (int i = 0; i < p_frame_count; i++) {
-		float spl0 = p_src_frames[i].l;
-		float spl1 = p_src_frames[i].r;
+		float spl0 = p_src_frames[i].left;
+		float spl1 = p_src_frames[i].right;
 		spl0 = spl0 * makeup;
 		spl1 = spl1 * makeup;
 		float sign0 = (spl0 < 0.0 ? -1.0 : 1.0);
@@ -62,8 +62,8 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 		spl0 = MIN(ceiling, Math::abs(spl0)) * (spl0 < 0.0 ? -1.0 : 1.0);
 		spl1 = MIN(ceiling, Math::abs(spl1)) * (spl1 < 0.0 ? -1.0 : 1.0);
 
-		p_dst_frames[i].l = spl0;
-		p_dst_frames[i].r = spl1;
+		p_dst_frames[i].left = spl0;
+		p_dst_frames[i].right = spl1;
 	}
 }
 

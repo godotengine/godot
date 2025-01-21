@@ -38,12 +38,10 @@
 
 #if defined(UNIX_ENABLED)
 
-typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
-
 class FileAccessUnix : public FileAccess {
 	FILE *f = nullptr;
 	int flags = 0;
-	void check_errors() const;
+	void check_errors(bool p_write = false) const;
 	mutable Error last_error = OK;
 	String save_path;
 	String path;
@@ -51,7 +49,12 @@ class FileAccessUnix : public FileAccess {
 
 	void _close();
 
+#if defined(TOOLS_ENABLED)
+	String get_real_path() const; // Returns the resolved real path for the current open file.
+#endif
+
 public:
+	typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 	static CloseNotificationFunc close_notification_func;
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
@@ -67,20 +70,13 @@ public:
 
 	virtual bool eof_reached() const override; ///< reading passed EOF
 
-	virtual uint8_t get_8() const override; ///< get a byte
-	virtual uint16_t get_16() const override;
-	virtual uint32_t get_32() const override;
-	virtual uint64_t get_64() const override;
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
 
 	virtual Error get_error() const override; ///< get last error
 
+	virtual Error resize(int64_t p_length) override;
 	virtual void flush() override;
-	virtual void store_8(uint8_t p_dest) override; ///< store a byte
-	virtual void store_16(uint16_t p_dest) override;
-	virtual void store_32(uint32_t p_dest) override;
-	virtual void store_64(uint64_t p_dest) override;
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) override; ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_path) override; ///< return true if a file exists
 

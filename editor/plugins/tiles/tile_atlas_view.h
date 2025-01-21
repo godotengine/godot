@@ -37,7 +37,7 @@
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/resources/tile_set.h"
+#include "scene/resources/2d/tile_set.h"
 
 class ViewPanner;
 
@@ -45,8 +45,8 @@ class TileAtlasView : public Control {
 	GDCLASS(TileAtlasView, Control);
 
 private:
-	TileSet *tile_set = nullptr;
-	TileSetAtlasSource *tile_set_atlas_source = nullptr;
+	Ref<TileSet> tile_set;
+	Ref<TileSetAtlasSource> tile_set_atlas_source;
 	int source_id = TileSet::INVALID_SOURCE;
 
 	enum DragType {
@@ -135,8 +135,8 @@ public:
 	void set_padding(Side p_side, int p_padding);
 
 	// Left side.
-	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
-	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
+	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); }
+	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); }
 
 	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp = false) const;
 
@@ -148,7 +148,7 @@ public:
 		}
 		p_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	};
+	}
 
 	// Right side.
 	Vector3i get_alternative_tile_at_pos(const Vector2 p_pos) const;
@@ -162,7 +162,7 @@ public:
 		}
 		p_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		p_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	};
+	}
 
 	// Redraw everything.
 	void queue_redraw();

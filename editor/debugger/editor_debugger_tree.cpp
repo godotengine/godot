@@ -30,7 +30,10 @@
 
 #include "editor_debugger_tree.h"
 
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/debugger/scene_debugger.h"
@@ -44,7 +47,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 
 	// Popup
 	item_menu = memnew(PopupMenu);
-	item_menu->connect("id_pressed", callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
+	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerTree::_item_menu_id_pressed));
 	add_child(item_menu);
 
 	// File Dialog
@@ -56,9 +59,15 @@ EditorDebuggerTree::EditorDebuggerTree() {
 void EditorDebuggerTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			update_icon_max_width();
 		} break;
 	}
 }
@@ -117,6 +126,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item_menu->clear();
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CopyNodePath")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
+	item_menu->add_icon_item(get_editor_theme_icon(SNAME("Collapse")), TTR("Expand/Collapse Branch"), ITEM_MENU_EXPAND_COLLAPSE);
 	item_menu->set_position(get_screen_position() + get_local_mouse_position());
 	item_menu->reset_size();
 	item_menu->popup();
@@ -137,25 +147,51 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 /// |-E
 ///
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
+	set_hide_root(false);
+
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
-	bool filter_changed = filter != last_filter;
+	TreeItem *select_item = nullptr;
+	bool hide_filtered_out_parents = EDITOR_GET("docks/scene_tree/hide_filtered_out_parents");
+
+	bool should_scroll = scrolling_to_item || filter != last_filter;
+	scrolling_to_item = false;
 	TreeItem *scroll_item = nullptr;
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
-	List<Pair<TreeItem *, int>> parents;
-	for (int i = 0; i < p_tree->nodes.size(); i++) {
+	List<ParentItem> parents;
+	for (const SceneDebuggerTree::RemoteNode &node : p_tree->nodes) {
 		TreeItem *parent = nullptr;
+		Pair<TreeItem *, TreeItem *> move_from_to;
 		if (parents.size()) { // Find last parent.
-			Pair<TreeItem *, int> &p = parents[0];
-			parent = p.first;
-			if (!(--p.second)) { // If no child left, remove it.
+			ParentItem &p = parents.front()->get();
+			parent = p.tree_item;
+			if (!(--p.child_count)) { // If no child left, remove it.
 				parents.pop_front();
+
+				if (hide_filtered_out_parents && !filter.is_subsequence_ofn(parent->get_text(0))) {
+					if (parent == get_root()) {
+						set_hide_root(true);
+					} else {
+						move_from_to.first = parent;
+						// Find the closest ancestor that matches the filter.
+						for (const ParentItem p2 : parents) {
+							move_from_to.second = p2.tree_item;
+							if (p2.matches_filter || move_from_to.second == get_root()) {
+								break;
+							}
+						}
+
+						if (!move_from_to.second) {
+							move_from_to.second = get_root();
+						}
+					}
+				}
 			}
 		}
+
 		// Add this node.
-		const SceneDebuggerTree::RemoteNode &node = p_tree->nodes[i];
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
 		if (node.scene_file_path.is_empty()) {
@@ -169,29 +205,41 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		}
 		item->set_metadata(0, node.id);
 
-		// Set current item as collapsed if necessary (root is never collapsed).
+		String current_path;
 		if (parent) {
+			current_path += (String)parent->get_meta("node_path");
+
+			// Set current item as collapsed if necessary (root is never collapsed).
 			if (!unfold_cache.has(node.id)) {
 				item->set_collapsed(true);
 			}
 		}
+		item->set_meta("node_path", current_path + "/" + item->get_text(0));
+
 		// Select previously selected node.
 		if (debugger_id == p_debugger) { // Can use remote id.
 			if (node.id == inspected_object_id) {
-				item->select(0);
-				if (filter_changed) {
+				if (selection_uncollapse_all) {
+					selection_uncollapse_all = false;
+
+					// Temporarily set to `false`, to allow caching the unfolds.
+					updating_scene_tree = false;
+					item->uncollapse_tree();
+					updating_scene_tree = true;
+				}
+
+				select_item = item;
+				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
-		} else { // Must use path
-			if (last_path == _get_path(item)) {
-				updating_scene_tree = false; // Force emission of new selection.
-				item->select(0);
-				if (filter_changed) {
-					scroll_item = item;
-				}
-				updating_scene_tree = true;
+		} else if (last_path == (String)item->get_meta("node_path")) { // Must use path.
+			updating_scene_tree = false; // Force emission of new selection.
+			select_item = item;
+			if (should_scroll) {
+				scroll_item = item;
 			}
+			updating_scene_tree = true;
 		}
 
 		// Add buttons.
@@ -223,7 +271,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 		// Add in front of the parents stack if children are expected.
 		if (node.child_count) {
-			parents.push_front(Pair<TreeItem *, int>(item, node.child_count));
+			parents.push_front(ParentItem(item, node.child_count, filter.is_subsequence_ofn(item->get_text(0))));
 		} else {
 			// Apply filters.
 			while (parent) {
@@ -231,32 +279,77 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				if (filter.is_subsequence_ofn(item->get_text(0))) {
 					break; // Filter matches, must survive.
 				}
+
 				parent->remove_child(item);
 				memdelete(item);
-				if (scroll_item == item) {
+				if (select_item == item || scroll_item == item) {
+					select_item = nullptr;
 					scroll_item = nullptr;
 				}
+
 				if (had_siblings) {
 					break; // Parent must survive.
 				}
+
 				item = parent;
 				parent = item->get_parent();
 				// Check if parent expects more children.
-				for (int j = 0; j < parents.size(); j++) {
-					if (parents[j].first == item) {
+				for (ParentItem &pair : parents) {
+					if (pair.tree_item == item) {
 						parent = nullptr;
 						break; // Might have more children.
 					}
 				}
 			}
 		}
+
+		// Move all children to the ancestor that matches the filter, if picked.
+		if (move_from_to.first) {
+			TreeItem *from = move_from_to.first;
+			TypedArray<TreeItem> children = from->get_children();
+			if (!children.is_empty()) {
+				for (Variant &c : children) {
+					TreeItem *ti = Object::cast_to<TreeItem>(c);
+					from->remove_child(ti);
+					move_from_to.second->add_child(ti);
+				}
+
+				from->get_parent()->remove_child(from);
+				memdelete(from);
+				if (select_item == from || scroll_item == from) {
+					select_item = nullptr;
+					scroll_item = nullptr;
+				}
+			}
+		}
 	}
-	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree
+
+	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
+
+	if (select_item) {
+		select_item->select(0);
+	}
 	if (scroll_item) {
-		callable_mp((Tree *)this, &Tree::scroll_to_item).call_deferred(scroll_item, false);
+		scroll_to_item(scroll_item, false);
 	}
+
 	last_filter = filter;
 	updating_scene_tree = false;
+}
+
+void EditorDebuggerTree::select_node(ObjectID p_id) {
+	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	selection_uncollapse_all = true;
+	inspected_object_id = uint64_t(p_id);
+	scrolling_to_item = true;
+	emit_signal(SNAME("object_selected"), inspected_object_id, debugger_id);
+
+	if (!updating_scene_tree) {
+		// Request a tree refresh.
+		EditorDebuggerNode::get_singleton()->request_remote_tree();
+	}
+	// Set the value immediately, so no update flooding happens and causes a crash.
+	updating_scene_tree = true;
 }
 
 Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
@@ -270,11 +363,14 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	}
 
 	String path = selected->get_text(0);
+	const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	TextureRect *tf = memnew(TextureRect);
 	tf->set_texture(selected->get_icon(0));
-	tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	tf->set_custom_minimum_size(Size2(icon_size, icon_size));
+	tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	hb->add_child(tf);
 	Label *label = memnew(Label(path));
 	hb->add_child(label);
@@ -292,26 +388,15 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	return vformat("\"%s\"", path);
 }
 
+void EditorDebuggerTree::update_icon_max_width() {
+	add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
+}
+
 String EditorDebuggerTree::get_selected_path() {
 	if (!get_selected()) {
 		return "";
 	}
-	return _get_path(get_selected());
-}
-
-String EditorDebuggerTree::_get_path(TreeItem *p_item) {
-	ERR_FAIL_NULL_V(p_item, "");
-
-	if (p_item->get_parent() == nullptr) {
-		return "/root";
-	}
-	String text = p_item->get_text(0);
-	TreeItem *cur = p_item->get_parent();
-	while (cur) {
-		text = cur->get_text(0) + "/" + text;
-		cur = cur->get_parent();
-	}
-	return "/" + text;
+	return get_selected()->get_meta("node_path");
 }
 
 void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
@@ -324,8 +409,8 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			Ref<PackedScene> sd = memnew(PackedScene);
 			ResourceSaver::get_recognized_extensions(sd, &extensions);
 			file_dialog->clear_filters();
-			for (int i = 0; i < extensions.size(); i++) {
-				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
+			for (const String &extension : extensions) {
+				file_dialog->add_filter("*." + extension, extension.to_upper());
 			}
 
 			String filename = get_selected_path().get_file() + "." + extensions.front()->get().to_lower();
@@ -340,7 +425,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 				text = ".";
 			} else {
 				text = text.replace("/root/", "");
-				int slash = text.find("/");
+				int slash = text.find_char('/');
 				if (slash < 0) {
 					text = ".";
 				} else {
@@ -349,6 +434,21 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			}
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;
+		case ITEM_MENU_EXPAND_COLLAPSE: {
+			TreeItem *s_item = get_selected();
+
+			if (!s_item) {
+				s_item = get_root();
+				if (!s_item) {
+					break;
+				}
+			}
+
+			bool collapsed = s_item->is_any_collapsed();
+			s_item->set_collapsed_recursive(!collapsed);
+
+			ensure_cursor_is_visible();
+		}
 	}
 }
 

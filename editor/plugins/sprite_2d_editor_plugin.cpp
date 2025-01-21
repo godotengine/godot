@@ -38,15 +38,17 @@
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
+#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
-#include "thirdparty/misc/clipper.hpp"
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
+
+#define PRECISION 1
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -59,58 +61,39 @@ void Sprite2DEditor::edit(Sprite2D *p_sprite) {
 	node = p_sprite;
 }
 
-#define PRECISION 10.0
-
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
 
-	ClipperLib::Path subj;
-	ClipperLib::PolyTree solution;
-	ClipperLib::PolyTree out;
-
+	Clipper2Lib::PathD subj(points.size());
 	for (int i = 0; i < points.size(); i++) {
-		subj << ClipperLib::IntPoint(points[i].x * PRECISION, points[i].y * PRECISION);
-	}
-	ClipperLib::ClipperOffset co;
-	co.AddPath(subj, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
-	co.Execute(solution, epsilon * PRECISION);
-
-	ClipperLib::PolyNode *p = solution.GetFirst();
-
-	ERR_FAIL_NULL_V(p, points);
-
-	while (p->IsHole()) {
-		p = p->GetNext();
+		subj[i] = Clipper2Lib::PointD(points[i].x, points[i].y);
 	}
 
-	//turn the result into simply polygon (AKA, fix overlap)
+	Clipper2Lib::PathsD solution = Clipper2Lib::InflatePaths({ subj }, epsilon, Clipper2Lib::JoinType::Miter, Clipper2Lib::EndType::Polygon, 2.0, PRECISION, 0.0);
+	// Here the miter_limit = 2.0 and arc_tolerance = 0.0 are Clipper2 defaults,
+	// and PRECISION is used to scale points up internally, to attain the desired precision.
 
-	//clamp into the specified rect
-	ClipperLib::Clipper cl;
-	cl.StrictlySimple(true);
-	cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-	//create the clipping rect
-	ClipperLib::Path clamp;
-	clamp.push_back(ClipperLib::IntPoint(0, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, rect.size.height * PRECISION));
-	clamp.push_back(ClipperLib::IntPoint(0, rect.size.height * PRECISION));
-	cl.AddPath(clamp, ClipperLib::ptClip, true);
-	cl.Execute(ClipperLib::ctIntersection, out);
+	ERR_FAIL_COND_V(solution.size() == 0, points);
+
+	// Clamp into the specified rect.
+	Clipper2Lib::RectD clamp(rect.position.x,
+			rect.position.y,
+			rect.position.x + rect.size.width,
+			rect.position.y + rect.size.height);
+	Clipper2Lib::PathsD out = Clipper2Lib::RectClip(clamp, solution[0], PRECISION);
+	// Here PRECISION is used to scale points up internally, to attain the desired precision.
+
+	ERR_FAIL_COND_V(out.size() == 0, points);
+
+	const Clipper2Lib::PathD &p2 = out[0];
 
 	Vector<Vector2> outPoints;
-	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_NULL_V(p2, points);
 
-	while (p2->IsHole()) {
-		p2 = p2->GetNext();
-	}
-
-	int lasti = p2->Contour.size() - 1;
-	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (uint64_t i = 0; i < p2->Contour.size(); i++) {
-		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
+	int lasti = p2.size() - 1;
+	Vector2 prev = Vector2(p2[lasti].x, p2[lasti].y);
+	for (uint64_t i = 0; i < p2.size(); i++) {
+		Vector2 cur = Vector2(p2[i].x, p2[i].y);
 		if (cur.distance_to(prev) > 0.5) {
 			outPoints.push_back(cur);
 			prev = cur;
@@ -156,7 +139,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 void Sprite2DEditor::_popup_debug_uv_dialog() {
 	String error_message;
-	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+	if (node->get_owner() != get_tree()->get_edited_scene_root() && node != get_tree()->get_edited_scene_root()) {
 		error_message = TTR("Can't convert a sprite from a foreign scene.");
 	}
 	Ref<Texture2D> texture = node->get_texture();
@@ -339,7 +322,7 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 	mesh_instance->set_mesh(mesh);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to MeshInstance2D"));
+	ur->create_action(TTR("Convert to MeshInstance2D"), UndoRedo::MERGE_DISABLE, node);
 	SceneTreeDock::get_singleton()->replace_node(node, mesh_instance);
 	ur->commit_action(false);
 }
@@ -394,7 +377,7 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	polygon_2d_instance->set_polygons(polys);
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Convert to Polygon2D"));
+	ur->create_action(TTR("Convert to Polygon2D"), UndoRedo::MERGE_DISABLE, node);
 	SceneTreeDock::get_singleton()->replace_node(node, polygon_2d_instance);
 	ur->commit_action(false);
 }
@@ -413,10 +396,10 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 		collision_polygon_2d_instance->set_polygon(outline);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Create CollisionPolygon2D Sibling"));
+		ur->create_action(TTR("Create CollisionPolygon2D Sibling"), UndoRedo::MERGE_DISABLE, node);
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, collision_polygon_2d_instance);
 		ur->add_do_reference(collision_polygon_2d_instance);
-		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
+		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", collision_polygon_2d_instance);
 		ur->commit_action();
 	}
 }
@@ -446,28 +429,28 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 		light_occluder_2d_instance->set_occluder_polygon(polygon);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Create LightOccluder2D Sibling"));
+		ur->create_action(TTR("Create LightOccluder2D Sibling"), UndoRedo::MERGE_DISABLE, node);
 		ur->add_do_method(this, "_add_as_sibling_or_child", node, light_occluder_2d_instance);
 		ur->add_do_reference(light_occluder_2d_instance);
-		ur->add_undo_method(node != this->get_tree()->get_edited_scene_root() ? node->get_parent() : this->get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
+		ur->add_undo_method(node != get_tree()->get_edited_scene_root() ? node->get_parent() : get_tree()->get_edited_scene_root(), "remove_child", light_occluder_2d_instance);
 		ur->commit_action();
 	}
 }
 
 void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node) {
 	// Can't make sibling if own node is scene root
-	if (p_own_node != this->get_tree()->get_edited_scene_root()) {
+	if (p_own_node != get_tree()->get_edited_scene_root()) {
 		p_own_node->get_parent()->add_child(p_new_node, true);
 		Object::cast_to<Node2D>(p_new_node)->set_transform(Object::cast_to<Node2D>(p_own_node)->get_transform());
 	} else {
 		p_own_node->add_child(p_new_node, true);
 	}
 
-	p_new_node->set_owner(this->get_tree()->get_edited_scene_root());
+	p_new_node->set_owner(get_tree()->get_edited_scene_root());
 }
 
 void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
-	if (panner->gui_input(p_input)) {
+	if (panner->gui_input(p_input, debug_uv->get_global_rect())) {
 		accept_event();
 	}
 }
@@ -476,7 +459,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 	debug_uv->draw_set_transform(-draw_offset * draw_zoom, 0, Vector2(draw_zoom, draw_zoom));
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	debug_uv->draw_texture(tex, Point2());
 
@@ -497,7 +480,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 
 void Sprite2DEditor::_center_view() {
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 	Vector2 zoom_factor = (debug_uv->get_size() - Vector2(1, 1) * 50 * EDSCALE) / tex->get_size();
 	zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
 	// Recalculate scroll limits.
@@ -534,7 +517,7 @@ void Sprite2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
 	}
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	Point2 min_corner;
 	Point2 max_corner = tex->get_size();
@@ -573,11 +556,17 @@ void Sprite2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(debug_uv_dialog, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
@@ -604,18 +593,18 @@ Sprite2DEditor::Sprite2DEditor() {
 	options->get_popup()->add_item(TTR("Create LightOccluder2D Sibling"), MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D);
 	options->set_switch_on_hover(true);
 
-	options->get_popup()->connect("id_pressed", callable_mp(this, &Sprite2DEditor::_menu_option));
+	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Sprite2DEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
+	debug_uv_dialog->set_size(Size2(960, 540) * EDSCALE);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	debug_uv = memnew(Panel);
-	debug_uv->connect("gui_input", callable_mp(this, &Sprite2DEditor::_debug_uv_input));
-	debug_uv->connect("draw", callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
-	debug_uv->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
+	debug_uv->connect(SceneStringName(gui_input), callable_mp(this, &Sprite2DEditor::_debug_uv_input));
+	debug_uv->connect(SceneStringName(draw), callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
 	debug_uv->set_clip_contents(true);
 	vb->add_margin_child(TTR("Preview:"), debug_uv, true);
 
@@ -630,12 +619,12 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	v_scroll = memnew(VScrollBar);
 	debug_uv->add_child(v_scroll);
-	v_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 	h_scroll = memnew(HScrollBar);
 	debug_uv->add_child(h_scroll);
-	h_scroll->connect("value_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
 
-	debug_uv_dialog->connect("confirmed", callable_mp(this, &Sprite2DEditor::_create_node));
+	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_child(memnew(Label(TTR("Simplification:"))));
@@ -664,7 +653,7 @@ Sprite2DEditor::Sprite2DEditor() {
 	hb->add_spacer();
 	update_preview = memnew(Button);
 	update_preview->set_text(TTR("Update Preview"));
-	update_preview->connect("pressed", callable_mp(this, &Sprite2DEditor::_update_mesh_data));
+	update_preview->connect(SceneStringName(pressed), callable_mp(this, &Sprite2DEditor::_update_mesh_data));
 	hb->add_child(update_preview);
 	vb->add_margin_child(TTR("Settings:"), hb);
 
@@ -690,7 +679,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

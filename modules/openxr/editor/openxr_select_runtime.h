@@ -40,12 +40,11 @@ public:
 	OpenXRSelectRuntime();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_notification);
 
 private:
 	void _update_items();
-	void _item_selected(int p_which);
+	void _on_item_selected(int p_which);
 };
 
 #endif // OPENXR_SELECT_RUNTIME_H

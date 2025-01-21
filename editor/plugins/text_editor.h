@@ -53,7 +53,7 @@ private:
 	PopupMenu *bookmarks_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 
 	enum {
 		EDIT_UNDO,
@@ -63,6 +63,7 @@ private:
 		EDIT_PASTE,
 		EDIT_SELECT_ALL,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_TRIM_FINAL_NEWLINES,
 		EDIT_CONVERT_INDENT_TO_SPACES,
 		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_MOVE_LINE_UP,
@@ -90,6 +91,7 @@ private:
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
+		EDIT_EMOJI_AND_SYMBOL,
 	};
 
 protected:
@@ -126,13 +128,14 @@ public:
 	virtual Variant get_navigation_state() override;
 	virtual Vector<String> get_functions() override;
 	virtual PackedInt32Array get_breakpoints() override;
-	virtual void set_breakpoint(int p_line, bool p_enabled) override{};
-	virtual void clear_breakpoints() override{};
-	virtual void goto_line(int p_line, bool p_with_error = false) override;
+	virtual void set_breakpoint(int p_line, bool p_enabled) override {}
+	virtual void clear_breakpoints() override {}
+	virtual void goto_line(int p_line, int p_column = 0) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
 	virtual void trim_trailing_whitespace() override;
+	virtual void trim_final_newlines() override;
 	virtual void insert_final_newline() override;
 	virtual void convert_indent() override;
 	virtual void ensure_focus() override;
@@ -142,7 +145,7 @@ public:
 	virtual bool can_lose_focus_on_node_selection() override { return true; }
 	virtual void set_debugger_active(bool p_active) override;
 	virtual void set_tooltip_request_func(const Callable &p_toolip_callback) override;
-	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
+	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) override;
 	void update_toggle_scripts_button() override;
 
 	virtual Control *get_edit_menu() override;
@@ -152,6 +155,7 @@ public:
 	virtual void validate() override;
 
 	virtual Control *get_base_editor() const override;
+	virtual CodeTextEditor *get_code_editor() const override;
 
 	static void register_editor();
 

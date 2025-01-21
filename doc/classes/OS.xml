@@ -8,7 +8,7 @@
 		[b]Note:[/b] In Godot 4, [OS] functions related to window management, clipboard, and TTS were moved to the [DisplayServer] singleton (and the [Window] class). Functions related to time were removed and are only available in the [Time] class.
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
 		<method name="alert">
@@ -23,7 +23,7 @@
 			<return type="void" />
 			<description>
 				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_midi_inputs] and [method get_connected_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
 			</description>
 		</method>
 		<method name="crash">
@@ -39,7 +39,7 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, the method will return [code]-1[/code].
+				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
@@ -50,20 +50,20 @@
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="open_console" type="bool" default="false" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space.
+				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
-				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise this method returns [code]-1[/code].
-				For example, running another instance of the project:
+				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
+				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
 				var pid = OS.create_process(OS.get_executable_path(), [])
 				[/gdscript]
 				[csharp]
-				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), []);
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
@@ -105,8 +105,8 @@
 				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				Godot.Collections.Array output = [];
+				int exitCode = OS.Execute("ls", ["-l", "/tmp"], output);
 				[/csharp]
 				[/codeblocks]
 				If you wish to access a shell built-in or execute a composite command, a platform-specific shell can be invoked. For example:
@@ -116,15 +116,35 @@
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				Godot.Collections.Array output = [];
+				OS.Execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
+			</description>
+		</method>
+		<method name="execute_with_pipe">
+			<return type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="arguments" type="PackedStringArray" />
+			<param index="2" name="blocking" type="bool" default="true" />
+			<description>
+				Creates a new process that runs independently of Godot with redirected IO. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
+				If [param blocking] is [code]false[/code], created pipes work in non-blocking mode, i.e. read and write operations will return immediately. Use [method FileAccess.get_error] to check if the last read/write operation was successful.
+				If the process cannot be created, this method returns an empty [Dictionary]. Otherwise, this method returns a [Dictionary] with the following keys:
+				- [code]"stdio"[/code] - [FileAccess] to access the process stdin and stdout pipes (read/write).
+				- [code]"stderr"[/code] - [FileAccess] to access the process stderr pipe (read only).
+				- [code]"pid"[/code] - Process ID as an [int], which you can use to monitor the process (and potentially terminate it with [method kill]).
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
+				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
@@ -164,33 +184,33 @@
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
-				Here's a minimal example on how to parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
+				[b]Example:[/b] Parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
 				    if argument.contains("="):
 				        var key_value = argument.split("=")
-				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				        arguments[key_value[0].trim_prefix("--")] = key_value[1]
 				    else:
 				        # Options without an argument will be present in the dictionary,
 				        # with the value set to an empty string.
-				        arguments[argument.lstrip("--")] = ""
+				        arguments[argument.trim_prefix("--")] = ""
 				[/gdscript]
 				[csharp]
-				var arguments = new Godot.Collections.Dictionary();
+				var arguments = new Dictionary&lt;string, string&gt;();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
 				    if (argument.Contains('='))
 				    {
 				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
+				        arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
 				    }
 				    else
 				    {
 				        // Options without an argument will be present in the dictionary,
 				        // with the value set to an empty string.
-				        arguments[keyValue[0].LStrip("--")] = "";
+				        arguments[argument.TrimPrefix("--")] = "";
 				    }
 				}
 				[/csharp]
@@ -204,7 +224,7 @@
 				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
 				# Godot has been executed with the following command:
-				# godot --fullscreen -- --level=2 --hardcore 
+				# godot --fullscreen -- --level=2 --hardcore
 
 				OS.get_cmdline_args()      # Returns ["--fullscreen", "--level=2", "--hardcore"]
 				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
@@ -224,7 +244,9 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -244,6 +266,14 @@
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_entropy">
+			<return type="PackedByteArray" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
+				[b]Note:[/b] Generating large quantities of bytes using this method can result in locking and entropy of lower quality on most platforms. Using [method Crypto.generate_random_bytes] is preferred in most cases.
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="variable" type="String" />
@@ -257,7 +287,7 @@
 			<return type="String" />
 			<description>
 				Returns the file path to the current engine executable.
-				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
+				[b]Note:[/b] On macOS, if you want to launch another instance of Godot, always use [method create_instance] instead of relying on the executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
@@ -328,7 +358,7 @@
 			<return type="String" />
 			<description>
 				Returns the model name of the current device.
-				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, and Windows. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -341,7 +371,7 @@
 				- On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
 				- On Android, this is [code]"Android"[/code].
 				- On iOS, this is [code]"iOS"[/code].
-				- On the web, this is [code]"Web"[/code].
+				- On Web, this is [code]"Web"[/code].
 				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, possibly returning other names.
 				[codeblocks]
 				[gdscript]
@@ -390,11 +420,21 @@
 				[b]Note:[/b] On Web platforms, it is still possible to determine the host platform's OS with feature tags. See [method has_feature].
 			</description>
 		</method>
+		<method name="get_process_exit_code" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="pid" type="int" />
+			<description>
+				Returns the exit code of a spawned process once it has finished running (see [method is_process_running]).
+				Returns [code]-1[/code] if the [param pid] is not a PID of a spawned child process, the process is still running, or the method is not implemented for the current platform.
+				[b]Note:[/b] Returns [code]-1[/code] if the [param pid] is a macOS bundled app process.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number used by the host machine to uniquely identify this application.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -426,6 +466,30 @@
 			<return type="int" />
 			<description>
 				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
+			</description>
+		</method>
+		<method name="get_stderr_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard error device.
+			</description>
+		</method>
+		<method name="get_stdin_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard input device.
+			</description>
+		</method>
+		<method name="get_stdout_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard output device.
+			</description>
+		</method>
+		<method name="get_system_ca_certificates">
+			<return type="String" />
+			<description>
+				Returns the list of certification authorities trusted by the operating system as a string of concatenated certificates in PEM format.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
@@ -475,6 +539,12 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="get_temp_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] temporary data directory according to the operating system's standards.
+			</description>
+		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -487,7 +557,7 @@
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls their operating system, upgrades it, or modifies their hardware. This means it should generally not be used to encrypt persistent data, as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by this method for security purposes.
-				[b]Note:[/b] On Web, returns an empty string and generates an error, as this method cannot be implemented for security concerns.
+				[b]Note:[/b] On Web, returns an empty string and generates an error, as this method cannot be implemented for security reasons.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -514,6 +584,13 @@
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_version_alias" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the branded version used in marketing, followed by the build number (on Windows) or the version number (on macOS). Examples include [code]11 (build 22000)[/code] and [code]Sequoia (15.0.0)[/code]. This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				[b]Note:[/b] This method is only supported on Windows and macOS. On other operating systems, it returns the same value as [method get_version].
+			</description>
+		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
@@ -537,7 +614,7 @@
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
-				[b]Note:[/b] On the Web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
+				[b]Note:[/b] On the Web platform, one of the following additional tags is defined to indicate the host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -561,10 +638,10 @@
 				print(OS.is_keycode_unicode(KEY_ESCAPE)) # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints false
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints false
+				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints False
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints False
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -574,7 +651,7 @@
 			<param index="0" name="pid" type="int" />
 			<description>
 				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated. [param pid] must be a valid ID generated from [method create_process].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="is_restart_on_exit_set" qualifiers="const">
@@ -636,28 +713,53 @@
 			<return type="void" />
 			<description>
 				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_midi_inputs] and [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+		<method name="read_buffer_from_stdin">
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer_size" type="int" />
+			<description>
+				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
+			<param index="0" name="buffer_size" type="int" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Reads a user input as a UTF-8 encoded string from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method automatically replaces [code]\r\n[/code] line breaks with [code]\n[/code] and removes them from the end of the string. Use [method read_buffer_from_stdin] to read the unprocessed data.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has been successfully granted.
-				[b]Note:[/b] This method is currently only implemented on Android, to specifically request permission for [code]"RECORD_AUDIO"[/code] by [code]AudioDriverOpenSL[/code].
+				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
+				The [param name] must be the full permission name. For example:
+				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
+				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
+				[b]Note:[/b] Permission must be checked during export.
+				[b]Note:[/b] This method is only implemented on Android.
 			</description>
 		</method>
 		<method name="request_permissions">
 			<return type="bool" />
 			<description>
-				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have been successfully granted.
+				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have already been granted. See also [signal MainLoop.on_request_permissions_result].
+				[b]Note:[/b] Permissions must be checked during export.
 				[b]Note:[/b] This method is only implemented on Android. Normal permissions are automatically granted at install time in Android applications.
 			</description>
 		</method>
@@ -707,7 +809,8 @@
 			<param index="0" name="uri" type="String" />
 			<description>
 				Requests the OS to open a resource identified by [param uri] with the most appropriate program. For example:
-				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("C:\\Users\\name\\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("C:/Users/name/Downloads")[/code] also works on Windows and opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path for use with this method.
@@ -759,6 +862,9 @@
 		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
 			The Direct3D 12 rendering driver.
 		</constant>
+		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
+			The Metal rendering driver.
+		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
 			Refers to the Desktop directory path.
 		</constant>
@@ -782,6 +888,21 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
 			Refers to the Ringtones directory path.
+		</constant>
+		<constant name="STD_HANDLE_INVALID" value="0" enum="StdHandleType">
+			Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
+		</constant>
+		<constant name="STD_HANDLE_CONSOLE" value="1" enum="StdHandleType">
+			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
+		</constant>
+		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
+			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+		</constant>
+		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
+			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
+		</constant>
+		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
+			Standard I/O device type is unknown.
 		</constant>
 	</constants>
 </class>

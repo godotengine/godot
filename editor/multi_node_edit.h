@@ -31,12 +31,12 @@
 #ifndef MULTI_NODE_EDIT_H
 #define MULTI_NODE_EDIT_H
 
-#include "scene/main/node.h"
+#include "core/object/ref_counted.h"
 
 class MultiNodeEdit : public RefCounted {
 	GDCLASS(MultiNodeEdit, RefCounted);
 
-	List<NodePath> nodes;
+	LocalVector<NodePath> nodes;
 	struct PLData {
 		int uses = 0;
 		PropertyInfo info;
@@ -67,6 +67,19 @@ public:
 
 	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
 
+	// If the nodes selected are the same independently of order then return true.
+	bool is_same_selection(const MultiNodeEdit *p_other) const {
+		if (get_node_count() != p_other->get_node_count()) {
+			return false;
+		}
+		for (int i = 0; i < get_node_count(); i++) {
+			if (!nodes.has(p_other->get_node(i))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 	MultiNodeEdit();
 };
 

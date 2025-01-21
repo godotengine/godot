@@ -30,8 +30,11 @@
 
 #include "gltf_physics_body.h"
 
-#include "scene/3d/area_3d.h"
-#include "scene/3d/vehicle_body_3d.h"
+#include "scene/3d/physics/animatable_body_3d.h"
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/character_body_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/physics/vehicle_body_3d.h"
 
 void GLTFPhysicsBody::_bind_methods() {
 	ClassDB::bind_static_method("GLTFPhysicsBody", D_METHOD("from_node", "body_node"), &GLTFPhysicsBody::from_node);
@@ -105,7 +108,7 @@ void GLTFPhysicsBody::set_body_type(String p_body_type) {
 	} else if (p_body_type == "trigger") {
 		body_type = PhysicsBodyType::TRIGGER;
 	} else {
-		ERR_PRINT("Error setting GLTF physics body type: The body type must be one of \"static\", \"animatable\", \"character\", \"rigid\", \"vehicle\", or \"trigger\".");
+		ERR_PRINT("Error setting glTF physics body type: The body type must be one of \"static\", \"animatable\", \"character\", \"rigid\", \"vehicle\", or \"trigger\".");
 	}
 }
 
@@ -190,9 +193,6 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_
 		physics_body->angular_velocity = body->get_angular_velocity();
 		physics_body->center_of_mass = body->get_center_of_mass();
 		physics_body->inertia_diagonal = body->get_inertia();
-		if (body->get_center_of_mass() != Vector3()) {
-			WARN_PRINT("GLTFPhysicsBody: This rigid body has a center of mass offset from the origin, which will be ignored when exporting to GLTF.");
-		}
 		if (cast_to<VehicleBody3D>(p_body_node)) {
 			physics_body->body_type = PhysicsBodyType::VEHICLE;
 		} else {
@@ -286,7 +286,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 			physics_body->body_type = PhysicsBodyType::TRIGGER;
 #endif // DISABLE_DEPRECATED
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The body type in the GLTF file \"" + body_type_string + "\" was not recognized.");
+			ERR_PRINT("Error parsing glTF physics body: The body type in the glTF file \"" + body_type_string + "\" was not recognized.");
 		}
 	}
 	if (motion.has("mass")) {
@@ -297,7 +297,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		if (arr.size() == 3) {
 			physics_body->set_linear_velocity(Vector3(arr[0], arr[1], arr[2]));
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The linear velocity vector must have exactly 3 numbers.");
+			ERR_PRINT("Error parsing glTF physics body: The linear velocity vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("angularVelocity")) {
@@ -305,7 +305,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		if (arr.size() == 3) {
 			physics_body->set_angular_velocity(Vector3(arr[0], arr[1], arr[2]));
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The angular velocity vector must have exactly 3 numbers.");
+			ERR_PRINT("Error parsing glTF physics body: The angular velocity vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("centerOfMass")) {
@@ -313,7 +313,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		if (arr.size() == 3) {
 			physics_body->set_center_of_mass(Vector3(arr[0], arr[1], arr[2]));
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The center of mass vector must have exactly 3 numbers.");
+			ERR_PRINT("Error parsing glTF physics body: The center of mass vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("inertiaDiagonal")) {
@@ -321,7 +321,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		if (arr.size() == 3) {
 			physics_body->set_inertia_diagonal(Vector3(arr[0], arr[1], arr[2]));
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The inertia diagonal vector must have exactly 3 numbers.");
+			ERR_PRINT("Error parsing glTF physics body: The inertia diagonal vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("inertiaOrientation")) {
@@ -329,7 +329,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		if (arr.size() == 4) {
 			physics_body->set_inertia_orientation(Quaternion(arr[0], arr[1], arr[2], arr[3]));
 		} else {
-			ERR_PRINT("Error parsing GLTF physics body: The inertia orientation quaternion must have exactly 4 numbers.");
+			ERR_PRINT("Error parsing glTF physics body: The inertia orientation quaternion must have exactly 4 numbers.");
 		}
 	}
 	return physics_body;

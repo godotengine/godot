@@ -85,7 +85,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 						, apply_morx (_hb_apply_morx (face, props))
 #endif
 {
-  shaper = hb_ot_shaper_categorize (this);
+  shaper = hb_ot_shaper_categorize (props.script, props.direction, map.chosen_script[0]);
 
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
   script_fallback_mark_positioning = shaper->fallback_position;
@@ -155,7 +155,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
   bool has_gpos = !disable_gpos && hb_ot_layout_has_positioning (face);
   if (false)
-    ;
+    {}
 #ifndef HB_NO_AAT_SHAPE
   /* Prefer GPOS over kerx if GSUB is present;
    * https://github.com/harfbuzz/harfbuzz/issues/3008 */
@@ -167,15 +167,16 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 
   if (!plan.apply_kerx && (!has_gpos_kern || !plan.apply_gpos))
   {
+    if (false) {}
 #ifndef HB_NO_AAT_SHAPE
-    if (has_kerx)
+    else if (has_kerx)
       plan.apply_kerx = true;
-    else
 #endif
 #ifndef HB_NO_OT_KERN
-    if (hb_ot_layout_has_kerning (face))
+    else if (hb_ot_layout_has_kerning (face))
       plan.apply_kern = true;
 #endif
+    else {}
   }
 
   plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
@@ -837,6 +838,28 @@ hb_ot_zero_width_default_ignorables (const hb_buffer_t *buffer)
 }
 
 static void
+hb_ot_deal_with_variation_selectors (hb_buffer_t *buffer)
+{
+  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK) ||
+	buffer->not_found_variation_selector == HB_CODEPOINT_INVALID)
+    return;
+
+  unsigned int count = buffer->len;
+  hb_glyph_info_t *info = buffer->info;
+  hb_glyph_position_t *pos = buffer->pos;
+
+  for (unsigned int i = 0; i < count; i++)
+  {
+    if (_hb_glyph_info_is_variation_selector (&info[i]))
+    {
+      info[i].codepoint = buffer->not_found_variation_selector;
+      pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
+      _hb_glyph_info_set_variation_selector (&info[i], false);
+    }
+  }
+}
+
+static void
 hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
 			       hb_font_t   *font)
 {
@@ -965,6 +988,7 @@ hb_ot_substitute_post (const hb_ot_shape_context_t *c)
     hb_aat_layout_remove_deleted_glyphs (c->buffer);
 #endif
 
+  hb_ot_deal_with_variation_selectors (c->buffer);
   hb_ot_hide_default_ignorables (c->buffer, c->font);
 
   if (c->plan->shaper->postprocess_glyphs &&

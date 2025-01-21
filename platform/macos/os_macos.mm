@@ -51,7 +51,7 @@ void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopAc
 	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
 
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !ds->get_is_resizing()) {
+	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -67,10 +67,19 @@ void OS_MacOS::initialize() {
 	initialize_core();
 }
 
+String OS_MacOS::get_model_name() const {
+	char buffer[256];
+	size_t buffer_len = 256;
+	if (sysctlbyname("hw.model", &buffer, &buffer_len, nullptr, 0) == 0 && buffer_len != 0) {
+		return String::utf8(buffer, buffer_len);
+	}
+	return OS_Unix::get_model_name();
+}
+
 String OS_MacOS::get_processor_name() const {
 	char buffer[256];
 	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, NULL, 0) == 0) {
+	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
 		return String::utf8(buffer, buffer_len);
 	}
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
@@ -133,13 +142,13 @@ void OS_MacOS::finalize() {
 
 	delete_main_loop();
 
-	if (joypad_macos) {
-		memdelete(joypad_macos);
+	if (joypad_apple) {
+		memdelete(joypad_apple);
 	}
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS(Input::get_singleton()));
+	joypad_apple = memnew(JoypadApple());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -174,6 +183,33 @@ String OS_MacOS::get_distribution_name() const {
 String OS_MacOS::get_version() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	return vformat("%d.%d.%d", (int64_t)ver.majorVersion, (int64_t)ver.minorVersion, (int64_t)ver.patchVersion);
+}
+
+String OS_MacOS::get_version_alias() const {
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	String macos_string;
+	if (ver.majorVersion == 15) {
+		macos_string += "Sequoia";
+	} else if (ver.majorVersion == 14) {
+		macos_string += "Sonoma";
+	} else if (ver.majorVersion == 13) {
+		macos_string += "Ventura";
+	} else if (ver.majorVersion == 12) {
+		macos_string += "Monterey";
+	} else if (ver.majorVersion == 11 || (ver.majorVersion == 10 && ver.minorVersion == 16)) {
+		// Big Sur was 10.16 during beta, but it became 11 for the stable version.
+		macos_string += "Big Sur";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 15) {
+		macos_string += "Catalina";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 14) {
+		macos_string += "Mojave";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 13) {
+		macos_string += "High Sierra";
+	} else {
+		macos_string += "Unknown";
+	}
+	// macOS versions older than 10.13 cannot run Godot.
+	return vformat("%s (%s)", macos_string, get_version());
 }
 
 void OS_MacOS::alert(const String &p_alert, const String &p_title) {
@@ -217,7 +253,7 @@ _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	return p_path;
 }
 
-Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
+Error OS_MacOS::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = get_framework_executable(p_path);
 
 	if (!FileAccess::exists(path)) {
@@ -230,13 +266,16 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("../Frameworks").path_join(p_path.get_file()));
 	}
 
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	if (!FileAccess::exists(path)) {
+		// Try using path as is. macOS system libraries with `/usr/lib/*` path do not exist as physical files and are loaded from shared cache.
+		path = p_path;
+	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
-	if (r_resolved_path != nullptr) {
-		*r_resolved_path = path;
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
 	}
 
 	return OK;
@@ -262,6 +301,19 @@ String OS_MacOS::get_cache_path() const {
 		return get_environment("HOME").path_join("Library/Caches");
 	}
 	return get_config_path();
+}
+
+String OS_MacOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
+		}
+	}
+	return ret;
 }
 
 String OS_MacOS::get_bundle_resource_dir() const {
@@ -353,11 +405,14 @@ Error OS_MacOS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
 	return OK;
 }
 
-Error OS_MacOS::shell_open(String p_uri) {
+Error OS_MacOS::shell_open(const String &p_uri) {
 	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *uri = [[NSURL alloc] initWithString:string];
-	// Escape special characters in filenames
 	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		// No scheme set, assume "file://" and escape special characters.
+		if (!p_uri.begins_with("file://")) {
+			string = [NSString stringWithUTF8String:("file://" + p_uri).utf8().get_data()];
+		}
 		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
 	}
 	[[NSWorkspace sharedWorkspace] openURL:uri];
@@ -598,7 +653,9 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
+#if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
+#endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
@@ -627,6 +684,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 
 			return err;
+#if defined(__x86_64__)
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
@@ -642,6 +700,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 			}
 			return err;
 		}
+#endif
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
@@ -657,6 +716,15 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
 	}
+}
+
+bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
+	NSRunningApplication *app = [NSRunningApplication runningApplicationWithProcessIdentifier:(pid_t)p_pid];
+	if (!app) {
+		return OS_Unix::is_process_running(p_pid);
+	}
+
+	return ![app isTerminated];
 }
 
 String OS_MacOS::get_unique_id() const {
@@ -755,21 +823,25 @@ void OS_MacOS::run() {
 		return;
 	}
 
-	main_loop->initialize();
+	@autoreleasepool {
+		main_loop->initialize();
+	}
 
 	bool quit = false;
 	while (!quit) {
-		@try {
-			if (DisplayServer::get_singleton()) {
-				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-			}
-			joypad_macos->process_joypads();
+		@autoreleasepool {
+			@try {
+				if (DisplayServer::get_singleton()) {
+					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
+				}
+				joypad_apple->process_joypads();
 
-			if (Main::iteration()) {
-				quit = true;
+				if (Main::iteration()) {
+					quit = true;
+				}
+			} @catch (NSException *exception) {
+				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 			}
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -823,6 +895,7 @@ OS_MacOS::OS_MacOS() {
 	id delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
+	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
 	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
 	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);

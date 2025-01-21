@@ -350,7 +350,7 @@ bool GI::voxel_gi_is_using_two_bounces(RID p_voxel_gi) const {
 
 bool GI::voxel_gi_is_interior(RID p_voxel_gi) const {
 	VoxelGI *voxel_gi = voxel_gi_owner.get_or_null(p_voxel_gi);
-	ERR_FAIL_NULL_V(voxel_gi, 0);
+	ERR_FAIL_NULL_V(voxel_gi, false);
 	return voxel_gi->interior;
 }
 
@@ -1307,24 +1307,24 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	push_constant.store_ambient_texture = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_enabled(p_env);
 
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
-	push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_DISABLED;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	if (reads_sky && p_env.is_valid()) {
 		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_COLOR) {
-			push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_COLOR;
+			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
 			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
-			push_constant.sky_color[0] = c.r;
-			push_constant.sky_color[1] = c.g;
-			push_constant.sky_color[2] = c.b;
+			push_constant.sky_color_or_orientation[0] = c.r;
+			push_constant.sky_color_or_orientation[1] = c.g;
+			push_constant.sky_color_or_orientation[2] = c.b;
 
 		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RS::ENV_BG_SKY) {
 			if (p_sky && p_sky->radiance.is_valid()) {
@@ -1350,7 +1350,16 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 					integrate_sky_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, gi->sdfgi_shader.integrate.version_get_shader(gi->sdfgi_shader.integrate_shader, 0), 1);
 				}
 				sky_uniform_set = integrate_sky_uniform_set;
-				push_constant.sky_mode = SDFGIShader::IntegratePushConstant::SKY_MODE_SKY;
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_SKY;
+
+				// Encode sky orientation as quaternion in existing push constants.
+				const Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+				const Quaternion sky_quaternion = sky_basis.get_quaternion().inverse();
+				push_constant.sky_color_or_orientation[0] = sky_quaternion.x;
+				push_constant.sky_color_or_orientation[1] = sky_quaternion.y;
+				push_constant.sky_color_or_orientation[2] = sky_quaternion.z;
+				// Ideally we would reconstruct the largest component for least error, but sky contribution to GI is low frequency so just needs to get the idea across.
+				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_ORIENTATION_SIGN * (sky_quaternion.w < 0.0 ? 0 : 1);
 			}
 		}
 	}
@@ -1396,7 +1405,7 @@ void GI::SDFGI::store_probes() {
 	push_constant.image_size[1] = probe_axis_count;
 	push_constant.store_ambient_texture = false;
 
-	push_constant.sky_mode = 0;
+	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
 
 	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
@@ -1721,7 +1730,7 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 
 	SDFGIShader::ProbeDebugMode mode = p_view_count > 1 ? SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW : SDFGIShader::PROBE_DEBUG_PROBES;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer);
 	RD::get_singleton()->draw_command_begin_label("Debug SDFGI");
 
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, gi->sdfgi_shader.debug_probes_pipeline[mode].get_render_pipeline(RD::INVALID_FORMAT_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
@@ -1790,6 +1799,10 @@ void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, con
 }
 
 void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data) {
+	if (p_render_data->sdfgi_update_data == nullptr) {
+		return;
+	}
+
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	/* Update general SDFGI Buffer */
 
@@ -2088,11 +2101,11 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				ipush_constant.history_size = history_size;
 				ipush_constant.ray_count = 0;
 				ipush_constant.ray_bias = 0;
-				ipush_constant.sky_mode = 0;
+				ipush_constant.sky_flags = 0;
 				ipush_constant.sky_energy = 0;
-				ipush_constant.sky_color[0] = 0;
-				ipush_constant.sky_color[1] = 0;
-				ipush_constant.sky_color[2] = 0;
+				ipush_constant.sky_color_or_orientation[0] = 0;
+				ipush_constant.sky_color_or_orientation[1] = 0;
+				ipush_constant.sky_color_or_orientation[2] = 0;
 				ipush_constant.y_mult = y_mult;
 				ipush_constant.store_ambient_texture = false;
 
@@ -2146,8 +2159,8 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		}
 
 		//clear dispatch indirect data
-		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
-		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirct_data);
+		uint32_t dispatch_indirect_data[4] = { 0, 0, 0, 0 };
+		RD::get_singleton()->buffer_update(cascades[cascade].solid_cell_dispatch_buffer_storage, 0, sizeof(uint32_t) * 4, dispatch_indirect_data);
 
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
@@ -3407,7 +3420,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 
 			voxel_gi_debug_shader_version_pipelines[i].setup(voxel_gi_debug_shader_version_shaders[i], RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
@@ -3575,7 +3588,7 @@ void GI::init(SkyRD *p_sky) {
 			RD::PipelineDepthStencilState ds;
 			ds.enable_depth_test = true;
 			ds.enable_depth_write = true;
-			ds.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 			for (int i = 0; i < SDFGIShader::PROBE_DEBUG_MAX; i++) {
 				// TODO check if version is enabled
 
@@ -3725,6 +3738,12 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 			}
 			rbgi->uniform_set[v] = RID();
 		}
+
+		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
+			// VoxelGI instances have changed, so we need to update volumetric fog.
+			Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
+			fog->sync_gi_dependent_sets_validity(true);
+		}
 	}
 
 	if (p_voxel_gi_instances.size() > 0) {
@@ -3804,8 +3823,13 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 			rbgi->scene_data_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(SceneData));
 		}
 
+		Projection correction;
+		correction.set_depth_correction(false);
+
 		for (uint32_t v = 0; v < p_view_count; v++) {
-			RendererRD::MaterialStorage::store_camera(p_projections[v].inverse(), scene_data.inv_projection[v]);
+			Projection temp = correction * p_projections[v];
+
+			RendererRD::MaterialStorage::store_camera(temp.inverse(), scene_data.inv_projection[v]);
 			scene_data.eye_offset[v][0] = p_eye_offsets[v].x;
 			scene_data.eye_offset[v][1] = p_eye_offsets[v].y;
 			scene_data.eye_offset[v][2] = p_eye_offsets[v].z;

@@ -9,8 +9,8 @@
 	</description>
 	<tutorials>
 		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="action_press">
@@ -118,7 +118,8 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns a SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty string if it cannot be found. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				On Windows, all XInput joypad GUIDs will be overridden by Godot to [code]__XINPUT_DEVICE__[/code], because their mappings are the same.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -126,13 +127,16 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows the dictionary contains the following fields:
-				[code]xinput_index[/code]: The index of the controller in the XInput system.
+				On Windows, the dictionary contains the following fields:
+				[code]xinput_index[/code]: The index of the controller in the XInput system. Undefined for DirectInput devices.
+				[code]vendor_id[/code]: The USB vendor ID of the device.
+				[code]product_id[/code]: The USB product ID of the device.
 				On Linux:
 				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the godot controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
+				[b]Note:[/b] The returned dictionary is always empty on Web, iOS, Android, and macOS.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -154,6 +158,12 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+			</description>
+		</method>
+		<method name="get_last_mouse_screen_velocity">
+			<return type="Vector2" />
+			<description>
+				Returns the last mouse velocity in screen coordinates. To provide a precise and jitter-free velocity, mouse velocity is only calculated every 0.1s. Therefore, mouse velocity will lag mouse movements.
 			</description>
 		</method>
 		<method name="get_last_mouse_velocity">
@@ -228,7 +238,7 @@
 				Returns [code]true[/code] if any action, key, joypad button, or mouse button is being pressed. This will also return [code]true[/code] if any action is simulated via code by calling [method action_press].
 			</description>
 		</method>
-		<method name="is_joy_button_pressed" qualifiers="const">
+		<method name="is_joy_button_pressed" qualifiers="const" keywords="is_gamepad_button_pressed, is_controller_button_pressed">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
@@ -236,7 +246,7 @@
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
 			</description>
 		</method>
-		<method name="is_joy_known">
+		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<description>
@@ -280,7 +290,6 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var cancel_event = InputEventAction.new()
@@ -295,13 +304,15 @@
 				Input.ParseInputEvent(cancelEvent);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Calling this function has no influence on the operating system. So for example sending an [InputEventMouseMotion] will not move the OS mouse cursor to the specified position (use [method warp_mouse] instead) and sending [kbd]Alt/Cmd + Tab[/kbd] as [InputEventKey] won't toggle between active windows.
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
 			<description>
-				Removes all mappings from the internal database that match the given GUID.
+				Removes all mappings from the internal database that match the given GUID. All currently connected joypads that use this GUID will become unmapped.
+				On Android, Godot will map to an internal fallback mapping.
 			</description>
 		</method>
 		<method name="set_accelerometer">
@@ -319,7 +330,7 @@
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
-				[param image]'s size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
+				[param image] can be either [Texture2D] or [Image] and its size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
 				[b]Note:[/b] The [b]Lossless[/b], [b]Lossy[/b] or [b]Uncompressed[/b] compression modes are recommended. The [b]Video RAM[/b] compression mode can be used, but it will be decompressed on the CPU, which means loading times are slowed down and no memory is saved compared to lossless modes.
@@ -377,6 +388,7 @@
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
+				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">
@@ -389,11 +401,14 @@
 		<method name="vibrate_handheld">
 			<return type="void" />
 			<param index="0" name="duration_ms" type="int" default="500" />
+			<param index="1" name="amplitude" type="float" default="-1.0" />
 			<description>
 				Vibrate the handheld device for the specified duration in milliseconds.
+				[param amplitude] is the strength of the vibration, as a value between [code]0.0[/code] and [code]1.0[/code]. If set to [code]-1.0[/code], the default vibration strength of the device is used.
 				[b]Note:[/b] This method is implemented on Android, iOS, and Web. It has no effect on other platforms.
 				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
 				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
+				[b]Note:[/b] For Web, the amplitude cannot be changed.
 				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
 			</description>
 		</method>
@@ -462,10 +477,10 @@
 			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Wait cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application isn't usable during the operation (e.g. something is blocking its main thread).
+			Wait cursor. Indicates that the application is busy performing an operation, and that it cannot be used during the operation (e.g. something is blocking its main thread).
 		</constant>
 		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. Indicates that the application is busy performing an operation. This cursor shape denotes that the application is still usable during the operation.
+			Busy cursor. Indicates that the application is busy performing an operation, and that it is still usable during the operation.
 		</constant>
 		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
 			Drag cursor. Usually displayed when dragging something.

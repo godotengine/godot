@@ -29,9 +29,9 @@
 /**************************************************************************/
 
 #include "a_star.h"
+#include "a_star.compat.inc"
 
 #include "core/math/geometry_3d.h"
-#include "core/object/script_language.h"
 
 int64_t AStar3D::get_available_point_id() const {
 	if (points.has(last_free_id)) {
@@ -39,7 +39,7 @@ int64_t AStar3D::get_available_point_id() const {
 		while (points.has(cur_new_id)) {
 			cur_new_id++;
 		}
-		const_cast<int64_t &>(last_free_id) = cur_new_id;
+		last_free_id = cur_new_id;
 	}
 
 	return last_free_id;
@@ -318,10 +318,11 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar3D::_solve(Point *begin_point, Point *end_point) {
+bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path) {
+	last_closest_point = nullptr;
 	pass++;
 
-	if (!end_point->enabled) {
+	if (!end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -332,10 +333,17 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 
 	begin_point->g_score = 0;
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
+	begin_point->abs_g_score = 0;
+	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
 	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
+
+		// Find point closer to end_point, or same distance to end_point but closer to begin_point.
+		if (last_closest_point == nullptr || last_closest_point->abs_f_score > p->abs_f_score || (last_closest_point->abs_f_score >= p->abs_f_score && last_closest_point->abs_g_score > p->abs_g_score)) {
+			last_closest_point = p;
+		}
 
 		if (p == end_point) {
 			found_route = true;
@@ -368,6 +376,8 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
 			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->abs_g_score = tentative_g_score;
+			e->abs_f_score = e->f_score - e->g_score;
 
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
@@ -380,9 +390,9 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 	return found_route;
 }
 
-real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
+real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_end_id) {
 	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_end_id, scost)) {
 		return scost;
 	}
 
@@ -390,11 +400,11 @@ real_t AStar3D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	bool from_exists = points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	Point *to_point = nullptr;
-	bool to_exists = points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
+	Point *end_point = nullptr;
+	bool end_exists = points.lookup(p_end_id, end_point);
+	ERR_FAIL_COND_V_MSG(!end_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_end_id));
 
-	return from_point->pos.distance_to(to_point->pos);
+	return from_point->pos.distance_to(end_point->pos);
 }
 
 real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
@@ -414,7 +424,7 @@ real_t AStar3D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
 	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -432,9 +442,14 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
-		return Vector<Vector3>();
+		if (!p_allow_partial_path || last_closest_point == nullptr) {
+			return Vector<Vector3>();
+		}
+
+		// Use closest point instead.
+		end_point = last_closest_point;
 	}
 
 	Point *p = end_point;
@@ -463,7 +478,7 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	return path;
 }
 
-Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
 	Point *a = nullptr;
 	bool from_exists = points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
@@ -481,9 +496,14 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	Point *begin_point = a;
 	Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
-		return Vector<int64_t>();
+		if (!p_allow_partial_path || last_closest_point == nullptr) {
+			return Vector<int64_t>();
+		}
+
+		// Use closest point instead.
+		end_point = last_closest_point;
 	}
 
 	Point *p = end_point;
@@ -555,10 +575,10 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar3D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar3D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar3D::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar3D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
 
-	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }
 
@@ -654,9 +674,9 @@ Vector2 AStar2D::get_closest_position_in_segment(const Vector2 &p_point) const {
 	return Vector2(p.x, p.y);
 }
 
-real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
+real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_end_id) {
 	real_t scost;
-	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
+	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_end_id, scost)) {
 		return scost;
 	}
 
@@ -664,11 +684,11 @@ real_t AStar2D::_estimate_cost(int64_t p_from_id, int64_t p_to_id) {
 	bool from_exists = astar.points.lookup(p_from_id, from_point);
 	ERR_FAIL_COND_V_MSG(!from_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_from_id));
 
-	AStar3D::Point *to_point = nullptr;
-	bool to_exists = astar.points.lookup(p_to_id, to_point);
-	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_to_id));
+	AStar3D::Point *end_point = nullptr;
+	bool to_exists = astar.points.lookup(p_end_id, end_point);
+	ERR_FAIL_COND_V_MSG(!to_exists, 0, vformat("Can't estimate cost. Point with id: %d doesn't exist.", p_end_id));
 
-	return from_point->pos.distance_to(to_point->pos);
+	return from_point->pos.distance_to(end_point->pos);
 }
 
 real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
@@ -688,7 +708,7 @@ real_t AStar2D::_compute_cost(int64_t p_from_id, int64_t p_to_id) {
 	return from_point->pos.distance_to(to_point->pos);
 }
 
-Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
 	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_from_id));
@@ -705,9 +725,14 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
-		return Vector<Vector2>();
+		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
+			return Vector<Vector2>();
+		}
+
+		// Use closest point instead.
+		end_point = astar.last_closest_point;
 	}
 
 	AStar3D::Point *p = end_point;
@@ -736,7 +761,7 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id) {
 	return path;
 }
 
-Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
+Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_allow_partial_path) {
 	AStar3D::Point *a = nullptr;
 	bool from_exists = astar.points.lookup(p_from_id, a);
 	ERR_FAIL_COND_V_MSG(!from_exists, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_from_id));
@@ -754,9 +779,14 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
-	bool found_route = _solve(begin_point, end_point);
+	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
-		return Vector<int64_t>();
+		if (!p_allow_partial_path || astar.last_closest_point == nullptr) {
+			return Vector<int64_t>();
+		}
+
+		// Use closest point instead.
+		end_point = astar.last_closest_point;
 	}
 
 	AStar3D::Point *p = end_point;
@@ -785,10 +815,11 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id) {
 	return path;
 }
 
-bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
+bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path) {
+	astar.last_closest_point = nullptr;
 	astar.pass++;
 
-	if (!end_point->enabled) {
+	if (!end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -799,10 +830,17 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 
 	begin_point->g_score = 0;
 	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
+	begin_point->abs_g_score = 0;
+	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
 	open_list.push_back(begin_point);
 
 	while (!open_list.is_empty()) {
 		AStar3D::Point *p = open_list[0]; // The currently processed point.
+
+		// Find point closer to end_point, or same distance to end_point but closer to begin_point.
+		if (astar.last_closest_point == nullptr || astar.last_closest_point->abs_f_score > p->abs_f_score || (astar.last_closest_point->abs_f_score >= p->abs_f_score && astar.last_closest_point->abs_g_score > p->abs_g_score)) {
+			astar.last_closest_point = p;
+		}
 
 		if (p == end_point) {
 			found_route = true;
@@ -835,6 +873,8 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
 			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->abs_g_score = tentative_g_score;
+			e->abs_f_score = e->f_score - e->g_score;
 
 			if (new_point) { // The position of the new points is already known.
 				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
@@ -874,9 +914,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar2D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar2D::get_closest_position_in_segment);
 
-	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar2D::get_point_path);
-	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar2D::get_id_path);
+	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
 
-	GDVIRTUAL_BIND(_estimate_cost, "from_id", "to_id")
+	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 }

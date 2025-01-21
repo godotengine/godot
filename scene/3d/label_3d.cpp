@@ -30,9 +30,8 @@
 
 #include "label_3d.h"
 
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/theme.h"
-#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void Label3D::_bind_methods() {
@@ -198,17 +197,17 @@ void Label3D::_notification(int p_what) {
 			if (!pending_update) {
 				_im_update();
 			}
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
+			Window *window = get_window();
+			ERR_FAIL_NULL(window);
+			window->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
+			String new_text = atr(text);
 			if (new_text == xl_text) {
 				return; // Nothing new.
 			}
@@ -319,7 +318,7 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 		facesw[j] = vtx;
 	}
 
-	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh.instantiate();
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
@@ -345,7 +344,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 			texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 		}
-	} else {
+	} else if (((p_glyph.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((p_glyph.flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 		gl_sz = TS->get_hex_code_box_size(p_glyph.font_size, p_glyph.index) * pixel_size;
 		gl_of = Vector2(0, -gl_sz.y);
 	}
@@ -422,12 +421,6 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
 			s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
 			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
-
-			if (aabb == AABB()) {
-				aabb.position = s.mesh_vertices[(s.offset * 4) + i];
-			} else {
-				aabb.expand_to(s.mesh_vertices[(s.offset * 4) + i]);
-			}
 		}
 
 		if (tex.is_valid()) {
@@ -598,6 +591,13 @@ void Label3D::_shape() {
 			} break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
+		if (aabb == AABB()) {
+			aabb.position = Vector3(offset.x, offset.y, 0);
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		} else {
+			aabb.expand_to(Vector3(offset.x, offset.y, 0));
+			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
+		}
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
 
 		if (outline_modulate.a != 0.0 && outline_size > 0) {
@@ -635,8 +635,12 @@ void Label3D::_shape() {
 }
 
 void Label3D::set_text(const String &p_string) {
+	if (text == p_string) {
+		return;
+	}
+
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = atr(p_string);
 	dirty_text = true;
 	_queue_update();
 }
@@ -781,6 +785,8 @@ Ref<Font> Label3D::get_font() const {
 }
 
 Ref<Font> Label3D::_get_font_or_default() const {
+	// Similar code taken from `FontVariation::_get_base_font_or_default`.
+
 	if (theme_font.is_valid()) {
 		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
@@ -790,12 +796,17 @@ Ref<Font> Label3D::_get_font_or_default() const {
 		return font_override;
 	}
 
-	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	const StringName theme_name = SceneStringName(font);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	Vector<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}

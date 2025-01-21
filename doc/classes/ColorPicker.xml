@@ -8,7 +8,7 @@
 		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
 	</description>
 	<tutorials>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
 	</tutorials>
 	<methods>
 		<method name="add_preset">
@@ -58,7 +58,7 @@
 		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
 			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
 		</member>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
@@ -168,20 +168,23 @@
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
-		<theme_item name="color_okhsl_hue" data_type="icon" type="Texture2D">
-			Custom texture for the H slider in the OKHSL color mode.
-		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.
 		</theme_item>
 		<theme_item name="folded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when folded.
 		</theme_item>
+		<theme_item name="menu_option" data_type="icon" type="Texture2D">
+			The icon for color preset option menu.
+		</theme_item>
 		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.
 		</theme_item>
 		<theme_item name="picker_cursor" data_type="icon" type="Texture2D">
 			The image displayed over the color box/circle (depending on the [member picker_shape]), marking the currently selected color.
+		</theme_item>
+		<theme_item name="picker_cursor_bg" data_type="icon" type="Texture2D">
+			The fill image displayed behind the picker cursor.
 		</theme_item>
 		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
 			Background panel for the color preview box (visible when the color is translucent).

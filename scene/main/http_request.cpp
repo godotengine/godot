@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "http_request.h"
-#include "core/io/compression.h"
+
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -49,13 +49,16 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	redirections = 0;
 
 	String scheme;
-	Error err = p_url.parse_url(scheme, url, port, request_string);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
+	String fragment;
+	Error err = p_url.parse_url(scheme, url, port, request_string, fragment);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error parsing URL: '%s'.", p_url));
+
 	if (scheme == "https://") {
 		use_tls = true;
 	} else if (scheme != "http://") {
-		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Invalid URL scheme: '%s'.", scheme));
 	}
+
 	if (port == 0) {
 		port = use_tls ? 443 : 80;
 	}
@@ -84,7 +87,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 
 	String lowwer_case_header_name = p_header_name.to_lower();
 	for (int i = 0; i < p_headers.size(); i++) {
-		if (p_headers[i].find(":") > 0) {
+		if (p_headers[i].find_char(':') > 0) {
 			Vector<String> parts = p_headers[i].split(":", false, 1);
 			if (parts.size() > 1 && parts[0].strip_edges().to_lower() == lowwer_case_header_name) {
 				value = parts[1].strip_edges();
@@ -237,7 +240,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		String new_request;
 
 		for (const String &E : rheaders) {
-			if (E.findn("Location: ") != -1) {
+			if (E.containsn("Location: ")) {
 				new_request = E.substr(9, E.length()).strip_edges();
 			}
 		}

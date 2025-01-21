@@ -33,8 +33,6 @@
 
 #include "scene/3d/visual_instance_3d.h"
 
-class World3D;
-class Camera3D;
 class VisibleOnScreenNotifier3D : public VisualInstance3D {
 	GDCLASS(VisibleOnScreenNotifier3D, VisualInstance3D);
 
@@ -56,8 +54,6 @@ public:
 	void set_aabb(const AABB &p_aabb);
 	virtual AABB get_aabb() const override;
 	bool is_on_screen() const;
-
-	virtual PackedStringArray get_configuration_warnings() const override;
 
 	VisibleOnScreenNotifier3D();
 	~VisibleOnScreenNotifier3D();

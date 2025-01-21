@@ -32,7 +32,7 @@
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/texture_rect.h"
 
 class Button;
@@ -70,7 +70,7 @@ class StyleBoxEditorPlugin : public EditorPlugin {
 	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "StyleBox"; }
+	virtual String get_plugin_name() const override { return "StyleBox"; }
 
 	StyleBoxEditorPlugin();
 };

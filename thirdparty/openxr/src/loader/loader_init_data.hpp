@@ -33,7 +33,7 @@ class LoaderInitData {
         return obj;
     }
 
-#ifdef XR_USE_PLATFORM_ANDROID
+#if defined(XR_USE_PLATFORM_ANDROID)
     /*!
      * Type alias for the platform-specific structure type.
      */

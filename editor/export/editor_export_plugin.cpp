@@ -31,12 +31,7 @@
 #include "editor_export_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
-#include "scene/resources/resource_format_text.h"
 
 void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_preset) {
 	if (p_preset.is_valid()) {
@@ -46,6 +41,14 @@ void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_pres
 
 Ref<EditorExportPreset> EditorExportPlugin::get_export_preset() const {
 	return export_preset;
+}
+
+Ref<EditorExportPlatform> EditorExportPlugin::get_export_platform() const {
+	if (export_preset.is_valid()) {
+		return export_preset->get_platform();
+	} else {
+		return Ref<EditorExportPlatform>();
+	}
 }
 
 void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap) {
@@ -58,6 +61,10 @@ void EditorExportPlugin::add_file(const String &p_path, const Vector<uint8_t> &p
 
 void EditorExportPlugin::add_shared_object(const String &p_path, const Vector<String> &p_tags, const String &p_target) {
 	shared_objects.push_back(SharedObject(p_path, p_tags, p_target));
+}
+
+void EditorExportPlugin::_add_shared_object(const SharedObject &p_shared_object) {
+	shared_objects.push_back(p_shared_object);
 }
 
 void EditorExportPlugin::add_ios_framework(const String &p_path) {
@@ -128,7 +135,7 @@ Vector<String> EditorExportPlugin::get_ios_project_static_libs() const {
 }
 
 Variant EditorExportPlugin::get_option(const StringName &p_name) const {
-	ERR_FAIL_NULL_V(export_preset, Variant());
+	ERR_FAIL_COND_V(export_preset.is_null(), Variant());
 	return export_preset->get(p_name);
 }
 
@@ -175,7 +182,7 @@ bool EditorExportPlugin::_begin_customize_resources(const Ref<EditorExportPlatfo
 
 Ref<Resource> EditorExportPlugin::_customize_resource(const Ref<Resource> &p_resource, const String &p_path) {
 	Ref<Resource> ret;
-	GDVIRTUAL_REQUIRED_CALL(_customize_resource, p_resource, p_path, ret);
+	GDVIRTUAL_CALL(_customize_resource, p_resource, p_path, ret);
 	return ret;
 }
 
@@ -187,13 +194,13 @@ bool EditorExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform>
 
 Node *EditorExportPlugin::_customize_scene(Node *p_root, const String &p_path) {
 	Node *ret = nullptr;
-	GDVIRTUAL_REQUIRED_CALL(_customize_scene, p_root, p_path, ret);
+	GDVIRTUAL_CALL(_customize_scene, p_root, p_path, ret);
 	return ret;
 }
 
 uint64_t EditorExportPlugin::_get_customization_configuration_hash() const {
 	uint64_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_customization_configuration_hash, ret);
+	GDVIRTUAL_CALL(_get_customization_configuration_hash, ret);
 	return ret;
 }
 
@@ -207,7 +214,7 @@ void EditorExportPlugin::_end_customize_resources() {
 
 String EditorExportPlugin::get_name() const {
 	String ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_name, ret);
+	GDVIRTUAL_CALL(_get_name, ret);
 	return ret;
 }
 
@@ -215,6 +222,10 @@ bool EditorExportPlugin::supports_platform(const Ref<EditorExportPlatform> &p_ex
 	bool ret = false;
 	GDVIRTUAL_CALL(_supports_platform, p_export_platform, ret);
 	return ret;
+}
+
+PackedStringArray EditorExportPlugin::get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
+	return _get_export_features(p_export_platform, p_debug);
 }
 
 PackedStringArray EditorExportPlugin::get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
@@ -279,9 +290,21 @@ bool EditorExportPlugin::_should_update_export_options(const Ref<EditorExportPla
 	return ret;
 }
 
+bool EditorExportPlugin::_get_export_option_visibility(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_get_export_option_visibility, p_export_platform, p_option_name, ret);
+	return ret;
+}
+
 String EditorExportPlugin::_get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const {
 	String ret;
 	GDVIRTUAL_CALL(_get_export_option_warning, p_export_platform, p_option_name, ret);
+	return ret;
+}
+
+Dictionary EditorExportPlugin::_get_export_options_overrides(const Ref<EditorExportPlatform> &p_platform) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_get_export_options_overrides, p_platform, ret);
 	return ret;
 }
 
@@ -311,6 +334,9 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);
 	ClassDB::bind_method(D_METHOD("get_option", "name"), &EditorExportPlugin::get_option);
 
+	ClassDB::bind_method(D_METHOD("get_export_preset"), &EditorExportPlugin::get_export_preset);
+	ClassDB::bind_method(D_METHOD("get_export_platform"), &EditorExportPlugin::get_export_platform);
+
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_end);
@@ -327,7 +353,9 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_end_customize_resources);
 
 	GDVIRTUAL_BIND(_get_export_options, "platform");
+	GDVIRTUAL_BIND(_get_export_options_overrides, "platform");
 	GDVIRTUAL_BIND(_should_update_export_options, "platform");
+	GDVIRTUAL_BIND(_get_export_option_visibility, "platform", "option");
 	GDVIRTUAL_BIND(_get_export_option_warning, "platform", "option");
 
 	GDVIRTUAL_BIND(_get_export_features, "platform", "debug");
@@ -341,9 +369,4 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_android_manifest_activity_element_contents, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_manifest_application_element_contents, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_manifest_element_contents, "platform", "debug");
-}
-
-EditorExportPlugin::EditorExportPlugin() {
-	EDITOR_DEF("export/ssh/ssh", "");
-	EDITOR_DEF("export/ssh/scp", "");
 }

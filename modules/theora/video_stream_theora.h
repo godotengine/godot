@@ -33,12 +33,8 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/templates/ring_buffer.h"
-#include "core/templates/safe_refcount.h"
 #include "scene/resources/video_stream.h"
-#include "servers/audio_server.h"
 
 #include <theora/theoradec.h>
 #include <vorbis/codec.h>
@@ -173,10 +169,10 @@ public:
 
 class ResourceFormatLoaderTheora : public ResourceFormatLoader {
 public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };
 
 #endif // VIDEO_STREAM_THEORA_H

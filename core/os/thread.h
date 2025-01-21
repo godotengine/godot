@@ -29,18 +29,27 @@
 /**************************************************************************/
 
 #include "platform_config.h"
+
 // Define PLATFORM_THREAD_OVERRIDE in your platform's `platform_config.h`
-// to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`
-// Overriding the platform implementation is required in some proprietary platforms
+// to use a custom Thread implementation defined in `platform/[your_platform]/platform_thread.h`.
+// Overriding the Thread implementation is required in some proprietary platforms.
+
 #ifdef PLATFORM_THREAD_OVERRIDE
+
 #include "platform_thread.h"
+
 #else
 
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
+
+#ifdef THREADS_ENABLED
+
+#include "core/templates/safe_refcount.h"
+
+#include <new> // IWYU pragma: keep // For hardware interference size.
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
@@ -52,8 +61,6 @@
 #endif
 
 class String;
-
-#ifdef THREADS_ENABLED
 
 class Thread {
 public:
@@ -85,12 +92,27 @@ public:
 		void (*term)() = nullptr;
 	};
 
+#if defined(__cpp_lib_hardware_interference_size) && !defined(ANDROID_ENABLED) // This would be OK with NDK >= 26.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winterference-size"
+#endif
+	static constexpr size_t CACHE_LINE_BYTES = std::hardware_destructive_interference_size;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#else
+	// At a negligible memory cost, we use a conservatively high value.
+	static constexpr size_t CACHE_LINE_BYTES = 128;
+#endif
+
 private:
 	friend class Main;
 
 	static PlatformFunctions platform_functions;
 
 	ID id = UNASSIGNED_ID;
+
 	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
 	THREADING_NAMESPACE::thread thread;
@@ -98,7 +120,7 @@ private:
 	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
 
 	static void make_main_thread() { caller_id = MAIN_ID; }
-	static void release_main_thread() { caller_id = UNASSIGNED_ID; }
+	static void release_main_thread() { caller_id = id_counter.increment(); }
 
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
@@ -106,9 +128,6 @@ public:
 	_FORCE_INLINE_ ID get_id() const { return id; }
 	// get the ID of the caller thread
 	_FORCE_INLINE_ static ID get_caller_id() {
-		if (unlikely(caller_id == UNASSIGNED_ID)) {
-			caller_id = id_counter.increment();
-		}
 		return caller_id;
 	}
 	// get the ID of the main thread
@@ -129,11 +148,15 @@ public:
 
 #else // No threads.
 
+class String;
+
 class Thread {
 public:
 	typedef void (*Callback)(void *p_userdata);
 
 	typedef uint64_t ID;
+
+	static constexpr size_t CACHE_LINE_BYTES = sizeof(void *);
 
 	enum : ID {
 		UNASSIGNED_ID = 0,

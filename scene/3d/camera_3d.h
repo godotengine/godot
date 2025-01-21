@@ -34,12 +34,8 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/resources/camera_attributes.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
-
-#ifdef MINGW_ENABLED
-#undef near
-#undef far
-#endif
 
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
@@ -72,8 +68,9 @@ private:
 	real_t fov = 75.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
-	real_t near = 0.05;
-	real_t far = 4000.0;
+	// _ prefix to avoid conflict with Windows defines.
+	real_t _near = 0.05;
+	real_t _far = 4000.0;
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
@@ -87,6 +84,7 @@ private:
 
 	Ref<Environment> environment;
 	Ref<CameraAttributes> attributes;
+	Ref<Compositor> compositor;
 	void _attributes_changed();
 
 	// void _camera_make_current(Node *p_camera);
@@ -100,7 +98,39 @@ private:
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
 
+	///////////////////////////////////////////////////////
+	// INTERPOLATION FUNCTIONS
+	void _physics_interpolation_ensure_transform_calculated(bool p_force = false) const;
+	void _physics_interpolation_ensure_data_flipped();
+
+	// These can be set by derived Camera3Ds, if they wish to do processing
+	// (while still allowing physics interpolation to function).
+	bool _desired_process_internal = false;
+	bool _desired_physics_process_internal = false;
+
+	mutable struct InterpolationData {
+		Transform3D xform_curr;
+		Transform3D xform_prev;
+		Transform3D xform_interpolated;
+		Transform3D camera_xform_interpolated; // After modification according to camera type.
+		uint32_t last_update_physics_tick = 0;
+		uint32_t last_update_frame = UINT32_MAX;
+	} _interpolation_data;
+
+	void _update_process_mode();
+
 protected:
+	// Use from derived classes to set process modes instead of setting directly.
+	// This is because physics interpolation may need to request process modes additionally.
+	void set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal);
+
+	// Opportunity for derived classes to interpolate extra attributes.
+	virtual void physics_interpolation_flip_data() {}
+
+	virtual void _physics_interpolated_changed() override;
+	virtual Transform3D _get_adjusted_camera_transform(const Transform3D &p_xform) const;
+	///////////////////////////////////////////////////////
+
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
@@ -170,6 +200,9 @@ public:
 
 	void set_attributes(const Ref<CameraAttributes> &p_effects);
 	Ref<CameraAttributes> get_attributes() const;
+
+	void set_compositor(const Ref<Compositor> &p_compositor);
+	Ref<Compositor> get_compositor() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

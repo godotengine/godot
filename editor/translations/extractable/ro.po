@@ -1,0 +1,107 @@
+# Romanian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-10 09:01+0000\n"
+"Last-Translator: FlooferLand <yunaflarf@gmail.com>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ro/>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "Network"
+msgstr "Rețea"
+
+msgid "Open"
+msgstr "Deschide"
+
+msgid "Select Current Folder"
+msgstr "Selectaţi directorul curent"
+
+msgid "Select This Folder"
+msgstr "Selectaţi directorul curent"
+
+msgid "All Recognized"
+msgstr "Toate Recunoscute"
+
+msgid "Open a File"
+msgstr "Deschideți un Fișier"
+
+msgid "Open File(s)"
+msgstr "Deschideți Fișier(e)"
+
+msgid "Open a Directory"
+msgstr "Deschideţi un Director"
+
+msgid "Open a File or Directory"
+msgstr "Deschideți un Fişier sau Director"
+
+msgid "Save"
+msgstr "Salvați"
+
+msgid "Save a File"
+msgstr "Salvați un Fișier"
+
+msgid "Go to previous folder."
+msgstr "Accesați Directorul Precedent."
+
+msgid "Go to next folder."
+msgstr "Mergi la următorul director."
+
+msgid "Go to parent folder."
+msgstr "Mergi la Directorul Părinte."
+
+msgid "Path:"
+msgstr "Cale:"
+
+msgid "Refresh files."
+msgstr "Reîmprospătează filele."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Comutați Vizibilitatea Fișierelor Ascunse."
+
+msgid "Directories & Files:"
+msgstr "Directoare și Fişiere:"
+
+msgid "File:"
+msgstr "Fișier:"
+
+msgid "Create Folder"
+msgstr "Creare folder"
+
+msgid "Name:"
+msgstr "Nume:"
+
+msgid "Could not create folder."
+msgstr "Directorul nu a putut fi creat."
+
+msgid "Zoom Out"
+msgstr "Departare"
+
+msgid "Zoom Reset"
+msgstr "Resetare zoom"
+
+msgid "Zoom In"
+msgstr "Apropiere"
+
+msgid "Cut"
+msgstr "Tăiere"
+
+msgid "Copy"
+msgstr "Copiaza"
+
+msgid "Paste"
+msgstr "Lipește"
+
+msgid "Clear"
+msgstr "Curăță"
