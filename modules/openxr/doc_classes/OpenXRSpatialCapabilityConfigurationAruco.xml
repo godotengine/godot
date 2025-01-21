@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationAruco" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for Aruca markers.
+	</brief_description>
+	<description>
+		Configuration header for Aruca markers. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect Aruca markers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="aruco_dict" type="int" setter="set_aruco_dict" getter="get_aruco_dict" enum="OpenXRSpatialCapabilityConfigurationAruco.OpenXrSpatialMarkerArucoDict" default="1">
+			Dictionary to use to decode aruco markers.
+			[b]Note:[/b] Must be set before using this configuration to create a spatial context.
+		</member>
+	</members>
+	<constants>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_4X4_50" value="1" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_4X4_100" value="2" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_4X4_250" value="3" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_4X4_1000" value="4" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_5X5_50" value="5" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_5X5_100" value="6" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_5X5_250" value="7" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_5X5_1000" value="8" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_6X6_50" value="9" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_6X6_100" value="10" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_6X6_250" value="11" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_6X6_1000" value="12" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_7X7_50" value="13" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_7X7_100" value="14" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_7X7_250" value="15" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+		<constant name="OPENXR_SPATIAL_MARKER_ARUCO_DICT_7X7_1000" value="16" enum="OpenXrSpatialMarkerArucoDict">
+		</constant>
+	</constants>
+</class>
