@@ -2975,6 +2975,9 @@ Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 
 	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
 
+	// Send a close message to gracefully close the process.
+	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
+
 	// This is a workaround to ensure the parent window correctly regains focus after the
 	// embedded window is closed. When the embedded window is closed while it has focus,
 	// the parent window (the editor) does not become active. It appears focused but is not truly activated.

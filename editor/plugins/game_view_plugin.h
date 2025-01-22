@@ -162,7 +162,7 @@ class GameView : public VBoxContainer {
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
 
-	void _window_before_closing();
+	void _window_close_request();
 	void _update_floating_window_settings();
 	void _attach_script_debugger();
 	void _detach_script_debugger();
