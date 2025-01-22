@@ -169,20 +169,7 @@ CSGShapeEditor::CSGShapeEditor() {
 
 CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	helper.instantiate();
-
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/csg");
-	create_material("shape_union_material", gizmo_color);
-	create_material("shape_union_solid_material", gizmo_color);
-	gizmo_color.invert();
-	create_material("shape_subtraction_material", gizmo_color);
-	create_material("shape_subtraction_solid_material", gizmo_color);
-	gizmo_color.r = 0.95;
-	gizmo_color.g = 0.95;
-	gizmo_color.b = 0.95;
-	create_material("shape_intersection_material", gizmo_color);
-	create_material("shape_intersection_solid_material", gizmo_color);
-
-	create_handle_material("handles");
+	CSGShape3DGizmoPlugin::update_materials();
 }
 
 CSGShape3DGizmoPlugin::~CSGShape3DGizmoPlugin() {
@@ -505,4 +492,19 @@ EditorPluginCSG::EditorPluginCSG() {
 
 	csg_shape_editor = memnew(CSGShapeEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
+}
+
+void CSGShape3DGizmoPlugin::update_materials() {
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/csg");
+	create_material("shape_union_material", gizmo_color);
+	create_material("shape_union_solid_material", gizmo_color);
+	gizmo_color.invert();
+	create_material("shape_subtraction_material", gizmo_color);
+	create_material("shape_subtraction_solid_material", gizmo_color);
+	gizmo_color.r = 0.95;
+	gizmo_color.g = 0.95;
+	gizmo_color.b = 0.95;
+	create_material("shape_intersection_material", gizmo_color);
+	create_material("shape_intersection_solid_material", gizmo_color);
+	create_handle_material("handles");
 }
