@@ -652,14 +652,20 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
 }
 
-void GameView::_window_before_closing() {
+void GameView::_window_close_request() {
 	// Before the parent window closed, we close the embedded game. That prevents
 	// the embedded game to be seen without a parent window for a fraction of second.
 	if (EditorRunBar::get_singleton()->is_playing() && (embedded_process->is_embedding_completed() || embedded_process->is_embedding_in_progress())) {
+		// Try to gracefully close the window. That way, the NOTIFICATION_WM_CLOSE_REQUEST
+		// notification should be propagated in the game process.
 		embedded_process->reset();
-		// Call deferred to prevent the _stop_pressed callback to be executed before the wrapper window
-		// actually closes.
-		callable_mp(EditorRunBar::get_singleton(), &EditorRunBar::stop_playing).call_deferred();
+
+		// When the embedding is not complete, we need to kill the process.
+		if (embedded_process->is_embedding_in_progress()) {
+			// Call deferred to prevent the _stop_pressed callback to be executed before the wrapper window
+			// actually closes.
+			callable_mp(EditorRunBar::get_singleton(), &EditorRunBar::stop_playing).call_deferred();
+		}
 	}
 }
 
@@ -829,7 +835,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	p_debugger->connect("session_started", callable_mp(this, &GameView::_sessions_changed));
 	p_debugger->connect("session_stopped", callable_mp(this, &GameView::_sessions_changed));
 
-	p_wrapper->connect("window_before_closing", callable_mp(this, &GameView::_window_before_closing));
+	p_wrapper->set_override_close_request(true);
+	p_wrapper->connect("window_close_requested", callable_mp(this, &GameView::_window_close_request));
 	p_wrapper->connect("window_size_changed", callable_mp(this, &GameView::_update_floating_window_settings));
 }
 
