@@ -94,6 +94,20 @@ class GameView : public VBoxContainer {
 		EMBED_MAKE_FLOATING_ON_PLAY,
 	};
 
+	enum EmbedSizeMode {
+		SIZE_MODE_FIXED,
+		SIZE_MODE_KEEP_ASPECT,
+		SIZE_MODE_STRETCH,
+	};
+
+	enum EmbedAvailability {
+		EMBED_AVAILABLE,
+		EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED,
+		EMBED_NOT_AVAILABLE_MINIMIZED,
+		EMBED_NOT_AVAILABLE_MAXIMIZED,
+		EMBED_NOT_AVAILABLE_FULLSCREEN,
+	};
+
 	inline static GameView *singleton = nullptr;
 
 	Ref<GameViewDebugger> debugger;
@@ -106,10 +120,10 @@ class GameView : public VBoxContainer {
 
 	bool embed_on_play = true;
 	bool make_floating_on_play = true;
+	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
 
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
-	Rect2i floating_window_screen_rect;
 
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
@@ -123,10 +137,11 @@ class GameView : public VBoxContainer {
 	MenuButton *camera_override_menu = nullptr;
 
 	VSeparator *embedding_separator = nullptr;
+	Button *fixed_size_button = nullptr;
 	Button *keep_aspect_button = nullptr;
+	Button *stretch_button = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-
 	Panel *panel = nullptr;
 	EmbeddedProcess *embedded_process = nullptr;
 	Label *state_label = nullptr;
@@ -140,7 +155,7 @@ class GameView : public VBoxContainer {
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
 	void _embed_options_menu_menu_id_pressed(int p_id);
-	void _keep_aspect_button_pressed();
+	void _size_mode_button_pressed(int size_mode);
 
 	void _play_pressed();
 	static void _instance_starting_static(int p_idx, List<String> &r_arguments);
@@ -150,12 +165,14 @@ class GameView : public VBoxContainer {
 	void _embedding_failed();
 	void _embedded_process_updated();
 	void _embedded_process_focused();
-	void _project_settings_changed();
+	void _editor_or_project_settings_changed();
 
+	EmbedAvailability _get_embed_available();
 	void _update_ui();
 	void _update_embed_menu_options();
 	void _update_embed_window_size();
 	void _update_arguments_for_instance(int p_idx, List<String> &r_arguments);
+	void _show_update_window_wrapper();
 
 	void _hide_selection_toggled(bool p_pressed);
 

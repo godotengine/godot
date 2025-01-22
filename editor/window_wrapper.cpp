@@ -325,6 +325,14 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 	}
 }
 
+Size2 WindowWrapper::get_margins_size() {
+	if (!margins) {
+		return Size2();
+	}
+
+	return Size2(margins->get_margin_size(SIDE_LEFT) + margins->get_margin_size(SIDE_RIGHT), margins->get_margin_size(SIDE_TOP) + margins->get_margin_size(SIDE_RIGHT));
+}
+
 void WindowWrapper::grab_window_focus() {
 	if (get_window_enabled() && is_visible()) {
 		window->grab_focus();

@@ -41,6 +41,7 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/embedded_process.h"
 #include "editor/themes/editor_scale.h"
@@ -222,16 +223,47 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 	if (!is_feature_enabled) {
 		return;
 	}
-	if (p_idx == 0 && embed_on_play && make_floating_on_play && !window_wrapper->get_window_enabled() && EditorNode::get_singleton()->is_multi_window_enabled()) {
+	if (p_idx == 0 && embed_on_play && make_floating_on_play && !window_wrapper->get_window_enabled() && EditorNode::get_singleton()->is_multi_window_enabled() && _get_embed_available() == EMBED_AVAILABLE) {
 		// Set the Floating Window default title. Always considered in DEBUG mode, same as in Window::set_title.
 		String appname = GLOBAL_GET("application/config/name");
 		appname = vformat("%s (DEBUG)", TranslationServer::get_singleton()->translate(appname));
 		window_wrapper->set_window_title(appname);
 
-		window_wrapper->restore_window_from_saved_position(floating_window_rect, floating_window_screen, floating_window_screen_rect);
+		_show_update_window_wrapper();
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
+}
+
+void GameView::_show_update_window_wrapper() {
+	EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
+	Point2 position = floating_window_rect.position;
+	Size2i size = floating_window_rect.size;
+	int screen = floating_window_screen;
+
+	Size2 wrapped_margins_size = window_wrapper->get_margins_size();
+	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
+	offset_embedded_process.x += embedded_process->get_margin_size(SIDE_LEFT);
+	offset_embedded_process.y += embedded_process->get_margin_size(SIDE_TOP);
+
+	// Obtain the size around the embedded process control. Usually, the difference between the game view's get_size
+	// and the embedded control should work. However, when the control is hidden and has never been displayed,
+	// the size of the embedded control is not calculated.
+	Size2 old_min_size = embedded_process->get_custom_minimum_size();
+	embedded_process->set_custom_minimum_size(Size2i());
+	Size2 min_size = get_minimum_size();
+	embedded_process->set_custom_minimum_size(old_min_size);
+
+	Point2 size_diff_embedded_process = Point2(0, min_size.y) + embedded_process->get_margins_size();
+
+	if (placement.position != Point2i(INT_MAX, INT_MAX)) {
+		position = placement.position - offset_embedded_process;
+		screen = placement.screen;
+	}
+	if (placement.size != Size2i()) {
+		size = placement.size + size_diff_embedded_process + wrapped_margins_size;
+	}
+	window_wrapper->restore_window_from_saved_position(Rect2(position, size), screen, Rect2i());
 }
 
 void GameView::_play_pressed() {
@@ -248,7 +280,7 @@ void GameView::_play_pressed() {
 		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
 	}
 
-	if (embed_on_play) {
+	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
 		// It's important to disable the low power mode when unfocused because otherwise
 		// the button in the editor are not responsive and if the user moves the mouse quickly,
 		// the mouse clicks are not registered.
@@ -306,9 +338,18 @@ void GameView::_embedded_process_focused() {
 	}
 }
 
-void GameView::_project_settings_changed() {
+void GameView::_editor_or_project_settings_changed() {
 	// Update the window size and aspect ratio.
 	_update_embed_window_size();
+
+	if (window_wrapper->get_window_enabled()) {
+		_show_update_window_wrapper();
+		if (embedded_process->is_embedding_completed()) {
+			embedded_process->queue_update_embedded_process();
+		}
+	}
+
+	_update_ui();
 }
 
 void GameView::_update_debugger_buttons() {
@@ -368,27 +409,82 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 		} break;
 	}
 	_update_embed_menu_options();
+	_update_ui();
 }
 
-void GameView::_keep_aspect_button_pressed() {
-	embedded_process->set_keep_aspect(keep_aspect_button->is_pressed());
+void GameView::_size_mode_button_pressed(int size_mode) {
+	embed_size_mode = (EmbedSizeMode)size_mode;
+
+	_update_embed_menu_options();
+	_update_embed_window_size();
+}
+
+GameView::EmbedAvailability GameView::_get_embed_available() {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+		return EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED;
+	}
+
+	EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
+	if (placement.force_fullscreen) {
+		return EMBED_NOT_AVAILABLE_FULLSCREEN;
+	}
+	if (placement.force_maximized) {
+		return EMBED_NOT_AVAILABLE_MAXIMIZED;
+	}
+
+	DisplayServer::WindowMode window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED) {
+		return EMBED_NOT_AVAILABLE_MINIMIZED;
+	}
+	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_MAXIMIZED) {
+		return EMBED_NOT_AVAILABLE_MAXIMIZED;
+	}
+	if (window_mode == DisplayServer::WindowMode::WINDOW_MODE_FULLSCREEN || window_mode == DisplayServer::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		return EMBED_NOT_AVAILABLE_FULLSCREEN;
+	}
+
+	return EMBED_AVAILABLE;
 }
 
 void GameView::_update_ui() {
 	bool show_game_size = false;
-	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
-		state_label->set_text(TTR("Game embedding not available on your OS."));
-	} else if (embedded_process->is_embedding_completed()) {
-		state_label->set_text("");
-		show_game_size = true;
-	} else if (embedded_process->is_embedding_in_progress()) {
-		state_label->set_text(TTR("Game starting..."));
-	} else if (EditorRunBar::get_singleton()->is_playing()) {
-		state_label->set_text(TTR("Game running not embedded."));
-	} else if (embed_on_play) {
-		state_label->set_text(TTR("Press play to start the game."));
+	EmbedAvailability available = _get_embed_available();
+
+	switch (available) {
+		case EMBED_AVAILABLE:
+			if (embedded_process->is_embedding_completed()) {
+				state_label->set_text("");
+				show_game_size = true;
+			} else if (embedded_process->is_embedding_in_progress()) {
+				state_label->set_text(TTR("Game starting..."));
+			} else if (EditorRunBar::get_singleton()->is_playing()) {
+				state_label->set_text(TTR("Game running not embedded."));
+			} else if (embed_on_play) {
+				state_label->set_text(TTR("Press play to start the game."));
+			} else {
+				state_label->set_text(TTR("Embedding is disabled."));
+			}
+			break;
+		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
+			state_label->set_text(TTR("Game embedding not available on your OS."));
+			break;
+		case EMBED_NOT_AVAILABLE_MINIMIZED:
+			state_label->set_text(TTR("Game embedding not available when the game starts minimized.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			break;
+		case EMBED_NOT_AVAILABLE_MAXIMIZED:
+			state_label->set_text(TTR("Game embedding not available when the game starts maximized.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			break;
+		case EMBED_NOT_AVAILABLE_FULLSCREEN:
+			state_label->set_text(TTR("Game embedding not available when the game starts in fullscreen.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			break;
+	}
+
+	if (available == EMBED_AVAILABLE) {
+		if (state_label->has_theme_color_override(SceneStringName(font_color))) {
+			state_label->remove_theme_color_override(SceneStringName(font_color));
+		}
 	} else {
-		state_label->set_text(TTR("Embedding is disabled."));
+		state_label->add_theme_color_override(SceneStringName(font_color), state_label->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	}
 
 	game_size_label->set_visible(show_game_size);
@@ -401,20 +497,22 @@ void GameView::_update_embed_menu_options() {
 
 	// When embed is Off or in single window mode, Make floating is not available.
 	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !EditorNode::get_singleton()->is_multi_window_enabled());
+
+	fixed_size_button->set_pressed(embed_size_mode == SIZE_MODE_FIXED);
+	keep_aspect_button->set_pressed(embed_size_mode == SIZE_MODE_KEEP_ASPECT);
+	stretch_button->set_pressed(embed_size_mode == SIZE_MODE_STRETCH);
 }
 
 void GameView::_update_embed_window_size() {
-	Size2 window_size;
-	window_size.x = GLOBAL_GET("display/window/size/viewport_width");
-	window_size.y = GLOBAL_GET("display/window/size/viewport_height");
-
-	Size2 desired_size;
-	desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
-	desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
-	if (desired_size.x > 0 && desired_size.y > 0) {
-		window_size = desired_size;
+	if (embed_size_mode == SIZE_MODE_FIXED || embed_size_mode == SIZE_MODE_KEEP_ASPECT) {
+		//The embedded process control will need the desired window size.
+		EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
+		embedded_process->set_window_size(placement.size);
+	} else {
+		//Stretch... No need for the window size.
+		embedded_process->set_window_size(Size2i());
 	}
-	embedded_process->set_window_size(window_size);
+	embedded_process->set_keep_aspect(embed_size_mode == SIZE_MODE_KEEP_ASPECT);
 }
 
 void GameView::_hide_selection_toggled(bool p_pressed) {
@@ -475,7 +573,9 @@ void GameView::_notification(int p_what) {
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 
 			hide_selection->set_button_icon(get_editor_theme_icon(hide_selection->is_pressed() ? SNAME("GuiVisibilityHidden") : SNAME("GuiVisibilityVisible")));
+			fixed_size_button->set_button_icon(get_editor_theme_icon(SNAME("FixedSize")));
 			keep_aspect_button->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
+			stretch_button->set_button_icon(get_editor_theme_icon(SNAME("Stretch")));
 			embed_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			camera_override_button->set_button_icon(get_editor_theme_icon(SNAME("Camera")));
@@ -487,7 +587,7 @@ void GameView::_notification(int p_what) {
 				// Embedding available.
 				embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
 				make_floating_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "make_floating_on_play", true);
-				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
+				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
 				_update_embed_menu_options();
 
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
@@ -495,15 +595,15 @@ void GameView::_notification(int p_what) {
 				EditorRun::instance_starting_callback = _instance_starting_static;
 
 				// Listen for project settings changes to update the window size and aspect ratio.
-				ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_project_settings_changed));
-
-				embedded_process->set_keep_aspect(keep_aspect_button->is_pressed());
+				ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_editor_or_project_settings_changed));
+				EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &GameView::_editor_or_project_settings_changed));
 			} else {
 				// Embedding not available.
 				embedding_separator->hide();
 				embed_options_menu->hide();
+				fixed_size_button->hide();
 				keep_aspect_button->hide();
-				keep_aspect_button->hide();
+				stretch_button->hide();
 			}
 
 			_update_ui();
@@ -558,7 +658,6 @@ Dictionary GameView::get_state() const {
 void GameView::set_window_layout(Ref<ConfigFile> p_layout) {
 	floating_window_rect = p_layout->get_value("GameView", "floating_window_rect", Rect2i());
 	floating_window_screen = p_layout->get_value("GameView", "floating_window_screen", -1);
-	floating_window_screen_rect = p_layout->get_value("GameView", "floating_window_screen_rect", Rect2i());
 }
 
 void GameView::get_window_layout(Ref<ConfigFile> p_layout) {
@@ -568,14 +667,12 @@ void GameView::get_window_layout(Ref<ConfigFile> p_layout) {
 
 	p_layout->set_value("GameView", "floating_window_rect", floating_window_rect);
 	p_layout->set_value("GameView", "floating_window_screen", floating_window_screen);
-	p_layout->set_value("GameView", "floating_window_screen_rect", floating_window_screen_rect);
 }
 
 void GameView::_update_floating_window_settings() {
 	if (window_wrapper->get_window_enabled()) {
 		floating_window_rect = window_wrapper->get_window_rect();
 		floating_window_screen = window_wrapper->get_window_screen();
-		floating_window_screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(floating_window_screen);
 	}
 }
 
@@ -610,7 +707,7 @@ void GameView::_remote_window_title_changed(String title) {
 }
 
 void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_arguments) {
-	if (p_idx != 0 || !embed_on_play || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING)) {
+	if (p_idx != 0 || !embed_on_play || _get_embed_available() != EMBED_AVAILABLE) {
 		return;
 	}
 
@@ -784,12 +881,26 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	embedding_separator = memnew(VSeparator);
 	main_menu_hbox->add_child(embedding_separator);
 
+	fixed_size_button = memnew(Button);
+	main_menu_hbox->add_child(fixed_size_button);
+	fixed_size_button->set_toggle_mode(true);
+	fixed_size_button->set_theme_type_variation("FlatButton");
+	fixed_size_button->set_tooltip_text(TTR("Embedded game size is based on project settings.\nThe 'Keep Aspect' mode is used when the Game Workspace is smaller than the desired size."));
+	fixed_size_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_FIXED));
+
 	keep_aspect_button = memnew(Button);
 	main_menu_hbox->add_child(keep_aspect_button);
 	keep_aspect_button->set_toggle_mode(true);
 	keep_aspect_button->set_theme_type_variation("FlatButton");
 	keep_aspect_button->set_tooltip_text(TTR("Keep the aspect ratio of the embedded game."));
-	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_keep_aspect_button_pressed));
+	keep_aspect_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_KEEP_ASPECT));
+
+	stretch_button = memnew(Button);
+	main_menu_hbox->add_child(stretch_button);
+	stretch_button->set_toggle_mode(true);
+	stretch_button->set_theme_type_variation("FlatButton");
+	stretch_button->set_tooltip_text(TTR("Embedded game size stretches to fit the Game Workspace."));
+	stretch_button->connect(SceneStringName(pressed), callable_mp(this, &GameView::_size_mode_button_pressed).bind(SIZE_MODE_STRETCH));
 
 	embed_options_menu = memnew(MenuButton);
 	main_menu_hbox->add_child(embed_options_menu);
@@ -823,8 +934,14 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
+	MarginContainer *state_container = memnew(MarginContainer);
+	state_container->add_theme_constant_override("margin_left", 8 * EDSCALE);
+	state_container->add_theme_constant_override("margin_right", 8 * EDSCALE);
+	state_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	panel->add_child(state_container);
+
 	state_label = memnew(Label());
-	panel->add_child(state_label);
+	state_container->add_child(state_label);
 	state_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	state_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
