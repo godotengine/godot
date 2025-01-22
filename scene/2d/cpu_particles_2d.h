@@ -189,6 +189,15 @@ private:
 
 	Mutex update_mutex;
 
+	struct InterpolationData {
+		// Whether this particle is non-interpolated, but following an interpolated parent.
+		bool interpolated_follow = false;
+
+		// If doing interpolated follow, we need to keep these updated per tick.
+		Transform2D global_xform_curr;
+		Transform2D global_xform_prev;
+	} _interpolation_data;
+
 	void _update_render_thread();
 
 	void _update_mesh_texture();
@@ -196,6 +205,8 @@ private:
 	void _set_do_redraw(bool p_do_redraw);
 
 	void _texture_changed();
+
+	void _refresh_interpolation_state();
 
 protected:
 	static void _bind_methods();

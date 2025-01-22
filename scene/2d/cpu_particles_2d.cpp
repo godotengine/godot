@@ -32,6 +32,7 @@
 #include "cpu_particles_2d.compat.inc"
 
 #include "core/math/random_number_generator.h"
+#include "core/math/transform_interpolator.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
@@ -96,7 +97,14 @@ void CPUParticles2D::set_lifetime_randomness(double p_random) {
 
 void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
-	set_notify_transform(!p_enable);
+
+	// Prevent sending item transforms when using global coords,
+	// and inform the RenderingServer to use identity mode.
+	set_canvas_item_use_identity_transform(!local_coords);
+
+	// We only need NOTIFICATION_TRANSFORM_CHANGED
+	// when following an interpolated target.
+	set_notify_transform(_interpolation_data.interpolated_follow);
 }
 
 void CPUParticles2D::set_speed_scale(double p_scale) {
@@ -226,6 +234,27 @@ void CPUParticles2D::_texture_changed() {
 		queue_redraw();
 		_update_mesh_texture();
 	}
+}
+
+void CPUParticles2D::_refresh_interpolation_state() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	// The logic for whether to do an interpolated follow.
+	// This is rather complex, but basically:
+	// If project setting interpolation is ON and this particle system is in global mode,
+	// we will follow the INTERPOLATED position rather than the actual position.
+	// This is so that particles aren't generated AHEAD of the interpolated parent.
+	bool follow = !local_coords && get_tree()->is_physics_interpolation_enabled();
+
+	if (follow == _interpolation_data.interpolated_follow) {
+		return;
+	}
+
+	_interpolation_data.interpolated_follow = follow;
+
+	set_physics_process_internal(_interpolation_data.interpolated_follow);
 }
 
 Ref<Texture2D> CPUParticles2D::get_texture() const {
@@ -600,6 +629,9 @@ void CPUParticles2D::_update_internal() {
 		return;
 	}
 
+	// Change update mode?
+	_refresh_interpolation_state();
+
 	double delta = get_process_delta_time();
 	if (!active && !emitting) {
 		set_process_internal(false);
@@ -679,7 +711,11 @@ void CPUParticles2D::_particles_process(double p_delta) {
 	Transform2D emission_xform;
 	Transform2D velocity_xform;
 	if (!local_coords) {
-		emission_xform = get_global_transform();
+		if (!_interpolation_data.interpolated_follow) {
+			emission_xform = get_global_transform();
+		} else {
+			TransformInterpolator::interpolate_transform_2d(_interpolation_data.global_xform_prev, _interpolation_data.global_xform_curr, emission_xform, Engine::get_singleton()->get_physics_interpolation_fraction());
+		}
 		velocity_xform = emission_xform;
 		velocity_xform[2] = Vector2();
 	}
@@ -1142,6 +1178,17 @@ void CPUParticles2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(emitting);
+
+			_refresh_interpolation_state();
+
+			set_physics_process_internal(emitting && _interpolation_data.interpolated_follow);
+
+			// If we are interpolated following, then reset physics interpolation
+			// when first appearing. This won't be called by canvas item, as in the
+			// following mode, is_physics_interpolated() is actually FALSE.
+			if (_interpolation_data.interpolated_follow) {
+				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1170,36 +1217,27 @@ void CPUParticles2D::_notification(int p_what) {
 			_update_internal();
 		} break;
 
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (_interpolation_data.interpolated_follow) {
+				// Keep the interpolated follow target updated.
+				_interpolation_data.global_xform_prev = _interpolation_data.global_xform_curr;
+				_interpolation_data.global_xform_curr = get_global_transform();
+			}
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			inv_emission_transform = get_global_transform().affine_inverse();
-
-			if (!local_coords) {
-				int pc = particles.size();
-
-				float *w = particle_data.ptrw();
-				const Particle *r = particles.ptr();
-				float *ptr = w;
-
-				for (int i = 0; i < pc; i++) {
-					Transform2D t = inv_emission_transform * r[i].transform;
-
-					if (r[i].active) {
-						ptr[0] = t.columns[0][0];
-						ptr[1] = t.columns[1][0];
-						ptr[2] = 0;
-						ptr[3] = t.columns[2][0];
-						ptr[4] = t.columns[0][1];
-						ptr[5] = t.columns[1][1];
-						ptr[6] = 0;
-						ptr[7] = t.columns[2][1];
-
-					} else {
-						memset(ptr, 0, sizeof(float) * 8);
-					}
-
-					ptr += 16;
+			if (_interpolation_data.interpolated_follow) {
+				// If the transform has been updated AFTER the physics tick, keep data flowing.
+				if (Engine::get_singleton()->is_in_physics_frame()) {
+					_interpolation_data.global_xform_curr = get_global_transform();
 				}
 			}
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			// Make sure current is up to date with any pending global transform changes.
+			_interpolation_data.global_xform_curr = get_global_transform_const();
+			_interpolation_data.global_xform_prev = _interpolation_data.global_xform_curr;
 		} break;
 	}
 }
@@ -1559,6 +1597,12 @@ CPUParticles2D::CPUParticles2D() {
 	set_color(Color(1, 1, 1, 1));
 
 	_update_mesh_texture();
+
+	// CPUParticles2D defaults to interpolation off.
+	// This is because the result often looks better when the particles are updated every frame.
+	// Note that children will need to explicitly turn back on interpolation if they want to use it,
+	// rather than relying on inherit mode.
+	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 CPUParticles2D::~CPUParticles2D() {

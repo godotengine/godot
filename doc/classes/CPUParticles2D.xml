@@ -241,6 +241,7 @@
 		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Particle system starts as if it had already run for this many seconds.
 		</member>
