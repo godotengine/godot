@@ -2365,12 +2365,9 @@ ColorPicker::ColorPicker() {
 	btn_preset->set_toggle_mode(true);
 	btn_preset->set_focus_mode(FOCUS_NONE);
 	btn_preset->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+	btn_preset->set_h_size_flags(SIZE_EXPAND_FILL);
 	btn_preset->connect(SceneStringName(toggled), callable_mp(this, &ColorPicker::_show_hide_preset).bind(btn_preset, preset_container));
 	palette_box->add_child(btn_preset);
-
-	HBoxContainer *padding_box = memnew(HBoxContainer);
-	padding_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	palette_box->add_child(padding_box);
 
 	menu_btn = memnew(Button);
 	menu_btn->set_flat(true);
