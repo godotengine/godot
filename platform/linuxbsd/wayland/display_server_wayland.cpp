@@ -325,20 +325,24 @@ void DisplayServerWayland::beep() const {
 	wayland_thread.beep();
 }
 
-void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
-	if (p_mode == mouse_mode) {
+void DisplayServerWayland::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 
 	wayland_thread.cursor_set_visible(show_cursor);
 
 	WaylandThread::PointerConstraint constraint = WaylandThread::PointerConstraint::NONE;
 
-	switch (p_mode) {
+	switch (wanted_mouse_mode) {
 		case DisplayServer::MOUSE_MODE_CAPTURED: {
 			constraint = WaylandThread::PointerConstraint::LOCKED;
 		} break;
@@ -354,11 +358,45 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 
 	wayland_thread.pointer_set_constraint(constraint);
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
+}
+
+void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerWayland::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWayland::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWayland::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 // NOTE: This is hacked together (and not guaranteed to work in the first place)

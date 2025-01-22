@@ -1968,6 +1968,9 @@
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
+		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
+			Max value of the [enum MouseMode].
+		</constant>
 		<constant name="SCREEN_WITH_MOUSE_FOCUS" value="-4">
 			Represents the screen containing the mouse pointer.
 			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].

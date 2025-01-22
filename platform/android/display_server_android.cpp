@@ -771,31 +771,66 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
-void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerAndroid::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
 	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon() || !OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_capture_pointer()) {
 		return;
 	}
-	if (mouse_mode == p_mode) {
+	if (mouse_mode == wanted_mouse_mode) {
 		return;
 	}
 
-	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_HIDDEN) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
 	} else {
 		cursor_set_shape(cursor_shape);
 	}
 
-	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_CAPTURED) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
 	} else {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->release_pointer_capture();
 	}
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
+}
+
+void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerAndroid::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerAndroid::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerAndroid::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 Point2i DisplayServerAndroid::mouse_get_position() const {
