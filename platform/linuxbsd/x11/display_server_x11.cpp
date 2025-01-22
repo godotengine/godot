@@ -417,10 +417,14 @@ void DisplayServerX11::beep() const {
 	XBell(x11_display, 0);
 }
 
-void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerX11::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (p_mode == mouse_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
@@ -429,7 +433,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	// The only modes that show a cursor are VISIBLE and CONFINED
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
@@ -450,7 +454,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
 		}
 	}
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
@@ -484,8 +488,42 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	XFlush(x11_display);
 }
 
+void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
 DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerX11::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerX11::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerX11::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 void DisplayServerX11::warp_mouse(const Point2i &p_position) {

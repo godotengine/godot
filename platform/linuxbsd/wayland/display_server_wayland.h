@@ -113,6 +113,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	CursorShape cursor_shape = CURSOR_ARROW;
 	DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
+	DisplayServer::MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	DisplayServer::MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	HashMap<CursorShape, CustomCursor> custom_cursors;
 
@@ -191,6 +195,10 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	virtual void warp_mouse(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;

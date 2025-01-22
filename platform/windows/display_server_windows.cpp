@@ -796,21 +796,59 @@ void DisplayServerWindows::beep() const {
 	MessageBeep(MB_OK);
 }
 
-void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerWindows::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (mouse_mode == p_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (mouse_mode == wanted_mouse_mode) {
 		// Already in the same mode; do nothing.
 		return;
 	}
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
-	_set_mouse_mode_impl(p_mode);
+	_set_mouse_mode_impl(wanted_mouse_mode);
+}
+
+void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerWindows::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWindows::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWindows::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
