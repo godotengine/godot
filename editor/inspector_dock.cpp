@@ -750,7 +750,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu = memnew(MenuButton);
 	object_menu->set_flat(false);
 	object_menu->set_theme_type_variation("FlatMenuButton");
-	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTR("Manage object properties."));
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
