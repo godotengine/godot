@@ -106,6 +106,7 @@ class GameView : public VBoxContainer {
 		EMBED_NOT_AVAILABLE_MINIMIZED,
 		EMBED_NOT_AVAILABLE_MAXIMIZED,
 		EMBED_NOT_AVAILABLE_FULLSCREEN,
+		EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE,
 	};
 
 	inline static GameView *singleton = nullptr;
