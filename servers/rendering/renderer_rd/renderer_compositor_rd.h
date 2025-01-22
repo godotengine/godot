@@ -144,7 +144,7 @@ public:
 
 	static void make_current() {
 		_create_func = _create_current;
-		low_end = false;
+		using_gl_compatibility = false;
 	}
 
 	static RendererCompositorRD *get_singleton() { return singleton; }

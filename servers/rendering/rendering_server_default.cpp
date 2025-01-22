@@ -353,8 +353,8 @@ void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 	RSG::utilities->set_debug_generate_wireframes(p_generate);
 }
 
-bool RenderingServerDefault::is_low_end() const {
-	return RendererCompositor::is_low_end();
+bool RenderingServerDefault::is_using_gl_compatibility() const {
+	return RendererCompositor::is_using_gl_compatibility();
 }
 
 Size2i RenderingServerDefault::get_maximum_viewport_size() const {

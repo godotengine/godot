@@ -72,7 +72,7 @@ private:
 protected:
 	static RendererCompositor *(*_create_func)();
 	bool back_end = false;
-	static bool low_end;
+	static bool using_gl_compatibility;
 
 public:
 	static RendererCompositor *create();
@@ -103,7 +103,7 @@ public:
 	virtual double get_total_time() const = 0;
 	virtual bool can_create_resources_async() const = 0;
 
-	static bool is_low_end() { return low_end; }
+	static bool is_using_gl_compatibility() { return using_gl_compatibility; }
 	virtual bool is_xr_enabled() const;
 
 	static RendererCompositor *get_singleton() { return singleton; }

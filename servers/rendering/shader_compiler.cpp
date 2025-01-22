@@ -41,7 +41,7 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 	String type = ShaderLanguage::get_datatype_name(p_type);
-	if (!RS::get_singleton()->is_low_end() && ShaderLanguage::is_sampler_type(p_type)) {
+	if (!RS::get_singleton()->is_using_gl_compatibility() && ShaderLanguage::is_sampler_type(p_type)) {
 		type = type.replace("sampler", "texture"); //we use textures instead of samplers in Vulkan GLSL
 	}
 	return type;
@@ -561,7 +561,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				if (SL::is_sampler_type(uniform.type)) {
 					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
-					if (!RS::get_singleton()->is_low_end()) {
+					if (!RS::get_singleton()->is_using_gl_compatibility()) {
 						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") ";
 					}
 					ucode += "uniform ";
@@ -712,7 +712,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 				vcode += ";\n";
 				// GLSL ES 3.0 does not allow layout qualifiers for varyings
-				if (!RS::get_singleton()->is_low_end()) {
+				if (!RS::get_singleton()->is_using_gl_compatibility()) {
 					r_gen_code.stage_globals[STAGE_VERTEX] += "layout(location=" + itos(index) + ") ";
 					r_gen_code.stage_globals[STAGE_FRAGMENT] += "layout(location=" + itos(index) + ") ";
 				}
@@ -1263,7 +1263,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									break;
 							}
 
-							if (correct_texture_uniform && !RS::get_singleton()->is_low_end()) {
+							if (correct_texture_uniform && !RS::get_singleton()->is_using_gl_compatibility()) {
 								// Need to map from texture to sampler in order to sample when using Vulkan GLSL.
 								String sampler_name;
 								bool is_depth_texture = false;
@@ -1322,7 +1322,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
-							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
+							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_using_gl_compatibility()) {
 								// Texture function on low end hardware (i.e. OpenGL).
 								// We just need to know if the texture supports multiview.
 

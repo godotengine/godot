@@ -1831,7 +1831,7 @@ public:
 
 	virtual void call_set_vsync_mode(DisplayServer::VSyncMode p_mode, DisplayServer::WindowID p_window) = 0;
 
-	virtual bool is_low_end() const = 0;
+	virtual bool is_using_gl_compatibility() const = 0;
 
 	virtual void set_print_gpu_profile(bool p_enable) = 0;
 

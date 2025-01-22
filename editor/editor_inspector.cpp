@@ -3247,7 +3247,7 @@ void EditorInspector::update_tree() {
 			category_vbox = nullptr;
 		}
 
-		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
+		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_using_gl_compatibility()) {
 			// Do not show this property in low end gfx.
 			continue;
 		}

@@ -36,7 +36,7 @@
 RendererCompositor *RendererCompositor::singleton = nullptr;
 
 RendererCompositor *(*RendererCompositor::_create_func)() = nullptr;
-bool RendererCompositor::low_end = false;
+bool RendererCompositor::using_gl_compatibility = false;
 
 RendererCompositor *RendererCompositor::create() {
 	return _create_func();
