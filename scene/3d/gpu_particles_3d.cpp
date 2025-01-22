@@ -92,10 +92,6 @@ void GPUParticles3D::set_one_shot(bool p_one_shot) {
 
 	if (is_emitting()) {
 		if (!one_shot) {
-			if (!use_fixed_seed) {
-				set_seed(Math::rand());
-			}
-
 			RenderingServer::get_singleton()->particles_restart(particles);
 		}
 	}
