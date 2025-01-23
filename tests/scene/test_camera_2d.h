@@ -62,6 +62,7 @@ TEST_CASE("[SceneTree][Camera2D] Getters and setters") {
 		constexpr float drag_bottom_margin = 0.8f;
 		constexpr float drag_horizontal_offset1 = 0.5f;
 		constexpr float drag_horizontal_offset2 = -0.5f;
+
 		constexpr float drag_vertical_offset1 = 0.5f;
 		constexpr float drag_vertical_offset2 = -0.5f;
 		test_camera->set_drag_margin(SIDE_LEFT, drag_left_margin);
