@@ -1857,6 +1857,18 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	particles_collision->cull_mask = p_cull_mask;
 }
 
+uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, false);
+	return particles_collision->heightfield_mask;
+}
+
+void ParticlesStorage::particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	particles_collision->heightfield_mask = p_heightfield_mask;
+}
+
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
