@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRFutureResult" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Result object tracking the asynchronous result of an OpenXR Future object.
+	</brief_description>
+	<description>
+		Result object tracking the asynchronous result of an OpenXR Future object, you can use this object to track the result status.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel_future">
+			<return type="void" />
+			<description>
+				Cancel this future, this will interrupt and stop the asynchronous function.
+			</description>
+		</method>
+		<method name="get_future" qualifiers="const">
+			<return type="int" />
+			<description>
+				Return the [code]XrFutureEXT[/code] value this result relates to.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="OpenXRFutureResult.ResultStatus" />
+			<description>
+				Returns the status of this result.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="completed">
+			<param index="0" name="result" type="OpenXRFutureResult" />
+			<description>
+				Emitted when the asynchronous function is finished or has been cancelled.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="RESULT_RUNNING" value="0" enum="ResultStatus">
+			The asynchronous function is running.
+		</constant>
+		<constant name="RESULT_FINISHED" value="1" enum="ResultStatus">
+			The asynchronous function has finished.
+		</constant>
+		<constant name="RESULT_CANCELLED" value="2" enum="ResultStatus">
+			The asynchronous function has been cancelled.
+		</constant>
+	</constants>
+</class>

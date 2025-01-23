@@ -34,6 +34,11 @@
 #include "openxr_extension_wrapper.h"
 
 class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
+	GDCLASS(OpenXRCompositionLayerDepthExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRCompositionLayerDepthExtension *get_singleton();
 
