@@ -2893,6 +2893,14 @@
 				Sets the signed distance field [param texture] for the 3D GPU particles collision specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionSDF3D.texture] or [member GPUParticlesAttractorVectorField3D.texture] depending on the [param particles_collision] type.
 			</description>
 		</method>
+		<method name="particles_collision_set_height_field_mask">
+			<return type="void" />
+			<param index="0" name="particles_collision" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+				Sets the heightfield [param mask] for the 3D GPU particles heightfield collision specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionHeightField3D.heightfield_mask].
+			</description>
+		</method>
 		<method name="particles_collision_set_height_field_resolution">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />

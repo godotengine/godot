@@ -12,10 +12,32 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_heightfield_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns [code]true[/code] if the specified layer of the [member heightfield_mask] is enabled, given a [param layer_number] between [code]1[/code] and [code]20[/code], inclusive.
+			</description>
+		</method>
+		<method name="set_heightfield_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member heightfield_mask], given a [param layer_number] between [code]1[/code] and [code]20[/code], inclusive.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_enabled" getter="is_follow_camera_enabled" default="false">
 			If [code]true[/code], the [GPUParticlesCollisionHeightField3D] will follow the current camera in global space. The [GPUParticlesCollisionHeightField3D] does not need to be a child of the [Camera3D] node for this to work.
 			Following the camera has a performance cost, as it will force the heightmap to update whenever the camera moves. Consider lowering [member resolution] to improve performance if [member follow_camera_enabled] is [code]true[/code].
+		</member>
+		<member name="heightfield_mask" type="int" setter="set_heightfield_mask" getter="get_heightfield_mask" default="1048575">
+			The visual layers to account for when updating the heightmap. Only [MeshInstance3D]s whose [member VisualInstance3D.layers] match with this [member heightfield_mask] will be included in the heightmap collision update. By default, all 20 user-visible layers are taken into account for updating the heightmap collision.
+			[b]Note:[/b] Since the [member heightfield_mask] allows for 32 layers to be stored in total, there are an additional 12 layers that are only used internally by the engine and aren't exposed in the editor. Setting [member heightfield_mask] using a script allows you to toggle those reserved layers, which can be useful for editor plugins.
+			To adjust [member heightfield_mask] more easily using a script, use [method get_heightfield_mask_value] and [method set_heightfield_mask_value].
 		</member>
 		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField3D.Resolution" default="2">
 			Higher resolutions can represent small details more accurately in large scenes, at the cost of lower performance. If [member update_mode] is [constant UPDATE_MODE_ALWAYS], consider using the lowest resolution possible.
