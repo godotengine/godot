@@ -69,7 +69,7 @@ class ProjectManager : public Control {
 
 	Ref<Theme> theme;
 
-	void _update_size_limits(bool p_custom_res);
+	void _update_size_limits();
 	void _update_theme(bool p_skip_creation = false);
 	void _titlebar_resized();
 
@@ -261,6 +261,6 @@ public:
 
 	void add_new_tag(const String &p_tag);
 
-	ProjectManager(bool p_custom_res);
+	ProjectManager();
 	~ProjectManager();
 };
