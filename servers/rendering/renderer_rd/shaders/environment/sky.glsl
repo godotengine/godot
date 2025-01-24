@@ -187,6 +187,32 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 	return vec4(fog_color, 1.0);
 }
 
+// Eberly approximation from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+// input [-1, 1] and output [0, PI]
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0) ? res : M_PI - res;
+}
+
+// Based on https://math.stackexchange.com/questions/1098487/atan2-faster-approximation
+// but using the Eberly coefficients from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+float atan2_approx(float y, float x) {
+	float a = min(abs(x), abs(y)) / max(abs(x), abs(y));
+	float s = a * a;
+	float poly = 0.0872929f;
+	poly = -0.301895f + poly * s;
+	poly = 1.0f + poly * s;
+	poly = poly * a;
+
+	float r = abs(y) > abs(x) ? (M_PI / 2.0) - poly : poly;
+	r = x < 0.0 ? M_PI - r : r;
+	r = y < 0.0 ? -r : r;
+
+	return r;
+}
+
 void main() {
 	vec3 cube_normal;
 #ifdef USE_MULTIVIEW
@@ -207,7 +233,7 @@ void main() {
 
 	vec2 uv = uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
