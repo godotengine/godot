@@ -961,6 +961,12 @@ void GridMapEditor::update_palette() {
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
+	Vector<int> currently_selected;
+
+	for (int palette_idx : mesh_palette->get_selected_items()) {
+		currently_selected.push_back(mesh_palette->get_item_metadata(palette_idx));
+	}
+
 	mesh_palette->clear();
 	if (display_mode == DISPLAY_THUMBNAIL) {
 		mesh_palette->set_max_columns(0);
@@ -1022,12 +1028,17 @@ void GridMapEditor::update_palette() {
 		mesh_palette->set_item_text(item, mesh_library_item_name);
 		mesh_palette->set_item_metadata(item, mesh_library_item_id);
 
-		if (selected_library_item_id == mesh_library_item_id) {
-			mesh_palette->select(item);
-		}
-
 		item++;
 	}
+
+	for (int palette_idx = 0; palette_idx < mesh_palette->get_item_count(); palette_idx++) {
+		int mesh_library_item_id = mesh_palette->get_item_metadata(palette_idx);
+		if (currently_selected.has(mesh_library_item_id)) {
+			mesh_palette->select(palette_idx, false);
+		}
+	}
+
+	_select_next_item();
 }
 
 void GridMapEditor::_update_mesh_library() {
