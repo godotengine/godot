@@ -101,7 +101,7 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct CustomCursor {
-		RID rid;
+		Ref<Resource> resource;
 		Point2i hotspot;
 	};
 
