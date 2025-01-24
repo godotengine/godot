@@ -57,10 +57,10 @@ public:
 		TK_IDENTIFIER,
 		TK_TRUE,
 		TK_FALSE,
-		TK_FLOAT_CONSTANT,
-		TK_INT_CONSTANT,
-		TK_UINT_CONSTANT,
-		TK_STRING_CONSTANT,
+		TK_FLOAT_LITERAL,
+		TK_INT_LITERAL,
+		TK_UINT_LITERAL,
+		TK_STRING_LITERAL,
 		TK_TYPE_VOID,
 		TK_TYPE_BOOL,
 		TK_TYPE_BVEC2,
@@ -374,7 +374,7 @@ public:
 			NODE_TYPE_BLOCK,
 			NODE_TYPE_VARIABLE,
 			NODE_TYPE_VARIABLE_DECLARATION,
-			NODE_TYPE_CONSTANT,
+			NODE_TYPE_LITERAL,
 			NODE_TYPE_OPERATOR,
 			NODE_TYPE_CONTROL_FLOW,
 			NODE_TYPE_MEMBER,
@@ -494,7 +494,7 @@ public:
 				Node(NODE_TYPE_ARRAY_CONSTRUCT) {}
 	};
 
-	struct ConstantNode : public Node {
+	struct LiteralNode : public Node {
 		DataType datatype = TYPE_VOID;
 		String struct_name = "";
 		int array_size = 0;
@@ -509,8 +509,8 @@ public:
 			return values;
 		}
 
-		ConstantNode() :
-				Node(NODE_TYPE_CONSTANT) {}
+		LiteralNode() :
+				Node(NODE_TYPE_LITERAL) {}
 	};
 
 	struct FunctionNode;
@@ -549,7 +549,7 @@ public:
 		bool use_op_eval = true;
 
 		DataType expected_type = TYPE_VOID;
-		HashSet<int> constants;
+		HashSet<int> literals;
 
 		BlockNode() :
 				Node(NODE_TYPE_BLOCK) {}
@@ -788,10 +788,10 @@ public:
 	struct Token {
 		TokenType type;
 		StringName text;
-		double constant;
+		double literal;
 		uint16_t line;
-		bool is_integer_constant() const {
-			return type == TK_INT_CONSTANT || type == TK_UINT_CONSTANT;
+		bool is_integer_literal() const {
+			return type == TK_INT_LITERAL || type == TK_UINT_LITERAL;
 		}
 	};
 
@@ -817,13 +817,13 @@ public:
 	static bool is_token_operator_assign(TokenType p_type);
 	static bool is_token_hint(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr);
+	static bool convert_literal(LiteralNode *p_literal, DataType p_to_type, Scalar *p_value = nullptr);
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
-	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant literal_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
@@ -1087,7 +1087,7 @@ private:
 
 	IdentifierType last_type = IDENTIFIER_MAX;
 
-	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, Vector<Scalar> *r_constant_values = nullptr);
+	bool _find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type = nullptr, IdentifierType *r_type = nullptr, bool *r_is_const = nullptr, int *r_array_size = nullptr, StringName *r_struct_name = nullptr, Vector<Scalar> *r_literal_values = nullptr);
 #ifdef DEBUG_ENABLED
 	void _parse_used_identifier(const StringName &p_identifier, IdentifierType p_type, const StringName &p_function);
 #endif // DEBUG_ENABLED
