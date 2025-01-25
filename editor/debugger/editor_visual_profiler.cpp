@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/flow_container.h"
 #include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::set_hardware_info(const String &p_cpu_name, const String &p_gpu_name) {
@@ -742,54 +743,67 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 
 EditorVisualProfiler::EditorVisualProfiler() {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 	add_child(hb);
+
+	FlowContainer *container = memnew(FlowContainer);
+	container->set_h_size_flags(SIZE_EXPAND_FILL);
+	container->add_theme_constant_override(SNAME("h_separation"), 8 * EDSCALE);
+	container->add_theme_constant_override(SNAME("v_separation"), 2 * EDSCALE);
+	hb->add_child(container);
+
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
 	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
 	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_activate_pressed));
-	hb->add_child(activate);
+	container->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
 	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
-	hb->add_child(clear_button);
+	container->add_child(clear_button);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
 	autostart_checkbox->set_text(TTR("Autostart"));
 	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false));
 	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorVisualProfiler::_autostart_toggled));
-	hb->add_child(autostart_checkbox);
+	container->add_child(autostart_checkbox);
 
-	hb->add_child(memnew(Label(TTR("Measure:"))));
+	HBoxContainer *hb_measure = memnew(HBoxContainer);
+	hb_measure->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	container->add_child(hb_measure);
+
+	hb_measure->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
 
-	hb->add_child(display_mode);
+	hb_measure->add_child(display_mode);
 
 	frame_relative = memnew(CheckBox(TTR("Fit to Frame")));
 	frame_relative->set_pressed(true);
-	hb->add_child(frame_relative);
+	container->add_child(frame_relative);
 	frame_relative->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 	linked = memnew(CheckBox(TTR("Linked")));
 	linked->set_pressed(true);
-	hb->add_child(linked);
+	container->add_child(linked);
 	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_update_plot));
 
-	hb->add_spacer();
+	HBoxContainer *hb_frame = memnew(HBoxContainer);
+	hb_frame->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	hb_frame->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	hb->add_child(hb_frame);
 
-	hb->add_child(memnew(Label(TTR("Frame #:"))));
+	hb_frame->add_child(memnew(Label(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
-	hb->add_child(cursor_metric_edit);
+	hb_frame->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
-
-	hb->add_theme_constant_override("separation", 8 * EDSCALE);
 
 	h_split = memnew(HSplitContainer);
 	add_child(h_split);
