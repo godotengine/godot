@@ -122,6 +122,8 @@ class GameView : public VBoxContainer {
 	bool embed_on_play = true;
 	bool make_floating_on_play = true;
 	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
+	bool paused = false;
+	Size2 size_paused;
 
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
@@ -185,6 +187,8 @@ class GameView : public VBoxContainer {
 	void _attach_script_debugger();
 	void _detach_script_debugger();
 	void _remote_window_title_changed(String title);
+
+	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
 protected:
 	void _notification(int p_what);
