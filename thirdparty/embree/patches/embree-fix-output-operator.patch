@@ -1,0 +1,39 @@
+From cda4cf1919bb2a748e78915fbd6e421a1056638d Mon Sep 17 00:00:00 2001
+From: Daniel Opitz <daniel.opitz@intel.com>
+Date: Mon, 13 May 2024 10:17:51 +0200
+Subject: [PATCH] fix output operator, issue #486
+
+---
+ kernels/geometry/pointi.h     | 4 ++--
+ kernels/subdiv/bezier_curve.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kernels/geometry/pointi.h b/kernels/geometry/pointi.h
+index f81edb9035..aba8ec4ab3 100644
+--- a/kernels/geometry/pointi.h
++++ b/kernels/geometry/pointi.h
+@@ -210,9 +210,9 @@ namespace embree
+     };
+ 
+     /*! output operator */
+-    friend __forceinline embree_ostream operator<<(embree_ostream cout, const PointMi& line)
++    friend __forceinline embree_ostream operator<<(embree_ostream cout, const PointMi& point)
+     {
+-      return cout << "Line" << M << "i {" << line.v0 << ", " << line.geomID() << ", " << line.primID() << "}";
++      return cout << "Point" << M << "i {" << point.geomID() << ", " << point.primID() << "}";
+     }
+ 
+    public:
+diff --git a/kernels/subdiv/bezier_curve.h b/kernels/subdiv/bezier_curve.h
+index 257e0afd40..5e3b5c83b3 100644
+--- a/kernels/subdiv/bezier_curve.h
++++ b/kernels/subdiv/bezier_curve.h
+@@ -135,7 +135,7 @@ namespace embree
+       }
+       
+       friend embree_ostream operator<<(embree_ostream cout, const QuadraticBezierCurve& a) {
+-        return cout << "QuadraticBezierCurve ( (" << a.u.lower << ", " << a.u.upper << "), " << a.v0 << ", " << a.v1 << ", " << a.v2 << ")";
++        return cout << "QuadraticBezierCurve (" << a.v0 << ", " << a.v1 << ", " << a.v2 << ")";
+       }
+     };
+   
