@@ -397,6 +397,12 @@ void SpringBoneSimulator3D::_notification(int p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_gizmos();
 		} break;
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			saving = true;
+		} break;
+		case NOTIFICATION_EDITOR_POST_SAVE: {
+			saving = false;
+		} break;
 #endif // TOOLS_ENABLED
 	}
 }
@@ -1467,6 +1473,13 @@ void SpringBoneSimulator3D::_process_modification() {
 	}
 	_find_collisions();
 	_process_collisions();
+
+#ifdef TOOLS_ENABLED
+	if (saving) {
+		return; // Collision position has been reset but we don't want to process simulating on saving. Abort.
+	}
+#endif //TOOLS_ENABLED
+
 	double delta = skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE ? skeleton->get_process_delta_time() : skeleton->get_physics_process_delta_time();
 	for (int i = 0; i < settings.size(); i++) {
 		_init_joints(skeleton, settings[i]);

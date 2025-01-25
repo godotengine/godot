@@ -91,6 +91,10 @@ public:
 	static Vector3 get_vector_from_axis(Vector3::Axis p_axis);
 	static Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis);
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const { return false; }
+#endif
+
 	SkeletonModifier3D();
 };
 

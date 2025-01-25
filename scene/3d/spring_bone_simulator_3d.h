@@ -36,6 +36,10 @@
 class SpringBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(SpringBoneSimulator3D, SkeletonModifier3D);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
 	bool joints_dirty = false;
 
 	LocalVector<ObjectID> collisions; // To process collisions for sync position with skeleton.
@@ -273,6 +277,10 @@ public:
 
 	// To process manually.
 	void reset();
+
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
