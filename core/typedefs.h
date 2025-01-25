@@ -67,7 +67,9 @@ static_assert(__cplusplus >= 201703L);
 
 // Should always inline, except in dev builds because it makes debugging harder.
 #ifndef _FORCE_INLINE_
-#ifdef DEV_ENABLED
+#if defined(DEV_ENABLED)
+#define _FORCE_INLINE_ inline
+#elif defined(SIZE_EXTRA)
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
