@@ -34,6 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/spin_box.h"
 
 class AspectRatioContainer;
 class ColorMode;
@@ -47,7 +48,6 @@ class MarginContainer;
 class MenuButton;
 class OptionButton;
 class PopupMenu;
-class SpinBox;
 class StyleBoxFlat;
 class TextureRect;
 
@@ -276,7 +276,6 @@ private:
 	void _copy_color_to_hsv();
 	void _copy_hsv_to_color();
 
-	PickerShapeType _get_actual_shape() const;
 	void create_slider(GridContainer *gc, int idx);
 	void _reset_sliders_theme();
 	void _html_submitted(const String &p_html);
@@ -459,5 +458,19 @@ public:
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);
 VARIANT_ENUM_CAST(ColorPicker::ColorModeType);
+
+class OverbrightSpinBox : public SpinBox {
+	GDCLASS(OverbrightSpinBox, SpinBox)
+
+	HSlider *slider = nullptr;
+
+	void _update();
+
+protected:
+	virtual void _value_changed(double p_value) override;
+
+public:
+	OverbrightSpinBox(HSlider *p_slider);
+};
 
 #endif // COLOR_PICKER_H
