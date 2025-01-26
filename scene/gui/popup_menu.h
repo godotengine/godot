@@ -215,6 +215,7 @@ class PopupMenu : public Popup {
 	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
 	void _set_item_checkable_type(int p_index, int p_checkable_type);
 	int _get_item_checkable_type(int p_index) const;
+	void _native_popup(const Rect2i &p_rect);
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const override;
