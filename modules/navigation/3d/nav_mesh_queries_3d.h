@@ -70,6 +70,10 @@ public:
 		PathPostProcessing path_postprocessing = PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 		bool simplify_path = false;
 		real_t simplify_epsilon = 0.0;
+		bool exclude_regions = false;
+		bool include_regions = false;
+		LocalVector<RID> excluded_regions;
+		LocalVector<RID> included_regions;
 
 		// Path building.
 		Vector3 begin_position;

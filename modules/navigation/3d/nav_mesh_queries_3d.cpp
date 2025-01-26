@@ -158,6 +158,29 @@ void NavMeshQueries3D::map_query_path(NavMap *map, const Ref<NavigationPathQuery
 	query_task.navigation_layers = p_query_parameters->get_navigation_layers();
 	query_task.callback = p_callback;
 
+	const TypedArray<RID> &_excluded_regions = p_query_parameters->get_excluded_regions();
+	const TypedArray<RID> &_included_regions = p_query_parameters->get_included_regions();
+
+	uint32_t _excluded_region_count = _excluded_regions.size();
+	uint32_t _included_region_count = _included_regions.size();
+
+	query_task.exclude_regions = _excluded_region_count > 0;
+	query_task.include_regions = _included_region_count > 0;
+
+	if (query_task.exclude_regions) {
+		query_task.excluded_regions.resize(_excluded_region_count);
+		for (uint32_t i = 0; i < _excluded_region_count; i++) {
+			query_task.excluded_regions[i] = _excluded_regions[i];
+		}
+	}
+
+	if (query_task.include_regions) {
+		query_task.included_regions.resize(_included_region_count);
+		for (uint32_t i = 0; i < _included_region_count; i++) {
+			query_task.included_regions[i] = _included_regions[i];
+		}
+	}
+
 	switch (p_query_parameters->get_pathfinding_algorithm()) {
 		case NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR: {
 			query_task.pathfinding_algorithm = PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
@@ -214,6 +237,13 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 
 	for (const NavRegionIteration &region : regions) {
 		if (!region.get_enabled()) {
+			continue;
+		}
+
+		if (p_query_task.exclude_regions && p_query_task.excluded_regions.has(region.get_self())) {
+			continue;
+		}
+		if (p_query_task.include_regions && !p_query_task.included_regions.has(region.get_self())) {
 			continue;
 		}
 
@@ -295,6 +325,41 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
 				const NavBaseIteration *owner = connection.polygon->owner;
+				bool skip_connection = false;
+				if (p_query_task.exclude_regions || p_query_task.include_regions) {
+					switch (owner->get_type()) {
+						case NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION: {
+							if (p_query_task.exclude_regions && p_query_task.excluded_regions.has(owner->get_self())) {
+								skip_connection = true;
+							} else if (p_query_task.include_regions && !p_query_task.included_regions.has(owner->get_self())) {
+								skip_connection = true;
+							}
+						} break;
+						case NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK: {
+							const LocalVector<gd::Polygon> &link_polygons = owner->get_navmesh_polygons();
+							if (link_polygons.size() != 2) {
+								// Whatever this is, it is not a valid connected link.
+								skip_connection = true;
+							} else {
+								const RID link_start_region = link_polygons[0].owner->get_self();
+								const RID link_end_region = link_polygons[1].owner->get_self();
+								if (p_query_task.exclude_regions && (p_query_task.excluded_regions.has(link_start_region) || p_query_task.excluded_regions.has(link_end_region))) {
+									// At least one region of the link is excluded so skip.
+									skip_connection = true;
+								}
+								if (p_query_task.include_regions && (!p_query_task.included_regions.has(link_start_region) || !p_query_task.excluded_regions.has(link_end_region))) {
+									// Not both regions of the link are included so skip.
+									skip_connection = true;
+								}
+							}
+						} break;
+					}
+				}
+
+				if (skip_connection) {
+					continue;
+				}
+
 				if ((p_navigation_layers & owner->get_navigation_layers()) != 0) {
 					Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 					const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly.entry, pathway);

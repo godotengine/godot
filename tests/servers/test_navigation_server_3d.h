@@ -793,6 +793,54 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
 		}
 
+		SUBCASE("Elaborate query with excluded region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			Array excluded_regions;
+			excluded_regions.push_back(region);
+			query_parameters->set_excluded_regions(excluded_regions);
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with included region should yield path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			Array included_regions;
+			included_regions.push_back(region);
+			query_parameters->set_included_regions(included_regions);
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with excluded and included region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			Array excluded_regions;
+			excluded_regions.push_back(region);
+			query_parameters->set_excluded_regions(excluded_regions);
+			Array included_regions;
+			included_regions.push_back(region);
+			query_parameters->set_included_regions(included_regions);
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
 		navigation_server->free(region);
 		navigation_server->free(map);
 		navigation_server->process(0.0); // Give server some cycles to commit.
