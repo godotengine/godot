@@ -417,7 +417,7 @@ void EditorPropertyArray::update_property() {
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		edit->set_button_icon(Ref<Texture2D>());
-		edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
+		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
 	}
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
