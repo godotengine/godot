@@ -1076,11 +1076,6 @@ void GDScript::_bind_methods() {
 }
 
 void GDScript::set_path_cache(const String &p_path) {
-	if (ResourceCache::has(p_path)) {
-		set_path(p_path, true);
-		return;
-	}
-
 	if (is_root_script()) {
 		Script::set_path_cache(p_path);
 	}
