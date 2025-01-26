@@ -68,6 +68,13 @@ enum Orientation {
 	VERTICAL
 };
 
+enum Direction {
+	NORTH,
+	EAST,
+	SOUTH,
+	WEST
+};
+
 enum HorizontalAlignment {
 	HORIZONTAL_ALIGNMENT_LEFT,
 	HORIZONTAL_ALIGNMENT_CENTER,

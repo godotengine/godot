@@ -6,6 +6,7 @@
 	<description>
 		[Texture2D] resource that draws only part of its [member atlas] texture, as defined by the [member region]. An additional [member margin] can also be set, which is useful for small adjustments.
 		Multiple [AtlasTexture] resources can be cropped from the same [member atlas]. Packing many smaller textures into a singular large texture helps to optimize video memory costs and render calls.
+		Packed textures may be rotated within their atlas to further optimize, in this case [member direction] may be used to properly orient them when drawing.
 		[b]Note:[/b] [AtlasTexture] cannot be used in an [AnimatedTexture], and will not tile properly in nodes such as [TextureRect] or [Sprite2D]. To tile an [AtlasTexture], modify its [member region] instead.
 	</description>
 	<tutorials>
@@ -22,6 +23,9 @@
 		</member>
 		<member name="region" type="Rect2" setter="set_region" getter="get_region" default="Rect2(0, 0, 0, 0)">
 			The region used to draw the [member atlas]. If either dimension of the region's size is [code]0[/code], the value from [member atlas] size will be used for that axis instead.
+		</member>
+		<member name="direction" type="Direction" setter="set_direction" getter="get_direction" default="NORTH">
+			The direction the [member region] considers to be up. This may be used to reorient textures that were rotated when packed into the [member atlas].
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>

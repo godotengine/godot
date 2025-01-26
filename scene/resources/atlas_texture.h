@@ -43,8 +43,12 @@ protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;
 	Rect2 margin;
+	Direction direction = Direction::NORTH;
 	bool filter_clip = false;
 
+	int get_region_width() const;
+	int get_region_height() const;
+	void draw_oriented(RID p_canvas_item, const Rect2 dr, const Rect2 src_c, const Color &p_modulate, bool p_transpose) const;
 	static void _bind_methods();
 
 public:
@@ -62,6 +66,9 @@ public:
 
 	void set_margin(const Rect2 &p_margin);
 	Rect2 get_margin() const;
+
+	void set_direction(const Direction p_direction);
+	Direction get_direction() const;
 
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;

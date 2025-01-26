@@ -31,6 +31,32 @@
 #include "atlas_texture.h"
 
 int AtlasTexture::get_width() const {
+	switch (direction) {
+		case NORTH:
+		case SOUTH:
+			return get_region_width();
+		case EAST:
+		case WEST:
+			return get_region_height();
+	}
+
+	return 1;
+}
+
+int AtlasTexture::get_height() const {
+	switch (direction) {
+		case NORTH:
+		case SOUTH:
+			return get_region_height();
+		case EAST:
+		case WEST:
+			return get_region_width();
+	}
+
+	return 1;
+}
+
+int AtlasTexture::get_region_width() const {
 	if (region.size.width == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_width();
@@ -41,7 +67,7 @@ int AtlasTexture::get_width() const {
 	}
 }
 
-int AtlasTexture::get_height() const {
+int AtlasTexture::get_region_height() const {
 	if (region.size.height == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_height();
@@ -113,6 +139,18 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
+void AtlasTexture::set_direction(const Direction p_direction) {
+	if (direction == p_direction) {
+		return;
+	}
+	direction = p_direction;
+	emit_changed();
+}
+
+Direction AtlasTexture::get_direction() const {
+	return direction;
+}
+
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
@@ -145,13 +183,50 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &AtlasTexture::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &AtlasTexture::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_direction", "orientation"), &AtlasTexture::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &AtlasTexture::get_direction);
+
 	ClassDB::bind_method(D_METHOD("set_filter_clip", "enable"), &AtlasTexture::set_filter_clip);
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_atlas", "get_atlas");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region", PROPERTY_HINT_NONE, "suffix:px"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin", PROPERTY_HINT_NONE, "suffix:px"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "North,East,South,West"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
+}
+
+void AtlasTexture::draw_oriented(RID p_canvas_item, const Rect2 p_draw, const Rect2 p_source, const Color &p_modulate, bool p_transpose) const {
+	bool transpose = p_transpose;
+	Rect2 draw = p_draw;
+	Rect2 source = p_source;
+	bool flipH = false;
+	bool flipV = false;
+
+	switch (direction) {
+		case SOUTH:
+			flipH = true;
+			flipV = true;
+			break;
+		case EAST:
+			flipV = true;
+			transpose = !transpose;
+			break;
+		case WEST:
+			flipH = true;
+			transpose = !transpose;
+			break;
+	}
+
+	if (flipH) {
+		source.size.x = -source.size.x;
+	}
+
+	if (flipV) {
+		source.size.y = -source.size.y;
+	}
+
+	atlas->draw_rect_region(p_canvas_item, draw, source, p_modulate, transpose, filter_clip);
 }
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
@@ -159,7 +234,7 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 		return;
 	}
 	const Rect2 rc = _get_region_rect();
-	atlas->draw_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose, filter_clip);
+	draw_oriented(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose);
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
@@ -172,7 +247,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		draw_oriented(p_canvas_item, dr, src_c, p_modulate, p_transpose);
 	}
 }
 
@@ -185,7 +260,7 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, p_src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		draw_oriented(p_canvas_item, dr, src_c, p_modulate, p_transpose);
 	}
 }
 
@@ -204,7 +279,16 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	Vector2 scale = p_rect.size / src.size;
 
 	src.position += (region.position - margin.position);
-	Rect2 src_clipped = _get_region_rect().intersection(src);
+
+	Rect2 clip_target = src;
+	switch (direction) {
+		case EAST:
+		case WEST:
+			clip_target.size = Vector2(clip_target.size.y, clip_target.size.x);
+			break;
+	}
+
+	Rect2 src_clipped = _get_region_rect().intersection(clip_target);
 	if (src_clipped.size == Size2()) {
 		return false;
 	}
@@ -227,8 +311,27 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 		return true;
 	}
 
-	int x = p_x + region.position.x - margin.position.x;
-	int y = p_y + region.position.y - margin.position.y;
+	int x = region.position.x - margin.position.x;
+	int y = region.position.y - margin.position.y;
+
+	switch (direction) {
+		case NORTH:
+			x += p_x;
+			y += p_y;
+			break;
+		case EAST:
+			x += region.size.x - p_y;
+			y += p_x;
+			break;
+		case WEST:
+			x += p_y;
+			y += region.size.y - p_x;
+			break;
+		case SOUTH:
+			x += region.size.x - p_x;
+			y += region.size.y - p_y;
+			break;
+	}
 
 	// Margin edge may outside of atlas.
 	if (x < 0 || x >= atlas->get_width()) {

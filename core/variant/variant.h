@@ -482,6 +482,7 @@ public:
 	// some core type enums to convert to
 	operator Side() const;
 	operator Orientation() const;
+	operator Direction() const;
 
 	operator IPAddress() const;
 
