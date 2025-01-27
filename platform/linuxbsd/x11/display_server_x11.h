@@ -338,6 +338,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xinerama_ext_ok = true;
 	bool xshaped_ext_ok = true;
 	bool xwayland = false;
+	bool kde5_embed_workaround = false; // Workaround embedded game visibility on KDE 5 (GH-102043).
 
 	struct Property {
 		unsigned char *data;
