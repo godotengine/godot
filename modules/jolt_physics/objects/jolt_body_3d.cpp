@@ -114,7 +114,7 @@ JPH::EMotionType JoltBody3D::_get_motion_type() const {
 }
 
 void JoltBody3D::_add_to_space() {
-	jolt_shape = build_shape();
+	jolt_shape = build_shapes(true);
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -208,20 +208,6 @@ void JoltBody3D::_move_kinematic(float p_step, JPH::Body &p_jolt_body) {
 	}
 
 	p_jolt_body.MoveKinematic(new_position, new_rotation, p_step);
-}
-
-void JoltBody3D::_pre_step_rigid(float p_step, JPH::Body &p_jolt_body) {
-	_integrate_forces(p_step, p_jolt_body);
-	_enqueue_call_queries();
-}
-
-void JoltBody3D::_pre_step_kinematic(float p_step, JPH::Body &p_jolt_body) {
-	_update_gravity(p_jolt_body);
-	_move_kinematic(p_step, p_jolt_body);
-
-	if (reports_contacts()) {
-		_enqueue_call_queries();
-	}
 }
 
 JPH::EAllowedDOFs JoltBody3D::_calculate_allowed_dofs() const {
@@ -477,8 +463,8 @@ void JoltBody3D::_mode_changed() {
 	wake_up();
 }
 
-void JoltBody3D::_shapes_built() {
-	JoltShapedObject3D::_shapes_built();
+void JoltBody3D::_shapes_committed() {
+	JoltShapedObject3D::_shapes_committed();
 
 	_update_mass_properties();
 	_update_joint_constraints();
@@ -1237,11 +1223,16 @@ void JoltBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID:
 		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
-			_pre_step_rigid(p_step, p_jolt_body);
+			_integrate_forces(p_step, p_jolt_body);
 		} break;
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
-			_pre_step_kinematic(p_step, p_jolt_body);
+			_update_gravity(p_jolt_body);
+			_move_kinematic(p_step, p_jolt_body);
 		} break;
+	}
+
+	if (_should_call_queries()) {
+		_enqueue_call_queries();
 	}
 
 	contact_count = 0;

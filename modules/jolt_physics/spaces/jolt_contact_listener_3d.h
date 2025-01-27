@@ -93,7 +93,7 @@ class JoltContactListener3D final
 
 #ifdef DEBUG_ENABLED
 	PackedVector3Array debug_contacts;
-	std::atomic_int debug_contact_count;
+	std::atomic_int debug_contact_count = 0;
 #endif
 
 	virtual void OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;

@@ -1280,7 +1280,7 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="ambient" type="int" enum="RenderingServer.EnvironmentAmbientSource" default="0" />
 			<param index="3" name="energy" type="float" default="1.0" />
-			<param index="4" name="sky_contibution" type="float" default="0.0" />
+			<param index="4" name="sky_contribution" type="float" default="0.0" />
 			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
 			<description>
 				Sets the values to be used for ambient light rendering. See [Environment] for more details.
@@ -2559,6 +2559,7 @@
 			<param index="2" name="transform_format" type="int" enum="RenderingServer.MultimeshTransformFormat" />
 			<param index="3" name="color_format" type="bool" default="false" />
 			<param index="4" name="custom_data_format" type="bool" default="false" />
+			<param index="5" name="use_indirect" type="bool" default="false" />
 			<description>
 			</description>
 		</method>
@@ -2591,6 +2592,29 @@
 			<param index="0" name="multimesh" type="RID" />
 			<description>
 				Returns the [RenderingDevice] [RID] handle of the [MultiMesh], which can be used as any other buffer on the Rendering Device.
+			</description>
+		</method>
+		<method name="multimesh_get_command_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the [MultiMesh] command buffer. This [RID] is only valid if [code]use_indirect[/code] is set to [code]true[/code] when allocating data through [method multimesh_allocate_data]. It can be used to directly modify the instance count via buffer.
+				The data structure is dependent on both how many surfaces the mesh contains and whether it is indexed or not, the buffer has 5 integers in it, with the last unused if the mesh is not indexed.
+				Each of the values in the buffer correspond to these options:
+				[codeblock lang=text]
+				Indexed:
+				  0 - indexCount;
+				  1 - instanceCount;
+				  2 - firstIndex;
+				  3 - vertexOffset;
+				  4 - firstInstance;
+				Non Indexed:
+				  0 - vertexCount;
+				  1 - instanceCount;
+				  2 - firstVertex;
+				  3 - firstInstance;
+				  4 - unused;
+				[/codeblock]
 			</description>
 		</method>
 		<method name="multimesh_get_custom_aabb" qualifiers="const">
@@ -2933,6 +2957,14 @@
 			<param index="0" name="particles" type="RID" />
 			<description>
 				Add particle system to list of particle systems that need to be updated. Update will take place on the next frame, or on the next call to [method instances_cull_aabb], [method instances_cull_convex], or [method instances_cull_ray].
+			</description>
+		</method>
+		<method name="particles_request_process_time">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Requests particles to process for extra process time during a single frame.
 			</description>
 		</method>
 		<method name="particles_restart">
@@ -4237,7 +4269,7 @@
 			<description>
 				Creates a new 3D visibility notifier object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]visibility_notifier_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
-				To place in a scene, attach this mesh to an instance using [method instance_set_base] using the returned RID.
+				To place in a scene, attach this notifier to an instance using [method instance_set_base] using the returned RID.
 				[b]Note:[/b] The equivalent node is [VisibleOnScreenNotifier3D].
 			</description>
 		</method>
@@ -4986,7 +5018,15 @@
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR2" value="2" enum="ViewportScaling3DMode">
 			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
 		</constant>
-		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="3" enum="ViewportScaling3DMode">
+		<constant name="VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL" value="3" enum="ViewportScaling3DMode">
+			Use MetalFX spatial upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL" value="4" enum="ViewportScaling3DMode">
+			Use MetalFX temporal upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="5" enum="ViewportScaling3DMode">
 			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
@@ -5356,6 +5396,9 @@
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the Academy Color Encoding System tonemapper. ACES is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. ACES typically has a more contrasted output compared to [constant ENV_TONE_MAPPER_REINHARD] and [constant ENV_TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+		</constant>
+		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
+			Use the AgX tonemapper. AgX is slightly more expensive than other options, but it handles bright lighting in a more realistic fashion by desaturating it as it becomes brighter. AgX is less likely to darken parts of the scene compared to [constant ENV_TONE_MAPPER_ACES], and can match [constant ENV_TONE_MAPPER_FILMIC] more closely.
 		</constant>
 		<constant name="ENV_SSR_ROUGHNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
 			Lowest quality of roughness filter for screen-space reflections. Rough materials will not have blurrier screen-space reflections compared to smooth (non-rough) materials. This is the fastest option.

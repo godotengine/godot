@@ -43,9 +43,15 @@ using namespace RendererRD;
 void TextureStorage::CanvasTexture::clear_cache() {
 	info_cache[0] = CanvasTextureCache();
 	info_cache[1] = CanvasTextureCache();
+	if (invalidated_callback != nullptr) {
+		invalidated_callback(false, invalidated_callback_userdata);
+	}
 }
 
 TextureStorage::CanvasTexture::~CanvasTexture() {
+	if (invalidated_callback != nullptr) {
+		invalidated_callback(true, invalidated_callback_userdata);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -733,6 +739,16 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 	res.use_specular = ct->use_specular_cache;
 
 	return res;
+}
+
+void TextureStorage::canvas_texture_set_invalidation_callback(RID p_canvas_texture, InvalidationCallback p_callback, void *p_userdata) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	if (!ct) {
+		return;
+	}
+
+	ct->invalidated_callback = p_callback;
+	ct->invalidated_callback_userdata = p_userdata;
 }
 
 /* Texture API */
@@ -3523,6 +3539,20 @@ RID TextureStorage::render_target_get_override_velocity_slice(RID p_render_targe
 
 		return rt->overridden.cached_slices[key];
 	}
+}
+
+void RendererRD::TextureStorage::render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->render_region = p_render_region;
+}
+
+Rect2i RendererRD::TextureStorage::render_target_get_render_region(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Rect2i());
+
+	return rt->render_region;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {

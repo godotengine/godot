@@ -145,7 +145,7 @@
 			<return type="Quaternion" />
 			<description>
 				Returns this basis's rotation as a [Quaternion].
-				[b]Note:[/b] Quatenions are much more suitable for 3D math but are less intuitive. For user interfaces, consider using the [method get_euler] method, which returns Euler angles.
+				[b]Note:[/b] Quaternions are much more suitable for 3D math but are less intuitive. For user interfaces, consider using the [method get_euler] method, which returns Euler angles.
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">

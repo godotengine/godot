@@ -70,6 +70,10 @@ private:
 	void _reset_child_skeleton_poses();
 	void _reset_child_skeletons();
 
+#ifdef TOOLS_ENABLED
+	void _force_update_child_skeletons();
+#endif // TOOLS_ENABLED
+
 	void cache_rests_with_reset();
 	void cache_rests();
 	Vector<RetargetBoneInfo> cache_bone_global_rests(Skeleton3D *p_skeleton);

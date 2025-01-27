@@ -197,6 +197,7 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 	};
 
 	enum {
@@ -210,6 +211,8 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -721,6 +724,12 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+
+	/******************/
+	/**** CALLBACK ****/
+	/******************/
+
+	typedef void (*DriverCallback)(RenderingDeviceDriver *p_driver, CommandBufferID p_command_buffer, void *p_userdata);
 
 	/*****************/
 	/**** QUERIES ****/
