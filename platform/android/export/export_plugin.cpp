@@ -3529,7 +3529,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			src_apk = find_export_template("android_release.apk");
 		}
 		if (src_apk.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("%s export template not found: \"%s\"."), (p_debug ? "Debug" : "Release"), src_apk));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(p_debug ? TTR("Debug export template not found: \"%s\".") : TTR("Release export template not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
