@@ -420,6 +420,7 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 
 void GameView::_size_mode_button_pressed(int size_mode) {
 	embed_size_mode = (EmbedSizeMode)size_mode;
+	EditorSettings::get_singleton()->set_project_metadata("game_view", "embed_size_mode", size_mode);
 
 	_update_embed_menu_options();
 	_update_embed_window_size();
