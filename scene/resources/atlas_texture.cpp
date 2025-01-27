@@ -139,7 +139,7 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
-void AtlasTexture::set_direction(const Direction p_direction) {
+void AtlasTexture::set_direction(const AtlasTexture::Direction p_direction) {
 	if (direction == p_direction) {
 		return;
 	}
@@ -147,7 +147,7 @@ void AtlasTexture::set_direction(const Direction p_direction) {
 	emit_changed();
 }
 
-Direction AtlasTexture::get_direction() const {
+AtlasTexture::Direction AtlasTexture::get_direction() const {
 	return direction;
 }
 

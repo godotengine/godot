@@ -39,11 +39,19 @@ class AtlasTexture : public Texture2D {
 
 	Rect2 _get_region_rect() const;
 
+public:
+	enum Direction {
+		NORTH,
+		EAST,
+		SOUTH,
+		WEST,
+	};
+
 protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;
 	Rect2 margin;
-	Direction direction = Direction::NORTH;
+	Direction direction = NORTH;
 	bool filter_clip = false;
 
 	int get_region_width() const;
@@ -84,5 +92,7 @@ public:
 
 	AtlasTexture();
 };
+
+VARIANT_ENUM_CAST(AtlasTexture::Direction);
 
 #endif // ATLAS_TEXTURE_H
