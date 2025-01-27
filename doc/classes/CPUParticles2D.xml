@@ -140,10 +140,10 @@
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
-			Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).
+			Each particle's initial color will vary along this [Gradient] (multiplied with [member color]).
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Each particle's color will vary along this [Gradient] (multiplied with [member color]).
+			Each particle's color will vary along this [Gradient] over its lifetime (multiplied with [member color]).
 		</member>
 		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 			Damping will vary along this [Curve]. Should be a unit [Curve].
