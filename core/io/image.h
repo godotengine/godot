@@ -380,6 +380,8 @@ public:
 	bool is_compressed() const;
 	static bool is_format_compressed(Format p_format);
 
+	static bool can_decompress(const String &p_format_tag);
+
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
