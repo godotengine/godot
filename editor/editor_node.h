@@ -576,6 +576,8 @@ private:
 	void _scene_tab_closed(int p_tab);
 	void _cancel_close_scene_tab();
 
+	void _prepare_save_confirmation_popup();
+
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
