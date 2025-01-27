@@ -913,6 +913,9 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		RenderingServerDefault::redraw_request();
 	}
 
+	texture_info_map.clear();
+	state.current_batch_index = 0;
+	state.canvas_instance_batches.clear();
 	state.current_data_buffer_index = (state.current_data_buffer_index + 1) % BATCH_DATA_BUFFER_COUNT;
 	state.current_instance_buffer_index = 0;
 }
@@ -2286,9 +2289,6 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::get_singleton()->draw_list_end();
 
-	texture_info_map.clear();
-	state.current_batch_index = 0;
-	state.canvas_instance_batches.clear();
 	state.last_instance_index += instance_index;
 }
 
@@ -2975,7 +2975,7 @@ void RendererCanvasRenderRD::_canvas_texture_invalidation_callback(bool p_delete
 	KeyValue<RID, TightLocalVector<RID>> *kv = static_cast<KeyValue<RID, TightLocalVector<RID>> *>(p_userdata);
 	RD *rd = RD::get_singleton();
 	for (RID rid : kv->value) {
-		// the invalidation callback will take care of clearing rid_set_to_uniform_set cache also
+		// The invalidation callback will also take care of clearing rid_set_to_uniform_set cache.
 		rd->free(rid);
 	}
 	kv->value.clear();
@@ -3008,7 +3008,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 			uniform_set = &iter->data;
 			RD::get_singleton()->uniform_set_set_invalidation_callback(rid, RendererCanvasRenderRD::_uniform_set_invalidation_callback, (void *)&iter->key);
 
-			// If this is a CanvasTexture, it must be tracked so that any changes to the diffuse, normal
+			// If this is a CanvasTexture, it must be tracked so that any changes to the diffuse, normal,
 			// or specular channels invalidate all associated uniform sets.
 			if (ts->owns_canvas_texture(p_batch->tex_info->state.texture)) {
 				KeyValue<RID, TightLocalVector<RID>> *kv = nullptr;
