@@ -157,6 +157,7 @@ private:
 	Control *wheel = nullptr;
 	Control *wheel_uv = nullptr;
 	TextureRect *sample = nullptr;
+	VBoxContainer *swatches_vbc = nullptr;
 	GridContainer *preset_container = nullptr;
 	HBoxContainer *recent_preset_hbc = nullptr;
 	Button *btn_add_preset = nullptr;
