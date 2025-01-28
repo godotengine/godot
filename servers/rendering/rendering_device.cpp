@@ -6647,7 +6647,10 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	device = context->device_get(device_index);
 	err = driver->initialize(device_index, frame_count);
+	//So VisionOS metal doesn't have that init call, so it fails, even though it's fine.
+// #ifndef VISIONOS
 	ERR_FAIL_COND_V_MSG(err != OK, FAILED, "Failed to initialize driver for device.");
+// #endif
 
 	if (is_main_instance) {
 		// Only the singleton instance with a display should print this information.
