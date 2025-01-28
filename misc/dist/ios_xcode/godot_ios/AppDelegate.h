@@ -1,5 +1,9 @@
+//  Copyright © 2025 GodotEngine. All rights reserved.
+//
+
+
 /**************************************************************************/
-/*  dummy.h                                                               */
+/*  app_delegate.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -27,8 +31,41 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
-
-// #import <Foundation/Foundation.h>
 #if TARGET_OS_VISION
-#import "AppDelegate.h"
+#import <UIKit/UIKit.h>
+#import <CompositorServices/CompositorServices.h>
+
+
+@class ViewController;
+
+// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented again,
+// so it can't be done with compilation time branching.
+//#if defined(GLES3_ENABLED)
+//@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
+//#endif
+//#if defined(VULKAN_ENABLED)
+@interface AppDelegate : NSObject <UIApplicationDelegate>
+//#endif
+
+@property(strong, nonatomic) UIWindow *window;
+@property(strong, class, readonly, nonatomic) ViewController *viewController;
+
+@end
+
+@protocol SwiftVisionController <NSObject>
+@required
+- (void) finishedLoading;
+- (void) setImmersiveSpace:(bool) immersive;
+- (void)presentViewController:(UIViewController *)viewControllerToPresent;
+@end
+
+
+@interface ViewController : NSObject
+
+@property(nonatomic, readwrite) id<SwiftVisionController>  swiftController;
+-(void)viewDidAppear;
+//-(void)runLoop;
+-(BOOL)setup:(cp_layer_renderer_t)renderer;
+
+@end
 #endif
