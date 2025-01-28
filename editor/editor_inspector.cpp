@@ -2996,6 +2996,7 @@ void EditorInspector::update_tree() {
 	int current_focusable = -1;
 
 	// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
+	bool was_following = get_root_inspector()->is_following_focus();
 	get_root_inspector()->set_follow_focus(false);
 
 	if (property_focusable != -1) {
@@ -3024,7 +3025,7 @@ void EditorInspector::update_tree() {
 	_clear(!object);
 
 	if (!object) {
-		get_root_inspector()->set_follow_focus(true);
+		get_root_inspector()->set_follow_focus(was_following);
 		return;
 	}
 
@@ -3890,7 +3891,7 @@ void EditorInspector::update_tree() {
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
 
-	get_root_inspector()->set_follow_focus(true);
+	get_root_inspector()->set_follow_focus(was_following);
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -4742,6 +4743,15 @@ void EditorInspector::_notification(int p_what) {
 				update_tree();
 			}
 		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			set_follow_focus(true);
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			// Don't follow focus when the inspector is not focused. Prevents potential jumping when gaining focus.
+			set_follow_focus(false);
+		} break;
 	}
 }
 
@@ -4898,7 +4908,6 @@ EditorInspector::EditorInspector() {
 	base_vbox->add_child(main_vbox);
 
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
-	set_follow_focus(true);
 
 	changing = 0;
 	search_box = nullptr;
