@@ -93,10 +93,9 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 			f->seek(prev_offset);
 		}
 	} else {
-		Ref<Image> src_image;
-		src_image.instantiate();
-		err = ImageLoader::load_image(p_src_path, src_image);
-		ERR_FAIL_COND_V(err != OK || src_image->is_empty(), ERR_CANT_OPEN);
+		Ref<Image> src_image = _load_icon_or_splash_image(p_src_path, &err);
+		ERR_FAIL_COND_V(err != OK || src_image.is_null() || src_image->is_empty(), ERR_CANT_OPEN);
+
 		for (size_t i = 0; i < sizeof(icon_size) / sizeof(icon_size[0]); ++i) {
 			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
 

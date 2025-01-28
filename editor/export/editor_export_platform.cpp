@@ -35,6 +35,7 @@
 #include "core/extension/gdextension.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
+#include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
@@ -81,6 +82,28 @@ static int _get_pad(int p_alignment, int p_n) {
 }
 
 #define PCK_PADDING 16
+
+Ref<Image> EditorExportPlatform::_load_icon_or_splash_image(const String &p_path, Error *r_error) const {
+	Ref<Image> image;
+
+	if (!p_path.is_empty() && ResourceLoader::exists(p_path) && !ResourceLoader::get_resource_type(p_path).is_empty()) {
+		Ref<Texture2D> texture = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, r_error);
+		if (texture.is_valid()) {
+			image = texture->get_image();
+			if (image.is_valid() && image->is_compressed()) {
+				image->decompress();
+			}
+		}
+	}
+	if (image.is_null()) {
+		image.instantiate();
+		Error err = ImageLoader::load_image(p_path, image);
+		if (r_error) {
+			*r_error = err;
+		}
+	}
+	return image;
+}
 
 bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) {
 	bool has_messages = false;

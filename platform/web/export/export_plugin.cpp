@@ -192,9 +192,9 @@ Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const St
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
-		icon.instantiate();
-		const Error err = ImageLoader::load_image(p_icon, icon);
-		if (err != OK) {
+		Error err = OK;
+		icon = _load_icon_or_splash_image(p_icon, &err);
+		if (err != OK || icon.is_null() || icon->is_empty()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Icon Creation"), vformat(TTR("Could not read file: \"%s\"."), p_icon));
 			return err;
 		}

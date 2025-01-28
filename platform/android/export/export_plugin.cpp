@@ -1723,18 +1723,18 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
 	String project_icon_path = GLOBAL_GET("application/config/icon");
 
-	icon.instantiate();
-	foreground.instantiate();
-	background.instantiate();
-	monochrome.instantiate();
+	Error err = OK;
 
 	// Regular icon: user selection -> project icon -> default.
 	String path = static_cast<String>(p_preset->get(LAUNCHER_ICON_OPTION)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
+	if (!path.is_empty()) {
+		icon = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || icon.is_null() || icon->is_empty()) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
 		if (!project_icon_path.is_empty()) {
-			ImageLoader::load_image(project_icon_path, icon);
+			icon = _load_icon_or_splash_image(project_icon_path, &err);
 		} else {
 			ERR_PRINT("No project icon specified. Please specify one in the Project Settings under Application -> Config -> Icon");
 		}
@@ -1743,7 +1743,10 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
+	if (!path.is_empty()) {
+		foreground = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || foreground.is_null() || foreground->is_empty()) {
 		print_verbose("- falling back to using the regular icon");
 		foreground = icon;
 	}
@@ -1752,14 +1755,14 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
-		ImageLoader::load_image(path, background);
+		background = _load_icon_or_splash_image(path, &err);
 	}
 
 	// Adaptive monochrome: user selection -> default.
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
-		ImageLoader::load_image(path, monochrome);
+		monochrome = _load_icon_or_splash_image(path, &err);
 	}
 }
 
