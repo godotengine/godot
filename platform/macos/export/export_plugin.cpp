@@ -1883,10 +1883,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 						icon->get_buffer(&data.write[0], icon->get_length());
 					}
 				} else {
-					Ref<Image> icon;
-					icon.instantiate();
-					err = ImageLoader::load_image(icon_path, icon);
-					if (err == OK && !icon->is_empty()) {
+					Ref<Image> icon = _load_icon_or_splash_image(icon_path, &err);
+					if (err == OK && icon.is_valid() && !icon->is_empty()) {
 						_make_icon(p_preset, icon, data);
 					}
 				}

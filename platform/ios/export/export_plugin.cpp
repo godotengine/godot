@@ -982,9 +982,9 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				}
 				// Resize main app icon.
 				icon_path = GLOBAL_GET("application/config/icon");
-				Ref<Image> img = memnew(Image);
-				Error err = ImageLoader::load_image(icon_path, img);
-				if (err != OK) {
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
 					return ERR_UNCONFIGURED;
 				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
@@ -1003,9 +1003,9 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				}
 			} else {
 				// Load custom icon and resize if required.
-				Ref<Image> img = memnew(Image);
-				Error err = ImageLoader::load_image(icon_path, img);
-				if (err != OK) {
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
 					return ERR_UNCONFIGURED;
 				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
@@ -1089,13 +1089,11 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 	const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
 
 	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
-		Ref<Image> image;
 		String image_path = p_dest_dir.path_join("splash@2x.png");
-		image.instantiate();
-		Error err = ImageLoader::load_image(custom_launch_image_2x, image);
+		Error err = OK;
+		Ref<Image> image = _load_icon_or_splash_image(custom_launch_image_2x, &err);
 
-		if (err) {
-			image.unref();
+		if (err != OK || image.is_null() || image->is_empty()) {
 			return err;
 		}
 
@@ -1103,13 +1101,10 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 			return ERR_FILE_CANT_WRITE;
 		}
 
-		image.unref();
 		image_path = p_dest_dir.path_join("splash@3x.png");
-		image.instantiate();
-		err = ImageLoader::load_image(custom_launch_image_3x, image);
+		image = _load_icon_or_splash_image(custom_launch_image_3x, &err);
 
-		if (err) {
-			image.unref();
+		if (err != OK || image.is_null() || image->is_empty()) {
 			return err;
 		}
 
@@ -1117,19 +1112,16 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 			return ERR_FILE_CANT_WRITE;
 		}
 	} else {
+		Error err = OK;
 		Ref<Image> splash;
 
 		const String splash_path = GLOBAL_GET("application/boot_splash/image");
 
 		if (!splash_path.is_empty()) {
-			splash.instantiate();
-			const Error err = ImageLoader::load_image(splash_path, splash);
-			if (err) {
-				splash.unref();
-			}
+			splash = _load_icon_or_splash_image(splash_path, &err);
 		}
 
-		if (splash.is_null()) {
+		if (err != OK || splash.is_null() || splash->is_empty()) {
 			splash.instantiate(boot_splash_png);
 		}
 
