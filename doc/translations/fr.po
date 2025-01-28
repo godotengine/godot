@@ -107,6 +107,7 @@
 # zefdzeqf <azrzrezfafe@users.noreply.hosted.weblate.org>, 2024.
 # Edvard Fauchelevent <edvardfauchelevent@gmail.com>, 2024.
 # Fontaine Nathan <nathan.fontaine53@gmail.com>, 2024.
+# Patrice Ferlet <metal3d@gmail.com>, 2025
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
@@ -2331,13 +2332,13 @@ msgid "AES electronic codebook encryption mode."
 msgstr "Mode de chiffrement du livre de codes électroniques AES."
 
 msgid "AES electronic codebook decryption mode."
-msgstr "Mode de décryptage du codebook électronique AES."
+msgstr "Mode de déchiffrement du codebook électronique AES."
 
 msgid "AES cipher blocker chaining encryption mode."
-msgstr "Mode de cryptage de chiffre de chaînage de blocs AES."
+msgstr "Mode de chiffrement par chaînage AES."
 
 msgid "AES cipher blocker chaining decryption mode."
-msgstr "Mode de décryptage de chiffre de chaînage de blocs AES."
+msgstr "Mode de déchiffrement par chaînage du bloqueur de chiffrement AES."
 
 msgid "Maximum value for the mode enum."
 msgstr "Valeur maximale pour le mode énumeration."
@@ -7020,7 +7021,7 @@ msgstr ""
 "avancées dans Godot.\n"
 "Pour l'instant, cela inclus la génération de données aléatoires pour des "
 "utilisations cryptographiques, la génération de clés RSA et de certificats "
-"auto-signés X509, de clé asymétriques de cryptage/décryptage, la signature et "
+"auto-signés X509, de clé asymétriques de chiffrement/déchiffrement, la signature et "
 "la vérification.\n"
 "[codeblock]\n"
 "extends Node\n"
@@ -7038,10 +7039,10 @@ msgstr ""
 "    # Enregistrer la clé et le certificat dans le dossier utilisateur.\n"
 "    key.save(\"user://generated.key\")\n"
 "    cert.save(\"user://generated.crt\")\n"
-"    # Cryptage\n"
+"    # Chiffrement\n"
 "    var data = \"Des données\"\n"
 "    var encrypted = crypto.encrypt(key, data.to_utf8())\n"
-"    # Décryptage\n"
+"    # Déchiffrement\n"
 "    var decrypted = crypto.decrypt(key, encrypted)\n"
 "    # Signature\n"
 "    var signature = crypto.sign(HashingContext.HASH_SHA256, data."
