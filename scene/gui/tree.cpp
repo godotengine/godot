@@ -5208,10 +5208,12 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 	}
 
 	int ofs = get_item_offset(p_item);
-	int height = compute_item_height(p_item);
+	int height = compute_item_height(p_item) + theme_cache.v_separation;
 	Rect2 r;
-	r.position.y = ofs;
+	r.position.y = ofs - theme_cache.offset.y + theme_cache.panel_style->get_offset().y;
 	r.size.height = height;
+	bool rtl = is_layout_rtl();
+	const Rect2 content_rect = _get_content_rect();
 
 	if (p_column == -1) {
 		r.position.x = 0;
@@ -5221,18 +5223,45 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 		for (int i = 0; i < p_column; i++) {
 			accum += get_column_width(i);
 		}
-		r.position.x = accum;
+		r.position.x = (rtl) ? get_size().x - (accum - theme_cache.offset.x) - get_column_width(p_column) - theme_cache.panel_style->get_margin(SIDE_LEFT) : accum - theme_cache.offset.x + theme_cache.panel_style->get_margin(SIDE_LEFT);
 		r.size.x = get_column_width(p_column);
 		if (p_button != -1) {
+			// RTL direction support for button rect is different due to buttons not
+			// having same behavior as they do in LTR when tree is scrolled.
 			const TreeItem::Cell &c = p_item->cells[p_column];
-			Vector2 ofst = Vector2(r.position.x + r.size.x, r.position.y);
+			Vector2 ofst = Vector2(r.position.x + r.size.x + theme_cache.button_margin, r.position.y);
+
+			// Compute total width of buttons block including spacings.
+			int buttons_width = 0;
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> b = c.buttons[j].texture;
 				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-				ofst.x -= size.x;
+				buttons_width += size.width + theme_cache.button_margin;
+			}
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+				ofst.x -= size.x + theme_cache.button_margin;
+
+				if (rtl) {
+					if (j == p_button) {
+						return Rect2(r.position, Size2(size.x, r.size.y));
+					}
+					r.position.x += size.x + theme_cache.button_margin;
+					continue;
+				}
 
 				if (j == p_button) {
-					return Rect2(ofst, size);
+					float content_rect_end_x = content_rect.position.x + content_rect.size.width;
+					if (r.position.x + r.size.x < content_rect_end_x) {
+						return Rect2(ofst, Size2(size.x, r.size.y));
+					}
+					// Button block can be outside of content_rect
+					if (content_rect_end_x - (r.position.x + theme_cache.h_separation) < buttons_width) {
+						return Rect2(r.position + Point2(theme_cache.h_separation + (buttons_width - ((r.position.x + r.size.x) - ofst.x)), 0), Size2(size.x, r.size.y));
+					}
+
+					return Rect2(ofst - Vector2((r.position.x + r.size.x) - content_rect_end_x, 0), Size2(size.x, r.size.y));
 				}
 			}
 		}
