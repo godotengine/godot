@@ -598,7 +598,6 @@ void WSLPeer::_wsl_recv_start_callback(wslay_event_context_ptr ctx, const struct
 		// Get ready to process a data package.
 		PendingMessage &pm = peer->pending_message;
 		pm.opcode = op;
-		pm.payload_size = arg->payload_length;
 	}
 }
 
@@ -608,6 +607,7 @@ void WSLPeer::_wsl_frame_recv_chunk_callback(wslay_event_context_ptr ctx, const 
 	if (pm.opcode != 0) {
 		// Only write the payload.
 		peer->in_buffer.write_packet(arg->data, arg->data_length, nullptr);
+		pm.payload_size += arg->data_length;
 	}
 }
 
