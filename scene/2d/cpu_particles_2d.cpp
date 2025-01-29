@@ -104,7 +104,8 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 
 	// We only need NOTIFICATION_TRANSFORM_CHANGED
 	// when following an interpolated target.
-	set_notify_transform(_interpolation_data.interpolated_follow);
+	set_notify_transform(_interpolation_data.interpolated_follow || !p_enable);
+	queue_redraw();
 }
 
 void CPUParticles2D::set_speed_scale(double p_scale) {
@@ -461,14 +462,17 @@ void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	notify_property_list_changed();
+	queue_redraw();
 }
 
 void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
+	queue_redraw();
 }
 
 void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
 	emission_rect_extents = p_extents;
+	queue_redraw();
 }
 
 void CPUParticles2D::set_emission_points(const Vector<Vector2> &p_points) {
@@ -1211,6 +1215,27 @@ void CPUParticles2D::_notification(int p_what) {
 			}
 
 			RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
+
+#ifdef TOOLS_ENABLED
+			Vector2 gizmo_position = Vector2();
+			if (!local_coords) {
+				gizmo_position = get_position();
+			}
+
+			switch (emission_shape) {
+				case CPUParticles2D::EMISSION_SHAPE_RECTANGLE:
+					draw_rect(Rect2(gizmo_position - emission_rect_extents, emission_rect_extents * 2.0), Color(0.8, 0.7, 0.4, 0.4), false);
+					break;
+				case CPUParticles2D::EMISSION_SHAPE_SPHERE:
+					[[fallthrough]];
+				case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE:
+					draw_circle(gizmo_position, emission_sphere_radius, Color(0.8, 0.7, 0.4, 0.4), false);
+					break;
+				default:
+					break;
+			}
+#endif
+
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -1232,6 +1257,9 @@ void CPUParticles2D::_notification(int p_what) {
 					_interpolation_data.global_xform_curr = get_global_transform();
 				}
 			}
+#ifdef TOOLS_ENABLED
+			queue_redraw();
+#endif
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {

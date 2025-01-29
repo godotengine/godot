@@ -101,6 +101,7 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	void _draw_gizmo();
 	void _update_collision_size();
 
 #ifndef DISABLE_DEPRECATED
