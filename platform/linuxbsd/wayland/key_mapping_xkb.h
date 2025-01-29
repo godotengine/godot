@@ -56,6 +56,7 @@ class KeyMappingXKB {
 public:
 	static void initialize();
 
+	static bool is_sym_numpad(xkb_keysym_t p_keysym);
 	static Key get_keycode(xkb_keysym_t p_keysym);
 	static xkb_keycode_t get_xkb_keycode(Key p_keycode);
 	static Key get_scancode(unsigned int p_code);
