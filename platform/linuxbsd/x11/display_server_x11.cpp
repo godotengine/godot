@@ -3562,8 +3562,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// XLookupString returns keysyms usable as nice keycodes.
 	char str[256] = {};
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
-	xkeyevent_no_mod.state &= ~ShiftMask;
-	xkeyevent_no_mod.state &= ~ControlMask;
+	xkeyevent_no_mod.state &= 0xFF00;
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
@@ -3601,7 +3600,17 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
-			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
+
+			Key keycode = Key::NONE;
+			if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+				// Special case for numpad keys.
+				keycode = KeyMappingX11::get_keycode(keysym_unicode);
+			}
+
+			if (keycode == Key::NONE) {
+				keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			}
+
 			Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 			if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
@@ -3669,9 +3678,18 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		if (res == XKB_COMPOSE_FEED_ACCEPTED) {
 			if (xkb_compose_state_get_status(wd.xkb_state) == XKB_COMPOSE_COMPOSED) {
 				bool keypress = xkeyevent->type == KeyPress;
-				Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 				Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 				KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
+
+				Key keycode = Key::NONE;
+				if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+					// Special case for numpad keys.
+					keycode = KeyMappingX11::get_keycode(keysym_unicode);
+				}
+
+				if (keycode == Key::NONE) {
+					keycode = KeyMappingX11::get_keycode(keysym_keycode);
+				}
 
 				if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 					keycode -= 'a' - 'A';
@@ -3733,7 +3751,16 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
 
-	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	Key keycode = Key::NONE;
+	if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+		// Special case for numpad keys.
+		keycode = KeyMappingX11::get_keycode(keysym_unicode);
+	}
+
+	if (keycode == Key::NONE) {
+		keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	}
+
 	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
