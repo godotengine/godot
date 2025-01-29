@@ -32,41 +32,12 @@
 
 #include "core/config/project_settings.h"
 
-static HashMap<String, Vector<uint8_t>> *files = nullptr;
-
-void FileAccessMemory::register_file(const String &p_name, const Vector<uint8_t> &p_data) {
-	if (!files) {
-		files = memnew((HashMap<String, Vector<uint8_t>>));
-	}
-
-	String name;
-	if (ProjectSettings::get_singleton()) {
-		name = ProjectSettings::get_singleton()->globalize_path(p_name);
-	} else {
-		name = p_name;
-	}
-	//name = DirAccess::normalize_path(name);
-
-	(*files)[name] = p_data;
-}
-
-void FileAccessMemory::cleanup() {
-	if (!files) {
-		return;
-	}
-
-	memdelete(files);
-}
-
 Ref<FileAccess> FileAccessMemory::create() {
 	return memnew(FileAccessMemory);
 }
 
 bool FileAccessMemory::file_exists(const String &p_name) {
-	String name = fix_path(p_name);
-	//name = DirAccess::normalize_path(name);
-
-	return files && (files->find(name) != nullptr);
+	return false;
 }
 
 Error FileAccessMemory::open_custom(const uint8_t *p_data, uint64_t p_len) {
@@ -77,19 +48,7 @@ Error FileAccessMemory::open_custom(const uint8_t *p_data, uint64_t p_len) {
 }
 
 Error FileAccessMemory::open_internal(const String &p_path, int p_mode_flags) {
-	ERR_FAIL_NULL_V(files, ERR_FILE_NOT_FOUND);
-
-	String name = fix_path(p_path);
-	//name = DirAccess::normalize_path(name);
-
-	HashMap<String, Vector<uint8_t>>::Iterator E = files->find(name);
-	ERR_FAIL_COND_V_MSG(!E, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s'.", p_path));
-
-	data = E->value.ptrw();
-	length = E->value.size();
-	pos = 0;
-
-	return OK;
+	return ERR_FILE_NOT_FOUND;
 }
 
 bool FileAccessMemory::is_open() const {

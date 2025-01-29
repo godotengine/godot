@@ -41,9 +41,6 @@ class FileAccessMemory : public FileAccess {
 	static Ref<FileAccess> create();
 
 public:
-	static void register_file(const String &p_name, const Vector<uint8_t> &p_data);
-	static void cleanup();
-
 	virtual Error open_custom(const uint8_t *p_data, uint64_t p_len); ///< open a file
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
