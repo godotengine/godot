@@ -68,7 +68,7 @@ ParticlesStorage::ParticlesStorage() {
 
 		actions.renames["COLOR"] = "PARTICLE.color";
 		actions.renames["VELOCITY"] = "PARTICLE.velocity";
-		//actions.renames["MASS"] = "mass"; ?
+		actions.renames["MASS"] = "mass";
 		actions.renames["ACTIVE"] = "particle_active";
 		actions.renames["RESTART"] = "restart";
 		actions.renames["CUSTOM"] = "PARTICLE.custom";
