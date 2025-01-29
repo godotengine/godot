@@ -109,7 +109,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 #endif
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			bool failed = true
+			bool failed = true;
 			PackedStringArray drivers = GLOBAL_GET("rendering/rendering_device/drivers_fallback_order");
 			for (int i = 0; i < drivers.size(); ++i) {
 				String driver = drivers[i];

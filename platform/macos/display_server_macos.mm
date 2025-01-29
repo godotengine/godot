@@ -3803,7 +3803,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 				String driver = drivers[i];
 #if defined(VULKAN_ENABLED)
 				if (driver == "vulkan" && rendering_driver != "vulkan") {
-					failed = false
+					failed = false;
 					memdelete(rendering_context);
 					rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 					if (rendering_context->initialize() == OK) {
@@ -3823,7 +3823,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 					rendering_context = memnew(RenderingContextDriverMetal);
 					if (rendering_context->initialize() == OK) {
 						failed = false;
-						WARN_PRINT("Your video card drivers seem not to support MoltenVK, switching to Metal.");;
+						WARN_PRINT("Your video card drivers seem not to support MoltenVK, switching to Metal.");
 						rendering_driver = "metal";
 						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 						break;
