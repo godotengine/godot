@@ -2061,9 +2061,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints_with_metal), default_driver_with_metal);
 
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_opengl3", true);
+		PackedStringArray drivers;
+		drivers.push_back("vulkan");
+		drivers.push_back("d3d12");
+		drivers.push_back("metal");
+		drivers.push_back("opengl3");
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "rendering/rendering_device/drivers_fallback_order"), drivers);
 	}
 
 	{
