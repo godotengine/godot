@@ -68,6 +68,10 @@
 #include <uvm/uvm_extern.h>
 #endif
 
+#if !defined(__ANDROID_API__) && defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
+#include <link.h>
+#endif
+
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -890,10 +894,30 @@ Error OS_Unix::open_dynamic_library(const String &p_path, void *&p_library_handl
 		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
+#if !defined(__ANDROID_API__) && defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
+	// If dlinfo is available try to dlopen dynamic library without preceding path
+	if (!FileAccess::exists(path)) {
+		path = p_path.get_file();
+	}
+#else
 	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+#endif
 
 	p_library_handle = dlopen(path.utf8().get_data(), GODOT_DLOPEN_MODE);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
+
+#if !defined(__ANDROID_API__) && defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
+	if (path == p_path.get_file()) {
+		const struct link_map *link_map;
+		int err = dlinfo(p_library_handle, RTLD_DI_LINKMAP, &link_map);
+		if (err != 0) {
+			const char *error_msg = dlerror();
+			dlclose(p_library_handle);
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, vformat("Failed to resolve dynamic library path: %s. Error: %s.", p_path, error_msg));
+		}
+		path = link_map->l_name;
+	}
+#endif
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
 		*p_data->r_resolved_path = path;
