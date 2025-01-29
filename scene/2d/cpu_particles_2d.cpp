@@ -116,7 +116,14 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 
 	// We only need NOTIFICATION_TRANSFORM_CHANGED
 	// when following an interpolated target.
+
+#ifdef TOOLS_ENABLED
+	set_notify_transform(_interpolation_data.interpolated_follow || (Engine::get_singleton()->is_editor_hint() && !local_coords));
+#else
 	set_notify_transform(_interpolation_data.interpolated_follow);
+#endif
+
+	queue_redraw();
 }
 
 void CPUParticles2D::set_speed_scale(double p_scale) {
@@ -474,14 +481,35 @@ void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	notify_property_list_changed();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
+	if (p_radius == emission_sphere_radius) {
+		return;
+	}
 	emission_sphere_radius = p_radius;
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
+	if (p_extents == emission_rect_extents) {
+		return;
+	}
 	emission_rect_extents = p_extents;
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		queue_redraw();
+	}
+#endif
 }
 
 void CPUParticles2D::set_emission_points(const Vector<Vector2> &p_points) {
@@ -568,6 +596,16 @@ bool CPUParticles2D::get_use_fixed_seed() const {
 void CPUParticles2D::set_seed(uint32_t p_seed) {
 	seed = p_seed;
 }
+
+#ifdef TOOLS_ENABLED
+void CPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
+	if (show_gizmos == p_show_gizmos) {
+		return;
+	}
+	show_gizmos = p_show_gizmos;
+	queue_redraw();
+}
+#endif
 
 uint32_t CPUParticles2D::get_seed() const {
 	return seed;
@@ -1224,6 +1262,13 @@ void CPUParticles2D::_notification(int p_what) {
 			}
 
 			RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
+
+#ifdef TOOLS_ENABLED
+			if (show_gizmos) {
+				_draw_emission_gizmo();
+			}
+#endif
+
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -1245,6 +1290,11 @@ void CPUParticles2D::_notification(int p_what) {
 					_interpolation_data.global_xform_curr = get_global_transform();
 				}
 			}
+#ifdef TOOLS_ENABLED
+			if (!local_coords) {
+				queue_redraw();
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
@@ -1254,6 +1304,30 @@ void CPUParticles2D::_notification(int p_what) {
 		} break;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void CPUParticles2D::_draw_emission_gizmo() {
+	Color emission_ring_color = Color(0.8, 0.7, 0.4, 0.4);
+	Transform2D gizmo_transform;
+	if (!local_coords) {
+		gizmo_transform = get_global_transform();
+	}
+
+	draw_set_transform_matrix(gizmo_transform);
+
+	switch (emission_shape) {
+		case CPUParticles2D::EMISSION_SHAPE_RECTANGLE:
+			draw_rect(Rect2(-emission_rect_extents, emission_rect_extents * 2.0), emission_ring_color, false);
+			break;
+		case CPUParticles2D::EMISSION_SHAPE_SPHERE:
+		case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE:
+			draw_circle(Vector2(), emission_sphere_radius, emission_ring_color, false);
+			break;
+		default:
+			break;
+	}
+}
+#endif
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(p_particles);
