@@ -914,8 +914,6 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	}
 
 	texture_info_map.clear();
-	state.current_batch_index = 0;
-	state.canvas_instance_batches.clear();
 	state.current_data_buffer_index = (state.current_data_buffer_index + 1) % BATCH_DATA_BUFFER_COUNT;
 	state.current_instance_buffer_index = 0;
 }
@@ -2289,6 +2287,8 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::get_singleton()->draw_list_end();
 
+	state.current_batch_index = 0;
+	state.canvas_instance_batches.clear();
 	state.last_instance_index += instance_index;
 }
 
@@ -3200,7 +3200,9 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 
 RendererCanvasRenderRD::Batch *RendererCanvasRenderRD::_new_batch(bool &r_batch_broken) {
 	if (state.canvas_instance_batches.size() == 0) {
-		state.canvas_instance_batches.push_back(Batch());
+		Batch new_batch;
+		new_batch.instance_buffer_index = state.current_instance_buffer_index;
+		state.canvas_instance_batches.push_back(new_batch);
 		return state.canvas_instance_batches.ptr();
 	}
 
