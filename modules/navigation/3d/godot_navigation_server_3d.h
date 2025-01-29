@@ -37,6 +37,8 @@
 #include "../nav_obstacle.h"
 #include "../nav_region.h"
 
+#include "nav_area_3d.h"
+
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
@@ -77,6 +79,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	mutable RID_Owner<NavLink> link_owner;
 	mutable RID_Owner<NavMap> map_owner;
 	mutable RID_Owner<NavRegion> region_owner;
+	mutable RID_Owner<NavArea3D> area_owner;
 	mutable RID_Owner<NavAgent> agent_owner;
 	mutable RID_Owner<NavObstacle> obstacle_owner;
 
@@ -143,6 +146,7 @@ public:
 	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const override;
+	virtual TypedArray<RID> map_get_areas(RID p_map) const override;
 
 	virtual void map_force_update(RID p_map) override;
 	virtual uint32_t map_get_iteration_id(RID p_map) const override;
@@ -269,6 +273,42 @@ public:
 	COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers);
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override;
 
+	virtual RID area_create() override;
+	virtual RID area_create_box(Vector3 p_position, Vector3 p_size, uint32_t p_navigation_layers, int p_priority = 0) override;
+	virtual RID area_create_cylinder(Vector3 p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0) override;
+	virtual RID area_create_polygon(Vector3 p_position, const Vector<Vector3> &p_vertices, float p_height, uint32_t p_navigation_layers, int p_priority = 0) override;
+
+	virtual void area_set_shape_type(RID p_area, NavigationServer3D::AreaShapeType3D p_shape_type) override;
+
+	virtual void area_set_enabled(RID p_area, bool p_enabled) override;
+	virtual bool area_get_enabled(RID p_area) const override;
+
+	virtual void area_set_map(RID p_area, RID p_map) override;
+	virtual RID area_get_map(RID p_area) const override;
+
+	virtual void area_set_position(RID p_area, Vector3 p_position) override;
+	virtual Vector3 area_get_position(RID p_area) const override;
+
+	virtual void area_set_height(RID p_area, float p_height) override;
+	virtual float area_get_height(RID p_area) const override;
+
+	virtual void area_set_navigation_layers(RID p_area, uint32_t p_navigation_layers) override;
+	virtual uint32_t area_get_navigation_layers(RID p_area) const override;
+
+	virtual void area_set_priority(RID p_area, int p_priority) override;
+	virtual int area_get_priority(RID p_area) const override;
+
+	virtual AABB area_get_bounds(RID p_area) const override;
+
+	virtual void area_set_size(RID p_area, Vector3 p_size) override;
+	virtual void area_set_radius(RID p_area, float p_radius) override;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) override;
+
+	virtual void area_set_owner_id(RID p_area, ObjectID p_owner_id) override;
+	virtual ObjectID area_get_owner_id(RID p_area) const override;
+
+	virtual bool area_has_point(RID p_area, Vector3 p_point) const override;
+
 	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
@@ -295,6 +335,7 @@ public:
 	int get_process_info(ProcessInfo p_info) const override;
 
 private:
+	void internal_free_area(RID p_object);
 	void internal_free_agent(RID p_object);
 	void internal_free_obstacle(RID p_object);
 };

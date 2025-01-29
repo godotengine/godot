@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_region.h                                                          */
+/*  navigation_layers_cost_map.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,87 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAVIGATION_LAYERS_COST_MAP_H
+#define NAVIGATION_LAYERS_COST_MAP_H
 
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "core/io/resource.h"
 
-#include "core/os/rw_lock.h"
-#include "scene/resources/navigation_mesh.h"
+class NavigationLayersCostMap : public Resource {
+	GDCLASS(NavigationLayersCostMap, Resource);
 
-struct NavRegionIteration;
+	LocalVector<float> navigation_layers_cost_map;
 
-class NavRegion : public NavBase {
-	RWLock region_rwlock;
-
-	NavMap *map = nullptr;
-	Transform3D transform;
-	bool enabled = true;
-
-	bool use_edge_connections = true;
-
-	bool polygons_dirty = true;
-
-	LocalVector<gd::Polygon> navmesh_polygons;
-
-	real_t surface_area = 0.0;
-	AABB bounds;
-
-	RWLock navmesh_rwlock;
-	Vector<Vector3> pending_navmesh_vertices;
-	Vector<Vector<int>> pending_navmesh_polygons;
-	Vector<uint32_t> pending_navmesh_polygons_meta;
-
-	SelfList<NavRegion> sync_dirty_request_list_element;
+protected:
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _validate_property(PropertyInfo &p_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
 public:
-	NavRegion();
-	~NavRegion();
+	void set_navigation_layer_cost(uint32_t p_layer_number, float p_cost);
+	float get_navigation_layer_cost(uint32_t p_layer_number) const;
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	const LocalVector<float> &get_navigation_layers_cost_map() { return navigation_layers_cost_map; }
 
-	void set_enabled(bool p_enabled);
-	bool get_enabled() const { return enabled; }
-
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_use_edge_connections(bool p_enabled);
-	bool get_use_edge_connections() const {
-		return use_edge_connections;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return navmesh_polygons;
-	}
-
-	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
-	gd::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
-	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
-
-	real_t get_surface_area() const { return surface_area; }
-	AABB get_bounds() const { return bounds; }
-
-	bool sync();
-	void request_sync();
-	void cancel_sync_request();
-
-	void get_iteration_update(NavRegionIteration &r_iteration);
-
-private:
-	void update_polygons();
+	NavigationLayersCostMap();
+	~NavigationLayersCostMap();
 };
 
-#endif // NAV_REGION_H
+#endif // NAVIGATION_LAYERS_COST_MAP_H

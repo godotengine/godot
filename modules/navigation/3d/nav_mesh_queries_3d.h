@@ -45,6 +45,8 @@ class NavMap;
 struct NavMapIteration;
 
 class NavMeshQueries3D {
+	static float _get_polygon_travel_cost(const gd::Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_cost_map);
+
 public:
 	struct PathQuerySlot {
 		LocalVector<gd::NavigationPoly> path_corridor;
@@ -71,6 +73,7 @@ public:
 		PathPostProcessing path_postprocessing = PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 		bool simplify_path = false;
 		real_t simplify_epsilon = 0.0;
+		LocalVector<float> navigation_layers_cost_map;
 
 		// Path building.
 		Vector3 begin_position;

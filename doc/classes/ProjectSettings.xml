@@ -1772,98 +1772,194 @@
 		<member name="layer_names/3d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 1. If left empty, the layer will display as "Layer 1".
 		</member>
+		<member name="layer_names/3d_navigation/layer_1_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 1. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/3d_navigation/layer_2_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 2. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 3. If left empty, the layer will display as "Layer 3".
 		</member>
+		<member name="layer_names/3d_navigation/layer_3_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 3. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/3d_navigation/layer_4_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 4. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 5. If left empty, the layer will display as "Layer 5".
 		</member>
+		<member name="layer_names/3d_navigation/layer_5_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 5. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/3d_navigation/layer_6_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 6. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 7. If left empty, the layer will display as "Layer 7".
 		</member>
+		<member name="layer_names/3d_navigation/layer_7_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 7. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 8. If left empty, the layer will display as "Layer 8".
+		</member>
+		<member name="layer_names/3d_navigation/layer_8_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 8. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_9" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 9. If left empty, the layer will display as "Layer 9".
 		</member>
+		<member name="layer_names/3d_navigation/layer_9_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 9. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_10" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 10. If left empty, the layer will display as "Layer 10".
+		</member>
+		<member name="layer_names/3d_navigation/layer_10_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 10. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_11" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 11. If left empty, the layer will display as "Layer 11".
 		</member>
+		<member name="layer_names/3d_navigation/layer_11_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 11. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_12" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 12. If left empty, the layer will display as "Layer 12".
+		</member>
+		<member name="layer_names/3d_navigation/layer_12_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 12. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_13" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 13. If left empty, the layer will display as "Layer 13".
 		</member>
+		<member name="layer_names/3d_navigation/layer_13_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 13. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_14" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 14. If left empty, the layer will display as "Layer 14".
+		</member>
+		<member name="layer_names/3d_navigation/layer_14_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 14. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_15" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 15. If left empty, the layer will display as "Layer 15".
 		</member>
+		<member name="layer_names/3d_navigation/layer_15_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 15. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_16" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 16. If left empty, the layer will display as "Layer 16".
+		</member>
+		<member name="layer_names/3d_navigation/layer_16_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 16. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_17" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 17. If left empty, the layer will display as "Layer 17".
 		</member>
+		<member name="layer_names/3d_navigation/layer_17_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 17. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_18" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 18. If left empty, the layer will display as "Layer 18".
+		</member>
+		<member name="layer_names/3d_navigation/layer_18_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 18. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_19" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 19. If left empty, the layer will display as "Layer 19".
 		</member>
+		<member name="layer_names/3d_navigation/layer_19_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 19. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_20" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 20. If left empty, the layer will display as "Layer 20".
+		</member>
+		<member name="layer_names/3d_navigation/layer_20_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 20. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_21" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 21. If left empty, the layer will display as "Layer 21".
 		</member>
+		<member name="layer_names/3d_navigation/layer_21_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 21. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_22" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 22. If left empty, the layer will display as "Layer 22".
+		</member>
+		<member name="layer_names/3d_navigation/layer_22_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 22. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_23" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 23. If left empty, the layer will display as "Layer 23".
 		</member>
+		<member name="layer_names/3d_navigation/layer_23_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 23. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_24" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 24. If left empty, the layer will display as "Layer 24".
+		</member>
+		<member name="layer_names/3d_navigation/layer_24_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 24. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_25" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 25. If left empty, the layer will display as "Layer 25".
 		</member>
+		<member name="layer_names/3d_navigation/layer_25_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 25. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_26" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 26. If left empty, the layer will display as "Layer 26".
+		</member>
+		<member name="layer_names/3d_navigation/layer_26_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 26. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_27" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 27. If left empty, the layer will display as "Layer 27".
 		</member>
+		<member name="layer_names/3d_navigation/layer_27_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 27. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_28" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 28. If left empty, the layer will display as "Layer 28".
+		</member>
+		<member name="layer_names/3d_navigation/layer_28_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 28. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_29" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 29. If left empty, the layer will display as "Layer 29".
 		</member>
+		<member name="layer_names/3d_navigation/layer_29_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 29. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_30" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 30. If left empty, the layer will display as "Layer 30".
+		</member>
+		<member name="layer_names/3d_navigation/layer_30_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 30. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_navigation/layer_31" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 31. If left empty, the layer will display as "Layer 31".
 		</member>
+		<member name="layer_names/3d_navigation/layer_31_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 31. If left empty, the layer will use the global default of the [NavigationServer3D].
+		</member>
 		<member name="layer_names/3d_navigation/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D navigation layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
+		<member name="layer_names/3d_navigation/layer_32_cost" type="float" setter="" getter="" default="1.0">
+			Optional cost for the 3D navigation layer 32. If left empty, the layer will use the global default of the [NavigationServer3D].
 		</member>
 		<member name="layer_names/3d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 3D physics layer 1. If left empty, the layer will display as "Layer 1".

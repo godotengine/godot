@@ -78,6 +78,24 @@ uint32_t NavigationPathQueryParameters3D::get_navigation_layers() const {
 	return navigation_layers;
 }
 
+void NavigationPathQueryParameters3D::set_navigation_layer_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+	uint32_t _navigation_layers = get_navigation_layers();
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+	set_navigation_layers(_navigation_layers);
+}
+
+bool NavigationPathQueryParameters3D::get_navigation_layer_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	return get_navigation_layers() & (1 << (p_layer_number - 1));
+}
+
 void NavigationPathQueryParameters3D::set_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags) {
 	metadata_flags = (int64_t)p_flags;
 }
@@ -102,6 +120,14 @@ real_t NavigationPathQueryParameters3D::get_simplify_epsilon() const {
 	return simplify_epsilon;
 }
 
+void NavigationPathQueryParameters3D::set_navigation_layers_cost_map(const Ref<NavigationLayersCostMap> &p_costs_map) {
+	navigation_layers_cost_map = p_costs_map;
+}
+
+Ref<NavigationLayersCostMap> NavigationPathQueryParameters3D::get_navigation_layers_cost_map() const {
+	return navigation_layers_cost_map;
+}
+
 void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pathfinding_algorithm", "pathfinding_algorithm"), &NavigationPathQueryParameters3D::set_pathfinding_algorithm);
 	ClassDB::bind_method(D_METHOD("get_pathfinding_algorithm"), &NavigationPathQueryParameters3D::get_pathfinding_algorithm);
@@ -121,6 +147,9 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "navigation_layers"), &NavigationPathQueryParameters3D::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationPathQueryParameters3D::get_navigation_layers);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationPathQueryParameters3D::set_navigation_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationPathQueryParameters3D::get_navigation_layer_value);
+
 	ClassDB::bind_method(D_METHOD("set_metadata_flags", "flags"), &NavigationPathQueryParameters3D::set_metadata_flags);
 	ClassDB::bind_method(D_METHOD("get_metadata_flags"), &NavigationPathQueryParameters3D::get_metadata_flags);
 
@@ -130,10 +159,14 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationPathQueryParameters3D::set_simplify_epsilon);
 	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationPathQueryParameters3D::get_simplify_epsilon);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_layers_cost_map", "costs_map"), &NavigationPathQueryParameters3D::set_navigation_layers_cost_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers_cost_map"), &NavigationPathQueryParameters3D::get_navigation_layers_cost_map);
+
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "navigation_layers_cost_map"), "set_navigation_layers_cost_map", "get_navigation_layers_cost_map");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered,None"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_metadata_flags", "get_metadata_flags");
