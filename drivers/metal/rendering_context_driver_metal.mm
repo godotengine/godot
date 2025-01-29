@@ -172,9 +172,13 @@ public:
 		count--;
 		front = (front + 1) % frame_buffers.size();
 
+#ifdef IOS_SIMULATOR
+		{
+#else
 		if (vsync_mode != DisplayServer::VSYNC_DISABLED) {
 			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable afterMinimumDuration:present_minimum_duration];
 		} else {
+#endif
 			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
 		}
 	}

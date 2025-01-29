@@ -29,7 +29,7 @@ env.servers_sources += thirdparty_obj
 module_obj = []
 
 env_effects.add_source_files(module_obj, "*.cpp")
-if env["metal"]:
+if env["metal"] and (env["platform"] == "macos" or (env["platform"] == "ios" and not env["ios_simulator"])):
     env_effects.add_source_files(module_obj, "metal_fx.mm")
 env.servers_sources += module_obj
 
