@@ -98,6 +98,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	ShaderCreateDialog *shader_create_dialog = nullptr;
 
 	float text_shader_zoom_factor = 1.0f;
+	bool restoring_layout = false;
 
 	Ref<Resource> _get_current_shader();
 	void _update_shader_list();
@@ -127,7 +128,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _set_text_shader_zoom_factor(float p_zoom_factor);
 	void _update_shader_editor_zoom_factor(CodeTextEditor *p_shader_editor) const;
 
-	void _switch_to_editor(ShaderEditor *p_editor);
+	void _switch_to_editor(ShaderEditor *p_editor, bool p_focus = false);
 
 protected:
 	void _notification(int p_what);
