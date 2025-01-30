@@ -709,6 +709,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_get_data", "shape"), &PhysicsServer3D::shape_get_data);
 	ClassDB::bind_method(D_METHOD("shape_get_margin", "shape"), &PhysicsServer3D::shape_get_margin);
 
+	ClassDB::bind_method(D_METHOD("heightmap_shape_get_hole_labels"), &PhysicsServer3D::heightmap_shape_get_hole_labels);
+	ClassDB::bind_method(D_METHOD("heightmap_shape_is_hole_label"), &PhysicsServer3D::heightmap_shape_is_hole_label);
+
 	ClassDB::bind_method(D_METHOD("space_create"), &PhysicsServer3D::space_create);
 	ClassDB::bind_method(D_METHOD("space_set_active", "space", "active"), &PhysicsServer3D::space_set_active);
 	ClassDB::bind_method(D_METHOD("space_is_active", "space"), &PhysicsServer3D::space_is_active);

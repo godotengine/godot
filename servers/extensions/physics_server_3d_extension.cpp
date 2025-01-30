@@ -152,6 +152,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shape_get_data, "shape");
 	GDVIRTUAL_BIND(_shape_get_custom_solver_bias, "shape");
 
+	GDVIRTUAL_BIND(_heightmap_shape_get_hole_labels);
+	GDVIRTUAL_BIND(_heightmap_shape_is_hole_label, "value");
+
 	/* SPACE API */
 
 	GDVIRTUAL_BIND(_space_create);

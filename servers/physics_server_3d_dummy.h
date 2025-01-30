@@ -152,6 +152,9 @@ public:
 
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override { return 0; }
 
+	virtual Vector<float> heightmap_shape_get_hole_labels() const override { return Vector<float>(); }
+	virtual bool heightmap_shape_is_hole_label(float p_value) const override { return false; }
+
 	/* SPACE API */
 
 	virtual RID space_create() override { return RID(); }

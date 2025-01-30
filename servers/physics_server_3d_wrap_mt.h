@@ -95,6 +95,10 @@ public:
 	FUNC1RC(ShapeType, shape_get_type, RID);
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
+
+	FUNC0RC(Vector<float>, heightmap_shape_get_hole_labels);
+	FUNC1RC(bool, heightmap_shape_is_hole_label, float);
+
 #if 0
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Transform &p_xform_A, const Vector3 &p_motion_A, RID p_shape_B, const Transform &p_xform_B, const Vector3 &p_motion_B, Vector3 *r_results, int p_result_max, int &r_result_count) {
