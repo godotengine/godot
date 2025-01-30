@@ -21,11 +21,11 @@
 		var array = new Godot.Collections.Array{"First", 2, 3, "Last"};
 		GD.Print(array[0]); // Prints "First"
 		GD.Print(array[2]); // Prints 3
-		GD.Print(array[array.Count - 1]); // Prints "Last"
+		GD.Print(array[^1]); // Prints "Last"
 
-		array[2] = "Second";
+		array[1] = "Second";
 		GD.Print(array[1]); // Prints "Second"
-		GD.Print(array[array.Count - 3]); // Prints "Second"
+		GD.Print(array[^3]); // Prints "Second"
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by [b]reference[/b]. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
