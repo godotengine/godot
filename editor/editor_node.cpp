@@ -1941,14 +1941,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
-	_reset_animation_mixers(scene, &anim_backups);
-
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
 	save_default_environment();
-
+	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
+	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
 	Ref<PackedScene> sdata;
