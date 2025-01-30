@@ -683,13 +683,17 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 	struct EmbeddedProcessData {
+		OS::ProcessID process_id = 0;
+		String window_title = "";
+
 		HWND window_handle = 0;
 		HWND parent_window_handle = 0;
 		bool is_visible = false;
 	};
-	HashMap<OS::ProcessID, EmbeddedProcessData *> embedded_processes;
+	List<EmbeddedProcessData *> embedded_processes;
+	int get_embedded_process(OS::ProcessID p_pid, String p_embedded_window);
 
-	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
+	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd, String window_title);
 
 	void initialize_tts() const;
 
@@ -758,7 +762,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID, int64_t p_parent = 0) override;
 	virtual void show_window(WindowID p_window) override;
 	virtual void delete_sub_window(WindowID p_window) override;
 
@@ -848,9 +852,9 @@ public:
 	virtual bool get_swap_cancel_ok() override;
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
-	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, String p_embedded_window, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
-	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid, String p_embedded_window) override;
 	virtual OS::ProcessID get_focused_process_id() override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;

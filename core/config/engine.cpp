@@ -423,6 +423,17 @@ bool Engine::is_embedded_in_editor() const {
 	return embedded_in_editor;
 }
 
+void Engine::add_embedded_subwindow(String p_subwindow_title, int64_t p_parent_id) {
+	embedded_subwindows[p_subwindow_title] = p_parent_id;
+}
+
+int64_t Engine::get_embedded_subwindow(String p_subwindow_title) {
+	if (embedded_subwindows.has(p_subwindow_title)) {
+		return embedded_subwindows[p_subwindow_title];
+	}
+	return 0;
+}
+
 Engine::Engine() {
 	singleton = this;
 }

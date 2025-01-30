@@ -1878,7 +1878,7 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, int64_t p_parent) {
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, 0);
@@ -5975,7 +5975,7 @@ void DisplayServerX11::_set_window_taskbar_pager_enabled(Window p_window, bool p
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 }
 
-Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, String p_embedded_window, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), FAILED);
@@ -6144,7 +6144,7 @@ Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
 
-Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid, String p_embedded_window) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {

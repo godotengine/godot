@@ -672,10 +672,15 @@ void Window::_make_window() {
 		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
 	}
 
-	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServer::INVALID_WINDOW_ID);
+	// Add parent window if --swid told us to embed a window with this title.
+	int64_t parent_handle = Engine::get_singleton()->get_embedded_subwindow(get_title());
+
+	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServer::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServer::INVALID_WINDOW_ID, parent_handle);
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
-	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
-	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+	if (!parent_handle) {
+		DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
+		DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+	}
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
@@ -1173,8 +1178,11 @@ void Window::_update_window_size() {
 
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		// When main window embedded in the editor, we can't resize the main window.
-		if (window_id != DisplayServer::MAIN_WINDOW_ID || !Engine::get_singleton()->is_embedded_in_editor()) {
+		// When a window is embedded in the editor, we can't resize it.
+		bool is_main_window = window_id == DisplayServer::MAIN_WINDOW_ID;
+		int64_t parent_handle = Engine::get_singleton()->get_embedded_subwindow(get_title());
+
+		if ((is_main_window && !Engine::get_singleton()->is_embedded_in_editor()) || (!is_main_window && !parent_handle)) {
 			if (reset_min_first && wrap_controls) {
 				// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
 				DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
