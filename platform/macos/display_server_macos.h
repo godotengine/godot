@@ -343,7 +343,7 @@ public:
 
 	virtual Vector<int> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID, int64_t p_parent = 0) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
@@ -442,7 +442,7 @@ public:
 	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
 #endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
-	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid, const String &p_embedded_window) override;
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;

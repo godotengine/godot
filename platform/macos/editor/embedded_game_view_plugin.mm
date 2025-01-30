@@ -160,12 +160,15 @@ GameViewPluginMacOS::GameViewPluginMacOS() {
 		return;
 	}
 
-	EmbeddedProcessMacOS *embedded_process = memnew(EmbeddedProcessMacOS);
+	EmbeddedProcessMacOS *setup_embedded_process = memnew(EmbeddedProcessMacOS);
+	EmbeddedProcessMacOS *setup_top_embedded_process = memnew(EmbeddedProcessMacOS);
 
-	Ref<GameViewDebuggerMacOS> debugger;
-	debugger.instantiate(embedded_process);
+	Ref<GameViewDebuggerMacOS> setup_debugger;
+	setup_debugger.instantiate(setup_embedded_process);
+	Ref<GameViewDebuggerMacOS> setup_top_debugger;
+	setup_top_debugger.instantiate(setup_top_embedded_process);
 
-	setup(debugger, embedded_process);
+	setup(setup_debugger, setup_top_debugger, setup_embedded_process, setup_top_embedded_process);
 }
 
 extern "C" GameViewPluginBase *get_game_view_plugin() {

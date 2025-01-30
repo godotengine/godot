@@ -631,6 +631,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--swid <subwindow_title>,<window_id>", "Request that a subwindow with the provided title be parented to another window.\n");
 	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 
 	print_help_title("Debug options");
@@ -1973,6 +1974,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (arg == "--swid") {
+			if (N) {
+				String vm = N->get();
+
+				if (!vm.contains_char(',')) {
+					OS::get_singleton()->print("Invalid data '%s', it should be e.g. '<subwindow_title>,<window_id>'.\n",
+							vm.utf8().get_data());
+					goto error;
+				}
+
+				String title = vm.get_slicec(',', 0);
+				int64_t window_index = vm.get_slicec(',', 1).to_int();
+
+				Engine::get_singleton()->add_embedded_subwindow(title, window_index);
+
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing <subwindow_title>,<window_id> argument for --swid <subwindow_title>,<window_id>.\n");
+				goto error;
+			}
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
