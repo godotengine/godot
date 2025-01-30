@@ -692,7 +692,7 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
+DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, int64_t p_parent) {
 	WindowID id = ++window_id_counter;
 	WindowData &wd = windows[id];
 
