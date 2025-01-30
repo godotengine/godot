@@ -34,6 +34,7 @@
 #include "../gdscript_tokenizer.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
@@ -722,6 +723,13 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
+	/* Global enums. */
+	List<StringName> global_enums;
+	CoreConstants::get_global_enums(&global_enums);
+	for (const StringName &enum_name : global_enums) {
+		class_names[enum_name] = types_color;
+	}
+
 	/* User types. */
 	const Color usertype_color = EDITOR_GET("text_editor/theme/highlighting/user_type_color");
 	List<StringName> global_classes;
@@ -847,6 +855,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			ClassDB::get_integer_constant_list(instance_base, &constant_list);
 			for (const String &E : constant_list) {
 				member_keywords[E] = member_variable_color;
+			}
+
+			List<StringName> builtin_enums;
+			ClassDB::get_enum_list(instance_base, &builtin_enums);
+			for (const StringName &E : builtin_enums) {
+				member_keywords[E] = types_color;
 			}
 		}
 
