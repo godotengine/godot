@@ -417,7 +417,7 @@ void EditorPropertyArray::update_property() {
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		edit->set_button_icon(Ref<Texture2D>());
-		edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
+		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
 	}
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
@@ -952,7 +952,11 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 	}
 
 	object->set(p_property, p_value);
-	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing);
+	bool new_item_or_key = !p_property.begins_with("indices");
+	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing || new_item_or_key);
+	if (new_item_or_key) {
+		update_property();
+	}
 }
 
 void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {

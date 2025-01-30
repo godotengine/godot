@@ -163,6 +163,7 @@
 #include "editor/surface_upgrade_tool.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "editor/uid_upgrade_tool.h"
 #include "editor/window_wrapper.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -467,6 +468,7 @@ void EditorNode::_update_from_settings() {
 
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	scene_root->set_use_hdr_2d(use_hdr_2d);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d);
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
@@ -651,6 +653,10 @@ void EditorNode::_notification(int p_what) {
 					run_surface_upgrade_tool = false;
 					SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
 					SurfaceUpgradeTool::get_singleton()->finish_upgrade();
+				} else if (run_uid_upgrade_tool) {
+					run_uid_upgrade_tool = false;
+					UIDUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+					UIDUpgradeTool::get_singleton()->finish_upgrade();
 				} else {
 					EditorFileSystem::get_singleton()->scan();
 				}
@@ -735,6 +741,23 @@ void EditorNode::_notification(int p_what) {
 
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			if (DisplayServer::get_singleton()->window_can_draw()) {
+				// Try to determine if this project's Godot version was less than 4.4 - if
+				// so, we'll ask the user if they want to upgrade the project.
+				PackedStringArray features = ProjectSettings::get_singleton()->get_setting("application/config/features");
+				if (!features.is_empty()) {
+					String version_str = features[0];
+					PackedStringArray version_parts = version_str.split(".", true, 1);
+					if (version_parts.size() >= 2) {
+						if (version_parts[0].is_valid_int() && version_parts[1].is_valid_int()) {
+							int major_ver = version_parts[0].to_int();
+							int minor_ver = version_parts[1].to_int();
+							if (major_ver < 4 || (major_ver == 4 && minor_ver < 4)) {
+								should_prompt_uid_upgrade_tool = true;
+							}
+						}
+					}
+				}
+
 				ProjectSettings::get_singleton()->save();
 			}
 
@@ -1178,6 +1201,11 @@ void EditorNode::_sources_changed(bool p_exist) {
 		// Start preview thread now that it's safe.
 		if (!singleton->cmdline_export_mode) {
 			EditorResourcePreview::get_singleton()->start();
+		}
+
+		if (should_prompt_uid_upgrade_tool) {
+			should_prompt_uid_upgrade_tool = false;
+			uid_upgrade_dialog->popup_on_demand();
 		}
 
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
@@ -1913,14 +1941,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
-	_reset_animation_mixers(scene, &anim_backups);
-
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
 	save_default_environment();
-
+	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
+	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
 	Ref<PackedScene> sdata;
@@ -3316,6 +3342,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		} break;
 		case TOOLS_SURFACE_UPGRADE: {
 			surface_upgrade_dialog->popup_on_demand();
+		} break;
+		case TOOLS_UID_UPGRADE: {
+			uid_upgrade_dialog->popup_on_demand();
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -5701,6 +5730,10 @@ void EditorNode::_cancel_close_scene_tab() {
 	}
 }
 
+void EditorNode::_prepare_save_confirmation_popup() {
+	save_confirmation->reparent(get_last_exclusive_window());
+}
+
 void EditorNode::_toggle_distraction_free_mode() {
 	if (EDITOR_GET("interface/editor/separate_distraction_mode")) {
 		int screen = editor_main_screen->get_selected_index();
@@ -6864,6 +6897,13 @@ EditorNode::EditorNode() {
 		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
 	}
 
+	// Same for UID upgrade tool.
+	uid_upgrade_tool = memnew(UIDUpgradeTool);
+	run_uid_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata(UIDUpgradeTool::META_UID_UPGRADE_TOOL, UIDUpgradeTool::META_RUN_ON_RESTART, false);
+	if (run_uid_upgrade_tool) {
+		UIDUpgradeTool::get_singleton()->begin_upgrade();
+	}
+
 	{
 		bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
 		bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
@@ -7406,6 +7446,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_mesh_surfaces", TTRC("Upgrade Mesh Surfaces...")), TOOLS_SURFACE_UPGRADE);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_uids", TTRC("Upgrade UIDs...")), TOOLS_UID_UPGRADE);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
@@ -7686,6 +7727,9 @@ EditorNode::EditorNode() {
 	surface_upgrade_dialog = memnew(SurfaceUpgradeDialog);
 	gui_base->add_child(surface_upgrade_dialog);
 
+	uid_upgrade_dialog = memnew(UIDUpgradeDialog);
+	gui_base->add_child(uid_upgrade_dialog);
+
 	confirmation = memnew(ConfirmationDialog);
 	gui_base->add_child(confirmation);
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
@@ -7697,6 +7741,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 	save_confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_close_scene_tab));
+	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
@@ -8079,6 +8124,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
 	memdelete(surface_upgrade_tool);
+	memdelete(uid_upgrade_tool);
 	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();
