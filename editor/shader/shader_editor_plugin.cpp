@@ -163,6 +163,10 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 				shader_tabs->set_current_tab(i);
 				shader_list->select(i);
 				_switch_to_editor(edited_shaders[i].shader_editor);
+				TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(edited_shaders[i].shader_editor);
+				if (text_shader_editor) {
+					text_shader_editor->get_code_editor()->get_text_editor()->grab_focus();
+				}
 				return;
 			}
 		}
