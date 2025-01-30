@@ -92,10 +92,10 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"IDENTIFIER",
 	"TRUE",
 	"FALSE",
-	"FLOAT_CONSTANT",
-	"INT_CONSTANT",
-	"UINT_CONSTANT",
-	"STRING_CONSTANT",
+	"FLOAT_LITERAL",
+	"INT_LITERAL",
+	"UINT_LITERAL",
+	"STRING_LITERAL",
 	"TYPE_VOID",
 	"TYPE_BOOL",
 	"TYPE_BVEC2",
@@ -234,8 +234,8 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 
 String ShaderLanguage::get_token_text(Token p_token) {
 	String name = token_names[p_token.type];
-	if (p_token.is_integer_constant() || p_token.type == TK_FLOAT_CONSTANT) {
-		name += "(" + rtos(p_token.constant) + ")";
+	if (p_token.is_integer_literal() || p_token.type == TK_FLOAT_LITERAL) {
+		name += "(" + rtos(p_token.literal) + ")";
 	} else if (p_token.type == TK_IDENTIFIER) {
 		name += "(" + String(p_token.text) + ")";
 	} else if (p_token.type == TK_ERROR) {
@@ -562,7 +562,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					}
 				}
 
-				return _make_token(TK_STRING_CONSTANT, _content);
+				return _make_token(TK_STRING_LITERAL, _content);
 			} break;
 			//case '\'' //string - no strings in shader
 			case '{':
@@ -794,15 +794,15 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 
 						if (error) {
 							if (hexa_found) {
-								return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric literal");
 							}
 							if (period_found || exponent_found || float_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 							}
 							if (uint_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric literal");
 							}
-							return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+							return _make_token(TK_ERROR, "Invalid (integer) numeric literal");
 						}
 						str += symbol;
 						i++;
@@ -819,28 +819,28 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							char_idx += 1;
 						}
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
-							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
+							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric literal");
 						}
 					} else if (period_found || exponent_found || float_suffix_found) { // Float
 						if (exponent_found && (!digit_after_exp || (!is_digit(last_char) && last_char != 'f'))) { // Checks for eg: "2E", "2E-", "2E+" and 0ef, 0e+f, 0.0ef, 0.0e-f (exponent without digit after it).
-							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+							return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 						}
 						if (period_found) {
 							if (float_suffix_found) {
 								//checks for eg "1.f" or "1.99f" notations
 								if (last_char != 'f') {
-									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+									return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 								}
 							} else {
 								//checks for eg. "1." or "1.99" notations
 								if (last_char != '.' && !is_digit(last_char)) {
-									return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+									return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 								}
 							}
 						} else if (float_suffix_found) {
 							// if no period found the float suffix must be the last character, like in "2f" for "2.0"
 							if (last_char != 'f') {
-								return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 							}
 						}
 
@@ -852,7 +852,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 
 						if (!str.is_valid_float()) {
-							return _make_token(TK_ERROR, "Invalid (float) numeric constant");
+							return _make_token(TK_ERROR, "Invalid (float) numeric literal");
 						}
 					} else { // Integer
 						if (uint_suffix_found) {
@@ -863,9 +863,9 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 						}
 						if (!str.is_valid_int()) {
 							if (uint_suffix_found) {
-								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (unsigned integer) numeric literal");
 							} else {
-								return _make_token(TK_ERROR, "Invalid (integer) numeric constant");
+								return _make_token(TK_ERROR, "Invalid (integer) numeric literal");
 							}
 						}
 					}
@@ -873,17 +873,17 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char_idx += str.length();
 					Token tk;
 					if (period_found || exponent_found || float_suffix_found) {
-						tk.type = TK_FLOAT_CONSTANT;
+						tk.type = TK_FLOAT_LITERAL;
 					} else if (uint_suffix_found) {
-						tk.type = TK_UINT_CONSTANT;
+						tk.type = TK_UINT_LITERAL;
 					} else {
-						tk.type = TK_INT_CONSTANT;
+						tk.type = TK_INT_LITERAL;
 					}
 
 					if (hexa_found) {
-						tk.constant = (double)str.hex_to_int();
+						tk.literal = (double)str.hex_to_int();
 					} else {
-						tk.constant = str.to_float();
+						tk.literal = str.to_float();
 					}
 					tk.line = tk_line;
 
@@ -3619,7 +3619,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 							break;
 						}
 					}
-					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::NODE_TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
+					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::NODE_TYPE_LITERAL && convert_literal(static_cast<LiteralNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
 						//all good, but needs implicit conversion later
 					} else if (args[i] != builtin_func_defs[idx].args[i]) {
 						fail = true;
@@ -3774,19 +3774,19 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 					}
 					//implicitly convert values if possible
 					for (int i = 0; i < argcount; i++) {
-						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i] || p_func->arguments[i + 1]->type != Node::NODE_TYPE_CONSTANT) {
+						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i] || p_func->arguments[i + 1]->type != Node::NODE_TYPE_LITERAL) {
 							//can't do implicit conversion here
 							continue;
 						}
 
 						//this is an implicit conversion
-						ConstantNode *constant = static_cast<ConstantNode *>(p_func->arguments[i + 1]);
-						ConstantNode *conversion = alloc_node<ConstantNode>();
+						LiteralNode *constant = static_cast<LiteralNode *>(p_func->arguments[i + 1]);
+						LiteralNode *conversion = alloc_node<LiteralNode>();
 
 						conversion->datatype = builtin_func_defs[idx].args[i];
 						conversion->values.resize(1);
 
-						convert_constant(constant, builtin_func_defs[idx].args[i], conversion->values.ptrw());
+						convert_literal(constant, builtin_func_defs[idx].args[i], conversion->values.ptrw());
 						p_func->arguments.write[i + 1] = conversion;
 					}
 
@@ -3901,7 +3901,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		bool use_constant_conversion = function_overload_count[rname] == 0;
 
 		for (int j = 0; j < args.size(); j++) {
-			if (use_constant_conversion && get_scalar_type(args[j]) == args[j] && p_func->arguments[j + 1]->type == Node::NODE_TYPE_CONSTANT && args3[j] == 0 && convert_constant(static_cast<ConstantNode *>(p_func->arguments[j + 1]), pfunc->arguments[j].type)) {
+			if (use_constant_conversion && get_scalar_type(args[j]) == args[j] && p_func->arguments[j + 1]->type == Node::NODE_TYPE_LITERAL && args3[j] == 0 && convert_literal(static_cast<LiteralNode *>(p_func->arguments[j + 1]), pfunc->arguments[j].type)) {
 				//all good, but it needs implicit conversion later
 			} else if (args[j] != pfunc->arguments[j].type || (args[j] == TYPE_STRUCT && args2[j] != pfunc->arguments[j].struct_name) || args3[j] != pfunc->arguments[j].array_size) {
 				String func_arg_name;
@@ -3936,19 +3936,19 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		if (!fail) {
 			//implicitly convert values if possible
 			for (int k = 0; k < args.size(); k++) {
-				if (get_scalar_type(args[k]) != args[k] || args[k] == pfunc->arguments[k].type || p_func->arguments[k + 1]->type != Node::NODE_TYPE_CONSTANT) {
+				if (get_scalar_type(args[k]) != args[k] || args[k] == pfunc->arguments[k].type || p_func->arguments[k + 1]->type != Node::NODE_TYPE_LITERAL) {
 					//can't do implicit conversion here
 					continue;
 				}
 
 				//this is an implicit conversion
-				ConstantNode *constant = static_cast<ConstantNode *>(p_func->arguments[k + 1]);
-				ConstantNode *conversion = alloc_node<ConstantNode>();
+				LiteralNode *literal = static_cast<LiteralNode *>(p_func->arguments[k + 1]);
+				LiteralNode *conversion = alloc_node<LiteralNode>();
 
 				conversion->datatype = pfunc->arguments[k].type;
 				conversion->values.resize(1);
 
-				convert_constant(constant, pfunc->arguments[k].type, conversion->values.ptrw());
+				convert_literal(literal, pfunc->arguments[k].type, conversion->values.ptrw());
 				p_func->arguments.write[k + 1] = conversion;
 			}
 
@@ -4126,38 +4126,38 @@ bool ShaderLanguage::is_token_hint(TokenType p_type) {
 	return int(p_type) > int(TK_RENDER_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
-bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value) {
-	if (p_constant->datatype == p_to_type) {
+bool ShaderLanguage::convert_literal(LiteralNode *p_literal, DataType p_to_type, Scalar *p_value) {
+	if (p_literal->datatype == p_to_type) {
 		if (p_value) {
-			for (int i = 0; i < p_constant->values.size(); i++) {
-				p_value[i] = p_constant->values[i];
+			for (int i = 0; i < p_literal->values.size(); i++) {
+				p_value[i] = p_literal->values[i];
 			}
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_INT && p_to_type == TYPE_FLOAT) {
+	} else if (p_literal->datatype == TYPE_INT && p_to_type == TYPE_FLOAT) {
 		if (p_value) {
-			p_value->real = p_constant->values[0].sint;
+			p_value->real = p_literal->values[0].sint;
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_UINT && p_to_type == TYPE_FLOAT) {
+	} else if (p_literal->datatype == TYPE_UINT && p_to_type == TYPE_FLOAT) {
 		if (p_value) {
-			p_value->real = p_constant->values[0].uint;
+			p_value->real = p_literal->values[0].uint;
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_INT && p_to_type == TYPE_UINT) {
-		if (p_constant->values[0].sint < 0) {
+	} else if (p_literal->datatype == TYPE_INT && p_to_type == TYPE_UINT) {
+		if (p_literal->values[0].sint < 0) {
 			return false;
 		}
 		if (p_value) {
-			p_value->uint = p_constant->values[0].sint;
+			p_value->uint = p_literal->values[0].sint;
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_UINT && p_to_type == TYPE_INT) {
-		if (p_constant->values[0].uint > 0x7FFFFFFF) {
+	} else if (p_literal->datatype == TYPE_UINT && p_to_type == TYPE_INT) {
+		if (p_literal->values[0].uint > 0x7FFFFFFF) {
 			return false;
 		}
 		if (p_value) {
-			p_value->sint = p_constant->values[0].uint;
+			p_value->sint = p_literal->values[0].uint;
 		}
 		return true;
 	} else {
@@ -4194,7 +4194,7 @@ bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }
 
-Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+Variant ShaderLanguage::literal_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
 	int array_size = p_array_size;
 
 	if (p_value.size() > 0) {
@@ -5098,7 +5098,7 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 				}
 			}
 		} break;
-		case Node::NODE_TYPE_CONSTANT:
+		case Node::NODE_TYPE_LITERAL:
 			break;
 		case Node::NODE_TYPE_VARIABLE: {
 			const VariableNode *var_node = static_cast<const VariableNode *>(p_node);
@@ -5639,47 +5639,47 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				return nullptr;
 			}
 
-		} else if (tk.type == TK_FLOAT_CONSTANT) {
-			ConstantNode *constant = alloc_node<ConstantNode>();
+		} else if (tk.type == TK_FLOAT_LITERAL) {
+			LiteralNode *literal = alloc_node<LiteralNode>();
 			Scalar v;
-			v.real = tk.constant;
-			constant->values.push_back(v);
-			constant->datatype = TYPE_FLOAT;
-			expr = constant;
+			v.real = tk.literal;
+			literal->values.push_back(v);
+			literal->datatype = TYPE_FLOAT;
+			expr = literal;
 
-		} else if (tk.type == TK_INT_CONSTANT) {
-			ConstantNode *constant = alloc_node<ConstantNode>();
+		} else if (tk.type == TK_INT_LITERAL) {
+			LiteralNode *literal = alloc_node<LiteralNode>();
 			Scalar v;
-			v.sint = tk.constant;
-			constant->values.push_back(v);
-			constant->datatype = TYPE_INT;
-			expr = constant;
+			v.sint = tk.literal;
+			literal->values.push_back(v);
+			literal->datatype = TYPE_INT;
+			expr = literal;
 
-		} else if (tk.type == TK_UINT_CONSTANT) {
-			ConstantNode *constant = alloc_node<ConstantNode>();
+		} else if (tk.type == TK_UINT_LITERAL) {
+			LiteralNode *literal = alloc_node<LiteralNode>();
 			Scalar v;
-			v.uint = tk.constant;
-			constant->values.push_back(v);
-			constant->datatype = TYPE_UINT;
-			expr = constant;
+			v.uint = tk.literal;
+			literal->values.push_back(v);
+			literal->datatype = TYPE_UINT;
+			expr = literal;
 
 		} else if (tk.type == TK_TRUE) {
-			//handle true constant
-			ConstantNode *constant = alloc_node<ConstantNode>();
+			//handle true literal
+			LiteralNode *literal = alloc_node<LiteralNode>();
 			Scalar v;
 			v.boolean = true;
-			constant->values.push_back(v);
-			constant->datatype = TYPE_BOOL;
-			expr = constant;
+			literal->values.push_back(v);
+			literal->datatype = TYPE_BOOL;
+			expr = literal;
 
 		} else if (tk.type == TK_FALSE) {
-			//handle false constant
-			ConstantNode *constant = alloc_node<ConstantNode>();
+			//handle false literal
+			LiteralNode *literal = alloc_node<LiteralNode>();
 			Scalar v;
 			v.boolean = false;
-			constant->values.push_back(v);
-			constant->datatype = TYPE_BOOL;
-			expr = constant;
+			literal->values.push_back(v);
+			literal->datatype = TYPE_BOOL;
+			expr = literal;
 
 		} else if (tk.type == TK_TYPE_VOID) {
 			//make sure void is not used in expression
@@ -5886,7 +5886,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 									valid_args++;
 								}
 							} else {
-								if (function_overload_count[rname] == 0 && get_scalar_type(a.type) == a.type && b->type == Node::NODE_TYPE_CONSTANT && a.array_size == 0 && convert_constant(static_cast<ConstantNode *>(b), a.type)) {
+								if (function_overload_count[rname] == 0 && get_scalar_type(a.type) == a.type && b->type == Node::NODE_TYPE_LITERAL && a.array_size == 0 && convert_literal(static_cast<LiteralNode *>(b), a.type)) {
 									// Implicit cast if no overloads.
 									continue;
 								}
@@ -6066,7 +6066,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 									if (is_const_arg || is_out_arg) {
 										StringName varname;
 
-										if (n->type == Node::NODE_TYPE_CONSTANT || n->type == Node::NODE_TYPE_OPERATOR || n->type == Node::NODE_TYPE_ARRAY_CONSTRUCT) {
+										if (n->type == Node::NODE_TYPE_LITERAL || n->type == Node::NODE_TYPE_OPERATOR || n->type == Node::NODE_TYPE_ARRAY_CONSTRUCT) {
 											if (!is_const_arg) {
 												error = true;
 											}
@@ -6322,8 +6322,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 
-						if (index_expression->type == Node::NODE_TYPE_CONSTANT) {
-							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
+						if (index_expression->type == Node::NODE_TYPE_LITERAL) {
+							LiteralNode *cnode = static_cast<LiteralNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -6787,8 +6787,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 
-						if (index_expression->type == Node::NODE_TYPE_CONSTANT) {
-							ConstantNode *cnode = static_cast<ConstantNode *>(index_expression);
+						if (index_expression->type == Node::NODE_TYPE_LITERAL) {
+							LiteralNode *cnode = static_cast<LiteralNode *>(index_expression);
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
@@ -6841,8 +6841,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				String member_struct_name;
 
 				if (expr->get_array_size() > 0) {
-					if (index->type == Node::NODE_TYPE_CONSTANT) {
-						uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+					if (index->type == Node::NODE_TYPE_LITERAL) {
+						uint32_t index_constant = static_cast<LiteralNode *>(index)->values[0].uint;
 						if (index_constant >= (uint32_t)expr->get_array_size()) {
 							_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, expr->get_array_size() - 1));
 							return nullptr;
@@ -6859,8 +6859,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						case TYPE_IVEC2:
 						case TYPE_UVEC2:
 						case TYPE_MAT2:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+							if (index->type == Node::NODE_TYPE_LITERAL) {
+								uint32_t index_constant = static_cast<LiteralNode *>(index)->values[0].uint;
 								if (index_constant >= 2) {
 									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 1));
 									return nullptr;
@@ -6893,8 +6893,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						case TYPE_IVEC3:
 						case TYPE_UVEC3:
 						case TYPE_MAT3:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+							if (index->type == Node::NODE_TYPE_LITERAL) {
+								uint32_t index_constant = static_cast<LiteralNode *>(index)->values[0].uint;
 								if (index_constant >= 3) {
 									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 2));
 									return nullptr;
@@ -6926,8 +6926,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						case TYPE_IVEC4:
 						case TYPE_UVEC4:
 						case TYPE_MAT4:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+							if (index->type == Node::NODE_TYPE_LITERAL) {
+								uint32_t index_constant = static_cast<LiteralNode *>(index)->values[0].uint;
 								if (index_constant >= 4) {
 									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 3));
 									return nullptr;
@@ -7497,16 +7497,16 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 		for (int i = 1; i < op->arguments.size(); i++) {
 			op->arguments.write[i] = _reduce_expression(p_block, op->arguments[i]);
-			if (op->arguments[i]->type == Node::NODE_TYPE_CONSTANT) {
-				ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[i]);
+			if (op->arguments[i]->type == Node::NODE_TYPE_LITERAL) {
+				LiteralNode *ln = static_cast<LiteralNode *>(op->arguments[i]);
 
-				if (get_scalar_type(cn->datatype) == base) {
-					for (int j = 0; j < cn->values.size(); j++) {
-						values.push_back(cn->values[j]);
+				if (get_scalar_type(ln->datatype) == base) {
+					for (int j = 0; j < ln->values.size(); j++) {
+						values.push_back(ln->values[j]);
 					}
-				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
+				} else if (get_scalar_type(ln->datatype) == ln->datatype) {
 					Scalar v;
-					if (!convert_constant(cn, base, &v)) {
+					if (!convert_literal(ln, base, &v)) {
 						return p_node;
 					}
 					values.push_back(v);
@@ -7543,34 +7543,34 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 			return p_node;
 		}
 
-		ConstantNode *cn = alloc_node<ConstantNode>();
-		cn->datatype = op->get_datatype();
-		cn->values = values;
-		return cn;
+		LiteralNode *ln = alloc_node<LiteralNode>();
+		ln->datatype = op->get_datatype();
+		ln->values = values;
+		return ln;
 	} else if (op->op == OP_NEGATE) {
 		op->arguments.write[0] = _reduce_expression(p_block, op->arguments[0]);
-		if (op->arguments[0]->type == Node::NODE_TYPE_CONSTANT) {
-			ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[0]);
+		if (op->arguments[0]->type == Node::NODE_TYPE_LITERAL) {
+			LiteralNode *ln = static_cast<LiteralNode *>(op->arguments[0]);
 
-			DataType base = get_scalar_type(cn->datatype);
+			DataType base = get_scalar_type(ln->datatype);
 
 			Vector<Scalar> values;
 
-			for (int i = 0; i < cn->values.size(); i++) {
+			for (int i = 0; i < ln->values.size(); i++) {
 				Scalar nv;
 				switch (base) {
 					case TYPE_BOOL: {
-						nv.boolean = !cn->values[i].boolean;
+						nv.boolean = !ln->values[i].boolean;
 					} break;
 					case TYPE_INT: {
-						nv.sint = -cn->values[i].sint;
+						nv.sint = -ln->values[i].sint;
 					} break;
 					case TYPE_UINT: {
 						// Intentionally wrap the unsigned int value, because GLSL does.
-						nv.uint = 0 - cn->values[i].uint;
+						nv.uint = 0 - ln->values[i].uint;
 					} break;
 					case TYPE_FLOAT: {
-						nv.real = -cn->values[i].real;
+						nv.real = -ln->values[i].real;
 					} break;
 					default: {
 					}
@@ -7579,8 +7579,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 				values.push_back(nv);
 			}
 
-			cn->values = values;
-			return cn;
+			ln->values = values;
+			return ln;
 		}
 	}
 
@@ -8223,7 +8223,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			Node *n = nullptr;
 
-			if (!tk.is_integer_constant()) {
+			if (!tk.is_integer_literal()) {
 				bool correct_constant_expression = false;
 
 				if (tk.type == TK_IDENTIFIER) {
@@ -8238,9 +8238,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 				if (!correct_constant_expression) {
 					if (p_block->expected_type == TYPE_UINT) {
-						_set_error(RTR("Expected an unsigned integer constant."));
+						_set_error(RTR("Expected an unsigned integer literal."));
 					} else {
-						_set_error(RTR("Expected an integer constant."));
+						_set_error(RTR("Expected an integer literal."));
 					}
 					return ERR_PARSE_ERROR;
 				}
@@ -8253,50 +8253,50 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 					_find_identifier(p_block, false, p_function_info, vn->name, &data_type, nullptr, nullptr, nullptr, nullptr, &v);
 					if (data_type == TYPE_INT) {
-						if (p_block->constants.has(v[0].sint)) {
+						if (p_block->literals.has(v[0].sint)) {
 							_set_error(vformat(RTR("Duplicated case label: %d."), v[0].sint));
 							return ERR_PARSE_ERROR;
 						}
-						p_block->constants.insert(v[0].sint);
+						p_block->literals.insert(v[0].sint);
 					} else {
-						if (p_block->constants.has(v[0].uint)) {
+						if (p_block->literals.has(v[0].uint)) {
 							_set_error(vformat(RTR("Duplicated case label: %d."), v[0].uint));
 							return ERR_PARSE_ERROR;
 						}
-						p_block->constants.insert(v[0].uint);
+						p_block->literals.insert(v[0].uint);
 					}
 				}
 				n = vn;
 			} else {
-				ConstantNode *cn = alloc_node<ConstantNode>();
+				LiteralNode *ln = alloc_node<LiteralNode>();
 				Scalar v;
 				if (p_block->expected_type == TYPE_UINT) {
-					if (tk.type != TK_UINT_CONSTANT) {
-						_set_error(RTR("Expected an unsigned integer constant."));
+					if (tk.type != TK_UINT_LITERAL) {
+						_set_error(RTR("Expected an unsigned integer literal."));
 						return ERR_PARSE_ERROR;
 					}
-					v.uint = (uint32_t)tk.constant;
-					if (p_block->constants.has(v.uint)) {
+					v.uint = (uint32_t)tk.literal;
+					if (p_block->literals.has(v.uint)) {
 						_set_error(vformat(RTR("Duplicated case label: %d."), v.uint));
 						return ERR_PARSE_ERROR;
 					}
-					p_block->constants.insert(v.uint);
-					cn->datatype = TYPE_UINT;
+					p_block->literals.insert(v.uint);
+					ln->datatype = TYPE_UINT;
 				} else {
-					if (tk.type != TK_INT_CONSTANT) {
-						_set_error(RTR("Expected an integer constant."));
+					if (tk.type != TK_INT_LITERAL) {
+						_set_error(RTR("Expected an integer literal."));
 						return ERR_PARSE_ERROR;
 					}
-					v.sint = (int32_t)tk.constant * sign;
-					if (p_block->constants.has(v.sint)) {
+					v.sint = (int32_t)tk.literal * sign;
+					if (p_block->literals.has(v.sint)) {
 						_set_error(vformat(RTR("Duplicated case label: %d."), v.sint));
 						return ERR_PARSE_ERROR;
 					}
-					p_block->constants.insert(v.sint);
-					cn->datatype = TYPE_INT;
+					p_block->literals.insert(v.sint);
+					ln->datatype = TYPE_INT;
 				}
-				cn->values.push_back(v);
-				n = cn;
+				ln->values.push_back(v);
+				n = ln;
 			}
 
 			tk = _get_token();
@@ -9516,18 +9516,18 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										tk = _get_token();
 									}
 
-									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-										_set_error(RTR("Expected an integer constant."));
+									if (tk.type != TK_FLOAT_LITERAL && !tk.is_integer_literal()) {
+										_set_error(RTR("Expected a float or integer literal."));
 										return ERR_PARSE_ERROR;
 									}
 
-									uniform.hint_range[0] = tk.constant;
+									uniform.hint_range[0] = tk.literal;
 									uniform.hint_range[0] *= sign;
 
 									tk = _get_token();
 
 									if (tk.type != TK_COMMA) {
-										_set_error(RTR("Expected ',' after integer constant."));
+										_set_error(RTR("Expected ',' after integer literal."));
 										return ERR_PARSE_ERROR;
 									}
 
@@ -9540,12 +9540,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										tk = _get_token();
 									}
 
-									if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-										_set_error(RTR("Expected an integer constant after ','."));
+									if (tk.type != TK_FLOAT_LITERAL && !tk.is_integer_literal()) {
+										_set_error(RTR("Expected a float or integer literal after ','."));
 										return ERR_PARSE_ERROR;
 									}
 
-									uniform.hint_range[1] = tk.constant;
+									uniform.hint_range[1] = tk.literal;
 									uniform.hint_range[1] *= sign;
 
 									tk = _get_token();
@@ -9553,12 +9553,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									if (tk.type == TK_COMMA) {
 										tk = _get_token();
 
-										if (tk.type != TK_FLOAT_CONSTANT && !tk.is_integer_constant()) {
-											_set_error(RTR("Expected an integer constant after ','."));
+										if (tk.type != TK_FLOAT_LITERAL && !tk.is_integer_literal()) {
+											_set_error(RTR("Expected a float or integer literal after ','."));
 											return ERR_PARSE_ERROR;
 										}
 
-										uniform.hint_range[2] = tk.constant;
+										uniform.hint_range[2] = tk.literal;
 										tk = _get_token();
 									} else {
 										if (type == TYPE_INT) {
@@ -9590,8 +9590,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									while (true) {
 										tk = _get_token();
 
-										if (tk.type != TK_STRING_CONSTANT) {
-											_set_error(RTR("Expected a string constant."));
+										if (tk.type != TK_STRING_LITERAL) {
+											_set_error(RTR("Expected a string literal."));
 											return ERR_PARSE_ERROR;
 										}
 
@@ -9602,7 +9602,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										if (tk.type == TK_PARENTHESIS_CLOSE) {
 											break;
 										} else if (tk.type != TK_COMMA) {
-											_set_error(RTR("Expected ',' or ')' after string constant."));
+											_set_error(RTR("Expected ',' or ')' after string literal."));
 											return ERR_PARSE_ERROR;
 										}
 									}
@@ -9628,12 +9628,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										return ERR_PARSE_ERROR;
 									}
 
-									if (!tk.is_integer_constant()) {
+									if (!tk.is_integer_literal()) {
 										_set_error(RTR("Expected an integer constant."));
 										return ERR_PARSE_ERROR;
 									}
 
-									custom_instance_index = tk.constant;
+									custom_instance_index = tk.literal;
 									current_uniform_instance_index_defined = true;
 
 									if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
@@ -9781,17 +9781,17 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						if (!expr) {
 							return ERR_PARSE_ERROR;
 						}
-						if (expr->type != Node::NODE_TYPE_CONSTANT) {
+						if (expr->type != Node::NODE_TYPE_LITERAL) {
 							_set_error(RTR("Expected constant expression after '='."));
 							return ERR_PARSE_ERROR;
 						}
 
-						ConstantNode *cn = static_cast<ConstantNode *>(expr);
+						LiteralNode *ln = static_cast<LiteralNode *>(expr);
 
-						uniform.default_value.resize(cn->values.size());
+						uniform.default_value.resize(ln->values.size());
 
-						if (!convert_constant(cn, uniform.type, uniform.default_value.ptrw())) {
-							_set_error(vformat(RTR("Can't convert constant to '%s'."), get_datatype_name(uniform.type)));
+						if (!convert_literal(ln, uniform.type, uniform.default_value.ptrw())) {
+							_set_error(vformat(RTR("Can't convert literal to '%s'."), get_datatype_name(uniform.type)));
 							return ERR_PARSE_ERROR;
 						}
 						tk = _get_token();
@@ -10185,7 +10185,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 								array_size = constant.array_size;
 
-								ConstantNode *expr = memnew(ConstantNode);
+								LiteralNode *expr = memnew(LiteralNode);
 
 								expr->datatype = constant.type;
 
@@ -10195,7 +10195,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 								expr->array_declarations.push_back(decl);
 
-								constant.initializer = static_cast<ConstantNode *>(expr);
+								constant.initializer = static_cast<LiteralNode *>(expr);
 							} else {
 #ifdef DEBUG_ENABLED
 								if (constant.type == DataType::TYPE_BOOL) {
