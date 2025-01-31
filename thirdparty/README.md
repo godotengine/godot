@@ -947,10 +947,10 @@ Files extracted from upstream source:
 - `include/` folder
 - `LICENSE`
 
-Some downstream changes have been made and are identified by
-`// -- GODOT begin --` and `// -- GODOT end --` comments.
-They can be reapplied using the patches included in the `patches`
-folder, in order.
+Patches:
+
+- `0001-specialization-constants.patch` (GH-50325)
+- `0002-zero-size-for-sc-sized-arrays.patch` (GH-94985)
 
 
 ## tinyexr
