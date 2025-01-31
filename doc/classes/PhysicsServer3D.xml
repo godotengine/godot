@@ -809,7 +809,7 @@
 		</method>
 		<method name="heightmap_shape_is_hole_label" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="bingus" type="float" />
+			<param index="0" name="value" type="float" />
 			<description>
 			</description>
 		</method>
