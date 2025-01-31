@@ -43,6 +43,11 @@ struct DBusMessageIter;
 
 class FreeDesktopPortalDesktop : public Object {
 private:
+	FreeDesktopPortalDesktop();
+	~FreeDesktopPortalDesktop();
+
+	static FreeDesktopPortalDesktop *singleton;
+
 	bool unsupported = false;
 
 	static bool try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value);
@@ -55,6 +60,11 @@ private:
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, const HashMap<String, String> &p_ids, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
+
+	struct AccessCameraData {
+		String filter;
+		String path;
+	};
 
 	struct FileDialogData {
 		Vector<String> filter_names;
@@ -76,6 +86,8 @@ private:
 	};
 	List<FileDialogCallback> pending_cbs;
 
+	Mutex access_camera_mutex;
+	Vector<AccessCameraData> access_camera_data;
 	Mutex file_dialog_mutex;
 	Vector<FileDialogData> file_dialogs;
 	Thread monitor_thread;
@@ -89,10 +101,11 @@ private:
 	static void _thread_monitor(void *p_ud);
 
 public:
-	FreeDesktopPortalDesktop();
-	~FreeDesktopPortalDesktop();
+	static FreeDesktopPortalDesktop *get_singleton();
 
 	bool is_supported() { return !unsupported; }
+
+	bool access_camera();
 
 	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
 	void process_file_dialog_callbacks();

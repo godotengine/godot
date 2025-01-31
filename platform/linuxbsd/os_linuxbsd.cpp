@@ -44,6 +44,10 @@
 #include "wayland/display_server_wayland.h"
 #endif
 
+#ifdef DBUS_ENABLED
+#include "freedesktop_portal_desktop.h"
+#endif
+
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
@@ -213,6 +217,19 @@ bool OS_LinuxBSD::is_sandboxed() const {
 
 	return false;
 }
+
+#ifdef DBUS_ENABLED
+bool OS_LinuxBSD::request_permission(const String &p_name) {
+	if (p_name == "CAMERA") {
+		if (FreeDesktopPortalDesktop::get_singleton()->access_camera()) {
+			// Always return false here, because we cannot know if permission is granted in advance.
+			return false;
+		}
+		// Desktop portal is not available in this case, return true like every other permission does.
+	}
+	return true;
+}
+#endif
 
 void OS_LinuxBSD::finalize() {
 	if (main_loop) {

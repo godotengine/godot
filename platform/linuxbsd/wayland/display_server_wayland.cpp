@@ -1612,7 +1612,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif // RD_ENABLED
 
 #ifdef DBUS_ENABLED
-	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	portal_desktop = FreeDesktopPortalDesktop::get_singleton();
 	screensaver = memnew(FreeDesktopScreenSaver);
 #endif // DBUS_ENABLED
 
@@ -1673,8 +1673,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 #endif
 
 #ifdef DBUS_ENABLED
-	if (portal_desktop) {
-		memdelete(portal_desktop);
+	if (screensaver) {
 		memdelete(screensaver);
 	}
 #endif
