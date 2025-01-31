@@ -201,6 +201,7 @@ private:
 	float environment_custom_energy = 1.0;
 	bool directional = false;
 	bool use_texture_for_bounces = true;
+	bool low_vram_mode = false;
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
@@ -303,6 +304,9 @@ public:
 
 	void set_use_texture_for_bounces(bool p_enable);
 	bool is_using_texture_for_bounces() const;
+
+	void set_low_vram_mode(bool p_enable);
+	bool is_low_vram_mode() const;
 
 	void set_interior(bool p_interior);
 	bool is_interior() const;

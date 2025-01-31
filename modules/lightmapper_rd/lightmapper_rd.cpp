@@ -136,6 +136,10 @@ void LightmapperRD::add_probe(const Vector3 &p_position) {
 	probe_positions.push_back(probe);
 }
 
+void LightmapperRD::set_low_vram_mode(bool p_enable) {
+	low_vram_mode = p_enable;
+}
+
 void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &p_triangles_sort, uint32_t p_grid_size) {
 	int half_size = p_size / 2;
 
@@ -694,6 +698,10 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 		fb.push_back(slice_unoc_tex);
 		fb.push_back(raster_depth_buffer);
 		framebuffers.push_back(rd->framebuffer_create(fb));
+		// In low VRAM mode only a single slice is stored in VRAM
+		if (low_vram_mode) {
+			break;
+		}
 	}
 
 	RD::PipelineDepthStencilState ds;
@@ -716,40 +724,44 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	clear_colors.push_back(Color(0, 0, 0, 0));
 
 	for (int i = 0; i < atlas_slices; i++) {
-		RasterPushConstant raster_push_constant;
-		raster_push_constant.atlas_size[0] = atlas_size.x;
-		raster_push_constant.atlas_size[1] = atlas_size.y;
-		raster_push_constant.base_triangle = triangle_offset;
-		raster_push_constant.to_cell_offset[0] = bounds.position.x;
-		raster_push_constant.to_cell_offset[1] = bounds.position.y;
-		raster_push_constant.to_cell_offset[2] = bounds.position.z;
-		raster_push_constant.bias = p_bias;
-		raster_push_constant.to_cell_size[0] = (1.0 / bounds.size.x) * float(grid_size);
-		raster_push_constant.to_cell_size[1] = (1.0 / bounds.size.y) * float(grid_size);
-		raster_push_constant.to_cell_size[2] = (1.0 / bounds.size.z) * float(grid_size);
-		raster_push_constant.grid_size[0] = grid_size;
-		raster_push_constant.grid_size[1] = grid_size;
-		raster_push_constant.grid_size[2] = grid_size;
+		if (!low_vram_mode || i == baking_slice) {
+			int fbindex = low_vram_mode ? 0 : i;
 
-		// Half pixel offset is required so the rasterizer doesn't output face edges directly aligned into pixels.
-		// This fixes artifacts where the pixel would be traced from the edge of a face, causing half the rays to
-		// be outside of the boundaries of the geometry. See <https://github.com/godotengine/godot/issues/69126>.
-		raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
-		raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
+			RasterPushConstant raster_push_constant;
+			raster_push_constant.atlas_size[0] = atlas_size.x;
+			raster_push_constant.atlas_size[1] = atlas_size.y;
+			raster_push_constant.base_triangle = triangle_offset;
+			raster_push_constant.to_cell_offset[0] = bounds.position.x;
+			raster_push_constant.to_cell_offset[1] = bounds.position.y;
+			raster_push_constant.to_cell_offset[2] = bounds.position.z;
+			raster_push_constant.bias = p_bias;
+			raster_push_constant.to_cell_size[0] = (1.0 / bounds.size.x) * float(grid_size);
+			raster_push_constant.to_cell_size[1] = (1.0 / bounds.size.y) * float(grid_size);
+			raster_push_constant.to_cell_size[2] = (1.0 / bounds.size.z) * float(grid_size);
+			raster_push_constant.grid_size[0] = grid_size;
+			raster_push_constant.grid_size[1] = grid_size;
+			raster_push_constant.grid_size[2] = grid_size;
 
-		RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i], RD::DRAW_CLEAR_ALL, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS);
-		//draw opaque
-		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
-		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
-		rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
-		rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
-		//draw wire
-		rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline_wire);
-		rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
-		rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
-		rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
+			// Half pixel offset is required so the rasterizer doesn't output face edges directly aligned into pixels.
+			// This fixes artifacts where the pixel would be traced from the edge of a face, causing half the rays to
+			// be outside of the boundaries of the geometry. See <https://github.com/godotengine/godot/issues/69126>.
+			raster_push_constant.uv_offset[0] = -0.5f / float(atlas_size.x);
+			raster_push_constant.uv_offset[1] = -0.5f / float(atlas_size.y);
 
-		rd->draw_list_end();
+			RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[fbindex], RD::DRAW_CLEAR_ALL, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS);
+			//draw opaque
+			rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline);
+			rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
+			rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
+			rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
+			//draw wire
+			rd->draw_list_bind_render_pipeline(draw_list, raster_pipeline_wire);
+			rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
+			rd->draw_list_set_push_constant(draw_list, &raster_push_constant, sizeof(RasterPushConstant));
+			rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
+
+			rd->draw_list_end();
+		}
 
 		triangle_offset += slice_triangle_count[i];
 	}
@@ -792,11 +804,17 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	push_constant.region_ofs[1] = 0;
 	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
 
-	for (int i = 0; i < atlas_slices; i++) {
-		push_constant.atlas_slice = i;
+	if (low_vram_mode) {
+		push_constant.atlas_slice = 0;
 		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 		rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-		//no barrier, let them run all together
+	} else {
+		for (int i = 0; i < atlas_slices; i++) {
+			push_constant.atlas_slice = i;
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+			//no barrier, let them run all together
+		}
 	}
 	rd->compute_list_end();
 	rd->free(compute_shader_dilate);
@@ -829,11 +847,17 @@ LightmapperRD::BakeError LightmapperRD::_pack_l1(RenderingDevice *rd, Ref<RDShad
 	push_constant.region_ofs[1] = 0;
 	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1); //restore group size
 
-	for (int i = 0; i < atlas_slices; i++) {
-		push_constant.atlas_slice = i;
+	if (low_vram_mode) {
+		push_constant.atlas_slice = 0;
 		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
 		rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-		//no barrier, let them run all together
+	} else {
+		for (int i = 0; i < atlas_slices; i++) {
+			push_constant.atlas_slice = i;
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+			//no barrier, let them run all together
+		}
 	}
 	rd->compute_list_end();
 	rd->free(compute_shader_pack);
@@ -1006,7 +1030,7 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
 	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
 	for (int s = 0; s < p_atlas_slices; s++) {
-		p_push_constant.atlas_slice = s;
+		p_push_constant.atlas_slice = low_vram_mode ? 0 : s;
 
 		for (int i = 0; i < x_regions; i++) {
 			for (int j = 0; j < y_regions; j++) {
@@ -1068,6 +1092,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	lightmap_textures.clear();
 	shadowmask_textures.clear();
 	int grid_size = 128;
+
+	baking_slice = -1;
 
 	/* STEP 1: Fetch material textures and compute the bounds */
 
@@ -1154,120 +1180,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	RID albedo_array_tex;
-	RID emission_array_tex;
-	RID normal_tex;
-	RID position_tex;
-	RID unocclude_tex;
-	RID light_source_tex;
-	RID light_dest_tex;
-	RID light_accum_tex;
-	RID light_accum_tex2;
-	RID light_environment_tex;
-	RID shadowmask_tex;
-	RID shadowmask_tex2;
-
-#define FREE_TEXTURES                \
-	rd->free(albedo_array_tex);      \
-	rd->free(emission_array_tex);    \
-	rd->free(normal_tex);            \
-	rd->free(position_tex);          \
-	rd->free(unocclude_tex);         \
-	rd->free(light_source_tex);      \
-	rd->free(light_accum_tex2);      \
-	rd->free(light_accum_tex);       \
-	rd->free(light_environment_tex); \
-	if (p_bake_shadowmask) {         \
-		rd->free(shadowmask_tex);    \
-		rd->free(shadowmask_tex2);   \
-	}
-
-	{ // create all textures
-
-		Vector<Vector<uint8_t>> albedo_data;
-		Vector<Vector<uint8_t>> emission_data;
-		for (int i = 0; i < atlas_slices; i++) {
-			albedo_data.push_back(albedo_images[i]->get_data());
-			emission_data.push_back(emission_images[i]->get_data());
-		}
-
-		RD::TextureFormat tf;
-		tf.width = atlas_size.width;
-		tf.height = atlas_size.height;
-		tf.array_layers = atlas_slices;
-		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-
-		albedo_array_tex = rd->texture_create(tf, RD::TextureView(), albedo_data);
-
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-
-		emission_array_tex = rd->texture_create(tf, RD::TextureView(), emission_data);
-
-		//this will be rastered to
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-		normal_tex = rd->texture_create(tf, RD::TextureView());
-		tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-		position_tex = rd->texture_create(tf, RD::TextureView());
-		unocclude_tex = rd->texture_create(tf, RD::TextureView());
-
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-
-		// shadowmask
-		if (p_bake_shadowmask) {
-			tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-
-			shadowmask_tex = rd->texture_create(tf, RD::TextureView());
-			rd->texture_clear(shadowmask_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
-
-			shadowmask_tex2 = rd->texture_create(tf, RD::TextureView());
-			rd->texture_clear(shadowmask_tex2, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
-		}
-
-		// lightmap
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-
-		light_source_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_source_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
-
-		if (p_bake_sh) {
-			tf.array_layers *= 4;
-		}
-		light_accum_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_accum_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
-		light_dest_tex = rd->texture_create(tf, RD::TextureView());
-		rd->texture_clear(light_dest_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
-		light_accum_tex2 = light_dest_tex;
-
-		//env
-		{
-			Ref<Image> panorama_tex;
-			if (p_environment_panorama.is_valid()) {
-				panorama_tex = p_environment_panorama;
-				panorama_tex->convert(Image::FORMAT_RGBAF);
-			} else {
-				panorama_tex.instantiate();
-				panorama_tex->initialize_data(8, 8, false, Image::FORMAT_RGBAF);
-				panorama_tex->fill(Color(0, 0, 0, 1));
-			}
-
-			RD::TextureFormat tfp;
-			tfp.width = panorama_tex->get_width();
-			tfp.height = panorama_tex->get_height();
-			tfp.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-			tfp.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-
-			Vector<Vector<uint8_t>> tdata;
-			tdata.push_back(panorama_tex->get_data());
-			light_environment_tex = rd->texture_create(tfp, RD::TextureView(), tdata);
-
-#ifdef DEBUG_TEXTURES
-			panorama_tex->save_exr("res://0_panorama.exr", false);
-#endif
-		}
-	}
-
 	/* STEP 2: create the acceleration structure for the GPU*/
 
 	Vector<int> slice_triangle_count;
@@ -1282,8 +1194,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID seams_buffer;
 	RID probe_positions_buffer;
 
-	Vector<int> slice_seam_count;
-
 #define FREE_BUFFERS                   \
 	rd->free(bake_parameters_buffer);  \
 	rd->free(vertex_buffer);           \
@@ -1295,6 +1205,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(grid_texture);            \
 	rd->free(seams_buffer);            \
 	rd->free(probe_positions_buffer);
+
+	Vector<int> slice_seam_count;
 
 	const uint32_t cluster_size = 16;
 	_create_acceleration_structures(rd, atlas_size, atlas_slices, bounds, grid_size, cluster_size, probe_positions, p_generate_probes, slice_triangle_count, slice_seam_count, vertex_buffer, triangle_buffer, lights_buffer, triangle_indices_buffer, cluster_indices_buffer, cluster_aabbs_buffer, probe_positions_buffer, grid_texture, seams_buffer, p_step_function, p_bake_userdata);
@@ -1338,240 +1250,378 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	bake_parameters_buffer = rd->uniform_buffer_create(sizeof(BakeParameters));
 	rd->buffer_update(bake_parameters_buffer, 0, sizeof(BakeParameters), &bake_parameters);
 
-	if (p_step_function) {
-		if (p_step_function(0.47, RTR("Preparing shaders"), p_bake_userdata, true)) {
-			FREE_TEXTURES
-			FREE_BUFFERS
-			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
-			return BAKE_ERROR_USER_ABORTED;
-		}
-	}
+	RID albedo_array_tex;
+	RID emission_array_tex;
 
-	//shaders
-	Ref<RDShaderFile> raster_shader;
-	raster_shader.instantiate();
-	err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
-	if (err != OK) {
-		raster_shader->print_errors("raster_shader");
+#define FREE_RESIDENT_TEXTURES  \
+	rd->free(albedo_array_tex); \
+	rd->free(emission_array_tex);
 
-		FREE_TEXTURES
-		FREE_BUFFERS
-
-		memdelete(rd);
-
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
-	}
-	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
-
-	RID rasterize_shader = rd->shader_create_from_spirv(raster_shader->get_spirv_stages());
-
-	ERR_FAIL_COND_V(rasterize_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //this is a bug check, though, should not happen
-
-	RID sampler;
 	{
-		RD::SamplerState s;
-		s.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-		s.min_filter = RD::SAMPLER_FILTER_LINEAR;
-		s.max_lod = 0;
+		Vector<Vector<uint8_t>> albedo_data;
+		Vector<Vector<uint8_t>> emission_data;
 
-		sampler = rd->sampler_create(s);
-	}
+		for (int i = 0; i < atlas_slices; i++) {
+			albedo_data.push_back(albedo_images[i]->get_data());
+			emission_data.push_back(emission_images[i]->get_data());
+		}
 
-	Vector<RD::Uniform> base_uniforms;
-	{
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 0;
-			u.append_id(bake_parameters_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 1;
-			u.append_id(vertex_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 2;
-			u.append_id(triangle_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 3;
-			u.append_id(triangle_indices_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 4;
-			u.append_id(lights_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 5;
-			u.append_id(seams_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 6;
-			u.append_id(probe_positions_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 7;
-			u.append_id(grid_texture);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 8;
-			u.append_id(albedo_array_tex);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			u.binding = 9;
-			u.append_id(emission_array_tex);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 10;
-			u.append_id(sampler);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 11;
-			u.append_id(cluster_indices_buffer);
-			base_uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 12;
-			u.append_id(cluster_aabbs_buffer);
-			base_uniforms.push_back(u);
-		}
-	}
-
-	RID raster_base_uniform = rd->uniform_set_create(base_uniforms, rasterize_shader, 0);
-	RID raster_depth_buffer;
-	{
 		RD::TextureFormat tf;
 		tf.width = atlas_size.width;
 		tf.height = atlas_size.height;
-		tf.depth = 1;
-		tf.texture_type = RD::TEXTURE_TYPE_2D;
-		tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
-		tf.is_discardable = true;
+		tf.array_layers = atlas_slices;
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 
-		raster_depth_buffer = rd->texture_create(tf, RD::TextureView());
+		albedo_array_tex = rd->texture_create(tf, RD::TextureView(), albedo_data);
+
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+
+		emission_array_tex = rd->texture_create(tf, RD::TextureView(), emission_data);
+
+		rd->submit();
+		rd->sync();
 	}
 
-	rd->submit();
-	rd->sync();
+	int baking_slice_count = low_vram_mode ? 1 : atlas_slices;
 
-	/* STEP 3: Raster the geometry to UV2 coords in the atlas textures GPU*/
+	for (int slice = 0; slice < atlas_slices; slice += baking_slice_count) {
+		baking_slice = slice;
 
-	_raster_geometry(rd, atlas_size, atlas_slices, grid_size, bounds, p_bias, slice_triangle_count, position_tex, unocclude_tex, normal_tex, raster_depth_buffer, rasterize_shader, raster_base_uniform);
+		RID normal_tex;
+		RID position_tex;
+		RID unocclude_tex;
+		RID light_source_tex;
+		RID light_dest_tex;
+		RID light_accum_tex;
+		RID light_accum_tex2;
+		RID light_environment_tex;
+		RID shadowmask_tex;
+		RID shadowmask_tex2;
+		RID light_probe_buffer;
+
+#define FREE_TEXTURES                \
+	rd->free(normal_tex);            \
+	rd->free(position_tex);          \
+	rd->free(unocclude_tex);         \
+	rd->free(light_source_tex);      \
+	rd->free(light_accum_tex2);      \
+	rd->free(light_accum_tex);       \
+	rd->free(light_environment_tex); \
+	if (p_bake_shadowmask) {         \
+		rd->free(shadowmask_tex);    \
+		rd->free(shadowmask_tex2);   \
+	}
+
+		{ // create all textures
+			RD::TextureFormat tf;
+			tf.width = atlas_size.width;
+			tf.height = atlas_size.height;
+			tf.array_layers = baking_slice_count;
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+			//this will be rastered to
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			normal_tex = rd->texture_create(tf, RD::TextureView());
+			tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			position_tex = rd->texture_create(tf, RD::TextureView());
+			unocclude_tex = rd->texture_create(tf, RD::TextureView());
+
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+
+			// shadowmask
+			if (p_bake_shadowmask) {
+				tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+
+				shadowmask_tex = rd->texture_create(tf, RD::TextureView());
+				rd->texture_clear(shadowmask_tex, Color(0, 0, 0, 0), 0, 1, 0, baking_slice_count);
+
+				shadowmask_tex2 = rd->texture_create(tf, RD::TextureView());
+				rd->texture_clear(shadowmask_tex2, Color(0, 0, 0, 0), 0, 1, 0, baking_slice_count);
+			}
+
+			// lightmap
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+
+			light_source_tex = rd->texture_create(tf, RD::TextureView());
+			rd->texture_clear(light_source_tex, Color(0, 0, 0, 0), 0, 1, 0, baking_slice_count);
+
+			if (p_bake_sh) {
+				tf.array_layers *= 4;
+			}
+			light_accum_tex = rd->texture_create(tf, RD::TextureView());
+			rd->texture_clear(light_accum_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
+			light_dest_tex = rd->texture_create(tf, RD::TextureView());
+			rd->texture_clear(light_dest_tex, Color(0, 0, 0, 0), 0, 1, 0, tf.array_layers);
+			light_accum_tex2 = light_dest_tex;
+
+			//env
+			{
+				Ref<Image> panorama_tex;
+				if (p_environment_panorama.is_valid()) {
+					panorama_tex = p_environment_panorama;
+					panorama_tex->convert(Image::FORMAT_RGBAF);
+				} else {
+					panorama_tex.instantiate();
+					panorama_tex->initialize_data(8, 8, false, Image::FORMAT_RGBAF);
+					panorama_tex->fill(Color(0, 0, 0, 1));
+				}
+
+				RD::TextureFormat tfp;
+				tfp.width = panorama_tex->get_width();
+				tfp.height = panorama_tex->get_height();
+				tfp.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+				tfp.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+
+				Vector<Vector<uint8_t>> tdata;
+				tdata.push_back(panorama_tex->get_data());
+				light_environment_tex = rd->texture_create(tfp, RD::TextureView(), tdata);
 
 #ifdef DEBUG_TEXTURES
-
-	for (int i = 0; i < atlas_slices; i++) {
-		Vector<uint8_t> s = rd->texture_get_data(position_tex, i);
-		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAF, s);
-		img->save_exr("res://1_position_" + itos(i) + ".exr", false);
-
-		s = rd->texture_get_data(normal_tex, i);
-		img->set_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->save_exr("res://1_normal_" + itos(i) + ".exr", false);
-	}
+				panorama_tex->save_exr("res://0_panorama.exr", false);
 #endif
+			}
+		}
+
+		if (p_step_function) {
+			if (p_step_function(0.47, RTR("Preparing shaders"), p_bake_userdata, true)) {
+				FREE_TEXTURES
+				FREE_RESIDENT_TEXTURES
+				FREE_BUFFERS
+				memdelete(rd);
+				if (rcd != nullptr) {
+					memdelete(rcd);
+				}
+				return BAKE_ERROR_USER_ABORTED;
+			}
+		}
+
+		//shaders
+		Ref<RDShaderFile> raster_shader;
+		raster_shader.instantiate();
+		err = raster_shader->parse_versions_from_text(lm_raster_shader_glsl);
+		if (err != OK) {
+			raster_shader->print_errors("raster_shader");
+
+			FREE_TEXTURES
+			FREE_RESIDENT_TEXTURES
+			FREE_BUFFERS
+
+			memdelete(rd);
+
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+		}
+		ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+
+		RID rasterize_shader = rd->shader_create_from_spirv(raster_shader->get_spirv_stages());
+
+		ERR_FAIL_COND_V(rasterize_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //this is a bug check, though, should not happen
+
+		RID sampler;
+		{
+			RD::SamplerState s;
+			s.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+			s.min_filter = RD::SAMPLER_FILTER_LINEAR;
+			s.max_lod = 0;
+
+			sampler = rd->sampler_create(s);
+		}
+
+		Vector<RD::Uniform> base_uniforms;
+		{
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+				u.binding = 0;
+				u.append_id(bake_parameters_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.append_id(vertex_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 2;
+				u.append_id(triangle_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 3;
+				u.append_id(triangle_indices_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 4;
+				u.append_id(lights_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 5;
+				u.append_id(seams_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 6;
+				u.append_id(probe_positions_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 7;
+				u.append_id(grid_texture);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 8;
+				u.append_id(albedo_array_tex);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 9;
+				u.append_id(emission_array_tex);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
+				u.binding = 10;
+				u.append_id(sampler);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 11;
+				u.append_id(cluster_indices_buffer);
+				base_uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 12;
+				u.append_id(cluster_aabbs_buffer);
+				base_uniforms.push_back(u);
+			}
+		}
 
 #define FREE_RASTER_RESOURCES   \
 	rd->free(rasterize_shader); \
 	rd->free(sampler);          \
 	rd->free(raster_depth_buffer);
 
-	/* Plot direct light */
+		RID raster_base_uniform = rd->uniform_set_create(base_uniforms, rasterize_shader, 0);
+		RID raster_depth_buffer;
+		{
+			RD::TextureFormat tf;
+			tf.width = atlas_size.width;
+			tf.height = atlas_size.height;
+			tf.depth = 1;
+			tf.texture_type = RD::TEXTURE_TYPE_2D;
+			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			tf.format = RD::DATA_FORMAT_D32_SFLOAT;
+			tf.is_discardable = true;
 
-	Ref<RDShaderFile> compute_shader;
-	String defines = "";
-	defines += "\n#define CLUSTER_SIZE " + uitos(cluster_size) + "\n";
-
-	if (p_bake_sh) {
-		defines += "\n#define USE_SH_LIGHTMAPS\n";
-	}
-
-	if (p_texture_for_bounces) {
-		defines += "\n#define USE_LIGHT_TEXTURE_FOR_BOUNCES\n";
-	}
-
-	if (p_bake_shadowmask) {
-		defines += "\n#define USE_SHADOWMASK\n";
-	}
-
-	compute_shader.instantiate();
-	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, defines);
-	if (err != OK) {
-		FREE_TEXTURES
-		FREE_BUFFERS
-		FREE_RASTER_RESOURCES
-		memdelete(rd);
-
-		if (rcd != nullptr) {
-			memdelete(rcd);
+			raster_depth_buffer = rd->texture_create(tf, RD::TextureView());
 		}
 
-		compute_shader->print_errors("compute_shader");
-	}
-	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+		rd->submit();
+		rd->sync();
 
-	// Unoccluder
-	RID compute_shader_unocclude = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("unocclude"));
-	ERR_FAIL_COND_V(compute_shader_unocclude.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
-	RID compute_shader_unocclude_pipeline = rd->compute_pipeline_create(compute_shader_unocclude);
+		/* STEP 3: Raster the geometry to UV2 coords in the atlas textures GPU*/
 
-	// Direct light
-	RID compute_shader_primary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("primary"));
-	ERR_FAIL_COND_V(compute_shader_primary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
-	RID compute_shader_primary_pipeline = rd->compute_pipeline_create(compute_shader_primary);
+		_raster_geometry(rd, atlas_size, atlas_slices, grid_size, bounds, p_bias, slice_triangle_count, position_tex, unocclude_tex, normal_tex, raster_depth_buffer, rasterize_shader, raster_base_uniform);
 
-	// Indirect light
-	RID compute_shader_secondary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("secondary"));
-	ERR_FAIL_COND_V(compute_shader_secondary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
-	RID compute_shader_secondary_pipeline = rd->compute_pipeline_create(compute_shader_secondary);
+#ifdef DEBUG_TEXTURES
 
-	// Light probes
-	RID compute_shader_light_probes = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("light_probes"));
-	ERR_FAIL_COND_V(compute_shader_light_probes.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
-	RID compute_shader_light_probes_pipeline = rd->compute_pipeline_create(compute_shader_light_probes);
+		for (int i = 0; i < atlas_slices; i++) {
+			Vector<uint8_t> s = rd->texture_get_data(position_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAF, s);
+			img->save_exr("res://1_position_" + itos(i) + ".exr", false);
 
-	RID compute_base_uniform_set = rd->uniform_set_create(base_uniforms, compute_shader_primary, 0);
+			s = rd->texture_get_data(normal_tex, i);
+			img->set_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://1_normal_" + itos(i) + ".exr", false);
+		}
+#endif
+
+		/* Plot direct light */
+
+		Ref<RDShaderFile> compute_shader;
+		String defines = "";
+		defines += "\n#define CLUSTER_SIZE " + uitos(cluster_size) + "\n";
+
+		if (p_bake_sh) {
+			defines += "\n#define USE_SH_LIGHTMAPS\n";
+		}
+
+		if (p_texture_for_bounces && !low_vram_mode) {
+			defines += "\n#define USE_LIGHT_TEXTURE_FOR_BOUNCES\n";
+		}
+
+		if (p_bake_shadowmask) {
+			defines += "\n#define USE_SHADOWMASK\n";
+		}
+
+		compute_shader.instantiate();
+		err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, defines);
+		if (err != OK) {
+			FREE_TEXTURES
+			FREE_RESIDENT_TEXTURES
+			FREE_BUFFERS
+			FREE_RASTER_RESOURCES
+			memdelete(rd);
+
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+
+			compute_shader->print_errors("compute_shader");
+		}
+		ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+
+		// Unoccluder
+		RID compute_shader_unocclude = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("unocclude"));
+		ERR_FAIL_COND_V(compute_shader_unocclude.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
+		RID compute_shader_unocclude_pipeline = rd->compute_pipeline_create(compute_shader_unocclude);
+
+		// Direct light
+		RID compute_shader_primary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("primary"));
+		ERR_FAIL_COND_V(compute_shader_primary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); // internal check, should not happen
+		RID compute_shader_primary_pipeline = rd->compute_pipeline_create(compute_shader_primary);
+
+		// Indirect light
+		RID compute_shader_secondary = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("secondary"));
+		ERR_FAIL_COND_V(compute_shader_secondary.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
+		RID compute_shader_secondary_pipeline = rd->compute_pipeline_create(compute_shader_secondary);
+
+		// Light probes
+		RID compute_shader_light_probes = rd->shader_create_from_spirv(compute_shader->get_spirv_stages("light_probes"));
+		ERR_FAIL_COND_V(compute_shader_light_probes.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES); //internal check, should not happen
+		RID compute_shader_light_probes_pipeline = rd->compute_pipeline_create(compute_shader_light_probes);
+
+		RID compute_base_uniform_set = rd->uniform_set_create(base_uniforms, compute_shader_primary, 0);
 
 #define FREE_COMPUTE_RESOURCES          \
 	rd->free(compute_shader_unocclude); \
@@ -1579,243 +1629,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(compute_shader_secondary); \
 	rd->free(compute_shader_light_probes);
 
-	Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
-	rd->submit();
-	rd->sync();
-
-	if (p_step_function) {
-		if (p_step_function(0.49, RTR("Un-occluding geometry"), p_bake_userdata, true)) {
-			FREE_TEXTURES
-			FREE_BUFFERS
-			FREE_RASTER_RESOURCES
-			FREE_COMPUTE_RESOURCES
-			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
-			return BAKE_ERROR_USER_ABORTED;
-		}
-	}
-
-	PushConstant push_constant;
-
-	/* UNOCCLUDE */
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 0;
-				u.append_id(position_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 1;
-				u.append_id(unocclude_tex); //will be unused
-				uniforms.push_back(u);
-			}
-		}
-
-		RID unocclude_uniform_set = rd->uniform_set_create(uniforms, compute_shader_unocclude, 1);
-
-		RD::ComputeListID compute_list = rd->compute_list_begin();
-		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_unocclude_pipeline);
-		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, unocclude_uniform_set, 1);
-
-		for (int i = 0; i < atlas_slices; i++) {
-			push_constant.atlas_slice = i;
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-			//no barrier, let them run all together
-		}
-		rd->compute_list_end(); //done
-	}
-
-	if (p_step_function) {
-		if (p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true)) {
-			FREE_TEXTURES
-			FREE_BUFFERS
-			FREE_RASTER_RESOURCES
-			FREE_COMPUTE_RESOURCES
-			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
-			return BAKE_ERROR_USER_ABORTED;
-		}
-	}
-
-	// Set ray count to the quality used for direct light and bounces.
-	switch (p_quality) {
-		case BAKE_QUALITY_LOW: {
-			push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
-		} break;
-		case BAKE_QUALITY_MEDIUM: {
-			push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
-		} break;
-		case BAKE_QUALITY_HIGH: {
-			push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
-		} break;
-		case BAKE_QUALITY_ULTRA: {
-			push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
-		} break;
-	}
-
-	push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
-
-	/* PRIMARY (direct) LIGHT PASS */
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 0;
-				u.append_id(light_source_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 1;
-				u.append_id(light_dest_tex); //will be unused
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 2;
-				u.append_id(position_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 3;
-				u.append_id(normal_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 4;
-				u.append_id(light_accum_tex);
-				uniforms.push_back(u);
-			}
-
-			if (p_bake_shadowmask) {
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 5;
-				u.append_id(shadowmask_tex);
-				uniforms.push_back(u);
-			}
-		}
-
-		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
-
-		RD::ComputeListID compute_list = rd->compute_list_begin();
-		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
-		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
-
-		for (int i = 0; i < atlas_slices; i++) {
-			push_constant.atlas_slice = i;
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-			//no barrier, let them run all together
-		}
-		rd->compute_list_end(); //done
-	}
-
-#ifdef DEBUG_TEXTURES
-
-	for (int i = 0; i < atlas_slices; i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_source_tex, i);
-		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->save_exr("res://2_light_primary_" + itos(i) + ".exr", false);
-	}
-
-	if (p_bake_sh) {
-		for (int i = 0; i < atlas_slices * 4; i++) {
-			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-			img->save_exr("res://2_light_primary_accum_" + itos(i) + ".exr", false);
-		}
-	}
-#endif
-
-	/* SECONDARY (indirect) LIGHT PASS(ES) */
-
-	if (p_bounces > 0) {
-		Vector<RD::Uniform> uniforms;
-		{
-			{
-				// Unused.
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 0;
-				u.append_id(light_dest_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 1;
-				u.append_id(light_source_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 2;
-				u.append_id(position_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 3;
-				u.append_id(normal_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-				u.binding = 4;
-				u.append_id(light_accum_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 5;
-				u.append_id(light_environment_tex);
-				uniforms.push_back(u);
-			}
-		}
-
-		RID secondary_uniform_set;
-		secondary_uniform_set = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
-
-		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
-		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
-
-		int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
-		int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
-
-		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
-
+		Vector3i group_size(Math::division_round_up(atlas_size.x, 8), Math::division_round_up(atlas_size.y, 8), 1);
 		rd->submit();
 		rd->sync();
 
 		if (p_step_function) {
-			if (p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true)) {
+			if (p_step_function(0.49, RTR("Un-occluding geometry"), p_bake_userdata, true)) {
 				FREE_TEXTURES
+				FREE_RESIDENT_TEXTURES
 				FREE_BUFFERS
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
@@ -1827,155 +1648,305 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			}
 		}
 
-		int count = 0;
-		for (int s = 0; s < atlas_slices; s++) {
-			push_constant.atlas_slice = s;
+		PushConstant push_constant;
 
-			for (int i = 0; i < x_regions; i++) {
-				for (int j = 0; j < y_regions; j++) {
-					int x = i * max_region_size;
-					int y = j * max_region_size;
-					int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
-					int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
+		/* UNOCCLUDE */
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 0;
+					u.append_id(position_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					u.append_id(unocclude_tex); //will be unused
+					uniforms.push_back(u);
+				}
+			}
 
-					push_constant.region_ofs[0] = x;
-					push_constant.region_ofs[1] = y;
+			RID unocclude_uniform_set = rd->uniform_set_create(uniforms, compute_shader_unocclude, 1);
 
-					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
+			RD::ComputeListID compute_list = rd->compute_list_begin();
+			rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_unocclude_pipeline);
+			rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+			rd->compute_list_bind_uniform_set(compute_list, unocclude_uniform_set, 1);
 
-					for (int k = 0; k < ray_iterations; k++) {
-						RD::ComputeListID compute_list = rd->compute_list_begin();
-						rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_secondary_pipeline);
-						rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-						rd->compute_list_bind_uniform_set(compute_list, secondary_uniform_set, 1);
+			for (int i = 0; i < baking_slice_count; i++) {
+				push_constant.atlas_slice = i;
+				rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+				rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+				//no barrier, let them run all together
+			}
+			rd->compute_list_end(); //done
+		}
 
-						push_constant.ray_from = k * max_rays;
-						push_constant.ray_to = MIN((k + 1) * max_rays, int32_t(push_constant.ray_count));
-						rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-						rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+		if (p_step_function) {
+			if (p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true)) {
+				FREE_TEXTURES
+				FREE_RESIDENT_TEXTURES
+				FREE_BUFFERS
+				FREE_RASTER_RESOURCES
+				FREE_COMPUTE_RESOURCES
+				memdelete(rd);
+				if (rcd != nullptr) {
+					memdelete(rcd);
+				}
+				return BAKE_ERROR_USER_ABORTED;
+			}
+		}
 
-						rd->compute_list_end();
-						rd->submit();
-						rd->sync();
+		// Set ray count to the quality used for direct light and bounces.
+		switch (p_quality) {
+			case BAKE_QUALITY_LOW: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_MEDIUM: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_HIGH: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_ray_count");
+			} break;
+			case BAKE_QUALITY_ULTRA: {
+				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_ray_count");
+			} break;
+		}
 
-						count++;
-						if (p_step_function) {
-							int total = (atlas_slices * x_regions * y_regions * ray_iterations);
-							int percent = count * 100 / total;
-							float p = float(count) / total * 0.1;
-							if (p_step_function(0.6 + p, vformat(RTR("Integrate indirect lighting %d%%"), percent), p_bake_userdata, false)) {
-								FREE_TEXTURES
-								FREE_BUFFERS
-								FREE_RASTER_RESOURCES
-								FREE_COMPUTE_RESOURCES
-								memdelete(rd);
-								if (rcd != nullptr) {
-									memdelete(rcd);
+		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
+
+		/* PRIMARY (direct) LIGHT PASS */
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 0;
+					u.append_id(light_source_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 1;
+					u.append_id(light_dest_tex); //will be unused
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 2;
+					u.append_id(position_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 3;
+					u.append_id(normal_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 4;
+					u.append_id(light_accum_tex);
+					uniforms.push_back(u);
+				}
+
+				if (p_bake_shadowmask) {
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 5;
+					u.append_id(shadowmask_tex);
+					uniforms.push_back(u);
+				}
+			}
+
+			RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
+
+			RD::ComputeListID compute_list = rd->compute_list_begin();
+			rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
+			rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+			rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+
+			for (int i = 0; i < baking_slice_count; i++) {
+				push_constant.atlas_slice = i;
+				rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+				rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+				//no barrier, let them run all together
+			}
+			rd->compute_list_end(); //done
+		}
+
+#ifdef DEBUG_TEXTURES
+
+		for (int i = 0; i < baking_slice_count; i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_source_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://2_light_primary_" + itos(i + slice) + ".exr", false);
+		}
+
+		if (p_bake_sh) {
+			for (int i = 0; i < baking_slice_count * 4; i++) {
+				Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+				Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+				img->save_exr("res://2_light_primary_accum_" + itos(i + slice) + ".exr", false);
+			}
+		}
+#endif
+
+		/* SECONDARY (indirect) LIGHT PASS(ES) */
+		if (p_bounces > 0) {
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					// Unused.
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 0;
+					u.append_id(light_dest_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 1;
+					u.append_id(light_source_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 2;
+					u.append_id(position_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 3;
+					u.append_id(normal_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 4;
+					u.append_id(light_accum_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 5;
+					u.append_id(light_environment_tex);
+					uniforms.push_back(u);
+				}
+			}
+
+			RID secondary_uniform_set;
+			secondary_uniform_set = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
+
+			int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+			int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
+
+			int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
+			int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
+
+			int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
+
+			rd->submit();
+			rd->sync();
+
+			if (p_step_function) {
+				if (p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true)) {
+					FREE_TEXTURES
+					FREE_RESIDENT_TEXTURES
+					FREE_BUFFERS
+					FREE_RASTER_RESOURCES
+					FREE_COMPUTE_RESOURCES
+					memdelete(rd);
+					if (rcd != nullptr) {
+						memdelete(rcd);
+					}
+					return BAKE_ERROR_USER_ABORTED;
+				}
+			}
+
+			int count = slice * x_regions * y_regions * ray_iterations;
+			for (int s = 0; s < baking_slice_count; s++) {
+				push_constant.atlas_slice = s;
+
+				for (int i = 0; i < x_regions; i++) {
+					for (int j = 0; j < y_regions; j++) {
+						int x = i * max_region_size;
+						int y = j * max_region_size;
+						int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
+						int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
+
+						push_constant.region_ofs[0] = x;
+						push_constant.region_ofs[1] = y;
+
+						group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
+
+						for (int k = 0; k < ray_iterations; k++) {
+							RD::ComputeListID compute_list = rd->compute_list_begin();
+							rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_secondary_pipeline);
+							rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+							rd->compute_list_bind_uniform_set(compute_list, secondary_uniform_set, 1);
+
+							push_constant.ray_from = k * max_rays;
+							push_constant.ray_to = MIN((k + 1) * max_rays, int32_t(push_constant.ray_count));
+							rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+							rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+
+							rd->compute_list_end();
+							rd->submit();
+							rd->sync();
+
+							count++;
+							if (p_step_function) {
+								int total = (atlas_slices * x_regions * y_regions * ray_iterations);
+								int percent = count * 100 / total;
+								float p = float(count) / total * 0.1;
+								if (p_step_function(0.6 + p, vformat(RTR("Integrate indirect lighting %d%%"), percent), p_bake_userdata, false)) {
+									FREE_TEXTURES
+									FREE_RESIDENT_TEXTURES
+									FREE_BUFFERS
+									FREE_RASTER_RESOURCES
+									FREE_COMPUTE_RESOURCES
+									memdelete(rd);
+									if (rcd != nullptr) {
+										memdelete(rcd);
+									}
+									return BAKE_ERROR_USER_ABORTED;
 								}
-								return BAKE_ERROR_USER_ABORTED;
 							}
 						}
 					}
 				}
 			}
 		}
-	}
 
-	/* LIGHTPROBES */
+		/* LIGHTPROBES */
 
-	RID light_probe_buffer;
-
-	if (probe_positions.size()) {
-		light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
-
-		if (p_step_function) {
-			if (p_step_function(0.7, RTR("Baking light probes"), p_bake_userdata, true)) {
-				FREE_TEXTURES
-				FREE_BUFFERS
-				FREE_RASTER_RESOURCES
-				FREE_COMPUTE_RESOURCES
-				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
-				}
-				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
-				return BAKE_ERROR_USER_ABORTED;
-			}
-		}
-
-		Vector<RD::Uniform> uniforms;
-		{
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 0;
-				u.append_id(light_probe_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 1;
-				u.append_id(light_source_tex);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 2;
-				u.append_id(light_environment_tex);
-				uniforms.push_back(u);
-			}
-		}
-		RID light_probe_uniform_set = rd->uniform_set_create(uniforms, compute_shader_light_probes, 1);
-
-		switch (p_quality) {
-			case BAKE_QUALITY_LOW: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_probe_ray_count");
-			} break;
-			case BAKE_QUALITY_MEDIUM: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count");
-			} break;
-			case BAKE_QUALITY_HIGH: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_probe_ray_count");
-			} break;
-			case BAKE_QUALITY_ULTRA: {
-				push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count");
-			} break;
-		}
-
-		push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
-		push_constant.probe_count = probe_positions.size();
-
-		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
-		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
-
-		for (int i = 0; i < ray_iterations; i++) {
-			RD::ComputeListID compute_list = rd->compute_list_begin();
-			rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_light_probes_pipeline);
-			rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-			rd->compute_list_bind_uniform_set(compute_list, light_probe_uniform_set, 1);
-
-			push_constant.ray_from = i * max_rays;
-			push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
-
-			rd->compute_list_end(); //done
-			rd->submit();
-			rd->sync();
+		if (slice < 1 && probe_positions.size()) {
+			light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
 
 			if (p_step_function) {
-				int percent = i * 100 / ray_iterations;
-				float p = float(i) / ray_iterations * 0.1;
-				if (p_step_function(0.7 + p, vformat(RTR("Integrating light probes %d%%"), percent), p_bake_userdata, false)) {
+				if (p_step_function(0.7, RTR("Baking light probes"), p_bake_userdata, true)) {
 					FREE_TEXTURES
+					FREE_RESIDENT_TEXTURES
 					FREE_BUFFERS
 					FREE_RASTER_RESOURCES
 					FREE_COMPUTE_RESOURCES
-					if (probe_positions.size() > 0) {
+					if (light_probe_buffer.is_valid()) {
 						rd->free(light_probe_buffer);
 					}
 					memdelete(rd);
@@ -1985,305 +1956,395 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					return BAKE_ERROR_USER_ABORTED;
 				}
 			}
+
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 0;
+					u.append_id(light_probe_buffer);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 1;
+					u.append_id(light_source_tex);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 2;
+					u.append_id(light_environment_tex);
+					uniforms.push_back(u);
+				}
+			}
+			RID light_probe_uniform_set = rd->uniform_set_create(uniforms, compute_shader_light_probes, 1);
+
+			switch (p_quality) {
+				case BAKE_QUALITY_LOW: {
+					push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/low_quality_probe_ray_count");
+				} break;
+				case BAKE_QUALITY_MEDIUM: {
+					push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/medium_quality_probe_ray_count");
+				} break;
+				case BAKE_QUALITY_HIGH: {
+					push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/high_quality_probe_ray_count");
+				} break;
+				case BAKE_QUALITY_ULTRA: {
+					push_constant.ray_count = GLOBAL_GET("rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count");
+				} break;
+			}
+
+			push_constant.ray_count = CLAMP(push_constant.ray_count, 16u, 8192u);
+			push_constant.probe_count = probe_positions.size();
+
+			int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_probe_pass");
+			int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
+
+			for (int i = 0; i < ray_iterations; i++) {
+				RD::ComputeListID compute_list = rd->compute_list_begin();
+				rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_light_probes_pipeline);
+				rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+				rd->compute_list_bind_uniform_set(compute_list, light_probe_uniform_set, 1);
+
+				push_constant.ray_from = i * max_rays;
+				push_constant.ray_to = MIN((i + 1) * max_rays, int32_t(push_constant.ray_count));
+				rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+				rd->compute_list_dispatch(compute_list, Math::division_round_up((int)probe_positions.size(), 64), 1, 1);
+
+				rd->compute_list_end(); //done
+				rd->submit();
+				rd->sync();
+
+				if (p_step_function) {
+					int percent = i * 100 / ray_iterations;
+					float p = float(i) / ray_iterations * 0.1;
+					if (p_step_function(0.7 + p, vformat(RTR("Integrating light probes %d%%"), percent), p_bake_userdata, false)) {
+						FREE_TEXTURES
+						FREE_RESIDENT_TEXTURES
+						FREE_BUFFERS
+						FREE_RASTER_RESOURCES
+						FREE_COMPUTE_RESOURCES
+						if (light_probe_buffer.is_valid()) {
+							rd->free(light_probe_buffer);
+						}
+						memdelete(rd);
+						if (rcd != nullptr) {
+							memdelete(rcd);
+						}
+						return BAKE_ERROR_USER_ABORTED;
+					}
+				}
+			}
 		}
-	}
 
 #if 0
-	for (int i = 0; i < probe_positions.size(); i++) {
-		Ref<Image> img = Image::create_empty(6, 4, false, Image::FORMAT_RGB8);
-		for (int j = 0; j < 6; j++) {
-			Vector<uint8_t> s = rd->texture_get_data(lightprobe_tex, i * 6 + j);
-			Ref<Image> img2 = Image::create_from_data(2, 2, false, Image::FORMAT_RGBAF, s);
-			img2->convert(Image::FORMAT_RGB8);
-			img->blit_rect(img2, Rect2i(0, 0, 2, 2), Point2i((j % 3) * 2, (j / 3) * 2));
+		for (int i = 0; i < probe_positions.size(); i++) {
+			Ref<Image> img = Image::create_empty(6, 4, false, Image::FORMAT_RGB8);
+			for (int j = 0; j < 6; j++) {
+				Vector<uint8_t> s = rd->texture_get_data(lightprobe_tex, i * 6 + j);
+				Ref<Image> img2 = Image::create_from_data(2, 2, false, Image::FORMAT_RGBAF, s);
+				img2->convert(Image::FORMAT_RGB8);
+				img->blit_rect(img2, Rect2i(0, 0, 2, 2), Point2i((j % 3) * 2, (j / 3) * 2));
+			}
+			img->save_png("res://3_light_probe_" + itos(i) + ".png");
 		}
-		img->save_png("res://3_light_probe_" + itos(i) + ".png");
-	}
 #endif
 
-	/* DENOISE */
+		/* DENOISE */
 
-	if (p_use_denoiser) {
-		if (p_step_function) {
-			if (p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true)) {
-				FREE_TEXTURES
-				FREE_BUFFERS
-				FREE_RASTER_RESOURCES
-				FREE_COMPUTE_RESOURCES
-				if (probe_positions.size() > 0) {
-					rd->free(light_probe_buffer);
+		if (p_use_denoiser) {
+			if (p_step_function) {
+				if (p_step_function(0.8, RTR("Denoising"), p_bake_userdata, true)) {
+					FREE_TEXTURES
+					FREE_RESIDENT_TEXTURES
+					FREE_BUFFERS
+					FREE_RASTER_RESOURCES
+					FREE_COMPUTE_RESOURCES
+					if (light_probe_buffer.is_valid()) {
+						rd->free(light_probe_buffer);
+					}
+					memdelete(rd);
+					if (rcd != nullptr) {
+						memdelete(rcd);
+					}
+					return BAKE_ERROR_USER_ABORTED;
 				}
-				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
+			}
+
+			{
+				BakeError error;
+				if (denoiser == 1) {
+					// OIDN (external).
+					error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, baking_slice_count, p_bake_sh, false, oidn_path);
+				} else {
+					// JNLM (built-in).
+					SWAP(light_accum_tex, light_accum_tex2);
+					error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, baking_slice_count, p_bake_sh, p_step_function, p_bake_userdata);
 				}
-				return BAKE_ERROR_USER_ABORTED;
+				if (unlikely(error != BAKE_OK)) {
+					return error;
+				}
+			}
+
+			if (p_bake_shadowmask) {
+				BakeError error;
+				if (denoiser == 1) {
+					// OIDN (external).
+					error = _denoise_oidn(rd, shadowmask_tex, normal_tex, shadowmask_tex, atlas_size, baking_slice_count, false, true, oidn_path);
+				} else {
+					// JNLM (built-in).
+					SWAP(shadowmask_tex, shadowmask_tex2);
+					error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, normal_tex, shadowmask_tex, p_denoiser_strength, p_denoiser_range, atlas_size, baking_slice_count, false, p_step_function, p_bake_userdata);
+				}
+				if (unlikely(error != BAKE_OK)) {
+					return error;
+				}
 			}
 		}
+
+		/* DILATE */
 
 		{
-			BakeError error;
-			if (denoiser == 1) {
-				// OIDN (external).
-				error = _denoise_oidn(rd, light_accum_tex, normal_tex, light_accum_tex, atlas_size, atlas_slices, p_bake_sh, false, oidn_path);
-			} else {
-				// JNLM (built-in).
-				SWAP(light_accum_tex, light_accum_tex2);
-				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, normal_tex, light_accum_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, p_bake_sh, p_step_function, p_bake_userdata);
-			}
+			SWAP(light_accum_tex, light_accum_tex2);
+			BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, baking_slice_count * (p_bake_sh ? 4 : 1));
 			if (unlikely(error != BAKE_OK)) {
 				return error;
 			}
-		}
 
-		if (p_bake_shadowmask) {
-			BakeError error;
-			if (denoiser == 1) {
-				// OIDN (external).
-				error = _denoise_oidn(rd, shadowmask_tex, normal_tex, shadowmask_tex, atlas_size, atlas_slices, false, true, oidn_path);
-			} else {
-				// JNLM (built-in).
+			if (p_bake_shadowmask) {
 				SWAP(shadowmask_tex, shadowmask_tex2);
-				error = _denoise(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, normal_tex, shadowmask_tex, p_denoiser_strength, p_denoiser_range, atlas_size, atlas_slices, false, p_step_function, p_bake_userdata);
-			}
-			if (unlikely(error != BAKE_OK)) {
-				return error;
-			}
-		}
-	}
-
-	/* DILATE */
-
-	{
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices * (p_bake_sh ? 4 : 1));
-		if (unlikely(error != BAKE_OK)) {
-			return error;
-		}
-
-		if (p_bake_shadowmask) {
-			SWAP(shadowmask_tex, shadowmask_tex2);
-			error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, shadowmask_tex, atlas_size, atlas_slices);
-			if (unlikely(error != BAKE_OK)) {
-				return error;
+				error = _dilate(rd, compute_shader, compute_base_uniform_set, push_constant, shadowmask_tex2, shadowmask_tex, atlas_size, baking_slice_count);
+				if (unlikely(error != BAKE_OK)) {
+					return error;
+				}
 			}
 		}
-	}
 
 #ifdef DEBUG_TEXTURES
-
-	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->save_exr("res://4_light_secondary_" + itos(i) + ".exr", false);
-	}
+		for (int i = 0; i < baking_slice_count * (p_bake_sh ? 4 : 1); i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://4_light_secondary_" + itos(slice + i) + ".exr", false);
+		}
 #endif
 
-	/* BLEND SEAMS */
-	//shaders
-	Ref<RDShaderFile> blendseams_shader;
-	blendseams_shader.instantiate();
-	err = blendseams_shader->parse_versions_from_text(lm_blendseams_shader_glsl);
-	if (err != OK) {
-		FREE_TEXTURES
-		FREE_BUFFERS
-		FREE_RASTER_RESOURCES
-		FREE_COMPUTE_RESOURCES
-		memdelete(rd);
+		/* BLEND SEAMS */
+		//shaders
+		Ref<RDShaderFile> blendseams_shader;
+		blendseams_shader.instantiate();
+		err = blendseams_shader->parse_versions_from_text(lm_blendseams_shader_glsl);
+		if (err != OK) {
+			FREE_TEXTURES
+			FREE_RESIDENT_TEXTURES
+			FREE_BUFFERS
+			FREE_RASTER_RESOURCES
+			FREE_COMPUTE_RESOURCES
+			memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
+			if (rcd != nullptr) {
+				memdelete(rcd);
+			}
+
+			blendseams_shader->print_errors("blendseams_shader");
 		}
+		ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-		blendseams_shader->print_errors("blendseams_shader");
-	}
-	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+		RID blendseams_line_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("lines"));
 
-	RID blendseams_line_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("lines"));
+		ERR_FAIL_COND_V(blendseams_line_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
-	ERR_FAIL_COND_V(blendseams_line_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+		RID blendseams_triangle_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("triangles"));
 
-	RID blendseams_triangle_raster_shader = rd->shader_create_from_spirv(blendseams_shader->get_spirv_stages("triangles"));
-
-	ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+		ERR_FAIL_COND_V(blendseams_triangle_raster_shader.is_null(), BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 #define FREE_BLENDSEAMS_RESOURCES            \
 	rd->free(blendseams_line_raster_shader); \
 	rd->free(blendseams_triangle_raster_shader);
 
-	{
-		//pre copy
-		for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-			rd->texture_copy(light_accum_tex, light_accum_tex2, Vector3(), Vector3(), Vector3(atlas_size.width, atlas_size.height, 1), 0, 0, i, i);
-		}
-
-		Vector<RID> framebuffers;
-		for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-			RID slice_tex = rd->texture_create_shared_from_slice(RD::TextureView(), light_accum_tex, i, 0);
-			Vector<RID> fb;
-			fb.push_back(slice_tex);
-			fb.push_back(raster_depth_buffer);
-			framebuffers.push_back(rd->framebuffer_create(fb));
-		}
-
-		Vector<RD::Uniform> uniforms;
 		{
+			//pre copy
+			for (int i = 0; i < baking_slice_count * (p_bake_sh ? 4 : 1); i++) {
+				rd->texture_copy(light_accum_tex, light_accum_tex2, Vector3(), Vector3(), Vector3(atlas_size.width, atlas_size.height, 1), 0, 0, i, i);
+			}
+
+			Vector<RID> framebuffers;
+			for (int i = 0; i < baking_slice_count * (p_bake_sh ? 4 : 1); i++) {
+				RID slice_tex = rd->texture_create_shared_from_slice(RD::TextureView(), light_accum_tex, i, 0);
+				Vector<RID> fb;
+				fb.push_back(slice_tex);
+				fb.push_back(raster_depth_buffer);
+				framebuffers.push_back(rd->framebuffer_create(fb));
+			}
+
+			Vector<RD::Uniform> uniforms;
 			{
-				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-				u.binding = 0;
-				u.append_id(light_accum_tex2);
-				uniforms.push_back(u);
-			}
-		}
-
-		RID blendseams_raster_uniform = rd->uniform_set_create(uniforms, blendseams_line_raster_shader, 1);
-
-		bool debug = false;
-		RD::PipelineColorBlendState bs = RD::PipelineColorBlendState::create_blend(1);
-		bs.attachments.write[0].src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-		bs.attachments.write[0].dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-
-		RD::PipelineDepthStencilState ds;
-		ds.enable_depth_test = true;
-		ds.enable_depth_write = true;
-		ds.depth_compare_operator = RD::COMPARE_OP_LESS; //so it does not render same pixel twice, this avoids wrong blending
-
-		RID blendseams_line_raster_pipeline = rd->render_pipeline_create(blendseams_line_raster_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_LINES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), ds, bs, 0);
-		RID blendseams_triangle_raster_pipeline = rd->render_pipeline_create(blendseams_triangle_raster_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), ds, bs, 0);
-
-		uint32_t seam_offset = 0;
-		uint32_t triangle_offset = 0;
-
-		for (int i = 0; i < atlas_slices; i++) {
-			int subslices = (p_bake_sh ? 4 : 1);
-
-			if (slice_seam_count[i] == 0) {
-				continue;
-			}
-
-			for (int k = 0; k < subslices; k++) {
-				RasterSeamsPushConstant seams_push_constant;
-				seams_push_constant.slice = uint32_t(i * subslices + k);
-				seams_push_constant.debug = debug;
-
-				// Store the current subslice in the breadcrumb.
-				RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS | seams_push_constant.slice);
-
-				rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
-				rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);
-
-				const int uv_offset_count = 9;
-				static const Vector3 uv_offsets[uv_offset_count] = {
-					Vector3(0, 0, 0.5), //using zbuffer, so go inwards-outwards
-					Vector3(0, 1, 0.2),
-					Vector3(0, -1, 0.2),
-					Vector3(1, 0, 0.2),
-					Vector3(-1, 0, 0.2),
-					Vector3(-1, -1, 0.1),
-					Vector3(1, -1, 0.1),
-					Vector3(1, 1, 0.1),
-					Vector3(-1, 1, 0.1),
-				};
-
-				/* step 1 use lines to blend the edges */
 				{
-					seams_push_constant.base_index = seam_offset;
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 0;
+					u.append_id(light_accum_tex2);
+					uniforms.push_back(u);
+				}
+			}
+
+			RID blendseams_raster_uniform = rd->uniform_set_create(uniforms, blendseams_line_raster_shader, 1);
+
+			bool debug = false;
+			RD::PipelineColorBlendState bs = RD::PipelineColorBlendState::create_blend(1);
+			bs.attachments.write[0].src_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+			bs.attachments.write[0].dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+
+			RD::PipelineDepthStencilState ds;
+			ds.enable_depth_test = true;
+			ds.enable_depth_write = true;
+			ds.depth_compare_operator = RD::COMPARE_OP_LESS; //so it does not render same pixel twice, this avoids wrong blending
+
+			RID blendseams_line_raster_pipeline = rd->render_pipeline_create(blendseams_line_raster_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_LINES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), ds, bs, 0);
+			RID blendseams_triangle_raster_pipeline = rd->render_pipeline_create(blendseams_triangle_raster_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), ds, bs, 0);
+
+			uint32_t seam_offset = 0;
+			uint32_t triangle_offset = 0;
+
+			for (int i = 0; i < slice; i++) {
+				seam_offset += slice_seam_count[i];
+				triangle_offset += slice_triangle_count[i];
+			}
+
+			for (int i = 0; i < baking_slice_count; i++) {
+				int subslices = (p_bake_sh ? 4 : 1);
+
+				if (slice_seam_count[slice + i] == 0) {
+					continue;
+				}
+
+				for (int k = 0; k < subslices; k++) {
+					RasterSeamsPushConstant seams_push_constant;
+					seams_push_constant.slice = uint32_t(i * subslices + k);
+					seams_push_constant.debug = debug;
+
+					// Store the current subslice in the breadcrumb.
+					RD::DrawListID draw_list = rd->draw_list_begin(framebuffers[i * subslices + k], RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::LIGHTMAPPER_PASS | seams_push_constant.slice);
+
+					rd->draw_list_bind_uniform_set(draw_list, raster_base_uniform, 0);
+					rd->draw_list_bind_uniform_set(draw_list, blendseams_raster_uniform, 1);
+
+					const int uv_offset_count = 9;
+					static const Vector3 uv_offsets[uv_offset_count] = {
+						Vector3(0, 0, 0.5), //using zbuffer, so go inwards-outwards
+						Vector3(0, 1, 0.2),
+						Vector3(0, -1, 0.2),
+						Vector3(1, 0, 0.2),
+						Vector3(-1, 0, 0.2),
+						Vector3(-1, -1, 0.1),
+						Vector3(1, -1, 0.1),
+						Vector3(1, 1, 0.1),
+						Vector3(-1, 1, 0.1),
+					};
+
+					/* step 1 use lines to blend the edges */
+					{
+						seams_push_constant.base_index = seam_offset;
+						rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
+						seams_push_constant.uv_offset[0] = (uv_offsets[0].x - 0.5f) / float(atlas_size.width);
+						seams_push_constant.uv_offset[1] = (uv_offsets[0].y - 0.5f) / float(atlas_size.height);
+						seams_push_constant.blend = uv_offsets[0].z;
+
+						rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
+						rd->draw_list_draw(draw_list, false, 1, slice_seam_count[slice + i] * 4);
+					}
+
+					/* step 2 use triangles to mask the interior */
+
+					{
+						seams_push_constant.base_index = triangle_offset;
+						rd->draw_list_bind_render_pipeline(draw_list, blendseams_triangle_raster_pipeline);
+						seams_push_constant.blend = 0; //do not draw them, just fill the z-buffer so its used as a mask
+
+						rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
+						rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[slice + i] * 3);
+					}
+					/* step 3 blend around the triangle */
+
 					rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
-					seams_push_constant.uv_offset[0] = (uv_offsets[0].x - 0.5f) / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = (uv_offsets[0].y - 0.5f) / float(atlas_size.height);
-					seams_push_constant.blend = uv_offsets[0].z;
 
-					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
-					rd->draw_list_draw(draw_list, false, 1, slice_seam_count[i] * 4);
+					for (int j = 1; j < uv_offset_count; j++) {
+						seams_push_constant.base_index = seam_offset;
+						seams_push_constant.uv_offset[0] = (uv_offsets[j].x - 0.5f) / float(atlas_size.width);
+						seams_push_constant.uv_offset[1] = (uv_offsets[j].y - 0.5f) / float(atlas_size.height);
+						seams_push_constant.blend = uv_offsets[0].z;
+
+						rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
+						rd->draw_list_draw(draw_list, false, 1, slice_seam_count[slice + i] * 4);
+					}
+					rd->draw_list_end();
 				}
-
-				/* step 2 use triangles to mask the interior */
-
-				{
-					seams_push_constant.base_index = triangle_offset;
-					rd->draw_list_bind_render_pipeline(draw_list, blendseams_triangle_raster_pipeline);
-					seams_push_constant.blend = 0; //do not draw them, just fill the z-buffer so its used as a mask
-
-					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
-					rd->draw_list_draw(draw_list, false, 1, slice_triangle_count[i] * 3);
-				}
-				/* step 3 blend around the triangle */
-
-				rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
-
-				for (int j = 1; j < uv_offset_count; j++) {
-					seams_push_constant.base_index = seam_offset;
-					seams_push_constant.uv_offset[0] = (uv_offsets[j].x - 0.5f) / float(atlas_size.width);
-					seams_push_constant.uv_offset[1] = (uv_offsets[j].y - 0.5f) / float(atlas_size.height);
-					seams_push_constant.blend = uv_offsets[0].z;
-
-					rd->draw_list_set_push_constant(draw_list, &seams_push_constant, sizeof(RasterSeamsPushConstant));
-					rd->draw_list_draw(draw_list, false, 1, slice_seam_count[i] * 4);
-				}
-				rd->draw_list_end();
+				seam_offset += slice_seam_count[slice + i];
+				triangle_offset += slice_triangle_count[slice + i];
 			}
-			seam_offset += slice_seam_count[i];
-			triangle_offset += slice_triangle_count[i];
 		}
-	}
 
-	if (p_bake_sh) {
-		SWAP(light_accum_tex, light_accum_tex2);
-		BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, atlas_slices);
-		if (unlikely(error != BAKE_OK)) {
-			return error;
+		if (p_bake_sh) {
+			SWAP(light_accum_tex, light_accum_tex2);
+			BakeError error = _pack_l1(rd, compute_shader, compute_base_uniform_set, push_constant, light_accum_tex2, light_accum_tex, atlas_size, baking_slice_count);
+			if (unlikely(error != BAKE_OK)) {
+				return error;
+			}
 		}
-	}
 
 #ifdef DEBUG_TEXTURES
-
-	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->save_exr("res://5_blendseams" + itos(i) + ".exr", false);
-	}
+		for (int i = 0; i < baking_slice_count * (p_bake_sh ? 4 : 1); i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->save_exr("res://5_blendseams" + itos(slice + i) + ".exr", false);
+		}
 #endif
 
-	if (p_step_function) {
-		p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
-	}
-
-	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
-		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
-		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBH); //remove alpha
-		lightmap_textures.push_back(img);
-	}
-
-	if (p_bake_shadowmask) {
-		for (int i = 0; i < atlas_slices; i++) {
-			Vector<uint8_t> s = rd->texture_get_data(shadowmask_tex, i);
-			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8, s);
-			img->convert(Image::FORMAT_R8);
-			shadowmask_textures.push_back(img);
+		if (p_step_function) {
+			p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
 		}
-	}
 
-	if (probe_positions.size() > 0) {
-		probe_values.resize(probe_positions.size() * 9);
-		Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
-		memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
-		rd->free(light_probe_buffer);
+		for (int i = 0; i < baking_slice_count * (p_bake_sh ? 4 : 1); i++) {
+			Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
+			img->convert(Image::FORMAT_RGBH); //remove alpha
+			lightmap_textures.push_back(img);
+		}
+
+		if (p_bake_shadowmask) {
+			for (int i = 0; i < baking_slice_count; i++) {
+				Vector<uint8_t> s = rd->texture_get_data(shadowmask_tex, i);
+				Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8, s);
+				img->convert(Image::FORMAT_R8);
+				shadowmask_textures.push_back(img);
+			}
+		}
+
+		if (light_probe_buffer.is_valid() && probe_positions.size() > 0) {
+			probe_values.resize(probe_positions.size() * 9);
+			Vector<uint8_t> probe_data = rd->buffer_get_data(light_probe_buffer);
+			memcpy(probe_values.ptrw(), probe_data.ptr(), probe_data.size());
+			rd->free(light_probe_buffer);
 
 #ifdef DEBUG_TEXTURES
-		{
-			Ref<Image> img2 = Image::create_from_data(probe_values.size(), 1, false, Image::FORMAT_RGBAF, probe_data);
-			img2->save_exr("res://6_lightprobes.exr", false);
-		}
+			{
+				Ref<Image> img2 = Image::create_from_data(probe_values.size(), 1, false, Image::FORMAT_RGBAF, probe_data);
+				img2->save_exr("res://6_lightprobes.exr", false);
+			}
 #endif
+		}
+
+		FREE_TEXTURES
+		FREE_RASTER_RESOURCES
+		FREE_COMPUTE_RESOURCES
+		FREE_BLENDSEAMS_RESOURCES
 	}
 
-	FREE_TEXTURES
+	FREE_RESIDENT_TEXTURES
 	FREE_BUFFERS
-	FREE_RASTER_RESOURCES
-	FREE_COMPUTE_RESOURCES
-	FREE_BLENDSEAMS_RESOURCES
 
 	memdelete(rd);
 

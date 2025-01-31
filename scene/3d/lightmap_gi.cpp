@@ -1266,6 +1266,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
+	lightmapper->set_low_vram_mode(low_vram_mode);
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces,
 			bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces,
 			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization, (supersampling_enabled ? supersampling_factor : 1));
@@ -1630,6 +1631,14 @@ bool LightmapGI::is_using_texture_for_bounces() const {
 	return use_texture_for_bounces;
 }
 
+void LightmapGI::set_low_vram_mode(bool p_enable) {
+	low_vram_mode = p_enable;
+}
+
+bool LightmapGI::is_low_vram_mode() const {
+	return low_vram_mode;
+}
+
 void LightmapGI::set_interior(bool p_enable) {
 	interior = p_enable;
 }
@@ -1860,6 +1869,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_texture_for_bounces", "use_texture_for_bounces"), &LightmapGI::set_use_texture_for_bounces);
 	ClassDB::bind_method(D_METHOD("is_using_texture_for_bounces"), &LightmapGI::is_using_texture_for_bounces);
 
+	ClassDB::bind_method(D_METHOD("set_low_vram_mode", "low_vram_mode"), &LightmapGI::set_low_vram_mode);
+	ClassDB::bind_method(D_METHOD("is_low_vram_mode"), &LightmapGI::is_low_vram_mode);
+
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
@@ -1874,6 +1886,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadowmask_mode", PROPERTY_HINT_ENUM, "None,Replace,Overlay"), "set_shadowmask_mode", "get_shadowmask_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_for_bounces"), "set_use_texture_for_bounces", "is_using_texture_for_bounces");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_vram_mode"), "set_low_vram_mode", "is_low_vram_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "denoiser_strength", PROPERTY_HINT_RANGE, "0.001,0.2,0.001,or_greater"), "set_denoiser_strength", "get_denoiser_strength");

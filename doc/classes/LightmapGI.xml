@@ -62,6 +62,10 @@
 		<member name="light_data" type="LightmapGIData" setter="set_light_data" getter="get_light_data">
 			The [LightmapGIData] associated to this [LightmapGI] node. This resource is automatically created after baking, and is not meant to be created manually.
 		</member>
+		<member name="low_vram_mode" type="bool" setter="set_low_vram_mode" getter="is_low_vram_mode" default="false">
+			If [code]true[/code], the lightmapper will attempt to use less VRAM by calculating each lightmap array slice separately in multiple compute shader invocations.
+			[b]Note:[/b] [member use_texture_for_bounces] will be ignored if this is [code]true[/code].
+		</member>
 		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
 			The maximum texture size for the generated texture atlas. Higher values will result in fewer slices being generated, but may not work on all hardware as a result of hardware limitations on texture sizes. Leave [member max_texture_size] at its default value of [code]16384[/code] if unsure.
 		</member>
@@ -93,7 +97,7 @@
 		</member>
 		<member name="use_texture_for_bounces" type="bool" setter="set_use_texture_for_bounces" getter="is_using_texture_for_bounces" default="true">
 			If [code]true[/code], a texture with the lighting information will be generated to speed up the generation of indirect lighting at the cost of some accuracy. The geometry might exhibit extra light leak artifacts when using low resolution lightmaps or UVs that stretch the lightmap significantly across surfaces. Leave [member use_texture_for_bounces] at its default value of [code]true[/code] if unsure.
-			[b]Note:[/b] [member use_texture_for_bounces] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
+			[b]Note:[/b] [member use_texture_for_bounces] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code] and [member low_vram_mode] is [code]false[/code].
 		</member>
 	</members>
 	<constants>
