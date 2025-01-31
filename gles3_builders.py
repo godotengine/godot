@@ -191,9 +191,9 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
 
 def build_gles3_header(
     filename: str,
-    env,
     include: str,
     class_suffix: str,
+    env=None,
     optional_output_filename: Optional[str] = None,
     header_data: Optional[GLES3HeaderStruct] = None,
 ):
@@ -205,13 +205,16 @@ def build_gles3_header(
     else:
         out_file = optional_output_filename
 
-    if env["build_dir"]:
-        if os.path.isabs(out_file):
-            out_file = os.path.relpath(out_file, base_folder_path)
-        out_file = os.path.join(base_folder_path, env["build_dir"], out_file)
-        out_dir = os.path.dirname(out_file)
-        if not os.path.isdir(out_dir):
-            os.makedirs(out_dir)
+    if env is not None and env["build_dir"]:
+        build_dir = env["build_dir"]
+    else:
+        build_dir = "build"
+    if os.path.isabs(out_file):
+        out_file = os.path.relpath(out_file, base_folder_path)
+    out_file = os.path.join(base_folder_path, build_dir, out_file)
+    out_dir = os.path.dirname(out_file)
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
 
     with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
         defspec = 0
