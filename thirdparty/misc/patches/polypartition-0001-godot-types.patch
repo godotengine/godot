@@ -1,5 +1,5 @@
 diff --git a/thirdparty/misc/polypartition.cpp b/thirdparty/misc/polypartition.cpp
-index 3a8a6efa83..8c5409bf24 100644
+index 3a8a6efa83..a725125ed0 100644
 --- a/thirdparty/misc/polypartition.cpp
 +++ b/thirdparty/misc/polypartition.cpp
 @@ -26,7 +26,6 @@
@@ -528,15 +528,15 @@ index 3a8a6efa83..8c5409bf24 100644
    // a tree, complexity requirements for operations are the same as
    // for the balanced binary search tree.
 -  std::set<ScanLineEdge> edgeTree;
-+  Set<ScanLineEdge> edgeTree;
++  RBSet<ScanLineEdge> edgeTree;
    // Store iterators to the edge tree elements.
    // This makes deleting existing edges much faster.
 -  std::set<ScanLineEdge>::iterator *edgeTreeIterators, edgeIter;
 -  edgeTreeIterators = new std::set<ScanLineEdge>::iterator[maxnumvertices];
 -  std::pair<std::set<ScanLineEdge>::iterator, bool> edgeTreeRet;
-+  Set<ScanLineEdge>::Element **edgeTreeIterators, *edgeIter;
-+  edgeTreeIterators = new Set<ScanLineEdge>::Element *[maxnumvertices];
-+  //Pair<Set<ScanLineEdge>::iterator, bool> edgeTreeRet;
++  RBSet<ScanLineEdge>::Element **edgeTreeIterators, *edgeIter;
++  edgeTreeIterators = new RBSet<ScanLineEdge>::Element *[maxnumvertices];
++  //Pair<RBSet<ScanLineEdge>::iterator, bool> edgeTreeRet;
    for (i = 0; i < numvertices; i++) {
 -    edgeTreeIterators[i] = edgeTree.end();
 +    edgeTreeIterators[i] = nullptr;
@@ -671,8 +671,8 @@ index 3a8a6efa83..8c5409bf24 100644
  void TPPLPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
 -        TPPLVertexType *vertextypes, std::set<ScanLineEdge>::iterator *edgeTreeIterators,
 -        std::set<ScanLineEdge> *edgeTree, long *helpers) {
-+        TPPLVertexType *vertextypes, Set<ScanLineEdge>::Element **edgeTreeIterators,
-+        Set<ScanLineEdge> *edgeTree, long *helpers) {
++	TPPLVertexType *vertextypes, RBSet<ScanLineEdge>::Element **edgeTreeIterators,
++	RBSet<ScanLineEdge> *edgeTree, long *helpers) {
    long newindex1, newindex2;
  
    newindex1 = *numvertices;
@@ -713,7 +713,7 @@ index 3a8a6efa83..8c5409bf24 100644
      }
    }
 diff --git a/thirdparty/misc/polypartition.h b/thirdparty/misc/polypartition.h
-index f163f5d217..b2d905a3ef 100644
+index e1df6cef9e..c084bdf74c 100644
 --- a/thirdparty/misc/polypartition.h
 +++ b/thirdparty/misc/polypartition.h
 @@ -24,8 +24,9 @@
@@ -724,7 +724,7 @@ index f163f5d217..b2d905a3ef 100644
 -#include <set>
 +#include "core/math/vector2.h"
 +#include "core/templates/list.h"
-+#include "core/templates/set.h"
++#include "core/templates/rb_set.h"
  
  typedef double tppl_float;
  
@@ -809,8 +809,8 @@ index f163f5d217..b2d905a3ef 100644
    void AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
 -          TPPLVertexType *vertextypes, std::set<ScanLineEdge>::iterator *edgeTreeIterators,
 -          std::set<ScanLineEdge> *edgeTree, long *helpers);
-+          TPPLVertexType *vertextypes, Set<ScanLineEdge>::Element **edgeTreeIterators,
-+          Set<ScanLineEdge> *edgeTree, long *helpers);
++	  TPPLVertexType *vertextypes, RBSet<ScanLineEdge>::Element **edgeTreeIterators,
++	  RBSet<ScanLineEdge> *edgeTree, long *helpers);
  
    // Triangulates a monotone polygon, used in Triangulate_MONO.
    int TriangulateMonotone(TPPLPoly *inPoly, TPPLPolyList *triangles);

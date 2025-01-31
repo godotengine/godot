@@ -1,7 +1,7 @@
-diff --git a/thirdparty/noise/FastNoiseLite.h b/thirdparty/noise/FastNoiseLite.h
+diff --git a/thirdparty/misc/FastNoiseLite.h b/thirdparty/misc/FastNoiseLite.h
 index ed97b0fcac..fb6dbcb92a 100644
---- a/thirdparty/noise/FastNoiseLite.h
-+++ b/thirdparty/noise/FastNoiseLite.h
+--- a/thirdparty/misc/FastNoiseLite.h
++++ b/thirdparty/misc/FastNoiseLite.h
 @@ -52,6 +52,8 @@
  
  #include <cmath>

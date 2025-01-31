@@ -738,10 +738,6 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/iOrange/bcdec
   * Version: git (3b29f8f44466c7d59852670f82f53905cf627d48, 2024)
   * License: MIT
-- `clipper.{cpp,hpp}`
-  * Upstream: https://sourceforge.net/projects/polyclipping
-  * Version: 6.4.2 (2017) + Godot changes (added optional exceptions handling)
-  * License: BSL-1.0
 - `cubemap_coeffs.h`
   * Upstream: https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes
     File coeffs_const_8.txt (retrieved April 2020)
@@ -750,14 +746,27 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ariya/FastLZ
   * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
   * License: MIT
+- `FastNoiseLite.h`
+  * Upstream: https://github.com/Auburn/FastNoiseLite
+  * Version: 1.1.0 (f7af54b56518aa659e1cf9fb103c0b6e36a833d9, 2023)
+  * License: MIT
+  * Patches:
+    - `FastNoiseLite-0001-namespace-warnings.patch` (GH-88526)
 - `ifaddrs-android.{cc,h}`
   * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
   * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
   * License: BSD-3-Clause
+  * Patches:
+    - `ifaddrs-android-0001-complete-struct.patch` (GH-34101)
 - `mikktspace.{c,h}`
   * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
   * Version: 1.0 (2011)
   * License: zlib
+- `nvapi_minimal.h`
+  * Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
+  * Version: R525
+  * License: MIT
+  * Modifications: Created from upstream `nvapi.h` by removing unnecessary code.
 - `ok_color.h`
   * Upstream: https://github.com/bottosson/bottosson.github.io/blob/master/misc/ok_color.h
   * Version: git (d69831edb90ffdcd08b7e64da3c5405acd48ad2c, 2022)
@@ -774,13 +783,15 @@ Collection of single-file libraries used in Godot components.
 - `polypartition.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.{cpp,h}`)
   * Version: git (7bdffb428b2b19ad1c43aa44c714dcc104177e84, 2021)
-  * Modifications: Change from STL to Godot types (see provided patch).
   * License: MIT
-- `qoa.h`
+  * Patches:
+    - `polypartition-0001-godot-types.patch` (2185c018f)
+    - `polypartition-0002-shadow-warning.patch` (GH-66808)
+- `qoa.{c,h}`
   * Upstream: https://github.com/phoboslab/qoa
   * Version: git (a2d927f8ce78a85e903676a33e0f956e53b89f7d, 2024)
-  * Modifications: Added implementation through `qoa.c`.
   * License: MIT
+  * Modifications: Added implementation through `qoa.c`.
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
   * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
@@ -789,7 +800,9 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/antirez/smaz
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
-  * Modifications: use `const char*` instead of `char*` for input string
+  * Modifications: License included in header.
+  * Patches:
+    - `smaz-0001-write-string-warning.patch` (GH-8572)
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
   * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
@@ -815,31 +828,6 @@ Files extracted from the upstream source:
 - `msdfgen.h`
 - Files in `core/` folder
 - `LICENSE.txt`
-
-
-## noise
-
-- Upstream: https://github.com/Auburn/FastNoiseLite
-- Version: 1.1.0 (f7af54b56518aa659e1cf9fb103c0b6e36a833d9, 2023)
-- License: MIT
-
-Files extracted from the upstream source:
-
-- `FastNoiseLite.h`
-- `LICENSE`
-
-Some custom changes were made to fix compiler warnings, and can be re-applied
-with the provided patch.
-
-
-## nvapi
-
-- Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
-- Version: R525
-- License: MIT
-
-- `nvapi_minimal.h` was created by using `nvapi.h` from upstream and removing
-  unnecessary code.
 
 
 ## openxr
