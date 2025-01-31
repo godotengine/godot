@@ -1,5 +1,5 @@
 diff --git a/thirdparty/embree/common/sys/sysinfo.cpp b/thirdparty/embree/common/sys/sysinfo.cpp
-index d01eab3c9d..4ecab05265 100644
+index d5b653fe5a..4583e49b1c 100644
 --- a/thirdparty/embree/common/sys/sysinfo.cpp
 +++ b/thirdparty/embree/common/sys/sysinfo.cpp
 @@ -295,7 +295,7 @@ namespace embree

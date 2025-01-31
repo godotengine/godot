@@ -209,13 +209,17 @@ Files extracted from upstream:
 - All config files listed in `modules/raycast/godot_update_embree.py`
 - `LICENSE.txt`
 
-The `modules/raycast/godot_update_embree.py` script can be used to pull the
-relevant files from the latest Embree release and apply some automatic changes.
+Patches:
 
-Some changes have been made in order to remove exceptions and fix minor build errors.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments. Apply the patches in the `patches/` folder when syncing on newer upstream
-commits.
+- `0001-disable-exceptions.patch` (GH-48050)
+- `0002-godot-config.patch` (GH-88783)
+- `0003-emscripten-nthreads.patch` (GH-69799)
+- `0004-mingw-no-cpuidex.patch` (GH-92488)
+- `0005-mingw-llvm-arm64.patch` (GH-93364)
+- `0006-include-order-dllexport.patch` (GH-94256)
+
+The `modules/raycast/godot_update_embree.py` script can be used to pull the
+relevant files from the latest Embree release and apply patches automatically.
 
 
 ## enet
