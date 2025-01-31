@@ -1726,6 +1726,17 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 }
 
+void EditorNode::_calculate_aabb_merged(Node *p_node, AABB &aabb) {
+	if (p_node->is_class("VisualInstance3D")) {
+		VisualInstance3D *v3d = Object::cast_to<VisualInstance3D>(p_node);
+		AABB node_aabb = v3d->get_global_transform().xform(v3d->get_aabb());
+		aabb.merge_with(node_aabb);
+	}
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_calculate_aabb_merged(p_node->get_child(i), aabb);
+	}
+}
+
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
@@ -1758,7 +1769,24 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
 			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+				Camera3D *vpcam = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_camera_3d();
+				Transform3D prev_trans_3d = vpcam->get_transform();
+				
+				// Move camera to fit 3d scene
+				AABB scene_aabb = AABB();
+				_calculate_aabb_merged(editor_data.get_edited_scene_root(), scene_aabb);
+				Vector3 scene_center = scene_aabb.get_center();
+				Transform3D thumbnail_cam_trans_3d = Transform3D();
+				float bound_sphere_radius = scene_aabb.get_longest_axis_size() / 2.0f;
+				float cam_distance = (bound_sphere_radius * 2.0f ) / Math::tan(vpcam->get_fov() / 2.0f);
+				thumbnail_cam_trans_3d.set_origin(scene_center + Vector3(1.0f, 0.25f, 1.0f).normalized() * cam_distance);
+				thumbnail_cam_trans_3d.set_look_at(thumbnail_cam_trans_3d.origin, scene_center);
+				RenderingServer::get_singleton()->camera_set_transform(vpcam->get_camera(), thumbnail_cam_trans_3d);
+				RenderingServer::get_singleton()->draw(false); // Redraw without glitching the viewport
+
+				// Move back camera after captured image
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
+				RenderingServer::get_singleton()->camera_set_transform(vpcam->get_camera(), prev_trans_3d);
 			}
 		}
 
