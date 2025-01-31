@@ -222,6 +222,11 @@
 		</member>
 		<member name="docks/filesystem/thumbnail_size" type="int" setter="" getter="">
 			The thumbnail size to use in the FileSystem dock (in pixels). See also [member filesystem/file_dialog/thumbnail_size].
+		<member name="docks/filesystem/scene_thumbnail_capture_method" type="int" setter="" getter="">
+			Controls how scene file (.tscn, .scn) thumbnail images will be captured.
+			- [b]Free[/b]: Use the current viewport view
+			- [b]Fixed[/b]: Fit all visual instances into view, also use a fixed angle to capture
+		</member>
 		</member>
 		<member name="docks/property_editor/auto_refresh_interval" type="float" setter="" getter="">
 			The refresh interval to use for the Inspector dock's properties. The effect of this setting is mainly noticeable when adjusting gizmos in the 2D/3D editor and looking at the inspector at the same time. Lower values make the inspector refresh more often, but take up more CPU time.

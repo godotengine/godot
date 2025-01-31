@@ -234,6 +234,11 @@ private:
 		MAX_BUILD_CALLBACKS = 128,
 	};
 
+	enum ThumbnailCaptureMethod {
+		FREE = 0,
+		FIXED = 1
+	};
+
 	struct ExportDefer {
 		String preset;
 		String path;
