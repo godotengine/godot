@@ -369,11 +369,12 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
-See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
+See the permalinks in `glad/gl.h` and `glad/glx.h` to regenerate the files with
 a new version of the web instance.
 
-Some changes have been made in order to allow loading OpenGL and OpenGLES APIs at the same time.
-See the patches in the `patches` directory.
+Patches:
+
+- `0001-enable-both-gl-and-gles.patch` (GH-72831)
 
 
 ## glslang

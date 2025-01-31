@@ -1,5 +1,5 @@
 diff --git a/thirdparty/glad/gl.c b/thirdparty/glad/gl.c
-index a0b59dbbfb..9f10f6544a 100644
+index e8cc5ff1d9..ee0cc188fc 100644
 --- a/thirdparty/glad/gl.c
 +++ b/thirdparty/glad/gl.c
 @@ -2475,7 +2475,7 @@ static GLADapiproc glad_gl_get_proc(void *vuserptr, const char *name) {
@@ -49,7 +49,7 @@ index a0b59dbbfb..9f10f6544a 100644
  }
  
 diff --git a/thirdparty/glad/glad/gl.h b/thirdparty/glad/glad/gl.h
-index 905c16aeed..f3cb7d8cb5 100644
+index 7f77d6a13f..307ea4dbb8 100644
 --- a/thirdparty/glad/glad/gl.h
 +++ b/thirdparty/glad/glad/gl.h
 @@ -67,6 +67,7 @@
