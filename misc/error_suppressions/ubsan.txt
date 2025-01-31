@@ -57,7 +57,7 @@ nonnull-attribute:thirdparty/spirv-reflect/spirv_reflect.c
 pointer-overflow:thirdparty/libogg/framing.c
 shift-base:thirdparty/libogg/bitwise.c
 shift-base:thirdparty/libvorbis/sharedbook.c
-shift-base:thirdparty/noise/FastNoiseLite.h
+shift-base:thirdparty/misc/FastNoiseLite.h
 shift-base:thirdparty/tinyexr/tinyexr.h
 shift-exponent:thirdparty/misc/mikktspace.c
-signed-integer-overflow:thirdparty/noise/FastNoiseLite.h
+signed-integer-overflow:thirdparty/misc/FastNoiseLite.h
