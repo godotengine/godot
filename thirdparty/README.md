@@ -520,7 +520,10 @@ Files extracted from upstream source:
 - `other_include/KHR/`
 - `utils/unused.h`
 
-Some Godot-specific changes are applied via patches included in the `patches` folder.
+Patches:
+
+- `0001-external-basisu.patch` (GH-76572)
+- `0002-disable-astc-block-ext.patch` (GH-76572)
 
 
 ## libogg
