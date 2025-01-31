@@ -7,7 +7,6 @@ signed = "#define SNORM";
 #version 450
 
 #include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
 
 #VERSION_DEFINES
 
