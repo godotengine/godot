@@ -161,9 +161,9 @@ Files extracted from upstream source:
 - `include/D3D12MemAlloc.h`
 - `LICENSE.txt`, `NOTICES.txt`
 
-Important: Some files have Godot-made changes for use with MinGW.
-They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments.
+Patches:
+
+- `0001-mingw-support.patch` (GH-83452)
 
 
 ## directx_headers
@@ -178,9 +178,10 @@ Files extracted from upstream source:
 - `include/dxguids/*.h`
 - `LICENSE`
 
-Important: Some files have Godot-made changes for use with MinGW.
-They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments.
+Patches:
+
+- `0001-mingw-pragma.patch` (GH-83452)
+- `0002-win7-8-dynamic-load.patch` (GH-88496)
 
 
 ## doctest
