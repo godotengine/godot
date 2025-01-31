@@ -498,9 +498,9 @@ Files extracted from upstream source:
   * `elf.c`, `macho.c`, `mmap.c`, `mmapio.c`, `nounwind.c`, `unknown.c`, `xcoff.c`
 - `LICENSE`
 
-Important: Some files have Godot-made changes to load big debug symbol files.
-They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the `patches` folder.
+Patches:
+
+- `0001-big-files-support.patch` (GH-100281)
 
 
 ## libktx
