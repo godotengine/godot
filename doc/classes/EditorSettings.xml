@@ -887,6 +887,7 @@
 			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window. Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
 			This is equivalent to [member ProjectSettings.display/window/subwindows/embed_subwindows] in the running project, except the setting's value is inverted.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
+			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
 		</member>
 		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
@@ -971,7 +972,7 @@
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
 		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
-			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, and Shader editor.
+			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, Shader editor, and Game Workspace.
 			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 		</member>
@@ -1148,6 +1149,7 @@
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
+			[b]Note:[/b] Game embedding is not available for "Force Maximized" or "Force Fullscreen."
 		</member>
 		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
 			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b].
