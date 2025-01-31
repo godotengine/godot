@@ -2877,8 +2877,7 @@ Error ResourceImporterScene::_check_resource_save_paths(const Dictionary &p_data
 		const Dictionary &settings = p_data[keys[i]];
 
 		if (bool(settings.get("save_to_file/enabled", false)) && settings.has("save_to_file/path")) {
-			const String &save_path = settings["save_to_file/path"];
-
+			const String save_path = ResourceUID::ensure_path(settings["save_to_file/path"]);
 			ERR_FAIL_COND_V(!save_path.is_empty() && !DirAccess::exists(save_path.get_base_dir()), ERR_FILE_BAD_PATH);
 		}
 	}
