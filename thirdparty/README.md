@@ -857,6 +857,10 @@ Exclude:
   `*.{def,expsym,in,json,map,pom,rc,txt}`
 - All dotfiles
 
+Patches:
+
+- `0001-glad-egl.patch` (GH-98824)
+
 
 ## pcre2
 

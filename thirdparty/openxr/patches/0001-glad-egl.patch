@@ -1,6 +1,7 @@
-diff -Nur openxr-orig/src/common/xr_dependencies.h openxr/src/common/xr_dependencies.h
---- openxr-orig/src/common/xr_dependencies.h	2024-11-04 10:38:11.940682727 -0600
-+++ openxr/src/common/xr_dependencies.h	2024-11-04 10:38:46.351415476 -0600
+diff --git a/thirdparty/openxr/src/common/xr_dependencies.h b/thirdparty/openxr/src/common/xr_dependencies.h
+index 55d93bfbac..a192a2ec6d 100644
+--- a/thirdparty/openxr/src/common/xr_dependencies.h
++++ b/thirdparty/openxr/src/common/xr_dependencies.h
 @@ -65,7 +65,11 @@
  #endif  // XR_USE_GRAPHICS_API_OPENGL
  
