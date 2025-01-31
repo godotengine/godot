@@ -3,7 +3,7 @@
 import os.path
 from typing import Optional
 
-from methods import print_error, to_raw_cstring
+from methods import print_error, to_raw_cstring, base_folder_path
 
 
 class GLES3HeaderStruct:
@@ -191,6 +191,7 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
 
 def build_gles3_header(
     filename: str,
+    env,
     include: str,
     class_suffix: str,
     optional_output_filename: Optional[str] = None,
@@ -203,6 +204,15 @@ def build_gles3_header(
         out_file = filename + ".gen.h"
     else:
         out_file = optional_output_filename
+
+    if env["build_dir"]:
+        if os.path.isabs(out_file):
+            out_file = os.path.relpath(out_file, base_folder_path)
+        out_file = os.path.join(base_folder_path, env["build_dir"], out_file)
+        out_dir = os.path.dirname(out_file)
+        if not os.path.isdir(out_dir):
+            os.makedirs(out_dir)
+
 
     with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
         defspec = 0
@@ -587,4 +597,4 @@ def build_gles3_header(
 def build_gles3_headers(target, source, env):
     env.NoCache(target)
     for x in source:
-        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3")
+        build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3", env=env)

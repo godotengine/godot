@@ -3,6 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("platform_linuxbsd_builders", "platform/linuxbsd/platform_linuxbsd_builders.py")
 import platform_linuxbsd_builders
 
 common_linuxbsd = [

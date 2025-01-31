@@ -10,47 +10,18 @@ import os
 import pickle
 import sys
 from collections import OrderedDict
-from importlib.util import module_from_spec, spec_from_file_location
-from types import ModuleType
+from methods import load_helper_module
 
 from SCons import __version__ as scons_raw_version
 
-# Explicitly resolve the helper modules, this is done to avoid clash with
-# modules of the same name that might be randomly added (e.g. someone adding
-# an `editor.py` file at the root of the module creates a clash with the editor
-# folder when doing `import editor.template_builder`)
-
-
-def _helper_module(name, path):
-    spec = spec_from_file_location(name, path)
-    module = module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules[name] = module
-    # Ensure the module's parents are in loaded to avoid loading the wrong parent
-    # when doing "import foo.bar" while only "foo.bar" as declared as helper module
-    child_module = module
-    parent_name = name
-    while True:
-        try:
-            parent_name, child_name = parent_name.rsplit(".", 1)
-        except ValueError:
-            break
-        try:
-            parent_module = sys.modules[parent_name]
-        except KeyError:
-            parent_module = ModuleType(parent_name)
-            sys.modules[parent_name] = parent_module
-        setattr(parent_module, child_name, child_module)
-
-
-_helper_module("gles3_builders", "gles3_builders.py")
-_helper_module("glsl_builders", "glsl_builders.py")
-_helper_module("methods", "methods.py")
-_helper_module("platform_methods", "platform_methods.py")
-_helper_module("version", "version.py")
-_helper_module("core.core_builders", "core/core_builders.py")
-_helper_module("main.main_builders", "main/main_builders.py")
-_helper_module("misc.utility.color", "misc/utility/color.py")
+load_helper_module("gles3_builders", "gles3_builders.py")
+load_helper_module("glsl_builders", "glsl_builders.py")
+load_helper_module("methods", "methods.py")
+load_helper_module("platform_methods", "platform_methods.py")
+load_helper_module("version", "version.py")
+load_helper_module("core.core_builders", "core/core_builders.py")
+load_helper_module("main.main_builders", "main/main_builders.py")
+load_helper_module("misc.utility.color", "misc/utility/color.py")
 
 # Local
 import gles3_builders
@@ -61,8 +32,8 @@ from misc.utility.color import STDERR_COLOR, print_error, print_info, print_warn
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
-    _helper_module("editor.editor_builders", "editor/editor_builders.py")
-    _helper_module("editor.template_builders", "editor/template_builders.py")
+    load_helper_module("editor.editor_builders", "editor/editor_builders.py")
+    load_helper_module("editor.template_builders", "editor/template_builders.py")
 
 # Scan possible build platforms
 
@@ -236,6 +207,7 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add("build_dir", "Directory where intermediate build artifacts will be stored.", "build")
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -1052,23 +1024,32 @@ if env["ninja"]:
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
+# Add build_dir in include directories for generated headers.
+if env["build_dir"]:
+    env.Append(CPPPATH=["#" + env["build_dir"]])
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
-SConscript("core/SCsub")
-SConscript("servers/SCsub")
-SConscript("scene/SCsub")
+# this function only has to be used for direct SConscript calls from SConstruct.
+# hence it is placed here locally and not in methods.py
+def call_sconscript(subdir: str):
+    SConscript(f"{subdir}/SCsub", variant_dir=f"{env['build_dir']}/{subdir}", duplicate=False)
+
+call_sconscript("core")
+call_sconscript("servers")
+call_sconscript("scene")
 if env.editor_build:
-    SConscript("editor/SCsub")
-SConscript("drivers/SCsub")
+    call_sconscript("editor")
+call_sconscript("drivers")
 
-SConscript("platform/SCsub")
-SConscript("modules/SCsub")
+call_sconscript("platform")
+call_sconscript("modules")
 if env["tests"]:
-    SConscript("tests/SCsub")
-SConscript("main/SCsub")
+    call_sconscript("tests")
+call_sconscript("main")
 
-SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
+call_sconscript(f"platform/{env['platform']}")  # Build selected platform.
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:

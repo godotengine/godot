@@ -3,6 +3,7 @@ import contextlib
 import glob
 import math
 import os
+import os.path
 import re
 import subprocess
 import sys
@@ -10,12 +11,45 @@ from collections import OrderedDict
 from io import StringIO, TextIOWrapper
 from pathlib import Path
 from typing import Generator, List, Optional, Union, cast
+from importlib.util import module_from_spec, spec_from_file_location
+from types import ModuleType
 
 from misc.utility.color import print_error, print_info, print_warning
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+
+# Explicitly resolve the helper modules, this is done to avoid clash with
+# modules of the same name that might be randomly added (e.g. someone adding
+# an `editor.py` file at the root of the module creates a clash with the editor
+# folder when doing `import editor.template_builder`)
+
+
+def load_helper_module(name: str, path: str):
+    if path.startswith("#"):
+        path = path[1:]
+    if not os.path.isabs(path):
+        path = os.path.join(base_folder_path, path)
+    spec = spec_from_file_location(name, path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    # Ensure the module's parents are in loaded to avoid loading the wrong parent
+    # when doing "import foo.bar" while only "foo.bar" as declared as helper module
+    child_module = module
+    parent_name = name
+    while True:
+        try:
+            parent_name, child_name = parent_name.rsplit(".", 1)
+        except ValueError:
+            break
+        try:
+            parent_module = sys.modules[parent_name]
+        except KeyError:
+            parent_module = ModuleType(parent_name)
+            sys.modules[parent_name] = parent_module
+        setattr(parent_module, child_name, child_module)
 
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
@@ -39,7 +73,14 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
 
     # Add each path as compiled Object following environment (self) configuration
     for path in files:
-        obj = self.Object(path)
+        target_path = str(path)
+        if target_path.startswith("#"):
+            target_path = target_path[1:]
+        if os.path.isabs(target_path):
+            target_path = os.path.relpath(target_path, base_folder_path)
+        target_path = os.path.join(base_folder_path, self["build_dir"], target_path)
+        target_path = '.'.join(target_path.split('.')[:-1]) + self["OBJSUFFIX"]
+        obj = self.Object(target=target_path, source=path)
         if obj in sources:
             print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue

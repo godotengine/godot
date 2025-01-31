@@ -7,6 +7,9 @@ import os
 import shutil
 import subprocess
 
+from methods import load_helper_module
+
+load_helper_module("platform_macos_builders", "platform/macos/platform_macos_builders.py")
 import platform_macos_builders
 
 from platform_methods import get_build_version, lipo

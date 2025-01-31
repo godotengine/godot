@@ -5,6 +5,9 @@ Import("env")
 
 import glob
 
+from methods import load_helper_module
+
+load_helper_module("editor_theme_builders", "editor/themes/editor_theme_builders.py")
 import editor_theme_builders
 
 # Fonts
@@ -13,9 +16,9 @@ flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
 flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff"))
 flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff2"))
 flist.sort()
-env.Depends("#editor/themes/builtin_fonts.gen.h", flist)
+env.Depends(f"#{env['build_dir']}/editor/themes/builtin_fonts.gen.h", flist)
 env.CommandNoCache(
-    "#editor/themes/builtin_fonts.gen.h",
+    f"#{env['build_dir']}/editor/themes/builtin_fonts.gen.h",
     flist,
     env.Run(editor_theme_builders.make_fonts_header),
 )

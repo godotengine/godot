@@ -8,7 +8,7 @@ env_msdfgen = env_modules.Clone()
 
 # Thirdparty source files
 
-thirdparty_obj = []
+thirdparty_lib = []
 
 if env["builtin_msdfgen"]:
     env_msdfgen.disable_warnings()
@@ -44,8 +44,10 @@ if env["builtin_msdfgen"]:
     env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env_msdfgen.Prepend(CPPPATH=["#thirdparty/freetype/include", "#thirdparty/msdfgen", "#thirdparty/nanosvg"])
 
-    lib = env_msdfgen.add_library("msdfgen_builtin", thirdparty_sources)
-    thirdparty_obj += lib
+    thirdparty_obj = []
+    env_msdfgen.add_source_files(thirdparty_obj, thirdparty_sources)
+    lib = env_msdfgen.add_library("msdfgen_builtin", thirdparty_obj)
+    thirdparty_lib += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -69,4 +71,4 @@ env_msdfgen.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
-env.Depends(module_obj, thirdparty_obj)
+env.Depends(module_obj, thirdparty_lib)

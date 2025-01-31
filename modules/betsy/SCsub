@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
+from glob import glob
 
 Import("env")
 Import("env_modules")
 
 env_betsy = env_modules.Clone()
-env_betsy.GLSL_HEADER("bc6h.glsl")
-env_betsy.GLSL_HEADER("bc1.glsl")
-env_betsy.GLSL_HEADER("bc4.glsl")
-env_betsy.GLSL_HEADER("alpha_stitch.glsl")
-env_betsy.Depends(Glob("*.glsl.gen.h"), ["#glsl_builders.py"])
+
+shader_files = ["alpha_stitch.glsl", "bc1.glsl", "bc4.glsl", "bc6h.glsl"]
+for file in shader_files:
+    env_betsy.GLSL_HEADER(f"#modules/betsy/{file}")
+env_betsy.Depends(
+    Glob(f"#{env['build_dir']}/modules/betsy/*.glsl.gen.h"),
+    ["#glsl_builders.py"]
+)
+
+env_betsy.Append(CPPPATH=[f"#{env['build_dir']}/modules/betsy"])
 
 # Thirdparty source files
 thirdparty_obj = []

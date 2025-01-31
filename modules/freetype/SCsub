@@ -8,7 +8,7 @@ env_freetype = env_modules.Clone()
 
 # Thirdparty source files
 
-thirdparty_obj = []
+thirdparty_lib = []
 
 if env["builtin_freetype"]:
     thirdparty_dir = "#thirdparty/freetype/"
@@ -72,6 +72,7 @@ if env["builtin_freetype"]:
     if env["builtin_libpng"]:
         env_freetype.Prepend(CPPPATH=["#thirdparty/libpng"])
 
+    thirdparty_obj = []
     sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.
     if env["platform"] == "web":
@@ -80,13 +81,15 @@ if env["builtin_freetype"]:
         tmp_env = env_freetype.Clone()
         tmp_env.disable_warnings()
         tmp_env.Append(CPPFLAGS=["-U__OPTIMIZE__"])
-        sfnt = tmp_env.Object(sfnt)
-    thirdparty_sources += [sfnt]
+        tmp_env.add_source_files(thirdparty_obj, sfnt)
+    else:
+        thirdparty_sources += [sfnt]
 
     env_thirdparty = env_freetype.Clone()
     env_thirdparty.disable_warnings()
-    lib = env_thirdparty.add_library("freetype_builtin", thirdparty_sources)
-    thirdparty_obj += lib
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    lib = env_thirdparty.add_library("freetype_builtin", thirdparty_obj)
+    thirdparty_lib += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -110,4 +113,4 @@ env_freetype.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.
-env.Depends(module_obj, thirdparty_obj)
+env.Depends(module_obj, thirdparty_lib)

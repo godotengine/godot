@@ -5,6 +5,12 @@ Import("env")
 
 import os
 
+# since we are using variant_dir this SCsub file is actually being executed in
+# the variant_dir. so to load the local python file, we will need to use
+# _helper_module function to tell python where this module is located.
+from methods import load_helper_module
+
+load_helper_module("core_builders", "core/core_builders.py")
 import core_builders
 
 import methods
@@ -252,28 +258,28 @@ env.add_source_files(env.core_sources, gen_encrypt)
 
 # Certificates
 env.Depends(
-    "#core/io/certs_compressed.gen.h",
+    f"#{env['build_dir']}/core/io/certs_compressed.gen.h",
     ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
 )
 env.CommandNoCache(
-    "#core/io/certs_compressed.gen.h",
+    f"#{env['build_dir']}/core/io/certs_compressed.gen.h",
     "#thirdparty/certs/ca-certificates.crt",
     env.Run(core_builders.make_certs_header),
 )
 
 # Authors
-env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header))
+env.Depends(f"#{env['build_dir']}/core/authors.gen.h", "#AUTHORS.md")
+env.CommandNoCache(f"#{env['build_dir']}/core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
 
 # Donors
-env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header))
+env.Depends(f"#{env['build_dir']}/core/donors.gen.h", "#DONORS.md")
+env.CommandNoCache(f"#{env['build_dir']}/core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
 
 # License
-env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
+env.Depends(f"#{env['build_dir']}/core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"])
 env.CommandNoCache(
-    "#core/license.gen.h",
-    ["../COPYRIGHT.txt", "../LICENSE.txt"],
+    f"#{env['build_dir']}/core/license.gen.h",
+    ["#COPYRIGHT.txt", "#LICENSE.txt"],
     env.Run(core_builders.make_license_header),
 )
 

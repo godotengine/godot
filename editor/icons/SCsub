@@ -5,6 +5,9 @@ Import("env")
 
 import os
 
+from methods import load_helper_module
+
+load_helper_module("editor_icons_builders", "editor/icons/editor_icons_builders.py")
 import editor_icons_builders
 
 # Editor's own icons
@@ -18,7 +21,7 @@ for path in env.module_icons_paths:
         icon_sources += Glob(f"{path}/*.svg")  # Custom.
 
 env.CommandNoCache(
-    "#editor/themes/editor_icons.gen.h",
+    f"#{env['build_dir']}/editor/themes/editor_icons.gen.h",
     icon_sources,
     env.Run(editor_icons_builders.make_editor_icons_action),
 )

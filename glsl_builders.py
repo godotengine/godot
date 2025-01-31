@@ -3,7 +3,7 @@
 import os.path
 from typing import Optional
 
-from methods import print_error, to_raw_cstring
+from methods import print_error, to_raw_cstring, base_folder_path
 
 
 class RDHeaderStruct:
@@ -93,7 +93,7 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
 
 
 def build_rd_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RDHeaderStruct] = None
+    filename: str, env, optional_output_filename: Optional[str] = None, header_data: Optional[RDHeaderStruct] = None
 ) -> None:
     header_data = header_data or RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
@@ -102,6 +102,14 @@ def build_rd_header(
         out_file = filename + ".gen.h"
     else:
         out_file = optional_output_filename
+
+    if env["build_dir"]:
+        if os.path.isabs(out_file):
+            out_file = os.path.relpath(out_file, base_folder_path)
+        out_file = os.path.join(base_folder_path, env["build_dir"], out_file)
+        out_dir = os.path.dirname(out_file)
+        if not os.path.isdir(out_dir):
+            os.makedirs(out_dir)
 
     out_file_base = out_file
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
@@ -150,7 +158,7 @@ public:
 def build_rd_headers(target, source, env):
     env.NoCache(target)
     for x in source:
-        build_rd_header(filename=str(x))
+        build_rd_header(filename=str(x), env=env)
 
 
 class RAWHeaderStruct:
@@ -176,7 +184,7 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
 
 
 def build_raw_header(
-    filename: str, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
+    filename: str, env, optional_output_filename: Optional[str] = None, header_data: Optional[RAWHeaderStruct] = None
 ):
     header_data = header_data or RAWHeaderStruct()
     include_file_in_raw_header(filename, header_data, 0)
@@ -185,6 +193,14 @@ def build_raw_header(
         out_file = filename + ".gen.h"
     else:
         out_file = optional_output_filename
+
+    if env["build_dir"]:
+        if os.path.isabs(out_file):
+            out_file = os.path.relpath(out_file, base_folder_path)
+        out_file = os.path.join(base_folder_path, env["build_dir"], out_file)
+        out_dir = os.path.dirname(out_file)
+        if not os.path.isdir(out_dir):
+            os.makedirs(out_dir)
 
     out_file_base = out_file.replace(".glsl.gen.h", "_shader_glsl")
     out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
@@ -208,4 +224,4 @@ static const char {out_file_base}[] = {{
 def build_raw_headers(target, source, env):
     env.NoCache(target)
     for x in source:
-        build_raw_header(filename=str(x))
+        build_raw_header(filename=str(x), env=env)

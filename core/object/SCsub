@@ -3,6 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("make_virtuals", "core/object/make_virtuals.py")
 import make_virtuals
 
 env.CommandNoCache(["gdvirtual.gen.inc"], "make_virtuals.py", env.Run(make_virtuals.run))

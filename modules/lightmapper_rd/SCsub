@@ -5,10 +5,15 @@ Import("env")
 Import("env_modules")
 
 env_lightmapper_rd = env_modules.Clone()
-env_lightmapper_rd.GLSL_HEADER("lm_raster.glsl")
-env_lightmapper_rd.GLSL_HEADER("lm_compute.glsl")
-env_lightmapper_rd.GLSL_HEADER("lm_blendseams.glsl")
-env_lightmapper_rd.Depends(Glob("*.glsl.gen.h"), ["lm_common_inc.glsl", "#glsl_builders.py"])
+shader_files = ["lm_raster.glsl", "lm_compute.glsl", "lm_blendseams.glsl"]
+for file in shader_files:
+    env_lightmapper_rd.GLSL_HEADER(f"#modules/lightmapper_rd/{file}")
+
+env_lightmapper_rd.Depends(
+    Glob(f"#{env['build_dir']}/modules/lightmapper_rd/*.glsl.gen.h"),
+    ["lm_common_inc.glsl", "#glsl_builders.py"]
+)
+env_lightmapper_rd.Append(CPPPATH=[f"#{env['build_dir']}/modules/lightmapper_rd"])
 
 # Godot source files
 env_lightmapper_rd.add_source_files(env.modules_sources, "*.cpp")

@@ -3,15 +3,20 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("default_theme_builders", "scene/theme/default_theme_builders.py")
 import default_theme_builders
 
-env.add_source_files(env.scene_sources, "*.cpp")
+env_scene_theme = env.Clone()
+env_scene_theme.add_source_files(env.scene_sources, "*.cpp")
 
 SConscript("icons/SCsub")
 
-env.Depends("#scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2")
-env.CommandNoCache(
-    "#scene/theme/default_font.gen.h",
+env_scene_theme.Append(CPPPATH=[f"#{env['build_dir']}/scene/theme"])
+env_scene_theme.Depends(f"#{env['build_dir']}/scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2")
+env_scene_theme.CommandNoCache(
+    f"#{env['build_dir']}/scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",
     env.Run(default_theme_builders.make_fonts_header),
 )

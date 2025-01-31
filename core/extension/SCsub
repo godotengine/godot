@@ -3,6 +3,10 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("make_interface_dumper", "core/extension/make_interface_dumper.py")
+load_helper_module("make_wrappers", "core/extension/make_wrappers.py")
 import make_interface_dumper
 import make_wrappers
 

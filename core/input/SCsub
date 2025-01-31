@@ -3,6 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("input_builders", "core/input/input_builders.py")
 import input_builders
 
 # Order matters here. Higher index controller database files write on top of lower index database files.

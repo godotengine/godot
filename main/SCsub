@@ -3,6 +3,9 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+from methods import load_helper_module
+
+load_helper_module("main_builders", "main/main_builders.py")
 import main_builders
 
 env.main_sources = []
@@ -17,9 +20,9 @@ if env["steamapi"] and env.editor_build:
 if env["tests"]:
     env_main.Append(CPPDEFINES=["TESTS_ENABLED"])
 
-env_main.Depends("#main/splash.gen.h", "#main/splash.png")
+env_main.Depends(f"#{env['build_dir']}/main/splash.gen.h", "#main/splash.png")
 env_main.CommandNoCache(
-    "#main/splash.gen.h",
+    f"#{env['build_dir']}/main/splash.gen.h",
     "#main/splash.png",
     env.Run(main_builders.make_splash),
 )
@@ -32,9 +35,9 @@ if env_main.editor_build and not env_main["no_editor_splash"]:
         env.Run(main_builders.make_splash_editor),
     )
 
-env_main.Depends("#main/app_icon.gen.h", "#main/app_icon.png")
+env_main.Depends(f"#{env['build_dir']}/main/app_icon.gen.h", "#main/app_icon.png")
 env_main.CommandNoCache(
-    "#main/app_icon.gen.h",
+    f"#{env['build_dir']}/main/app_icon.gen.h",
     "#main/app_icon.png",
     env.Run(main_builders.make_app_icon),
 )
