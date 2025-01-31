@@ -29,7 +29,10 @@ Files extracted from upstream source:
 - `shaders` folder from `src/ffx-fsr2-api` with `ffx_*.hlsl` files excluded
 - `LICENSE.txt`
 
-Apply `patches` to add the new options required by Godot and general compilation fixes.
+Patches:
+
+- `0001-build-fixes.patch` (GH-81197)
+- `0002-godot-fsr2-options.patch` (GH-81197)
 
 
 ## angle
