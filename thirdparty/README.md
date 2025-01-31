@@ -260,6 +260,11 @@ Files extracted from upstream source:
 - The files `DecodeRGB.{cpp.hpp}` are based on the code from the original repository.
 - `AUTHORS.txt` and `LICENSE.txt`
 
+Patches:
+
+- `0001-remove-bc7enc.patch` (GH-101362)
+
+
 ## fonts
 
 - `DroidSans*.woff2`:
