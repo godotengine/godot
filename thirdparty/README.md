@@ -725,9 +725,9 @@ Files extracted from the upstream source:
   `{crypt.h,ioapi.{c,h},unzip.{c,h},zip.{c,h}}`
   `MiniZip64_info.txt`
 
-Important: Some files have Godot-made changes for use in core/io.
-They are marked with `/* GODOT start */` and `/* GODOT end */`
-comments and a patch is provided in the `patches` folder.
+Patches:
+
+- `0001-godot-seek.patch` (GH-10428)
 
 
 ## misc
