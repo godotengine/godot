@@ -396,6 +396,11 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 - Unnecessary files like `CMakeLists.txt` or `updateGrammar` removed
 
+Patches:
+
+- `0001-apple-disable-absolute-paths.patch` (GH-92010)
+- `0002-gcc15-include-fix.patch` (GH-102022)
+
 
 ## graphite
 
