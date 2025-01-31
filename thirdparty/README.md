@@ -1129,9 +1129,11 @@ File extracted from upstream release tarball:
   Contents might need tweaking for Godot, review diff
 - All `.c` and `.h` files from `lib/`
 - All `.h` in `lib/includes/wslay/` as `wslay/`
-- `wslay/wslay.h` has a small Godot addition to fix MSVC build
-  See `patches/msvcfix.diff`
 - `COPYING`
+
+Patches:
+
+- `0001-msvc-build-fix.patch` (GH-30263)
 
 
 ## xatlas
