@@ -765,7 +765,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_velocity_track.erase(st->get_index());
 		}
 
-		if (emulate_mouse_from_touch) {
+		if (emulate_mouse_from_touch && get_mouse_mode() != MouseMode::MOUSE_MODE_CAPTURED) {
 			bool translate = false;
 			if (st->is_pressed()) {
 				if (mouse_from_touch_index == -1) {
@@ -813,7 +813,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		sd->set_velocity(track.velocity);
 		sd->set_screen_velocity(track.screen_velocity);
 
-		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
+		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index && get_mouse_mode() != MouseMode::MOUSE_MODE_CAPTURED) {
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instantiate();
 

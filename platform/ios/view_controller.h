@@ -30,6 +30,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "core/input/input.h"
+
 @class GodotView;
 @class GodotNativeVideoView;
 @class GodotKeyboardInputView;
@@ -38,5 +40,8 @@
 
 @property(nonatomic, readonly, strong) GodotView *godotView;
 @property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
+@property(nonatomic) bool hasMouse;
+
+- (BitField<MouseButtonMask>)mouseGetButtonState;
 
 @end

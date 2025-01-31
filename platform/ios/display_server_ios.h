@@ -82,6 +82,8 @@ class DisplayServerIOS : public DisplayServer {
 
 	int virtual_keyboard_height = 0;
 
+	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+
 	void perform_event(const Ref<InputEvent> &p_event);
 
 	DisplayServerIOS(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
@@ -221,6 +223,11 @@ public:
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) override;
 	virtual void virtual_keyboard_hide() override;
+
+	virtual void mouse_set_mode(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode() const override;
+
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	void virtual_keyboard_set_height(int height);
 	virtual int virtual_keyboard_get_height() const override;

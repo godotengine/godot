@@ -49,6 +49,10 @@
 
 @property(strong, nonatomic) UIView *godotLoadingOverlay;
 
+@property(strong, nonatomic) NSMutableArray *connectedMice;
+
+@property(nonatomic) Vector2 last_position;
+
 @end
 
 @implementation ViewController
@@ -152,6 +156,198 @@
 
 - (void)godot_commonInit {
 	// Initialize view controller values.
+
+	self.hasMouse = false;
+	self.connectedMice = [NSMutableArray array];
+	if (@available(iOS 14, *)) {
+		[[NSNotificationCenter defaultCenter]
+				addObserver:self
+				   selector:@selector(mouseWasConnected:)
+					   name:GCMouseDidConnectNotification
+					 object:nil];
+
+		[[NSNotificationCenter defaultCenter]
+				addObserver:self
+				   selector:@selector(mouseWasDisconnected:)
+					   name:GCMouseDidDisconnectNotification
+					 object:nil];
+	}
+}
+
+- (void)mouseWasConnected:(NSNotification *)notification {
+	if (@available(iOS 14, *)) {
+		GCMouse *mouse = (GCMouse *)notification.object;
+
+		if (mouse) {
+			print_verbose(vformat("Mouse connected: %s", String::utf8([mouse.vendorName UTF8String])));
+			[self.connectedMice addObject:mouse];
+			[self setMouseInputHandler:mouse];
+		}
+		self.hasMouse = (self.connectedMice.count != 0);
+	}
+}
+
+- (void)mouseWasDisconnected:(NSNotification *)notification {
+	if (@available(iOS 14, *)) {
+		GCMouse *mouse = (GCMouse *)notification.object;
+
+		if (mouse) {
+			print_verbose(vformat("Mouse disconnected: %s", String::utf8([mouse.vendorName UTF8String])));
+			[self.connectedMice removeObject:mouse];
+		}
+		self.hasMouse = (self.connectedMice.count != 0);
+	}
+}
+
+- (BitField<MouseButtonMask>)mouseGetButtonState {
+	BitField<MouseButtonMask> last_button_state = 0;
+	if (@available(iOS 14, *)) {
+		const GCMouseInput *mouse_input = [[GCMouse current] mouseInput];
+		if (mouse_input != Nil) {
+			if (mouse_input.leftButton.pressed) {
+				last_button_state.set_flag(MouseButtonMask::LEFT);
+			}
+			if (mouse_input.rightButton.pressed) {
+				last_button_state.set_flag(MouseButtonMask::RIGHT);
+			}
+			if (mouse_input.middleButton.pressed) {
+				last_button_state.set_flag(MouseButtonMask::MIDDLE);
+			}
+			for (NSUInteger i = 0; i < [mouse_input.auxiliaryButtons count]; i++) {
+				GCControllerButtonInput *button_element = [mouse_input.auxiliaryButtons objectAtIndex:i];
+				if (button_element.pressed) {
+					last_button_state.set_flag((MouseButtonMask)((NSUInteger)MouseButtonMask::MB_XBUTTON1 << i));
+				}
+			}
+		}
+	}
+	return last_button_state;
+}
+
+- (void)sendMouseButton:(MouseButton)button pressed:(bool)pressed pos:(Vector2)pos {
+	Ref<InputEventMouseButton> mb;
+	mb.instantiate();
+	mb->set_button_index(button);
+	mb->set_pressed(pressed);
+	mb->set_button_mask([self mouseGetButtonState]);
+	mb->set_position(pos);
+	mb->set_global_position(pos);
+	Input::get_singleton()->parse_input_event(mb);
+}
+
+- (void)sendScroll:(Vector2)factor pos:(Vector2)pos {
+	if (factor.x != 0) { // Note: X is primary wheel, not horizontal.
+		Ref<InputEventMouseButton> sc;
+		sc.instantiate();
+		sc->set_button_index(factor.x < 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP);
+		sc->set_factor(Math::abs(factor.x));
+		sc->set_pressed(true);
+		BitField<MouseButtonMask> scroll_mask = [self mouseGetButtonState];
+		scroll_mask.set_flag(mouse_button_to_mask(sc->get_button_index()));
+		sc->set_button_mask(scroll_mask);
+		sc->set_position(pos);
+		sc->set_global_position(pos);
+		Input::get_singleton()->parse_input_event(sc);
+		sc = sc->duplicate();
+		sc->set_pressed(false);
+		scroll_mask.clear_flag(mouse_button_to_mask(sc->get_button_index()));
+		sc->set_button_mask(scroll_mask);
+		Input::get_singleton()->parse_input_event(sc);
+	}
+	if (factor.y != 0) { // Note: Y is secondary wheel, not vertical.
+		Ref<InputEventMouseButton> sc;
+		sc.instantiate();
+		sc->set_button_index(factor.y < 0 ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT);
+		sc->set_factor(Math::abs(factor.y));
+		sc->set_pressed(true);
+		BitField<MouseButtonMask> scroll_mask = [self mouseGetButtonState];
+		scroll_mask.set_flag(mouse_button_to_mask(sc->get_button_index()));
+		sc->set_button_mask(scroll_mask);
+		sc->set_position(pos);
+		sc->set_global_position(pos);
+		Input::get_singleton()->parse_input_event(sc);
+		sc = sc->duplicate();
+		sc->set_pressed(false);
+		scroll_mask.clear_flag(mouse_button_to_mask(sc->get_button_index()));
+		sc->set_button_mask(scroll_mask);
+		Input::get_singleton()->parse_input_event(sc);
+	}
+}
+
+- (void)sendMove:(Vector2)pos delta:(Vector2)delta {
+	Ref<InputEventMouseMotion> mm;
+	mm.instantiate();
+
+	mm->set_button_mask([self mouseGetButtonState]);
+	mm->set_position(pos);
+	mm->set_global_position(pos);
+	mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	mm->set_screen_velocity(mm->get_velocity());
+	mm->set_relative(delta);
+	mm->set_relative_screen_position(mm->get_relative());
+	Input::get_singleton()->parse_input_event(mm);
+}
+
+- (void)setMouseInputHandler:(GCMouse *)mouse API_AVAILABLE(ios(14.0)) {
+	if (mouse.mouseInput != nil) {
+		mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouse_input, float deltaX, float deltaY) {
+			if (DisplayServerIOS::get_singleton()) {
+				if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+					[self sendMove:DisplayServerIOS::get_singleton()->window_get_size() / 2 delta:Vector2(deltaX, deltaY)];
+				} else {
+					[self sendMove:self.last_position delta:Vector2(deltaX, deltaY)];
+				}
+			}
+		};
+		mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *_Nonnull button, float value, BOOL pressed) {
+			if (DisplayServerIOS::get_singleton()) {
+				if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+					[self sendMouseButton:MouseButton::LEFT pressed:button.isPressed pos:DisplayServerIOS::get_singleton()->window_get_size() / 2];
+				} else {
+					[self sendMouseButton:MouseButton::LEFT pressed:button.isPressed pos:self.last_position];
+				}
+			}
+		};
+		mouse.mouseInput.rightButton.pressedChangedHandler = ^(GCControllerButtonInput *_Nonnull button, float value, BOOL pressed) {
+			if (DisplayServerIOS::get_singleton()) {
+				if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+					[self sendMouseButton:MouseButton::RIGHT pressed:button.isPressed pos:DisplayServerIOS::get_singleton()->window_get_size() / 2];
+				} else {
+					[self sendMouseButton:MouseButton::RIGHT pressed:button.isPressed pos:self.last_position];
+				}
+			}
+		};
+		mouse.mouseInput.middleButton.pressedChangedHandler = ^(GCControllerButtonInput *_Nonnull button, float value, BOOL pressed) {
+			if (DisplayServerIOS::get_singleton()) {
+				if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+					[self sendMouseButton:MouseButton::MIDDLE pressed:button.isPressed pos:DisplayServerIOS::get_singleton()->window_get_size() / 2];
+				} else {
+					[self sendMouseButton:MouseButton::MIDDLE pressed:button.isPressed pos:self.last_position];
+				}
+			}
+		};
+		for (NSUInteger i = 0; i < [mouse.mouseInput.auxiliaryButtons count]; i++) {
+			GCControllerButtonInput *button_element = [mouse.mouseInput.auxiliaryButtons objectAtIndex:i];
+			button_element.pressedChangedHandler = ^(GCControllerButtonInput *_Nonnull button, float value, BOOL pressed) {
+				if (DisplayServerIOS::get_singleton()) {
+					if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+						[self sendMouseButton:(MouseButton)((NSUInteger)MouseButton::MB_XBUTTON1 + i) pressed:button.isPressed pos:DisplayServerIOS::get_singleton()->window_get_size() / 2];
+					} else {
+						[self sendMouseButton:(MouseButton)((NSUInteger)MouseButton::MB_XBUTTON1 + i) pressed:button.isPressed pos:self.last_position];
+					}
+				}
+			};
+		}
+		mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+			if (DisplayServerIOS::get_singleton()) {
+				if (DisplayServerIOS::get_singleton()->mouse_get_mode() == DisplayServer::MouseMode::MOUSE_MODE_CAPTURED) {
+					[self sendScroll:Vector2(xValue, yValue) pos:DisplayServerIOS::get_singleton()->window_get_size() / 2];
+				} else {
+					[self sendScroll:Vector2(xValue, yValue) pos:self.last_position];
+				}
+			}
+		};
+	}
 }
 
 - (void)didReceiveMemoryWarning {
@@ -166,6 +362,18 @@
 	[self displayLoadingOverlay];
 
 	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+
+	if (@available(iOS 14, *)) {
+		UIHoverGestureRecognizer *hoverRecognizer = [[UIHoverGestureRecognizer alloc] initWithTarget:self action:@selector(mouseHover:)];
+		[self.view addGestureRecognizer:hoverRecognizer];
+	}
+}
+
+- (void)mouseHover:(UIHoverGestureRecognizer *)gestureRecognizer API_AVAILABLE(ios(14.0)) {
+	if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged) {
+		CGPoint p = [gestureRecognizer locationInView:gestureRecognizer.view];
+		self.last_position = Vector2(p.x, p.y) * self.view.contentScaleFactor;
+	}
 }
 
 - (void)observeKeyboard {
@@ -212,6 +420,7 @@
 }
 
 - (void)dealloc {
+	self.connectedMice = nil;
 	self.keyboardView = nil;
 
 	self.renderer = nil;
@@ -294,6 +503,18 @@
 	} else {
 		return NO;
 	}
+}
+
+- (BOOL)prefersPointerLocked API_AVAILABLE(ios(14.0)) {
+	if (DisplayServerIOS::get_singleton()) {
+		DisplayServer::MouseMode mm = DisplayServerIOS::get_singleton()->mouse_get_mode();
+		if (mm == DisplayServer::MouseMode::MOUSE_MODE_VISIBLE) {
+			return NO;
+		} else {
+			return YES;
+		}
+	}
+	return NO;
 }
 
 // MARK: Keyboard

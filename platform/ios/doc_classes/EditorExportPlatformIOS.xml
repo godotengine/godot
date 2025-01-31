@@ -72,6 +72,9 @@
 		<member name="application/signature" type="String" setter="" getter="">
 			A four-character creator code that is specific to the bundle. Optional.
 		</member>
+		<member name="application/supports_indirect_input" type="bool" setter="" getter="">
+			If [code]true[/code], raw mouse/touchpad input is always used. Otherwise, it's only used in captured mode.
+		</member>
 		<member name="application/targeted_device_family" type="int" setter="" getter="">
 			Supported device family.
 		</member>
