@@ -652,8 +652,9 @@ Files extracted from upstream repository:
 - All files in `src/`
 - `LICENSE.md`
 
-A patch is included to modify the simplifier to report only distance error
-metrics instead of a combination of distance and attribute errors.
+Patches:
+
+- `0001-simplifier-distance-only-error.patch` (GH-98529)
 
 
 ## mingw-std-threads
