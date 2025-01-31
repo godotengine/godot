@@ -209,6 +209,7 @@ def build_gles3_header(
         build_dir = env["build_dir"]
     else:
         build_dir = "build"
+
     if os.path.isabs(out_file):
         out_file = os.path.relpath(out_file, base_folder_path)
     out_file = os.path.join(base_folder_path, build_dir, out_file)
