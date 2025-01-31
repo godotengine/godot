@@ -802,6 +802,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="heightmap_shape_get_hole_labels" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="heightmap_shape_is_hole_label" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bingus" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
