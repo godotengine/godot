@@ -376,7 +376,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	TS->free_rid(num_rid);
 
 	if (!hide_slider) {
-		if (get_step() == 1) {
+		if (editing_integer) {
 			Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {
@@ -528,6 +528,19 @@ void EditorSpinSlider::set_hide_slider(bool p_hide) {
 
 bool EditorSpinSlider::is_hiding_slider() const {
 	return hide_slider;
+}
+
+void EditorSpinSlider::set_editing_integer(bool p_editing_integer) {
+	if (p_editing_integer == editing_integer) {
+		return;
+	}
+
+	editing_integer = p_editing_integer;
+	queue_redraw();
+}
+
+bool EditorSpinSlider::is_editing_integer() const {
+	return editing_integer;
 }
 
 void EditorSpinSlider::set_label(const String &p_label) {
@@ -689,11 +702,15 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
 	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
 
+	ClassDB::bind_method(D_METHOD("set_editing_integer", "editing_integer"), &EditorSpinSlider::set_editing_integer);
+	ClassDB::bind_method(D_METHOD("is_editing_integer"), &EditorSpinSlider::is_editing_integer);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
