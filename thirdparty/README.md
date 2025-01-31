@@ -1008,10 +1008,14 @@ Files extracted from upstream source:
 - From `src/VHACD_Lib/`: `inc`, `public` and `src`
 - `LICENSE`
 
-Some downstream changes have been made and are identified by
-`// -- GODOT start --` and `// -- GODOT end --` comments.
-They can be reapplied using the patches included in the `vhacd`
-folder.
+Patches:
+
+- `0001-bullet-namespace.patch` (GH-27929)
+- `0002-fpermissive-fix.patch` (GH-27929)
+- `0003-fix-musl-build.patch` (GH-34250)
+- `0004-fix-msvc-arm-build.patch` (GH-34331)
+- `0005-fix-scale-calculation.patch` (GH-38506)
+- `0006-gcc13-include-fix.patch` (GH-77949)
 
 
 ## volk
