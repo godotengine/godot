@@ -48,6 +48,7 @@ class EmbeddedProcess : public Control {
 
 	Window *window = nullptr;
 	Timer *timer_embedding = nullptr;
+	Timer *timer_update_embedded_process = nullptr;
 
 	const int embedding_timeout = 45000;
 
@@ -61,6 +62,7 @@ class EmbeddedProcess : public Control {
 	void _try_embed_process();
 	void _update_embedded_process();
 	void _timer_embedding_timeout();
+	void _timer_update_embedded_process_timeout();
 	void _draw();
 	void _check_mouse_over();
 	void _check_focused_process_id();
