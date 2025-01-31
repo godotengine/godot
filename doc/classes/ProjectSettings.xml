@@ -879,6 +879,7 @@
 		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
+			[b]Note:[/b] Game embedding is available only in the "Windowed" mode.
 		</member>
 		<member name="display/window/size/no_focus" type="bool" setter="" getter="" default="false">
 			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
