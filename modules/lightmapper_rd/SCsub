@@ -10,8 +10,7 @@ for file in shader_files:
     env_lightmapper_rd.GLSL_HEADER(f"#modules/lightmapper_rd/{file}")
 
 env_lightmapper_rd.Depends(
-    Glob(f"#{env['build_dir']}/modules/lightmapper_rd/*.glsl.gen.h"),
-    ["lm_common_inc.glsl", "#glsl_builders.py"]
+    Glob(f"#{env['build_dir']}/modules/lightmapper_rd/*.glsl.gen.h"), ["lm_common_inc.glsl", "#glsl_builders.py"]
 )
 env_lightmapper_rd.Append(CPPPATH=[f"#{env['build_dir']}/modules/lightmapper_rd"])
 

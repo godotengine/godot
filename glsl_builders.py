@@ -3,7 +3,7 @@
 import os.path
 from typing import Optional
 
-from methods import print_error, to_raw_cstring, base_folder_path
+from methods import base_folder_path, print_error, to_raw_cstring
 
 
 class RDHeaderStruct:

@@ -14,7 +14,9 @@ env_scene_theme.add_source_files(env.scene_sources, "*.cpp")
 SConscript("icons/SCsub")
 
 env_scene_theme.Append(CPPPATH=[f"#{env['build_dir']}/scene/theme"])
-env_scene_theme.Depends(f"#{env['build_dir']}/scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2")
+env_scene_theme.Depends(
+    f"#{env['build_dir']}/scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2"
+)
 env_scene_theme.CommandNoCache(
     f"#{env['build_dir']}/scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",

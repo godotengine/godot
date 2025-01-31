@@ -8,11 +8,11 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
+from importlib.util import module_from_spec, spec_from_file_location
 from io import StringIO, TextIOWrapper
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
-from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
+from typing import Generator, List, Optional, Union, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 
@@ -26,7 +26,7 @@ base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 # folder when doing `import editor.template_builder`)
 
 
-def load_helper_module(name: str, path: str):
+def load_helper_module(name, path):
     if path.startswith("#"):
         path = path[1:]
     if not os.path.isabs(path):
@@ -50,6 +50,7 @@ def load_helper_module(name: str, path: str):
             parent_module = ModuleType(parent_name)
             sys.modules[parent_name] = parent_module
         setattr(parent_module, child_name, child_module)
+
 
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
@@ -79,7 +80,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
         if os.path.isabs(target_path):
             target_path = os.path.relpath(target_path, base_folder_path)
         target_path = os.path.join(base_folder_path, self["build_dir"], target_path)
-        target_path = '.'.join(target_path.split('.')[:-1]) + self["OBJSUFFIX"]
+        target_path = ".".join(target_path.split(".")[:-1]) + self["OBJSUFFIX"]
         obj = self.Object(target=target_path, source=path)
         if obj in sources:
             print_warning('Object "{}" already included in environment sources.'.format(obj))

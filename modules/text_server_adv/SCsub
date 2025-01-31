@@ -486,7 +486,7 @@ if env["builtin_icu4c"]:
         env_icu.CommandNoCache(
             f"#{env['build_dir']}/thirdparty/icu4c/icudata.gen.h",
             "#thirdparty/icu4c/icudt_godot.dat",
-            env.Run(make_icu_data)
+            env.Run(make_icu_data),
         )
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/", f"#{env['build_dir']}/thirdparty/icu4c"])
     else:

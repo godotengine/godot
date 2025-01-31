@@ -10,9 +10,10 @@ import os
 import pickle
 import sys
 from collections import OrderedDict
-from methods import load_helper_module
 
 from SCons import __version__ as scons_raw_version
+
+from methods import load_helper_module
 
 load_helper_module("gles3_builders", "gles3_builders.py")
 load_helper_module("glsl_builders", "glsl_builders.py")
@@ -1031,10 +1032,12 @@ if env["build_dir"]:
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
+
 # this function only has to be used for direct SConscript calls from SConstruct.
 # hence it is placed here locally and not in methods.py
 def call_sconscript(subdir: str):
     SConscript(f"{subdir}/SCsub", variant_dir=f"{env['build_dir']}/{subdir}", duplicate=False)
+
 
 call_sconscript("core")
 call_sconscript("servers")

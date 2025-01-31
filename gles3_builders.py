@@ -3,7 +3,7 @@
 import os.path
 from typing import Optional
 
-from methods import print_error, to_raw_cstring, base_folder_path
+from methods import base_folder_path, print_error, to_raw_cstring
 
 
 class GLES3HeaderStruct:
@@ -212,7 +212,6 @@ def build_gles3_header(
         out_dir = os.path.dirname(out_file)
         if not os.path.isdir(out_dir):
             os.makedirs(out_dir)
-
 
     with open(out_file, "w", encoding="utf-8", newline="\n") as fd:
         defspec = 0
