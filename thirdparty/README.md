@@ -480,6 +480,10 @@ Files extracted from upstream source:
 - `jpgd*.{c,h}`
 - `jpge*.{c,h}`
 
+Patches:
+
+- `0001-clang-fortify-fix.patch` (GH-101927)
+
 
 ## libbacktrace
 
