@@ -672,8 +672,10 @@ Files extracted from upstream repository:
 - `mingw.shared_mutex.h`
 - `mingw.thread.h`
 
-Once copied, apply `godot.patch` (needed because Godot is built without exceptions
-and to avoid std:: replacements leak in Clang builds).
+Patches:
+
+- `0001-disable-exceptions.patch` (GH-85039)
+- `0002-clang-std-replacements-leak.patch` (GH-85208)
 
 
 ## minimp3
