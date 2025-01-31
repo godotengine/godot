@@ -13,13 +13,13 @@ namespace embree
   __forceinline bool isIncoherent(RTCRayQueryFlags flags) { return (flags & RTC_RAY_QUERY_FLAG_COHERENT) == RTC_RAY_QUERY_FLAG_INCOHERENT; }
 
 /*! Macros used in the rtcore API implementation */
-// -- GODOT start --
-#define RTC_CATCH_BEGIN
-#define RTC_CATCH_END(device)
-#define RTC_CATCH_END2(scene)
-#define RTC_CATCH_END2_FALSE(scene) return false;
-#if 0
-// -- GODOT end --
+#if 1
+#  define RTC_CATCH_BEGIN
+#  define RTC_CATCH_END(device)
+#  define RTC_CATCH_END2(scene)
+#  define RTC_CATCH_END2_FALSE(scene) return false;
+#else
+  
 #define RTC_CATCH_BEGIN try {
   
 #define RTC_CATCH_END(device)                                                \
@@ -94,7 +94,6 @@ namespace embree
 #define RTC_TRACE(x) 
 #endif
 
-// -- GODOT start --
 #if 0
   /*! used to throw embree API errors */
   struct rtcore_error : public std::exception
@@ -116,13 +115,12 @@ namespace embree
 #if defined(DEBUG) // only report file and line in debug mode
   #define throw_RTCError(error,str) \
     printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-    // throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+    //throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
 #else
   #define throw_RTCError(error,str) \
     abort();
-    // throw rtcore_error(error,str);
+    //throw rtcore_error(error,str);
 #endif
-// -- GODOT end --
 
 #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
   (settings.byteSize > (offsetof(RTCBuildArguments,member)+sizeof(settings.member)))

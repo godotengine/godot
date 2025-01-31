@@ -1,0 +1,25 @@
+diff --git a/thirdparty/directx_headers/include/directx/d3dx12_pipeline_state_stream.h b/thirdparty/directx_headers/include/directx/d3dx12_pipeline_state_stream.h
+index f061e79596..27c7f20448 100644
+--- a/thirdparty/directx_headers/include/directx/d3dx12_pipeline_state_stream.h
++++ b/thirdparty/directx_headers/include/directx/d3dx12_pipeline_state_stream.h
+@@ -25,8 +25,10 @@
+ struct DefaultSampleMask { operator UINT() noexcept { return UINT_MAX; } };
+ struct DefaultSampleDesc { operator DXGI_SAMPLE_DESC() noexcept { return DXGI_SAMPLE_DESC{1, 0}; } };
+ 
++#if defined(_MSC_VER)
+ #pragma warning(push)
+ #pragma warning(disable : 4324)
++#endif
+ template <typename InnerStructType, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE Type, typename DefaultArg = InnerStructType>
+ class alignas(void*) CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT
+ {
+@@ -42,7 +44,9 @@ public:
+     InnerStructType* operator&() noexcept { return &pssInner; }
+     InnerStructType const* operator&() const noexcept { return &pssInner; }
+ };
++#if defined(_MSC_VER)
+ #pragma warning(pop)
++#endif
+ typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< D3D12_PIPELINE_STATE_FLAGS,         D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_FLAGS>                             CD3DX12_PIPELINE_STATE_STREAM_FLAGS;
+ typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< UINT,                               D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_NODE_MASK>                         CD3DX12_PIPELINE_STATE_STREAM_NODE_MASK;
+ typedef CD3DX12_PIPELINE_STATE_STREAM_SUBOBJECT< ID3D12RootSignature*,               D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE>                    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE;

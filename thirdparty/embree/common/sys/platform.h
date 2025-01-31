@@ -213,19 +213,15 @@
 #define UPRINT4(x,y,z,w) embree_cout_uniform << STRING(x) << " = " << (x) << ", " << STRING(y) << " = " << (y) << ", " << STRING(z) << " = " << (z) << ", " << STRING(w) << " = " << (w) << embree_endl
 
 #if defined(DEBUG) // only report file and line in debug mode
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str) \
-  //   throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+  //#define THROW_RUNTIME_ERROR(str) \
+  //  throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
   #define THROW_RUNTIME_ERROR(str) \
     printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
-  // -- GODOT end --
 #else
-  // -- GODOT start --
-  // #define THROW_RUNTIME_ERROR(str) \
-  //   throw std::runtime_error(str);
+  //#define THROW_RUNTIME_ERROR(str) \
+  //  throw std::runtime_error(str);
   #define THROW_RUNTIME_ERROR(str) \
     abort();
-  // -- GODOT end --
 #endif
 
 #define FATAL(x)   THROW_RUNTIME_ERROR(x)

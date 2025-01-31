@@ -1,0 +1,40 @@
+diff --git a/thirdparty/libbacktrace/read.c b/thirdparty/libbacktrace/read.c
+index 7af66602fd..a7e937667c 100644
+--- a/thirdparty/libbacktrace/read.c
++++ b/thirdparty/libbacktrace/read.c
+@@ -52,14 +52,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+ {
+   uint64_t got;
+   ssize_t r;
+-
+-  if ((uint64_t) (size_t) size != size)
+-    {
+-      error_callback (data, "file size too large", 0);
+-      return 0;
+-    }
+-
+-  if (lseek (descriptor, offset, SEEK_SET) < 0)
++  if (_lseeki64 (descriptor, offset, SEEK_SET) < 0)
+     {
+       error_callback (data, "lseek", errno);
+       return 0;
+@@ -74,7 +67,10 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+   got = 0;
+   while (got < size)
+     {
+-      r = read (descriptor, view->base, size - got);
++      uint64_t sz = size - got;
++      if (sz > INT_MAX)
++        sz = INT_MAX;
++      r = _read (descriptor, view->base, sz);
+       if (r < 0)
+ 	{
+ 	  error_callback (data, "read", errno);
+@@ -84,6 +80,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+       if (r == 0)
+ 	break;
+       got += (uint64_t) r;
++      view->base += r;
+     }
+ 
+   if (got < size)

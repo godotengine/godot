@@ -257,17 +257,15 @@ RTC_NAMESPACE_BEGIN;
     RTC_TRACE(rtcSetSceneBuildQuality);
     RTC_VERIFY_HANDLE(hscene);
     RTC_ENTER_DEVICE(hscene);
-    // -- GODOT start --
-    // if (quality != RTC_BUILD_QUALITY_LOW &&
-    //     quality != RTC_BUILD_QUALITY_MEDIUM &&
-    //     quality != RTC_BUILD_QUALITY_HIGH)
-    //   throw std::runtime_error("invalid build quality");
+    //if (quality != RTC_BUILD_QUALITY_LOW &&
+    //    quality != RTC_BUILD_QUALITY_MEDIUM &&
+    //    quality != RTC_BUILD_QUALITY_HIGH)
+    //  throw std::runtime_error("invalid build quality");
     if (quality != RTC_BUILD_QUALITY_LOW &&
         quality != RTC_BUILD_QUALITY_MEDIUM &&
         quality != RTC_BUILD_QUALITY_HIGH) {
       abort();
     }
-    // -- GODOT end --
     scene->setBuildQuality(quality);
     RTC_CATCH_END2(scene);
   }
@@ -1570,19 +1568,17 @@ RTC_API void rtcSetGeometryTransform(RTCGeometry hgeometry, unsigned int timeSte
     RTC_TRACE(rtcSetGeometryBuildQuality);
     RTC_VERIFY_HANDLE(hgeometry);
     RTC_ENTER_DEVICE(hgeometry);
-    // -- GODOT start --
-    // if (quality != RTC_BUILD_QUALITY_LOW &&
-    //     quality != RTC_BUILD_QUALITY_MEDIUM &&
-    //     quality != RTC_BUILD_QUALITY_HIGH &&
-    //     quality != RTC_BUILD_QUALITY_REFIT)
-    //   throw std::runtime_error("invalid build quality");
+    //if (quality != RTC_BUILD_QUALITY_LOW &&
+    //    quality != RTC_BUILD_QUALITY_MEDIUM &&
+    //    quality != RTC_BUILD_QUALITY_HIGH &&
+    //    quality != RTC_BUILD_QUALITY_REFIT)
+    //  throw std::runtime_error("invalid build quality");
     if (quality != RTC_BUILD_QUALITY_LOW &&
         quality != RTC_BUILD_QUALITY_MEDIUM &&
         quality != RTC_BUILD_QUALITY_HIGH &&
         quality != RTC_BUILD_QUALITY_REFIT) {
       abort();
     }
-    // -- GODOT end --
     geometry->setBuildQuality(quality);
     RTC_CATCH_END2(geometry);
   }

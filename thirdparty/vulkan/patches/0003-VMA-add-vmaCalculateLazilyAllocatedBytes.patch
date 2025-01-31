@@ -1,12 +1,11 @@
 diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
-index ecb84094b9..50ff4ea1c2 100644
+index ecb84094b9..c436209896 100644
 --- a/thirdparty/vulkan/vk_mem_alloc.h
 +++ b/thirdparty/vulkan/vk_mem_alloc.h
-@@ -1713,6 +1713,21 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
+@@ -1713,6 +1713,19 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
      VmaAllocator VMA_NOT_NULL allocator,
      VmaTotalStatistics* VMA_NOT_NULL pStats);
  
-+// -- GODOT begin --
 +/** \brief Retrieves lazily allocated bytes
 +
 +This function is called "calculate" not "get" because it has to traverse all
@@ -19,16 +18,14 @@ index ecb84094b9..50ff4ea1c2 100644
 +*/
 +VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
 +    VmaAllocator VMA_NOT_NULL allocator);
-+// -- GODOT end --
 +
  /** \brief Retrieves information about current memory usage and budget for all memory heaps.
  
  \param allocator
-@@ -14912,6 +14927,28 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
+@@ -14912,6 +14925,26 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
      allocator->CalculateStatistics(pStats);
  }
  
-+// -- GODOT begin --
 +VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
 +    VmaAllocator allocator)
 +{
@@ -48,7 +45,6 @@ index ecb84094b9..50ff4ea1c2 100644
 +	}
 +	return total_lazilily_allocated_bytes;
 +}
-+// -- GODOT end --
 +
  VMA_CALL_PRE void VMA_CALL_POST vmaGetHeapBudgets(
      VmaAllocator allocator,

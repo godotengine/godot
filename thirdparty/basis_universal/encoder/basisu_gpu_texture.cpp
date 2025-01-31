@@ -1976,7 +1976,7 @@ namespace basisu
 	// Accepts 2D, 2D mipmapped, 2D array, 2D array mipmapped
 	// and cubemap, cubemap mipmapped, and cubemap array mipmapped.
 	bool write_dds_file(uint8_vec &dds_data, const basisu::vector<gpu_image_vec>& gpu_images, bool cubemap_flag, bool use_srgb_format)
-	{		
+	{
 		return false;
 	}
 
