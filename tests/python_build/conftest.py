@@ -13,10 +13,10 @@ sys.path.append(str(ROOT))
 @pytest.fixture
 def shader_files(request):
     shader_path = request.param
-
+    base_folder_path = Path(os.path.join(CWD, "../.."))
     res = {
         "path_input": str(CWD / "fixtures" / f"{shader_path}.glsl"),
-        "path_output": str(CWD / "fixtures" / f"{shader_path}.glsl.gen.h"),
+        "path_output": str(base_folder_path / "build/tests/python_build/fixtures" / f"{shader_path}.glsl.gen.h"),
         "path_expected_full": str(CWD / "fixtures" / f"{shader_path}_expected_full.glsl"),
         "path_expected_parts": str(CWD / "fixtures" / f"{shader_path}_expected_parts.json"),
     }
