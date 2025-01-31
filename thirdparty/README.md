@@ -71,8 +71,13 @@ Files extracted from upstream source:
   `jpgd.{cpp,h}`, `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
 - `LICENSE`
 
-Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
-fix build with our own copy of zstd (patch in `patches`).
+Patches:
+
+- `0001-external-zstd-pr344.patch` (GH-73441)
+- `0002-external-jpgd.patch` (GH-88508)
+- `0003-external-tinyexr.patch` (GH-97582)
+- `0004-remove-tinydds-qoi.patch` (GH-97582)
+
 
 ## betsy
 
