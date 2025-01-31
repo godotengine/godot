@@ -631,12 +631,14 @@ File extracted from upstream release tarball:
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
   `lms.c`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
-- Applied the patch `msvc-redeclaration-bug.diff` to fix a compilation error
-  with some MSVC versions
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
 - Added the file `godot_module_mbedtls_config.h` to customize the build
   configuration when bundling the full library
+
+Patches:
+
+- `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
 
 
 ## meshoptimizer
