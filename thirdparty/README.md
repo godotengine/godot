@@ -233,17 +233,15 @@ Files extracted from upstream source:
 - All `.c` files in the main directory (except `unix.c` and `win32.c`)
 - The `include/enet/` folder as `enet/` (except `unix.h` and `win32.h`)
 - `LICENSE` file
+- Added 3 files `enet_godot.cpp`, `enet/enet_godot.h`, and `enet/enet_godot_ext.h`,
+  providing ENet socket implementation using Godot classes, allowing IPv6 and DTLS.
 
-Important: `enet.h`, `host.c`, `protocol.c` have been slightly modified
-to be usable by Godot's socket implementation and allow IPv6 and DTLS.
-Apply the patches in the `patches/` folder when syncing on newer upstream
-commits.
+Patches:
 
-Three files (`godot.cpp`, `enet/godot.h`, `enet/godot_ext.h`) have been added to
-provide ENet socket implementation using Godot classes.
+- `0001-godot-socket.patch` (GH-7985)
 
-It is still possible to build against a system wide ENet but doing so will limit
-its functionality to IPv4 only.
+Important: Building against a system wide ENet is possible, but will limit its
+functionality to IPv4 only and no DTLS. We recommend against it.
 
 
 ## etcpak

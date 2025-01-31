@@ -1,15 +1,14 @@
 diff --git a/thirdparty/enet/enet/enet.h b/thirdparty/enet/enet/enet.h
-index 4a207041b3..5232f8a869 100644
+index 3001018763..ccd8382c23 100644
 --- a/thirdparty/enet/enet/enet.h
 +++ b/thirdparty/enet/enet/enet.h
-@@ -10,13 +10,19 @@ extern "C"
+@@ -10,13 +10,17 @@ extern "C"
  {
  #endif
  
 +#include <stdint.h>
  #include <stdlib.h>
  
-+// -- Godot start --
 +#if 0
  #ifdef _WIN32
  #include "enet/win32.h"
@@ -17,16 +16,14 @@ index 4a207041b3..5232f8a869 100644
  #include "enet/unix.h"
  #endif
 +#endif
-+#include "enet/godot.h"
-+// -- Godot end --
++#include "enet/enet_godot.h"
  
  #include "enet/types.h"
  #include "enet/protocol.h"
-@@ -87,11 +93,15 @@ typedef enum _ENetSocketShutdown
+@@ -87,11 +91,13 @@ typedef enum _ENetSocketShutdown
   * but not for enet_host_create.  Once a server responds to a broadcast, the
   * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
   */
-+// -- Godot start --
 +#if 0
  typedef struct _ENetAddress
  {
@@ -34,17 +31,14 @@ index 4a207041b3..5232f8a869 100644
     enet_uint16 port;
  } ENetAddress;
 +#endif
-+// -- Godot end --
  
  /**
   * Packet flag bit constants.
-@@ -608,6 +618,10 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
+@@ -608,6 +614,8 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
     
  extern size_t enet_protocol_command_size (enet_uint8);
  
-+// -- Godot start --
-+#include "enet/godot_ext.h"
-+// -- Godot end --
++#include "enet/enet_godot_ext.h"
 +
  #ifdef __cplusplus
  }
