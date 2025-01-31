@@ -598,6 +598,11 @@ Patches:
 - `0003-clang-cl-sse2-sse41.patch`
 
 
+## linuxbsd_headers
+
+See `linuxbsd_headers/README.md`.
+
+
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
