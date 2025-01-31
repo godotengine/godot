@@ -591,8 +591,11 @@ Files extracted from upstream source:
 - `src/` and `sharpyuv/` except from `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
 
-Patch `godot-node-debug-fix.patch` workarounds shadowing of Godot's Node class
-in the MSVC debugger.
+Patches:
+
+- `0001-msvc-node-debug-rename.patch`
+- `0002-msvc-arm64-fpstrict.patch`
+- `0003-clang-cl-sse2-sse41.patch`
 
 
 ## manifold
