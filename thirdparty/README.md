@@ -953,20 +953,6 @@ Patches:
 - `0002-zero-size-for-sc-sized-arrays.patch` (GH-94985)
 
 
-## tinyexr
-
-- Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.9 (5fcb4dcb6e3abf96214b67e5c54db1ceec6a455c, 2024)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- `tinyexr.{cc,h}`
-
-The `tinyexr.cc` file was modified to include `zlib.h` which we provide,
-instead of `miniz.h` as an external dependency.
-
-
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
@@ -982,6 +968,21 @@ Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
 - `0002-gcc15-include-fix.patch` (GH-102022)
+
+
+## tinyexr
+
+- Upstream: https://github.com/syoyo/tinyexr
+- Version: 1.0.9 (5fcb4dcb6e3abf96214b67e5c54db1ceec6a455c, 2024)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `tinyexr.{cc,h}`
+
+Patches:
+
+- `0001-external-zlib.patch` (GH-55115)
 
 
 ## ufbx
