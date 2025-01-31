@@ -5494,22 +5494,30 @@ void Tree::_do_incr_search(const String &p_add) {
 	ensure_cursor_is_visible();
 }
 
-TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const {
+TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const {
+	r_column = -1;
+	r_height = 0;
+	r_section = -100;
+
+	if (!root) {
+		return nullptr;
+	}
+
 	Point2 pos = p_pos;
 
 	if ((root != p_item || !hide_root) && p_item->is_visible_in_tree()) {
-		h = compute_item_height(p_item) + theme_cache.v_separation;
-		if (pos.y < h) {
+		r_height = compute_item_height(p_item) + theme_cache.v_separation;
+		if (pos.y < r_height) {
 			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
-				section = 0;
+				r_section = 0;
 			} else if (drop_mode_flags == DROP_MODE_INBETWEEN) {
-				section = pos.y < h / 2 ? -1 : 1;
-			} else if (pos.y < h / 4) {
-				section = -1;
-			} else if (pos.y >= (h * 3 / 4)) {
-				section = 1;
+				r_section = pos.y < r_height / 2 ? -1 : 1;
+			} else if (pos.y < r_height / 4) {
+				r_section = -1;
+			} else if (pos.y >= (r_height * 3 / 4)) {
+				r_section = 1;
 			} else {
-				section = 0;
+				r_section = 0;
 			}
 
 			for (int i = 0; i < columns.size(); i++) {
@@ -5524,10 +5532,10 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 
 			return nullptr;
 		} else {
-			pos.y -= h;
+			pos.y -= r_height;
 		}
 	} else {
-		h = 0;
+		r_height = 0;
 	}
 
 	if (p_item->is_collapsed() || !p_item->is_visible_in_tree()) {
@@ -5537,9 +5545,9 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	TreeItem *n = p_item->get_first_child();
 	while (n) {
 		int ch;
-		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, section);
+		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, r_section);
 		pos.y -= ch;
-		h += ch;
+		r_height += ch;
 		if (r) {
 			return r;
 		}
@@ -5630,62 +5638,64 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 }
 
 int Tree::get_column_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return -1;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return col;
-		}
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -1;
 	}
 
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return -1;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return col;
+	}
 	return -1;
 }
 
 int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return -100;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return section;
-		}
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -100;
 	}
 
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return -100;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return section;
+	}
 	return -100;
 }
 
@@ -5708,36 +5718,41 @@ Variant Tree::get_drag_data(const Point2 &p_point) {
 }
 
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return nullptr;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return it;
-		}
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return nullptr;
 	}
 
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return nullptr;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return it;
+	}
 	return nullptr;
 }
 
 int Tree::get_button_id_at_position(const Point2 &p_pos) const {
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -1;
+	}
+
 	TreeItem *it;
 	int col, index;
 	_find_button_at_pos(p_pos, it, col, index);
