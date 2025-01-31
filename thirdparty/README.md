@@ -975,10 +975,13 @@ instead of `miniz.h` as an external dependency.
 
 Files extracted from upstream source:
 
-See `thorvg/update-thorvg.sh` for extraction instructions. Set the version
-number and run the script.
+- See `thorvg/update-thorvg.sh` for extraction instructions.
+  Set the version number and run the script.
 
-Patches in the `patches/` directory should be re-applied after updating.
+Patches:
+
+- `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
+- `0002-gcc15-include-fix.patch` (GH-102022)
 
 
 ## ufbx
