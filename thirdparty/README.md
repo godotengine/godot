@@ -127,8 +127,10 @@ Files extracted from upstream source:
 - `CPP/Clipper2Lib/` folder (in root)
 - `LICENSE`
 
-Apply the patches in the `patches/` folder when syncing on newer upstream
-commits.
+Patches:
+
+- `0001-disable-exceptions.patch` (GH-80796)
+- `0002-llvm-disable-int1280-math.patch` (GH-95964)
 
 
 ## cvtt

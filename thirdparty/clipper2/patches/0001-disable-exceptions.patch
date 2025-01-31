@@ -1,5 +1,5 @@
 diff --git a/thirdparty/clipper2/include/clipper2/clipper.core.h b/thirdparty/clipper2/include/clipper2/clipper.core.h
-index 925c04685e..d0d159b949 100644
+index 925c04685e..67dd731af6 100644
 --- a/thirdparty/clipper2/include/clipper2/clipper.core.h
 +++ b/thirdparty/clipper2/include/clipper2/clipper.core.h
 @@ -22,6 +22,8 @@
