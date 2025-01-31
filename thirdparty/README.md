@@ -1059,7 +1059,12 @@ SDK release: https://github.com/KhronosGroup/Vulkan-Utility-Libraries/blob/main/
 Version: 3.1.0 (009ecd192c1289c7529bff248a16cfe896254816, 2024)
 `vk_mem_alloc.cpp` is a Godot file and should be preserved on updates.
 
-Patches in the `patches` directory should be re-applied after updates.
+Patches:
+
+- `0001-VKEnumStringHelper-godot-vulkan.patch` (GH-97510)
+- `0002-VMA-godot-vulkan.patch` (GH-97510)
+- `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` (GH-99257)
+
 
 
 ## wayland
