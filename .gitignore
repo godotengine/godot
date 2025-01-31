@@ -30,7 +30,7 @@ misc/hooks/pre-commit-custom-*
 #############################
 
 # Buildsystem
-build
+./build/*
 bin
 *.gen.*
 compile_commands.json
