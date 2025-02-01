@@ -47,6 +47,13 @@ void Camera2D::_edit_set_state(const Dictionary &p_state) {
 	Node2D::_edit_set_state(p_state);
 }
 
+void Camera2D::_edit_set_position(const Point2 &p_position) {
+	Rect2 rect = _get_limit_rect();
+	rect.position = p_position;
+	_set_limit_rect(rect);
+	Node2D::_edit_set_position(p_position);
+}
+
 void Camera2D::_edit_set_rect(const Rect2 &p_rect) {
 	ERR_FAIL_COND(limit_enabled && !_edit_use_rect());
 	Rect2 rect = p_rect;
