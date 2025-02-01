@@ -3632,7 +3632,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 			Rect2i win_rect = Rect2i(window_get_position_with_decorations(E->get()), window_get_size_with_decorations(E->get()));
 			// Area of the parent window, which responsible for opening sub-menu.
 			Rect2i safe_rect = window_get_popup_safe_rect(E->get());
-			if (win_rect.has_point(pos)) {
+			if (win_rect.has_point(pos) && !window_get_flag(DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH, E->get())) {
 				break;
 			} else if (safe_rect != Rect2i() && safe_rect.has_point(pos)) {
 				break;

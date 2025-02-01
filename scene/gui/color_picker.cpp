@@ -1704,6 +1704,7 @@ void ColorPicker::_pick_button_pressed() {
 		} else {
 			picker_window->set_size(Vector2i(55, 72));
 			picker_window->set_flag(Window::FLAG_EXCLUDE_FROM_CAPTURE, true); // Only supported on MacOS and Windows.
+			picker_window->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
 		}
 		picker_window->connect(SceneStringName(visibility_changed), callable_mp(this, &ColorPicker::_pick_finished));
 		picker_window->connect(SceneStringName(window_input), callable_mp(this, &ColorPicker::_target_gui_input));
