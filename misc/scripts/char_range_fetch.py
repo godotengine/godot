@@ -106,8 +106,7 @@ def generate_char_range_inc() -> None:
     source += f"""
 // This file was generated using the `misc/scripts/char_range_fetch.py` script.
 
-#ifndef CHAR_RANGE_INC
-#define CHAR_RANGE_INC
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -124,8 +123,6 @@ struct CharRange {{
     source += make_array("uppercase_letter", uppercase_letter)
     source += make_array("lowercase_letter", lowercase_letter)
     source += make_array("unicode_letter", unicode_letter)
-
-    source += "#endif // CHAR_RANGE_INC\n"
 
     char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.inc")
     with open(char_range_path, "w", newline="\n") as f:
