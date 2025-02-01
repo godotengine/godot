@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_MATH_FUNCS_H
-#define JOLT_MATH_FUNCS_H
+#pragma once
 
 #include "core/math/transform_3d.h"
 
@@ -55,5 +54,3 @@ public:
 		r_new_transform = new_transform;
 	}
 };
-
-#endif // JOLT_MATH_FUNCS_H

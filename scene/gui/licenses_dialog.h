@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LICENSES_DIALOG_H
-#define LICENSES_DIALOG_H
+#pragma once
 
 #include "scene/main/canvas_layer.h"
 
@@ -44,5 +43,3 @@ protected:
 public:
 	LicensesDialog();
 };
-
-#endif // LICENSES_DIALOG_H

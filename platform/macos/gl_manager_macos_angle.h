@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_MACOS_ANGLE_H
-#define GL_MANAGER_MACOS_ANGLE_H
+#pragma once
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
@@ -59,5 +58,3 @@ public:
 };
 
 #endif // MACOS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_MACOS_ANGLE_H

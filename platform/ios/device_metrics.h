@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 #import <Foundation/Foundation.h>
 
 @interface GodotDeviceMetrics : NSObject

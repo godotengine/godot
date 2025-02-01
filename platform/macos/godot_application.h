@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_APPLICATION_H
-#define GODOT_APPLICATION_H
+#pragma once
 
 #include "core/os/os.h"
 
@@ -39,5 +38,3 @@
 
 @interface GodotApplication : NSApplication
 @end
-
-#endif // GODOT_APPLICATION_H

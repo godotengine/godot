@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_H
-#define IOS_H
+#pragma once
 
 #include "core/object/class_db.h"
 
@@ -58,5 +57,3 @@ public:
 
 	iOS();
 };
-
-#endif // IOS_H

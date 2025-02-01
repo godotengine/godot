@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -47,9 +49,6 @@
 /* implied. See the License for the specific language governing           */
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
-
-#ifndef METAL_DEVICE_PROPERTIES_H
-#define METAL_DEVICE_PROPERTIES_H
 
 #import "servers/rendering/rendering_device.h"
 
@@ -153,5 +152,3 @@ public:
 private:
 	static const SampleCount sample_count[RenderingDevice::TextureSamples::TEXTURE_SAMPLES_MAX];
 };
-
-#endif // METAL_DEVICE_PROPERTIES_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VECTOR_H
-#define TEST_VECTOR_H
+#pragma once
 
 #include "core/templates/vector.h"
 
@@ -706,5 +705,3 @@ TEST_CASE("[Vector] Cyclic Reference") {
 }
 
 } // namespace TestVector
-
-#endif // TEST_VECTOR_H

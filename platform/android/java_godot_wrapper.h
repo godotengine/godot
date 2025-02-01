@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_WRAPPER_H
-#define JAVA_GODOT_WRAPPER_H
+#pragma once
 
 #include "java_godot_view_wrapper.h"
 
@@ -141,5 +140,3 @@ public:
 
 	void on_editor_workspace_selected(const String &p_workspace);
 };
-
-#endif // JAVA_GODOT_WRAPPER_H

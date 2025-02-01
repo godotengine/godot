@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_H
-#define DISPLAY_SERVER_H
+#pragma once
 
 #include "core/input/input.h"
 #include "core/io/image.h"
@@ -683,5 +682,3 @@ VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
 VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
-
-#endif // DISPLAY_SERVER_H

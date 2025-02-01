@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_IOS_H
-#define OS_IOS_H
+#pragma once
 
 #ifdef IOS_ENABLED
 
@@ -137,5 +136,3 @@ public:
 };
 
 #endif // IOS_ENABLED
-
-#endif // OS_IOS_H

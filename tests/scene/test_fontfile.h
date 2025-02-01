@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_FONTFILE_H
-#define TEST_FONTFILE_H
+#pragma once
 
 #include "modules/modules_enabled.gen.h"
 
@@ -143,5 +142,3 @@ TEST_CASE("[FontFile] Create font file and check data") {
 }
 
 } // namespace TestFontfile
-
-#endif // TEST_FONTFILE_H
