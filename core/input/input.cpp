@@ -125,6 +125,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match"), &Input::is_action_just_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_toggled", "action"), &Input::is_action_toggled);
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
@@ -382,6 +383,13 @@ bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
 	}
 
 	return E->value.cache.pressed && (p_exact ? E->value.exact : true);
+}
+
+bool Input::is_action_toggled(const StringName &p_action) const {
+	if (Input::is_action_just_pressed(p_action)) {
+		action_states[p_action].toggle_state = !action_states[p_action].toggle_state;
+	}
+	return action_states[p_action].toggle_state;
 }
 
 bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) const {

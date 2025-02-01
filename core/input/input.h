@@ -113,6 +113,7 @@ private:
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
 		bool exact = true;
+		bool toggle_state = false;
 
 		struct DeviceState {
 			bool pressed[MAX_EVENT] = { false };
@@ -131,7 +132,7 @@ private:
 		} cache;
 	};
 
-	HashMap<StringName, ActionState> action_states;
+	mutable HashMap<StringName, ActionState> action_states;
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
@@ -308,6 +309,7 @@ public:
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
+	bool is_action_toggled(const StringName &p_action) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
