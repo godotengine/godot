@@ -410,17 +410,11 @@ void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector
 }
 
 void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
-	p_from_line = MAX(p_from_line, 0);
-	ERR_FAIL_INDEX(p_from_line, text.size());
-
-	p_to_line = MIN(p_to_line, text.size());
-	ERR_FAIL_COND(p_to_line < p_from_line);
-
 	if (p_from_line == p_to_line) {
 		return;
 	}
 
-	for (int i = p_from_line; i < p_to_line; i++) {
+	for (int i = p_from_line + 1; i <= p_to_line; i++) {
 		const Line &text_line = text[i];
 		if (text_line.hidden) {
 			continue;
@@ -435,9 +429,9 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 		total_visible_line_count -= text_line.line_count;
 	}
 
-	int diff = (p_to_line - p_from_line);
-	for (int i = p_to_line; i < text.size() - 1; i++) {
-		text.write[(i - diff) + 1] = text[i + 1];
+	int diff = p_to_line - p_from_line;
+	for (int i = p_to_line + 1; i < text.size(); i++) {
+		text.write[i - diff] = text[i];
 	}
 	text.resize(text.size() - diff);
 
