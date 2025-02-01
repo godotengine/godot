@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PROJECTION_H
-#define TEST_PROJECTION_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
@@ -699,5 +698,3 @@ TEST_CASE("[Projection] Pixels per meter") {
 	CHECK(ppm == 400);
 }
 } //namespace TestProjection
-
-#endif // TEST_PROJECTION_H

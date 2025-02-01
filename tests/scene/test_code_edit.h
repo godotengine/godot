@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CODE_EDIT_H
-#define TEST_CODE_EDIT_H
+#pragma once
 
 #include "scene/gui/code_edit.h"
 
@@ -5676,5 +5675,3 @@ func _ready():
 }
 
 } // namespace TestCodeEdit
-
-#endif // TEST_CODE_EDIT_H

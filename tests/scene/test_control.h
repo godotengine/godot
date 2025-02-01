@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CONTROL_H
-#define TEST_CONTROL_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
@@ -1109,5 +1108,3 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 }
 
 } // namespace TestControl
-
-#endif // TEST_CONTROL_H

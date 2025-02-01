@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_ANDROID_H
-#define OS_ANDROID_H
+#pragma once
 
 #include "audio_driver_opensl.h"
 
@@ -192,5 +191,3 @@ private:
 	static void _on_main_screen_changed(const String &p_screen_name);
 #endif
 };
-
-#endif // OS_ANDROID_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_SOFT_BODY_3D_H
-#define JOLT_SOFT_BODY_3D_H
+#pragma once
 
 #include "jolt_object_3d.h"
 
@@ -168,5 +167,3 @@ public:
 
 	bool is_vertex_pinned(int p_index) const;
 };
-
-#endif // JOLT_SOFT_BODY_3D_H
