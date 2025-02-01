@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_MACOS_H
-#define OS_MACOS_H
+#pragma once
 
 #include "crash_handler_macos.h"
 
@@ -137,5 +136,3 @@ public:
 	OS_MacOS();
 	~OS_MacOS();
 };
-
-#endif // OS_MACOS_H
