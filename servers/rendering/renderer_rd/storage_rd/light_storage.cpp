@@ -724,6 +724,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					continue;
 				}
 
+				// Has no energy, don't draw this light to improve performance.
+				if (light->param[RS::LIGHT_PARAM_ENERGY] <= CMP_EPSILON) {
+					continue;
+				}
+
 				Transform3D light_transform = light_instance->transform;
 				const real_t distance = p_camera_transform.origin.distance_to(light_transform.origin);
 
@@ -746,6 +751,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			} break;
 			case RS::LIGHT_SPOT: {
 				if (spot_light_count >= max_lights) {
+					continue;
+				}
+
+				// Has no energy, don't draw this light to improve performance.
+				if (light->param[RS::LIGHT_PARAM_ENERGY] <= CMP_EPSILON) {
 					continue;
 				}
 
