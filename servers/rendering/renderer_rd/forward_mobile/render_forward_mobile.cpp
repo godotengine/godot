@@ -886,8 +886,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			using_subpass_post_process = false;
 		}
 
-		if (rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
-			// Can't do blit subpass because we're using FXAA.
+		if (rb->get_screen_space_aa() != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
+			// Can't do blit subpass because we're using screen space AA.
 			using_subpass_post_process = false;
 		}
 

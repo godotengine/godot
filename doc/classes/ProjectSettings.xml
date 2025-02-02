@@ -2712,6 +2712,10 @@
 			[b]Note:[/b] Screen-space antialiasing is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To set the screen-space antialiasing mode at runtime, set [member Viewport.screen_space_aa] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_screen_space_aa].
 		</member>
+		<member name="rendering/anti_aliasing/quality/smaa_edge_detection_threshold" type="float" setter="" getter="" default="0.05">
+			Sets the sensitivity to edges when using SMAA for antialiasing. Lower values will catch more edges, at a potentially higher performance cost.
+			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
+		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
