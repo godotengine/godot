@@ -132,6 +132,7 @@ public:
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
 	virtual void _edit_set_position(const Point2 &p_position) override;
+	virtual Point2 _edit_get_position() const override;
 
 	virtual void _edit_set_rect(const Rect2 &p_rect) override;
 	virtual Size2 _edit_get_minimum_size() const override { return Size2(); }
