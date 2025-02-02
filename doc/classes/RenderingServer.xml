@@ -4211,6 +4211,14 @@
 				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
 			</description>
 		</method>
+		<method name="viewport_set_tonemap_to_screen">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], the viewport will tonemap its content to the window's HDR output luminance range, if HDR output is enabled.
+			</description>
+		</method>
 		<method name="viewport_set_transparent_background">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
