@@ -1371,6 +1371,7 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 
 void FileDialog::set_use_native_dialog(bool p_native) {
 	use_native_dialog = p_native;
+	if (p_native) { set_access(ACCESS_FILESYSTEM); }
 
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -1484,7 +1485,7 @@ FileDialog::FileDialog() {
 	grid_options->set_columns(2);
 	vbox->add_child(grid_options);
 
-	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	dir_access = DirAccess::create(use_native_dialog ? DirAccess::ACCESS_FILESYSTEM : DirAccess::ACCESS_RESOURCES);
 	_update_drives();
 
 	connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_action_pressed));
