@@ -476,7 +476,7 @@ void ConnectDialog::_update_warning_label() {
 }
 
 void ConnectDialog::_post_popup() {
-	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)dst_method, &Control::grab_focus).call_deferred(PlayerId::P1);
 	callable_mp(dst_method, &LineEdit::select_all).call_deferred();
 }
 
