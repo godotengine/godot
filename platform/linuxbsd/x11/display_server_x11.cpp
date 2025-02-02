@@ -1377,8 +1377,6 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 					}
 
 					if (desktop_valid) {
-						use_simple_method = false;
-
 						// Handle bad window errors silently because there's no other way to check
 						// that one of the windows has been destroyed in the meantime.
 						int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
@@ -1406,6 +1404,8 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								}
 							}
 							if (!g_bad_window && strut_found && (format == 32) && (strut_len >= 4) && strut_data) {
+								use_simple_method = false;
+
 								long *struts = (long *)strut_data;
 
 								long left = struts[0];
