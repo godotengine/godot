@@ -230,6 +230,8 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 		window_wrapper->set_window_title(appname);
 
 		_show_update_window_wrapper();
+
+		embedded_process->grab_focus();
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
