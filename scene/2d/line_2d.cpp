@@ -136,13 +136,13 @@ Vector2 Line2D::get_point_position(int i) const {
 
 void Line2D::set_point_global_position(int i, Vector2 p_pos) {
 	ERR_FAIL_INDEX(i, _points.size());
-	_points.set(i, p_pos - get_global_position());
+	_points.set(i, to_local(p_pos));
 	queue_redraw();
 }
 
 Vector2 Line2D::get_point_global_position(int i) const {
 	ERR_FAIL_INDEX_V(i, _points.size(), Vector2());
-	return _points.get(i) + get_global_position();
+	return to_global(_points.get(i));
 }
 
 int Line2D::get_point_count() const {
@@ -167,7 +167,7 @@ void Line2D::add_point(Vector2 p_pos, int p_atpos) {
 }
 
 void Line2D::add_point_global(Vector2 p_pos, int p_atpos) {
-	add_point(p_pos - get_global_position(), p_atpos);
+	add_point(to_local(p_pos), p_atpos);
 }
 
 void Line2D::remove_point(int i) {
