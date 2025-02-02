@@ -75,7 +75,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 pixel_size;
 	uint tonemapper;
-	uint pad;
+	uint pad1;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -88,6 +88,9 @@ layout(push_constant, std430) uniform Params {
 	float white;
 	float auto_exposure_scale;
 	float luminance_multiplier;
+
+	float output_max_value;
+	uint pad2[3];
 }
 params;
 
@@ -201,9 +204,9 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float white) {
 	float white_squared = white * white;
-	vec3 white_squared_color = white_squared * color;
-	// Equivalent to color * (1 + color / white_squared) / (1 + color)
-	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+
+	// Updated version of the Reinhard tonemapper supporting HDR rendering.
+	return color * (1.0f + color / (white_squared / params.output_max_value)) / (1.0f + color / params.output_max_value);
 }
 
 vec3 tonemap_filmic(vec3 color, float white) {
@@ -345,6 +348,7 @@ vec3 linear_to_srgb(vec3 color) {
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
 	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	// Linear is special: it always passes through with no adjustments.
 	if (params.tonemapper == TONEMAPPER_LINEAR) {
 		return color;
 	} else if (params.tonemapper == TONEMAPPER_REINHARD) {
@@ -406,10 +410,28 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 	if (params.glow_mode == GLOW_MODE_ADD) {
 		return color + glow;
 	} else if (params.glow_mode == GLOW_MODE_SCREEN) {
-		// Needs color clamping.
-		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
-		return max((color + glow) - (color * glow), vec3(0.0));
+		// Compress the color and glow from scene intensity to avoid artifacts due to color clamping,
+		// perform the screen blend mode (color + glow - color * glow),
+		// and expand the color back to the original intensity range.
+
+		// Trivial implementation of the screen blend mode
+		// color /= params.output_max_value;
+		// glow /= params.output_max_value;
+		// glow = clamp(glow, vec3(0.0f), vec3(1.0f));
+		// color = max((color + glow) - (color * glow), vec3(0.0));
+		// color *= params.output_max_value;
+
+		// The following is a mathematically simplified version of the above.
+		glow = clamp(glow / params.output_max_value, 0.0, 1.0);
+		color = color + (params.output_max_value - color) * glow;
+		color = max(color, 0.0);
+
+		return color;
 	} else if (params.glow_mode == GLOW_MODE_SOFTLIGHT) {
+		// Compress the color and glow from scene intensity to avoid artifacts due to the color clamping.
+		color /= params.output_max_value;
+		glow /= params.output_max_value;
+
 		// Needs color clamping.
 		glow.rgb = clamp(glow.rgb, vec3(0.0f), vec3(1.0f));
 		glow = glow * vec3(0.5f) + vec3(0.5f);
@@ -417,6 +439,10 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
 		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
 		color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
+
+		// Expand the color back to the original intensity range.
+		color *= params.output_max_value;
+
 		return color;
 	} else { //replace
 		return glow;

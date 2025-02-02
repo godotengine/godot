@@ -4,23 +4,26 @@
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(push_constant, std430) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 
 	float rotation_sin;
 	float rotation_cos;
-
 	vec2 eye_center;
+
 	float k1;
 	float k2;
-
 	float upscale;
 	float aspect_ratio;
+
 	uint layer;
-	bool convert_to_srgb;
+	bool source_is_srgb;
 	bool use_debanding;
-	float pad;
+	uint target_color_space;
+
+	float reference_multiplier;
+	uint pad[3];
 }
 data;
 
@@ -45,23 +48,26 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(push_constant, std430) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 
 	float rotation_sin;
 	float rotation_cos;
-
 	vec2 eye_center;
+
 	float k1;
 	float k2;
-
 	float upscale;
 	float aspect_ratio;
+
 	uint layer;
-	bool convert_to_srgb;
+	bool source_is_srgb;
 	bool use_debanding;
-	float pad;
+	uint target_color_space;
+
+	float reference_multiplier;
+	uint pad[3];
 }
 data;
 
@@ -74,6 +80,15 @@ layout(binding = 0) uniform sampler2DArray src_rt;
 #else
 layout(binding = 0) uniform sampler2D src_rt;
 #endif
+
+// Keep in sync with RenderingDeviceCommons::ColorSpace
+#define COLOR_SPACE_REC709_LINEAR 0
+#define COLOR_SPACE_REC709_SRGB 1
+#define COLOR_SPACE_REC2020_ST2084 2
+
+vec3 srgb_to_linear(vec3 color) {
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
+}
 
 vec3 linear_to_srgb(vec3 color) {
 	const vec3 a = vec3(0.055f);
@@ -95,6 +110,27 @@ vec3 screen_space_dither(vec2 frag_coord) {
 	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
 	// Divide by 255 to align to 8-bit quantization.
 	return (dither.rgb - 0.5) / 255.0;
+}
+
+vec3 rec709_to_rec2020(vec3 color) {
+	const mat3 conversion = mat3(
+			0.627403895934699, 0.069097289358232, 0.016391438875150,
+			0.329283038377884, 0.919540395075458, 0.088013307877226,
+			0.043313065687417, 0.011362315566309, 0.895595253247624);
+	return conversion * color;
+}
+
+// Linear color must be non-negative. 1.0 represents 10,000 nits.
+vec3 linear_to_st2084(vec3 color) {
+	// Apply ST2084 curve
+	const float c1 = 0.8359375;
+	const float c2 = 18.8515625;
+	const float c3 = 18.6875;
+	const float m1 = 0.1593017578125;
+	const float m2 = 78.84375;
+	vec3 cp = pow(color, vec3(m1));
+
+	return pow((c1 + c2 * cp) / (1 + c3 * cp), vec3(m2));
 }
 
 void main() {
@@ -133,19 +169,52 @@ void main() {
 	color = texture(src_rt, uv);
 #endif
 
-	if (data.convert_to_srgb) {
-		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-
-		// Even if debanding was applied earlier in the rendering process, it must
-		// be reapplied after the linear_to_srgb floating point operations.
-		// When the linear_to_srgb operation was not performed, the source is
-		// already an 8-bit format and debanding cannot be effective. In this
-		// case, GPU driver rounding error can add noise so debanding should be
-		// skipped entirely.
-		if (data.use_debanding) {
-			color.rgb += screen_space_dither(gl_FragCoord.xy);
+	// Colorspace conversion for final blit
+	if (data.target_color_space == COLOR_SPACE_REC709_LINEAR) {
+		// Negative values may be interpreted as scRGB colors,
+		// so clip them to the intended sRGB colors.
+		color.rgb = max(vec3(0.0), color.rgb);
+		if (data.source_is_srgb == true) {
+			// sRGB -> linear conversion
+			color.rgb = srgb_to_linear(color.rgb);
 		}
 
-		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
+		// Adjust brightness of SDR content to reference luminance
+		color.rgb *= data.reference_multiplier;
+	} else if (data.target_color_space == COLOR_SPACE_REC709_SRGB) {
+		// Negative values will be clipped by the target, so no need to
+		// clip them here.
+		if (data.source_is_srgb == false) {
+			// linear -> sRGB conversion
+			color.rgb = linear_to_srgb(color.rgb);
+
+			// Even if debanding was applied earlier in the rendering process, it must
+			// be reapplied after the linear_to_srgb floating point operations.
+			// When the linear_to_srgb operation was not performed, the source is
+			// already an 8-bit format and debanding cannot be effective. In this
+			// case, GPU driver rounding error can add noise so debanding should be
+			// skipped entirely.
+			if (data.use_debanding) {
+				color.rgb += screen_space_dither(gl_FragCoord.xy);
+			}
+		}
+	} else if (data.target_color_space == COLOR_SPACE_REC2020_ST2084) {
+		// Negative values may be interpreted as colors outside of sRGB,
+		// so clip them to the intended sRGB colors.
+		color.rgb = max(vec3(0.0), color.rgb);
+
+		if (data.source_is_srgb == true) {
+			// sRGB -> linear conversion
+			color.rgb = srgb_to_linear(color.rgb);
+		}
+
+		// Convert to Rec.2020 primaries
+		color.rgb = rec709_to_rec2020(color.rgb);
+
+		// Adjust brightness of SDR content to reference luminance
+		color.rgb *= data.reference_multiplier;
+
+		// Apply the ST2084 curve
+		color.rgb = linear_to_st2084(color.rgb);
 	}
 }
