@@ -2444,6 +2444,60 @@
 		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="PLAYER_ID_P1" value="0" enum="PlayerId">
+			Player 1 (value: 0).
+		</constant>
+		<constant name="PLAYER_ID_P2" value="1" enum="PlayerId">
+			Player 2 (value: 1).
+		</constant>
+		<constant name="PLAYER_ID_P3" value="2" enum="PlayerId">
+			Player 3 (value: 2).
+		</constant>
+		<constant name="PLAYER_ID_P4" value="3" enum="PlayerId">
+			Player 4 (value: 3).
+		</constant>
+		<constant name="PLAYER_ID_P5" value="4" enum="PlayerId">
+			Player 5 (value: 4).
+		</constant>
+		<constant name="PLAYER_ID_P6" value="5" enum="PlayerId">
+			Player 6 (value: 5).
+		</constant>
+		<constant name="PLAYER_ID_P7" value="6" enum="PlayerId">
+			Player 7 (value: 6).
+		</constant>
+		<constant name="PLAYER_ID_P8" value="7" enum="PlayerId">
+			Player 8 (value: 7).
+		</constant>
+		<constant name="PLAYER_NONE" value="0" enum="PlayerMask" is_bitfield="true">
+			Player none mask.
+		</constant>
+		<constant name="PLAYER_1" value="1" enum="PlayerMask" is_bitfield="true">
+			Player 1 mask.
+		</constant>
+		<constant name="PLAYER_2" value="2" enum="PlayerMask" is_bitfield="true">
+			Player 2 mask.
+		</constant>
+		<constant name="PLAYER_3" value="4" enum="PlayerMask" is_bitfield="true">
+			Player 3 mask.
+		</constant>
+		<constant name="PLAYER_4" value="8" enum="PlayerMask" is_bitfield="true">
+			Player 4 mask.
+		</constant>
+		<constant name="PLAYER_5" value="16" enum="PlayerMask" is_bitfield="true">
+			Player 5 mask.
+		</constant>
+		<constant name="PLAYER_6" value="32" enum="PlayerMask" is_bitfield="true">
+			Player 6 mask.
+		</constant>
+		<constant name="PLAYER_7" value="64" enum="PlayerMask" is_bitfield="true">
+			Player 7 mask.
+		</constant>
+		<constant name="PLAYER_8" value="128" enum="PlayerMask" is_bitfield="true">
+			Player 8 mask.
+		</constant>
+		<constant name="PLAYER_ALL" value="255" enum="PlayerMask" is_bitfield="true">
+			Player all mask.
+		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>
@@ -2816,6 +2870,9 @@
 		<constant name="PROPERTY_HINT_LAYERS_AVOIDANCE" value="37" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
+		<constant name="PROPERTY_HINT_LAYERS_PLAYER_MASK" value="42" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named player mask layers.
+		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
@@ -2954,7 +3011,7 @@
 		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

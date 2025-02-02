@@ -314,7 +314,7 @@ void ColorPicker::finish_shaders() {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)c_text, &Control::grab_focus).call_deferred(PlayerId::P1);
 }
 
 void ColorPicker::set_focus_on_picker_shape() {
