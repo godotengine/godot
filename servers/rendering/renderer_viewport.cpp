@@ -315,7 +315,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, p_viewport->window_output_max_value, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("< Render 3D Scene");
 #endif // _3D_DISABLED
@@ -355,6 +355,15 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			} else if (RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS) {
 				// The scene renderer will still copy over the last frame, so we need to clear the render target.
 				force_clear_render_target = true;
+			}
+		}
+
+		p_viewport->window_output_max_value = 1.0;
+		DisplayServer::WindowID parent_window = _get_containing_window(p_viewport);
+		if (RD::get_singleton() && parent_window != DisplayServer::INVALID_WINDOW_ID) {
+			RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
+			if (context_driver->window_get_hdr_output_enabled(parent_window)) {
+				p_viewport->window_output_max_value = context_driver->window_get_output_max_linear_value(parent_window);
 			}
 		}
 	}
@@ -652,7 +661,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			// Clear now otherwise we copy over garbage from the render target.
 			RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 			if (!can_draw_3d) {
-				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 			} else {
 				_draw_3d(p_viewport);
 			}
@@ -695,7 +704,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				// Clear now otherwise we copy over garbage from the render target.
 				RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 				if (!can_draw_3d) {
-					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+					RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 				} else {
 					_draw_3d(p_viewport);
 				}
@@ -709,7 +718,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			// Clear now otherwise we copy over garbage from the render target.
 			RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
 			if (!can_draw_3d) {
-				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
+				RSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas, p_viewport->window_output_max_value);
 			} else {
 				_draw_3d(p_viewport);
 			}
@@ -731,6 +740,21 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
+}
+
+DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_viewport) {
+	if (p_viewport->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+		return p_viewport->viewport_to_screen;
+	}
+
+	if (p_viewport->parent.is_valid()) {
+		Viewport *parent = viewport_owner.get_or_null(p_viewport->parent);
+		if (parent) {
+			return _get_containing_window(parent);
+		}
+	}
+
+	return DisplayServer::INVALID_WINDOW_ID;
 }
 
 void RendererViewport::draw_viewports(bool p_swap_buffers) {

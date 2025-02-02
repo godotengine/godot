@@ -74,6 +74,8 @@ public:
 
 	bool lightmap_bicubic_filter = false;
 
+	float window_output_max_value = 1.0;
+
 	RenderingMethod::RenderInfo *render_info = nullptr;
 
 	/* Viewport data */

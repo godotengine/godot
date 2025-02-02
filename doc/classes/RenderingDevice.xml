@@ -2740,6 +2740,9 @@
 
 			[b]Note:[/b] This is currently only supported when using Vulkan. This is not supported on macOS and iOS (even on hardware supporting raytracing) due to MoltenVK limitations.
 		</constant>
+		<constant name="SUPPORTS_HDR_OUTPUT" value="13" enum="Features">
+			Support for high dynamic range (HDR) output.
+		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 			Maximum number of uniform sets that can be bound at a given time.
 		</constant>

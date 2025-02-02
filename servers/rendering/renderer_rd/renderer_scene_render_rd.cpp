@@ -728,14 +728,20 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// to a high white value.
 			bool limit_agx_white = rb->get_base_data_format() == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 
+			// When using HDR 2D, we use the parent window's output max value.
+			// Otherwise, we're tonemapping to an SDR low bit depth buffer, so
+			// we need to use SDR range with a max value of 1.0.
+			float max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
+
 			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white);
+			RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, max_value);
 			tonemap.tonemapper_params[0] = params.tonemapper_params[0];
 			tonemap.tonemapper_params[1] = params.tonemapper_params[1];
 			tonemap.tonemapper_params[2] = params.tonemapper_params[2];
 			tonemap.tonemapper_params[3] = params.tonemapper_params[3];
-			tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white);
+			tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, max_value);
 			tonemap.exposure = environment_get_exposure(p_render_data->environment);
+			tonemap.max_value = max_value;
 		}
 
 		tonemap.use_color_correction = false;
@@ -892,6 +898,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RendererRD::ToneMapper::TonemapSettings tonemap;
 
+	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
+
 	if (p_render_data->environment.is_valid()) {
 		// When we are using RGB10A2 render buffer format, our scene
 		// is limited to a maximum of 2.0. In this case we should limit
@@ -899,14 +907,20 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		// to a high white value.
 		bool limit_agx_white = rb->get_base_data_format() == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 
+		// When using HDR 2D, we use the parent window's output max value.
+		// Otherwise, we're tonemapping to an SDR low bit depth buffer, so
+		// we need to use SDR range with a max value of 1.0.
+		float max_value = using_hdr ? p_render_data->window_output_max_value : 1.0;
+
 		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white);
+		RendererEnvironmentStorage::TonemapParameters params = environment_get_tonemap_parameters(p_render_data->environment, limit_agx_white, max_value);
 		tonemap.tonemapper_params[0] = params.tonemapper_params[0];
 		tonemap.tonemapper_params[1] = params.tonemapper_params[1];
 		tonemap.tonemapper_params[2] = params.tonemapper_params[2];
 		tonemap.tonemapper_params[3] = params.tonemapper_params[3];
 		tonemap.exposure = environment_get_exposure(p_render_data->environment);
-		tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white);
+		tonemap.white = environment_get_white(p_render_data->environment, limit_agx_white, max_value);
+		tonemap.max_value = max_value;
 	}
 
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
@@ -919,8 +933,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		ERR_FAIL_MSG("Auto Exposure is not supported when using subpasses.");
 	}
-
-	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
 	tonemap.use_glow = false;
 	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
@@ -1317,7 +1329,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 	}
 }
 
-void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, float p_window_output_max_value, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1429,6 +1441,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.render_sdfgi_regions = p_render_sdfgi_regions;
 		render_data.render_sdfgi_region_count = p_render_sdfgi_region_count;
 		render_data.sdfgi_update_data = p_sdfgi_update_data;
+		render_data.window_output_max_value = p_window_output_max_value;
 
 		render_data.render_info = r_render_info;
 

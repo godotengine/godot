@@ -5648,19 +5648,20 @@
 			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
-			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
+			Adds the glow effect to the scene.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
-			Screen glow blending mode. Increases brightness, used frequently with bloom.
+			Adds the glow effect to the scene after modifying the glow influence based on the scene value; dark values will be highly influenced by glow and bright values will not be influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. [member Environment.tonemap_white] is used to determine the maximum scene value where the glow should have no influence. When [member Environment.tonemap_mode] is set to [constant Environment.TONE_MAPPER_LINEAR] and [member Viewport.use_hdr_2d] is [code]true[/code], the parent window's [method Window.get_output_max_linear_value] will be used as the maximum scene value.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
-			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights (vivid bloom).
+			Adds the glow effect to the tonemapped image after modifying the glow influence based on the image value; dark values and bright values will not be influenced by glow and mid-range values will be highly influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. The glow will have the largest influence on image values of [code]0.25[/code] and will have no influence when applied to image values greater than [code]1.0[/code].
+			[b]Note:[/b] This blend mode does not support HDR output because expects a maximum output value of [code]1.0[/code]. It is recommended to use a different blend mode when rendering to an HDR screen.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
-			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
+			Replaces all pixels' color by the glow effect. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness or to preview glow configuration in the editor.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
-			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
+			Mixes the glow image with the scene image. Best used with [member Environment.glow_bloom] to avoid darkening the scene.
 		</constant>
 		<constant name="ENV_FOG_MODE_EXPONENTIAL" value="0" enum="EnvironmentFogMode">
 			Use a physically-based fog model defined primarily by fog density.
@@ -5677,10 +5678,12 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
 			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant ENV_TONE_MAPPER_REINHARD]. Slightly slower than [constant ENV_TONE_MAPPER_REINHARD].
+			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant ENV_TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
 			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
