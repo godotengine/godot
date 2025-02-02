@@ -215,13 +215,13 @@ void StaticBody3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_na
 								h2 = map_data_ptr[(heightmap_width * d) + heightmap_width + w];
 								h3 = map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1];
 
-								if (!(physics_server->heightmap_shape_is_hole_label(h0) || physics_server->heightmap_shape_is_hole_label(h1) || physics_server->heightmap_shape_is_hole_label(h2))) {
+								if (!(physics_server->is_heightmap_hole(h0) || physics_server->is_heightmap_hole(h1) || physics_server->is_heightmap_hole(h2))) {
 									vertex_array_ptrw[vertex_index] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + w], d);
 									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
 									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);
 									vertex_index += 3;
 								}
-								if (!(physics_server->heightmap_shape_is_hole_label(h3) || physics_server->heightmap_shape_is_hole_label(h1) || physics_server->heightmap_shape_is_hole_label(h2))) {
+								if (!(physics_server->is_heightmap_hole(h3) || physics_server->is_heightmap_hole(h1) || physics_server->is_heightmap_hole(h2))) {
 									vertex_array_ptrw[vertex_index] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + w + 1], d);
 									vertex_array_ptrw[vertex_index + 1] = start + Vector3(w + 1, map_data_ptr[(heightmap_width * d) + heightmap_width + w + 1], d + 1);
 									vertex_array_ptrw[vertex_index + 2] = start + Vector3(w, map_data_ptr[(heightmap_width * d) + heightmap_width + w], d + 1);

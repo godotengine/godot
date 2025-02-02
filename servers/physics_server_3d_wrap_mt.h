@@ -96,8 +96,9 @@ public:
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
 
-	FUNC0RC(Vector<float>, heightmap_shape_get_hole_labels);
-	FUNC1RC(bool, heightmap_shape_is_hole_label, float);
+	bool is_heightmap_hole(float p_height) const override {
+		return physics_server_3d->is_heightmap_hole(p_height);
+	}
 
 #if 0
 	//these work well, but should be used from the main thread only
