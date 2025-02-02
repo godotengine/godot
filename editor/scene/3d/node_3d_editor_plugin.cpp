@@ -3080,6 +3080,12 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	_update_shrink();
 
+	// Check if HDR is supported and enabled and force 2D HDR if so.
+	bool force_hdr_2d = false;
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR) && RD::get_singleton() && RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HDR_OUTPUT)) {
+		force_hdr_2d = GLOBAL_GET("display/window/hdr/enabled");
+	}
+
 	// Update MSAA, screen-space AA and debanding if changed
 
 	const int msaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_3d");
@@ -3093,7 +3099,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_transparent_background(transparent_background);
 
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	viewport->set_use_hdr_2d(use_hdr_2d);
+	viewport->set_use_hdr_2d(use_hdr_2d || force_hdr_2d);
+
+	viewport->set_tonemap_to_window(true); // TODO: move this to a better place
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
