@@ -17,6 +17,7 @@
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="strength" type="float" default="1.0" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				This will simulate pressing the specified action.
 				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
@@ -26,6 +27,7 @@
 		<method name="action_release">
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
+			<param index="1" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				If the specified action is already pressed, this will release it.
 			</description>
@@ -57,6 +59,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Returns a value between 0 and 1 representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -66,6 +69,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be 0 or 1.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -75,6 +79,7 @@
 			<return type="float" />
 			<param index="0" name="negative_action" type="StringName" />
 			<param index="1" name="positive_action" type="StringName" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Get axis input by specifying two actions, one negative and one positive.
 				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
@@ -192,6 +197,7 @@
 			<param index="2" name="negative_y" type="StringName" />
 			<param index="3" name="positive_y" type="StringName" />
 			<param index="4" name="deadzone" type="float" default="-1.0" />
+			<param index="5" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
 				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
@@ -202,6 +208,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Returns [code]true[/code] when the user has [i]started[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
@@ -215,6 +222,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
@@ -226,6 +234,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerId" default="PLAYER_ID_P1" />
 			<description>
 				Returns [code]true[/code] if you are pressing the action event.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -519,5 +528,39 @@
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Help cursor. Usually a question mark.
 		</constant>
+		<constant name="PLAYERS_MAX" value="8">
+			Max number of allowed players by the engine.
+		</constant>
+		<constant name="PLAYER_NONE" value="0" enum="PlayerMask">
+			Player none, meaning no player allowed.
+		</constant>
+		<constant name="PLAYER_1" value="1" enum="PlayerMask">
+			Mask with only player 1 activated.
+		</constant>
+		<constant name="PLAYER_2" value="2" enum="PlayerMask">
+			Mask with only player 2 activated.
+		</constant>
+		<constant name="PLAYER_3" value="4" enum="PlayerMask">
+			Mask with only player 3 activated.
+		</constant>
+		<constant name="PLAYER_4" value="8" enum="PlayerMask">
+			Mask with only player 4 activated.
+		</constant>
+		<constant name="PLAYER_5" value="16" enum="PlayerMask">
+			Mask with only player 5 activated.
+		</constant>
+		<constant name="PLAYER_6" value="32" enum="PlayerMask">
+			Mask with only player 6 activated.
+		</constant>
+		<constant name="PLAYER_7" value="64" enum="PlayerMask">
+			Mask with only player 7 activated.
+		</constant>
+		<constant name="PLAYER_8" value="128" enum="PlayerMask">
+			Mask with only player 8 activated.
+		</constant>
+		<constant name="PLAYER_ALL" value="256" enum="PlayerMask">
+			Mask with all players activated.
+		</constant>
+
 	</constants>
 </class>

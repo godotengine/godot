@@ -367,7 +367,7 @@ private:
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask;
-		Control *key_focus = nullptr;
+		Control *key_focus[PLAYERS_MAX] = { nullptr };
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
 		bool sending_mouse_enter_exit_notifications = false;
@@ -439,18 +439,18 @@ private:
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
-	void _gui_remove_control(Control *p_control);
-	void _gui_hide_control(Control *p_control);
+	void _gui_remove_control(Control *p_control, PlayerId p_player_id = PlayerId::P1);
+	void _gui_hide_control(Control *p_control, PlayerId p_player_id = PlayerId::P1);
 	void _gui_update_mouse_over();
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 	Control *_gui_get_drag_preview();
 
-	void _gui_remove_focus_for_window(Node *p_window);
-	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control *p_control);
-	void _gui_control_grab_focus(Control *p_control);
+	void _gui_remove_focus_for_window(Node *p_window, PlayerId p_player_id = PlayerId::P1);
+	void _gui_unfocus_control(Control *p_control, PlayerId p_player_id = PlayerId::P1);
+	bool _gui_control_has_focus(const Control *p_control, PlayerId p_player_id = PlayerId::P1);
+	void _gui_control_grab_focus(Control *p_control, PlayerId p_player_id = PlayerId::P1);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
@@ -591,7 +591,7 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
-	void push_text_input(const String &p_text);
+	void push_text_input(const String &p_text, PlayerId p_player_id = PlayerId::P1);
 	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
@@ -619,8 +619,8 @@ public:
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
 
-	void gui_release_focus();
-	Control *gui_get_focus_owner() const;
+	void gui_release_focus(PlayerId p_player_id = PlayerId::P1);
+	Control *gui_get_focus_owner(PlayerId p_player_id = PlayerId::P1) const;
 	Control *gui_get_hovered_control() const;
 
 	PackedStringArray get_configuration_warnings() const override;
