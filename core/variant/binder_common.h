@@ -174,6 +174,7 @@ VARIANT_ENUM_CAST(JoyButton);
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
 VARIANT_BITFIELD_CAST(MouseButtonMask);
+VARIANT_ENUM_CAST(PlayerMask);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HorizontalAlignment);
 VARIANT_ENUM_CAST(VerticalAlignment);

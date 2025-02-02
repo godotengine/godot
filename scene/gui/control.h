@@ -232,6 +232,9 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		// Accept inputs from all players by default.
+		uint8_t player_mask = UINT8_MAX;
+
 		ObjectID shortcut_context;
 
 		// Theming.
@@ -540,10 +543,10 @@ public:
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
-	bool has_focus() const;
-	void grab_focus();
-	void grab_click_focus();
-	void release_focus();
+	bool has_focus(int p_player = 0) const;
+	void grab_focus(int p_player = 0);
+	void grab_click_focus(int p_player = 0);
+	void release_focus(int p_player = 0);
 
 	Control *find_next_valid_focus() const;
 	Control *find_prev_valid_focus() const;
@@ -556,6 +559,10 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_player_mask(uint8_t p_mask);
+	uint8_t get_player_mask() const;
+	uint8_t get_ancestor_player_mask() const;
 
 	// Rendering.
 

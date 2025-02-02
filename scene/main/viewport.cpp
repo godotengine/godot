@@ -1786,6 +1786,8 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
+	const int p_id = p_event->get_player_index();
+
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		Point2 mpos = mb->get_position();
@@ -1837,8 +1839,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						if (control->get_focus_mode() != Control::FOCUS_NONE) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
-							if (control != gui.key_focus && gui.mouse_over_hierarchy.has(control)) {
-								control->grab_focus();
+							if (control != gui.key_focus[p_id] && gui.mouse_over_hierarchy.has(control)) {
+								control->grab_focus(p_id);
 							}
 							break;
 						}
@@ -2163,13 +2165,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
-			gui.key_focus->release_focus();
+		if (gui.key_focus[p_id] && !gui.key_focus[p_id]->is_visible_in_tree()) {
+			gui.key_focus[p_id]->release_focus();
 		}
 
-		if (gui.key_focus) {
-			if (gui.key_focus->can_process()) {
-				gui.key_focus->_call_gui_input(p_event);
+		if (gui.key_focus[p_id]) {
+			if (gui.key_focus[p_id]->can_process()) {
+				gui.key_focus[p_id]->_call_gui_input(p_event);
 			}
 
 			if (is_input_handled()) {
@@ -2177,7 +2179,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		Control *from = gui.key_focus ? gui.key_focus : nullptr;
+		Control *from = gui.key_focus[p_id] ? gui.key_focus[p_id] : nullptr;
 
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
@@ -2235,7 +2237,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 			if (next) {
-				next->grab_focus();
+				next->grab_focus(p_id);
 				set_input_as_handled();
 			}
 		}
@@ -2337,18 +2339,18 @@ void Viewport::_gui_remove_root_control(List<Control *>::Element *RI) {
 	gui.roots.erase(RI);
 }
 
-void Viewport::_gui_unfocus_control(Control *p_control) {
-	if (gui.key_focus == p_control) {
-		gui.key_focus->release_focus();
+void Viewport::_gui_unfocus_control(Control *p_control, int p_player) {
+	if (gui.key_focus[p_player] == p_control) {
+		gui.key_focus[p_player]->release_focus();
 	}
 }
 
-void Viewport::_gui_hide_control(Control *p_control) {
+void Viewport::_gui_hide_control(Control *p_control, int p_player) {
 	if (gui.mouse_focus == p_control) {
 		_drop_mouse_focus();
 	}
 
-	if (gui.key_focus == p_control) {
+	if (gui.key_focus[p_player] == p_control) {
 		gui_release_focus();
 	}
 	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
@@ -2362,13 +2364,13 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	}
 }
 
-void Viewport::_gui_remove_control(Control *p_control) {
+void Viewport::_gui_remove_control(Control *p_control, int p_player) {
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = nullptr;
 		gui.mouse_focus_mask.clear();
 	}
-	if (gui.key_focus == p_control) {
-		gui.key_focus = nullptr;
+	if (gui.key_focus[p_player] == p_control) {
+		gui.key_focus[p_player] = nullptr;
 	}
 	if (gui.mouse_over == p_control || gui.mouse_over_hierarchy.has(p_control)) {
 		_drop_mouse_over(p_control->get_parent_control());
@@ -2495,24 +2497,25 @@ Window *Viewport::get_base_window() {
 	return w;
 }
 
-void Viewport::_gui_remove_focus_for_window(Node *p_window) {
+void Viewport::_gui_remove_focus_for_window(Node *p_window, int p_player) {
 	if (get_base_window() == p_window) {
-		gui_release_focus();
+		gui_release_focus(p_player);
 	}
 }
 
-bool Viewport::_gui_control_has_focus(const Control *p_control) {
-	return gui.key_focus == p_control;
+bool Viewport::_gui_control_has_focus(const Control *p_control, int p_player) {
+	return gui.key_focus[p_player] == p_control;
 }
 
-void Viewport::_gui_control_grab_focus(Control *p_control) {
-	if (gui.key_focus && gui.key_focus == p_control) {
+void Viewport::_gui_control_grab_focus(Control *p_control, int p_player) {
+	if (gui.key_focus[p_player] && gui.key_focus[p_player] == p_control) {
 		// No need for change.
 		return;
 	}
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
+	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window(), p_player);
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
-		gui.key_focus = p_control;
+		gui.key_focus[p_player] = p_control;
+		// TODO: Anything to do here with this signal?
 		emit_signal(SNAME("gui_focus_changed"), p_control);
 		p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 		p_control->queue_redraw();
@@ -2627,15 +2630,15 @@ void Viewport::_post_gui_grab_click_focus() {
 
 ///////////////////////////////
 
-void Viewport::push_text_input(const String &p_text) {
+void Viewport::push_text_input(const String &p_text, int p_player) {
 	ERR_MAIN_THREAD_GUARD;
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
 
-	if (gui.key_focus) {
-		gui.key_focus->call("set_text", p_text);
+	if (gui.key_focus[p_player]) {
+		gui.key_focus[p_player]->call("set_text", p_text);
 	}
 }
 
@@ -3455,19 +3458,19 @@ int Viewport::gui_get_canvas_sort_index() {
 	return gui.canvas_sort_index++;
 }
 
-void Viewport::gui_release_focus() {
+void Viewport::gui_release_focus(int p_player) {
 	ERR_MAIN_THREAD_GUARD;
-	if (gui.key_focus) {
-		Control *f = gui.key_focus;
-		gui.key_focus = nullptr;
+	if (gui.key_focus[p_player]) {
+		Control *f = gui.key_focus[p_player];
+		gui.key_focus[p_player] = nullptr;
 		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
 		f->queue_redraw();
 	}
 }
 
-Control *Viewport::gui_get_focus_owner() const {
+Control *Viewport::gui_get_focus_owner(int p_player) const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-	return gui.key_focus;
+	return gui.key_focus[p_player];
 }
 
 Control *Viewport::gui_get_hovered_control() const {
@@ -4816,7 +4819,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window"), &Viewport::_gui_remove_focus_for_window);
+	ClassDB::bind_method(D_METHOD("_gui_remove_focus_for_window", "player"), &Viewport::_gui_remove_focus_for_window, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_positional_shadow_atlas_size", "size"), &Viewport::set_positional_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("get_positional_shadow_atlas_size"), &Viewport::get_positional_shadow_atlas_size);
