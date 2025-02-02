@@ -267,7 +267,7 @@ void ColorModeRAW::slider_draw(int p_which) {
 }
 
 bool ColorModeRAW::apply_theme() const {
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < ColorPicker::SLIDER_COUNT; i++) {
 		HSlider *slider = color_picker->get_slider(i);
 		slider->remove_theme_icon_override("grabber");
 		slider->remove_theme_icon_override("grabber_highlight");
