@@ -120,6 +120,15 @@
 				Returns layout direction and text writing direction.
 			</description>
 		</method>
+		<method name="get_output_max_value" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the maximum value for linear color components that can be displayed in HDR mode for this window.
+				Use this to scale HDR content to max out the display's brightness, for example lasers or other bright effects.
+				Will return 1.0 if HDR is not enabled or not supported.
+				[b]Note:[/b] You will need to convert sRGB colors to linear before multiplying by this value to get accurate results.
+			</description>
+		</method>
 		<method name="get_position_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -339,6 +348,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is currently embedded in another window.
+			</description>
+		</method>
+		<method name="is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window supports HDR output.
+				This depends on the platform, display capabilities, system settings, and the display the window is currently on.
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -627,6 +643,11 @@
 		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
+		</member>
+		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
+			If [code]true[/code], requests HDR output for the window, falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between displays, display capabilities change, or system settings are modified.
+			Only available on platforms that support HDR output, have HDR enabled in the system settings, and have a compatible display connected.
+			[b]Note:[/b] Some integrated GPUs have poor support for HDR output, even when they claim to support it. If you experience issues, try disabling this setting.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window].

@@ -2131,6 +2131,44 @@
 				Returns the current value of the given window's [param flag].
 			</description>
 		</method>
+		<method name="window_get_hdr_output_current_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the current maximum luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				If max luminance is being auto adjusted based on the display's capabilities, this will return that value.
+				Otherwise, it will return the value set by [method window_set_hdr_output_max_luminance].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_current_reference_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the current reference luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				If reference luminance is being auto adjusted based on the display's capabilities, this will return that value.
+				Otherwise, it will return the value set by [method window_set_hdr_output_reference_luminance].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum luminance in nits (cd/m²) set for HDR content for the window specified by [param window_id].
+				Negative values indicate that the value is being auto adjusted based on the display's capabilities.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_reference_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the SDR reference luminance in nits (cd/m²) set for HDR content for the window specified by [param window_id].
+				Negative values indicate that the value is being auto adjusted based on the display's capabilities.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
 		<method name="window_get_max_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2159,6 +2197,16 @@
 			<description>
 				Returns internal structure pointers for use in plugins.
 				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
+		<method name="window_get_output_max_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum value for linear color components that can be displayed in HDR mode for the window specified by [param window_id].
+				Use this to scale HDR content to max out the display's brightness, for example lasers or other bright effects.
+				Will return 1.0 if HDR is not enabled or not supported.
+				[b]Note:[/b] You will need to convert sRGB colors to linear before multiplying by this value to get accurate results.
 			</description>
 		</method>
 		<method name="window_get_popup_safe_rect" qualifiers="const">
@@ -2226,6 +2274,32 @@
 				Returns [code]true[/code] if the window specified by [param window_id] is focused.
 			</description>
 		</method>
+		<method name="window_is_hdr_output_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether HDR output is currently enabled for the window specified by [param window_id].
+				This value may change dynamically based on system settings, display capabilities, and which display the window is currently on.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_requested" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether HDR output is requested for the window specified by [param window_id].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether the window specified by [param window_id] supports HDR output.
+				This depends on the platform, display capabilities, system settings, and the display the window is currently on.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
 		<method name="window_is_maximize_allowed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2259,6 +2333,18 @@
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
 				Makes the window specified by [param window_id] request attention, which is materialized by the window title and taskbar entry blinking until the window is focused. This usually has no visible effect if the window is currently focused. The exact behavior varies depending on the operating system.
+			</description>
+		</method>
+		<method name="window_request_hdr_output">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether HDR output should be requested for the window specified by [param window_id], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between displays, display capabilities change, or system settings are modified.
+				Only available on platforms that support HDR output, have HDR enabled in the system settings, and have a compatible display connected.
+				[b]Note:[/b] Some integrated GPUs have poor support for HDR output, even when they claim to support it. If you experience issues, try disabling this setting.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
 			</description>
 		</method>
 		<method name="window_set_color">
@@ -2306,6 +2392,34 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag].
+			</description>
+		</method>
+		<method name="window_set_hdr_output_max_luminance">
+			<return type="void" />
+			<param index="0" name="max_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the maximum luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				Set to a negative value to automatically use the display's maximum capability.
+				By default, this is set to [code]-1[/code].
+				This controls the maximum brightness of bright elements in HDR content, typically by scaling down highlights within the scene.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] On some platforms, setting a custom max luminance is not supported and will always be auto adjusted based on the display's capabilities.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_reference_luminance">
+			<return type="void" />
+			<param index="0" name="reference_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the SDR reference luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				Set to a negative value to automatically adjust to the reference level set by the OS or window manager.
+				By default, this is set to [code]-1[/code].
+				This controls the brightness of SDR content (such as UI) when HDR is enabled.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] On some platforms, setting a custom reference luminance is not supported and will always be auto adjusted based on the display's capabilities.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -2619,6 +2733,9 @@
 		</constant>
 		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
+		</constant>
+		<constant name="FEATURE_HDR" value="35" enum="Feature">
+			Display server supports HDR output. [b]Windows[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.

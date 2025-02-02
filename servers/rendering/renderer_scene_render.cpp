@@ -373,8 +373,8 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 	return environment_storage.environment_get_exposure(p_env);
 }
 
-float RendererSceneRender::environment_get_white(RID p_env) const {
-	return environment_storage.environment_get_white(p_env);
+float RendererSceneRender::environment_get_white(RID p_env, float p_output_max_value) const {
+	return environment_storage.environment_get_white(p_env, p_output_max_value);
 }
 
 // Fog

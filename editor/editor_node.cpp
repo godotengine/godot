@@ -462,6 +462,14 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
+	// Enable HDR if requested and available.
+	bool hdr_output_needs_hdr_2d = false;
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR) && RD::get_singleton() && RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HDR_OUTPUT)) {
+		bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+		DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+		hdr_output_needs_hdr_2d = hdr_requested;
+	}
+
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
@@ -521,8 +529,11 @@ void EditorNode::_update_from_settings() {
 	get_viewport()->set_use_debanding(use_debanding);
 
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d);
+	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_output_needs_hdr_2d);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_output_needs_hdr_2d);
+	if (use_hdr_2d != hdr_output_needs_hdr_2d) {
+		WARN_PRINT("Forcing HDR 2D on because HDR output is enabled. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+	}
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);

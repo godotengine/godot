@@ -75,7 +75,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 pixel_size;
 	uint tonemapper;
-	uint pad;
+	uint pad1;
 
 	uvec2 glow_texture_size;
 	float glow_intensity;
@@ -88,6 +88,9 @@ layout(push_constant, std430) uniform Params {
 	float white;
 	float auto_exposure_scale;
 	float luminance_multiplier;
+
+	float output_max_value;
+	uint pad2[3];
 }
 params;
 
@@ -201,9 +204,9 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 // Based on Reinhard's extended formula, see equation 4 in https://doi.org/cjbgrt
 vec3 tonemap_reinhard(vec3 color, float white) {
 	float white_squared = white * white;
-	vec3 white_squared_color = white_squared * color;
-	// Equivalent to color * (1 + color / white_squared) / (1 + color)
-	return (white_squared_color + color * color) / (white_squared_color + white_squared);
+
+	// Updated version of the Reinhard tonemapper supporting HDR rendering.
+	return color * (1.0f + color / (white_squared / params.output_max_value)) / (1.0f + color / params.output_max_value);
 }
 
 vec3 tonemap_filmic(vec3 color, float white) {
@@ -347,6 +350,7 @@ vec3 srgb_to_linear(vec3 color) {
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR
 	// Ensure color values passed to tonemappers are positive.
 	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	// Linear is special: it always passes through with no adjustments.
 	if (params.tonemapper == TONEMAPPER_LINEAR) {
 		return color;
 	} else if (params.tonemapper == TONEMAPPER_REINHARD) {
