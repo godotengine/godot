@@ -2969,9 +2969,22 @@
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
 		<member name="rendering/rendering_device/drivers_fallback_order" type="PackedStringArray" setter="" getter="">
-			A [PackedStringArray] of rendering drivers fall back order. The forward renderer will fall back to other rendering drivers according to this order if current rendering driver is not supported. Make it empty to disable this feature.
-			Each item in it should be one of the following: [code]vulkan[/code], [code]d3d12[/code], [code]metal[/code], and [code]opengl3[/code].
-			[b]Note:[/b] Depending on the operating system, some rendering drivers might be unavailable and would be skipped.
+			A [PackedStringArray] of rendering drivers fall back order. The forward renderer will fall back to other rendering drivers according to this order if current rendering driver is not supported. Make it empty to disable this feature. This property can't be edited directly. Instead, set the order using the platform-specific overrides.
+		</member>
+		<member name="rendering/rendering_device/drivers_fallback_order.android" type="PackedStringArray" setter="" getter="">
+			Android override for [member rendering/rendering_device/drivers_fallback_order].
+		</member>
+		<member name="rendering/rendering_device/drivers_fallback_order.ios" type="PackedStringArray" setter="" getter="">
+			iOS override for [member rendering/rendering_device/drivers_fallback_order].
+		</member>
+		<member name="rendering/rendering_device/drivers_fallback_order.linuxbsd" type="PackedStringArray" setter="" getter="">
+			LinuxBSD override for [member rendering/rendering_device/drivers_fallback_order].
+		</member>
+		<member name="rendering/rendering_device/drivers_fallback_order.macos" type="PackedStringArray" setter="" getter="">
+			macOS override for [member rendering/rendering_device/drivers_fallback_order].
+		</member>
+		<member name="rendering/rendering_device/drivers_fallback_order.windows" type="PackedStringArray" setter="" getter="">
+			Windows override for [member rendering/rendering_device/drivers_fallback_order].
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.

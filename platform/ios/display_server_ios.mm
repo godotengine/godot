@@ -110,7 +110,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			bool failed = true;
-			PackedStringArray drivers = GLOBAL_GET("rendering/rendering_device/drivers_fallback_order");
+			PackedStringArray drivers = GLOBAL_GET("rendering/rendering_device/drivers_fallback_order.ios");
 			for (int i = 0; i < drivers.size(); ++i) {
 				String driver = drivers[i];
 #if defined(VULKAN_ENABLED)

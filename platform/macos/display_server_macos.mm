@@ -3798,7 +3798,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			bool failed = true;
-			PackedStringArray drivers = GLOBAL_GET("rendering/rendering_device/drivers_fallback_order");
+			PackedStringArray drivers = GLOBAL_GET("rendering/rendering_device/drivers_fallback_order.macos");
 			for (int i = 0; i < drivers.size(); ++i) {
 				String driver = drivers[i];
 #if defined(VULKAN_ENABLED)
