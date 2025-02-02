@@ -263,6 +263,7 @@ private:
 
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
+	bool tonemap_to_window = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
@@ -548,6 +549,9 @@ public:
 
 	void set_use_hdr_2d(bool p_enable);
 	bool is_using_hdr_2d() const;
+
+	void set_tonemap_to_window(bool p_enable);
+	bool is_tonemapping_to_window() const;
 
 	Ref<ViewportTexture> get_texture() const;
 
