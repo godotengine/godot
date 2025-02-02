@@ -150,6 +150,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_WINDOW_DRAG:
 		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+		case FEATURE_HDR:
 			return true;
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
@@ -1146,6 +1147,24 @@ static BOOL CALLBACK _MonitorEnumProcCount(HMONITOR hMonitor, HDC hdcMonitor, LP
 	return TRUE;
 }
 
+static BOOL CALLBACK _MonitorEnumProcMonitor(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumScreenData *data = (EnumScreenData *)dwData;
+
+	if (data->screen == data->count) {
+		data->monitor = hMonitor;
+		return FALSE;
+	}
+
+	data->count++;
+	return TRUE;
+}
+
+static HMONITOR _get_hmonitor_of_screen(int p_screen) {
+	EnumScreenData data = { 0, p_screen, nullptr };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcMonitor, (LPARAM)&data);
+	return data.monitor;
+}
+
 int DisplayServerWindows::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1234,6 +1253,14 @@ typedef struct {
 	int screen;
 	float rate;
 } EnumRefreshRateData;
+
+typedef struct {
+	Vector<DISPLAYCONFIG_PATH_INFO> paths;
+	Vector<DISPLAYCONFIG_MODE_INFO> modes;
+	int count;
+	int screen;
+	float sdrWhiteLevelInNits;
+} EnumSdrWhiteLevelData;
 
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumSizeData *data = (EnumSizeData *)dwData;
@@ -1515,6 +1542,201 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	}
 
 	return img;
+}
+
+#ifdef D3D12_ENABLED
+static bool _get_monitor_desc(HMONITOR p_monitor, DXGI_OUTPUT_DESC1 &r_Desc) {
+	ComPtr<IDXGIFactory4> dxgi_factory;
+	r_Desc = {};
+
+	if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&dxgi_factory)))) {
+		return false;
+	}
+
+	// Retrieve the current default adapter.
+	ComPtr<IDXGIAdapter1> dxgiAdapter;
+	if (FAILED(dxgi_factory->EnumAdapters1(0, &dxgiAdapter))) {
+		return false;
+	}
+
+	UINT i = 0;
+	ComPtr<IDXGIOutput> dxgiOutput;
+	DXGI_OUTPUT_DESC1 desc1;
+	while (dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND) {
+		ComPtr<IDXGIOutput6> output6;
+		if (FAILED(dxgiOutput.As(&output6))) {
+			continue;
+		}
+
+		if (FAILED(output6->GetDesc1(&desc1))) {
+			continue;
+		}
+
+		if (desc1.Monitor == p_monitor) {
+			r_Desc = desc1;
+			return true;
+		}
+
+		i++;
+	}
+
+	return false;
+}
+#endif // D3D12_ENABLED
+
+bool DisplayServerWindows::screen_is_hdr_supported(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+#ifdef D3D12_ENABLED
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	if (monitor == nullptr) {
+		return false;
+	}
+	DXGI_OUTPUT_DESC1 desc1;
+	if (!_get_monitor_desc(monitor, desc1)) {
+		return false;
+	}
+
+	return (desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+#else
+	return false;
+#endif // D3D12_ENABLED
+}
+
+float DisplayServerWindows::screen_get_min_luminance(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	const float default_return = 0.0f;
+	p_screen = _get_screen_index(p_screen);
+#ifdef D3D12_ENABLED
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	if (monitor == nullptr) {
+		return default_return;
+	}
+	DXGI_OUTPUT_DESC1 desc1;
+	if (!_get_monitor_desc(monitor, desc1)) {
+		return default_return;
+	}
+
+	return desc1.MinLuminance;
+#else
+	return default_return;
+#endif // D3D12_ENABLED
+}
+
+float DisplayServerWindows::screen_get_max_luminance(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	const float default_return = 0.0f;
+	p_screen = _get_screen_index(p_screen);
+#ifdef D3D12_ENABLED
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	DXGI_OUTPUT_DESC1 desc1;
+	if (!_get_monitor_desc(monitor, desc1)) {
+		return default_return;
+	}
+
+	return desc1.MaxLuminance;
+#else
+	return default_return;
+#endif // D3D12_ENABLED
+}
+
+float DisplayServerWindows::screen_get_max_full_frame_luminance(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	const float default_return = 0.0f;
+	p_screen = _get_screen_index(p_screen);
+#ifdef D3D12_ENABLED
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	DXGI_OUTPUT_DESC1 desc1;
+	if (!_get_monitor_desc(monitor, desc1)) {
+		return default_return;
+	}
+
+	return desc1.MaxFullFrameLuminance;
+#else
+	return default_return;
+#endif // D3D12_ENABLED
+}
+
+static BOOL CALLBACK _MonitorEnumProcSdrWhiteLevel(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumSdrWhiteLevelData *data = (EnumSdrWhiteLevelData *)dwData;
+
+	// Only return TRUE to go to the next screen. Everything past this point should return FALSE.
+	if (data->count != data->screen) {
+		data->count++;
+		return TRUE;
+	}
+
+	MONITORINFOEXW minfo;
+	memset(&minfo, 0, sizeof(minfo));
+	minfo.cbSize = sizeof(minfo);
+	if (!GetMonitorInfoW(hMonitor, &minfo)) {
+		ERR_FAIL_V_MSG(FALSE, vformat("Failed to get monitor info for screen: %d", data->screen));
+	}
+
+	// Find this screen's path.
+	for (const DISPLAYCONFIG_PATH_INFO &path : data->paths) {
+		DISPLAYCONFIG_SOURCE_DEVICE_NAME source_name;
+		memset(&source_name, 0, sizeof(source_name));
+		source_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+		source_name.header.size = sizeof(source_name);
+		source_name.header.adapterId = path.sourceInfo.adapterId;
+		source_name.header.id = path.sourceInfo.id;
+
+		if (DisplayConfigGetDeviceInfo(&source_name.header) != ERROR_SUCCESS) {
+			ERR_PRINT(vformat("Failed to get source name for screen: %d, adapterId: 0x%08X%08X, id: %d", data->screen, (uint32_t)path.sourceInfo.adapterId.HighPart, (uint32_t)path.sourceInfo.adapterId.LowPart, path.sourceInfo.id));
+			continue;
+		}
+
+		if (wcscmp(minfo.szDevice, source_name.viewGdiDeviceName) != 0) {
+			continue;
+		}
+
+		// Query the SDR white level.
+		DISPLAYCONFIG_SDR_WHITE_LEVEL sdr_white_level;
+		memset(&sdr_white_level, 0, sizeof(sdr_white_level));
+		sdr_white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
+		sdr_white_level.header.size = sizeof(sdr_white_level);
+		sdr_white_level.header.adapterId = path.targetInfo.adapterId;
+		sdr_white_level.header.id = path.targetInfo.id;
+
+		if (DisplayConfigGetDeviceInfo(&sdr_white_level.header) != ERROR_SUCCESS) {
+			ERR_PRINT(vformat("Failed to get SDR white level for screen: %d, adapterId: 0x%08X%08X, id: %d", data->screen, (uint32_t)path.targetInfo.adapterId.HighPart, (uint32_t)path.targetInfo.adapterId.LowPart, path.targetInfo.id));
+			continue;
+		}
+
+		data->sdrWhiteLevelInNits = (float)sdr_white_level.SDRWhiteLevel / 1000.0f * 80.0f;
+	}
+
+	return FALSE;
+}
+
+float DisplayServerWindows::screen_get_sdr_white_level(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	const float default_return = 0.0f;
+	p_screen = _get_screen_index(p_screen);
+	EnumSdrWhiteLevelData data = { Vector<DISPLAYCONFIG_PATH_INFO>(), Vector<DISPLAYCONFIG_MODE_INFO>(), 0, p_screen, default_return };
+
+	uint32_t path_count = 0;
+	uint32_t mode_count = 0;
+
+	if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_count, &mode_count) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG(0.0f, "Failed to get display config buffer sizes.");
+	}
+
+	data.paths.resize(path_count);
+	data.modes.resize(mode_count);
+
+	if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_count, data.paths.ptrw(), &mode_count, data.modes.ptrw(), nullptr) != ERROR_SUCCESS) {
+		ERR_FAIL_V_MSG(0.0f, "Failed to query display config.");
+	}
+
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSdrWhiteLevel, (LPARAM)&data);
+	return data.sdrWhiteLevelInNits;
 }
 
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
@@ -3114,6 +3336,81 @@ HWND DisplayServerWindows::_find_window_from_process_id(OS::ProcessID p_pid, HWN
 	return NULL;
 }
 
+// Get screen HDR capabilities for internal use only.
+// Do not report values from this method to the user.
+DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(int p_screen) const {
+	ScreenHdrData data;
+#ifdef D3D12_ENABLED
+	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
+	DXGI_OUTPUT_DESC1 desc;
+	if (_get_monitor_desc(monitor, desc)) {
+		data.hdr_supported = desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+		data.min_luminance = desc.MinLuminance;
+		data.max_luminance = desc.MaxLuminance;
+		data.max_average_luminance = desc.MaxFullFrameLuminance;
+	}
+#else
+	// If we don't have D3D12, assume HDR is supported to avoid blocking Vulkan only builds.
+	data.hdr_supported = true;
+	data.min_luminance = 0.0f;
+	data.max_luminance = 0.0f;
+	data.max_average_luminance = 0.0f;
+#endif // D3D12_ENABLED
+
+	data.sdr_white_level = screen_get_sdr_white_level(p_screen);
+	return data;
+}
+
+void DisplayServerWindows::_update_hdr_output_for_window(WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data) {
+#ifdef RD_ENABLED
+	if (rendering_context) {
+		bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
+		bool desired_hdr_enabled = p_window_data.hdr_output_requested && p_screen_data.hdr_supported;
+
+		if (current_hdr_enabled != desired_hdr_enabled) {
+			rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
+		}
+
+		if (p_window_data.hdr_output_auto_adjust_reference_luminance) {
+			if (p_screen_data.sdr_white_level > 0.0f) {
+				rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+			} else {
+				// If we failed to get the SDR white level, fallback to the last set value.
+				rendering_context->window_set_hdr_output_reference_luminance(p_window, p_window_data.hdr_output_reference_luminance);
+			}
+		}
+
+		if (p_window_data.hdr_output_auto_adjust_max_luminance) {
+			if (p_screen_data.max_luminance > 0.0f) {
+				rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+			} else {
+				// If we failed to get the max luminance, fallback to the last set value.
+				rendering_context->window_set_hdr_output_max_luminance(p_window, p_window_data.hdr_output_max_luminance);
+			}
+		}
+	}
+#endif // RD_ENABLED
+}
+
+void DisplayServerWindows::_update_hdr_output_for_tracked_windows() {
+	HashMap<int, ScreenHdrData> outputs;
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		if (E.value.hdr_output_requested) {
+			int screen = window_get_current_screen(E.key);
+
+			ScreenHdrData data;
+			if (!outputs.has(screen)) {
+				data = _get_screen_hdr_data(screen);
+				outputs.insert(screen, data);
+			} else {
+				data = outputs[screen];
+			}
+
+			_update_hdr_output_for_window(E.key, E.value, data);
+		}
+	}
+}
+
 Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
 	_THREAD_SAFE_METHOD_
 
@@ -4236,6 +4533,212 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+bool DisplayServerWindows::window_is_hdr_output_supported(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		return false; // HDR output is not supported by the rendering device.
+	}
+#endif
+
+	// The window supports HDR if the screen it is on supports HDR.
+	int screen = window_get_current_screen(p_window);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	return data.hdr_supported;
+}
+
+void DisplayServerWindows::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	ERR_FAIL_COND_MSG(p_enabled && (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
+#endif
+
+	WindowData &wd = windows[p_window];
+	wd.hdr_output_requested = p_enabled;
+
+	int screen = window_get_current_screen(p_window);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	_update_hdr_output_for_window(p_window, wd, data);
+}
+
+bool DisplayServerWindows::window_is_hdr_output_enabled(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+
+	return false;
+}
+
+void DisplayServerWindows::window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_window];
+	if (wd.hdr_output_prefer_high_precision == p_enabled) {
+		return; // No change.
+	}
+
+	wd.hdr_output_prefer_high_precision = p_enabled;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_prefer_high_precision(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerWindows::window_is_hdr_output_preferring_high_precision(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_prefer_high_precision;
+}
+
+void DisplayServerWindows::window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_window];
+	if (wd.hdr_output_auto_adjust_reference_luminance == p_enabled) {
+		return;
+	}
+
+	wd.hdr_output_auto_adjust_reference_luminance = p_enabled;
+
+	if (wd.hdr_output_auto_adjust_reference_luminance) {
+		int screen = window_get_current_screen(p_window);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		_update_hdr_output_for_window(p_window, wd, data);
+	} else {
+		// Apply the previously set reference luminance.
+#if defined(RD_ENABLED)
+		if (rendering_context) {
+			rendering_context->window_set_hdr_output_reference_luminance(p_window, wd.hdr_output_reference_luminance);
+		}
+#endif
+	}
+}
+
+bool DisplayServerWindows::window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_auto_adjust_reference_luminance;
+}
+
+void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(p_reference_luminance < 0.0f, "Reference luminance must be non-negative.");
+
+	WindowData &wd = windows[p_window];
+	wd.hdr_output_reference_luminance = p_reference_luminance;
+
+	// If the reference luminance is set to auto-adjust, don't apply it.
+	if (wd.hdr_output_auto_adjust_reference_luminance) {
+		return;
+	}
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+	}
+#endif
+}
+
+float DisplayServerWindows::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
+}
+
+void DisplayServerWindows::window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_window];
+	if (wd.hdr_output_auto_adjust_max_luminance == p_enabled) {
+		return;
+	}
+
+	wd.hdr_output_auto_adjust_max_luminance = p_enabled;
+
+	if (wd.hdr_output_auto_adjust_max_luminance) {
+		int screen = window_get_current_screen(p_window);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		_update_hdr_output_for_window(p_window, wd, data);
+	} else {
+		// Apply the previously set maximum luminance.
+#if defined(RD_ENABLED)
+		if (rendering_context) {
+			rendering_context->window_set_hdr_output_max_luminance(p_window, wd.hdr_output_max_luminance);
+		}
+#endif
+	}
+}
+
+bool DisplayServerWindows::window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	const WindowData &wd = windows[p_window];
+	return wd.hdr_output_auto_adjust_max_luminance;
+}
+
+void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_MSG(p_max_luminance < 0.0f, "Maximum luminance must be non-negative.");
+
+	WindowData &wd = windows[p_window];
+	wd.hdr_output_max_luminance = p_max_luminance;
+
+	// If the maximum luminance is set to auto-adjust, don't apply it.
+	if (wd.hdr_output_auto_adjust_max_luminance) {
+		return;
+	}
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+	}
+#endif
+}
+
+float DisplayServerWindows::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+
+	return 0.0f;
+}
+
+float DisplayServerWindows::window_get_hdr_output_max_value(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		if (rendering_context->window_get_hdr_output_enabled(p_window)) {
+			return rendering_context->window_get_hdr_output_max_value(p_window);
+		}
+	}
+#endif
+
+	return 1.0f;
 }
 
 void DisplayServerWindows::window_start_drag(WindowID p_window) {
@@ -5687,6 +6190,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 
+		case WM_DISPLAYCHANGE: {
+			_update_hdr_output_for_tracked_windows();
+		} break;
+
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
@@ -5779,6 +6286,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (window.rect_changed_callback.is_valid()) {
 					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
+
+				_update_hdr_output_for_tracked_windows();
 
 				// Update cursor clip region after window rect has changed.
 				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {

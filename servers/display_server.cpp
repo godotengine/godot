@@ -1267,6 +1267,62 @@ DisplayServer::VSyncMode DisplayServer::window_get_vsync_mode(WindowID p_window)
 	return VSyncMode::VSYNC_ENABLED;
 }
 
+bool DisplayServer::window_is_hdr_output_supported(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+bool DisplayServer::window_is_hdr_output_enabled(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+bool DisplayServer::window_is_hdr_output_preferring_high_precision(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+bool DisplayServer::window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+float DisplayServer::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+	return 0.0f;
+}
+
+void DisplayServer::window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+bool DisplayServer::window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window) const {
+	return false;
+}
+
+void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	WARN_PRINT("HDR output is not supported by this display server.");
+}
+
+float DisplayServer::window_get_hdr_output_max_luminance(WindowID p_window) const {
+	return 0.0f;
+}
+
+float DisplayServer::window_get_hdr_output_max_value(WindowID p_window) const {
+	return 1.0f;
+}
+
 DisplayServer::WindowID DisplayServer::get_focused_window() const {
 	return MAIN_WINDOW_ID; // Proper value for single windows.
 }
@@ -1402,6 +1458,12 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_image", "screen"), &DisplayServer::screen_get_image, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_image_rect", "rect"), &DisplayServer::screen_get_image_rect);
 
+	ClassDB::bind_method(D_METHOD("screen_is_hdr_supported", "screen"), &DisplayServer::screen_is_hdr_supported, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_min_luminance", "screen"), &DisplayServer::screen_get_min_luminance, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_max_luminance", "screen"), &DisplayServer::screen_get_max_luminance, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_max_full_frame_luminance", "screen"), &DisplayServer::screen_get_max_full_frame_luminance, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_sdr_white_level", "screen"), &DisplayServer::screen_get_sdr_white_level, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 
@@ -1468,6 +1530,24 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_supported", "window_id"), &DisplayServer::window_is_hdr_output_supported, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_enabled", "enabled", "window_id"), &DisplayServer::window_set_hdr_output_enabled, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_enabled", "window_id"), &DisplayServer::window_is_hdr_output_enabled, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_prefer_high_precision", "enabled", "window_id"), &DisplayServer::window_set_hdr_output_prefer_high_precision, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_preferring_high_precision", "window_id"), &DisplayServer::window_is_hdr_output_preferring_high_precision, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_auto_adjust_reference_luminance", "enabled", "window_id"), &DisplayServer::window_set_hdr_output_auto_adjust_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_auto_adjusting_reference_luminance", "window_id"), &DisplayServer::window_is_hdr_output_auto_adjusting_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_reference_luminance", "reference_luminance", "window_id"), &DisplayServer::window_set_hdr_output_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_reference_luminance", "window_id"), &DisplayServer::window_get_hdr_output_reference_luminance, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_auto_adjust_max_luminance", "enabled", "window_id"), &DisplayServer::window_set_hdr_output_auto_adjust_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_is_hdr_output_auto_adjusting_max_luminance", "window_id"), &DisplayServer::window_is_hdr_output_auto_adjusting_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_hdr_output_max_luminance", "max_luminance", "window_id"), &DisplayServer::window_set_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_max_luminance", "window_id"), &DisplayServer::window_get_hdr_output_max_luminance, DEFVAL(MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_get_hdr_output_max_value", "window_id"), &DisplayServer::window_get_hdr_output_max_value, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_is_maximize_allowed", "window_id"), &DisplayServer::window_is_maximize_allowed, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_maximize_on_title_dbl_click"), &DisplayServer::window_maximize_on_title_dbl_click);
@@ -1657,6 +1737,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_COLOR_PICKER);
 	BIND_ENUM_CONSTANT(FEATURE_SELF_FITTING_WINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_ACCESSIBILITY_SCREEN_READER);
+	BIND_ENUM_CONSTANT(FEATURE_HDR);
 
 	BIND_ENUM_CONSTANT(ROLE_UNKNOWN);
 	BIND_ENUM_CONSTANT(ROLE_DEFAULT_BUTTON);

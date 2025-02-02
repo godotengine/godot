@@ -337,6 +337,23 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
+	// Check if the viewport should be tonemapping to the screen.
+	bool adjust_tonemap_max_value = false;
+	DisplayServer::WindowID parent_window = _get_containing_window(p_viewport);
+	if (RD::get_singleton() && parent_window != DisplayServer::INVALID_WINDOW_ID) {
+		RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
+
+		if (p_viewport->tonemap_to_screen && context_driver->window_get_hdr_output_enabled(parent_window)) {
+			// Doesn't cover all possible cases, but should catch viewports that were set to tonemap to screen
+			if (!p_viewport->use_hdr_2d && !p_viewport->hdr_output_with_no_hdr_2d_warning_issued) {
+				p_viewport->hdr_output_with_no_hdr_2d_warning_issued = true;
+				WARN_PRINT_ED("Viewport is set to tonemap to screen and HDR output is enabled, but HDR 2D is not enabled. This may result in a lack of dynamic range. To fix this, enable HDR 2D in the viewport.");
+			}
+
+			adjust_tonemap_max_value = true;
+		}
+	}
+
 	if (RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
@@ -346,6 +363,15 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			} else if (RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS) {
 				// The scene renderer will still copy over the last frame, so we need to clear the render target.
 				force_clear_render_target = true;
+			}
+
+			// If the viewport is tonemapping to the screen, we need to adjust the maximum value for tonemapping.
+			if (adjust_tonemap_max_value) {
+				RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
+				float max_value = context_driver->window_get_hdr_output_max_value(parent_window);
+				RSG::scene->environment_set_max_value(environment, max_value);
+			} else {
+				RSG::scene->environment_set_max_value(environment, 1.0f);
 			}
 		}
 	}
@@ -722,6 +748,21 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		RSG::utilities->capture_timestamp(rt_id);
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
+}
+
+DisplayServer::WindowID RendererViewport::_get_containing_window(Viewport *p_viewport) {
+	if (p_viewport->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+		return p_viewport->viewport_to_screen;
+	}
+
+	if (p_viewport->parent.is_valid()) {
+		Viewport *parent = viewport_owner.get_or_null(p_viewport->parent);
+		if (parent) {
+			return _get_containing_window(parent);
+		}
+	}
+
+	return DisplayServer::INVALID_WINDOW_ID;
 }
 
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
@@ -1137,6 +1178,13 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 	}
 }
 
+void RendererViewport::viewport_set_tonemap_to_screen(RID p_viewport, bool p_enable) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	viewport->tonemap_to_screen = p_enable;
+}
+
 void RendererViewport::viewport_set_update_mode(RID p_viewport, RS::ViewportUpdateMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
@@ -1351,6 +1399,7 @@ void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d
 		return;
 	}
 	viewport->use_hdr_2d = p_use_hdr_2d;
+	viewport->hdr_output_with_no_hdr_2d_warning_issued = false;
 	RSG::texture_storage->render_target_set_use_hdr(viewport->render_target, p_use_hdr_2d);
 }
 
