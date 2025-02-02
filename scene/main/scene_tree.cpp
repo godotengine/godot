@@ -2060,7 +2060,7 @@ SceneTree::SceneTree() {
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	root->set_use_hdr_2d(use_hdr_2d);
 
-	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
+	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast),SMAA (Average)"), 0);
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
