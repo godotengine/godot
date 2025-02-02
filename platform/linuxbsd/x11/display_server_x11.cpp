@@ -4767,6 +4767,13 @@ void DisplayServerX11::process_events() {
 
 				// Have we failed to set fullscreen while the window was unmapped?
 				_validate_mode_on_map(window_id);
+
+				// On KDE Plasma, when the parent window of an embedded process is restored after being minimized,
+				// only the embedded window receives the Map notification, causing it to
+				// appear without its parent.
+				if (wd.embed_parent) {
+					XMapWindow(x11_display, wd.embed_parent);
+				}
 			} break;
 
 			case Expose: {
