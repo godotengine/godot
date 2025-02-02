@@ -3396,6 +3396,13 @@ void RichTextLabel::update_image(const Variant &p_key, BitField<ImageUpdateMask>
 				ItemImage *item = it_img;
 				if (p_mask & UPDATE_REGION) {
 					item->region = p_region;
+					if (!(p_mask & UPDATE_TEXTURE)) {
+						// Update existing atlas texture region, if texture is not updated.
+						Ref<AtlasTexture> atlas_tex = item->image;
+						if (atlas_tex.is_valid()) {
+							atlas_tex->set_region(item->region);
+						}
+					}
 				}
 				if (p_mask & UPDATE_TEXTURE) {
 					if (item->image.is_valid()) {
