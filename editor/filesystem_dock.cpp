@@ -746,7 +746,8 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	// Select the file or directory in the tree.
 	tree->deselect_all();
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
-		const String file_name = is_directory ? target_path.trim_suffix("/").get_file() + "/" : target_path.get_file();
+		// Either search for 'folder/' or '/file.ext'.
+		const String file_name = is_directory ? target_path.trim_suffix("/").get_file() + "/" : "/" + target_path.get_file();
 		TreeItem *item = is_directory ? *directory_ptr : (*directory_ptr)->get_first_child();
 		while (item) {
 			if (item->get_metadata(0).operator String().ends_with(file_name)) {
