@@ -153,6 +153,8 @@ public:
 
 	const StringName Start = "Start";
 	const StringName End = "End";
+	const StringName state_started = "state_started";
+	const StringName state_finished = "state_finished";
 
 	const StringName FlatButton = "FlatButton";
 };
