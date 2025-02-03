@@ -313,7 +313,7 @@ if not env["platform"]:
         env["platform"] = "windows"
 
     if env["platform"]:
-        print(f'Automatically detected platform: {env["platform"]}')
+        print(f"Automatically detected platform: {env['platform']}")
 
 # Deprecated aliases kept for compatibility.
 if env["platform"] in compatibility_platform_aliases:
@@ -998,8 +998,7 @@ if env["disable_3d"]:
 if env["disable_advanced_gui"]:
     if env.editor_build:
         print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, "
-            "only for export template builds."
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
         )
         Exit(255)
     else:

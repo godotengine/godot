@@ -499,7 +499,7 @@ def build_gles3_header(
             fd.write("\t\t};\n\n")
             variant_count = len(header_data.variant_defines)
         else:
-            fd.write("\t\tstatic const char **_variant_defines[]={" "};\n")
+            fd.write('\t\tstatic const char **_variant_defines[]={" "};\n')
 
         if header_data.texunits:
             fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
