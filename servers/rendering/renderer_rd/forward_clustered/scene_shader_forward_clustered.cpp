@@ -52,6 +52,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	blend_mode = BLEND_MODE_MIX;
+	Vector<StringName> blend_factor_names;
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
@@ -62,6 +63,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_alpha_clip = false;
 	uses_alpha_antialiasing = false;
 	uses_blend_alpha = false;
+	uses_blend_factors = false;
 	uses_depth_prepass_alpha = false;
 	uses_discard = false;
 	uses_roughness = false;
@@ -165,6 +167,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.stencil_reference = &stencil_referencei;
 
+	actions.blend_factors = &blend_factor_names;
 	actions.uniforms = &uniforms;
 
 	Error err = OK;
@@ -241,6 +244,14 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	}
 
 	uses_blend_alpha = blend_mode_uses_blend_alpha(BlendMode(blend_mode));
+
+	if (blend_factor_names.size() == 4) {
+		// Fully-specified blend mode inside shader overrides blending factors specified in blend_mode
+		uses_blend_factors = true;
+		for (int i = 0; i < 4; i++) {
+			blend_factors[i] = RD::render_get_blend_factor_by_name(blend_factor_names[i]);
+		}
+	}
 }
 
 bool SceneShaderForwardClustered::ShaderData::is_animated() const {
@@ -340,7 +351,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 #endif
 
 	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular, attachment 2: Motion Vectors
-	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));
+	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode), (uses_blend_factors) ? blend_factors : nullptr);
 	RD::PipelineColorBlendState blend_state_color_blend;
 	blend_state_color_blend.attachments = { blend_attachment, RD::PipelineColorBlendState::Attachment(), RD::PipelineColorBlendState::Attachment() };
 	RD::PipelineColorBlendState blend_state_color_opaque = RD::PipelineColorBlendState::create_disabled(3);
