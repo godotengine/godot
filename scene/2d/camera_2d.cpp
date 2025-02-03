@@ -31,6 +31,8 @@
 #include "camera_2d.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "editor/editor_node.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
@@ -48,16 +50,17 @@ void Camera2D::_edit_set_state(const Dictionary &p_state) {
 }
 
 void Camera2D::_edit_set_position(const Point2 &p_position) {
-	if (_edit_use_rect()) {
+	if (_is_dragging_limit_rect()) {
 		Rect2 rect = _get_limit_rect();
 		rect.position = p_position;
 		_set_limit_rect(rect);
+	} else {
+		Node2D::_edit_set_position(p_position);
 	}
-	Node2D::_edit_set_position(p_position);
 }
 
 Point2 Camera2D::_edit_get_position() const {
-	return _edit_use_rect() ? _get_limit_rect().position : Node2D::_edit_get_position();
+	return _is_dragging_limit_rect() ? _get_limit_rect().position : Node2D::_edit_get_position();
 }
 
 void Camera2D::_edit_set_rect(const Rect2 &p_rect) {
@@ -123,6 +126,10 @@ void Camera2D::_update_scroll() {
 		// TODO: Remove xform and screen_offset when ParallaxBackground/ParallaxLayer is removed.
 		get_tree()->call_group(group_name, SNAME("_camera_moved"), xform, screen_offset, adj_screen_pos);
 	}
+}
+
+bool Camera2D::_is_dragging_limit_rect() const {
+	return _edit_use_rect() && Input::get_singleton()->is_key_pressed(Key::CTRL);
 }
 
 #ifdef TOOLS_ENABLED
