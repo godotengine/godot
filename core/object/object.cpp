@@ -1089,8 +1089,8 @@ TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	get_method_list(&ml);
 	TypedArray<Dictionary> ret;
 
-	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
-		Dictionary d = E->get();
+	for (const MethodInfo &mi : ml) {
+		Dictionary d = mi;
 		//va.push_back(d);
 		ret.push_back(d);
 	}
