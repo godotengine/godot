@@ -39,19 +39,13 @@ class AtlasTexture : public Texture2D {
 
 	Rect2 _get_region_rect() const;
 
-public:
-	enum Direction {
-		NORTH,
-		EAST,
-		SOUTH,
-		WEST,
-	};
-
 protected:
 	Ref<Texture2D> atlas;
 	Rect2 region;
 	Rect2 margin;
-	Direction direction = NORTH;
+	bool hflip = false;
+	bool vflip = false;
+	bool transpose = false;
 	bool filter_clip = false;
 
 	int get_region_width() const;
@@ -75,8 +69,14 @@ public:
 	void set_margin(const Rect2 &p_margin);
 	Rect2 get_margin() const;
 
-	void set_direction(const Direction p_direction);
-	Direction get_direction() const;
+	void set_flip_h(const bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(const bool p_flip);
+	bool is_flipped_v() const;
+
+	void set_transpose(const bool p_transpose);
+	bool is_transposed() const;
 
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;
@@ -92,7 +92,5 @@ public:
 
 	AtlasTexture();
 };
-
-VARIANT_ENUM_CAST(AtlasTexture::Direction);
 
 #endif // ATLAS_TEXTURE_H
