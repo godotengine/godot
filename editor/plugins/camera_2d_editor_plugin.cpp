@@ -54,6 +54,7 @@ void Camera2DEditor::_menu_option(int p_option) {
 			selected_camera->set_limit(SIDE_TOP, 0);
 			selected_camera->set_limit(SIDE_RIGHT, GLOBAL_GET("display/window/size/viewport_width"));
 			selected_camera->set_limit(SIDE_BOTTOM, GLOBAL_GET("display/window/size/viewport_height"));
+			break;
 		}
 		default:
 			break;
