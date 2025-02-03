@@ -451,7 +451,7 @@ String FileAccess::get_line() const {
 	uint8_t c = get_8();
 
 	while (!eof_reached()) {
-		if (c == '\n' || c == '\0') {
+		if (c == '\n' || c == '\0' || get_error() != OK) {
 			line.push_back(0);
 			return String::utf8(line.get_data());
 		} else if (c != '\r') {
