@@ -39,6 +39,7 @@ import android.util.Log
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.FragmentActivity
+import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 
@@ -73,6 +74,13 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	@CallSuper
 	override fun onCreate(savedInstanceState: Bundle?) {
+		val assetsCommandLine = try {
+			CommandLineFileParser.parseCommandLine(assets.open("_cl_"))
+		} catch (ignored: Exception) {
+			mutableListOf()
+		}
+		commandLineParams.addAll(assetsCommandLine)
+
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
 		commandLineParams.addAll(params ?: emptyArray())
@@ -159,8 +167,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		intent = newIntent
 
 		handleStartIntent(newIntent, false)
-
-		godotFragment?.onNewIntent(newIntent)
 	}
 
 	private fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
@@ -215,5 +221,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		return GodotFragment()
 	}
 
+	@CallSuper
 	override fun getCommandLine(): MutableList<String> = commandLineParams
 }

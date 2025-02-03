@@ -40,7 +40,7 @@ import java.util.ArrayList
  *
  * Returns a mutable list of command lines
  */
-internal class CommandLineFileParser {
+internal object CommandLineFileParser {
 	fun parseCommandLine(inputStream: InputStream): MutableList<String> {
 		return try {
 			val headerBytes = ByteArray(4)
