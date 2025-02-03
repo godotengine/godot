@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_flecs = env_modules.Clone()
+
+# Add Flecs header path
+env_flecs.Append(CPPPATH=["#modules/flecs/thirdparty"])
+
+# Compile Flecs
+env_flecs.add_source_files(env.modules_sources, "thirdparty/flecs.c")
+
+# Compile module
+env_flecs.add_source_files(env.modules_sources, "*.cpp")
