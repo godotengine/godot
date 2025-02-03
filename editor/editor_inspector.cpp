@@ -4138,7 +4138,8 @@ void EditorInspector::expand_revertable() {
 }
 
 void EditorInspector::set_scroll_offset(int p_offset) {
-	set_v_scroll(p_offset);
+	// This can be called before the container finishes sorting its children, so defer it.
+	callable_mp((ScrollContainer *)this, &ScrollContainer::set_v_scroll).call_deferred(p_offset);
 }
 
 int EditorInspector::get_scroll_offset() const {
