@@ -202,6 +202,8 @@ protected:
 	Error _load_patches(const Vector<String> &p_patches);
 	void _unload_patches();
 
+	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
+
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 

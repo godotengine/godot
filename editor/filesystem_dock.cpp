@@ -1959,17 +1959,11 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	}
 
 	if (p_copy) {
-		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
 			if (to_move[i].path != new_paths[i]) {
 				_try_duplicate_item(to_move[i], new_paths[i]);
 				select_after_scan = new_paths[i];
-				is_copied = true;
 			}
-		}
-
-		if (is_copied) {
-			_rescan();
 		}
 	} else {
 		// Check groups.

@@ -4513,6 +4513,297 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 	return Variant();
 }
 
+Variant ShaderLanguage::get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
+	int array_size = p_array_size;
+
+	Variant value;
+	switch (p_type) {
+		case ShaderLanguage::TYPE_BOOL:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<bool>::init(&value);
+				VariantDefaultInitializer<bool>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC2:
+			array_size *= 2;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<int64_t>::init(&value);
+				VariantDefaultInitializer<int64_t>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC3:
+			array_size *= 3;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<int64_t>::init(&value);
+				VariantDefaultInitializer<int64_t>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_BVEC4:
+			array_size *= 4;
+
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(false);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<int64_t>::init(&value);
+				VariantDefaultInitializer<int64_t>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_INT:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<int64_t>::init(&value);
+				VariantDefaultInitializer<int64_t>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC2:
+			if (array_size > 0) {
+				array_size *= 2;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector2i>::init(&value);
+				VariantDefaultInitializer<Vector2i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC3:
+			if (array_size > 0) {
+				array_size *= 3;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector3i>::init(&value);
+				VariantDefaultInitializer<Vector3i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_IVEC4:
+			if (array_size > 0) {
+				array_size *= 4;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector4i>::init(&value);
+				VariantDefaultInitializer<Vector4i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_UINT:
+			if (array_size > 0) {
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<int64_t>::init(&value);
+				VariantDefaultInitializer<int64_t>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC2:
+			if (array_size > 0) {
+				array_size *= 2;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector2i>::init(&value);
+				VariantDefaultInitializer<Vector2i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC3:
+			if (array_size > 0) {
+				array_size *= 3;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector3i>::init(&value);
+				VariantDefaultInitializer<Vector3i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_UVEC4:
+			if (array_size > 0) {
+				array_size *= 4;
+
+				PackedInt32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0U);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector4i>::init(&value);
+				VariantDefaultInitializer<Vector4i>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_FLOAT:
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(0.0f);
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<float>::init(&value);
+				VariantDefaultInitializer<float>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC2:
+			if (array_size > 0) {
+				PackedVector2Array array;
+				for (int i = 0; i < array_size; i++) {
+					array.push_back(Vector2(0.0f, 0.0f));
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Vector2>::init(&value);
+				VariantDefaultInitializer<Vector2>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC3:
+			if (array_size > 0) {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					PackedColorArray array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Color(0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				} else {
+					PackedVector3Array array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Vector3(0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				}
+			} else {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					VariantInitializer<Color>::init(&value);
+					VariantDefaultInitializer<Color>::init(&value);
+				} else {
+					VariantInitializer<Vector3>::init(&value);
+					VariantDefaultInitializer<Vector3>::init(&value);
+				}
+			}
+			break;
+		case ShaderLanguage::TYPE_VEC4:
+			if (array_size > 0) {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					PackedColorArray array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Color(0.0f, 0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				} else {
+					PackedVector4Array array;
+					for (int i = 0; i < array_size; i++) {
+						array.push_back(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+					}
+					value = Variant(array);
+				}
+			} else {
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
+					VariantInitializer<Color>::init(&value);
+					VariantDefaultInitializer<Color>::init(&value);
+				} else {
+					VariantInitializer<Vector4>::init(&value);
+					VariantDefaultInitializer<Vector4>::init(&value);
+				}
+			}
+			break;
+		case ShaderLanguage::TYPE_MAT2:
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 4; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Transform2D>::init(&value);
+				VariantDefaultInitializer<Transform2D>::init(&value);
+			}
+			break;
+		case ShaderLanguage::TYPE_MAT3: {
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 9; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Basis>::init(&value);
+				VariantDefaultInitializer<Basis>::init(&value);
+			}
+			break;
+		}
+		case ShaderLanguage::TYPE_MAT4: {
+			if (array_size > 0) {
+				PackedFloat32Array array;
+				for (int i = 0; i < array_size; i++) {
+					for (int j = 0; j < 16; j++) {
+						array.push_back(0.0f);
+					}
+				}
+				value = Variant(array);
+			} else {
+				VariantInitializer<Projection>::init(&value);
+				VariantDefaultInitializer<Projection>::init(&value);
+			}
+			break;
+		}
+		default: {
+		} break;
+	}
+	return value;
+}
+
 PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform &p_uniform) {
 	PropertyInfo pi;
 	switch (p_uniform.type) {

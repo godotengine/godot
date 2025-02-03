@@ -117,6 +117,10 @@ public:
 	void set_profile(Ref<SkeletonProfile> p_profile);
 	Ref<SkeletonProfile> get_profile() const;
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
+
 	RetargetModifier3D();
 	virtual ~RetargetModifier3D();
 };

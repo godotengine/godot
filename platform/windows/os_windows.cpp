@@ -2168,7 +2168,7 @@ String OS_Windows::get_temp_path() const {
 			temp_path_cache = get_config_path();
 		}
 	}
-	return temp_path_cache;
+	return temp_path_cache.replace("\\", "/").trim_suffix("/");
 }
 
 // Get properly capitalized engine name for system paths
