@@ -40,20 +40,6 @@ void EmbeddedProcess::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			window = get_window();
 		} break;
-		case NOTIFICATION_PROCESS: {
-			_check_focused_process_id();
-			_check_mouse_over();
-
-			// We need to detect when the control globally changes location or size on the screen.
-			// NOTIFICATION_RESIZED and NOTIFICATION_WM_POSITION_CHANGED are not enough to detect
-			// resized parent to siblings controls that can affect global position.
-			Rect2i new_global_rect = get_global_rect();
-			if (last_global_rect != new_global_rect) {
-				last_global_rect = new_global_rect;
-				queue_update_embedded_process();
-			}
-
-		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
 		} break;
@@ -192,7 +178,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	current_process_id = p_pid;
 	start_embedding_time = OS::get_singleton()->get_ticks_msec();
 	embedding_grab_focus = has_focus();
-	set_process(true);
+	timer_update_embedded_process->start();
 	set_notify_transform(true);
 
 	// Attempt to embed the process, but if it has just started and the window is not ready yet,
@@ -209,7 +195,7 @@ void EmbeddedProcess::reset() {
 	start_embedding_time = 0;
 	embedding_grab_focus = false;
 	timer_embedding->stop();
-	set_process(false);
+	timer_update_embedded_process->stop();
 	set_notify_transform(false);
 	queue_redraw();
 }
@@ -242,18 +228,31 @@ bool EmbeddedProcess::_is_embedded_process_updatable() {
 }
 
 void EmbeddedProcess::queue_update_embedded_process() {
-	if (updated_embedded_process_queued || !_is_embedded_process_updatable()) {
-		return;
+	updated_embedded_process_queued = true;
+}
+
+void EmbeddedProcess::_timer_update_embedded_process_timeout() {
+	_check_focused_process_id();
+	_check_mouse_over();
+
+	if (!updated_embedded_process_queued) {
+		// We need to detect when the control globally changes location or size on the screen.
+		// NOTIFICATION_RESIZED and NOTIFICATION_WM_POSITION_CHANGED are not enough to detect
+		// resized parent to siblings controls that can affect global position.
+		Rect2i new_global_rect = get_global_rect();
+		if (last_global_rect != new_global_rect) {
+			last_global_rect = new_global_rect;
+			queue_update_embedded_process();
+		}
 	}
 
-	updated_embedded_process_queued = true;
-
-	callable_mp(this, &EmbeddedProcess::_update_embedded_process).call_deferred();
+	if (updated_embedded_process_queued) {
+		updated_embedded_process_queued = false;
+		_update_embedded_process();
+	}
 }
 
 void EmbeddedProcess::_update_embedded_process() {
-	updated_embedded_process_queued = false;
-
 	if (!_is_embedded_process_updatable()) {
 		return;
 	}
@@ -352,6 +351,12 @@ EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding->set_one_shot(true);
 	add_child(timer_embedding);
 	timer_embedding->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_embedding_timeout));
+
+	timer_update_embedded_process = memnew(Timer);
+	timer_update_embedded_process->set_wait_time(0.1);
+	add_child(timer_update_embedded_process);
+	timer_update_embedded_process->connect("timeout", callable_mp(this, &EmbeddedProcess::_timer_update_embedded_process_timeout));
+
 	set_focus_mode(FOCUS_ALL);
 }
 
