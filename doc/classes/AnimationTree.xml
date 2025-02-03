@@ -40,6 +40,13 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_node_notification">
+			<param index="0" name="animation_node_path" type="StringName" />
+			<param index="1" name="what" type="int" />
+			<description>
+				Emitted when the animation node located at [param animation_node_path] state changes during processing or playback.
+			</description>
+		</signal>
 		<signal name="animation_player_changed">
 			<description>
 				Emitted when the [member anim_player] is changed.
