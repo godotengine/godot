@@ -1470,15 +1470,10 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		file->add_filter("*." + E, E.to_upper());
 		preferred.push_back(E);
 	}
-	// Lowest priority extension.
+	// Lowest provided extension priority.
 	List<String>::Element *res_element = preferred.find("res");
 	if (res_element) {
 		preferred.move_to_back(res_element);
-	}
-	// Highest priority extension.
-	List<String>::Element *tres_element = preferred.find("tres");
-	if (tres_element) {
-		preferred.move_to_front(tres_element);
 	}
 
 	if (!p_at_path.is_empty()) {
