@@ -307,7 +307,7 @@ private:
 		real_t activity = 0.0;
 	};
 	mutable AHashMap<StringName, LocalVector<Activity>> input_activity_map;
-	mutable AHashMap<StringName, LocalVector<Activity> *> input_activity_map_get;
+	mutable AHashMap<StringName, int> input_activity_map_get;
 
 	NodePath animation_player;
 
