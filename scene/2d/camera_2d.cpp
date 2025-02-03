@@ -128,7 +128,12 @@ void Camera2D::_update_scroll() {
 }
 
 bool Camera2D::_is_dragging_limit_rect() const {
-	return _edit_use_rect() && Input::get_singleton()->is_key_pressed(Key::CTRL);
+	bool is_ctrl_held = Input::get_singleton()->is_key_pressed(Key::CTRL);
+#ifdef DEBUG_ENABLED
+	return _edit_use_rect() && is_ctrl_held;
+#else
+	return is_ctrl_held;
+#endif
 }
 
 #ifdef TOOLS_ENABLED
