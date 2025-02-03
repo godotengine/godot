@@ -572,6 +572,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 			is_fading_out = true;
 			cur_fade_out_remaining = fade_out;
 			cur_fade_in_remaining = 0;
+			if (cur_fade_out_remaining > 0) {
+				_notify_tree(ANIMATION_NODE_NOTIFICATION_FADEOUT_STARTED);
+			}
 		} else {
 			// Shot is ended, do nothing.
 			is_shooting = false;
@@ -675,6 +678,9 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 		cur_fade_out_remaining = os_nti.get_remain(break_loop_at_end);
 		cur_fade_in_remaining = 0;
 		set_parameter(internal_active, false);
+		if (cur_fade_out_remaining > 0) {
+			_notify_tree(ANIMATION_NODE_NOTIFICATION_FADEOUT_STARTED);
+		}
 	}
 
 	if (!p_seek) {
@@ -695,6 +701,10 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 
 	set_parameter(fade_in_remaining, cur_fade_in_remaining);
 	set_parameter(fade_out_remaining, cur_fade_out_remaining);
+
+	if (cur_active != (bool)get_parameter(active)) {
+		_notify_tree(cur_active ? ANIMATION_NODE_NOTIFICATION_FINISHED : ANIMATION_NODE_NOTIFICATION_STARTED);
+	}
 
 	return cur_internal_active ? os_nti : main_nti;
 }
@@ -1554,7 +1564,6 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	ERR_FAIL_COND(p_new_name == SceneStringName(output));
 
 	nodes[p_name].node->disconnect_changed(callable_mp(this, &AnimationNodeBlendTree::_node_changed));
-
 	nodes[p_new_name] = nodes[p_name];
 	nodes.erase(p_name);
 
@@ -1853,7 +1862,7 @@ void AnimationNodeBlendTree::_initialize_node_tree() {
 	n.node = output;
 	n.position = Vector2(300, 150);
 	n.connections.resize(1);
-	nodes["output"] = n;
+	nodes[SceneStringName(output)] = n;
 }
 
 AnimationNodeBlendTree::AnimationNodeBlendTree() {
