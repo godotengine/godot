@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "editor/editor_node.h"
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
