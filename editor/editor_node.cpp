@@ -2069,6 +2069,13 @@ void EditorNode::restart_editor(bool p_goto_project_manager) {
 
 	if (p_goto_project_manager) {
 		args.push_back("--project-manager");
+
+		// Setup working directory.
+		const String exec_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		if (!exec_dir.is_empty()) {
+			args.push_back("--path");
+			args.push_back(exec_dir);
+		}
 	} else {
 		args.push_back("--path");
 		args.push_back(ProjectSettings::get_singleton()->get_resource_path());
