@@ -153,6 +153,8 @@ public:
 
 	const StringName Start = StaticCString::create("Start");
 	const StringName End = StaticCString::create("End");
+	const StringName state_started = StaticCString::create("state_started");
+	const StringName state_finished = StaticCString::create("state_finished");
 
 	const StringName FlatButton = StaticCString::create("FlatButton");
 };
