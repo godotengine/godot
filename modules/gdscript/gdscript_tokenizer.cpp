@@ -696,13 +696,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	if (_peek(-1) == '.') {
 		has_decimal = true;
 	} else if (_peek(-1) == '0') {
-		if (_peek() == 'x') {
+		if (_peek() == 'x' || _peek() == 'X') {
 			// Hexadecimal.
 			base = 16;
 			digit_check_func = is_hex_digit;
 			need_digits = true;
 			_advance();
-		} else if (_peek() == 'b') {
+		} else if (_peek() == 'b' || _peek() == 'B') {
 			// Binary.
 			base = 2;
 			digit_check_func = is_binary_digit;
