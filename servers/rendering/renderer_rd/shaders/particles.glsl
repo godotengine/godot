@@ -167,6 +167,8 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 
 /* SET 3: MATERIAL */
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = 3, binding = 0, std140) uniform MaterialUniforms {

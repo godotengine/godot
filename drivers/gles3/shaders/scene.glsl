@@ -479,6 +479,10 @@ out highp vec4 shadow_coord4;
 #endif //LIGHT_USE_PSSM4
 #endif
 
+/* clang-format off */
+#STRUCTS
+/* clang-format on */
+
 #ifdef MATERIAL_UNIFORMS_USED
 
 /* clang-format off */
@@ -915,6 +919,10 @@ uniform samplerCube refprobe2_texture; // texunit:-9
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
+
+/* clang-format off */
+#STRUCTS
+/* clang-format on */
 
 /* Material Uniforms */
 #ifdef MATERIAL_UNIFORMS_USED

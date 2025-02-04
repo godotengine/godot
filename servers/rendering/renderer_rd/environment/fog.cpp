@@ -342,7 +342,7 @@ void Fog::FogShaderData::set_code(const String &p_code) {
 		version = fog_singleton->volumetric_fog.shader.version_create();
 	}
 
-	fog_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
+	fog_singleton->volumetric_fog.shader.version_set_compute_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_structs[ShaderCompiler::STAGE_COMPUTE], gen_code.stage_globals[ShaderCompiler::STAGE_COMPUTE], gen_code.defines);
 	ERR_FAIL_COND(!fog_singleton->volumetric_fog.shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;

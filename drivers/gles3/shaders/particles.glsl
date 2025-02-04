@@ -21,6 +21,10 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
+/* clang-format on */
+#STRUCTS
+/* clang-format off */
+
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
 layout(std140) uniform MaterialUniforms{ //ubo:2

@@ -102,6 +102,10 @@ flat out vec4 varying_E;
 flat out uvec2 varying_F;
 flat out uvec4 varying_G;
 
+/* clang-format on */
+#STRUCTS
+/* clang-format off */
+
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
 layout(std140) uniform MaterialUniforms{ //ubo:4
@@ -344,6 +348,8 @@ uniform mediump uint batch_flags;
 uniform highp uint specular_shininess_in;
 
 layout(location = 0) out vec4 frag_color;
+
+#STRUCTS
 
 /* clang-format off */
 // This needs to be outside clang-format so the ubo comment is in the right place

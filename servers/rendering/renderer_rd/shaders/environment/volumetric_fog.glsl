@@ -76,6 +76,8 @@ layout(r32ui, set = 1, binding = 3) uniform volatile uimage3D density_only_map;
 layout(r32ui, set = 1, binding = 4) uniform volatile uimage3D light_only_map;
 #endif
 
+#STRUCTS
+
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
 layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
