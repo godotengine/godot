@@ -597,7 +597,7 @@ void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -1392,6 +1392,8 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 
+	ADD_PROPERTY_DEFAULT("seed", 0);
+
 	////////////////////////////////
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles2D::set_direction);
@@ -1561,6 +1563,7 @@ CPUParticles2D::CPUParticles2D() {
 	set_emitting(true);
 	set_amount(8);
 	set_use_local_coordinates(false);
+	set_seed(Math::rand());
 
 	rng.instantiate();
 
