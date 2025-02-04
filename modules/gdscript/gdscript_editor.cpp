@@ -3956,10 +3956,38 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						} else {
 							const int dot_pos = enum_name.rfind_char('.');
 							if (dot_pos >= 0) {
+								Error err = OK;
 								r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-								r_result.class_name = enum_name.left(dot_pos);
-								r_result.class_member = p_symbol;
-								return OK;
+								if (base_type.class_type != nullptr) {
+									// For script enums the value isn't accessible as class constant so we need the full enum name.
+									r_result.class_name = enum_name;
+									r_result.class_member = p_symbol;
+									r_result.script = GDScriptCache::get_shallow_script(base_type.script_path, err);
+									r_result.script_path = base_type.script_path;
+									if (base_type.class_type->has_member(enum_name.substr(dot_pos + 1))) {
+										const GDScriptParser::ClassNode::Member member = base_type.class_type->get_member(enum_name.substr(dot_pos + 1));
+										if (member.type == GDScriptParser::ClassNode::Member::ENUM) {
+											for (const GDScriptParser::EnumNode::Value &value : member.m_enum->values) {
+												if (value.identifier->name == p_symbol) {
+													r_result.location = value.line;
+													break;
+												}
+											}
+										}
+									}
+								} else if (base_type.script_type.is_valid()) {
+									// For script enums the value isn't accessible as class constant so we need the full enum name.
+									r_result.class_name = enum_name;
+									r_result.class_member = p_symbol;
+									r_result.script = base_type.script_type;
+									r_result.script_path = base_type.script_path;
+									// TODO: Find a way to obtain enum value location for a script
+									r_result.location = base_type.script_type->get_member_line(enum_name.substr(dot_pos + 1));
+								} else {
+									r_result.class_name = enum_name.left(dot_pos);
+									r_result.class_member = p_symbol;
+								}
+								return err;
 							}
 						}
 					} else if (Variant::has_builtin_method(Variant::DICTIONARY, p_symbol)) {
