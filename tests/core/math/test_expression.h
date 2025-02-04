@@ -213,6 +213,15 @@ TEST_CASE("[Expression] Underscored numeric literals") {
 	CHECK_MESSAGE(
 			expression.parse("0xff_99_00") == OK,
 			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0Xff_99_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0b10_11_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0B10_11_00") == OK,
+			"The expression should parse successfully.");
 }
 
 TEST_CASE("[Expression] Built-in functions") {
