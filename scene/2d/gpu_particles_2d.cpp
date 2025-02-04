@@ -408,7 +408,7 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 
 void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 	if (p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
@@ -899,6 +899,8 @@ void GPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMIT_FLAG_VELOCITY);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_COLOR);
 	BIND_ENUM_CONSTANT(EMIT_FLAG_CUSTOM);
+
+	ADD_PROPERTY_DEFAULT("seed", 0);
 }
 
 GPUParticles2D::GPUParticles2D() {
@@ -912,8 +914,8 @@ GPUParticles2D::GPUParticles2D() {
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
+	set_seed(Math::rand());
 	set_use_fixed_seed(false);
-	set_seed(0);
 	set_amount(8);
 	set_amount_ratio(1.0);
 	set_lifetime(1);
