@@ -159,7 +159,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+						} else if (range[c] == '0' && (c <= range.length() - 2) && (range[c + 1] == 'x' || range[c + 1] == 'X')) {
 							// Read hexadecimal value, start.
 							token = String();
 							if (step == STEP_START_BEGIN) {

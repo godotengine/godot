@@ -351,12 +351,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		// Special cases for numbers.
 		if (in_number && !is_a_digit) {
-			if (str[j] == 'b' && str[j - 1] == '0') {
+			if ((str[j] == 'b' || str[j] == 'B') && str[j - 1] == '0') {
 				is_bin_notation = true;
-			} else if (str[j] == 'x' && str[j - 1] == '0') {
+			} else if ((str[j] == 'x' || str[j] == 'X') && str[j - 1] == '0') {
 				is_hex_notation = true;
 			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
-					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
+					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'B' || str[j - 1] == 'x' || str[j - 1] == 'X' || str[j - 1] == '.')) &&
 					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
 					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '_' || str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
 					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
