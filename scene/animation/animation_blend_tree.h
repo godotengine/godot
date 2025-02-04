@@ -411,6 +411,7 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 	};
 
 	AHashMap<StringName, Node> nodes;
+	AHashMap<AnimationNode *, StringName> node_to_name;
 
 	Vector2 graph_offset;
 
