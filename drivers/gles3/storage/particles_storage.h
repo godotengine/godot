@@ -436,6 +436,7 @@ public:
 	GLuint particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
 	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override;
 
 	_FORCE_INLINE_ Size2i particles_collision_get_heightfield_size(RID p_particles_collision) const {
 		ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
