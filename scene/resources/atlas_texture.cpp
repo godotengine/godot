@@ -31,7 +31,7 @@
 #include "atlas_texture.h"
 
 int AtlasTexture::get_width() const {
-	return transpose ? get_region_height(): get_region_width();
+	return transpose ? get_region_height() : get_region_width();
 }
 
 int AtlasTexture::get_height() const {
@@ -318,8 +318,7 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 		} else {
 			x += p_y;
 		}
-	}
-	else {
+	} else {
 		if (hflip) {
 			x += region.size.x - p_x;
 		} else {
