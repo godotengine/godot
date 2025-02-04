@@ -547,6 +547,7 @@ bool Camera2D::is_ignoring_rotation() const {
 void Camera2D::set_limit_enabled(bool p_limit_enabled) {
 	limit_enabled = p_limit_enabled;
 	_update_scroll();
+	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin
 	notify_property_list_changed();
 }
 
@@ -1050,4 +1051,6 @@ Camera2D::Camera2D() {
 
 	set_notify_transform(true);
 	set_hide_clip_children(true);
+
+	add_user_signal(MethodInfo("_camera_limit_enabled_updated")); // Camera2DEditorPlugin listens to this
 }

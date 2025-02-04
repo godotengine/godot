@@ -73,6 +73,8 @@ class Camera2DEditorPlugin : public EditorPlugin {
 
 	Label *approach_to_move_rect = nullptr;
 
+	void _update_approach_text_visibility();
+
 public:
 	virtual String get_plugin_name() const override { return "Camera2D"; }
 	bool has_main_screen() const override { return false; }

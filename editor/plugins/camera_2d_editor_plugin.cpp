@@ -83,8 +83,31 @@ Camera2DEditor::Camera2DEditor() {
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Camera2DEditor::_menu_option));
 }
 
+void Camera2DEditorPlugin::_update_approach_text_visibility() {
+	if (camera_2d_editor->selected_camera == nullptr) {
+		print_line("Selected camera is null");
+		return;
+	}
+	approach_to_move_rect->set_visible(camera_2d_editor->selected_camera->is_limit_enabled());
+}
+
 void Camera2DEditorPlugin::edit(Object *p_object) {
-	camera_2d_editor->edit(Object::cast_to<Camera2D>(p_object));
+	Camera2D *cam = Object::cast_to<Camera2D>(p_object);
+	if (cam != nullptr) {
+		Callable update_text = callable_mp(this, &Camera2DEditorPlugin::_update_approach_text_visibility);
+		StringName update_signal = SNAME("_camera_limit_enabled_updated");
+
+		if (cam->is_connected(update_signal, update_text)) {
+			cam->disconnect(update_signal, update_text);
+		}
+
+		camera_2d_editor->edit(cam);
+		_update_approach_text_visibility();
+
+		if (!cam->is_connected(update_signal, update_text)) {
+			cam->connect(update_signal, update_text);
+		}
+	}
 }
 
 bool Camera2DEditorPlugin::handles(Object *p_object) const {
