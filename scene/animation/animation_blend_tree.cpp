@@ -45,6 +45,7 @@ Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullpt
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::BOOL, backward, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::STRING_NAME, animation, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
 Variant AnimationNodeAnimation::get_parameter_default_value(const StringName &p_parameter) const {
