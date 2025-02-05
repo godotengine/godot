@@ -4387,13 +4387,57 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			_edit_set(p_path, Variant(), false, "");
 		} else {
 			Variant to_create;
-			List<PropertyInfo> pinfo;
-			object->get_property_list(&pinfo);
-			for (const PropertyInfo &E : pinfo) {
-				if (E.name == p_path) {
-					Callable::CallError ce;
-					Variant::construct(E.type, to_create, nullptr, 0, ce);
-					break;
+			Control *control = Object::cast_to<Control>(object);
+			bool skip = false;
+			if (control) {
+				if (p_path.begins_with("theme_override_icons/")) {
+					String name = p_path.substr(strlen("theme_override_icons/"));
+					if (control->has_theme_icon(name)) { // Exclude the dump icon cache.
+						to_create = control->get_theme_icon(name)->duplicate();
+						skip = !to_create.is_null();
+					}
+				} else if (p_path.begins_with("theme_override_styles/")) {
+					String name = p_path.substr(strlen("theme_override_styles/"));
+					if (control->has_theme_stylebox(name)) { // Exclude the dump style cache.
+						to_create = control->get_theme_stylebox(name)->duplicate();
+						skip = !to_create.is_null();
+					}
+				} else if (p_path.begins_with("theme_override_fonts/")) {
+					String name = p_path.substr(strlen("theme_override_fonts/"));
+					if (control->has_theme_font(name)) { // Exclude the dump font cache.
+						to_create = control->get_theme_font(name)->duplicate();
+						skip = !to_create.is_null();
+					}
+				} else if (p_path.begins_with("theme_override_font_sizes/")) {
+					String name = p_path.substr(strlen("theme_override_font_sizes/"));
+					if (control->has_theme_font_size(name)) { // Exclude the dump font size cache.
+						to_create = control->get_theme_font_size(name);
+						skip = true;
+					}
+				} else if (p_path.begins_with("theme_override_colors/")) {
+					String name = p_path.substr(strlen("theme_override_colors/"));
+					if (control->has_theme_color(name)) { // Exclude the dump color cache.
+						to_create = control->get_theme_color(name);
+						skip = true;
+					}
+				} else if (p_path.begins_with("theme_override_constants/")) {
+					String name = p_path.substr(strlen("theme_override_constants/"));
+					if (control->has_theme_constant(name)) { // Exclude the dump constant cache.
+						to_create = control->get_theme_constant(name);
+						skip = true;
+					}
+				}
+			}
+
+			if (!skip) {
+				List<PropertyInfo> pinfo;
+				object->get_property_list(&pinfo);
+				for (const PropertyInfo &E : pinfo) {
+					if (E.name == p_path) {
+						Callable::CallError ce;
+						Variant::construct(E.type, to_create, nullptr, 0, ce);
+						break;
+					}
 				}
 			}
 			_edit_set(p_path, to_create, false, "");

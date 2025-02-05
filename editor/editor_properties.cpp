@@ -1320,7 +1320,31 @@ void EditorPropertyInteger::_value_changed(int64_t val) {
 }
 
 void EditorPropertyInteger::update_property() {
-	int64_t val = get_edited_property_value();
+	int64_t val = 0;
+	bool is_not_theme_property = true;
+	if (is_checkable() && !is_checked()) {
+		Control *control = Object::cast_to<Control>(get_edited_object());
+		if (control) {
+			String property_name = get_edited_property();
+			if (property_name.begins_with("theme_override_font_sizes/")) {
+				String name = property_name.substr(strlen("theme_override_font_sizes/"));
+				if (control->has_theme_font_size(name)) { // Exclude the dump font size cache.
+					val = control->get_theme_font_size(name);
+					is_not_theme_property = false;
+				}
+			} else if (property_name.begins_with("theme_override_constants/")) {
+				String name = property_name.substr(strlen("theme_override_constants/"));
+				if (control->has_theme_constant(name)) { // Exclude the dump constant cache.
+					val = control->get_theme_constant(name);
+					is_not_theme_property = false;
+				}
+			}
+		}
+	}
+	if (is_not_theme_property) {
+		val = get_edited_property_value();
+	}
+
 	spin->set_value_no_signal(val);
 #ifdef DEBUG_ENABLED
 	// If spin (currently EditorSplinSlider : Range) is changed so that it can use int64_t, then the below warning wouldn't be a problem.
@@ -2628,7 +2652,27 @@ void EditorPropertyColor::_notification(int p_what) {
 }
 
 void EditorPropertyColor::update_property() {
-	picker->set_pick_color(get_edited_property_value());
+	Color c;
+	bool is_not_theme_property = true;
+	if (is_checkable() && !is_checked()) {
+		Control *control = Object::cast_to<Control>(get_edited_object());
+		if (control) {
+			String property_name = get_edited_property();
+			if (property_name.begins_with("theme_override_colors/")) {
+				String name = property_name.substr(strlen("theme_override_colors/"));
+				if (control->has_theme_color(name)) { // Exclude the dump color cache.
+					c = control->get_theme_color(name);
+					is_not_theme_property = false;
+				}
+			}
+		}
+	}
+	if (is_not_theme_property) {
+		c = get_edited_property_value();
+	}
+
+	picker->set_pick_color(c);
+
 	const Color color = picker->get_pick_color();
 
 	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
@@ -3008,7 +3052,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
-	} else {
+	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
 	}
 }
@@ -3269,7 +3313,36 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 }
 
 void EditorPropertyResource::update_property() {
-	Ref<Resource> res = get_edited_property_value();
+	Ref<Resource> res;
+	bool is_not_theme_property = true;
+	if (is_checkable() && !is_checked()) {
+		Control *control = Object::cast_to<Control>(get_edited_object());
+		if (control) {
+			String property_name = get_edited_property();
+			if (property_name.begins_with("theme_override_icons/")) {
+				String name = property_name.substr(strlen("theme_override_icons/"));
+				if (control->has_theme_icon(name)) { // Exclude the dump icon cache.
+					res = control->get_theme_icon(name);
+					is_not_theme_property = false;
+				}
+			} else if (property_name.begins_with("theme_override_styles/")) {
+				String name = property_name.substr(strlen("theme_override_styles/"));
+				if (control->has_theme_stylebox(name)) { // Exclude the dump style cache.
+					res = control->get_theme_stylebox(name);
+					is_not_theme_property = false;
+				}
+			} else if (property_name.begins_with("theme_override_fonts/")) {
+				String name = property_name.substr(strlen("theme_override_fonts/"));
+				if (control->has_theme_font(name)) { // Exclude the dump font cache.
+					res = control->get_theme_font(name);
+					is_not_theme_property = false;
+				}
+			}
+		}
+	}
+	if (is_not_theme_property) {
+		res = get_edited_property_value();
+	}
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {
@@ -3320,6 +3393,8 @@ void EditorPropertyResource::update_property() {
 					opened_editor = true;
 				}
 			}
+
+			sub_inspector->set_read_only(is_checkable() && !is_checked());
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
 				sub_inspector->edit(res.ptr());
