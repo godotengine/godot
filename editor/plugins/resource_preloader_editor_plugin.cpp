@@ -88,7 +88,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 
 	file->clear_filters();
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("", extensions);
 	for (const String &extension : extensions) {
 		file->add_filter("*." + extension);
 	}

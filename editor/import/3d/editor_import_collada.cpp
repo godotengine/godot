@@ -1796,8 +1796,8 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 /*************************************** SCENE ***********************************/
 /*********************************************************************************/
 
-void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("dae");
+void EditorSceneFormatImporterCollada::get_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("dae");
 }
 
 Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {

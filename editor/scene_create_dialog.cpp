@@ -258,7 +258,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		List<String> extensions;
 		Ref<PackedScene> sd = memnew(PackedScene);
-		ResourceSaver::get_recognized_extensions(sd, &extensions);
+		ResourceSaver::get_recognized_extensions(sd, extensions);
 
 		scene_extension_picker = memnew(OptionButton);
 		hb->add_child(scene_extension_picker);

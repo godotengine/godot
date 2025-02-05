@@ -117,7 +117,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	}
 
 	List<String> breakpoints;
-	EditorNode::get_editor_data().get_editor_breakpoints(&breakpoints);
+	EditorNode::get_editor_data().get_editor_breakpoints(breakpoints);
 
 	if (!breakpoints.is_empty()) {
 		args.push_back("--breakpoints");

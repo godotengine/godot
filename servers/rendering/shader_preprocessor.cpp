@@ -1381,7 +1381,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		switch (pp_state.completion_type) {
 			case COMPLETION_TYPE_DIRECTIVE: {
 				List<String> options;
-				get_keyword_list(&options, true, true);
+				get_keyword_list(options, true, true);
 
 				for (const String &E : options) {
 					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
@@ -1391,7 +1391,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			} break;
 			case COMPLETION_TYPE_PRAGMA: {
 				List<String> options;
-				ShaderPreprocessor::get_pragma_list(&options);
+				ShaderPreprocessor::get_pragma_list(options);
 
 				for (const String &E : options) {
 					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
@@ -1420,29 +1420,29 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 	return err;
 }
 
-void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords) {
-	r_keywords->push_back("define");
+void ShaderPreprocessor::get_keyword_list(List<String> &r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords) {
+	r_keywords.push_back("define");
 	if (!p_ignore_context_keywords) {
-		r_keywords->push_back("defined");
+		r_keywords.push_back("defined");
 	}
-	r_keywords->push_back("elif");
+	r_keywords.push_back("elif");
 	if (p_include_shader_keywords) {
-		r_keywords->push_back("else");
+		r_keywords.push_back("else");
 	}
-	r_keywords->push_back("endif");
-	r_keywords->push_back("error");
+	r_keywords.push_back("endif");
+	r_keywords.push_back("error");
 	if (p_include_shader_keywords) {
-		r_keywords->push_back("if");
+		r_keywords.push_back("if");
 	}
-	r_keywords->push_back("ifdef");
-	r_keywords->push_back("ifndef");
-	r_keywords->push_back("include");
-	r_keywords->push_back("pragma");
-	r_keywords->push_back("undef");
+	r_keywords.push_back("ifdef");
+	r_keywords.push_back("ifndef");
+	r_keywords.push_back("include");
+	r_keywords.push_back("pragma");
+	r_keywords.push_back("undef");
 }
 
-void ShaderPreprocessor::get_pragma_list(List<String> *r_pragmas) {
-	r_pragmas->push_back("disable_preprocessor");
+void ShaderPreprocessor::get_pragma_list(List<String> &r_pragmas) {
+	r_pragmas.push_back("disable_preprocessor");
 }
 
 ShaderPreprocessor::ShaderPreprocessor() {

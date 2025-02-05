@@ -150,7 +150,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
@@ -206,9 +206,9 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
-	virtual void get_platform_features(List<String> *r_features) const override {
-		r_features->push_back("mobile");
-		r_features->push_back("ios");
+	virtual void get_platform_features(List<String> &r_features) const override {
+		r_features.push_back("mobile");
+		r_features.push_back("ios");
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {

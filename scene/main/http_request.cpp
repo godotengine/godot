@@ -218,7 +218,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	got_response = true;
 	response_code = client->get_response_code();
 	List<String> rheaders;
-	client->get_response_headers(&rheaders);
+	client->get_response_headers(rheaders);
 	response_headers.clear();
 	downloaded.set(0);
 	final_body_size.set(0);

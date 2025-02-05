@@ -37,8 +37,8 @@
 
 #include "core/config/project_settings.h"
 
-void EditorSceneFormatImporterUFBX::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("fbx");
+void EditorSceneFormatImporterUFBX::get_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("fbx");
 }
 
 Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t p_flags,

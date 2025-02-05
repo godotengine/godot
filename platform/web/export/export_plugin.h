@@ -117,7 +117,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _stop_server();
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
@@ -139,9 +139,9 @@ public:
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 
-	virtual void get_platform_features(List<String> *r_features) const override {
-		r_features->push_back("web");
-		r_features->push_back(get_os_name().to_lower());
+	virtual void get_platform_features(List<String> &r_features) const override {
+		r_features.push_back("web");
+		r_features.push_back(get_os_name().to_lower());
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {

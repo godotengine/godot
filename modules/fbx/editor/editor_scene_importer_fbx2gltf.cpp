@@ -38,8 +38,8 @@
 
 #include "modules/gltf/gltf_document.h"
 
-void EditorSceneFormatImporterFBX2GLTF::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("fbx");
+void EditorSceneFormatImporterFBX2GLTF::get_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("fbx");
 }
 
 Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint32_t p_flags,

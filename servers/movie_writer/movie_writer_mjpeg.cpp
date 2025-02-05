@@ -42,8 +42,8 @@ bool MovieWriterMJPEG::handles_file(const String &p_path) const {
 	return p_path.get_extension().to_lower() == "avi";
 }
 
-void MovieWriterMJPEG::get_supported_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("avi");
+void MovieWriterMJPEG::get_supported_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("avi");
 }
 
 Error MovieWriterMJPEG::write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {

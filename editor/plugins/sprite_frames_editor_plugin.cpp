@@ -61,7 +61,7 @@ static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const 
 void SpriteFramesEditor::_open_sprite_sheet() {
 	file_split_sheet->clear_filters();
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Texture2D", extensions);
 	for (const String &extension : extensions) {
 		file_split_sheet->add_filter("*." + extension);
 	}
@@ -747,7 +747,7 @@ void SpriteFramesEditor::_load_pressed() {
 
 	file->clear_filters();
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Texture2D", extensions);
 	for (const String &extension : extensions) {
 		file->add_filter("*." + extension);
 	}

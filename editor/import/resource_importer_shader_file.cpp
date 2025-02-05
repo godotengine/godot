@@ -44,8 +44,8 @@ String ResourceImporterShaderFile::get_visible_name() const {
 	return "GLSL Shader File";
 }
 
-void ResourceImporterShaderFile::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("glsl");
+void ResourceImporterShaderFile::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("glsl");
 }
 
 String ResourceImporterShaderFile::get_save_extension() const {

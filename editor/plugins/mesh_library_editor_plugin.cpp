@@ -264,7 +264,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	//not for now?
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
 	for (const String &extension : extensions) {

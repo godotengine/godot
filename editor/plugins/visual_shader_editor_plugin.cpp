@@ -6375,7 +6375,7 @@ void VisualShaderEditor::_bind_methods() {
 }
 
 VisualShaderEditor::VisualShaderEditor() {
-	ShaderLanguage::get_keyword_list(&keyword_list);
+	ShaderLanguage::get_keyword_list(keyword_list);
 	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::_resource_saved));
 	FileSystemDock::get_singleton()->get_script_create_dialog()->connect("script_created", callable_mp(this, &VisualShaderEditor::_script_created));
 	FileSystemDock::get_singleton()->connect("resource_removed", callable_mp(this, &VisualShaderEditor::_resource_removed));

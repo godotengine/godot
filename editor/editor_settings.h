@@ -197,7 +197,7 @@ public:
 	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
 	Ref<Shortcut> get_shortcut(const String &p_name) const;
-	void get_shortcut_list(List<String> *r_shortcuts);
+	void get_shortcut_list(List<String> &r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
 	const Array get_builtin_action_overrides(const String &p_name) const;
@@ -205,7 +205,7 @@ public:
 	void notify_changes();
 
 #ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const override;
 #endif
 
 	EditorSettings();

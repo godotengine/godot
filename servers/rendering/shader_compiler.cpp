@@ -1590,7 +1590,7 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 
 	List<String> func_list;
 
-	ShaderLanguage::get_builtin_funcs(&func_list);
+	ShaderLanguage::get_builtin_funcs(func_list);
 
 	for (const String &E : func_list) {
 		internal_functions.insert(E);

@@ -556,8 +556,8 @@ void EditorExportPlatform::_edit_filter_list(HashSet<String> &r_list, const Stri
 HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset> &p_preset, bool p_debug) const {
 	Ref<EditorExportPlatform> platform = p_preset->get_platform();
 	List<String> feature_list;
-	platform->get_platform_features(&feature_list);
-	platform->get_preset_features(p_preset, &feature_list);
+	platform->get_platform_features(feature_list);
+	platform->get_preset_features(p_preset, feature_list);
 
 	HashSet<String> result;
 	for (const String &E : feature_list) {
@@ -1362,7 +1362,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				// Erase all Paths.
 				List<String> keys;
-				config->get_section_keys("remap", &keys);
+				config->get_section_keys("remap", keys);
 				for (const String &K : keys) {
 					if (K.begins_with("path")) {
 						config->erase_section_key("remap", K);
@@ -1398,7 +1398,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			} else {
 				// File is imported and not customized, replace by what it imports.
 				List<String> remaps;
-				config->get_section_keys("remap", &remaps);
+				config->get_section_keys("remap", remaps);
 
 				HashSet<String> remap_features;
 
@@ -2236,7 +2236,7 @@ Vector<String> EditorExportPlatform::gen_export_flags(BitField<EditorExportPlatf
 		ret.push_back(get_debug_protocol() + host + ":" + String::num_int64(remote_port));
 
 		List<String> breakpoints;
-		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+		ScriptEditor::get_singleton()->get_breakpoints(breakpoints);
 
 		if (breakpoints.size()) {
 			ret.push_back("--breakpoints");

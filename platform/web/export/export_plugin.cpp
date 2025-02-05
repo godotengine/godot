@@ -335,21 +335,21 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	return OK;
 }
 
-void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
+void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
 	if (p_preset->get("vram_texture_compression/for_desktop")) {
-		r_features->push_back("s3tc");
-		r_features->push_back("bptc");
+		r_features.push_back("s3tc");
+		r_features.push_back("bptc");
 	}
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
-		r_features->push_back("etc2");
-		r_features->push_back("astc");
+		r_features.push_back("etc2");
+		r_features.push_back("astc");
 	}
 	if (p_preset->get("variant/thread_support").operator bool()) {
-		r_features->push_back("threads");
+		r_features.push_back("threads");
 	} else {
-		r_features->push_back("nothreads");
+		r_features.push_back("nothreads");
 	}
-	r_features->push_back("wasm32");
+	r_features.push_back("wasm32");
 }
 
 void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) const {

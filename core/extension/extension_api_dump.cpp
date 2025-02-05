@@ -930,7 +930,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				//constants
 				Array constants;
 				List<String> constant_list;
-				ClassDB::get_integer_constant_list(class_name, &constant_list, true);
+				ClassDB::get_integer_constant_list(class_name, constant_list, true);
 				for (const String &F : constant_list) {
 					StringName enum_name = ClassDB::get_integer_constant_enum(class_name, F);
 					if (enum_name != StringName()) {

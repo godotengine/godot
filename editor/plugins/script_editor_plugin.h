@@ -563,7 +563,7 @@ public:
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
 	Vector<String> _get_breakpoints();
-	void get_breakpoints(List<String> *p_breakpoints);
+	void get_breakpoints(List<String> &p_breakpoints);
 
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
@@ -636,7 +636,7 @@ public:
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
-	virtual void get_breakpoints(List<String> *p_breakpoints) override;
+	virtual void get_breakpoints(List<String> &p_breakpoints) override;
 
 	virtual void edited_scene_changed() override;
 

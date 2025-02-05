@@ -44,7 +44,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const override;
 	GDVIRTUAL1RC_REQUIRED(Vector<String>, _get_preset_features, Ref<EditorExportPreset>);
 
 	virtual bool is_executable(const String &p_path) const override;
@@ -142,7 +142,7 @@ public:
 	virtual Error export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 	GDVIRTUAL5R(Error, _export_zip_patch, Ref<EditorExportPreset>, bool, const String &, const Vector<String> &, BitField<EditorExportPlatform::DebugFlags>);
 
-	virtual void get_platform_features(List<String> *r_features) const override;
+	virtual void get_platform_features(List<String> &r_features) const override;
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_platform_features);
 
 	virtual String get_debug_protocol() const override;

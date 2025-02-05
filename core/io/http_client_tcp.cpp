@@ -229,13 +229,13 @@ int HTTPClientTCP::get_response_code() const {
 	return response_num;
 }
 
-Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
+Error HTTPClientTCP::get_response_headers(List<String> &r_response) {
 	if (!response_headers.size()) {
 		return ERR_INVALID_PARAMETER;
 	}
 
 	for (int i = 0; i < response_headers.size(); i++) {
-		r_response->push_back(response_headers[i]);
+		r_response.push_back(response_headers[i]);
 	}
 
 	response_headers.clear();

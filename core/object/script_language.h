@@ -262,12 +262,12 @@ public:
 		}
 	};
 
-	void get_core_type_words(List<String> *p_core_type_words) const;
-	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	void get_core_type_words(List<String> &p_core_type_words) const;
+	virtual void get_reserved_words(List<String> &p_words) const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
+	virtual void get_comment_delimiters(List<String> &p_delimiters) const = 0;
+	virtual void get_doc_comment_delimiters(List<String> &p_delimiters) const = 0;
+	virtual void get_string_delimiters(List<String> &p_delimiters) const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
@@ -424,7 +424,7 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;

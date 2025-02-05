@@ -76,8 +76,8 @@ protected:
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const;
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> &p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
@@ -85,7 +85,7 @@ public:
 	virtual String get_resource_script_class(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual bool has_custom_uid_support() const;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
+	virtual void get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
 	virtual bool is_imported(const String &p_path) const { return false; }
@@ -238,7 +238,7 @@ public:
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
-	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
+	static void get_recognized_extensions_for_type(const String &p_type, List<String> &p_extensions);
 	static void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front = false);
 	static void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
 	static void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
@@ -246,7 +246,7 @@ public:
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static bool has_custom_uid_support(const String &p_path);
-	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
+	static void get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
 	static String get_import_group_file(const String &p_path);

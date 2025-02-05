@@ -3377,29 +3377,29 @@ NodePath Node::get_import_path() const {
 }
 
 #ifdef TOOLS_ENABLED
-static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
+static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> &r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
 		return;
 	}
 	if (p_node->is_unique_name_in_owner() && p_node->get_owner() == p_base) {
 		String n = "%" + p_node->get_name();
-		r_options->push_back(n.quote());
+		r_options.push_back(n.quote());
 	}
 	String n = p_base->get_path_to(p_node);
-	r_options->push_back(n.quote());
+	r_options.push_back(n.quote());
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_add_nodes_to_options(p_base, p_node->get_child(i), r_options);
 	}
 }
 
-void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void Node::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_node" || pf == "get_node" || pf == "get_node_or_null")) {
 		_add_nodes_to_options(this, this, r_options);
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options.push_back(E.key.operator String().quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);

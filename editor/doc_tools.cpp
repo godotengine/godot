@@ -666,7 +666,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			}
 
 			List<String> constant_list;
-			ClassDB::get_integer_constant_list(name, &constant_list, true);
+			ClassDB::get_integer_constant_list(name, constant_list, true);
 
 			for (const String &E : constant_list) {
 				DocData::ConstantDoc constant;

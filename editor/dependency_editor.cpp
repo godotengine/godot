@@ -64,7 +64,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, M
 
 	search->clear_filters();
 	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), &ext);
+	ResourceLoader::get_recognized_extensions_for_type(ti->get_metadata(0), ext);
 	for (const String &E : ext) {
 		search->add_filter("*." + E);
 	}
@@ -165,7 +165,7 @@ void DependencyEditor::_update_file() {
 
 void DependencyEditor::_update_list() {
 	List<String> deps;
-	ResourceLoader::get_dependencies(editing, &deps, true);
+	ResourceLoader::get_dependencies(editing, deps, true);
 
 	tree->clear();
 	missing.clear();

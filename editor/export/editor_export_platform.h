@@ -205,7 +205,7 @@ protected:
 	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const = 0;
 
 	struct ExportOption {
 		PropertyInfo option;
@@ -333,7 +333,7 @@ public:
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0);
 	virtual Error export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0);
 	virtual Error export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0);
-	virtual void get_platform_features(List<String> *r_features) const = 0;
+	virtual void get_platform_features(List<String> &r_features) const = 0;
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
 

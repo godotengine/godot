@@ -202,7 +202,7 @@ void Control::set_root_layout_direction(int p_root_dir) {
 }
 
 #ifdef TOOLS_ENABLED
-void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	ERR_READ_THREAD_GUARD;
 	if (p_idx == 0) {
 		const String pf = p_function;
@@ -235,7 +235,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 			sn.sort_custom<StringName::AlphCompare>();
 			for (const StringName &name : sn) {
-				r_options->push_back(String(name).quote());
+				r_options.push_back(String(name).quote());
 			}
 		}
 	}

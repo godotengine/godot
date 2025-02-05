@@ -406,7 +406,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	if (p_index == MENU_LOAD_FILE) {
 		open_file->clear_filters();
 		List<String> filters;
-		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
+		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", filters);
 		for (const String &E : filters) {
 			open_file->add_filter("*." + E);
 		}

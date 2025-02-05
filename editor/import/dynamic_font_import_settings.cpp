@@ -1156,7 +1156,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	print_verbose("Loading import settings:");
 	if (err == OK) {
 		List<String> keys;
-		config->get_section_keys("params", &keys);
+		config->get_section_keys("params", keys);
 		for (List<String>::Element *E = keys.front(); E; E = E->next()) {
 			String key = E->get();
 			print_verbose(String("    ") + key + " == " + String(config->get_value("params", key)));

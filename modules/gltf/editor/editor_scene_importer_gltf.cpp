@@ -35,9 +35,9 @@
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 
-void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("gltf");
-	r_extensions->push_back("glb");
+void EditorSceneFormatImporterGLTF::get_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("gltf");
+	r_extensions.push_back("glb");
 }
 
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,

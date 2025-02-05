@@ -87,7 +87,7 @@ String InputMap::suggest_actions(const StringName &p_action) const {
 }
 
 #ifdef TOOLS_ENABLED
-void InputMap::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void InputMap::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	bool first_argument_is_action = false;
 	if (p_idx == 0) {
@@ -107,7 +107,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 			}
 
 			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
-			r_options->push_back(name.quote());
+			r_options.push_back(name.quote());
 		}
 	}
 

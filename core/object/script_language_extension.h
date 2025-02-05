@@ -242,42 +242,42 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
 
-	virtual void get_reserved_words(List<String> *p_words) const override {
+	virtual void get_reserved_words(List<String> &p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_reserved_words, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+			p_words.push_back(ret[i]);
 		}
 	}
 	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_comment_delimiters)
 
-	virtual void get_comment_delimiters(List<String> *p_words) const override {
+	virtual void get_comment_delimiters(List<String> &p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_comment_delimiters, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+			p_words.push_back(ret[i]);
 		}
 	}
 
 	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
 
-	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+	virtual void get_doc_comment_delimiters(List<String> &p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+			p_words.push_back(ret[i]);
 		}
 	}
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_string_delimiters)
 
-	virtual void get_string_delimiters(List<String> *p_words) const override {
+	virtual void get_string_delimiters(List<String> &p_words) const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_string_delimiters, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
+			p_words.push_back(ret[i]);
 		}
 	}
 
@@ -608,11 +608,11 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(PackedStringArray, _get_recognized_extensions)
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
+	virtual void get_recognized_extensions(List<String> &p_extensions) const override {
 		PackedStringArray ret;
 		GDVIRTUAL_CALL(_get_recognized_extensions, ret);
 		for (int i = 0; i < ret.size(); i++) {
-			p_extensions->push_back(ret[i]);
+			p_extensions.push_back(ret[i]);
 		}
 	}
 

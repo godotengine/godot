@@ -150,13 +150,13 @@ Dictionary AnimationLibrary::_get_data() const {
 }
 
 #ifdef TOOLS_ENABLED
-void AnimationLibrary::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void AnimationLibrary::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0 && (pf == "get_animation" || pf == "has_animation" || pf == "rename_animation" || pf == "remove_animation")) {
 		List<StringName> names;
 		get_animation_list(&names);
 		for (const StringName &E : names) {
-			r_options->push_back(E.operator String().quote());
+			r_options.push_back(E.operator String().quote());
 		}
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);

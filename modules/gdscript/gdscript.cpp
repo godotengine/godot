@@ -2727,7 +2727,7 @@ void GDScriptLanguage::frame() {
 }
 
 /* EDITOR FUNCTIONS */
-void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
+void GDScriptLanguage::get_reserved_words(List<String> &p_words) const {
 	// Please keep alphabetical order within categories.
 	static const char *_reserved_words[] = {
 		// Control flow.
@@ -2787,7 +2787,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 	const char **w = _reserved_words;
 
 	while (*w) {
-		p_words->push_back(*w);
+		p_words.push_back(*w);
 		w++;
 	}
 }
@@ -3030,9 +3030,9 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	return scr;
 }
 
-void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gd");
-	p_extensions->push_back("gdc");
+void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("gd");
+	p_extensions.push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -3047,7 +3047,7 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 	return "";
 }
 
-void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types) {
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_path + "'.");
 
@@ -3062,7 +3062,7 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 
 	for (const String &E : parser.get_dependencies()) {
-		p_dependencies->push_back(E);
+		p_dependencies.push_back(E);
 	}
 }
 
@@ -3091,9 +3091,9 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	return OK;
 }
 
-void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverGDScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const {
 	if (Object::cast_to<GDScript>(*p_resource)) {
-		p_extensions->push_back("gd");
+		p_extensions.push_back("gd");
 	}
 }
 

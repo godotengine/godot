@@ -4241,7 +4241,7 @@ String VisualShaderNodeParameter::_get_qual_str() const {
 
 String VisualShaderNodeParameter::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
 	List<String> keyword_list;
-	ShaderLanguage::get_keyword_list(&keyword_list);
+	ShaderLanguage::get_keyword_list(keyword_list);
 	if (keyword_list.find(parameter_name)) {
 		return RTR("Shader keywords cannot be used as parameter names.\nChoose another name.");
 	}

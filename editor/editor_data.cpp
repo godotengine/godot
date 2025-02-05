@@ -302,7 +302,7 @@ void EditorData::copy_object_params(Object *p_object) {
 	}
 }
 
-void EditorData::get_editor_breakpoints(List<String> *p_breakpoints) {
+void EditorData::get_editor_breakpoints(List<String> &p_breakpoints) {
 	for (int i = 0; i < editor_plugins.size(); i++) {
 		editor_plugins[i]->get_breakpoints(p_breakpoints);
 	}

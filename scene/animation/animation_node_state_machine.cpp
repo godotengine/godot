@@ -1770,7 +1770,7 @@ void AnimationNodeStateMachine::_animation_node_removed(const ObjectID &p_oid, c
 }
 
 #ifdef TOOLS_ENABLED
-void AnimationNodeStateMachine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void AnimationNodeStateMachine::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	bool add_state_options = false;
 	if (p_idx == 0) {
@@ -1780,7 +1780,7 @@ void AnimationNodeStateMachine::get_argument_options(const StringName &p_functio
 	}
 	if (add_state_options) {
 		for (const KeyValue<StringName, State> &E : states) {
-			r_options->push_back(String(E.key).quote());
+			r_options.push_back(String(E.key).quote());
 		}
 	}
 	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);

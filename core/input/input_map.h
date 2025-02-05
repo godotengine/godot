@@ -103,7 +103,7 @@ public:
 	String suggest_actions(const StringName &p_action) const;
 
 #ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const override;
 #endif
 
 	String get_builtin_display_name(const String &p_name) const;

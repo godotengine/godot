@@ -269,7 +269,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	// Get all possible extensions for script.
 	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
+		ScriptServer::get_language(l)->get_recognized_extensions(extensions);
 	}
 
 	bool found = false;
@@ -447,7 +447,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	List<String> extensions;
 
 	int lang = language_menu->get_selected();
-	ScriptServer::get_language(lang)->get_recognized_extensions(&extensions);
+	ScriptServer::get_language(lang)->get_recognized_extensions(extensions);
 
 	for (const String &E : extensions) {
 		file_browse->add_filter("*." + E);
@@ -740,7 +740,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	// Get meta delimiter
 	String meta_delimiter;
 	List<String> comment_delimiters;
-	p_language->get_comment_delimiters(&comment_delimiters);
+	p_language->get_comment_delimiters(comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
 		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;

@@ -1173,7 +1173,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			ResourceSaver::get_recognized_extensions(sd, extensions);
 			new_scene_from_dialog->clear_filters();
 			for (const String &extension : extensions) {
 				new_scene_from_dialog->add_filter("*." + extension, extension.to_upper());

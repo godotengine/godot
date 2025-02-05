@@ -407,7 +407,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			ResourceSaver::get_recognized_extensions(sd, extensions);
 			file_dialog->clear_filters();
 			for (const String &extension : extensions) {
 				file_dialog->add_filter("*." + extension, extension.to_upper());

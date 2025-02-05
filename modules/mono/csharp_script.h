@@ -500,11 +500,11 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
+	void get_reserved_words(List<String> &p_words) const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	void get_comment_delimiters(List<String> &p_delimiters) const override;
+	void get_doc_comment_delimiters(List<String> &p_delimiters) const override;
+	void get_string_delimiters(List<String> &p_delimiters) const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -568,7 +568,7 @@ public:
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
 	/* LOADER FUNCTIONS */
-	void get_recognized_extensions(List<String> *p_extensions) const override;
+	void get_recognized_extensions(List<String> &p_extensions) const override;
 
 #ifdef TOOLS_ENABLED
 	Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) override;
@@ -592,7 +592,7 @@ public:
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
 	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	void get_recognized_extensions(List<String> *p_extensions) const override;
+	void get_recognized_extensions(List<String> &p_extensions) const override;
 	bool handles_type(const String &p_type) const override;
 	String get_resource_type(const String &p_path) const override;
 };
@@ -600,7 +600,7 @@ public:
 class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
 public:
 	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const override;
 	bool recognize(const Ref<Resource> &p_resource) const override;
 };
 

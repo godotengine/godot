@@ -102,7 +102,7 @@ public:
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
 	String recognize_script_class(Ref<FileAccess> p_f);
-	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
+	void get_dependencies(Ref<FileAccess> p_f, List<String> &p_dependencies, bool p_add_types);
 	void get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes);
 
 	ResourceLoaderBinary() {}
@@ -111,15 +111,15 @@ public:
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> &p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual String get_resource_script_class(const String &p_path) const override;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual void get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types = false) override;
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) override;
 };
 
@@ -185,7 +185,7 @@ public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const override;
 
 	ResourceFormatSaverBinary();
 };

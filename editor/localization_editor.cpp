@@ -48,14 +48,14 @@ void LocalizationEditor::_notification(int p_what) {
 			translation_pot_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
 
 			List<String> tfn;
-			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
+			ResourceLoader::get_recognized_extensions_for_type("Translation", tfn);
 			tfn.erase("csv"); // CSV is recognized by the resource importer to generate translation files, but it's not a translation file itself.
 			for (const String &E : tfn) {
 				translation_file_open->add_filter("*." + E);
 			}
 
 			List<String> rfn;
-			ResourceLoader::get_recognized_extensions_for_type("Resource", &rfn);
+			ResourceLoader::get_recognized_extensions_for_type("Resource", rfn);
 			for (const String &E : rfn) {
 				translation_res_file_open_dialog->add_filter("*." + E);
 				translation_res_option_file_open_dialog->add_filter("*." + E);
@@ -406,7 +406,7 @@ void LocalizationEditor::_pot_generate(const String &p_file) {
 void LocalizationEditor::_update_pot_file_extensions() {
 	pot_file_open_dialog->clear_filters();
 	List<String> translation_parse_file_extensions;
-	EditorTranslationParser::get_singleton()->get_recognized_extensions(&translation_parse_file_extensions);
+	EditorTranslationParser::get_singleton()->get_recognized_extensions(translation_parse_file_extensions);
 	for (const String &E : translation_parse_file_extensions) {
 		pot_file_open_dialog->add_filter("*." + E);
 	}

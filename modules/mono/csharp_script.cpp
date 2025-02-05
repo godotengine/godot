@@ -189,7 +189,7 @@ void CSharpLanguage::finalize() {
 	finalized = true;
 }
 
-void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
+void CSharpLanguage::get_reserved_words(List<String> &p_words) const {
 	static const char *_reserved_words[] = {
 		// Reserved keywords
 		"abstract",
@@ -306,7 +306,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 	const char **w = _reserved_words;
 
 	while (*w) {
-		p_words->push_back(*w);
+		p_words.push_back(*w);
 		w++;
 	}
 }
@@ -331,20 +331,20 @@ bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
 			p_keyword == "while";
 }
 
-void CSharpLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("//"); // single-line comment
-	p_delimiters->push_back("/* */"); // delimited comment
+void CSharpLanguage::get_comment_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("//"); // single-line comment
+	p_delimiters.push_back("/* */"); // delimited comment
 }
 
-void CSharpLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("///"); // single-line doc comment
-	p_delimiters->push_back("/** */"); // delimited doc comment
+void CSharpLanguage::get_doc_comment_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("///"); // single-line doc comment
+	p_delimiters.push_back("/** */"); // delimited doc comment
 }
 
-void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("' '"); // character literal
-	p_delimiters->push_back("\" \""); // regular string literal
-	p_delimiters->push_back("@\" \""); // verbatim string literal
+void CSharpLanguage::get_string_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("' '"); // character literal
+	p_delimiters.push_back("\" \""); // regular string literal
+	p_delimiters.push_back("@\" \""); // verbatim string literal
 	// Generic string highlighting suffices as a workaround for now.
 }
 
@@ -390,7 +390,7 @@ Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(co
 String CSharpLanguage::validate_path(const String &p_path) const {
 	String class_name = p_path.get_file().get_basename();
 	List<String> keywords;
-	get_reserved_words(&keywords);
+	get_reserved_words(keywords);
 	if (keywords.find(class_name)) {
 		return RTR("Class name can't be a reserved keyword");
 	}
@@ -1012,8 +1012,8 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 }
 #endif
 
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
+void CSharpLanguage::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("cs");
 }
 
 #ifdef TOOLS_ENABLED
@@ -2863,8 +2863,8 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	return scr;
 }
 
-void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
+void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("cs");
 }
 
 bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const {
@@ -2912,9 +2912,9 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 	return OK;
 }
 
-void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const {
 	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
-		p_extensions->push_back("cs");
+		p_extensions.push_back("cs");
 	}
 }
 

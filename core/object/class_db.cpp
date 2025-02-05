@@ -1141,7 +1141,7 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 #endif
 }
 
-void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
+void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> &p_constants, bool p_no_inheritance) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -1149,12 +1149,12 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	while (type) {
 #ifdef DEBUG_METHODS_ENABLED
 		for (const StringName &E : type->constant_order) {
-			p_constants->push_back(E);
+			p_constants.push_back(E);
 		}
 #else
 
 		for (const KeyValue<StringName, int64_t> &E : type->constant_map) {
-			p_constants->push_back(E.key);
+			p_constants.push_back(E.key);
 		}
 
 #endif
@@ -2159,9 +2159,9 @@ void ClassDB::add_resource_base_extension(const StringName &p_extension, const S
 	resource_base_extensions[p_extension] = p_class;
 }
 
-void ClassDB::get_resource_base_extensions(List<String> *p_extensions) {
+void ClassDB::get_resource_base_extensions(List<String> &p_extensions) {
 	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
-		p_extensions->push_back(E.key);
+		p_extensions.push_back(E.key);
 	}
 }
 
@@ -2169,10 +2169,10 @@ bool ClassDB::is_resource_extension(const StringName &p_extension) {
 	return resource_base_extensions.has(p_extension);
 }
 
-void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p_extensions) {
+void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> &p_extensions) {
 	for (const KeyValue<StringName, StringName> &E : resource_base_extensions) {
 		if (is_parent_class(p_class, E.value) || is_parent_class(E.value, p_class)) {
-			p_extensions->push_back(E.key);
+			p_extensions.push_back(E.key);
 		}
 	}
 }

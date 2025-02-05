@@ -45,12 +45,12 @@ String ResourceImporterMP3::get_visible_name() const {
 	return "MP3";
 }
 
-void ResourceImporterMP3::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterMP3::get_recognized_extensions(List<String> &p_extensions) const {
 #ifndef MINIMP3_ONLY_MP3
-	p_extensions->push_back("mp1");
-	p_extensions->push_back("mp2");
+	p_extensions.push_back("mp1");
+	p_extensions.push_back("mp2");
 #endif
-	p_extensions->push_back("mp3");
+	p_extensions.push_back("mp3");
 }
 
 String ResourceImporterMP3::get_save_extension() const {

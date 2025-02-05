@@ -36,7 +36,7 @@
 
 PackedStringArray ConfigFile::_get_sections() const {
 	List<String> s;
-	get_sections(&s);
+	get_sections(s);
 	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
@@ -49,7 +49,7 @@ PackedStringArray ConfigFile::_get_sections() const {
 
 PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 	List<String> s;
-	get_section_keys(p_section, &s);
+	get_section_keys(p_section, s);
 	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
@@ -101,17 +101,17 @@ bool ConfigFile::has_section_key(const String &p_section, const String &p_key) c
 	return values[p_section].has(p_key);
 }
 
-void ConfigFile::get_sections(List<String> *r_sections) const {
+void ConfigFile::get_sections(List<String> &r_sections) const {
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
-		r_sections->push_back(E.key);
+		r_sections.push_back(E.key);
 	}
 }
 
-void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
+void ConfigFile::get_section_keys(const String &p_section, List<String> &r_keys) const {
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 
 	for (const KeyValue<String, Variant> &E : values[p_section]) {
-		r_keys->push_back(E.key);
+		r_keys.push_back(E.key);
 	}
 }
 

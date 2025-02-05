@@ -1832,11 +1832,11 @@ void AudioServer::set_enable_tagging_used_audio_streams(bool p_enable) {
 }
 
 #ifdef TOOLS_ENABLED
-void AudioServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void AudioServer::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if ((p_idx == 0 && pf == "get_bus_index") || (p_idx == 1 && pf == "set_bus_send")) {
 		for (const AudioServer::Bus *E : buses) {
-			r_options->push_back(String(E->name).quote());
+			r_options.push_back(String(E->name).quote());
 		}
 	}
 

@@ -204,7 +204,7 @@ private:
 
 	// Project list updates.
 
-	static void _scan_folder_recursive(const String &p_path, List<String> *r_projects, const SafeFlag &p_scan_active);
+	static void _scan_folder_recursive(const String &p_path, List<String> &r_projects, const SafeFlag &p_scan_active);
 
 	// Project list items.
 

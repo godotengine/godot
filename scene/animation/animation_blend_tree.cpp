@@ -1802,7 +1802,7 @@ void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {
 }
 
 #ifdef TOOLS_ENABLED
-void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	bool add_node_options = false;
 	if (p_idx == 0) {
@@ -1812,7 +1812,7 @@ void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, 
 	}
 	if (add_node_options) {
 		for (const KeyValue<StringName, Node> &E : nodes) {
-			r_options->push_back(String(E.key).quote());
+			r_options.push_back(String(E.key).quote());
 		}
 	}
 	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);

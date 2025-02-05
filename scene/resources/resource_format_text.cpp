@@ -868,7 +868,7 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 ResourceLoaderText::ResourceLoaderText() :
 		stream(false), format_version(FORMAT_VERSION) {}
 
-void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
+void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> &p_dependencies, bool p_add_types) {
 	open(p_f);
 	ignore_resource_parsing = true;
 	ERR_FAIL_COND(error != OK);
@@ -919,7 +919,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 			path += "::" + fallback_path;
 		}
 
-		p_dependencies->push_back(path);
+		p_dependencies.push_back(path);
 
 		Error err = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
@@ -1421,25 +1421,25 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 	}
 }
 
-void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &p_type, List<String> &p_extensions) const {
 	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
 	}
 
 	if (ClassDB::is_parent_class("PackedScene", p_type)) {
-		p_extensions->push_back("tscn");
+		p_extensions.push_back("tscn");
 	}
 
 	// Don't allow .tres for PackedScenes or GDExtension.
 	if (p_type != "PackedScene" && p_type != "GDExtension") {
-		p_extensions->push_back("tres");
+		p_extensions.push_back("tres");
 	}
 }
 
-void ResourceFormatLoaderText::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("tscn");
-	p_extensions->push_back("tres");
+void ResourceFormatLoaderText::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("tscn");
+	p_extensions.push_back("tres");
 }
 
 bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
@@ -1529,7 +1529,7 @@ bool ResourceFormatLoaderText::has_custom_uid_support() const {
 	return true;
 }
 
-void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderText::get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		ERR_FAIL();
@@ -2161,11 +2161,11 @@ bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
 	return true; // All resources recognized!
 }
 
-void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const {
 	if (Ref<PackedScene>(p_resource).is_valid()) {
-		p_extensions->push_back("tscn"); // Text scene.
+		p_extensions.push_back("tscn"); // Text scene.
 	} else {
-		p_extensions->push_back("tres"); // Text resource.
+		p_extensions.push_back("tres"); // Text resource.
 	}
 }
 

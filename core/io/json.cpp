@@ -1642,8 +1642,8 @@ Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String 
 	return json;
 }
 
-void ResourceFormatLoaderJSON::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("json");
+void ResourceFormatLoaderJSON::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("json");
 }
 
 bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
@@ -1677,10 +1677,10 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	return OK;
 }
 
-void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const {
 	Ref<JSON> json = p_resource;
 	if (json.is_valid()) {
-		p_extensions->push_back("json");
+		p_extensions.push_back("json");
 	}
 }
 

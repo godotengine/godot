@@ -571,11 +571,11 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
-	virtual void get_reserved_words(List<String> *p_words) const override;
+	virtual void get_reserved_words(List<String> &p_words) const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const override;
+	virtual void get_comment_delimiters(List<String> &p_delimiters) const override;
+	virtual void get_doc_comment_delimiters(List<String> &p_delimiters) const override;
+	virtual void get_string_delimiters(List<String> &p_delimiters) const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -632,7 +632,7 @@ public:
 
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const override;
 
 	/* GLOBAL CLASSES */
 
@@ -651,16 +651,16 @@ public:
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual void get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types = false) override;
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
 

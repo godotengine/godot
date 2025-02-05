@@ -518,7 +518,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const Scrip
 
 	List<String> kwors;
 	if (p_language) {
-		p_language->get_reserved_words(&kwors);
+		p_language->get_reserved_words(kwors);
 	}
 
 	HashSet<String> control_flow_keywords;

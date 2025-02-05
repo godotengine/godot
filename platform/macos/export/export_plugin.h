@@ -130,7 +130,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	bool is_shebang(const String &p_path) const;
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
@@ -153,10 +153,10 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
-	virtual void get_platform_features(List<String> *r_features) const override {
-		r_features->push_back("pc");
-		r_features->push_back("s3tc");
-		r_features->push_back("macos");
+	virtual void get_platform_features(List<String> &r_features) const override {
+		r_features.push_back("pc");
+		r_features.push_back("s3tc");
+		r_features.push_back("macos");
 	}
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override {

@@ -135,7 +135,7 @@ void AnimationLibraryEditor::_add_library_confirm() {
 
 void AnimationLibraryEditor::_load_library() {
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", extensions);
 
 	file_dialog->set_title(TTR("Load Animation"));
 	file_dialog->clear_filters();
@@ -197,7 +197,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			}
 			file_dialog->clear_filters();
 			List<String> exts;
-			ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", &exts);
+			ResourceLoader::get_recognized_extensions_for_type("AnimationLibrary", exts);
 			for (const String &K : exts) {
 				file_dialog->add_filter("*." + K);
 			}
@@ -275,7 +275,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 			}
 			file_dialog->clear_filters();
 			List<String> exts;
-			ResourceLoader::get_recognized_extensions_for_type("Animation", &exts);
+			ResourceLoader::get_recognized_extensions_for_type("Animation", exts);
 			for (const String &K : exts) {
 				file_dialog->add_filter("*." + K);
 			}
@@ -545,7 +545,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 			case LIB_BUTTON_LOAD: {
 				adding_animation_to_library = p_item->get_metadata(0);
 				List<String> extensions;
-				ResourceLoader::get_recognized_extensions_for_type("Animation", &extensions);
+				ResourceLoader::get_recognized_extensions_for_type("Animation", extensions);
 
 				file_dialog->clear_filters();
 				for (const String &K : extensions) {
@@ -890,7 +890,7 @@ Vector<uint64_t> AnimationLibraryEditor::_load_mixer_libs_folding() {
 		uint64_t current_mixer_id = uint64_t(mixer->get_instance_id());
 		String current_mixer_signature = _get_mixer_signature();
 		List<String> sections;
-		config->get_sections(&sections);
+		config->get_sections(sections);
 
 		for (const String &section : sections) {
 			Variant mixer_id = config->get_value(section, "mixer");

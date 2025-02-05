@@ -162,7 +162,7 @@ public:
 	Dictionary get_editor_plugin_states() const;
 	Dictionary get_scene_editor_states(int p_idx) const;
 	void set_editor_plugin_states(const Dictionary &p_states);
-	void get_editor_breakpoints(List<String> *p_breakpoints);
+	void get_editor_breakpoints(List<String> &p_breakpoints);
 	void clear_editor_states();
 	void save_editor_external_data();
 	void apply_changes_in_editors();

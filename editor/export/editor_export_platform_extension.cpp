@@ -79,11 +79,11 @@ void EditorExportPlatformExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_debug_protocol);
 }
 
-void EditorExportPlatformExtension::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
+void EditorExportPlatformExtension::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
 	Vector<String> ret;
-	if (GDVIRTUAL_CALL(_get_preset_features, p_preset, ret) && r_features) {
+	if (GDVIRTUAL_CALL(_get_preset_features, p_preset, ret)) {
 		for (const String &E : ret) {
-			r_features->push_back(E);
+			r_features.push_back(E);
 		}
 	}
 }
@@ -331,11 +331,11 @@ Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPres
 	return err;
 }
 
-void EditorExportPlatformExtension::get_platform_features(List<String> *r_features) const {
+void EditorExportPlatformExtension::get_platform_features(List<String> &r_features) const {
 	Vector<String> ret;
-	if (GDVIRTUAL_CALL(_get_platform_features, ret) && r_features) {
+	if (GDVIRTUAL_CALL(_get_platform_features, ret)) {
 		for (const String &E : ret) {
-			r_features->push_back(E);
+			r_features.push_back(E);
 		}
 	}
 }

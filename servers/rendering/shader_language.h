@@ -829,9 +829,9 @@ public:
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
 
-	static void get_keyword_list(List<String> *r_keywords);
+	static void get_keyword_list(List<String> &r_keywords);
 	static bool is_control_flow_keyword(String p_keyword);
-	static void get_builtin_funcs(List<String> *r_keywords);
+	static void get_builtin_funcs(List<String> &r_keywords);
 
 	static SafeNumeric<int> instance_counter;
 
@@ -1203,7 +1203,7 @@ public:
 	uint32_t get_warning_flags() const;
 #endif // DEBUG_ENABLED
 
-	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
+	//static void get_keyword_list(ShaderType p_type,List<String> &p_keywords);
 
 	void clear();
 

@@ -2991,7 +2991,7 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 
 		if (p_inspect) {
 			if (extensions.find(parent.get_extension()) && (!EditorNode::get_singleton()->get_edited_scene() || EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path() != parent)) {

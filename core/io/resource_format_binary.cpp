@@ -953,7 +953,7 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringN
 	}
 }
 
-void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
+void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> &p_dependencies, bool p_add_types) {
 	open(p_f, false, true);
 	if (error) {
 		return;
@@ -980,7 +980,7 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 			dep += "::" + fallback_path;
 		}
 
-		p_dependencies->push_back(dep);
+		p_dependencies.push_back(dep);
 	}
 }
 
@@ -1260,7 +1260,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	return loader.resource;
 }
 
-void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
+void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String &p_type, List<String> &p_extensions) const {
 	if (p_type.is_empty()) {
 		get_recognized_extensions(p_extensions);
 		return;
@@ -1272,24 +1272,24 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 	}
 
 	List<String> extensions;
-	ClassDB::get_extensions_for_type(p_type, &extensions);
+	ClassDB::get_extensions_for_type(p_type, extensions);
 
 	extensions.sort();
 
 	for (const String &E : extensions) {
 		String ext = E.to_lower();
-		p_extensions->push_back(ext);
+		p_extensions.push_back(ext);
 	}
 }
 
-void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> &p_extensions) const {
 	List<String> extensions;
-	ClassDB::get_resource_base_extensions(&extensions);
+	ClassDB::get_resource_base_extensions(extensions);
 	extensions.sort();
 
 	for (const String &E : extensions) {
 		String ext = E.to_lower();
-		p_extensions->push_back(ext);
+		p_extensions.push_back(ext);
 	}
 }
 
@@ -1297,7 +1297,7 @@ bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 	return true; //handles all
 }
 
-void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> &p_dependencies, bool p_add_types) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
 
@@ -2516,11 +2516,11 @@ bool ResourceFormatSaverBinary::recognize(const Ref<Resource> &p_resource) const
 	return true; //all recognized
 }
 
-void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> &p_extensions) const {
 	String base = p_resource->get_base_extension().to_lower();
-	p_extensions->push_back(base);
+	p_extensions.push_back(base);
 	if (base != "res") {
-		p_extensions->push_back("res");
+		p_extensions.push_back("res");
 	}
 }
 

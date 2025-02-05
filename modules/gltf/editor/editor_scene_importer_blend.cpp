@@ -102,8 +102,8 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	return true;
 }
 
-void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("blend");
+void EditorSceneFormatImporterBlend::get_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("blend");
 }
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,

@@ -143,7 +143,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 	if (DebugAdapterProtocol::get_singleton()->_sync_breakpoints) {
 		// Send all current breakpoints
 		List<String> breakpoints;
-		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+		ScriptEditor::get_singleton()->get_breakpoints(breakpoints);
 		for (List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
 			String breakpoint = E->get();
 

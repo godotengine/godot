@@ -39,8 +39,8 @@ AudioServer::SpeakerMode MovieWriterPNGWAV::get_audio_speaker_mode() const {
 	return speaker_mode;
 }
 
-void MovieWriterPNGWAV::get_supported_extensions(List<String> *r_extensions) const {
-	r_extensions->push_back("png");
+void MovieWriterPNGWAV::get_supported_extensions(List<String> &r_extensions) const {
+	r_extensions.push_back("png");
 }
 
 bool MovieWriterPNGWAV::handles_file(const String &p_path) const {

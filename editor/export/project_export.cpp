@@ -425,8 +425,8 @@ void ProjectExportDialog::_update_feature_list() {
 
 	List<String> features_list;
 
-	current->get_platform()->get_platform_features(&features_list);
-	current->get_platform()->get_preset_features(current, &features_list);
+	current->get_platform()->get_platform_features(features_list);
+	current->get_platform()->get_preset_features(current, features_list);
 
 	String custom = current->get_custom_features();
 	Vector<String> custom_list = custom.split(",");

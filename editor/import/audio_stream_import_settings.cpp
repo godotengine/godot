@@ -441,7 +441,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			bar_beats_edit->set_value(config_file->get_value("params", "bar_beats", 4));
 
 			List<String> keys;
-			config_file->get_section_keys("params", &keys);
+			config_file->get_section_keys("params", keys);
 			for (const String &K : keys) {
 				params[K] = config_file->get_value("params", K);
 			}

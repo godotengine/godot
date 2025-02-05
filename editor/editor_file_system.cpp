@@ -251,7 +251,7 @@ void EditorFileSystem::_first_scan_filesystem() {
 	// Preloading GDExtensions file extensions to prevent looping on all the resource loaders
 	// for each files in _first_scan_process_scripts.
 	List<String> gdextension_extensions;
-	ResourceLoader::get_recognized_extensions_for_type("GDExtension", &gdextension_extensions);
+	ResourceLoader::get_recognized_extensions_for_type("GDExtension", gdextension_extensions);
 
 	// This loads the global class names from the scripts and ensures that even if the
 	// global_script_class_cache.cfg was missing or invalid, the global class names are valid in ScriptServer.
@@ -1516,7 +1516,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 void EditorFileSystem::_delete_internal_files(const String &p_file) {
 	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
-		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
+		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, paths);
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (const String &E : paths) {
 			da->remove(E);
@@ -1958,7 +1958,7 @@ Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 	}
 
 	List<String> deps;
-	ResourceLoader::get_dependencies(p_path, &deps);
+	ResourceLoader::get_dependencies(p_path, deps);
 
 	Vector<String> ret;
 	for (const String &E : deps) {
@@ -2492,7 +2492,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		if (config->has_section("params")) {
 			List<String> sk;
-			config->get_section_keys("params", &sk);
+			config->get_section_keys("params", sk);
 			for (const String &param : sk) {
 				Variant value = config->get_value("params", param);
 				//override with whatever is in file
@@ -2676,7 +2676,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		if (err == OK) {
 			if (cf->has_section("params")) {
 				List<String> sk;
-				cf->get_section_keys("params", &sk);
+				cf->get_section_keys("params", sk);
 				for (const String &E : sk) {
 					if (!params.has(E)) {
 						params[E] = cf->get_value("params", E);
@@ -3314,7 +3314,7 @@ void EditorFileSystem::_move_group_files(EditorFileSystemDirectory *efd, const S
 			}
 
 			List<String> sk;
-			config->get_section_keys("params", &sk);
+			config->get_section_keys("params", sk);
 			for (const String &param : sk) {
 				//not very clean, but should work
 				String value = config->get_value("params", param);
@@ -3506,7 +3506,7 @@ void EditorFileSystem::_update_extensions() {
 	other_file_extensions.clear();
 
 	List<String> extensionsl;
-	ResourceLoader::get_recognized_extensions_for_type("", &extensionsl);
+	ResourceLoader::get_recognized_extensions_for_type("", extensionsl);
 	for (const String &E : extensionsl) {
 		valid_extensions.insert(E);
 	}
@@ -3529,7 +3529,7 @@ void EditorFileSystem::_update_extensions() {
 	}
 
 	extensionsl.clear();
-	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
+	ResourceFormatImporter::get_singleton()->get_recognized_extensions(extensionsl);
 	for (const String &E : extensionsl) {
 		import_extensions.insert(E);
 	}

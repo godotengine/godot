@@ -77,7 +77,7 @@ protected:
 
 public:
 	virtual bool handles_file(const String &p_path) const;
-	virtual void get_supported_extensions(List<String> *r_extensions) const;
+	virtual void get_supported_extensions(List<String> &r_extensions) const;
 
 	static void add_writer(MovieWriter *p_writer);
 	static MovieWriter *find_writer_for_file(const String &p_file);

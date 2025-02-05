@@ -231,7 +231,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 }
 
 #ifdef TOOLS_ENABLED
-void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_animation" || pf == "remove_animation" || pf == "rename_animation" ||
@@ -241,7 +241,7 @@ void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx,
 				pf == "get_frame_count" || pf == "get_frame_texture" || pf == "get_frame_duration" ||
 				pf == "clear") {
 			for (const String &E : get_animation_names()) {
-				r_options->push_back(E.quote());
+				r_options.push_back(E.quote());
 			}
 		}
 	}

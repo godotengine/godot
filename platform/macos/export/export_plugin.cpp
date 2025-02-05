@@ -49,23 +49,23 @@
 
 #include "modules/svg/image_loader_svg.h"
 
-void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	r_features->push_back(p_preset->get("binary_format/architecture"));
+void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
+	r_features.push_back(p_preset->get("binary_format/architecture"));
 	String architecture = p_preset->get("binary_format/architecture");
 
 	if (architecture == "universal" || architecture == "x86_64") {
-		r_features->push_back("s3tc");
-		r_features->push_back("bptc");
+		r_features.push_back("s3tc");
+		r_features.push_back("bptc");
 	} else if (architecture == "arm64") {
-		r_features->push_back("etc2");
-		r_features->push_back("astc");
+		r_features.push_back("etc2");
+		r_features.push_back("astc");
 	} else {
 		ERR_PRINT("Invalid architecture");
 	}
 
 	if (architecture == "universal") {
-		r_features->push_back("x86_64");
-		r_features->push_back("arm64");
+		r_features.push_back("x86_64");
+		r_features.push_back("arm64");
 	}
 }
 

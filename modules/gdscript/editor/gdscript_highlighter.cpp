@@ -733,7 +733,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	/* Core types. */
 	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 	List<String> core_types;
-	gdscript->get_core_type_words(&core_types);
+	gdscript->get_core_type_words(core_types);
 	for (const String &E : core_types) {
 		class_names[StringName(E)] = basetype_color;
 	}
@@ -748,7 +748,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 	List<String> keyword_list;
-	gdscript->get_reserved_words(&keyword_list);
+	gdscript->get_reserved_words(keyword_list);
 	for (const String &E : keyword_list) {
 		if (gdscript->is_control_flow_keyword(E)) {
 			reserved_keywords[StringName(E)] = control_flow_keyword_color;
@@ -775,7 +775,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	/* Comments */
 	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	List<String> comments;
-	gdscript->get_comment_delimiters(&comments);
+	gdscript->get_comment_delimiters(comments);
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
@@ -785,7 +785,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	/* Doc comments */
 	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 	List<String> doc_comments;
-	gdscript->get_doc_comment_delimiters(&doc_comments);
+	gdscript->get_doc_comment_delimiters(doc_comments);
 	for (const String &doc_comment : doc_comments) {
 		String beg = doc_comment.get_slice(" ", 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
@@ -828,7 +828,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			}
 
 			List<String> clist;
-			ClassDB::get_integer_constant_list(instance_base, &clist);
+			ClassDB::get_integer_constant_list(instance_base, clist);
 			for (const String &E : clist) {
 				member_keywords[E] = member_variable_color;
 			}

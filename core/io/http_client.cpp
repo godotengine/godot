@@ -110,7 +110,7 @@ Error HTTPClient::verify_headers(const Vector<String> &p_headers) {
 
 Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	List<String> rh;
-	get_response_headers(&rh);
+	get_response_headers(rh);
 	Dictionary ret;
 	for (const String &s : rh) {
 		int sp = s.find_char(':');
@@ -127,7 +127,7 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 
 PackedStringArray HTTPClient::_get_response_headers() {
 	List<String> rh;
-	get_response_headers(&rh);
+	get_response_headers(rh);
 	PackedStringArray ret;
 	ret.resize(rh.size());
 	int idx = 0;

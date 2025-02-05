@@ -225,7 +225,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	text_edit->get_syntax_highlighter()->update_cache();
 
 	List<String> strings;
-	script->get_language()->get_string_delimiters(&strings);
+	script->get_language()->get_string_delimiters(strings);
 	text_edit->clear_string_delimiters();
 	for (const String &string : strings) {
 		String beg = string.get_slice(" ", 0);
@@ -242,7 +242,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	text_edit->clear_comment_delimiters();
 
 	List<String> comments;
-	script->get_language()->get_comment_delimiters(&comments);
+	script->get_language()->get_comment_delimiters(comments);
 	for (const String &comment : comments) {
 		String beg = comment.get_slice(" ", 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
@@ -254,7 +254,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 
 	List<String> doc_comments;
-	script->get_language()->get_doc_comment_delimiters(&doc_comments);
+	script->get_language()->get_doc_comment_delimiters(doc_comments);
 	for (const String &doc_comment : doc_comments) {
 		String beg = doc_comment.get_slice(" ", 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
@@ -963,7 +963,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		}
 
 		List<String> scene_extensions;
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+		ResourceLoader::get_recognized_extensions_for_type("PackedScene", scene_extensions);
 
 		if (scene_extensions.find(symbol.get_extension())) {
 			EditorNode::get_singleton()->load_scene(symbol);
@@ -1065,7 +1065,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
 			List<String> scene_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", scene_extensions);
 
 			if (scene_extensions.find(path.get_extension())) {
 				EditorNode::get_singleton()->load_scene(path);
@@ -1762,7 +1762,7 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 
 	String delimiter = "#";
 	List<String> comment_delimiters;
-	script->get_language()->get_comment_delimiters(&comment_delimiters);
+	script->get_language()->get_comment_delimiters(comment_delimiters);
 
 	for (const String &script_delimiter : comment_delimiters) {
 		if (!script_delimiter.contains_char(' ')) {

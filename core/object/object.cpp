@@ -249,10 +249,10 @@ void Object::_postinitialize() {
 	notification(NOTIFICATION_POSTINITIALIZE);
 }
 
-void Object::get_valid_parents_static(List<String> *p_parents) {
+void Object::get_valid_parents_static(List<String> &p_parents) {
 }
 
-void Object::_get_valid_parents_static(List<String> *p_parents) {
+void Object::_get_valid_parents_static(List<String> &p_parents) {
 }
 
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
@@ -2235,14 +2235,14 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 }
 
 #ifdef TOOLS_ENABLED
-void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "connect" || pf == "is_connected" || pf == "disconnect" || pf == "emit_signal" || pf == "has_signal") {
 			List<MethodInfo> signals;
 			get_signal_list(&signals);
 			for (const MethodInfo &E : signals) {
-				r_options->push_back(E.name.quote());
+				r_options.push_back(E.name.quote());
 			}
 		} else if (pf == "call" || pf == "call_deferred" || pf == "callv" || pf == "has_method") {
 			List<MethodInfo> methods;
@@ -2251,19 +2251,19 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 				if (E.name.begins_with("_") && !(E.flags & METHOD_FLAG_VIRTUAL)) {
 					continue;
 				}
-				r_options->push_back(E.name.quote());
+				r_options.push_back(E.name.quote());
 			}
 		} else if (pf == "set" || pf == "set_deferred" || pf == "get") {
 			List<PropertyInfo> properties;
 			get_property_list(&properties);
 			for (const PropertyInfo &E : properties) {
 				if (E.usage & PROPERTY_USAGE_DEFAULT && !(E.usage & PROPERTY_USAGE_INTERNAL)) {
-					r_options->push_back(E.name.quote());
+					r_options.push_back(E.name.quote());
 				}
 			}
 		} else if (pf == "set_meta" || pf == "get_meta" || pf == "has_meta" || pf == "remove_meta") {
 			for (const KeyValue<StringName, Variant> &K : metadata) {
-				r_options->push_back(String(K.key).quote());
+				r_options.push_back(String(K.key).quote());
 			}
 		}
 	} else if (p_idx == 2) {
@@ -2273,7 +2273,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 			List<StringName> constants;
 			ClassDB::get_enum_constants("Object", "ConnectFlags", &constants);
 			for (const StringName &E : constants) {
-				r_options->push_back(String(E));
+				r_options.push_back(String(E));
 			}
 		}
 	}

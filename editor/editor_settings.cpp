@@ -1032,7 +1032,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 		if (p_extra_config->has_section("presets")) {
 			List<String> keys;
-			p_extra_config->get_section_keys("presets", &keys);
+			p_extra_config->get_section_keys("presets", keys);
 
 			for (const String &key : keys) {
 				Variant val = p_extra_config->get_value("presets", key);
@@ -1583,7 +1583,7 @@ void EditorSettings::load_favorites_and_recent_dirs() {
 	cf.instantiate();
 	if (cf->load(favorite_properties_file) == OK) {
 		List<String> secs;
-		cf->get_sections(&secs);
+		cf->get_sections(secs);
 
 		for (String &E : secs) {
 			PackedStringArray properties = PackedStringArray(cf->get_value(E, "properties"));
@@ -1653,7 +1653,7 @@ void EditorSettings::load_text_editor_theme() {
 	}
 
 	List<String> keys;
-	cf->get_section_keys("color_theme", &keys);
+	cf->get_section_keys("color_theme", keys);
 
 	for (const String &key : keys) {
 		String val = cf->get_value("color_theme", key);
@@ -1851,9 +1851,9 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 	return Ref<Shortcut>();
 }
 
-void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
+void EditorSettings::get_shortcut_list(List<String> &r_shortcuts) {
 	for (const KeyValue<String, Ref<Shortcut>> &E : shortcuts) {
-		r_shortcuts->push_back(E.key);
+		r_shortcuts.push_back(E.key);
 	}
 }
 
@@ -2060,7 +2060,7 @@ void EditorSettings::notify_changes() {
 }
 
 #ifdef TOOLS_ENABLED
-void EditorSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void EditorSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "erase" ||
@@ -2070,17 +2070,17 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 					continue;
 				}
 
-				r_options->push_back(E.key.quote());
+				r_options.push_back(E.key.quote());
 			}
 		} else if (pf == "get_project_metadata" && project_metadata.is_valid()) {
 			List<String> sections;
-			project_metadata->get_sections(&sections);
+			project_metadata->get_sections(sections);
 			for (const String &section : sections) {
-				r_options->push_back(section.quote());
+				r_options.push_back(section.quote());
 			}
 		} else if (pf == "set_builtin_action_override") {
 			for (const StringName &action : InputMap::get_singleton()->get_actions()) {
-				r_options->push_back(String(action).quote());
+				r_options.push_back(String(action).quote());
 			}
 		}
 	}

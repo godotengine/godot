@@ -49,8 +49,8 @@ Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 	return PNGDriverCommon::png_to_image(reader, buffer_size, p_flags & FLAG_FORCE_LINEAR, p_image);
 }
 
-void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("png");
+void ImageLoaderPNG::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("png");
 }
 
 Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {

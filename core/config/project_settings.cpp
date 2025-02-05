@@ -1384,7 +1384,7 @@ void ProjectSettings::load_scene_groups_cache() {
 	cf.instantiate();
 	if (cf->load(get_scene_groups_cache_path()) == OK) {
 		List<String> scene_paths;
-		cf->get_sections(&scene_paths);
+		cf->get_sections(scene_paths);
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;
@@ -1401,7 +1401,7 @@ const HashMap<StringName, HashSet<StringName>> &ProjectSettings::get_scene_group
 }
 
 #ifdef TOOLS_ENABLED
-void ProjectSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void ProjectSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "get_setting_with_override" ||
@@ -1412,7 +1412,7 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 					continue;
 				}
 
-				r_options->push_back(String(E.key).quote());
+				r_options.push_back(String(E.key).quote());
 			}
 		}
 	}

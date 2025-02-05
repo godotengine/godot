@@ -49,14 +49,14 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
 
-void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
+void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
-	r_features->push_back("etc2");
-	r_features->push_back("astc");
+	r_features.push_back("etc2");
+	r_features.push_back("astc");
 
 	Vector<String> architectures = _get_preset_architectures(p_preset);
 	for (int i = 0; i < architectures.size(); ++i) {
-		r_features->push_back(architectures[i]);
+		r_features.push_back(architectures[i]);
 	}
 }
 
@@ -2834,7 +2834,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num_int64(remote_port));
 
 		List<String> breakpoints;
-		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+		ScriptEditor::get_singleton()->get_breakpoints(breakpoints);
 
 		if (breakpoints.size()) {
 			cmd_args_list.push_back("--breakpoints");

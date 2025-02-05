@@ -488,7 +488,7 @@ public:
 	void set_enable_tagging_used_audio_streams(bool p_enable);
 
 #ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const override;
 #endif
 
 	PlaybackType get_default_playback_type() const;

@@ -1828,13 +1828,13 @@ Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enable
 	return enabled_abis;
 }
 
-void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	r_features->push_back("etc2");
-	r_features->push_back("astc");
+void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
+	r_features.push_back("etc2");
+	r_features.push_back("astc");
 
 	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {
-		r_features->push_back(abis[i].arch);
+		r_features.push_back(abis[i].arch);
 	}
 }
 
@@ -3859,9 +3859,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	CLEANUP_AND_RETURN(OK);
 }
 
-void EditorExportPlatformAndroid::get_platform_features(List<String> *r_features) const {
-	r_features->push_back("mobile");
-	r_features->push_back("android");
+void EditorExportPlatformAndroid::get_platform_features(List<String> &r_features) const {
+	r_features.push_back("mobile");
+	r_features.push_back("android");
 }
 
 void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

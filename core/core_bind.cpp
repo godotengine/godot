@@ -79,7 +79,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 
 Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
 	List<String> exts;
-	::ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
+	::ResourceLoader::get_recognized_extensions_for_type(p_type, exts);
 	Vector<String> ret;
 	for (const String &E : exts) {
 		ret.push_back(E);
@@ -102,7 +102,7 @@ void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 
 PackedStringArray ResourceLoader::get_dependencies(const String &p_path) {
 	List<String> deps;
-	::ResourceLoader::get_dependencies(p_path, &deps);
+	::ResourceLoader::get_dependencies(p_path, deps);
 
 	PackedStringArray ret;
 	for (const String &E : deps) {
@@ -171,7 +171,7 @@ Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path,
 
 Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
 	List<String> exts;
-	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
+	::ResourceSaver::get_recognized_extensions(p_resource, exts);
 	Vector<String> ret;
 	for (const String &E : exts) {
 		ret.push_back(E);
@@ -1601,7 +1601,7 @@ Variant ClassDB::class_call_static(const Variant **p_arguments, int p_argcount, 
 
 PackedStringArray ClassDB::class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<String> constants;
-	::ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
+	::ClassDB::get_integer_constant_list(p_class, constants, p_no_inheritance);
 
 	PackedStringArray ret;
 	ret.resize(constants.size());
@@ -1671,7 +1671,7 @@ bool ClassDB::is_class_enabled(const StringName &p_class) const {
 }
 
 #ifdef TOOLS_ENABLED
-void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	bool first_argument_is_class = false;
 	if (p_idx == 0) {
@@ -1686,7 +1686,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		for (const String &E : get_class_list()) {
-			r_options->push_back(E.quote());
+			r_options.push_back(E.quote());
 		}
 	}
 
@@ -1931,11 +1931,11 @@ bool Engine::is_printing_error_messages() const {
 }
 
 #ifdef TOOLS_ENABLED
-void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+void Engine::get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0 && (pf == "has_singleton" || pf == "get_singleton" || pf == "unregister_singleton")) {
 		for (const String &E : get_singleton_list()) {
-			r_options->push_back(E.quote());
+			r_options.push_back(E.quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);

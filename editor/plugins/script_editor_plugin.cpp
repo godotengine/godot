@@ -156,7 +156,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Core types. */
 		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 		List<String> core_types;
-		scr_lang->get_core_type_words(&core_types);
+		scr_lang->get_core_type_words(core_types);
 		for (const String &E : core_types) {
 			highlighter->add_keyword_color(E, basetype_color);
 		}
@@ -165,7 +165,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 		List<String> keywords;
-		scr_lang->get_reserved_words(&keywords);
+		scr_lang->get_reserved_words(keywords);
 		for (const String &E : keywords) {
 			if (scr_lang->is_control_flow_keyword(E)) {
 				highlighter->add_keyword_color(E, control_flow_keyword_color);
@@ -191,7 +191,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			}
 
 			List<String> clist;
-			ClassDB::get_integer_constant_list(instance_base, &clist);
+			ClassDB::get_integer_constant_list(instance_base, clist);
 			for (const String &E : clist) {
 				highlighter->add_member_keyword_color(E, member_variable_color);
 			}
@@ -200,7 +200,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Comments */
 		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 		List<String> comments;
-		scr_lang->get_comment_delimiters(&comments);
+		scr_lang->get_comment_delimiters(comments);
 		for (const String &comment : comments) {
 			String beg = comment.get_slice(" ", 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
@@ -210,7 +210,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Doc comments */
 		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 		List<String> doc_comments;
-		scr_lang->get_doc_comment_delimiters(&doc_comments);
+		scr_lang->get_doc_comment_delimiters(doc_comments);
 		for (const String &doc_comment : doc_comments) {
 			String beg = doc_comment.get_slice(" ", 0);
 			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
@@ -220,7 +220,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 		List<String> strings;
-		scr_lang->get_string_delimiters(&strings);
+		scr_lang->get_string_delimiters(strings);
 		for (const String &string : strings) {
 			String beg = string.get_slice(" ", 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
@@ -615,7 +615,7 @@ void ScriptEditor::_clear_breakpoints() {
 
 	// Clear from closed scripts.
 	List<String> cached_editors;
-	script_editor_cache->get_sections(&cached_editors);
+	script_editor_cache->get_sections(cached_editors);
 	for (const String &E : cached_editors) {
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
 		for (int breakpoint : breakpoints) {
@@ -826,8 +826,8 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	// if its not on disk its a help file or deleted
 	if (FileAccess::exists(path)) {
 		List<String> extensions;
-		ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-		ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+		ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+		ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 
 		if (extensions.find(path.get_extension())) {
 			Ref<Resource> scr = ResourceLoader::load(path);
@@ -1328,7 +1328,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog_option = FILE_OPEN;
 
 			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+			ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
 			file_dialog->clear_filters();
 			for (const String &extension : extensions) {
 				file_dialog->add_filter("*." + extension, extension.to_upper());
@@ -1351,8 +1351,8 @@ void ScriptEditor::_menu_option(int p_option) {
 			previous_scripts.pop_back();
 
 			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-			ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+			ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+			ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 			bool built_in = !path.is_resource_file();
 
 			if (extensions.find(path.get_extension()) || built_in) {
@@ -1483,7 +1483,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					file_dialog_option = FILE_SAVE_AS;
 
 					List<String> extensions;
-					ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+					ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
 					file_dialog->clear_filters();
 					file_dialog->set_current_dir(text_file->get_path().get_base_dir());
 					file_dialog->set_current_file(text_file->get_path().get_file());
@@ -1910,7 +1910,7 @@ Vector<String> ScriptEditor::_get_breakpoints() {
 
 	// Load breakpoints that are in closed scripts.
 	List<String> cached_editors;
-	script_editor_cache->get_sections(&cached_editors);
+	script_editor_cache->get_sections(cached_editors);
 	for (const String &E : cached_editors) {
 		if (loaded_scripts.has(E)) {
 			continue;
@@ -1924,7 +1924,7 @@ Vector<String> ScriptEditor::_get_breakpoints() {
 	return ret;
 }
 
-void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
+void ScriptEditor::get_breakpoints(List<String> &p_breakpoints) {
 	HashSet<String> loaded_scripts;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -1945,13 +1945,13 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
 		PackedInt32Array bpoints = se->get_breakpoints();
 		for (int32_t bpoint : bpoints) {
-			p_breakpoints->push_back(base + ":" + itos((int)bpoint + 1));
+			p_breakpoints.push_back(base + ":" + itos((int)bpoint + 1));
 		}
 	}
 
 	// Load breakpoints that are in closed scripts.
 	List<String> cached_editors;
-	script_editor_cache->get_sections(&cached_editors);
+	script_editor_cache->get_sections(cached_editors);
 	for (const String &E : cached_editors) {
 		if (loaded_scripts.has(E)) {
 			continue;
@@ -1959,7 +1959,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
 		for (int breakpoint : breakpoints) {
-			p_breakpoints->push_back(E + ":" + itos((int)breakpoint + 1));
+			p_breakpoints.push_back(E + ":" + itos((int)breakpoint + 1));
 		}
 	}
 }
@@ -2878,8 +2878,8 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 
 Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 	if (extensions.find(p_file.get_extension())) {
 		Ref<Resource> scr = ResourceLoader::load(p_file);
 		if (scr.is_null()) {
@@ -3475,8 +3475,8 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	HashSet<String> loaded_scripts;
 	List<String> extensions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
-	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("Script", extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", extensions);
 
 	for (int i = 0; i < scripts.size(); i++) {
 		String path = scripts[i];
@@ -3544,7 +3544,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	// Remove any deleted editors that have been removed between launches.
 	// and if a Script, register breakpoints with the debugger.
 	List<String> cached_editors;
-	script_editor_cache->get_sections(&cached_editors);
+	script_editor_cache->get_sections(cached_editors);
 	for (const String &E : cached_editors) {
 		if (loaded_scripts.has(E)) {
 			continue;
@@ -4659,7 +4659,7 @@ void ScriptEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	}
 }
 
-void ScriptEditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
+void ScriptEditorPlugin::get_breakpoints(List<String> &p_breakpoints) {
 	script_editor->get_breakpoints(p_breakpoints);
 }
 

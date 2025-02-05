@@ -298,7 +298,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 
 	for (int i = 0; i < ee->get_export_platform_count(); i++) {
 		List<String> p;
-		ee->get_export_platform(i)->get_platform_features(&p);
+		ee->get_export_platform(i)->get_platform_features(p);
 		for (const String &E : p) {
 			presets.insert(E);
 		}
@@ -306,7 +306,7 @@ void ProjectSettingsEditor::_add_feature_overrides() {
 
 	for (int i = 0; i < ee->get_export_preset_count(); i++) {
 		List<String> p;
-		ee->get_export_preset(i)->get_platform()->get_preset_features(ee->get_export_preset(i), &p);
+		ee->get_export_preset(i)->get_platform()->get_preset_features(ee->get_export_preset(i), p);
 		for (const String &E : p) {
 			presets.insert(E);
 		}

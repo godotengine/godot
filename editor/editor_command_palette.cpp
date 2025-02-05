@@ -216,9 +216,9 @@ void EditorCommandPalette::open_popup() {
 	search_options->scroll_to_item(search_options->get_root());
 }
 
-void EditorCommandPalette::get_actions_list(List<String> *p_list) const {
+void EditorCommandPalette::get_actions_list(List<String> &p_list) const {
 	for (const KeyValue<String, Command> &E : commands) {
-		p_list->push_back(E.key);
+		p_list.push_back(E.key);
 	}
 }
 

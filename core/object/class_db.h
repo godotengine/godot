@@ -459,7 +459,7 @@ public:
 	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
-	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
+	static void get_integer_constant_list(const StringName &p_class, List<String> &p_constants, bool p_no_inheritance = false);
 	static int64_t get_integer_constant(const StringName &p_class, const StringName &p_name, bool *p_success = nullptr);
 	static bool has_integer_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
@@ -482,8 +482,8 @@ public:
 	static bool is_class_runtime(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
-	static void get_resource_base_extensions(List<String> *p_extensions);
-	static void get_extensions_for_type(const StringName &p_class, List<String> *p_extensions);
+	static void get_resource_base_extensions(List<String> &p_extensions);
+	static void get_extensions_for_type(const StringName &p_class, List<String> &p_extensions);
 	static bool is_resource_extension(const StringName &p_extension);
 
 	static void add_compatibility_class(const StringName &p_class, const StringName &p_fallback);

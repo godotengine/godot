@@ -41,7 +41,7 @@ class ResourceImporterMP3 : public ResourceImporter {
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> &p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
 
@@ -56,7 +56,7 @@ public:
 	virtual void show_advanced_options(const String &p_path) override;
 #endif
 
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr) override;
 
 	virtual bool can_import_threaded() const override { return true; }
 

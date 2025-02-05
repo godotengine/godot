@@ -331,7 +331,7 @@ void EditorExport::load_config() {
 		String option_section = "preset." + itos(index) + ".options";
 
 		List<String> options;
-		config->get_section_keys(option_section, &options);
+		config->get_section_keys(option_section, options);
 
 		for (const String &E : options) {
 			Variant value = config->get_value(option_section, E);
@@ -340,7 +340,7 @@ void EditorExport::load_config() {
 
 		if (credentials->has_section(option_section)) {
 			options.clear();
-			credentials->get_section_keys(option_section, &options);
+			credentials->get_section_keys(option_section, options);
 
 			for (const String &E : options) {
 				// Drop values for secret properties that no longer exist, or during the next save they would end up in the regular config file.

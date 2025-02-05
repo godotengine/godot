@@ -427,9 +427,9 @@ public:                                                                         
 	static _FORCE_INLINE_ String get_parent_class_static() {                                                                                \
 		return m_inherits::get_class_static();                                                                                              \
 	}                                                                                                                                       \
-	static void get_inheritance_list_static(List<String> *p_inheritance_list) {                                                             \
+	static void get_inheritance_list_static(List<String> &p_inheritance_list) {                                                             \
 		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                        \
-		p_inheritance_list->push_back(String(#m_class));                                                                                    \
+		p_inheritance_list.push_back(String(#m_class));                                                                                     \
 	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
@@ -441,7 +441,7 @@ public:                                                                         
 		return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr);                                                  \
 	}                                                                                                                                       \
                                                                                                                                             \
-	static void get_valid_parents_static(List<String> *p_parents) {                                                                         \
+	static void get_valid_parents_static(List<String> &p_parents) {                                                                         \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                                  \
 			m_class::_get_valid_parents_static(p_parents);                                                                                  \
 		}                                                                                                                                   \
@@ -743,8 +743,8 @@ protected:
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {
 		return &Object::_notification;
 	}
-	static void get_valid_parents_static(List<String> *p_parents);
-	static void _get_valid_parents_static(List<String> *p_parents);
+	static void get_valid_parents_static(List<String> &p_parents);
+	static void _get_valid_parents_static(List<String> &p_parents);
 
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
@@ -814,7 +814,7 @@ public:
 	};
 
 	/* TYPE API */
-	static void get_inheritance_list_static(List<String> *p_inheritance_list) { p_inheritance_list->push_back("Object"); }
+	static void get_inheritance_list_static(List<String> &p_inheritance_list) { p_inheritance_list.push_back("Object"); }
 
 	static String get_class_static() { return "Object"; }
 	static String get_parent_class_static() { return String(); }
@@ -973,7 +973,7 @@ public:
 	virtual void set_translation_domain(const StringName &p_domain);
 
 #ifdef TOOLS_ENABLED
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const;
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }

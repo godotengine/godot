@@ -2107,7 +2107,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_another_theme_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	import_another_theme_dialog->set_title(TTR("Select Another Theme Resource:"));
 	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
+	ResourceLoader::get_recognized_extensions_for_type("Theme", ext);
 	for (const String &E : ext) {
 		import_another_theme_dialog->add_filter("*." + E, TTR("Theme Resource"));
 	}
@@ -3830,7 +3830,7 @@ ThemeEditor::ThemeEditor() {
 	preview_scene_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	preview_scene_dialog->set_title(TTR("Select UI Scene:"));
 	List<String> ext;
-	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
+	ResourceLoader::get_recognized_extensions_for_type("PackedScene", ext);
 	for (const String &E : ext) {
 		preview_scene_dialog->add_filter("*." + E, TTR("Scene"));
 	}

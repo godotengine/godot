@@ -238,7 +238,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
 
 	List<String> keywords;
-	ShaderLanguage::get_keyword_list(&keywords);
+	ShaderLanguage::get_keyword_list(keywords);
 
 	for (const String &E : keywords) {
 		if (ShaderLanguage::is_control_flow_keyword(E)) {
@@ -249,7 +249,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	}
 
 	List<String> pp_keywords;
-	ShaderPreprocessor::get_keyword_list(&pp_keywords, false);
+	ShaderPreprocessor::get_keyword_list(pp_keywords, false);
 
 	for (const String &E : pp_keywords) {
 		syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);

@@ -110,7 +110,7 @@ protected:
 	static void _bind_methods();
 
 #ifdef TOOLS_ENABLED
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> &r_options) const override;
 #endif
 
 	virtual bool _can_do_next_pass() const override;

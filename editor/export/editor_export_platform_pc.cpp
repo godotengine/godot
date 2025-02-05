@@ -33,18 +33,18 @@
 #include "core/config/project_settings.h"
 #include "scene/resources/image_texture.h"
 
-void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
+void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> &r_features) const {
 	if (p_preset->get("texture_format/s3tc_bptc")) {
-		r_features->push_back("s3tc");
-		r_features->push_back("bptc");
+		r_features.push_back("s3tc");
+		r_features.push_back("bptc");
 	}
 	if (p_preset->get("texture_format/etc2_astc")) {
-		r_features->push_back("etc2");
-		r_features->push_back("astc");
+		r_features.push_back("etc2");
+		r_features.push_back("astc");
 	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
-	r_features->push_back(p_preset->get("binary_format/architecture"));
+	r_features.push_back(p_preset->get("binary_format/architecture"));
 }
 
 void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) const {
@@ -257,9 +257,9 @@ void EditorExportPlatformPC::set_logo(const Ref<Texture2D> &p_logo) {
 	logo = p_logo;
 }
 
-void EditorExportPlatformPC::get_platform_features(List<String> *r_features) const {
-	r_features->push_back("pc"); // Identify PC platforms as such.
-	r_features->push_back(get_os_name().to_lower()); // OS name is a feature.
+void EditorExportPlatformPC::get_platform_features(List<String> &r_features) const {
+	r_features.push_back("pc"); // Identify PC platforms as such.
+	r_features.push_back(get_os_name().to_lower()); // OS name is a feature.
 }
 
 void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {

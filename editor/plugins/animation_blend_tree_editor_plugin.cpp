@@ -315,7 +315,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	if (p_idx == MENU_LOAD_FILE) {
 		open_file->clear_filters();
 		List<String> ext_filters;
-		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", &ext_filters);
+		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", ext_filters);
 		for (const String &E : ext_filters) {
 			open_file->add_filter("*." + E);
 		}

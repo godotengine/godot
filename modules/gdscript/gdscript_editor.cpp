@@ -51,19 +51,19 @@
 #include "editor/editor_settings.h"
 #endif
 
-void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("#");
+void GDScriptLanguage::get_comment_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("#");
 }
 
-void GDScriptLanguage::get_doc_comment_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("##");
+void GDScriptLanguage::get_doc_comment_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("##");
 }
 
-void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-	p_delimiters->push_back("\" \"");
-	p_delimiters->push_back("' '");
-	p_delimiters->push_back("\"\"\" \"\"\"");
-	p_delimiters->push_back("''' '''");
+void GDScriptLanguage::get_string_delimiters(List<String> &p_delimiters) const {
+	p_delimiters.push_back("\" \"");
+	p_delimiters.push_back("' '");
+	p_delimiters.push_back("\"\"\" \"\"\"");
+	p_delimiters.push_back("''' '''");
 	// NOTE: StringName, NodePath and r-strings are not listed here.
 }
 
@@ -454,8 +454,8 @@ String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const S
 	return String();
 }
 
-void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("gd");
+void GDScriptLanguage::get_recognized_extensions(List<String> &p_extensions) const {
+	p_extensions.push_back("gd");
 }
 
 void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
@@ -1292,7 +1292,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				if (!p_only_functions) {
 					List<String> constants;
-					ClassDB::get_integer_constant_list(type, &constants);
+					ClassDB::get_integer_constant_list(type, constants);
 					for (const String &E : constants) {
 						int location = p_recursion_depth + _get_constant_location(type, StringName(E));
 						ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
@@ -2831,7 +2831,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						Object *obj = base.operator Object *();
 						if (obj) {
 							List<String> options;
-							obj->get_argument_options(p_method, p_argidx, &options);
+							obj->get_argument_options(p_method, p_argidx, options);
 							for (String &opt : options) {
 								// Handle user preference.
 								if (opt.is_quoted()) {
@@ -3519,7 +3519,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			// Handles the `$Node/Path` or `$"Some NodePath"` syntax specifically.
 			if (p_owner) {
 				List<String> opts;
-				p_owner->get_argument_options("get_node", 0, &opts);
+				p_owner->get_argument_options("get_node", 0, opts);
 
 				bool for_unique_name = false;
 				if (completion_context.node != nullptr && completion_context.node->type == GDScriptParser::Node::GET_NODE && !static_cast<GDScriptParser::GetNodeNode *>(completion_context.node)->use_dollar) {
@@ -3878,7 +3878,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 
 				List<String> constants;
-				ClassDB::get_integer_constant_list(class_name, &constants, true);
+				ClassDB::get_integer_constant_list(class_name, constants, true);
 				for (const String &E : constants) {
 					if (E == p_symbol) {
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;

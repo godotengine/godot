@@ -1458,7 +1458,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	current_menu_option = RESOURCE_SAVE_AS;
 	List<String> extensions;
 	Ref<PackedScene> sd = memnew(PackedScene);
-	ResourceSaver::get_recognized_extensions(p_resource, &extensions);
+	ResourceSaver::get_recognized_extensions(p_resource, extensions);
 	file->clear_filters();
 
 	List<String> preferred;
@@ -1566,7 +1566,7 @@ void EditorNode::_load_editor_plugin_states_from_config(const Ref<ConfigFile> &p
 	}
 
 	List<String> esl;
-	p_config_file->get_section_keys("editor_states", &esl);
+	p_config_file->get_section_keys("editor_states", esl);
 
 	Dictionary md;
 	for (const String &E : esl) {
@@ -2297,7 +2297,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			// Erase key values.
 			List<String> keys;
-			config->get_section_keys(p_file, &keys);
+			config->get_section_keys(p_file, keys);
 			for (const String &key : keys) {
 				config->set_value(p_file, key, Variant());
 			}
@@ -2758,7 +2758,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_OPEN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -2869,7 +2869,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
-			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			ResourceSaver::get_recognized_extensions(sd, extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -3192,7 +3192,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_PICK_MAIN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
+			ResourceLoader::get_recognized_extensions_for_type("PackedScene", extensions);
 			file->clear_filters();
 			for (const String &extension : extensions) {
 				file->add_filter("*." + extension, extension.to_upper());
@@ -3375,7 +3375,7 @@ void EditorNode::_export_as_menu_option(int p_idx) {
 
 		List<String> extensions;
 		Ref<MeshLibrary> ml(memnew(MeshLibrary));
-		ResourceSaver::get_recognized_extensions(ml, &extensions);
+		ResourceSaver::get_recognized_extensions(ml, extensions);
 		file_export_lib->clear_filters();
 		for (const String &E : extensions) {
 			file_export_lib->add_filter("*." + E);
@@ -5593,7 +5593,7 @@ void EditorNode::_update_layouts_menu() {
 	}
 
 	List<String> layouts;
-	config.ptr()->get_sections(&layouts);
+	config.ptr()->get_sections(layouts);
 
 	for (const String &layout : layouts) {
 		if (layout == TTR("Default")) {
@@ -7812,7 +7812,7 @@ EditorNode::EditorNode() {
 	file_script->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_script->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	List<String> sexts;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &sexts);
+	ResourceLoader::get_recognized_extensions_for_type("Script", sexts);
 	for (const String &E : sexts) {
 		file_script->add_filter("*." + E);
 	}
