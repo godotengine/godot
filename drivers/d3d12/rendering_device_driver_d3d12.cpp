@@ -3378,7 +3378,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 			binary_data.nir_runtime_data_root_param_idx = root_params.size();
 			CD3DX12_ROOT_PARAMETER1 nir_runtime_data;
 			nir_runtime_data.InitAsConstants(
-					sizeof(dxil_spirv_vertex_runtime_data) / sizeof(uint32_t),
+					std::size(dxil_spirv_vertex_runtime_data),
 					RUNTIME_DATA_REGISTER,
 					0,
 					D3D12_SHADER_VISIBILITY_VERTEX);
