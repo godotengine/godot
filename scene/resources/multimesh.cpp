@@ -226,6 +226,8 @@ void MultiMesh::set_instance_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 	RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
+
+	notify_property_list_changed();
 }
 
 int MultiMesh::get_instance_count() const {
@@ -308,7 +310,6 @@ RID MultiMesh::get_rid() const {
 }
 
 void MultiMesh::set_use_colors(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
 	use_colors = p_enable;
 }
 
@@ -317,7 +318,6 @@ bool MultiMesh::is_using_colors() const {
 }
 
 void MultiMesh::set_use_custom_data(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
 	use_custom_data = p_enable;
 }
 
@@ -326,7 +326,6 @@ bool MultiMesh::is_using_custom_data() const {
 }
 
 void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
-	ERR_FAIL_COND(instance_count > 0);
 	transform_format = p_transform_format;
 }
 
@@ -402,6 +401,14 @@ void MultiMesh::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(INTERP_QUALITY_FAST);
 	BIND_ENUM_CONSTANT(INTERP_QUALITY_HIGH);
+}
+
+void MultiMesh::_validate_property(PropertyInfo &p_property) const {
+	if (instance_count > 0) {
+		if (p_property.name == "transform_format" || p_property.name == "use_colors" || p_property.name == "use_custom_data") {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	}
 }
 
 MultiMesh::MultiMesh() {
