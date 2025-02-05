@@ -60,49 +60,33 @@ void RemoteTransform3D::_update_remote() {
 		return;
 	}
 
-	//todo make faster
-	if (use_global_coordinates) {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_global_transform(get_global_transform());
+	Transform3D our_trans = use_global_coordinates ? get_global_transform() : get_transform();
+
+	if (update_remote_position && update_remote_rotation && update_remote_scale) {
+		if (use_global_coordinates) {
+			n->set_global_transform(our_trans);
 		} else {
-			Transform3D our_trans = get_global_transform();
+			n->set_transform(our_trans);
+		}
+	} else {
+		Transform3D n_trans = use_global_coordinates ? n->get_global_transform() : n->get_transform();
 
-			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
-			}
-
-			if (update_remote_scale) {
-				n->set_scale(our_trans.basis.get_scale());
-			}
-
-			if (update_remote_position) {
-				Transform3D n_trans = n->get_global_transform();
-
-				n_trans.set_origin(our_trans.get_origin());
-				n->set_global_transform(n_trans);
-			}
+		if (update_remote_rotation && update_remote_scale) {
+			n_trans.basis = our_trans.basis;
+		} else if (update_remote_rotation) {
+			n_trans.basis = our_trans.basis.orthonormalized().scaled_local(n_trans.basis.get_scale());
+		} else if (update_remote_scale) {
+			n_trans.basis = n_trans.basis.orthonormalized().scaled_local(our_trans.basis.get_scale());
 		}
 
-	} else {
-		if (update_remote_position && update_remote_rotation && update_remote_scale) {
-			n->set_transform(get_transform());
+		if (update_remote_position) {
+			n_trans.origin = our_trans.origin;
+		}
+
+		if (use_global_coordinates) {
+			n->set_global_transform(n_trans);
 		} else {
-			Transform3D our_trans = get_transform();
-
-			if (update_remote_rotation) {
-				n->set_rotation(our_trans.basis.get_euler_normalized(EulerOrder(n->get_rotation_order())));
-			}
-
-			if (update_remote_scale) {
-				n->set_scale(our_trans.basis.get_scale());
-			}
-
-			if (update_remote_position) {
-				Transform3D n_trans = n->get_transform();
-
-				n_trans.set_origin(our_trans.get_origin());
-				n->set_transform(n_trans);
-			}
+			n->set_transform(n_trans);
 		}
 	}
 }
