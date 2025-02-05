@@ -35,7 +35,7 @@
 
 #include <thirdparty/noise/FastNoiseLite.h>
 
-typedef fastnoiselite::FastNoiseLite _FastNoiseLite;
+using _FastNoiseLite = fastnoiselite::FastNoiseLite;
 
 class FastNoiseLite : public Noise {
 	GDCLASS(FastNoiseLite, Noise);
