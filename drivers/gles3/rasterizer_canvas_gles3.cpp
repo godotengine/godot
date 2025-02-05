@@ -662,8 +662,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 	if (index == 0) {
 		// Nothing to render, just return.
-		state.current_batch_index = 0;
-		state.canvas_instance_batches.clear();
 		return;
 	}
 
@@ -914,8 +912,6 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 		state.instance_data_array[r_index].flags = base_flags;
 		state.instance_data_array[r_index].instance_uniforms_ofs = p_item->instance_allocated_shader_uniforms_offset;
-
-		state.instance_data_array[r_index].flags = base_flags | (state.instance_data_array[r_index == 0 ? 0 : r_index - 1].flags & (BATCH_FLAGS_DEFAULT_NORMAL_MAP_USED | BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED)); // Reset on each command for safety, keep canvastexture binding config.
 
 		Color blend_color = base_color;
 		GLES3::CanvasShaderData::BlendMode blend_mode = p_blend_mode;
@@ -1571,7 +1567,9 @@ void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broke
 
 void RasterizerCanvasGLES3::_new_batch(bool &r_batch_broken) {
 	if (state.canvas_instance_batches.size() == 0) {
-		state.canvas_instance_batches.push_back(Batch());
+		Batch new_batch;
+		new_batch.instance_buffer_index = state.current_instance_buffer_index;
+		state.canvas_instance_batches.push_back(new_batch);
 		return;
 	}
 

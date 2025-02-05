@@ -69,6 +69,14 @@
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
 
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT 0L
+#define _NET_WM_MOVERESIZE_SIZE_TOP 1L
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT 2L
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT 3L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT 4L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM 5L
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT 6L
+#define _NET_WM_MOVERESIZE_SIZE_LEFT 7L
 #define _NET_WM_MOVERESIZE_MOVE 8L
 
 // 2.2 is the first release with multitouch
@@ -129,28 +137,40 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_HIDPI:
 		case FEATURE_ICON:
-#ifdef DBUS_ENABLED
-		case FEATURE_NATIVE_DIALOG_FILE:
-		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-#endif
-		//case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
 #ifdef DBUS_ENABLED
 		case FEATURE_KEEP_SCREEN_ON:
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
-		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_WINDOW_DRAG: {
 			return true;
-		case FEATURE_SCREEN_CAPTURE:
+		} break;
+
+		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
+#ifdef DBUS_ENABLED
+		case FEATURE_NATIVE_DIALOG_FILE:
+		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
+		} break;
+#endif
+		case FEATURE_SCREEN_CAPTURE: {
 			return !xwayland;
+		} break;
+
+#ifdef SPEECHD_ENABLED
+		case FEATURE_TEXT_TO_SPEECH: {
+			return true;
+		} break;
+#endif
+
 		default: {
+			return false;
 		}
 	}
-
-	return false;
 }
 
 String DisplayServerX11::get_name() const {
@@ -358,10 +378,13 @@ void DisplayServerX11::tts_stop() {
 #ifdef DBUS_ENABLED
 
 bool DisplayServerX11::is_dark_mode_supported() const {
-	return portal_desktop->is_supported();
+	return portal_desktop && portal_desktop->is_supported() && portal_desktop->is_settings_supported();
 }
 
 bool DisplayServerX11::is_dark_mode() const {
+	if (!is_dark_mode_supported()) {
+		return false;
+	}
 	switch (portal_desktop->get_appearance_color_scheme()) {
 		case 1:
 			// Prefers dark theme.
@@ -407,10 +430,14 @@ void DisplayServerX11::beep() const {
 	XBell(x11_display, 0);
 }
 
-void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerX11::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (p_mode == mouse_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
@@ -419,7 +446,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	// The only modes that show a cursor are VISIBLE and CONFINED
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
@@ -440,7 +467,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
 		}
 	}
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
@@ -474,8 +501,42 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	XFlush(x11_display);
 }
 
+void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
 DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerX11::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerX11::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerX11::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 void DisplayServerX11::warp_mouse(const Point2i &p_position) {
@@ -1316,8 +1377,6 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 					}
 
 					if (desktop_valid) {
-						use_simple_method = false;
-
 						// Handle bad window errors silently because there's no other way to check
 						// that one of the windows has been destroyed in the meantime.
 						int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
@@ -1345,6 +1404,8 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								}
 							}
 							if (!g_bad_window && strut_found && (format == 32) && (strut_len >= 4) && strut_data) {
+								use_simple_method = false;
+
 								long *struts = (long *)strut_data;
 
 								long left = struts[0];
@@ -1974,7 +2035,8 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 	Atom _net_wm_name = XInternAtom(x11_display, "_NET_WM_NAME", false);
 	Atom utf8_string = XInternAtom(x11_display, "UTF8_STRING", false);
 	if (_net_wm_name != None && utf8_string != None) {
-		XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
+		CharString utf8_title = p_title.utf8();
+		XChangeProperty(x11_display, wd.x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)utf8_title.get_data(), utf8_title.length());
 	}
 }
 
@@ -3513,8 +3575,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// XLookupString returns keysyms usable as nice keycodes.
 	char str[256] = {};
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
-	xkeyevent_no_mod.state &= ~ShiftMask;
-	xkeyevent_no_mod.state &= ~ControlMask;
+	xkeyevent_no_mod.state &= 0xFF00;
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
@@ -3552,7 +3613,17 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 		if (status == XLookupChars) {
 			bool keypress = xkeyevent->type == KeyPress;
-			Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
+
+			Key keycode = Key::NONE;
+			if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+				// Special case for numpad keys.
+				keycode = KeyMappingX11::get_keycode(keysym_unicode);
+			}
+
+			if (keycode == Key::NONE) {
+				keycode = KeyMappingX11::get_keycode(keysym_keycode);
+			}
+
 			Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 			if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
@@ -3620,9 +3691,18 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		if (res == XKB_COMPOSE_FEED_ACCEPTED) {
 			if (xkb_compose_state_get_status(wd.xkb_state) == XKB_COMPOSE_COMPOSED) {
 				bool keypress = xkeyevent->type == KeyPress;
-				Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
 				Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 				KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
+
+				Key keycode = Key::NONE;
+				if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+					// Special case for numpad keys.
+					keycode = KeyMappingX11::get_keycode(keysym_unicode);
+				}
+
+				if (keycode == Key::NONE) {
+					keycode = KeyMappingX11::get_keycode(keysym_keycode);
+				}
 
 				if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
 					keycode -= 'a' - 'A';
@@ -3684,7 +3764,16 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// KeyMappingX11 just translated the X11 keysym to a PIGUI
 	// keysym, so it works in all platforms the same.
 
-	Key keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	Key keycode = Key::NONE;
+	if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+		// Special case for numpad keys.
+		keycode = KeyMappingX11::get_keycode(keysym_unicode);
+	}
+
+	if (keycode == Key::NONE) {
+		keycode = KeyMappingX11::get_keycode(keysym_keycode);
+	}
+
 	Key physical_keycode = KeyMappingX11::get_scancode(xkeyevent->keycode);
 
 	KeyLocation key_location = KeyMappingX11::get_location(xkeyevent->keycode);
@@ -4678,6 +4767,13 @@ void DisplayServerX11::process_events() {
 
 				// Have we failed to set fullscreen while the window was unmapped?
 				_validate_mode_on_map(window_id);
+
+				// On KDE Plasma, when the parent window of an embedded process is restored after being minimized,
+				// only the embedded window receives the Map notification, causing it to
+				// appear without its parent.
+				if (wd.embed_parent) {
+					XMapWindow(x11_display, wd.embed_parent);
+				}
 			} break;
 
 			case Expose: {
@@ -5486,6 +5582,10 @@ void DisplayServerX11::window_start_drag(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if (wd.embed_parent) {
+		return; // Embedded window.
+	}
+
 	XClientMessageEvent m;
 	memset(&m, 0, sizeof(m));
 
@@ -5507,6 +5607,74 @@ void DisplayServerX11::window_start_drag(WindowID p_window) {
 		m.data.l[3] = Button1;
 	}
 	m.data.l[2] = _NET_WM_MOVERESIZE_MOVE;
+	m.data.l[4] = 1; // Source - normal application.
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&m);
+
+	XSync(x11_display, 0);
+}
+
+void DisplayServerX11::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.embed_parent) {
+		return; // Embedded window.
+	}
+
+	XClientMessageEvent m;
+	memset(&m, 0, sizeof(m));
+
+	XUngrabPointer(x11_display, CurrentTime);
+
+	Window root_return, child_return;
+	int root_x, root_y, win_x, win_y;
+	unsigned int mask_return;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, wd.x11_window, &root_return, &child_return, &root_x, &root_y, &win_x, &win_y, &mask_return);
+
+	m.type = ClientMessage;
+	m.window = wd.x11_window;
+	m.message_type = XInternAtom(x11_display, "_NET_WM_MOVERESIZE", True);
+	m.format = 32;
+	if (xquerypointer_result) {
+		m.data.l[0] = root_x;
+		m.data.l[1] = root_y;
+		m.data.l[3] = Button1;
+	}
+
+	switch (p_edge) {
+		case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOP;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_LEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_RIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOM;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+			m.data.l[2] = _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
+		} break;
+		default:
+			break;
+	}
 	m.data.l[4] = 1; // Source - normal application.
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&m);
@@ -5718,7 +5886,7 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 			}
 		}
 
-		if (desired_rect.size.x < 100 || desired_rect.size.y < 100) {
+		if (desired_rect.size.x <= 100 || desired_rect.size.y <= 100) {
 			p_visible = false;
 		}
 
@@ -5766,6 +5934,28 @@ Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
 	}
 
 	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	// Handle bad window errors silently because just in case the embedded window was closed.
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
+
+	// Check if the window is still valid.
+	XWindowAttributes attr;
+	if (XGetWindowAttributes(x11_display, ep->process_window, &attr)) {
+		// Send the message to gracefully close the window.
+		XEvent ev;
+		memset(&ev, 0, sizeof(ev));
+		ev.xclient.type = ClientMessage;
+		ev.xclient.window = ep->process_window;
+		ev.xclient.message_type = XInternAtom(x11_display, "WM_PROTOCOLS", True);
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = XInternAtom(x11_display, "WM_DELETE_WINDOW", False);
+		ev.xclient.data.l[1] = CurrentTime;
+		XSendEvent(x11_display, ep->process_window, False, NoEventMask, &ev);
+	}
+
+	// Restore default error handler.
+	XSetErrorHandler(oldHandler);
+
 	embedded_processes.erase(p_pid);
 	memdelete(ep);
 
@@ -6086,7 +6276,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			}
 		}
 
-		if (wd.is_popup || wd.no_focus || wd.embed_parent) {
+		if (wd.is_popup || wd.no_focus || (wd.embed_parent && !kde5_embed_workaround)) {
 			// Set Utility type to disable fade animations.
 			Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
 			Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
@@ -6232,6 +6422,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	KeyMappingX11::initialize();
 
 	xwayland = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").to_lower() == "wayland";
+	kde5_embed_workaround = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower() == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
 
 	native_menu = memnew(NativeMenu);
 	context = p_context;

@@ -66,6 +66,10 @@ public:
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
 #ifndef DISABLE_DEPRECATED
 	bool animate_physical_bones = true;
 	Node *simulator = nullptr;
@@ -183,7 +187,6 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
-	mutable LocalVector<BonePoseBackup> bones_backup;
 
 	// Global bone pose calculation.
 	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.

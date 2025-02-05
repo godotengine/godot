@@ -151,8 +151,8 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
-    if env["metal"] and env["arch"] != "arm64":
-        print_warning("Target architecture '{}' does not support the Metal rendering driver".format(env["arch"]))
+    if env["metal"] and env["ios_simulator"]:
+        print_warning("iOS simulator does not support the Metal rendering driver")
         env["metal"] = False
 
     if env["metal"]:
@@ -160,16 +160,22 @@ def configure(env: "SConsEnvironment"):
         env.Prepend(
             CPPPATH=[
                 "$IOS_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
+                "$IOS_SDK_PATH/System/Library/Frameworks/MetalFX.framework/Headers",
                 "$IOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+
+    if env["vulkan"] and env["ios_simulator"]:
+        print_warning("iOS simulator does not support the Vulkan rendering driver")
+        env["vulkan"] = False
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])
+        env.Append(CCFLAGS=["-Wno-module-import-in-extern-c"])
         env.Prepend(
             CPPPATH=[
                 "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
