@@ -232,6 +232,9 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		// Accept inputs from all players by default.
+		uint32_t player_mask = UINT32_MAX;
+
 		ObjectID shortcut_context;
 
 		// Theming.
@@ -556,6 +559,9 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_player_mask(uint32_t p_mask);
+	uint32_t get_player_mask() const;
 
 	// Rendering.
 
