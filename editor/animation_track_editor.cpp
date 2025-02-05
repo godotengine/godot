@@ -4719,6 +4719,17 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 	}
 
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);
+	if (!created && p_id.type == Animation::TYPE_BEZIER) {
+		int k_idx = animation->track_find_key(p_id.track_idx, time) + 1;
+		undo_redo->add_do_method(
+				this,
+				"_bezier_track_set_key_handle_mode",
+				animation.ptr(),
+				p_id.track_idx,
+				k_idx,
+				(Animation::HandleMode)(int)EDITOR_GET("editors/animation/default_bezier_key_behavior"),
+				Animation::HANDLE_SET_MODE_AUTO);
+	}
 
 	if (created) {
 		// Just remove the track.
@@ -7635,6 +7646,22 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	spacer->set_mouse_filter(MOUSE_FILTER_PASS);
 	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
 	bottom_hf->add_child(spacer);
+
+	Label *bezier_key_default_label = memnew(Label);
+	bezier_key_default_label->set_text(TTR("Bezier Key Mode:"));
+	bottom_hf->add_child(bezier_key_default_label);
+
+	bezier_key_mode = memnew(OptionButton);
+	bezier_key_mode->add_item(TTR("Horizontal"));
+	bezier_key_mode->add_item(TTR("Linear"));
+	bezier_key_mode->add_item(TTR("Balanced Automatic"));
+	bezier_key_mode->add_item(TTR("Mirrored Automatic"));
+	bezier_key_mode->set_tooltip_text(TTR("Set the default behavior of new bezier keys."));
+
+	bezier_key_mode->select((int)EDITOR_GET("editors/animation/default_bezier_key_behavior"));
+
+	bottom_hf->add_child(bezier_key_mode);
+	bottom_hf->add_child(memnew(VSeparator));
 
 	bezier_edit_icon = memnew(Button);
 	bezier_edit_icon->set_flat(true);
