@@ -130,7 +130,7 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme type names") {
 		"With/Slash",
 		"With Space",
 		"With@various$symbols!",
-		String::utf8("contains_汉字"),
+		String::utf8(u8"contains_汉字"),
 	};
 
 	ERR_PRINT_OFF; // All these rightfully print errors.

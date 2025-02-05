@@ -169,7 +169,7 @@ TEST_CASE("[StreamPeer] Get and sets through StreamPeerBuffer") {
 	}
 
 	SUBCASE("A utf8 string value") {
-		String value = String::utf8("Hello✩, World✩!");
+		String value = String::utf8(u8"Hello✩, World✩!");
 
 		spb->clear();
 		spb->put_utf8_string(value);

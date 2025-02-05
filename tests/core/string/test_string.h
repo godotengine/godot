@@ -1511,10 +1511,10 @@ TEST_CASE("[String] lstrip and rstrip") {
 	STRIP_TEST(String("abca").rstrip("a") == "abc");
 	// in utf-8 "¿" (\u00bf) has the same first byte as "µ" (\u00b5)
 	// and the same second as "ÿ" (\u00ff)
-	STRIP_TEST(String::utf8("¿").lstrip(String::utf8("µÿ")) == String::utf8("¿"));
-	STRIP_TEST(String::utf8("¿").rstrip(String::utf8("µÿ")) == String::utf8("¿"));
-	STRIP_TEST(String::utf8("µ¿ÿ").lstrip(String::utf8("µÿ")) == String::utf8("¿ÿ"));
-	STRIP_TEST(String::utf8("µ¿ÿ").rstrip(String::utf8("µÿ")) == String::utf8("µ¿"));
+	STRIP_TEST(String::utf8(u8"¿").lstrip(String::utf8(u8"µÿ")) == String::utf8(u8"¿"));
+	STRIP_TEST(String::utf8(u8"¿").rstrip(String::utf8(u8"µÿ")) == String::utf8(u8"¿"));
+	STRIP_TEST(String::utf8(u8"µ¿ÿ").lstrip(String::utf8(u8"µÿ")) == String::utf8(u8"¿ÿ"));
+	STRIP_TEST(String::utf8(u8"µ¿ÿ").rstrip(String::utf8(u8"µÿ")) == String::utf8(u8"µ¿"));
 
 	// the above tests repeated with additional superfluous strip chars
 
@@ -1888,7 +1888,7 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
+	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", u8"文字" };
 	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
 	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
 	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };

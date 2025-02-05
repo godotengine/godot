@@ -187,15 +187,15 @@ TEST_CASE("[TranslationCSV] CSV import") {
 
 	ts->set_locale("ja");
 
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("おはよう"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("こんばんは"));
+	CHECK(ts->tr("GOOD_MORNING") == String::utf8(u8"おはよう"));
+	CHECK(ts->tr("GOOD_EVENING") == String::utf8(u8"こんばんは"));
 
 	/* FIXME: This passes, but triggers a chain reaction that makes test_viewport
 	 * and test_text_edit explode in a billion glittery Unicode particles.
 	ts->set_locale("fa");
 
-	CHECK(ts->tr("GOOD_MORNING") == String::utf8("صبح بخیر"));
-	CHECK(ts->tr("GOOD_EVENING") == String::utf8("عصر بخیر"));
+	CHECK(ts->tr("GOOD_MORNING") == String::utf8(u8"صبح بخیر"));
+	CHECK(ts->tr("GOOD_EVENING") == String::utf8(u8"عصر بخیر"));
 	*/
 }
 #endif // TOOLS_ENABLED

@@ -112,7 +112,7 @@ TEST_CASE("[Curve2D] Baked") {
 		CHECK(curve->get_baked_points().size() == 15);
 	}
 
-	SUBCASE("Beziér Curve") {
+	SUBCASE(u8"Beziér Curve") {
 		add_sample_curve_points(curve);
 
 		real_t len = curve->get_baked_length();

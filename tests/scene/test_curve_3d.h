@@ -121,7 +121,7 @@ TEST_CASE("[Curve3D] Baked") {
 		CHECK(curve->get_baked_up_vectors().size() == 369);
 	}
 
-	SUBCASE("Beziér Curve") {
+	SUBCASE(u8"Beziér Curve") {
 		add_sample_curve_points(curve);
 
 		real_t len = curve->get_baked_length();
