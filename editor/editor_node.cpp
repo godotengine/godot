@@ -5734,7 +5734,9 @@ void EditorNode::_cancel_close_scene_tab() {
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
-	save_confirmation->reparent(get_last_exclusive_window());
+	if (save_confirmation->get_window() != get_last_exclusive_window()) {
+		save_confirmation->reparent(get_last_exclusive_window());
+	}
 }
 
 void EditorNode::_toggle_distraction_free_mode() {
