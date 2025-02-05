@@ -117,6 +117,8 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree.
+				Visibility is checked only in parent nodes that inherit from [Node3D]. If the parent is of any other type (such as [Node], [AnimationPlayer], or [Node2D]), it is assumed to be visible.
+				[b]Note:[/b] This method does not take [member VisualInstance3D.layers] into account, so even if this method returns [code]true[/code], the node might end up not being rendered.
 			</description>
 		</method>
 		<method name="look_at">
