@@ -1131,11 +1131,13 @@ void KeyMappingX11::initialize() {
 
 bool KeyMappingX11::is_sym_numpad(KeySym p_keysym) {
 	switch (p_keysym) {
+		case XK_KP_Equal:
+		case XK_KP_Add:
+		case XK_KP_Subtract:
 		case XK_KP_Multiply:
 		case XK_KP_Divide:
-		case XK_KP_Subtract:
 		case XK_KP_Separator:
-		case XK_KP_Add:
+		case XK_KP_Decimal:
 		case XK_KP_0:
 		case XK_KP_1:
 		case XK_KP_2:
