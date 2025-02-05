@@ -1825,6 +1825,7 @@ void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_editing_integer(true);
 	}
 }
 
