@@ -89,9 +89,9 @@ protected:
 	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
-	bool _is_dragging_limit_rect() const;
 
 #ifdef TOOLS_ENABLED
+	bool _is_dragging_limit_rect() const;
 	void _project_settings_changed();
 #endif
 

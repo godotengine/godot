@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 
@@ -47,17 +48,11 @@ void Camera2DEditor::edit(Camera2D *p_camera) {
 void Camera2DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_SNAP_LIMITS_TO_VIEWPORT: {
-			if (selected_camera == nullptr) {
-				break;
-			}
 			selected_camera->set_limit(SIDE_LEFT, 0);
 			selected_camera->set_limit(SIDE_TOP, 0);
 			selected_camera->set_limit(SIDE_RIGHT, GLOBAL_GET("display/window/size/viewport_width"));
 			selected_camera->set_limit(SIDE_BOTTOM, GLOBAL_GET("display/window/size/viewport_height"));
-			break;
-		}
-		default:
-			break;
+		} break;
 	}
 }
 
@@ -65,7 +60,6 @@ void Camera2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("Camera2D")));
-			options->get_popup()->set_item_icon(MENU_SNAP_LIMITS_TO_VIEWPORT, get_editor_theme_icon(SNAME("Camera2D")));
 		} break;
 	}
 }
@@ -75,20 +69,31 @@ Camera2DEditor::Camera2DEditor() {
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
-	options->set_text(TTR("Camera2D"));
+	options->set_text(TTRC("Camera2D"));
 
-	options->get_popup()->add_item(TTR("Snap the Limits to the Viewport"), MENU_SNAP_LIMITS_TO_VIEWPORT);
+	options->get_popup()->add_item(TTRC("Snap the Limits to the Viewport"), MENU_SNAP_LIMITS_TO_VIEWPORT);
 	options->set_switch_on_hover(true);
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Camera2DEditor::_menu_option));
+
+#ifdef TOOLS_ENABLED
+	add_user_signal(MethodInfo("_editor_theme_changed"));
+#endif
 }
 
 void Camera2DEditorPlugin::_update_approach_text_visibility() {
 	if (camera_2d_editor->selected_camera == nullptr) {
-		print_line("Selected camera is null");
 		return;
 	}
 	approach_to_move_rect->set_visible(camera_2d_editor->selected_camera->is_limit_enabled());
+}
+
+void Camera2DEditorPlugin::_editor_theme_changed() {
+	approach_to_move_rect->remove_theme_color_override(SceneStringName(font_color));
+	approach_to_move_rect->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
+	approach_to_move_rect->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
+	approach_to_move_rect->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
+	approach_to_move_rect->add_theme_constant_override("line_spacing", 0);
 }
 
 void Camera2DEditorPlugin::edit(Object *p_object) {
@@ -97,7 +102,8 @@ void Camera2DEditorPlugin::edit(Object *p_object) {
 		Callable update_text = callable_mp(this, &Camera2DEditorPlugin::_update_approach_text_visibility);
 		StringName update_signal = SNAME("_camera_limit_enabled_updated");
 
-		if (cam->is_connected(update_signal, update_text)) {
+		Camera2D *prev_cam = camera_2d_editor->selected_camera;
+		if (prev_cam != nullptr && prev_cam->is_connected(update_signal, update_text)) {
 			cam->disconnect(update_signal, update_text);
 		}
 
@@ -120,7 +126,6 @@ void Camera2DEditorPlugin::make_visible(bool p_visible) {
 		approach_to_move_rect->show();
 	} else {
 		camera_2d_editor->options->hide();
-		camera_2d_editor->edit(nullptr);
 		approach_to_move_rect->hide();
 	}
 }
@@ -128,18 +133,15 @@ void Camera2DEditorPlugin::make_visible(bool p_visible) {
 Camera2DEditorPlugin::Camera2DEditorPlugin() {
 	camera_2d_editor = memnew(Camera2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(camera_2d_editor);
+#ifdef TOOLS_ENABLED
+	camera_2d_editor->connect(SNAME("_editor_theme_changed"), callable_mp(this, &Camera2DEditorPlugin::_editor_theme_changed));
+#endif
 
 	approach_to_move_rect = memnew(Label);
-	approach_to_move_rect->set_text(TTR("In moving mode: \nHold Ctrl + left mouse button to move the limit rectangle.\nHold left mouse button to move the camera only."));
-	approach_to_move_rect->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
-	approach_to_move_rect->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	approach_to_move_rect->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	approach_to_move_rect->add_theme_constant_override("line_spacing", 0);
+	approach_to_move_rect->set_text(TTRC("In Move Mode: \nHold Ctrl + left mouse button to move the limit rectangle.\nHold left mouse button to move the camera only."));
 	approach_to_move_rect->hide();
+	_editor_theme_changed();
 	CanvasItemEditor::get_singleton()->get_controls_container()->add_child(approach_to_move_rect);
 
 	make_visible(false);
-}
-
-Camera2DEditorPlugin::~Camera2DEditorPlugin() {
 }

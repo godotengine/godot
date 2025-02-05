@@ -32,15 +32,10 @@
 #define CAMERA_2D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/2d/camera_2d.h"
-#include "scene/gui/spin_box.h"
 
-class AcceptDialog;
-class ConfirmationDialog;
-class EditorZoomWidget;
+class Camera2D;
+class Label;
 class MenuButton;
-class Panel;
-class ViewPanner;
 
 class Camera2DEditor : public Control {
 	GDCLASS(Camera2DEditor, Control);
@@ -48,8 +43,6 @@ class Camera2DEditor : public Control {
 	enum Menu {
 		MENU_SNAP_LIMITS_TO_VIEWPORT,
 	};
-
-	Menu selected_menu_item;
 
 	Camera2D *selected_camera = nullptr;
 
@@ -73,17 +66,15 @@ class Camera2DEditorPlugin : public EditorPlugin {
 
 	Label *approach_to_move_rect = nullptr;
 
+	void _editor_theme_changed();
 	void _update_approach_text_visibility();
 
 public:
-	virtual String get_plugin_name() const override { return "Camera2D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	Camera2DEditorPlugin();
-	~Camera2DEditorPlugin();
 };
 
 #endif // CAMERA_2D_EDITOR_PLUGIN_H

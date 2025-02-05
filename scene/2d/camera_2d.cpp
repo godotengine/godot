@@ -127,16 +127,11 @@ void Camera2D::_update_scroll() {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 bool Camera2D::_is_dragging_limit_rect() const {
-	bool is_ctrl_held = Input::get_singleton()->is_key_pressed(Key::CTRL);
-#ifdef DEBUG_ENABLED
-	return _edit_use_rect() && is_ctrl_held;
-#else
-	return is_ctrl_held;
-#endif
+	return _edit_use_rect() && Input::get_singleton()->is_key_pressed(Key::CTRL);
 }
 
-#ifdef TOOLS_ENABLED
 void Camera2D::_project_settings_changed() {
 	if (screen_drawing_enabled) {
 		queue_redraw();
@@ -545,9 +540,14 @@ bool Camera2D::is_ignoring_rotation() const {
 }
 
 void Camera2D::set_limit_enabled(bool p_limit_enabled) {
+	if (p_limit_enabled == limit_enabled) {
+		return;
+	}
 	limit_enabled = p_limit_enabled;
 	_update_scroll();
+#ifdef TOOLS_ENABLED
 	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin
+#endif
 	notify_property_list_changed();
 }
 
@@ -1052,5 +1052,7 @@ Camera2D::Camera2D() {
 	set_notify_transform(true);
 	set_hide_clip_children(true);
 
+#ifdef TOOLS_ENABLED
 	add_user_signal(MethodInfo("_camera_limit_enabled_updated")); // Camera2DEditorPlugin listens to this
+#endif
 }
