@@ -1059,6 +1059,11 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				continue;
 			}
 
+			// Don't save connections that are already saved in a child scene.
+			if (c.flags & CONNECT_INHERITED) {
+				continue;
+			}
+
 			// only connections that originate or end into main saved scene are saved
 			// everything else is discarded
 
