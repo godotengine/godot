@@ -721,7 +721,6 @@ Error RenderingDevice::buffer_get_data_async(RID p_buffer, const Callable &p_cal
 	_check_transfer_worker_buffer(buffer);
 
 	BufferGetDataRequest get_data_request;
-	uint32_t flushed_copies = 0;
 	get_data_request.callback = p_callback;
 	get_data_request.frame_local_index = frames[frame].download_buffer_copy_regions.size();
 	get_data_request.size = p_size;
@@ -738,21 +737,25 @@ Error RenderingDevice::buffer_get_data_async(RID p_buffer, const Callable &p_cal
 			return err;
 		}
 
-		if ((get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
+		const bool flush_frames = (get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL;
+		if (flush_frames) {
 			if (_buffer_make_mutable(buffer, p_buffer)) {
 				// The buffer must be mutable to be used as a copy source.
 				draw_graph.add_synchronization();
 			}
 
-			for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+			for (uint32_t i = 0; i < get_data_request.frame_local_count; i++) {
 				uint32_t local_index = get_data_request.frame_local_index + i;
 				draw_graph.add_buffer_get_data(buffer->driver_id, buffer->draw_tracker, frames[frame].download_buffer_staging_buffers[local_index], frames[frame].download_buffer_copy_regions[local_index]);
 			}
-
-			flushed_copies = get_data_request.frame_local_count;
 		}
 
 		_staging_buffer_execute_required_action(download_staging_buffers, required_action);
+
+		if (flush_frames) {
+			get_data_request.frame_local_count = 0;
+			get_data_request.frame_local_index = frames[frame].download_buffer_copy_regions.size();
+		}
 
 		RDD::BufferCopyRegion region;
 		region.src_offset = submit_from + p_offset;
@@ -775,7 +778,7 @@ Error RenderingDevice::buffer_get_data_async(RID p_buffer, const Callable &p_cal
 			draw_graph.add_synchronization();
 		}
 
-		for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+		for (uint32_t i = 0; i < get_data_request.frame_local_count; i++) {
 			uint32_t local_index = get_data_request.frame_local_index + i;
 			draw_graph.add_buffer_get_data(buffer->driver_id, buffer->draw_tracker, frames[frame].download_buffer_staging_buffers[local_index], frames[frame].download_buffer_copy_regions[local_index]);
 		}
@@ -2098,7 +2101,6 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	uint32_t block_write_offset;
 	uint32_t block_write_amount;
 	StagingRequiredAction required_action;
-	uint32_t flushed_copies = 0;
 	for (uint32_t i = 0; i < tex->mipmaps; i++) {
 		uint32_t image_total = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1, &w, &h, &d);
 		uint32_t tight_mip_size = image_total - mipmap_offset;
@@ -2119,16 +2121,20 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 					Error err = _staging_buffer_allocate(download_staging_buffers, to_allocate, required_align, block_write_offset, block_write_amount, required_action, false);
 					ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-					if ((get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
-						for (uint32_t j = flushed_copies; j < get_data_request.frame_local_count; j++) {
+					const bool flush_frames = (get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL;
+					if (flush_frames) {
+						for (uint32_t j = 0; j < get_data_request.frame_local_count; j++) {
 							uint32_t local_index = get_data_request.frame_local_index + j;
 							draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, frames[frame].download_texture_staging_buffers[local_index], frames[frame].download_buffer_texture_copy_regions[local_index]);
 						}
-
-						flushed_copies = get_data_request.frame_local_count;
 					}
 
 					_staging_buffer_execute_required_action(download_staging_buffers, required_action);
+
+					if (flush_frames) {
+						get_data_request.frame_local_count = 0;
+						get_data_request.frame_local_index = frames[frame].download_buffer_texture_copy_regions.size();
+					}
 
 					RDD::BufferTextureCopyRegion copy_region;
 					copy_region.buffer_offset = block_write_offset;
@@ -2154,12 +2160,11 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	}
 
 	if (get_data_request.frame_local_count > 0) {
-		for (uint32_t i = flushed_copies; i < get_data_request.frame_local_count; i++) {
+		for (uint32_t i = 0; i < get_data_request.frame_local_count; i++) {
 			uint32_t local_index = get_data_request.frame_local_index + i;
 			draw_graph.add_texture_get_data(tex->driver_id, tex->draw_tracker, frames[frame].download_texture_staging_buffers[local_index], frames[frame].download_buffer_texture_copy_regions[local_index]);
 		}
 
-		flushed_copies = get_data_request.frame_local_count;
 		frames[frame].download_texture_get_data_requests.push_back(get_data_request);
 	}
 
