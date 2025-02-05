@@ -71,18 +71,6 @@ Files extracted from upstream source:
 Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
 fix build with our own copy of zstd (patch in `patches`).
 
-## betsy
-
-- Upstream: https://github.com/darksylinc/betsy
-- Version: git (cc723dcae9a6783ae572f64d12a90d60ef8d631a, 2022)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `bc6h.glsl`, `bc1.glsl`, `bc4.glsl`, `CrossPlatformSettings_piece_all.glsl` and `UavCrossPlatform_piece_all.glsl`.
-- `LICENSE.md`
-
-
 ## brotli
 
 - Upstream: https://github.com/google/brotli
