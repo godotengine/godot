@@ -81,6 +81,7 @@
 #include "editor/plugins/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/scene_tree_dock.h"
+#include "modules/csg/csg_shape.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/decal.h"
@@ -4383,6 +4384,11 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(node);
 	if (co) {
 		rids.insert(co->get_rid());
+	}
+
+	CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(node);
+	if (csg_shape) {
+		rids.insert(csg_shape->get_root_collision_instance());
 	}
 
 	for (int i = 0; i < node->get_child_count(); i++) {

@@ -166,6 +166,16 @@ bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
 	return get_collision_mask() & (1 << (p_layer_number - 1));
 }
 
+RID CSGShape3D::get_root_collision_instance() {
+	if (root_collision_instance.is_valid()) {
+		return root_collision_instance;
+	} else if (parent_shape) {
+		return parent_shape->get_root_collision_instance();
+	}
+
+	return RID();
+}
+
 void CSGShape3D::set_collision_priority(real_t p_priority) {
 	collision_priority = p_priority;
 	if (root_collision_instance.is_valid()) {
