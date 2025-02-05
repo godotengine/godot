@@ -464,7 +464,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -868,6 +868,8 @@ void GPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY);
+
+	ADD_PROPERTY_DEFAULT("seed", 0);
 }
 
 GPUParticles3D::GPUParticles3D() {
@@ -877,6 +879,7 @@ GPUParticles3D::GPUParticles3D() {
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
+	set_seed(Math::rand());
 	set_amount_ratio(1.0);
 	set_amount(8);
 	set_lifetime(1);
@@ -895,7 +898,6 @@ GPUParticles3D::GPUParticles3D() {
 	set_collision_base_size(collision_base_size);
 	set_transform_align(TRANSFORM_ALIGN_DISABLED);
 	set_use_fixed_seed(false);
-	set_seed(0);
 }
 
 GPUParticles3D::~GPUParticles3D() {
