@@ -52,9 +52,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
 {
   uint64_t got;
   ssize_t r;
-/* GODOT start */
   if (_lseeki64 (descriptor, offset, SEEK_SET) < 0)
-/* GODOT end */
     {
       error_callback (data, "lseek", errno);
       return 0;
@@ -69,13 +67,10 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
   got = 0;
   while (got < size)
     {
-/* GODOT start */
       uint64_t sz = size - got;
-      if (sz > INT_MAX) {
+      if (sz > INT_MAX)
         sz = INT_MAX;
-      }
       r = _read (descriptor, view->base, sz);
-/* GODOT end */
       if (r < 0)
 	{
 	  error_callback (data, "read", errno);
@@ -85,9 +80,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
       if (r == 0)
 	break;
       got += (uint64_t) r;
-/* GODOT start */
       view->base += r;
-/* GODOT end */
     }
 
   if (got < size)

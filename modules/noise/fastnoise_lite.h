@@ -33,7 +33,7 @@
 
 #include "noise.h"
 
-#include <thirdparty/noise/FastNoiseLite.h>
+#include "thirdparty/misc/FastNoiseLite.h"
 
 typedef fastnoiselite::FastNoiseLite _FastNoiseLite;
 
