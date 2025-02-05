@@ -129,9 +129,9 @@ public:
 	FUNC2(area_set_space, RID, RID);
 	FUNC1RC(RID, area_get_space, RID);
 
-	FUNC4(area_add_shape, RID, RID, const Transform2D &, bool);
+	FUNC5(area_add_shape, RID, RID, const Transform2D &, bool, bool);
 	FUNC3(area_set_shape, RID, int, RID);
-	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
+	FUNC4(area_set_shape_transform, RID, int, const Transform2D &, bool);
 	FUNC3(area_set_shape_disabled, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);

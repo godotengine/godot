@@ -122,7 +122,14 @@ GodotAreaPair2D::~GodotAreaPair2D() {
 bool GodotArea2Pair2D::setup(real_t p_step) {
 	bool result_a = area_a->collides_with(area_b);
 	bool result_b = area_b->collides_with(area_a);
-	if ((result_a || result_b) && !GodotCollisionSolver2D::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), nullptr, this)) {
+
+	bool a_indpdt_xform = area_a->get_shape_xform_independance(shape_a);
+	bool b_indpdt_xform = area_b->get_shape_xform_independance(shape_b);
+
+	Transform2D transform_a = a_indpdt_xform ? area_a->get_shape_transform(shape_a) : (area_a->get_transform() * area_a->get_shape_transform(shape_a));
+	Transform2D transform_b = b_indpdt_xform ? area_b->get_shape_transform(shape_b) : (area_b->get_transform() * area_b->get_shape_transform(shape_b));
+
+	if ((result_a || result_b) && !GodotCollisionSolver2D::solve(area_a->get_shape(shape_a), transform_a, Vector2(), area_b->get_shape(shape_b), transform_b, Vector2(), nullptr, this)) {
 		result_a = false;
 		result_b = false;
 	}

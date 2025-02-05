@@ -40,7 +40,7 @@ void CollisionShape2D::_shape_changed() {
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
-	collision_object->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, get_transform(), is_set_as_top_level());
 	if (p_xform_only) {
 		return;
 	}
@@ -56,7 +56,7 @@ void CollisionShape2D::_notification(int p_what) {
 			if (collision_object) {
 				owner_id = collision_object->create_shape_owner(this);
 				if (shape.is_valid()) {
-					collision_object->shape_owner_add_shape(owner_id, shape);
+					collision_object->shape_owner_add_shape(owner_id, shape, is_set_as_top_level());
 				}
 				_update_in_shape_owner();
 			}
@@ -72,6 +72,7 @@ void CollisionShape2D::_notification(int p_what) {
 			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
+			update_configuration_warnings(); // Only needed for the top level warning
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -180,6 +181,10 @@ PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(col_object)) {
 		warnings.push_back(RTR("The One Way Collision property will be ignored when the collision object is an Area2D."));
+	}
+	if (is_set_as_top_level()) {
+		// If removing this, also remove update_configuration_warnings in NOTIFICATION_LOCAL_TRANSFORM_CHANGED
+		warnings.push_back(RTR("Top-Level on CollisionShape2D is in development and might not work as expected"));
 	}
 
 	Ref<ConvexPolygonShape2D> convex = shape;

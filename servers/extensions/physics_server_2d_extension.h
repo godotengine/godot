@@ -244,9 +244,9 @@ public:
 	EXBIND2(area_set_space, RID, RID)
 	EXBIND1RC(RID, area_get_space, RID)
 
-	EXBIND4(area_add_shape, RID, RID, const Transform2D &, bool)
+	EXBIND5(area_add_shape, RID, RID, const Transform2D &, bool, bool)
 	EXBIND3(area_set_shape, RID, int, RID)
-	EXBIND3(area_set_shape_transform, RID, int, const Transform2D &)
+	EXBIND4(area_set_shape_transform, RID, int, const Transform2D &, bool)
 	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND1RC(int, area_get_shape_count, RID)

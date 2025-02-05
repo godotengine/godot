@@ -168,9 +168,9 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_set_space, "area", "space");
 	GDVIRTUAL_BIND(_area_get_space, "area");
 
-	GDVIRTUAL_BIND(_area_add_shape, "area", "shape", "transform", "disabled");
+	GDVIRTUAL_BIND(_area_add_shape, "area", "shape", "transform", "disabled", "top_level");
 	GDVIRTUAL_BIND(_area_set_shape, "area", "shape_idx", "shape");
-	GDVIRTUAL_BIND(_area_set_shape_transform, "area", "shape_idx", "transform");
+	GDVIRTUAL_BIND(_area_set_shape_transform, "area", "shape_idx", "transform", "top_level");
 	GDVIRTUAL_BIND(_area_set_shape_disabled, "area", "shape_idx", "disabled");
 
 	GDVIRTUAL_BIND(_area_get_shape_count, "area");

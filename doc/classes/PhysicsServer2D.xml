@@ -22,8 +22,9 @@
 			<param index="1" name="shape" type="RID" />
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="disabled" type="bool" default="false" />
+			<param index="4" name="top_level" type="bool" default="false" />
 			<description>
-				Adds a shape to the area, with the given local transform. The shape (together with its [param transform] and [param disabled] properties) is added to an array of shapes, and the shapes of an area are usually referenced by their index in this array.
+				Adds a shape to the area, with the given local transform (or [b]global[/b] transform if [param top_level] is set to [code]true[/code]). The shape (together with its [param transform], [param disabled] and [param top_level] properties) is added to an array of shapes, and the shapes of an area are usually referenced by their index in this array.
 			</description>
 		</method>
 		<method name="area_attach_canvas_instance_id">
@@ -221,8 +222,9 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="top_level" type="bool" default="false" />
 			<description>
-				Sets the local transform matrix of the area's shape with the given index.
+				Sets the local transform (or [b]global[/b] if [param top_level] is set to [code]true[/code]) matrix of the area's shape with the given index.
 			</description>
 		</method>
 		<method name="area_set_space">

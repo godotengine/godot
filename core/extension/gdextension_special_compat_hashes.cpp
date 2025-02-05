@@ -624,13 +624,13 @@ void GDExtensionSpecialCompatHashes::initialize() {
 	});
 	mappings.insert("PhysicsServer2D", {
 #ifdef REAL_T_IS_DOUBLE
-		{ "area_add_shape", 754862190, 3597527023 },
+		{ "area_add_shape", 754862190, 2227993816 },
 		{ "body_add_shape", 754862190, 3597527023 },
 		{ "body_apply_impulse", 34330743, 1124035137 },
 		{ "body_apply_force", 34330743, 1124035137 },
 		{ "body_add_constant_force", 34330743, 1124035137 },
 #else
-		{ "area_add_shape", 754862190, 339056240 },
+		{ "area_add_shape", 754862190, 2986419922 },
 		{ "body_add_shape", 754862190, 339056240 },
 		{ "body_apply_impulse", 34330743, 205485391 },
 		{ "body_apply_force", 34330743, 205485391 },

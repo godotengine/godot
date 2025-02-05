@@ -32,10 +32,11 @@
 #include "godot_physics_server_2d.h"
 #include "godot_space_2d.h"
 
-void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2D &p_transform, bool p_disabled) {
+void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2D &p_transform, bool p_disabled, bool p_indpdt_xform) {
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
+	s.indpdt_xform = p_indpdt_xform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
 	s.disabled = p_disabled;
@@ -61,11 +62,12 @@ void GodotCollisionObject2D::set_shape(int p_index, GodotShape2D *p_shape) {
 	}
 }
 
-void GodotCollisionObject2D::set_shape_transform(int p_index, const Transform2D &p_transform) {
+void GodotCollisionObject2D::set_shape_transform(int p_index, const Transform2D &p_transform, bool p_indpdt_xform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
 	shapes.write[p_index].xform = p_transform;
 	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
+	shapes.write[p_index].indpdt_xform = p_indpdt_xform;
 
 	if (!pending_shape_update_list.in_list()) {
 		GodotPhysicsServer2D::godot_singleton->pending_shape_update_list.add(&pending_shape_update_list);
@@ -170,7 +172,7 @@ void GodotCollisionObject2D::_update_shapes() {
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb = s.shape->get_aabb();
-		Transform2D xform = transform * s.xform;
+		Transform2D xform = s.indpdt_xform ? s.xform : transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
 		shape_aabb.grow_by((s.aabb_cache.size.x + s.aabb_cache.size.y) * 0.5 * 0.05);
 		s.aabb_cache = shape_aabb;

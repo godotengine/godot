@@ -320,14 +320,14 @@ RID GodotPhysicsServer2D::area_get_space(RID p_area) const {
 	return space->get_self();
 }
 
-void GodotPhysicsServer2D::area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform, bool p_disabled) {
+void GodotPhysicsServer2D::area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform, bool p_disabled, bool p_indpdt_xform) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
 
 	GodotShape2D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL(shape);
 
-	area->add_shape(shape, p_transform, p_disabled);
+	area->add_shape(shape, p_transform, p_disabled, p_indpdt_xform);
 }
 
 void GodotPhysicsServer2D::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -341,11 +341,11 @@ void GodotPhysicsServer2D::area_set_shape(RID p_area, int p_shape_idx, RID p_sha
 	area->set_shape(p_shape_idx, shape);
 }
 
-void GodotPhysicsServer2D::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) {
+void GodotPhysicsServer2D::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform, bool p_indpdt_xform) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
 
-	area->set_shape_transform(p_shape_idx, p_transform);
+	area->set_shape_transform(p_shape_idx, p_transform, p_indpdt_xform);
 }
 
 void GodotPhysicsServer2D::area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) {

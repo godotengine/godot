@@ -126,9 +126,9 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space) override;
 	virtual RID area_get_space(RID p_area) const override;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false, bool p_indpdt_xform = false) override;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) override;
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) override;
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform, bool p_indpdt_xform) override;
 
 	virtual int area_get_shape_count(RID p_area) const override;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const override;
