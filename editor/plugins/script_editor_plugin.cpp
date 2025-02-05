@@ -2826,19 +2826,19 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		}
 
 		if (!p_refresh_only) {
-			uint64_t last_date = edited_res->get_last_modified_time();
+			uint64_t last_date = se->edited_file_data.last_modified_time;
 			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
 
 			if (last_date == date) {
 				continue;
 			}
+			se->edited_file_data.last_modified_time = date;
 
 			Ref<Script> scr = edited_res;
 			if (scr.is_valid()) {
 				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_scr.is_null());
 				scr->set_source_code(rel_scr->get_source_code());
-				scr->set_last_modified_time(rel_scr->get_last_modified_time());
 				scr->reload(true);
 
 				update_docs_from_script(scr);
@@ -2849,7 +2849,6 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_json.is_null());
 				json->parse(rel_json->get_parsed_text(), true);
-				json->set_last_modified_time(rel_json->get_last_modified_time());
 			}
 
 			Ref<TextFile> text_file = edited_res;

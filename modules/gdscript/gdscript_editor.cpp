@@ -3694,12 +3694,12 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					case GDScriptParser::ClassNode::Member::GROUP:
 						return ERR_BUG;
 					case GDScriptParser::ClassNode::Member::CLASS: {
-						String type_name;
-						String enum_name;
-						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(member.get_datatype()), type_name, enum_name);
+						String doc_type_name;
+						String doc_enum_name;
+						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(member.get_datatype()), doc_type_name, doc_enum_name);
 
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
-						r_result.class_name = type_name;
+						r_result.class_name = doc_type_name;
 					} break;
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
@@ -3722,11 +3722,11 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 
 				if (member.type != GDScriptParser::ClassNode::Member::CLASS) {
-					String type_name;
-					String enum_name;
-					GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), type_name, enum_name);
+					String doc_type_name;
+					String doc_enum_name;
+					GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
 
-					r_result.class_name = type_name;
+					r_result.class_name = doc_type_name;
 					r_result.class_member = name;
 				}
 
@@ -3944,21 +3944,35 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			case GDScriptParser::DataType::ENUM: {
 				if (base_type.is_meta_type) {
 					if (base_type.enum_values.has(p_symbol)) {
-						String type_name;
-						String enum_name;
-						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), type_name, enum_name);
+						String doc_type_name;
+						String doc_enum_name;
+						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
 
-						if (CoreConstants::is_global_enum(enum_name)) {
+						if (CoreConstants::is_global_enum(doc_enum_name)) {
 							r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
 							r_result.class_name = "@GlobalScope";
 							r_result.class_member = p_symbol;
 							return OK;
 						} else {
-							const int dot_pos = enum_name.rfind_char('.');
+							const int dot_pos = doc_enum_name.rfind_char('.');
 							if (dot_pos >= 0) {
 								r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-								r_result.class_name = enum_name.left(dot_pos);
+								r_result.class_name = doc_enum_name.left(dot_pos);
 								r_result.class_member = p_symbol;
+								if (base_type.class_type != nullptr) {
+									const String enum_name = doc_enum_name.substr(dot_pos + 1);
+									if (base_type.class_type->has_member(enum_name)) {
+										const GDScriptParser::ClassNode::Member member = base_type.class_type->get_member(enum_name);
+										if (member.type == GDScriptParser::ClassNode::Member::ENUM) {
+											for (const GDScriptParser::EnumNode::Value &value : member.m_enum->values) {
+												if (value.identifier->name == p_symbol) {
+													r_result.location = value.line;
+													break;
+												}
+											}
+										}
+									}
+								}
 								return OK;
 							}
 						}

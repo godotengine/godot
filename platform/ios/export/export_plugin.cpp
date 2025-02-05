@@ -253,7 +253,6 @@ bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPre
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option.begins_with("privacy") ||
-			p_option == "application/generate_simulator_library_if_missing" ||
 			(p_option.begins_with("icons/") && !p_option.begins_with("icons/icon") && !p_option.begins_with("icons/app_store")) ||
 			p_option == "custom_template/debug" ||
 			p_option == "custom_template/release" ||
@@ -294,8 +293,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
-	// TODO(sgc): set to iOS 14.0 for Metal
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "12.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "14.0"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 
@@ -303,7 +301,6 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/generate_simulator_library_if_missing"), true));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -1259,167 +1256,6 @@ struct ExportLibsData {
 	String dest_dir;
 };
 
-bool EditorExportPlatformIOS::_archive_has_arm64(const String &p_path, uint32_t *r_cputype, uint32_t *r_cpusubtype) const {
-	bool has_arm64_image = false;
-	if (FileAccess::exists(p_path)) {
-		if (LipO::is_lipo(p_path)) {
-			// LipO.
-			Ref<LipO> lipo;
-			lipo.instantiate();
-			if (lipo->open_file(p_path)) {
-				for (int i = 0; i < lipo->get_arch_count(); i++) {
-					if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
-						has_arm64_image = true;
-						break;
-					}
-				}
-			}
-			lipo->close();
-		} else {
-			// Single architecture archive.
-			Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ);
-			if (sim_f.is_valid()) {
-				char magic[9] = {};
-				sim_f->get_buffer((uint8_t *)&magic[0], 8);
-				if (String(magic) == String("!<arch>\n")) {
-					while (!sim_f->eof_reached()) {
-						// Read file metadata.
-						char name_short[17] = {};
-						char size_short[11] = {};
-						sim_f->get_buffer((uint8_t *)&name_short[0], 16);
-						sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
-						sim_f->get_buffer((uint8_t *)&size_short[0], 10);
-						sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
-
-						int64_t file_size = String(size_short).to_int();
-						int64_t next_off = sim_f->get_position() + file_size;
-
-						String name = String(name_short); // Skip extended name.
-						if (name.is_empty() || file_size == 0) {
-							break;
-						}
-						if (name.begins_with("#1/")) {
-							int64_t name_len = String(name_short).replace("#1/", "").to_int();
-							sim_f->seek(sim_f->get_position() + name_len);
-						}
-
-						// Read file content.
-						uint32_t obj_magic = sim_f->get_32();
-
-						bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
-						if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-							uint32_t cputype = sim_f->get_32();
-							uint32_t cpusubtype = sim_f->get_32();
-							if (swap) {
-								cputype = BSWAP32(cputype);
-								cpusubtype = BSWAP32(cpusubtype);
-							}
-							if (r_cputype) {
-								*r_cputype = cputype;
-							}
-							if (r_cpusubtype) {
-								*r_cpusubtype = cpusubtype;
-							}
-							if (cputype == 0x100000c && cpusubtype == 0) {
-								has_arm64_image = true;
-							}
-							break;
-						}
-						sim_f->seek(next_off);
-					}
-				}
-				sim_f->close();
-			}
-		}
-	}
-	return has_arm64_image;
-}
-
-int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path) const {
-	int commands_patched = 0;
-	Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-	if (sim_f.is_valid()) {
-		char magic[9] = {};
-		sim_f->get_buffer((uint8_t *)&magic[0], 8);
-		if (String(magic) == String("!<arch>\n")) {
-			while (!sim_f->eof_reached()) {
-				// Read file metadata.
-				char name_short[17] = {};
-				char size_short[11] = {};
-				sim_f->get_buffer((uint8_t *)&name_short[0], 16);
-				sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
-				sim_f->get_buffer((uint8_t *)&size_short[0], 10);
-				sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
-
-				int64_t file_size = String(size_short).to_int();
-				int64_t next_off = sim_f->get_position() + file_size;
-
-				String name = String(name_short); // Skip extended name.
-				if (name.is_empty() || file_size == 0) {
-					break;
-				}
-				if (name.begins_with("#1/")) {
-					int64_t name_len = String(name_short).replace("#1/", "").to_int();
-					sim_f->seek(sim_f->get_position() + name_len);
-				}
-
-				// Read file content.
-				uint32_t obj_magic = sim_f->get_32();
-
-				bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
-				if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-					uint32_t cputype = sim_f->get_32();
-					uint32_t cpusubtype = sim_f->get_32();
-					uint32_t filetype = sim_f->get_32();
-					uint32_t ncmds = sim_f->get_32();
-					sim_f->get_32(); // Commands total size.
-					sim_f->get_32(); // Commands flags.
-					if (obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
-						sim_f->get_32(); // Reserved, 64-bit only.
-					}
-					if (swap) {
-						ncmds = BSWAP32(ncmds);
-						cputype = BSWAP32(cputype);
-						cpusubtype = BSWAP32(cpusubtype);
-						filetype = BSWAP32(filetype);
-					}
-					if (cputype == 0x100000C && cpusubtype == 0 && filetype == 1) {
-						// ARM64, object file.
-						for (uint32_t i = 0; i < ncmds; i++) {
-							int64_t cmdofs = sim_f->get_position();
-							uint32_t cmdid = sim_f->get_32();
-							uint32_t cmdsize = sim_f->get_32();
-							if (swap) {
-								cmdid = BSWAP32(cmdid);
-								cmdsize = BSWAP32(cmdsize);
-							}
-							if (cmdid == MachO::LoadCommandID::LC_BUILD_VERSION) {
-								int64_t platform = sim_f->get_32();
-								if (swap) {
-									platform = BSWAP32(platform);
-								}
-								if (platform == MachO::PlatformID::PLATFORM_IOS) {
-									sim_f->seek(cmdofs + 4 + 4);
-									uint32_t new_id = MachO::PlatformID::PLATFORM_IOSSIMULATOR;
-									if (swap) {
-										new_id = BSWAP32(new_id);
-									}
-									sim_f->store_32(new_id);
-									commands_patched++;
-								}
-							}
-							sim_f->seek(cmdofs + cmdsize);
-						}
-					}
-				}
-				sim_f->seek(next_off);
-			}
-		}
-		sim_f->close();
-	}
-	return commands_patched;
-}
-
 void EditorExportPlatformIOS::_check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const {
 	Ref<PList> plist;
 	plist.instantiate();
@@ -2123,10 +1959,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
+	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
 }
 
-Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick) {
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
@@ -2424,78 +2260,6 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	// Check and generate missing ARM64 simulator library.
-	if (p_preset->get("application/generate_simulator_library_if_missing").operator bool()) {
-		String sim_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64_x86_64-simulator").path_join("libgodot.a");
-		String dev_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64").path_join("libgodot.a");
-		String tmp_lib_path = EditorPaths::get_singleton()->get_temp_dir().path_join(binary_name + "_lipo_");
-		uint32_t cputype = 0;
-		uint32_t cpusubtype = 0;
-		if (!_archive_has_arm64(sim_lib_path, &cputype, &cpusubtype) && _archive_has_arm64(dev_lib_path) && FileAccess::exists(dev_lib_path)) {
-			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("ARM64 simulator library, generating from device library."));
-
-			Vector<String> tmp_lib_files;
-			Vector<Vector2i> tmp_lib_cputypes;
-			// Extract/copy simulator lib.
-			if (FileAccess::exists(sim_lib_path)) {
-				if (LipO::is_lipo(sim_lib_path)) {
-					Ref<LipO> lipo;
-					lipo.instantiate();
-					if (lipo->open_file(sim_lib_path)) {
-						for (int i = 0; i < lipo->get_arch_count(); i++) {
-							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
-							lipo->extract_arch(i, f_name);
-							tmp_lib_files.push_back(f_name);
-							tmp_lib_cputypes.push_back(Vector2i(lipo->get_arch_cputype(i), lipo->get_arch_cpusubtype(i)));
-						}
-					}
-				} else {
-					const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
-					tmp_app_path->copy(sim_lib_path, f_name);
-					tmp_lib_files.push_back(f_name);
-					tmp_lib_cputypes.push_back(Vector2i(cputype, cpusubtype));
-				}
-			}
-			// Copy device lib.
-			if (LipO::is_lipo(dev_lib_path)) {
-				Ref<LipO> lipo;
-				lipo.instantiate();
-				if (lipo->open_file(dev_lib_path)) {
-					for (int i = 0; i < lipo->get_arch_count(); i++) {
-						if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
-							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
-							lipo->extract_arch(i, f_name);
-							tmp_lib_files.push_back(f_name);
-							tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
-							break;
-						}
-					}
-				}
-			} else {
-				const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
-				tmp_app_path->copy(dev_lib_path, f_name);
-				tmp_lib_files.push_back(f_name);
-				tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
-			}
-
-			// Patch device lib.
-			int patch_count = _archive_convert_to_simulator(tmp_lib_path + itos(tmp_lib_files.size() - 1));
-			if (patch_count == 0) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Unable to generate ARM64 simulator library."));
-			} else {
-				// Repack.
-				Ref<LipO> lipo;
-				lipo.instantiate();
-				lipo->create_file(sim_lib_path, tmp_lib_files, tmp_lib_cputypes);
-			}
-
-			// Cleanup.
-			for (const String &E : tmp_lib_files) {
-				tmp_app_path->remove(E);
-			}
-		}
-	}
-
 	// Generate translations files.
 
 	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
@@ -2641,19 +2405,11 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	archive_args.push_back("-scheme");
 	archive_args.push_back(binary_name);
 	archive_args.push_back("-sdk");
-	if (p_simulator) {
-		archive_args.push_back("iphonesimulator");
-	} else {
-		archive_args.push_back("iphoneos");
-	}
+	archive_args.push_back("iphoneos");
 	archive_args.push_back("-configuration");
 	archive_args.push_back(p_debug ? "Debug" : "Release");
 	archive_args.push_back("-destination");
-	if (p_simulator) {
-		archive_args.push_back("generic/platform=iOS Simulator");
-	} else {
-		archive_args.push_back("generic/platform=iOS");
-	}
+	archive_args.push_back("generic/platform=iOS");
 	archive_args.push_back("archive");
 	archive_args.push_back("-allowProvisioningUpdates");
 	archive_args.push_back("-archivePath");
@@ -2824,9 +2580,7 @@ Ref<ImageTexture> EditorExportPlatformIOS::get_option_icon(int p_index) const {
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			if (devices[p_index].simulator) {
-				icon = theme->get_icon("IOSSimulator", EditorStringName(EditorIcons));
-			} else if (devices[p_index].wifi) {
+			if (devices[p_index].wifi) {
 				icon = theme->get_icon("IOSDeviceWireless", EditorStringName(EditorIcons));
 			} else {
 				icon = theme->get_icon("IOSDeviceWired", EditorStringName(EditorIcons));
@@ -2950,82 +2704,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 							nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
 							nd.wifi = device_event["Interface"] == "WIFI";
 							nd.use_ios_deploy = true;
-							nd.simulator = false;
 							ldevices.push_back(nd);
-						}
-					}
-				}
-			}
-		}
-
-		// Enum simulators.
-		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			{
-				String devices;
-				List<String> args;
-				args.push_back("devicectl");
-				args.push_back("list");
-				args.push_back("devices");
-				args.push_back("-j");
-				args.push_back("-");
-				args.push_back("-q");
-				int ec = 0;
-				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
-				if (err == OK && ec == 0) {
-					Ref<JSON> json;
-					json.instantiate();
-					err = json->parse(devices);
-					if (err == OK) {
-						const Dictionary &data = json->get_data();
-						const Dictionary &result = data["result"];
-						const Array &devices = result["devices"];
-						for (int i = 0; i < devices.size(); i++) {
-							const Dictionary &device_info = devices[i];
-							const Dictionary &conn_props = device_info["connectionProperties"];
-							const Dictionary &dev_props = device_info["deviceProperties"];
-							if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
-								Device nd;
-								nd.id = device_info["identifier"];
-								nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
-								nd.wifi = conn_props["transportType"] == "localNetwork";
-								nd.simulator = false;
-								ldevices.push_back(nd);
-							}
-						}
-					}
-				}
-			}
-
-			// Enum simulators.
-			if (ea->has_runnable_preset.is_set()) {
-				String devices;
-				List<String> args;
-				args.push_back("simctl");
-				args.push_back("list");
-				args.push_back("devices");
-				args.push_back("-j");
-
-				int ec = 0;
-				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
-				if (err == OK && ec == 0) {
-					Ref<JSON> json;
-					json.instantiate();
-					err = json->parse(devices);
-					if (err == OK) {
-						const Dictionary &data = json->get_data();
-						const Dictionary &devices = data["devices"];
-						for (const Variant *key = devices.next(nullptr); key; key = devices.next(key)) {
-							const Array &os_devices = devices[*key];
-							for (int i = 0; i < os_devices.size(); i++) {
-								const Dictionary &device_info = os_devices[i];
-								if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
-									Device nd;
-									nd.id = device_info["udid"];
-									nd.name = device_info["name"].operator String() + " (simulator)";
-									nd.simulator = true;
-									ldevices.push_back(nd);
-								}
-							}
 						}
 					}
 				}
@@ -3124,7 +2803,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	Device dev = devices[p_device];
 
 	// Export before sending to device.
-	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, dev.simulator, true);
+	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true);
 
 	if (err != OK) {
 		CLEANUP_AND_RETURN(err);
@@ -3179,57 +2858,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		cmd_args_list.push_back("--debug-navigation");
 	}
 
-	if (dev.simulator) {
-		// Deploy and run on simulator.
-		if (ep.step("Installing to simulator...", 3)) {
-			CLEANUP_AND_RETURN(ERR_SKIP);
-		} else {
-			List<String> args;
-			args.push_back("simctl");
-			args.push_back("install");
-			args.push_back(dev.id);
-			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
-
-			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
-			if (ec != 0) {
-				print_line("simctl install:\n" + log);
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
-				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
-			}
-		}
-
-		if (ep.step("Running on simulator...", 4)) {
-			CLEANUP_AND_RETURN(ERR_SKIP);
-		} else {
-			List<String> args;
-			args.push_back("simctl");
-			args.push_back("launch");
-			args.push_back("--terminate-running-process");
-			args.push_back(dev.id);
-			args.push_back(p_preset->get("application/bundle_identifier"));
-			for (const String &E : cmd_args_list) {
-				args.push_back(E);
-			}
-
-			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
-			if (ec != 0) {
-				print_line("simctl launch:\n" + log);
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
-			}
-		}
-	} else if (dev.use_ios_deploy) {
+	if (dev.use_ios_deploy) {
 		// Deploy and run on real device (via ios-deploy).
 		if (ep.step("Installing and running on device...", 4)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);

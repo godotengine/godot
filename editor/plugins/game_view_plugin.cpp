@@ -230,6 +230,8 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 		window_wrapper->set_window_title(appname);
 
 		_show_update_window_wrapper();
+
+		embedded_process->grab_focus();
 	}
 
 	_update_arguments_for_instance(p_idx, r_arguments);
@@ -977,6 +979,11 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	game_size_label = memnew(Label());
 	main_menu_hbox->add_child(game_size_label);
 	game_size_label->hide();
+	// Setting the minimum size prevents the game workspace from resizing indefinitely
+	// due to the label size oscillating by a few pixels when the game is in stretch mode
+	// and the game workspace is at its minimum size.
+	game_size_label->set_custom_minimum_size(Size2(80 * EDSCALE, 0));
+	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
 	panel = memnew(Panel);
 	add_child(panel);

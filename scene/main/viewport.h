@@ -596,6 +596,8 @@ public:
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
+	void notify_mouse_entered();
+	void notify_mouse_exited();
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

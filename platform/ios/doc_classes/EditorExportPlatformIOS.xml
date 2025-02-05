@@ -41,9 +41,6 @@
 		<member name="application/export_project_only" type="bool" setter="" getter="">
 			If [code]true[/code], exports iOS project files without building an XCArchive or [code].ipa[/code] file. If [code]false[/code], exports iOS project files and builds an XCArchive and [code].ipa[/code] file at the same time. When combining Godot with Fastlane or other build pipelines, you may want to set this to [code]true[/code].
 		</member>
-		<member name="application/generate_simulator_library_if_missing" type="bool" setter="" getter="">
-			If [code]true[/code], and ARM64 simulator library is missing from the export template, it is automatically generated from ARM64 device library.
-		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
