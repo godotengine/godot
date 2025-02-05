@@ -32,6 +32,8 @@
 
 #include "scene/resources/world_2d.h"
 
+#include "collision_object_2d.compat.inc"
+
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

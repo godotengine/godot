@@ -111,6 +111,13 @@ protected:
 
 	virtual void _space_changed(const RID &p_new_space);
 
+#ifndef DISABLE_DEPRECATED
+	void _shape_owner_add_shape_compat_99017(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	void _shape_owner_set_transform_compat_99017(uint32_t p_owner, const Transform2D &p_transform);
+
+	static void _bind_compatibility_methods();
+#endif
+
 	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)

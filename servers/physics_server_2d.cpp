@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
 
+#include "physics_server_2d.compat.inc"
+
 PhysicsServer2D *PhysicsServer2D::singleton = nullptr;
 
 void PhysicsDirectBodyState2D::integrate_forces() {

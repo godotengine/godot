@@ -214,6 +214,13 @@ class PhysicsServer2D : public Object {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	virtual void _area_add_shape_bind_compat_99017(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
+	virtual void _area_set_shape_transform_compat_99017(RID p_area, int p_shape_idx, const Transform2D &p_transform);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static PhysicsServer2D *get_singleton();
 
