@@ -6,10 +6,12 @@ Import('env_modules')
 env_flecs = env_modules.Clone()
 
 # Add Flecs header path
-env_flecs.Append(CPPPATH=["#modules/flecs/thirdparty"])
+env_flecs.Append(CPPPATH=["#modules/flecs/thirdparty", "#core"])
 
 # Compile Flecs
 env_flecs.add_source_files(env.modules_sources, "thirdparty/flecs.c")
 
 # Compile module
 env_flecs.add_source_files(env.modules_sources, "*.cpp")
+env_flecs.add_source_files(env.modules_sources, "modules/*.cpp")
+env_flecs.add_source_files(env.modules_sources, "components/*.cpp")

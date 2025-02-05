@@ -1,12 +1,11 @@
 // flecs_World.cpp
-#include "flecs_World.h"
+#include "flecs_world.h"
 #include "flecs_singleton.h"
 #include "core/object/class_db.h"
 FlecsWorld* FlecsWorld::singleton = nullptr;
 void FlecsWorld::_bind_methods() {
     ClassDB::bind_method(D_METHOD("start_world"), &FlecsWorld::start_world);
     ClassDB::bind_method(D_METHOD("stop_world"), &FlecsWorld::stop_world);
-    ClassDB::bind_method(D_METHOD("is_active"), &FlecsWorld::is_active);
 	ClassDB::bind_method(D_METHOD("progress_world"), &FlecsWorld::progress_world);
 }
 
@@ -15,7 +14,8 @@ void FlecsWorld::_process(double delta) {
 	progress_world(delta);
 }
 
-FlecsWorld::FlecsWorld() : world(nullptr), is_world_active(false) {
+FlecsWorld::FlecsWorld()
+{
     singleton = this;
 }
 
@@ -45,18 +45,15 @@ void FlecsWorld::_notification(int p_what) {
 }
 
 void FlecsWorld::start_world() {
-    if (!is_world_active) {
-    	world = flecs::world();
-    	world.import <flecs::stats>();
-    	world.set<flecs::Rest>({});
+    world = flecs::world();
+	world.import <flecs::stats>();
+	world.set<flecs::Rest>({});
 
-    	const int ThreadCount = OS::get_singleton()->get_processor_count();
-    	world.set_task_threads(ThreadCount);
-    	world.set_threads(ThreadCount);
-        is_world_active = true;
+	const int ThreadCount = OS::get_singleton()->get_processor_count();
+	world.set_task_threads(ThreadCount);
+	world.set_threads(ThreadCount);
 
-    	register_singletons();
-    }
+	register_singletons();
 }
 
 void FlecsWorld::register_singletons() {
@@ -76,21 +73,16 @@ void FlecsWorld::register_singletons() {
 }
 
 void FlecsWorld::stop_world() {
-    if (is_world_active) {
-        is_world_active = false;
 
-    	for (FlecsSingleton* delete_singleton : singletons)
-    	{
-    		memdelete(delete_singleton);
-    	}
+    for (FlecsSingleton* delete_singleton : singletons)
+	{
+		memdelete(delete_singleton);
+	}
 
-    	singletons.clear();
-    }
+	singletons.clear();
 }
 
 void FlecsWorld::progress_world(double delta) const {
-	if (is_world_active) {
-		world.progress(delta);
-	}
+	world.progress(delta);
 }
 
