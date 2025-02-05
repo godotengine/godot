@@ -139,13 +139,13 @@
 			Array containing each [Transform3D] value used by all instances of this mesh, as a [PackedVector3Array]. Each transform is divided into 4 [Vector3] values corresponding to the transforms' [code]x[/code], [code]y[/code], [code]z[/code], and [code]origin[/code].
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">
-			Format of transform used to transform mesh, either 2D or 3D.
+			Format of transform used to transform mesh, either 2D or 3D. Outside the editor, can only be set when [member instance_count] is [code]0[/code] or less. This means that you need to call this method before setting the instance count, or temporarily reset it to [code]0[/code].
 		</member>
 		<member name="use_colors" type="bool" setter="set_use_colors" getter="is_using_colors" default="false">
-			If [code]true[/code], the [MultiMesh] will use color data (see [method set_instance_color]). Can only be set when [member instance_count] is [code]0[/code] or less. This means that you need to call this method before setting the instance count, or temporarily reset it to [code]0[/code].
+			If [code]true[/code], the [MultiMesh] will use color data (see [method set_instance_color]). Outside the editor, can only be set when [member instance_count] is [code]0[/code] or less. This means that you need to call this method before setting the instance count, or temporarily reset it to [code]0[/code].
 		</member>
 		<member name="use_custom_data" type="bool" setter="set_use_custom_data" getter="is_using_custom_data" default="false">
-			If [code]true[/code], the [MultiMesh] will use custom data (see [method set_instance_custom_data]). Can only be set when [member instance_count] is [code]0[/code] or less. This means that you need to call this method before setting the instance count, or temporarily reset it to [code]0[/code].
+			If [code]true[/code], the [MultiMesh] will use custom data (see [method set_instance_custom_data]). Outside the editor, can only be set when [member instance_count] is [code]0[/code] or less. This means that you need to call this method before setting the instance count, or temporarily reset it to [code]0[/code].
 		</member>
 		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count" default="-1">
 			Limits the number of instances drawn, -1 draws all instances. Changing this does not change the sizes of the buffers.
