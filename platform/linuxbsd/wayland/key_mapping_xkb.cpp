@@ -371,11 +371,13 @@ void KeyMappingXKB::initialize() {
 
 bool KeyMappingXKB::is_sym_numpad(xkb_keysym_t p_keysym) {
 	switch (p_keysym) {
+		case XKB_KEY_KP_Equal:
+		case XKB_KEY_KP_Add:
+		case XKB_KEY_KP_Subtract:
 		case XKB_KEY_KP_Multiply:
 		case XKB_KEY_KP_Divide:
-		case XKB_KEY_KP_Subtract:
 		case XKB_KEY_KP_Separator:
-		case XKB_KEY_KP_Add:
+		case XKB_KEY_KP_Decimal:
 		case XKB_KEY_KP_0:
 		case XKB_KEY_KP_1:
 		case XKB_KEY_KP_2:
