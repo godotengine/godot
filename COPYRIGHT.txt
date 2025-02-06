@@ -411,6 +411,11 @@ Comment: FastLZ
 Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
+Files: thirdparty/misc/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2023, Jordan Peck and contributors
+License: Expat
+
 Files: thirdparty/misc/ifaddrs-android.cc
  thirdparty/misc/ifaddrs-android.h
 Comment: libjingle
@@ -423,15 +428,15 @@ Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
+Files: thirdparty/misc/nvapi_minimal.h
+Comment: NVIDIA NVAPI (minimal excerpt)
+Copyright: 2019-2022, NVIDIA Corporation
+License: Expat
+
 Files: thirdparty/misc/ok_color.h
  thirdparty/misc/ok_color_shader.h
 Comment: OK Lab color space
 Copyright: 2021, Björn Ottosson
-License: Expat
-
-Files: thirdparty/noise/FastNoiseLite.h
-Comment: FastNoise Lite
-Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
 Files: thirdparty/misc/pcg.cpp
@@ -482,11 +487,6 @@ License: BSD-2-clause
 Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
 Copyright: 2014-2024, Viktor Chlumsky
-License: Expat
-
-Files: thirdparty/nvapi/nvapi_minimal.h
-Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
-Copyright: 2019-2022, NVIDIA Corporation
 License: Expat
 
 Files: thirdparty/openxr/*
