@@ -171,7 +171,7 @@ void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, boo
 	}
 }
 
-EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, bool p_horizontal) {
+EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_wide, VectorDisplayStyle displayStyle) {
 	vector_type = p_type;
 	switch (vector_type) {
 		case Variant::VECTOR2:
@@ -193,20 +193,19 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 			ERR_PRINT("Not a Vector type.");
 			break;
 	}
-	bool horizontal = p_force_wide || p_horizontal;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	BoxContainer *bc;
 
-	if (p_force_wide) {
-		bc = memnew(HBoxContainer);
-		hb->add_child(bc);
-	} else if (horizontal) {
+	if (displayStyle == HORIZONTAL || p_force_wide) {
 		bc = memnew(HBoxContainer);
 		hb->add_child(bc);
 		set_bottom_editor(hb);
+	} else if (displayStyle == COMPACT) {
+		bc = memnew(HBoxContainer);
+		hb->add_child(bc);
 	} else {
 		bc = memnew(VBoxContainer);
 		hb->add_child(bc);
@@ -221,7 +220,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 		bc->add_child(spin[i]);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(String(COMPONENT_LABELS[i]));
-		if (horizontal) {
+		if (displayStyle == HORIZONTAL || displayStyle == COMPACT) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
 		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
@@ -242,25 +241,25 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	hb->add_child(linked);
 
 	add_child(hb);
-	if (!horizontal) {
+	if (displayStyle == VERTICAL) {
 		set_label_reference(spin_sliders[0]); // Show text and buttons around this.
 	}
 }
 
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR2, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR2, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector2_display_style")) {}
 
 EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR2I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector2_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR2I, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector2_display_style")) {}
 
 EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR3, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR3, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector_types_display_style")) {}
 
 EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR3I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR3I, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector_types_display_style")) {}
 
 EditorPropertyVector4::EditorPropertyVector4(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR4, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR4, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector_types_display_style")) {}
 
 EditorPropertyVector4i::EditorPropertyVector4i(bool p_force_wide) :
-		EditorPropertyVectorN(Variant::VECTOR4I, p_force_wide, EDITOR_GET("interface/inspector/horizontal_vector_types_editing")) {}
+		EditorPropertyVectorN(Variant::VECTOR4I, p_force_wide, (VectorDisplayStyle)(int)EDITOR_GET("interface/inspector/vector_types_display_style")) {}
