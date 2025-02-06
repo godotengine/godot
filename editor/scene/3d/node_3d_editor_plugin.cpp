@@ -2852,7 +2852,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/cancel_transform", event_mod) && _edit.mode != TRANSFORM_NONE) {
 			cancel_transform();
 		}
-		if (!view_3d_controller->is_freelook_enabled() && !k->is_echo()) {
+		if (!view_3d_controller->cursor.region_select && !ruler->is_inside_tree() && !view_3d_controller->is_freelook_enabled() && !k->is_echo()) {
 			if (ED_IS_SHORTCUT("spatial_editor/reset_transform_position", event_mod)) {
 				_reset_transform(TransformType::POSITION);
 			}
