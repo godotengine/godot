@@ -317,7 +317,13 @@ void Viewport::_sub_window_register(Window *p_window) {
 
 void Viewport::_sub_window_update(Window *p_window) {
 	int index = _sub_window_find(p_window);
-	ERR_FAIL_COND(index == -1);
+
+	// _sub_window_update is sometimes called deferred, and the window may have been closed since then.
+	// For example, when the user resizes the game window.
+	// In that case, _sub_window_find will not find it, which is expected.
+	if (index == -1) {
+		return;
+	}
 
 	SubWindow &sw = gui.sub_windows.write[index];
 	sw.pending_window_update = false;
