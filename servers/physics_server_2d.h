@@ -214,6 +214,13 @@ class PhysicsServer2D : public Object {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	virtual void _area_add_shape_bind_compat_99017(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
+	virtual void _area_set_shape_transform_compat_99017(RID p_area, int p_shape_idx, const Transform2D &p_transform);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static PhysicsServer2D *get_singleton();
 
@@ -308,9 +315,9 @@ public:
 		AREA_SPACE_OVERRIDE_REPLACE_COMBINE // Discards all previous calculations, then keeps combining
 	};
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) = 0;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false, bool p_indpdt_xform = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) = 0;
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform, bool p_indpdt_xform) = 0;
 
 	virtual int area_get_shape_count(RID p_area) const = 0;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const = 0;

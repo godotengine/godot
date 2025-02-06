@@ -56,6 +56,7 @@ private:
 	struct Shape {
 		Transform2D xform;
 		Transform2D xform_inv;
+		bool indpdt_xform;
 		GodotBroadPhase2D::ID bpid = 0;
 		Rect2 aabb_cache; //for rayqueries
 		GodotShape2D *shape = nullptr;
@@ -108,9 +109,13 @@ public:
 	void _shape_changed() override;
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(GodotShape2D *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
+	void add_shape(GodotShape2D *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false, bool p_indpdt_xform = false);
 	void set_shape(int p_index, GodotShape2D *p_shape);
-	void set_shape_transform(int p_index, const Transform2D &p_transform);
+	void set_shape_transform(int p_index, const Transform2D &p_transform, bool p_indpdt_xform = false);
+	void set_shape_xform_independance(int p_index, bool p_indpt) {
+		ERR_FAIL_INDEX(p_index, shapes.size());
+		shapes.write[p_index].indpdt_xform = p_indpt;
+	}
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
 	_FORCE_INLINE_ GodotShape2D *get_shape(int p_index) const {
@@ -128,6 +133,10 @@ public:
 	_FORCE_INLINE_ const Rect2 &get_shape_aabb(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].aabb_cache;
+	}
+	_FORCE_INLINE_ bool get_shape_xform_independance(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].indpdt_xform;
 	}
 
 	_FORCE_INLINE_ const Transform2D &get_transform() const { return transform; }

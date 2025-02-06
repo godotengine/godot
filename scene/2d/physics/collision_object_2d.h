@@ -111,6 +111,13 @@ protected:
 
 	virtual void _space_changed(const RID &p_new_space);
 
+#ifndef DISABLE_DEPRECATED
+	void _shape_owner_add_shape_compat_99017(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	void _shape_owner_set_transform_compat_99017(uint32_t p_owner, const Transform2D &p_transform);
+
+	static void _bind_compatibility_methods();
+#endif
+
 	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)
@@ -140,7 +147,7 @@ public:
 	void get_shape_owners(List<uint32_t> *r_owners);
 	PackedInt32Array _get_shape_owners();
 
-	void shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform);
+	void shape_owner_set_transform(uint32_t p_owner, const Transform2D &p_transform, bool p_indpdt_xform = false);
 	Transform2D shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
@@ -153,7 +160,7 @@ public:
 	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
 	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
-	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape, bool p_shape_indpdt_xform = false);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape2D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;

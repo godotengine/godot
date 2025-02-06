@@ -16,6 +16,7 @@
 			<param index="1" name="shape" type="RID" />
 			<param index="2" name="transform" type="Transform2D" />
 			<param index="3" name="disabled" type="bool" />
+			<param index="4" name="top_level" type="bool" />
 			<description>
 				Overridable version of [method PhysicsServer2D.area_add_shape].
 			</description>
@@ -211,6 +212,7 @@
 			<param index="0" name="area" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="top_level" type="bool" />
 			<description>
 				Overridable version of [method PhysicsServer2D.area_set_shape_transform].
 			</description>
