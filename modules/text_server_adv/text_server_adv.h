@@ -147,7 +147,8 @@ class TextServerAdvanced : public TextServerExtension {
 		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
-		String exp;
+		String exp_l;
+		String exp_u;
 	};
 
 	Vector<NumSystemData> num_systems;

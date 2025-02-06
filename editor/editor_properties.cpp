@@ -1343,6 +1343,7 @@ void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, 
 EditorPropertyInteger::EditorPropertyInteger() {
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
+	spin->set_editing_integer(true);
 	add_child(spin);
 	add_focusable(spin);
 	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyInteger::_value_changed));

@@ -441,7 +441,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 									is_float = true;
 								} else {
@@ -451,7 +451,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							} break;
 							case READING_DEC: {
 								if (is_digit(c)) {
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 								} else {
 									reading = READING_DONE;
@@ -1962,7 +1962,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		case Variant::FLOAT: {
 			String s = rtos_fix(p_variant.operator double());
 			if (s != "inf" && s != "inf_neg" && s != "nan") {
-				if (!s.contains_char('.') && !s.contains_char('e')) {
+				if (!s.contains_char('.') && !s.contains_char('e') && !s.contains_char('E')) {
 					s += ".0";
 				}
 			}

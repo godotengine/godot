@@ -222,6 +222,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
+	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);

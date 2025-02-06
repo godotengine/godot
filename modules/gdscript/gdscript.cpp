@@ -1075,26 +1075,6 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 }
 
-void GDScript::set_path_cache(const String &p_path) {
-	if (ResourceCache::has(p_path)) {
-		set_path(p_path, true);
-		return;
-	}
-
-	if (is_root_script()) {
-		Script::set_path_cache(p_path);
-	}
-
-	String old_path = path;
-	path = p_path;
-	path_valid = true;
-	GDScriptCache::move_script(old_path, p_path);
-
-	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
-		kv.value->set_path_cache(p_path);
-	}
-}
-
 void GDScript::set_path(const String &p_path, bool p_take_over) {
 	if (is_root_script()) {
 		Script::set_path(p_path, p_take_over);
@@ -2831,7 +2811,7 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 	return p_type == "GDScript";
 }
 
-String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2931,6 +2911,12 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	}
 	if (r_icon_path) {
 		*r_icon_path = c->simplified_icon_path;
+	}
+	if (r_is_abstract) {
+		*r_is_abstract = false;
+	}
+	if (r_is_tool) {
+		*r_is_tool = parser.is_tool();
 	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }

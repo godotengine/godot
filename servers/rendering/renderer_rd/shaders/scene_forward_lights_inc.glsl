@@ -120,7 +120,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #endif
 
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 	if (is_directional || attenuation > EPSILON) {
 		float cNdotL = max(NdotL, 0.0);
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
@@ -405,7 +405,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec3 binormal, vec3 tangent, float anisotropy,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 
 	// Omni light attenuation.
 	vec3 light_rel_vec = omni_lights.data[idx].position - vertex;
@@ -700,7 +700,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 
 	// Spot light attenuation.
 	vec3 light_rel_vec = spot_lights.data[idx].position - vertex;

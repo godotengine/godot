@@ -66,6 +66,10 @@ public:
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
 #ifndef DISABLE_DEPRECATED
 	bool animate_physical_bones = true;
 	Node *simulator = nullptr;

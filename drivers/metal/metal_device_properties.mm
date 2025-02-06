@@ -99,6 +99,10 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		features.supports32BitMSAA = p_device.supports32BitMSAA;
 	}
 
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		features.supports_gpu_address = true;
+	}
+
 	features.hostMemoryPageSize = sysconf(_SC_PAGESIZE);
 
 	for (SampleCount sc = SampleCount1; sc <= SampleCount64; sc <<= 1) {

@@ -206,6 +206,7 @@ private:
 	Ref<CameraAttributes> camera_attributes;
 
 	Ref<LightmapGIData> light_data;
+	Node *last_owner = nullptr;
 
 	struct LightsFound {
 		Transform3D xform;

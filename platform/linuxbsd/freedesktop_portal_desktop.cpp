@@ -49,6 +49,7 @@
 #define BUS_OBJECT_NAME "org.freedesktop.portal.Desktop"
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
 
+#define BUS_INTERFACE_PROPERTIES "org.freedesktop.DBus.Properties"
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 
@@ -385,6 +386,61 @@ bool FreeDesktopPortalDesktop::file_chooser_parse_response(DBusMessageIter *p_it
 		}
 	}
 	return true;
+}
+
+bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
+	bool supported = false;
+	DBusError err;
+	dbus_error_init(&err);
+	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		dbus_error_free(&err);
+	} else {
+		DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_PROPERTIES, "Get");
+		if (message) {
+			const char *name_space = p_iface;
+			const char *key = "version";
+			dbus_message_append_args(
+					message,
+					DBUS_TYPE_STRING, &name_space,
+					DBUS_TYPE_STRING, &key,
+					DBUS_TYPE_INVALID);
+			DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, 250, &err);
+			if (dbus_error_is_set(&err)) {
+				dbus_error_free(&err);
+			} else if (reply) {
+				DBusMessageIter iter;
+				if (dbus_message_iter_init(reply, &iter)) {
+					DBusMessageIter iter_ver;
+					dbus_message_iter_recurse(&iter, &iter_ver);
+					dbus_uint32_t ver_code;
+					dbus_message_iter_get_basic(&iter_ver, &ver_code);
+					print_verbose(vformat("PortalDesktop: %s version %d detected.", p_iface, ver_code));
+					supported = true;
+				}
+				dbus_message_unref(reply);
+			}
+			dbus_message_unref(message);
+		}
+		dbus_connection_unref(bus);
+	}
+	return supported;
+}
+
+bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
+	static int supported = -1;
+	if (supported == -1) {
+		supported = _is_interface_supported(BUS_INTERFACE_FILE_CHOOSER);
+	}
+	return supported;
+}
+
+bool FreeDesktopPortalDesktop::is_settings_supported() {
+	static int supported = -1;
+	if (supported == -1) {
+		supported = _is_interface_supported(BUS_INTERFACE_SETTINGS);
+	}
+	return supported;
 }
 
 Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {

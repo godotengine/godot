@@ -75,16 +75,12 @@ void fill_zlib_filefunc64_32_def_from_filefunc32(zlib_filefunc64_32_def* p_filef
     p_filefunc64_32->zfile_func64.opaque = p_filefunc32->opaque;
     p_filefunc64_32->zseek32_file = p_filefunc32->zseek_file;
     p_filefunc64_32->ztell32_file = p_filefunc32->ztell_file;
-    /* GODOT start */
     p_filefunc64_32->zfile_func64.alloc_mem = p_filefunc32->alloc_mem;
     p_filefunc64_32->zfile_func64.free_mem = p_filefunc32->free_mem;
-    /* GODOT end */
 }
 
-/* GODOT start */
-/*
-// GODOT end
 
+#if 0
 
 static voidpf ZCALLBACK fopen_file_func(voidpf opaque, const char* filename, int mode) {
     FILE* file = NULL;
@@ -236,6 +232,5 @@ void fill_fopen64_filefunc(zlib_filefunc64_def* pzlib_filefunc_def) {
     pzlib_filefunc_def->zerror_file = ferror_file_func;
     pzlib_filefunc_def->opaque = NULL;
 }
-// GODOT start
-*/
-/* GODOT end */
+
+#endif

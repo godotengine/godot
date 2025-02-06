@@ -74,11 +74,21 @@ jobs:
             artifact: false
             cache-limit: 5
 
-          - name: Template w/ Mono (target=template_release, tests=yes)
+          - name: Template w/ Mono, release (target=template_release, tests=yes)
             cache-name: linux-template-mono
             target: template_release
             sconsflags: module_mono_enabled=yes
             bin: ./bin/godot.linuxbsd.template_release.x86_64.mono
+            build-mono: false
+            tests: true
+            artifact: true
+            cache-limit: 1
+
+          - name: Template w/ Mono, debug (target=template_debug, tests=yes)
+            cache-name: linux-template-mono-debug
+            target: template_debug
+            sconsflags: module_mono_enabled=yes
+            bin: ./bin/godot.linuxbsd.template_debug.x86_64.mono
             build-mono: false
             tests: true
             artifact: true

@@ -695,13 +695,13 @@ namespace Clipper2Lib
   // returns true if (and only if) a * b == c * d
   inline bool ProductsAreEqual(int64_t a, int64_t b, int64_t c, int64_t d)
   {
-// -- GODOT start --
-// #if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
-//     const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
-//     const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
-//     return ab == cd;
-// #else
-// -- GODOT end --
+// Work around LLVM issue: https://github.com/llvm/llvm-project/issues/16778
+// Details: https://github.com/godotengine/godot/pull/95964#issuecomment-2306581804
+//#if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
+//    const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
+//    const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
+//    return ab == cd;
+//#else
     // nb: unsigned values needed for calculating overflow carry
     const auto abs_a = static_cast<uint64_t>(std::abs(a));
     const auto abs_b = static_cast<uint64_t>(std::abs(b));
@@ -716,9 +716,7 @@ namespace Clipper2Lib
     const auto sign_cd = TriSign(c) * TriSign(d);
 
     return abs_ab == abs_cd && sign_ab == sign_cd;
-// -- GODOT start --
 // #endif
-// -- GODOT end --
   }
 
   template <typename T>

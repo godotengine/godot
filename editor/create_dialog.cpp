@@ -257,14 +257,9 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 		inherits = ClassDB::get_parent_class(p_type);
 		inherited_type = TypeCategory::CPP_TYPE;
 	} else {
-		if (p_type_category == TypeCategory::PATH_TYPE || ScriptServer::is_global_class(p_type)) {
-			Ref<Script> scr;
-			if (p_type_category == TypeCategory::PATH_TYPE) {
-				ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
-				scr = ResourceLoader::load(p_type, "Script");
-			} else {
-				scr = EditorNode::get_editor_data().script_class_load_script(p_type);
-			}
+		if (p_type_category == TypeCategory::PATH_TYPE) {
+			ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
+			Ref<Script> scr = ResourceLoader::load(p_type, "Script");
 			ERR_FAIL_COND(scr.is_null());
 
 			Ref<Script> base = scr->get_base_script();
@@ -286,6 +281,10 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
 			}
+		} else if (ScriptServer::is_global_class(p_type)) {
+			inherits = ScriptServer::get_global_class_base(p_type);
+			bool is_native_class = ClassDB::class_exists(inherits);
+			inherited_type = is_native_class ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE;
 		} else {
 			inherits = custom_type_parents[p_type];
 			if (ClassDB::class_exists(inherits)) {
@@ -315,18 +314,14 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
 
-		String script_path = ScriptServer::get_global_class_path(p_type);
-		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
-
-		ERR_FAIL_COND(scr.is_null());
-		is_abstract = scr->is_abstract();
+		is_abstract = ScriptServer::is_global_class_abstract(p_type);
 
 		String tooltip = TTR("Script path: %s");
-		bool is_tool = scr->is_tool();
+		bool is_tool = ScriptServer::is_global_class_tool(p_type);
 		if (is_tool) {
 			tooltip = TTR("The script will run in the editor.") + "\n" + tooltip;
 		}
-		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, script_path));
+		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, ScriptServer::get_global_class_path(p_type)));
 		if (is_tool) {
 			int button_index = r_item->get_button_count(0) - 1;
 			r_item->set_button_color(0, button_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));

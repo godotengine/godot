@@ -2958,6 +2958,21 @@ void PopupMenu::_bind_methods() {
 	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
+void PopupMenu::_native_popup(const Rect2i &p_rect) {
+	Point2i popup_pos = p_rect.position;
+	if (is_embedded()) {
+		popup_pos = get_embedder()->get_screen_transform().xform(popup_pos); // Note: for embedded windows "screen transform" is transform relative to embedder not the actual screen.
+		DisplayServer::WindowID wid = get_window_id();
+		if (wid == DisplayServer::INVALID_WINDOW_ID) {
+			wid = DisplayServer::MAIN_WINDOW_ID;
+		}
+		popup_pos += DisplayServer::get_singleton()->window_get_position(wid);
+	}
+	float win_scale = get_parent_visible_window()->get_content_scale_factor();
+	NativeMenu::get_singleton()->set_minimum_width(global_menu, p_rect.size.x * win_scale);
+	NativeMenu::get_singleton()->popup(global_menu, popup_pos);
+}
+
 void PopupMenu::popup(const Rect2i &p_bounds) {
 	bool native = global_menu.is_valid();
 #ifdef TOOLS_ENABLED
@@ -2967,7 +2982,7 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 #endif
 
 	if (native) {
-		NativeMenu::get_singleton()->popup(global_menu, (p_bounds != Rect2i()) ? p_bounds.position : get_position());
+		_native_popup(p_bounds != Rect2i() ? p_bounds : Rect2i(get_position(), Size2i()));
 	} else {
 		set_flag(FLAG_NO_FOCUS, !is_embedded());
 
@@ -2995,7 +3010,7 @@ void PopupMenu::set_visible(bool p_visible) {
 
 	if (native) {
 		if (p_visible) {
-			NativeMenu::get_singleton()->popup(global_menu, get_position());
+			_native_popup(Rect2i(get_position(), get_size()));
 		}
 	} else {
 		set_flag(FLAG_NO_FOCUS, !is_embedded());

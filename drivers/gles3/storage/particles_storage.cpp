@@ -1432,6 +1432,18 @@ bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collis
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
 }
 
+uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, false);
+	return particles_collision->heightfield_mask;
+}
+
+void ParticlesStorage::particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	particles_collision->heightfield_mask = p_heightfield_mask;
+}
+
 Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {
 	ParticlesCollision *pc = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(pc, nullptr);

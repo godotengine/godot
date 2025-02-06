@@ -126,11 +126,13 @@ void OS_IOS::initialize() {
 	initialize_core();
 }
 
+void OS_IOS::initialize_joypads() {
+	joypad_apple = memnew(JoypadApple);
+}
+
 void OS_IOS::initialize_modules() {
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
-
-	joypad_apple = memnew(JoypadApple);
 }
 
 void OS_IOS::deinitialize_modules() {

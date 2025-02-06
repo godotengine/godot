@@ -1868,7 +1868,6 @@ void RuntimeNodeSelect::_update_view_2d() {
 #ifndef _3D_DISABLED
 void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
 	Window *root = SceneTree::get_singleton()->get_root();
-	Camera3D *camera = root->get_viewport()->get_camera_3d();
 	Vector3 ray, pos, to;
 	if (root->get_viewport()->is_camera_3d_override_enabled()) {
 		Viewport *vp = root->get_viewport();
@@ -1876,6 +1875,11 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 		pos = vp->camera_3d_override_project_ray_origin(p_pos);
 		to = pos + ray * vp->get_camera_3d_override_properties()["z_far"];
 	} else {
+		Camera3D *camera = root->get_viewport()->get_camera_3d();
+		if (!camera) {
+			return;
+		}
+
 		ray = camera->project_ray_normal(p_pos);
 		pos = camera->project_ray_origin(p_pos);
 		to = pos + ray * camera->get_far();

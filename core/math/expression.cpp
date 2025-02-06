@@ -350,16 +350,16 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_INT: {
 								if (is_digit(c)) {
 									if (is_first_char && c == '0') {
-										if (next_char == 'b') {
+										if (next_char == 'b' || next_char == 'B') {
 											reading = READING_BIN;
-										} else if (next_char == 'x') {
+										} else if (next_char == 'x' || next_char == 'X') {
 											reading = READING_HEX;
 										}
 									}
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 									is_float = true;
 								} else {
@@ -370,7 +370,7 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_BIN: {
 								if (bin_beg && !is_binary_digit(c)) {
 									reading = READING_DONE;
-								} else if (c == 'b') {
+								} else if (c == 'b' || c == 'B') {
 									bin_beg = true;
 								}
 
@@ -378,14 +378,14 @@ Error Expression::_get_token(Token &r_token) {
 							case READING_HEX: {
 								if (hex_beg && !is_hex_digit(c)) {
 									reading = READING_DONE;
-								} else if (c == 'x') {
+								} else if (c == 'x' || c == 'X') {
 									hex_beg = true;
 								}
 
 							} break;
 							case READING_DEC: {
 								if (is_digit(c)) {
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 								} else {
 									reading = READING_DONE;

@@ -169,6 +169,10 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -306,6 +310,10 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;

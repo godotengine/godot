@@ -180,13 +180,3 @@ Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone
 Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
 	return Vector3(0, 0, 0);
 }
-
-#ifdef TOOLS_ENABLED
-void SpringBoneCollision3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_EDITOR_PRE_SAVE: {
-			sync_pose();
-		} break;
-	}
-}
-#endif // TOOLS_ENABLED

@@ -277,7 +277,7 @@
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
-			If [code]false[/code], "Emoji and Symbols" menu is enabled.
+			If [code]true[/code], "Emoji and Symbols" menu is enabled.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.

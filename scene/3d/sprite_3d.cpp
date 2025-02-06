@@ -276,6 +276,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 	if (last_texture != p_texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
 		last_texture = p_texture->get_rid();
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {

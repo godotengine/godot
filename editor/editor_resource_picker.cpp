@@ -37,6 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -181,15 +182,6 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 	}
 }
 
-void EditorResourcePicker::_load_button_pressed() {
-	Vector<StringName> base_types;
-	for (const String &type : base_type.split(",")) {
-		base_types.push_back(type);
-	}
-
-	EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
-}
-
 void EditorResourcePicker::_update_menu() {
 	_update_menu_items();
 
@@ -205,23 +197,20 @@ void EditorResourcePicker::_update_menu_items() {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
-	bool added_create_options = false;
-
 	// Add options for creating specific subtypes of the base resource type.
 	if (is_editable()) {
-		int previous_item_count = edit_menu->get_item_count();
-
 		set_create_options(edit_menu);
 
-		added_create_options = previous_item_count != edit_menu->get_item_count();
+		// Add an option to load a resource from a file using the QuickOpen dialog.
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Quick Load..."), OBJ_MENU_QUICKLOAD);
+		edit_menu->set_item_tooltip(-1, TTR("Opens a quick menu to select from a list of allowed Resource files."));
+
+		// Add an option to load a resource from a file using the regular file dialog.
+		edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Load..."), OBJ_MENU_LOAD);
 	}
 
 	// Add options for changing existing value of the resource.
 	if (edited_resource.is_valid()) {
-		if (added_create_options) {
-			edit_menu->add_separator();
-		}
-
 		// Determine if the edited resource is part of another scene (foreign) which was imported
 		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource, true);
 
@@ -321,6 +310,47 @@ void EditorResourcePicker::_update_menu_items() {
 
 void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 	switch (p_which) {
+		case OBJ_MENU_LOAD: {
+			List<String> extensions;
+			for (int i = 0; i < base_type.get_slice_count(","); i++) {
+				String base = base_type.get_slice(",", i);
+				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
+				if (ScriptServer::is_global_class(base)) {
+					ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
+				}
+			}
+
+			HashSet<String> valid_extensions;
+			for (const String &E : extensions) {
+				valid_extensions.insert(E);
+			}
+
+			if (!file_dialog) {
+				file_dialog = memnew(EditorFileDialog);
+				file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				add_child(file_dialog);
+				file_dialog->connect("file_selected", callable_mp(this, &EditorResourcePicker::_file_selected));
+			}
+
+			file_dialog->clear_filters();
+			for (const String &E : valid_extensions) {
+				file_dialog->add_filter("*." + E, E.to_upper());
+			}
+
+			file_dialog->popup_file_dialog();
+		} break;
+
+		case OBJ_MENU_QUICKLOAD: {
+			const Vector<String> &base_types_string = base_type.split(",");
+
+			Vector<StringName> base_types;
+			for (const String &type : base_types_string) {
+				base_types.push_back(type);
+			}
+
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
+		} break;
+
 		case OBJ_MENU_INSPECT: {
 			if (edited_resource.is_valid()) {
 				emit_signal(SNAME("resource_selected"), edited_resource, true);
@@ -472,24 +502,28 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		for (const StringName &E : allowed_types) {
-			const String &type = E;
+			const String &t = E;
 
-			if (!ClassDB::can_instantiate(type)) {
+			if (!ClassDB::can_instantiate(t)) {
 				continue;
 			}
 
-			inheritors_array.push_back(type);
+			inheritors_array.push_back(t);
 
-			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
-			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), type), id);
+			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 
-			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(type);
+			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
 			if (class_doc) {
 				edit_menu->set_item_tooltip(-1, DTR(class_doc->value.brief_description));
 			}
 
 			idx++;
+		}
+
+		if (edit_menu->get_item_count()) {
+			edit_menu->add_separator();
 		}
 	}
 }
@@ -807,7 +841,6 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -949,7 +982,6 @@ void EditorResourcePicker::set_resource_owner(Object *p_object) {
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && edited_resource.is_null());
-	load_button->set_visible(editable);
 	edit_button->set_visible(editable);
 }
 
@@ -1053,7 +1085,6 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
-	assign_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
@@ -1075,17 +1106,12 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 		assign_button->add_child(preview_rect);
 	}
 
-	load_button = memnew(Button);
-	load_button->set_flat(false);
-	add_child(load_button);
-	load_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_load_button_pressed));
-
 	edit_button = memnew(Button);
 	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
 	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
-	add_child(edit_button);
 	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
+	add_child(edit_button);
 	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
@@ -1109,6 +1135,7 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
+	menu_node->add_separator();
 }
 
 bool EditorScriptPicker::handle_menu_selected(int p_which) {
@@ -1158,6 +1185,7 @@ void EditorShaderPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Shader")), TTR("New Shader..."), OBJ_MENU_NEW_SHADER);
+	menu_node->add_separator();
 }
 
 bool EditorShaderPicker::handle_menu_selected(int p_which) {

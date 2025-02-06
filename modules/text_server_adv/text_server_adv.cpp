@@ -4867,8 +4867,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							gl.index = index;
 							gl.advance = w;
 						}
-						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index >= 0 && gl.span_index < span_size) {
-							Variant key = p_sd->spans[gl.span_index].embedded_key;
+						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + p_new_sd->first_span >= 0 && gl.span_index + p_new_sd->first_span < span_size) {
+							Variant key = p_sd->spans[gl.span_index + p_new_sd->first_span].embedded_key;
 							if (key != Variant()) {
 								ShapedTextDataAdvanced::EmbeddedObject obj = p_sd->objects[key];
 								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -5307,6 +5307,9 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	MutexLock lock(sd->mutex);
 	if (!sd->valid.is_set()) {
 		_shaped_text_shape(p_shaped_line);
+	}
+	if (!sd->line_breaks_valid) {
+		_shaped_text_update_breaks(p_shaped_line);
 	}
 
 	sd->text_trimmed = false;
@@ -6878,7 +6881,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ar.lang.insert(StringName("sd_Arab_PK"));
 		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
 		ar.percent_sign = U"٪";
-		ar.exp = U"اس";
+		ar.exp_l = U"اس";
+		ar.exp_u = U"اس";
 		num_systems.push_back(ar);
 	}
 
@@ -6909,7 +6913,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		pr.lang.insert(StringName("uz_Arab_AF"));
 		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
 		pr.percent_sign = U"٪";
-		pr.exp = U"اس";
+		pr.exp_l = U"اس";
+		pr.exp_u = U"اس";
 		num_systems.push_back(pr);
 	}
 
@@ -6927,7 +6932,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		bn.lang.insert(StringName("mni_Beng_IN"));
 		bn.digits = U"০১২৩৪৫৬৭৮৯.";
 		bn.percent_sign = U"%";
-		bn.exp = U"e";
+		bn.exp_l = U"e";
+		bn.exp_u = U"E";
 		num_systems.push_back(bn);
 	}
 
@@ -6943,7 +6949,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		mr.lang.insert(StringName("sa_IN"));
 		mr.digits = U"०१२३४५६७८९.";
 		mr.percent_sign = U"%";
-		mr.exp = U"e";
+		mr.exp_l = U"e";
+		mr.exp_u = U"E";
 		num_systems.push_back(mr);
 	}
 
@@ -6954,7 +6961,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		dz.lang.insert(StringName("dz_BT"));
 		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
 		dz.percent_sign = U"%";
-		dz.exp = U"e";
+		dz.exp_l = U"e";
+		dz.exp_u = U"E";
 		num_systems.push_back(dz);
 	}
 
@@ -6967,7 +6975,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		sat.lang.insert(StringName("sat_Olck_IN"));
 		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
 		sat.percent_sign = U"%";
-		sat.exp = U"e";
+		sat.exp_l = U"e";
+		sat.exp_u = U"E";
 		num_systems.push_back(sat);
 	}
 
@@ -6978,7 +6987,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		my.lang.insert(StringName("my_MM"));
 		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
 		my.percent_sign = U"%";
-		my.exp = U"e";
+		my.exp_l = U"e";
+		my.exp_u = U"E";
 		num_systems.push_back(my);
 	}
 
@@ -6990,7 +7000,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ccp.lang.insert(StringName("ccp_IN"));
 		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
 		ccp.percent_sign = U"%";
-		ccp.exp = U"e";
+		ccp.exp_l = U"e";
+		ccp.exp_u = U"E";
 		num_systems.push_back(ccp);
 	}
 
@@ -7012,7 +7023,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ff.lang.insert(StringName("ff_Adlm_SN"));
 		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
 		ff.percent_sign = U"%";
-		ff.exp = U"e";
+		ff.exp_l = U"𞤉";
+		ff.exp_u = U"𞤉";
 		num_systems.push_back(ff);
 	}
 }
@@ -7026,8 +7038,8 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace("e", num_systems[i].exp);
-			res.replace("E", num_systems[i].exp);
+			res = res.replace("e", num_systems[i].exp_l);
+			res = res.replace("E", num_systems[i].exp_u);
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] >= 0x30 && data[j] <= 0x39) {
@@ -7051,7 +7063,8 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace(num_systems[i].exp, "e");
+			res = res.replace(num_systems[i].exp_l, "e");
+			res = res.replace(num_systems[i].exp_u, "E");
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] == num_systems[i].digits[10]) {

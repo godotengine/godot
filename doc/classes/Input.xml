@@ -464,6 +464,9 @@
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
 		</constant>
+		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
+			Max value of the [enum MouseMode].
+		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Arrow cursor. Standard, default pointing cursor.
 		</constant>

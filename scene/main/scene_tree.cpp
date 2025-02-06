@@ -1892,7 +1892,7 @@ SceneTree::SceneTree() {
 	const bool transparent_background = GLOBAL_DEF("rendering/viewport/transparent_background", false);
 	root->set_transparent_background(transparent_background);
 
-	const bool use_hdr_2d = GLOBAL_DEF_RST_BASIC("rendering/viewport/hdr_2d", false);
+	const bool use_hdr_2d = GLOBAL_DEF_BASIC("rendering/viewport/hdr_2d", false);
 	root->set_use_hdr_2d(use_hdr_2d);
 
 	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);

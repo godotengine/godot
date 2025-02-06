@@ -618,6 +618,7 @@ public:
 	FUNC2(particles_collision_set_attractor_attenuation, RID, real_t)
 	FUNC2(particles_collision_set_field_texture, RID, RID)
 	FUNC1(particles_collision_height_field_update, RID)
+	FUNC2(particles_collision_set_height_field_mask, RID, uint32_t)
 	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* FOG VOLUME */
@@ -962,6 +963,7 @@ public:
 	FUNC2(canvas_item_set_self_modulate, RID, const Color &)
 
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
+	FUNC2(canvas_item_set_use_identity_transform, RID, bool)
 
 	FUNC6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)

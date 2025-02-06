@@ -1713,7 +1713,6 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     VmaAllocator VMA_NOT_NULL allocator,
     VmaTotalStatistics* VMA_NOT_NULL pStats);
 
-// -- GODOT begin --
 /** \brief Retrieves lazily allocated bytes
 
 This function is called "calculate" not "get" because it has to traverse all
@@ -1726,7 +1725,6 @@ become outdated.
 */
 VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
     VmaAllocator VMA_NOT_NULL allocator);
-// -- GODOT end --
 
 /** \brief Retrieves information about current memory usage and budget for all memory heaps.
 
@@ -14927,7 +14925,6 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     allocator->CalculateStatistics(pStats);
 }
 
-// -- GODOT begin --
 VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
     VmaAllocator allocator)
 {
@@ -14947,7 +14944,6 @@ VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
 	}
 	return total_lazilily_allocated_bytes;
 }
-// -- GODOT end --
 
 VMA_CALL_PRE void VMA_CALL_POST vmaGetHeapBudgets(
     VmaAllocator allocator,
