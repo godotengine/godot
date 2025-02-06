@@ -61,6 +61,15 @@ Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
+Files: modules/betsy/alpha_stitch.glsl
+ modules/betsy/bc1.glsl
+ modules/betsy/bc4.glsl
+ modules/betsy/bc6h.glsl
+ modules/betsy/CrossPlatformSettings_piece_all.glsl
+Comment: Betsy
+Copyright: 2020-2022, Matias N. Goldberg
+License: Expat
+
 Files: modules/godot_physics_2d/godot_joints_2d.cpp
 Comment: Chipmunk2D Joint Constraints
 Copyright: 2007, Scott Lembcke
@@ -178,11 +187,6 @@ Files: thirdparty/basis_universal/*
 Comment: Basis Universal
 Copyright: 2019-2024, Binomial LLC.
 License: Apache-2.0
-
-Files: thirdparty/betsy/*
-Comment: Betsy
-Copyright: 2020-2022, Matias N. Goldberg
-License: Expat
 
 Files: thirdparty/brotli/*
 Comment: Brotli
