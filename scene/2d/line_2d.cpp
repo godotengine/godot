@@ -27,14 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
-
 #include "line_2d.h"
 
 #include "core/math/geometry_2d.h"
 #include "line_builder.h"
-
-Line2D::Line2D() {
-}
 
 #ifdef DEBUG_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
@@ -75,8 +71,53 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 }
 #endif
 
+// Constructor
+Line2D::Line2D() {
+	// (Default values are already set in the member declarations.)
+}
+
 void Line2D::set_points(const Vector<Vector2> &p_points) {
 	_points = p_points;
+	queue_redraw();
+}
+
+Vector<Vector2> Line2D::get_points() const {
+	return _points;
+}
+
+void Line2D::set_point_position(int i, Vector2 p_pos) {
+	ERR_FAIL_INDEX(i, _points.size());
+	_points.set(i, p_pos);
+	queue_redraw();
+}
+
+Vector2 Line2D::get_point_position(int i) const {
+	ERR_FAIL_INDEX_V(i, _points.size(), Vector2());
+	return _points.get(i);
+}
+
+int Line2D::get_point_count() const {
+	return _points.size();
+}
+
+void Line2D::clear_points() {
+	if (!_points.empty()) {
+		_points.clear();
+		queue_redraw();
+	}
+}
+
+void Line2D::add_point(Vector2 p_pos, int p_atpos) {
+	if (p_atpos < 0 || _points.size() < p_atpos) {
+		_points.push_back(p_pos);
+	} else {
+		_points.insert(p_atpos, p_pos);
+	}
+	queue_redraw();
+}
+
+void Line2D::remove_point(int i) {
+	_points.remove_at(i);
 	queue_redraw();
 }
 
@@ -117,47 +158,6 @@ void Line2D::set_curve(const Ref<Curve> &p_curve) {
 
 Ref<Curve> Line2D::get_curve() const {
 	return _curve;
-}
-
-Vector<Vector2> Line2D::get_points() const {
-	return _points;
-}
-
-void Line2D::set_point_position(int i, Vector2 p_pos) {
-	ERR_FAIL_INDEX(i, _points.size());
-	_points.set(i, p_pos);
-	queue_redraw();
-}
-
-Vector2 Line2D::get_point_position(int i) const {
-	ERR_FAIL_INDEX_V(i, _points.size(), Vector2());
-	return _points.get(i);
-}
-
-int Line2D::get_point_count() const {
-	return _points.size();
-}
-
-void Line2D::clear_points() {
-	int count = _points.size();
-	if (count > 0) {
-		_points.clear();
-		queue_redraw();
-	}
-}
-
-void Line2D::add_point(Vector2 p_pos, int p_atpos) {
-	if (p_atpos < 0 || _points.size() < p_atpos) {
-		_points.push_back(p_pos);
-	} else {
-		_points.insert(p_atpos, p_pos);
-	}
-	queue_redraw();
-}
-
-void Line2D::remove_point(int i) {
-	_points.remove_at(i);
-	queue_redraw();
 }
 
 void Line2D::set_default_color(Color p_color) {
@@ -232,14 +232,6 @@ Line2D::LineCapMode Line2D::get_end_cap_mode() const {
 	return _end_cap_mode;
 }
 
-void Line2D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_DRAW: {
-			_draw();
-		} break;
-	}
-}
-
 void Line2D::set_sharp_limit(float p_limit) {
 	if (p_limit < 0.f) {
 		p_limit = 0.f;
@@ -270,60 +262,244 @@ bool Line2D::get_antialiased() const {
 	return _antialiased;
 }
 
+// --- New dashed/dotted setters and getters ---
+
+void Line2D::set_dashed(bool p_dashed) {
+	_dashed = p_dashed;
+	queue_redraw();
+}
+
+bool Line2D::is_dashed() const {
+	return _dashed;
+}
+
+void Line2D::set_dash_length(float p_length) {
+	_dash_length = (p_length < 0 ? 0 : p_length);
+	queue_redraw();
+}
+
+float Line2D::get_dash_length() const {
+	return _dash_length;
+}
+
+void Line2D::set_gap_length(float p_gap) {
+	_gap_length = (p_gap < 0 ? 0 : p_gap);
+	queue_redraw();
+}
+
+float Line2D::get_gap_length() const {
+	return _gap_length;
+}
+
+// Notification (only handling the draw notification)
+void Line2D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
+	}
+}
+
+// --- Dashed/dotted helper ---
+// Given the full polyline, compute an array of “dash” segments.
+// Each dash segment is represented as a vector of Vector2 points.
+// (The dash pattern is continuous along the line.)
+Vector<Vector<Vector2>> Line2D::_compute_dashed_segments(const Vector<Vector2>& points, bool closed, float dash_length, float gap_length) const {
+	Vector<Vector<Vector2>> segments;
+	if (points.size() < 2)
+		return segments;
+	if (dash_length <= 0)
+		return segments; // nothing to draw if dash length is zero.
+	// If gap_length is zero, the line is continuous.
+	
+	// State for the dash pattern:
+	bool drawing = true; // true means we are currently drawing a dash.
+	float phase_remaining = dash_length; // remaining length in the current dash or gap.
+	Vector<Vector2> current_dash;
+
+	// Number of segments to process:
+	int num_segments = closed ? points.size() : points.size() - 1;
+
+	// Process each segment in the polyline.
+	for (int i = 0; i < num_segments; i++) {
+		Vector2 p0 = points[i];
+		// For closed polyline, wrap around; otherwise next point:
+		Vector2 p1 = (i == points.size() - 1 && closed) ? points[0] : points[i + 1];
+		Vector2 segment = p1 - p0;
+		float seg_len = segment.length();
+		if (seg_len == 0)
+			continue;
+		Vector2 dir = segment / seg_len;
+		float seg_remaining = seg_len;
+		Vector2 pos = p0;
+
+		while (seg_remaining > 0) {
+			if (phase_remaining <= seg_remaining) {
+				// We can complete the current phase within this segment.
+				Vector2 new_pos = pos + dir * phase_remaining;
+				if (drawing) {
+					// Start a new dash segment if needed.
+					if (current_dash.empty())
+						current_dash.push_back(pos);
+					current_dash.push_back(new_pos);
+				} else {
+					// End the current dash (if any) when a gap finishes.
+					if (!current_dash.empty()) {
+						segments.push_back(current_dash);
+						current_dash.clear();
+					}
+				}
+				pos = new_pos;
+				seg_remaining -= phase_remaining;
+				// Toggle mode and reset phase_remaining.
+				drawing = !drawing;
+				phase_remaining = drawing ? dash_length : gap_length;
+			} else {
+				// The segment ends before finishing the current phase.
+				if (drawing) {
+					if (current_dash.empty())
+						current_dash.push_back(pos);
+					current_dash.push_back(p1);
+				}
+				phase_remaining -= seg_remaining;
+				pos = p1;
+				seg_remaining = 0;
+			}
+		}
+	}
+	// If we ended in a drawing phase, output the current dash segment.
+	if (!current_dash.empty()) {
+		segments.push_back(current_dash);
+	}
+	return segments;
+}
+
+// --- Drawing function ---
 void Line2D::_draw() {
 	int len = _points.size();
-	if (len <= 1 || _width == 0.f) {
+	if (len <= 1 || _width == 0.f)
 		return;
+
+	// If dashed mode is enabled, compute dash segments and build geometry for each.
+	if (_dashed) {
+		Vector<Vector<Vector2>> dash_segments = _compute_dashed_segments(_points, _closed, _dash_length, _gap_length);
+
+		// We will combine the geometry from each dash segment into a single triangle array.
+		Vector<int> combined_indices;
+		Vector<Vector2> combined_vertices;
+		Vector<Color> combined_colors;
+		Vector<Vector2> combined_uvs;
+		int vertex_offset = 0;
+
+		// For each dash segment, build geometry if there are at least two points.
+		for (int i = 0; i < dash_segments.size(); i++) {
+			Vector<Vector2> seg_points = dash_segments[i];
+			if (seg_points.size() < 2)
+				continue;
+
+			LineBuilder lb;
+			lb.points = seg_points;
+			// Even if the full line was marked as closed, individual dashes are drawn as open segments.
+			lb.closed = false;
+			lb.default_color = _default_color;
+			// If a gradient is assigned, use it; otherwise, the builder will use default_color.
+			if (_gradient.is_valid())
+				lb.gradient = *_gradient;
+			lb.texture_mode = _texture_mode;
+			lb.joint_mode = _joint_mode;
+			lb.begin_cap_mode = _begin_cap_mode;
+			lb.end_cap_mode = _end_cap_mode;
+			lb.round_precision = _round_precision;
+			lb.sharp_limit = _sharp_limit;
+			lb.width = _width;
+			if (_curve.is_valid())
+				lb.curve = *_curve;
+			if (_texture.is_valid()) {
+				lb.tile_aspect = _texture->get_size().aspect();
+			}
+			// Build the geometry for this dash.
+			lb.build();
+
+			// Append this dash’s geometry to the combined arrays.
+			for (int idx : lb.indices) {
+				combined_indices.push_back(idx + vertex_offset);
+			}
+			for (int j = 0; j < lb.vertices.size(); j++) {
+				combined_vertices.push_back(lb.vertices[j]);
+				combined_colors.push_back(lb.colors[j]);
+				combined_uvs.push_back(lb.uvs[j]);
+			}
+			vertex_offset += lb.vertices.size();
+		}
+
+		// Get the texture RID if a texture is used.
+		RID texture_rid;
+		if (_texture.is_valid())
+			texture_rid = _texture->get_rid();
+
+		RS::get_singleton()->canvas_item_add_triangle_array(
+				get_canvas_item(),
+				combined_indices,
+				combined_vertices,
+				combined_colors,
+				combined_uvs, Vector<int>(), Vector<float>(),
+				texture_rid);
+
+	} else {
+		// Non-dashed mode: use the normal procedure.
+		LineBuilder lb;
+		lb.points = _points;
+		lb.closed = _closed;
+		lb.default_color = _default_color;
+		if (_gradient.is_valid())
+			lb.gradient = *_gradient;
+		lb.texture_mode = _texture_mode;
+		lb.joint_mode = _joint_mode;
+		lb.begin_cap_mode = _begin_cap_mode;
+		lb.end_cap_mode = _end_cap_mode;
+		lb.round_precision = _round_precision;
+		lb.sharp_limit = _sharp_limit;
+		lb.width = _width;
+		if (_curve.is_valid())
+			lb.curve = *_curve;
+		RID texture_rid;
+		if (_texture.is_valid()) {
+			texture_rid = _texture->get_rid();
+			lb.tile_aspect = _texture->get_size().aspect();
+		}
+
+		lb.build();
+
+		RS::get_singleton()->canvas_item_add_triangle_array(
+				get_canvas_item(),
+				lb.indices,
+				lb.vertices,
+				lb.colors,
+				lb.uvs, Vector<int>(), Vector<float>(),
+				texture_rid);
 	}
 
-	// TODO Maybe have it as member rather than copying parameters and allocating memory?
-	LineBuilder lb;
-	lb.points = _points;
-	lb.closed = _closed;
-	lb.default_color = _default_color;
-	lb.gradient = *_gradient;
-	lb.texture_mode = _texture_mode;
-	lb.joint_mode = _joint_mode;
-	lb.begin_cap_mode = _begin_cap_mode;
-	lb.end_cap_mode = _end_cap_mode;
-	lb.round_precision = _round_precision;
-	lb.sharp_limit = _sharp_limit;
-	lb.width = _width;
-	lb.curve = *_curve;
-
-	RID texture_rid;
-	if (_texture.is_valid()) {
-		texture_rid = _texture->get_rid();
-
-		lb.tile_aspect = _texture->get_size().aspect();
-	}
-
-	lb.build();
-
-	RS::get_singleton()->canvas_item_add_triangle_array(
-			get_canvas_item(),
-			lb.indices,
-			lb.vertices,
-			lb.colors,
-			lb.uvs, Vector<int>(), Vector<float>(),
-			texture_rid);
-
-	// DEBUG: Draw wireframe
-	//	if (lb.indices.size() % 3 == 0) {
-	//		Color col(0, 0, 0);
-	//		for (int i = 0; i < lb.indices.size(); i += 3) {
-	//			Vector2 a = lb.vertices[lb.indices[i]];
-	//			Vector2 b = lb.vertices[lb.indices[i+1]];
-	//			Vector2 c = lb.vertices[lb.indices[i+2]];
-	//			draw_line(a, b, col);
-	//			draw_line(b, c, col);
-	//			draw_line(c, a, col);
-	//		}
-	//		for (int i = 0; i < lb.vertices.size(); ++i) {
-	//			Vector2 p = lb.vertices[i];
-	//			draw_rect(Rect2(p.x - 1, p.y - 1, 2, 2), Color(0, 0, 0, 0.5));
-	//		}
-	//	}
+	// DEBUG: (Optional) Draw wireframe for debugging.
+	// Uncomment the following block to see the underlying triangles.
+	/*
+		if (_dashed) {
+			// Draw the combined wireframe if needed.
+		} else if (lb.indices.size() % 3 == 0) {
+			Color col(0, 0, 0);
+			for (int i = 0; i < lb.indices.size(); i += 3) {
+				Vector2 a = lb.vertices[lb.indices[i]];
+				Vector2 b = lb.vertices[lb.indices[i+1]];
+				Vector2 c = lb.vertices[lb.indices[i+2]];
+				draw_line(a, b, col);
+				draw_line(b, c, col);
+				draw_line(c, a, col);
+			}
+			for (int i = 0; i < lb.vertices.size(); ++i) {
+				Vector2 p = lb.vertices[i];
+				draw_rect(Rect2(p.x - 1, p.y - 1, 2, 2), Color(0, 0, 0, 0.5));
+			}
+		}
+	*/
 }
 
 void Line2D::_gradient_changed() {
@@ -334,7 +510,7 @@ void Line2D::_curve_changed() {
 	queue_redraw();
 }
 
-// static
+// --- Binding methods ---
 void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
@@ -361,7 +537,7 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
 	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
 
-	ClassDB::bind_method(D_METHOD("set_gradient", "color"), &Line2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &Line2D::set_gradient);
 	ClassDB::bind_method(D_METHOD("get_gradient"), &Line2D::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Line2D::set_texture);
@@ -388,6 +564,15 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &Line2D::set_antialiased);
 	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
 
+	// Bind the new dashed/dotted properties.
+	ClassDB::bind_method(D_METHOD("set_dashed", "dashed"), &Line2D::set_dashed);
+	ClassDB::bind_method(D_METHOD("is_dashed"), &Line2D::is_dashed);
+	ClassDB::bind_method(D_METHOD("set_dash_length", "length"), &Line2D::set_dash_length);
+	ClassDB::bind_method(D_METHOD("get_dash_length"), &Line2D::get_dash_length);
+	ClassDB::bind_method(D_METHOD("set_gap_length", "gap"), &Line2D::set_gap_length);
+	ClassDB::bind_method(D_METHOD("get_gap_length"), &Line2D::get_gap_length);
+
+	// Register properties.
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
@@ -405,6 +590,10 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision", PROPERTY_HINT_RANGE, "1,32,1"), "set_round_precision", "get_round_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dashed"), "set_dashed", "is_dashed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dash_length", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_dash_length", "get_dash_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gap_length", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_gap_length", "get_gap_length");
 
 	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);
 	BIND_ENUM_CONSTANT(LINE_JOINT_BEVEL);
