@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "所有可用类型"
+
 msgid "New Code Region"
 msgstr "新建代码区域"
 
@@ -74,14 +77,14 @@ msgstr "打开"
 msgid "Select Current Folder"
 msgstr "选择当前文件夹"
 
+msgid "Save"
+msgstr "保存"
+
 msgid "Select This Folder"
 msgstr "选择此文件夹"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "你无权访问此文件夹的内容。"
-
-msgid "All Recognized"
-msgstr "所有可用类型"
 
 msgid "All Files"
 msgstr "所有文件"
@@ -97,9 +100,6 @@ msgstr "打开目录"
 
 msgid "Open a File or Directory"
 msgstr "打开文件或目录"
-
-msgid "Save"
-msgstr "保存"
 
 msgid "Save a File"
 msgstr "保存文件"

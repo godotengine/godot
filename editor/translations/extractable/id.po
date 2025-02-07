@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Semua diakui"
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color"
@@ -44,11 +47,11 @@ msgstr "Buka"
 msgid "Select Current Folder"
 msgstr "Pilih Folder Saat Ini"
 
+msgid "Save"
+msgstr "Simpan"
+
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
-
-msgid "All Recognized"
-msgstr "Semua diakui"
 
 msgid "Open a File"
 msgstr "Buka sebuah File"
@@ -61,9 +64,6 @@ msgstr "Buka sebuah Direktori"
 
 msgid "Open a File or Directory"
 msgstr "Buka sebuah File atau Direktori"
-
-msgid "Save"
-msgstr "Simpan"
 
 msgid "Save a File"
 msgstr "Simpan sebuah File"

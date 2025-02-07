@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "All Recognized"
+msgstr "Όλα τα αναγνωρισμένα"
+
 msgid "Add current color as a preset."
 msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθορισμένα."
 
@@ -30,11 +33,11 @@ msgstr "Άνοιγμα"
 msgid "Select Current Folder"
 msgstr "Επιλογή τρέχοντα φακέλου"
 
+msgid "Save"
+msgstr "Αποθήκευση"
+
 msgid "Select This Folder"
 msgstr "Επιλογή αυτού του φακέλου"
-
-msgid "All Recognized"
-msgstr "Όλα τα αναγνωρισμένα"
 
 msgid "Open a File"
 msgstr "Άνοιγμα αρχείου"
@@ -47,9 +50,6 @@ msgstr "Άνοιγμα φακέλου"
 
 msgid "Open a File or Directory"
 msgstr "Άνοιγμα αρχείου ή φακέλου"
-
-msgid "Save"
-msgstr "Αποθήκευση"
 
 msgid "Save a File"
 msgstr "Αποθήκευση αρχείου"

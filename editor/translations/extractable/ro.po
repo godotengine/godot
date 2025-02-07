@@ -19,6 +19,9 @@ msgstr ""
 "20)) ? 1 : 2;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Toate Recunoscute"
+
 msgid "Network"
 msgstr "Rețea"
 
@@ -28,11 +31,11 @@ msgstr "Deschide"
 msgid "Select Current Folder"
 msgstr "Selectaţi directorul curent"
 
+msgid "Save"
+msgstr "Salvați"
+
 msgid "Select This Folder"
 msgstr "Selectaţi directorul curent"
-
-msgid "All Recognized"
-msgstr "Toate Recunoscute"
 
 msgid "Open a File"
 msgstr "Deschideți un Fișier"
@@ -45,9 +48,6 @@ msgstr "Deschideţi un Director"
 
 msgid "Open a File or Directory"
 msgstr "Deschideți un Fişier sau Director"
-
-msgid "Save"
-msgstr "Salvați"
 
 msgid "Save a File"
 msgstr "Salvați un Fișier"

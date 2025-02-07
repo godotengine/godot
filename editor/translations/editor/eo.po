@@ -22,19 +22,20 @@
 # lassr8 <lassr8@proton.me>, 2023.
 # clement lee <leeclement455@gmail.com>, 2024.
 # casuallyblue <sierra@casuallyblue.dev>, 2024.
+# programutox <programutox@disroot.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-02-26 06:02+0000\n"
-"Last-Translator: casuallyblue <sierra@casuallyblue.dev>\n"
+"PO-Revision-Date: 2024-09-27 03:18+0000\n"
+"Last-Translator: programutox <programutox@disroot.org>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Ĉefa Fadeno"
@@ -81,6 +82,24 @@ msgstr "Duobla alklako"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Musmovo ĉe pozicio (%s) kun rapideco (%s)"
 
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Maldekstra Stangeto X-Akso, Stirstango 0 X-Akso"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Maldekstra Stangeto Y-Akso, Stirstango 0 Y-Akso"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Dekstra Stangeto X-Akso, Stirstango 1 X-Akso"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Dekstra Stangeto Y-Akso, Stirstango 1 Y-Akso"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Stirstango 2 X-Akso, Maldekstra Ĉano, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Stirstango 2 Y-Akso, Maldekstra Ĉano, Sony R2, Xbox RT"
+
 msgid "Joystick 3 X-Axis"
 msgstr "X-Akso de stirstango 3"
 
@@ -99,8 +118,38 @@ msgstr "Nekonata Stirstanga Akso"
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "Stirstanga moviĝo sur akso %d (%s) kun valoro %.2f"
 
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Gvidilo, Sony PS, Xbox Home"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Starti, Xbox Menuo, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Maldesktra Strangeto, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Dekstra Strangeto, Sony R3, Xbox R/RS"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Tuŝplato"
+
 msgid "Joypad Button %d"
 msgstr "Butono de ludstrilo %d"
+
+msgid "Pressure:"
+msgstr "Premo:"
+
+msgid "touched"
+msgstr "tuŝita"
+
+msgid "released"
+msgstr "relasita"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Grandigogesto al (%s) kun faktoro de %s"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Enigo sur la Kanalo=%s Mesaĝo=%s"
 
 msgid "Accept"
 msgstr "Akceptu"
@@ -110,6 +159,12 @@ msgstr "Elekti"
 
 msgid "Cancel"
 msgstr "Rezigni"
+
+msgid "Left"
+msgstr "Maldesktro"
+
+msgid "Right"
+msgstr "Dekstro"
 
 msgid "Up"
 msgstr "Alŝuta"
@@ -141,17 +196,50 @@ msgstr "Refari"
 msgid "New Line"
 msgstr "Nova Linio"
 
+msgid "New Blank Line"
+msgstr "Nova Malplena Linio"
+
+msgid "New Line Above"
+msgstr "Nova Linio Supre"
+
+msgid "Indent"
+msgstr "Deŝovi"
+
+msgid "Dedent"
+msgstr "Maldeŝovi"
+
+msgid "Backspace"
+msgstr "Retropaŝo"
+
 msgid "Delete"
 msgstr "Forigi"
 
 msgid "Delete Word"
 msgstr "Forigi Vorton"
 
+msgid "Delete all to Right"
+msgstr "Ĉion forigi desktre"
+
 msgid "Select All"
 msgstr "Elekti tutan"
 
+msgid "Duplicate Nodes"
+msgstr "Duobligi Nodojn"
+
+msgid "Delete Nodes"
+msgstr "Forigi Nodojn"
+
 msgid "Refresh"
 msgstr "Aktualigi"
+
+msgid "Show Hidden"
+msgstr "Vidigi kaŝitajn dosierojn"
+
+msgid "Swap Input Direction"
+msgstr "Interŝanĝi Enigajn Direktojn"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Nevalida enigo %d (ne pasis) en esprimo"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr "self ne povas esti uzata, ĉar ekzemplo estas senvalora (ne pasita)"
@@ -170,6 +258,12 @@ msgstr "Malvalidaj argumentoj por konstrui '%s'"
 
 msgid "On call to '%s':"
 msgstr "En voko al '%s':"
+
+msgid "Built-in script"
+msgstr "Enkonstruita skripto"
+
+msgid "Built-in"
+msgstr "Enkonstruita"
 
 msgid "B"
 msgstr "B"
@@ -205,6 +299,15 @@ msgstr "Faro kun la nomo '%s' jam ekzistas."
 msgid "Add Event"
 msgstr "Aldoni eventon"
 
+msgid "Remove Action"
+msgstr "Forigi Agon"
+
+msgid "Cannot Remove Action"
+msgstr "Ne eblas forigi agon"
+
+msgid "Remove Event"
+msgstr "Forigi Eventon"
+
 msgid "Add"
 msgstr "Aldoni"
 
@@ -213,6 +316,12 @@ msgstr "Faro"
 
 msgid "Deadzone"
 msgstr "Mortzono"
+
+msgid "Name:"
+msgstr "Nomo:"
+
+msgid "Type:"
+msgstr "Tipo:"
 
 msgid "Time:"
 msgstr "Tempo:"
@@ -226,6 +335,9 @@ msgstr "Enmetu ŝlosilon ĉi tien"
 msgid "Duplicate Selected Key(s)"
 msgstr "Duplikati elektita(j)n ŝlosilo(j)n"
 
+msgid "Paste Key(s)"
+msgstr "Alglui Ŝlosilo(j)n"
+
 msgid "Delete Selected Key(s)"
 msgstr "Forigi elektita(j)n ŝlosilo(j)n"
 
@@ -234,6 +346,12 @@ msgstr "Aldoni Bezier-punkton"
 
 msgid "Move Bezier Points"
 msgstr "Movi Bezier-punktojn"
+
+msgid "Animation Duplicate Keys"
+msgstr "Duplikati Ŝlosilojn de Animado"
+
+msgid "Animation Paste Keys"
+msgstr "Alglui Ŝlosilojn de Animado"
 
 msgid "Change Animation Length"
 msgstr "Aliigi Animadon Longecon"
@@ -265,6 +383,9 @@ msgstr "Ŝanĝi vojon de trako"
 msgid "Toggle this track on/off."
 msgstr "Ŝalti/malŝalti ĉi tiun trakon."
 
+msgid "Use Blend"
+msgstr "Uzi Stompon"
+
 msgid "Update Mode (How this property is set)"
 msgstr "Aktualigi Modon (Kiel tio ĉi atributo estas determinigis)"
 
@@ -282,6 +403,9 @@ msgstr "Tempo (s):"
 
 msgid "Position:"
 msgstr "Pozicio:"
+
+msgid "Rotation:"
+msgstr "Rotacio:"
 
 msgid "Scale:"
 msgstr "Skalo:"
@@ -313,14 +437,29 @@ msgstr "Lineara"
 msgid "Cubic"
 msgstr "Kubika"
 
+msgid "Linear Angle"
+msgstr "Lineara Angulo"
+
+msgid "Cubic Angle"
+msgstr "Kuba Angulo"
+
 msgid "Clamp Loop Interp"
 msgstr "Krampi Iteracion Interpolon"
 
 msgid "Wrap Loop Interp"
 msgstr "Ĉirkaŭvolvi Iteracion Interpolon"
 
+msgid "Insert Key..."
+msgstr "Enigi Ŝlosilon..."
+
 msgid "Duplicate Key(s)"
 msgstr "Duobligi Ŝlosilo(j)n"
+
+msgid "Copy Key(s)"
+msgstr "Kopii Ŝlosilo(j)n"
+
+msgid "Add RESET Value(s)"
+msgstr "Aldoni RESET-Valoro(j)n"
 
 msgid "Delete Key(s)"
 msgstr "Forigi Ŝlosilo(j)n"
@@ -336,6 +475,12 @@ msgstr "Aliigi Animadon Iteracion Modon"
 
 msgid "Remove Anim Track"
 msgstr "Forigi animacian trakon"
+
+msgid "Create new track for %s and insert key?"
+msgstr "Krei novan trakon por %s kaj enmeti ŝlosilon?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Krei %d novajn trakojn kaj enmeti ŝlosilojn?"
 
 msgid "Create"
 msgstr "Krei"
@@ -384,6 +529,12 @@ msgstr "Aldoni Bezier-an trakon"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Vojo de trako estas nevalida, do ne eblas aldoni ŝlosilon."
 
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Trako ne estas de tipo Node3D, ne eblas enmeti ŝlosilon"
+
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Trako ne estas de tipo MeshInstance3D, ne eblas enmeti ŝlosilon"
+
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Vojo de trako estas nevalida, do ne eblas aldoni metodan ŝlosilon."
 
@@ -393,14 +544,26 @@ msgstr "Aldoni metodan trakan ŝlosilon"
 msgid "Method not found in object:"
 msgstr "En objekto ne estas tia metodo:"
 
+msgid "Animation Move Keys"
+msgstr "Movi Ŝlosilojn de Animado"
+
+msgid "Position"
+msgstr "Pozicio"
+
 msgid "Rotation"
 msgstr "Rotacio"
 
 msgid "Scale"
 msgstr "Skalo"
 
+msgid "BlendShape"
+msgstr "Stompoformo"
+
 msgid "Methods"
 msgstr "Metodoj"
+
+msgid "Bezier"
+msgstr "Bézier"
 
 msgid "Audio"
 msgstr "Aŭdio"
@@ -411,20 +574,78 @@ msgstr "La tondujo estas malplena!"
 msgid "Paste Tracks"
 msgstr "Alglui trakojn"
 
+msgid "Animation Scale Keys"
+msgstr "Skali Ŝlosilojn de Animado"
+
+msgid "Make Easing Keys"
+msgstr "Krei Malrigidigitajn Ŝlosilojn"
+
+msgid "Animation Add RESET Keys"
+msgstr "Aldoni RESET-Ŝlosilojn de Animado"
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Ĉi tiu animado apartenas al importita sceno, do ŝanĝoj al importitaj trakoj "
+"ne konserviĝos.\n"
+"\n"
+"Por modifiki ĉi tiun animadon, navigu al la altnivelaj importaj agordoj de la "
+"sceno kaj selektu la animadon.\n"
+"Kelkaj opcioj, inkluzive bukligo, estas disponebla ĉi tie. Por aldoni "
+"agorditajn trakojn, aktivigu \"Konservi En Dosiero\" kaj\n"
+"\"Gardi Agorditajn Trakojn\"."
+
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"Kelkaj opcioj de la AnimationPlayerEditor estas malaktivigitaj ĉar tio estas "
+"la postiĉa AnimationPlayer por la antaŭrigardo.\n"
+"\n"
+"Tiu postiĉa AnimationPlayer estas forcita \"aktiva\", nedeterminista kaj ne "
+"havas la ĉefa trako de movo. Krome, la origina nodo estas dumtempe "
+"malaktivigita."
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Elektu AnimationPlayer-nodon por krei kaj redakti animaciojn."
 
+msgid "Imported Scene"
+msgstr "Importita Sceno"
+
 msgid "Warning: Editing imported animation"
 msgstr "Averto: Redaktanti importis animadon"
+
+msgid "Dummy Player"
+msgstr "Postiĉa Ludanto"
+
+msgid "Warning: Editing dummy AnimationPlayer"
+msgstr "Atentu: Postiĉa AnimationPlayer redaktanta"
+
+msgid "Inactive Player"
+msgstr "Malaktiva Ludanto"
+
+msgid "Warning: AnimationPlayer is inactive"
+msgstr "Atentu: AnimationPlayer malaktivas"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr ""
+"Baskuli inter la redaktilo de kurboj de Bézier kaj la redaktilo de trakoj."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Vidigi trakojn nur el elektitajn nodojn en la arbo."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Grupigi trakojn per nodo aŭ vidigi ilin kiel simplan liston."
-
-msgid "Snap:"
-msgstr "Klako:"
 
 msgid "Animation step value."
 msgstr "Animado paŝo valoro."
@@ -435,11 +656,44 @@ msgstr "Sekundoj"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Fit to panel"
+msgstr "Alĝustigi al la panelo"
+
 msgid "Edit"
 msgstr "Redakti"
 
 msgid "Animation properties."
 msgstr "Animado atributoj."
+
+msgid "Copy Tracks..."
+msgstr "Kopii Trakojn..."
+
+msgid "Scale Selection..."
+msgstr "Skali la Elektaron..."
+
+msgid "Scale From Cursor..."
+msgstr "Skali El Kursoron..."
+
+msgid "Make Easing Selection..."
+msgstr "Fari Elektaron de Malrigidigo..."
+
+msgid "Duplicate Selected Keys"
+msgstr "Duobligi Elektita(j)n Ŝlosilo(j)n"
+
+msgid "Cut Selected Keys"
+msgstr "Forigi Elektita(j)n Ŝlosilo(j)n"
+
+msgid "Copy Selected Keys"
+msgstr "Kopii Elektita(j)n Ŝlosilo(j)n"
+
+msgid "Paste Keys"
+msgstr "Alglui Ŝlosilojn"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "Movi la unuan selektitan ŝlosilon al la kursoro"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "Movi la lastan selektitan ŝlosilo al la kursoro"
 
 msgid "Delete Selection"
 msgstr "Forigi Elektaron"
@@ -453,11 +707,32 @@ msgstr "Iri al Antaŭa Paŝo"
 msgid "Apply Reset"
 msgstr "Almeti rekomencigon"
 
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimumigi la Animadon (neniu nuligado)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Purigi la Animadon (neniu nuligado)..."
+
+msgid "Pick a node to animate:"
+msgstr "Elekti nodon por animi:"
+
 msgid "Use Bezier Curves"
 msgstr "Uzu Bezier-kurbojn"
 
 msgid "Create RESET Track(s)"
 msgstr "Krei RESET-trako(j)n"
+
+msgid "Animation Optimizer"
+msgstr "Optimumiganto de Animado"
+
+msgid "Max Velocity Error:"
+msgstr "Pleja Eraro de Rapido:"
+
+msgid "Max Angular Error:"
+msgstr "Pleja Angula Eraro:"
+
+msgid "Max Precision Error:"
+msgstr "Pleja Eraro de Precizeco:"
 
 msgid "Optimize"
 msgstr "Optimigi"
@@ -480,11 +755,99 @@ msgstr "Senrubigi"
 msgid "Scale Ratio:"
 msgstr "Skali Rejŝo:"
 
+msgid "Select Transition and Easing"
+msgstr "Selekti Transiron kaj Malrigidigon"
+
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Lineara"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinuso"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Kvinopa"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Kvartopa"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Kvadrata"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Eksponenta"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elasta"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Kuba"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Cirkla"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Resalto"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Retroiro"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Risorto"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Interne"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Ekstere"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "InterneEkstere"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "EkstereInterne"
+
+msgid "Transition Type:"
+msgstr "Tipo de transiro:"
+
+msgid "Ease Type:"
+msgstr "Tipo de malrigidigo:"
+
+msgid "FPS:"
+msgstr "BJS:"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D-a Poz/Rot/Ska Trako:"
+
+msgid "Blendshape Track:"
+msgstr "Trako de Stompoformo:"
+
 msgid "Select Tracks to Copy"
 msgstr "Elekti trakojn por kopii"
 
 msgid "Select All/None"
 msgstr "Elekti Ĉiujn/Neniujn"
+
+msgid "Close"
+msgstr "Fermi"
+
+msgid "Error!"
+msgstr "Eraro!"
 
 msgid "Add Audio Track Clip"
 msgstr "Aldoni aŭdio-trakan eltondaĵon"
@@ -503,6 +866,14 @@ msgstr "Lineo-Numeron:"
 
 msgid "%d replaced."
 msgstr "%d anstataŭiĝis."
+
+msgid "No match"
+msgstr "Neniu akordo"
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d akordo"
+msgstr[1] "%d akordoj"
 
 msgid "Match Case"
 msgstr "Kongrui Usklon"
@@ -598,9 +969,6 @@ msgstr "Malkonektas la signalo post ĝia unua emisio."
 msgid "Cannot connect signal"
 msgstr "Ne povas konekti signalo"
 
-msgid "Close"
-msgstr "Fermi"
-
 msgid "Connect"
 msgstr "Konekti"
 
@@ -679,6 +1047,9 @@ msgstr "Konservi la branĉon kiel sceno"
 msgid "Toggle Visibility"
 msgstr "Baskuli videblon"
 
+msgid "Clear"
+msgstr "Vakigi"
+
 msgid "Monitors"
 msgstr "Monitoroj"
 
@@ -696,9 +1067,6 @@ msgstr "Halti"
 
 msgid "Start"
 msgstr "Komenci"
-
-msgid "Clear"
-msgstr "Vakigi"
 
 msgid "Measure:"
 msgstr "Mezuro:"
@@ -913,12 +1281,6 @@ msgstr "Posede"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Risurcoj sen eksplicita proprieto:"
 
-msgid "Could not create folder."
-msgstr "Ne povis krei dosierujon."
-
-msgid "Create Folder"
-msgstr "Krei dosierujon"
-
 msgid "Thanks from the Godot community!"
 msgstr "Dankon de la komunumo de Godot!"
 
@@ -1077,17 +1439,11 @@ msgstr "Dosierlokigo por nova aranĝo..."
 msgid "Open Audio Bus Layout"
 msgstr "Malfermi aranĝon de aŭdia buso"
 
-msgid "There is no '%s' file."
-msgstr "Estas neniu dosiero '%s'."
+msgid "Error saving file: %s"
+msgstr "Eraris konservi dosieron: %s"
 
 msgid "Layout:"
 msgstr "Aranĝo:"
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Malvalida dosiero, ne estas aranĝo de aŭdia buso."
-
-msgid "Error saving file: %s"
-msgstr "Eraris konservi dosieron: %s"
 
 msgid "Add Bus"
 msgstr "Aldoni Buson"
@@ -1400,20 +1756,14 @@ msgstr ""
 msgid "Editor"
 msgstr "Redaktilo"
 
-msgid "Property:"
-msgstr "Atributo:"
+msgid "Show in FileSystem"
+msgstr "Montri en dosiersistemo"
 
-msgid "Signal:"
-msgstr "Signalo:"
+msgid "Open in File Manager"
+msgstr "Malfermi en dosiermastrumilo"
 
-msgid "%d matches."
-msgstr "%d rekonoj."
-
-msgid "Method"
-msgstr "Metodo"
-
-msgid "Signal"
-msgstr "Signalo"
+msgid "Class"
+msgstr "Klaso"
 
 msgid "Constant"
 msgstr "Konstanto"
@@ -1423,6 +1773,18 @@ msgstr "Atributo"
 
 msgid "Theme Property"
 msgstr "Etosa atributo"
+
+msgid "Method"
+msgstr "Metodo"
+
+msgid "Signal"
+msgstr "Signalo"
+
+msgid "File"
+msgstr "Dosiero"
+
+msgid "%d matches."
+msgstr "%d rekonoj."
 
 msgid "Search Help"
 msgstr "Serĉi helpon"
@@ -1457,17 +1819,14 @@ msgstr "Nur etosaj atributoj"
 msgid "Member Type"
 msgstr "Tipo de membro"
 
-msgid "Class"
-msgstr "Klaso"
-
 msgid "Resize Array"
 msgstr "Regrandigi Vicon"
 
 msgid "Set %s"
 msgstr "Agordis %s"
 
-msgid "Name:"
-msgstr "Nomo:"
+msgid "Favorites"
+msgstr "Favoritaj"
 
 msgid "Creating Mesh Previews"
 msgstr "Kreas antaŭvidojn de maŝoj"
@@ -1583,15 +1942,6 @@ msgstr ""
 msgid "Open Base Scene"
 msgstr "Malfermi scenon de bazo"
 
-msgid "Quick Open..."
-msgstr "Rapide malfermi..."
-
-msgid "Quick Open Scene..."
-msgstr "Rapide malfermi scenon..."
-
-msgid "Quick Open Script..."
-msgstr "Rapide malfermi skripton..."
-
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
@@ -1601,9 +1951,6 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Konservi sceno kiel..."
-
-msgid "Current scene not saved. Open anyway?"
-msgstr "Nuna sceno ne estas konservita. Malfermi ĉuikaze?"
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Ne povu malfari dum musbutonoj estas premitaj."
@@ -1666,30 +2013,6 @@ msgstr "Sceno '%s' havas rompitajn dependojn:"
 msgid "Clear Recent Scenes"
 msgstr "Vakigi lastajn scenojn"
 
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Ne ĉefa sceno definiĝis iam, elekti unu?\n"
-"Vi povas ŝanĝi ĝin poste en \"Projektaj agordoj\" en la 'apliko' kategorio."
-
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Elektita sceno '%s' ekzisitas, elekti validan unuon?\n"
-"Vi povas ŝanĝi ĝin poste en \"Projektaj agordoj\" en la 'apliko' kategorio."
-
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Elektita sceno '%s' ne estas scena dosiero, elekti validan unuon?\n"
-"Vi povas ŝanĝi ĝin poste en \"Projektaj agordoj\" en la 'apliko' kategorio."
-
 msgid "Default"
 msgstr "Defaŭlto"
 
@@ -1746,6 +2069,15 @@ msgstr "Malfermi lastaj"
 
 msgid "Save Scene"
 msgstr "Konservi scenon"
+
+msgid "Quick Open..."
+msgstr "Rapide malfermi..."
+
+msgid "Quick Open Scene..."
+msgstr "Rapide malfermi scenon..."
+
+msgid "Quick Open Script..."
+msgstr "Rapide malfermi skripton..."
 
 msgid "MeshLibrary..."
 msgstr "Maŝo biblioteko..."
@@ -1848,13 +2180,6 @@ msgstr "Eksporti bibliotekon"
 
 msgid "Open & Run a Script"
 msgstr "Malfermi & ruli skripto"
-
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?"
-msgstr ""
-"La jenaj dosieroj estas pli novaj sur disko.\n"
-"Kian agon fari?"
 
 msgid "New Inherited"
 msgstr "Nova heredita"
@@ -1965,9 +2290,6 @@ msgstr "Farigi unikan"
 msgid "Save As..."
 msgstr "Konservi kiel..."
 
-msgid "Show in FileSystem"
-msgstr "Montri en dosiersistemo"
-
 msgid "New %s"
 msgstr "Nova %s"
 
@@ -2072,6 +2394,9 @@ msgstr "Ekstraktas eksportajn ŝablonojn"
 msgid "Importing:"
 msgstr "Enportas:"
 
+msgid "Official export templates aren't available for development builds."
+msgstr "Oficaj eksportaj ŝablonoj estas ne haveblaj por programistaj muntoj."
+
 msgid "Uncompressing Android Build Sources"
 msgstr "Malkompaktigas kompilajn fontkodojn por Android"
 
@@ -2083,9 +2408,6 @@ msgstr "Aktuala versio:"
 
 msgid "Uninstall"
 msgstr "Malinstali"
-
-msgid "Official export templates aren't available for development builds."
-msgstr "Oficaj eksportaj ŝablonoj estas ne haveblaj por programistaj muntoj."
 
 msgid "Select Template File"
 msgstr "Elekti ŝablonan dosieron"
@@ -2104,9 +2426,6 @@ msgstr "Mastrumi eksportaj ŝablonoj"
 
 msgid "Browse"
 msgstr "Foliumi"
-
-msgid "Favorites"
-msgstr "Favoritaj"
 
 msgid "View items as a grid of thumbnails."
 msgstr "Vidigi elementoj kiel krado de miniaturoj."
@@ -2148,6 +2467,9 @@ msgstr "Duplikatas dosieron:"
 msgid "Duplicating folder:"
 msgstr "Duplikatas dosierujon:"
 
+msgid "Create Folder"
+msgstr "Krei dosierujon"
+
 msgid "New Inherited Scene"
 msgstr "Nova heredita sceno"
 
@@ -2168,9 +2490,6 @@ msgstr "Forigi el favoritaj"
 
 msgid "Reimport"
 msgstr "Reenporti"
-
-msgid "Open in File Manager"
-msgstr "Malfermi en dosiermastrumilo"
 
 msgid "New Folder..."
 msgstr "Nova dosierujo..."
@@ -2258,12 +2577,6 @@ msgstr "Elekti kurantan dosierujon"
 msgid "Select This Folder"
 msgstr "Elekti ĉi tiun dosierujon"
 
-msgid "All Recognized"
-msgstr "Ĉiaj rekonaj dosiertipoj"
-
-msgid "All Files (*)"
-msgstr "Ĉiuj dosierojn (*)"
-
 msgid "Open a File"
 msgstr "Malfermi dosieron"
 
@@ -2278,6 +2591,9 @@ msgstr "Malfermi dosieron aŭ dosierujon"
 
 msgid "Save a File"
 msgstr "Konservi dosieron"
+
+msgid "Could not create folder."
+msgstr "Ne povis krei dosierujon."
 
 msgid "Go Back"
 msgstr "Posteniri"
@@ -2321,11 +2637,11 @@ msgstr "Aktualigi dosieroj."
 msgid "(Un)favorite current folder."
 msgstr "(Mal)favoratigi aktualan dosieron."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Baskuli videblo de kaŝitaj dosieroj."
-
 msgid "Directories & Files:"
 msgstr "Dosierujoj kaj dosieroj:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Baskuli videblo de kaŝitaj dosieroj."
 
 msgid "Preview:"
 msgstr "Antaŭrigardo:"
@@ -2342,8 +2658,8 @@ msgstr "Ludi la projekton."
 msgid "Play the edited scene."
 msgstr "Ludi la redaktantan scenon."
 
-msgid "Quick Run Scene..."
-msgstr "Rapida Ruli scenon..."
+msgid "Network Profiler"
+msgstr "Reta Profililo"
 
 msgid "Play This Scene"
 msgstr "Ludi ĉi tiun scenon"
@@ -2707,18 +3023,6 @@ msgstr "Mikso sekvo ŝanĝiĝis"
 msgid "Change Blend Time"
 msgstr "Ŝanĝi tempon de mikso"
 
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Ludi elektitan animacion retre el aktuala pozicio. (A)"
-
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Ludi elektitan animacion retre el fino. (Majuskliga klavo+A)"
-
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "Ludi elektitan animacion el komenco. (Majuskliga klavo+D)"
-
-msgid "Play selected animation from current pos. (D)"
-msgstr "Ludi elektitan animacion el aktuala pozicio. (D)"
-
 msgid "Animation position (in seconds)."
 msgstr "Pozicio de animacio (en sekundoj)."
 
@@ -2778,9 +3082,6 @@ msgstr "Inkludi gizmojn (3D)"
 
 msgid "Pin AnimationPlayer"
 msgstr "Fiksi AnimationPlayer"
-
-msgid "Error!"
-msgstr "Eraro!"
 
 msgid "Cross-Animation Blend Times"
 msgstr "Tempoj de trans-animacia mikso"
@@ -3273,24 +3574,6 @@ msgstr "Dekstre vaste"
 msgid "Full Rect"
 msgstr "Plene rektangula"
 
-msgid "Load Emission Mask"
-msgstr "Ŝargi emisian maskon"
-
-msgid "Emission Mask"
-msgstr "Emisia masko"
-
-msgid "Solid Pixels"
-msgstr "Solidaj rastumeroj"
-
-msgid "Border Pixels"
-msgstr "Rastumeroj de bordero"
-
-msgid "Directed Border Pixels"
-msgstr "Rastumeroj de direktinta bordero"
-
-msgid "Create Emission Points From Node"
-msgstr "Krei emisiajn punktojn el la nodo"
-
 msgid "Load Curve Preset"
 msgstr "Ŝargi antaŭagordon de kurbo"
 
@@ -3385,9 +3668,6 @@ msgstr "Instalitaj kromprogramoj:"
 msgid "Version"
 msgstr "Versio"
 
-msgid "Convert to CPUParticles2D"
-msgstr "Konverti al CPUParticles2D"
-
 msgid "Create Occluder Polygon"
 msgstr "Krei okludan plurlateron"
 
@@ -3413,9 +3693,6 @@ msgstr "Ne eblis krei iajn kolizifigurojn."
 msgid "Mesh is empty!"
 msgstr "Maŝo estas malplena!"
 
-msgid "Create Navigation Mesh"
-msgstr "Krei navigan maŝon"
-
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "La enhavita maŝo ne estas de tipo ArrayMesh (tabelo-maŝo)."
 
@@ -3424,6 +3701,9 @@ msgstr "UV-malvolvado malsukcesis, maŝo eble ne estas sternaĵa?"
 
 msgid "No mesh to debug."
 msgstr "Ne maŝo por sencimigo."
+
+msgid "Create Navigation Mesh"
+msgstr "Krei navigan maŝon"
 
 msgid "Create Outline"
 msgstr "Krei konturon"
@@ -3469,12 +3749,6 @@ msgstr "Sencimigo de UV-kanalo"
 msgid "Remove item %d?"
 msgstr "Forigi elementon %d?"
 
-msgid "Edit Poly"
-msgstr "Redakti plurlateron"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Redakti plurlateron (forigi punkton)"
-
 msgid ""
 "Click to toggle between visibility states.\n"
 "\n"
@@ -3497,6 +3771,27 @@ msgstr "Uzi kapton krade"
 
 msgid "Transform"
 msgstr "Transformo"
+
+msgid "Load Emission Mask"
+msgstr "Ŝargi emisian maskon"
+
+msgid "Solid Pixels"
+msgstr "Solidaj rastumeroj"
+
+msgid "Border Pixels"
+msgstr "Rastumeroj de bordero"
+
+msgid "Directed Border Pixels"
+msgstr "Rastumeroj de direktinta bordero"
+
+msgid "Emission Mask"
+msgstr "Emisia masko"
+
+msgid "Convert to CPUParticles2D"
+msgstr "Konverti al CPUParticles2D"
+
+msgid "Create Emission Points From Node"
+msgstr "Krei emisiajn punktojn el la nodo"
 
 msgid "Edit a Plugin"
 msgstr "Redakti kromprogramon"
@@ -3521,6 +3816,12 @@ msgstr "Aktivigi nun?"
 
 msgid "Create Polygon3D"
 msgstr "Krei Polygon3D"
+
+msgid "Edit Poly"
+msgstr "Redakti plurlateron"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Redakti plurlateron (forigi punkton)"
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Ne malfermeblas '%s'. La dosiero eble estis movita aŭ forigita."
@@ -3563,9 +3864,6 @@ msgstr "Sekva Skripto"
 
 msgid "Previous Script"
 msgstr "Antaŭa Skripto"
-
-msgid "File"
-msgstr "Dosiero"
 
 msgid "Open..."
 msgstr "Malfermi..."
@@ -3633,9 +3931,6 @@ msgstr "Celo"
 msgid "Go to Function"
 msgstr "Iri al funkcio"
 
-msgid "Lookup Symbol"
-msgstr "Ricevi simbolon"
-
 msgid "Pick Color"
 msgstr "Elekti koloron"
 
@@ -3681,6 +3976,9 @@ msgstr "Konverti krommarĝenon al taboj"
 msgid "Contextual Help"
 msgstr "Kunteksta Helpo"
 
+msgid "Lookup Symbol"
+msgstr "Ricevi simbolon"
+
 msgid "Close File"
 msgstr "Fermu Dosiero"
 
@@ -3692,6 +3990,18 @@ msgstr "Filtrili animacioj"
 
 msgid "Delete Animation"
 msgstr "Forigi animacion"
+
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "Ludi elektitan animacion retre el aktuala pozicio. (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "Ludi elektitan animacion retre el fino. (Majuskliga klavo+A)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "Ludi elektitan animacion el komenco. (Majuskliga klavo+D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "Ludi elektitan animacion el aktuala pozicio. (D)"
 
 msgid "Zoom Reset"
 msgstr "Rekomencigi zomon"
@@ -3764,17 +4074,8 @@ msgstr "Eraro dum malfermi la pakaĵan dosieron, ne de ZIP formato."
 msgid "The following files failed extraction from package:"
 msgstr "La jenaj dosieroj malplenumis malkompaktigi el la pakaĵo:"
 
-msgid "Import & Edit"
-msgstr "Enporti kaj redakti"
-
-msgid "Create & Edit"
-msgstr "Krei kaj editi"
-
 msgid "Install Project:"
 msgstr "Instali projekton:"
-
-msgid "Install & Edit"
-msgstr "Instali kaj editi"
 
 msgid "Project Name:"
 msgstr "Projekta nomo:"
@@ -4001,9 +4302,6 @@ msgstr "Envena RPC"
 
 msgid "Outgoing RPC"
 msgstr "Elira RPC"
-
-msgid "Network Profiler"
-msgstr "Reta Profililo"
 
 msgid "Delete Property?"
 msgstr "Forigi atributon?"
