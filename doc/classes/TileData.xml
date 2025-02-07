@@ -4,7 +4,7 @@
 		Settings for a single tile in a [TileSet].
 	</brief_description>
 	<description>
-		[TileData] object represents a single tile in a [TileSet]. It is usually edited using the tileset editor, but it can be modified at runtime using [method TileMap._tile_data_runtime_update].
+		[TileData] object represents a single tile in a [TileSet]. It is usually edited using the tileset editor, but it can be modified at runtime using [method TileMapLayer._tile_data_runtime_update].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -301,7 +301,7 @@
 			Vertical point of the tile used for determining y-sorted order.
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
-			Ordering index of this tile, relative to [TileMap].
+			Ordering index of this tile, relative to [TileMapLayer].
 		</member>
 	</members>
 	<signals>
