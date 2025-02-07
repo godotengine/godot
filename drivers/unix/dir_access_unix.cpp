@@ -434,7 +434,7 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	struct stat flags = {};
-	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
+	if ((lstat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
 
