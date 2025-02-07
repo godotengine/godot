@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
@@ -570,11 +571,18 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		PackedStringArray files = drag_data["files"];
 
 		for (const String &file : files) {
-			const String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			int idx_in_dir;
+			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			if (!dir) {
+				return false;
+			}
+			StringName ftype = dir->get_file_type(idx_in_dir);
+			String script_class = dir->get_file_resource_script_class(idx_in_dir);
+
 			for (String at : allowed_type.split(",")) {
 				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
-				if (!ClassDB::is_parent_class(ftype, at)) {
+				if (!ClassDB::is_parent_class(ftype, at) && !EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 					return false;
 				}
 			}
