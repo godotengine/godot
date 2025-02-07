@@ -133,6 +133,7 @@
 #include "editor/import/resource_importer_wav.h"
 #include "editor/import_dock.h"
 #include "editor/inspector_dock.h"
+#include "editor/resource_inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -1360,8 +1361,105 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
-	InspectorDock::get_singleton()->edit_resource(res);
+	if(ResourceInspectorDock::get_singleton()->edit_resource(res) != OK) {
+		InspectorDock::get_singleton()->edit_resource(res);
+	}	
 	return OK;
+}
+
+Error EditorNode::load_resource_in_new_inspector(const String &p_resource, bool p_ignore_broken_deps) {
+
+	if (ResourceInspectorDock::get_singleton()) {
+        return ResourceInspectorDock::get_singleton()->inspect_resource(p_resource);
+    }
+	// Ref<Resource> res = ResourceLoader::load(p_resource);
+
+	// ERR_FAIL_COND_V(res.is_null(), ERR_CANT_OPEN);
+
+	// if (ResourceInspectorDock::get_singleton()) {
+    //     return ResourceInspectorDock::get_singleton()->inspect_resource(p_resource);
+    // }
+
+	//  // Check if resource is already open in a tab
+    // if (resource_inspector_window) {
+    //     for (int i = 0; i < tab_container->get_tab_count(); i++) {
+    //         EditorInspector *inspector = Object::cast_to<EditorInspector>(tab_container->get_tab_control(i)->get_child(0));
+    //         if (inspector && inspector->get_edited_object() == res.ptr()) {
+    //             tab_container->set_current_tab(i); // Switch to existing tab
+    //             return OK;
+    //         }
+    //     }
+    // }
+
+    // // Check if window already exists
+    // if (!resource_inspector_window) {
+    //     // Create window first time
+    //     resource_inspector_window = memnew(Window);
+    //     resource_inspector_window->set_title(TTR("Resource Inspector"));
+    //     resource_inspector_window->set_size(Size2(400, 800));
+    //     resource_inspector_window->set_theme(theme);
+	// 	resource_inspector_window->set_flag(Window::FLAG_ALWAYS_ON_TOP, true); // Make it always on top
+        
+    //     VBoxContainer *vbox = memnew(VBoxContainer);
+    //     vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+    //     resource_inspector_window->add_child(vbox);
+
+    //     // Add TabContainer
+    //     tab_container = memnew(TabContainer);
+    //     tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	// 	tab_container->set_drag_to_rearrange_enabled(true);
+	// 	tab_container->get_tab_bar()->connect("gui_input", callable_mp(this, &EditorNode::_tab_gui_input));
+    //     vbox->add_child(tab_container);
+
+    //     resource_inspector_window->connect("close_requested", callable_mp(this, &EditorNode::_cleanup_resource_inspector_window));
+    //     add_child(resource_inspector_window);
+    //     resource_inspector_window->show();
+    // }
+
+    // // Add new tab with inspector
+    // VBoxContainer *tab_vbox = memnew(VBoxContainer);
+    // EditorInspector *inspector = memnew(EditorInspector);
+    // inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+    // inspector->set_use_doc_hints(true);
+    // inspector->set_hide_script(false);
+    // inspector->set_hide_metadata(false);
+    // inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
+    // inspector->set_property_name_style(EditorPropertyNameProcessor::get_default_inspector_style());
+    // inspector->set_use_filter(true);
+    // inspector->set_show_categories(true, true);
+    // inspector->set_autoclear(true);
+    // tab_vbox->add_child(inspector);
+
+    // String tab_title = p_resource.get_file();
+    // tab_container->add_child(tab_vbox);
+    // tab_container->set_tab_title(tab_container->get_tab_count() - 1, tab_title);
+
+    // inspector->edit(res.ptr());
+
+	return OK;
+}
+
+void EditorNode::_tab_gui_input(const Ref<InputEvent> &p_event) {
+    const Ref<InputEventMouseButton> mb = p_event;
+    if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+        int tab_clicked = tab_container->get_tab_idx_at_point(mb->get_position());
+        if (tab_clicked >= 0) {
+            Control *tab = Object::cast_to<Control>(tab_container->get_tab_control(tab_clicked));
+            if (tab) {
+				tab_container->remove_child(tab);
+                if (tab_container->get_tab_count() == 0) {
+                    _cleanup_resource_inspector_window();
+                }
+                
+            }
+        }
+    }
+}
+
+void EditorNode::_cleanup_resource_inspector_window() {
+	resource_inspector_window->queue_free();
+	resource_inspector_window = nullptr;
+	tab_container = nullptr;
 }
 
 void EditorNode::edit_node(Node *p_node) {
@@ -7656,6 +7754,7 @@ EditorNode::EditorNode() {
 
 	memnew(SceneTreeDock(scene_root, editor_selection, editor_data));
 	memnew(InspectorDock(editor_data));
+	memnew(ResourceInspectorDock());
 	memnew(ImportDock);
 	memnew(NodeDock);
 
@@ -7678,6 +7777,9 @@ EditorNode::EditorNode() {
 
 	// Inspector: Full height right.
 	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTR("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "AnimationTrackList");
+
+	// Resource Inspector: Full height right.
+	editor_dock_manager->add_dock(ResourceInspectorDock::get_singleton(), TTR("Resources"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "AnimationTrackList");
 
 	// Node: Full height right, behind Inspector.
 	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTR("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL, nullptr, "Object");
