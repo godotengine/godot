@@ -95,12 +95,13 @@
 # Ufuk SARIALTIN <sarialtinufuk@gmail.com>, 2023.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2023.
 # Ahmet <ahmet2006ozbay@gmail.com>, 2023.
+# ulk <ulk.info@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-05 14:04+0000\n"
+"PO-Revision-Date: 2024-12-29 05:09+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -109,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -275,6 +276,9 @@ msgstr "Altpencereler"
 
 msgid "Embed Subwindows"
 msgstr "Altpencereleri Göm"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Physics"
 msgstr "Fizik"
@@ -468,6 +472,21 @@ msgstr "Collada"
 msgid "Use Ambient"
 msgstr "Çevreyi Kullan"
 
+msgid "Input Devices"
+msgstr "Giriş Aygıtları"
+
+msgid "Pointing"
+msgstr "İşaretçi"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Uzun Basmayı Sağ Tıklama Olarak Algıla"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Kaydırma ve Ölçekleme Hareketlerini Etkileştir"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "Döner Giriş Kaydırma Ekseni"
+
 msgid "Low Processor Usage Mode"
 msgstr "Düşük İşlemci Kullanım Kipi"
 
@@ -506,9 +525,6 @@ msgstr "Dokunmayı Fareye Benzeşim Yap"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Fareden Dokunmaya Benzeşim Yap"
-
-msgid "Input Devices"
-msgstr "Giriş Aygıtları"
 
 msgid "Compatibility"
 msgstr "Uyumluluk"
@@ -852,29 +868,8 @@ msgstr "İstek Zaman Aşımı"
 msgid "Sync Breakpoints"
 msgstr "Kesme Noktalarını Eşle"
 
-msgid "FileSystem"
-msgstr "DosyaSistemi"
-
-msgid "File Server"
-msgstr "Dosya Sunucusu"
-
-msgid "Port"
-msgstr "Port"
-
-msgid "Password"
-msgstr "Şifre"
-
 msgid "Default Feature Profile"
 msgstr "Varsayılan Özellik Profili"
-
-msgid "Text Editor"
-msgstr "Metin Düzenleyici"
-
-msgid "Help"
-msgstr "Yardım"
-
-msgid "Sort Functions Alphabetically"
-msgstr "Fonksiyonları Alfabetik Olarak Sırala"
 
 msgid "Label"
 msgstr "Etiket"
@@ -897,17 +892,14 @@ msgstr "Anahtarlama"
 msgid "Deletable"
 msgstr "Silinebilir"
 
+msgid "Selectable"
+msgstr "Seçilebilir"
+
 msgid "Distraction Free Mode"
 msgstr "Dikkat Dağıtmayan Kip"
 
 msgid "Movie Maker Enabled"
 msgstr "Film Yapıcı Etkin"
-
-msgid "Theme"
-msgstr "Tema"
-
-msgid "Line Spacing"
-msgstr "Satır Aralığı"
 
 msgid "Base Type"
 msgstr "Temel Tip"
@@ -927,11 +919,14 @@ msgstr "Düzenleyici"
 msgid "Editor Language"
 msgstr "Düzenleyici Dili"
 
+msgid "Asset Library"
+msgstr "Varlık Kütüphanesi"
+
+msgid "Use Threads"
+msgstr "İş Parçacıklarını Kullan"
+
 msgid "Localize Settings"
 msgstr "Ayarları Yerelleştir"
-
-msgid "Dock Tab Style"
-msgstr "Yuva Sekmesi Stili"
 
 msgid "UI Layout Direction"
 msgstr "UI Yerleşim Düzeni Yönü"
@@ -948,12 +943,6 @@ msgstr "Düzenleyici Ekranı"
 msgid "Project Manager Screen"
 msgstr "Proje Yöneticisi Ekranı"
 
-msgid "Connection"
-msgstr "Bağlantı"
-
-msgid "Engine Version Update Mode"
-msgstr "Motor Sürümü Güncelleme Kipi"
-
 msgid "Use Embedded Menu"
 msgstr "Gömülü Menüyü Kullan"
 
@@ -963,12 +952,6 @@ msgstr "Özgün Dosya Diyaloglarını Kullan"
 msgid "Expand to Title"
 msgstr "Başlığa Genişlet"
 
-msgid "Main Font Size"
-msgstr "Ana Yazı Tipi Boyutu"
-
-msgid "Code Font Size"
-msgstr "Kod Yazı Tipi Boyutu"
-
 msgid "Code Font Contextual Ligatures"
 msgstr "Kod Yazı Tipi İçeriksel Bağlar"
 
@@ -977,12 +960,6 @@ msgstr "Kod Yazı Tipi Özel OpenType Özellikleri"
 
 msgid "Code Font Custom Variations"
 msgstr "Kod Yazı Tipi Özel Değişimler"
-
-msgid "Font Antialiasing"
-msgstr "Yazı Tipi Kenar Yumuşatması"
-
-msgid "Font Hinting"
-msgstr "Yazı Tipi Belirteci"
 
 msgid "Font Subpixel Positioning"
 msgstr "Yazı Tipi Alt-piksel Konumlandırması"
@@ -1014,9 +991,6 @@ msgstr "Ek Fare Butonları Geçmişte Gezinmek İçin"
 msgid "Save Each Scene on Quit"
 msgstr "Çıkışta Her Sahneyi Kaydet"
 
-msgid "Save on Focus Loss"
-msgstr "Odak Kaybında Kaydet"
-
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Onay Penceresinde Vazgeç ve Tamam Düğmeleri"
 
@@ -1032,29 +1006,29 @@ msgstr "Düşük İşlemci Kipi Uyku (µsec)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Odaklanılmamış Düşük İşlemci Kipi Uyku (µsec)"
 
-msgid "Import Resources When Unfocused"
-msgstr "Kaynakları Odaklı Değilken İçe Aktarın"
-
-msgid "V-Sync Mode"
-msgstr "Dikey-Eşleme Kipi"
-
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
+
+msgid "Editors"
+msgstr "Düzenleyiciler"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "Sahne Ağacı Kök Seçimini Göster"
+
+msgid "Derive Script Globals by Name"
+msgstr "Betik Genellerini İsmiyle Türet"
+
+msgid "Docks"
+msgstr "Yuvalar"
+
+msgid "Scene Tree"
+msgstr "Sahne Ağacı"
 
 msgid "Inspector"
 msgstr "Denetleyici"
 
-msgid "Max Array Dictionary Items per Page"
-msgstr "Sayfa Başına En Fazla Dizi Sözlüğü Öğesi"
-
 msgid "Show Low Level OpenType Features"
 msgstr "Düşük Seviye OpenType Özelliklerini Göster"
-
-msgid "Float Drag Speed"
-msgstr "Ondalıklı Sürükleme Hızı"
-
-msgid "Nested Color Mode"
-msgstr "İç İçe Renk Modu"
 
 msgid "Delimitate All Container and Resources"
 msgstr "Tüm Taşıyıcı ve Kaynakların Sınırlarını Belirle"
@@ -1083,35 +1057,11 @@ msgstr "Kaynakları Mevcut Denetleyicide Aç"
 msgid "Resources to Open in New Inspector"
 msgstr "Kaynakları Yeni Denetleyicide Aç"
 
-msgid "Default Color Picker Mode"
-msgstr "Varsayılan Renk Seçici Kipi"
-
-msgid "Default Color Picker Shape"
-msgstr "Varsayılan Renk Seçici Şekli"
-
-msgid "Follow System Theme"
-msgstr "Sistem Temasını Uygula"
-
-msgid "Preset"
-msgstr "Hazır Ayar"
-
-msgid "Spacing Preset"
-msgstr "Aralık Hazır Ayarı"
+msgid "Theme"
+msgstr "Tema"
 
 msgid "Icon and Font Color"
 msgstr "Simge ve Yazı Tipi Rengi"
-
-msgid "Base Color"
-msgstr "Temel Renk"
-
-msgid "Accent Color"
-msgstr "Vurgu Rengi"
-
-msgid "Use System Accent Color"
-msgstr "Sistem Vurgu Rengini Kullan"
-
-msgid "Contrast"
-msgstr "Karşıtlık"
 
 msgid "Draw Extra Borders"
 msgstr "Fazladan Kenarlar Çiz"
@@ -1140,17 +1090,11 @@ msgstr "Özel Tema"
 msgid "Touchscreen"
 msgstr "Dokunmatik Ekran"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "Kaydırma Çubuğu Dokunma Alanını Arttır"
-
-msgid "Enable Long Press as Right Click"
-msgstr "Uzun Basmayı Sağ Tıklama Olarak Algıla"
-
-msgid "Enable Pan and Scale Gestures"
-msgstr "Kaydırma ve Ölçekleme Hareketlerini Etkileştir"
-
 msgid "Scale Gizmo Handles"
 msgstr "Alet Tutamaçlarını Ölçekle"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "Kaydırma Çubuğu Dokunma Alanını Arttır"
 
 msgid "Scene Tabs"
 msgstr "Sahne Sekmeleri"
@@ -1170,32 +1114,11 @@ msgstr "Betik Düğmesini Göster"
 msgid "Restore Scenes on Load"
 msgstr "Açılışta Sahneleri Geri Yükle"
 
-msgid "Multi Window"
-msgstr "Çoklu Pencere"
-
-msgid "Restore Windows on Load"
-msgstr "Açılışta Pencereleri Geri Yükle"
-
-msgid "Maximize Window"
-msgstr "Pencereyi Tam Boy Yap"
+msgid "FileSystem"
+msgstr "DosyaSistemi"
 
 msgid "External Programs"
 msgstr "Harici Uygulamalar"
-
-msgid "Raster Image Editor"
-msgstr "Izgaralı Resim Düzenleyici"
-
-msgid "Vector Image Editor"
-msgstr "Vektör Resim Düzenleyici"
-
-msgid "Audio Editor"
-msgstr "Ses Düzenleyicisi"
-
-msgid "3D Model Editor"
-msgstr "3B Model Düzenleyici"
-
-msgid "Terminal Emulator"
-msgstr "Terminal Emülatörü"
 
 msgid "Terminal Emulator Flags"
 msgstr "Terminal Emülatörü Bayrakları"
@@ -1206,9 +1129,6 @@ msgstr "Klasörler"
 msgid "Autoscan Project Path"
 msgstr "Proje Yolunu Otomatik Tara"
 
-msgid "Default Project Path"
-msgstr "Varsayılan Proje Yolu"
-
 msgid "On Save"
 msgstr "Kaydetme Sırasında"
 
@@ -1217,6 +1137,15 @@ msgstr "İkili-tip Kaynakları Sıkıştır"
 
 msgid "Safe Save on Backup then Rename"
 msgstr "Yedeklerken Güvenli Kaydet, sonra Yeniden İsimlendir"
+
+msgid "File Server"
+msgstr "Dosya Sunucusu"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Şifre"
 
 msgid "File Dialog"
 msgstr "Dosya İleti Penceresi"
@@ -1229,6 +1158,9 @@ msgstr "Görüntüleme Kipi"
 
 msgid "Thumbnail Size"
 msgstr "Küçük Resim Boyutu"
+
+msgid "Max Results"
+msgstr "En Fazla Sonuç"
 
 msgid "Import"
 msgstr "İçe Aktar"
@@ -1260,11 +1192,8 @@ msgstr "OIDN"
 msgid "OIDN Denoise Path"
 msgstr "OIDN Gürültü Giderici Yolu"
 
-msgid "Docks"
-msgstr "Yuvalar"
-
-msgid "Scene Tree"
-msgstr "Sahne Ağacı"
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "İlişkili Animasyon İzlerini Silmeden Önce Sor"
 
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Oluştur İleti Penceresini Tam Boy Başlat"
@@ -1290,8 +1219,11 @@ msgstr "Otomatik Yenileme Aralığı"
 msgid "Subresource Hue Tint"
 msgstr "Alt Kaynak Renk Tonu"
 
-msgid "Color Theme"
-msgstr "Renk Teması"
+msgid "Text Editor"
+msgstr "Metin Düzenleyici"
+
+msgid "Line Spacing"
+msgstr "Satır Aralığı"
 
 msgid "Appearance"
 msgstr "Dış görünüş"
@@ -1352,9 +1284,6 @@ msgstr "Satırlar"
 
 msgid "Code Folding"
 msgstr "Kod Katlama"
-
-msgid "Word Wrap"
-msgstr "Kelime Kaydırma"
 
 msgid "Autowrap Mode"
 msgstr "Otomatik Kaydırma Kipi"
@@ -1434,6 +1363,12 @@ msgstr "Kayıt Sırasında Girintileri Dönüştür"
 msgid "Auto Reload Scripts on External Change"
 msgstr "Harici Bir Değişiklikte Betikleri Otomatik Yeniden Yükle"
 
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "Kaydederken Betikleri Otomatik Tekrar Yükle ve Çözümle"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "Sahne Değişiminde Baskın Betiği Aç"
+
 msgid "Script List"
 msgstr "Betik Listesi"
 
@@ -1442,6 +1377,30 @@ msgstr "Üyelere Genel Bakışı Göster"
 
 msgid "Sort Members Outline Alphabetically"
 msgstr "Üyelerin Anahatlarını Alfabetik Sırala"
+
+msgid "Script Temperature Enabled"
+msgstr "Betik Sıcaklığı Etkin"
+
+msgid "Script Temperature History Size"
+msgstr "Betik Sıcaklığı Geçmiş Boyutu"
+
+msgid "Group Help Pages"
+msgstr "Yardım Sayfalarını Grupla"
+
+msgid "Sort Scripts By"
+msgstr "Betikleri Şöyle Sırala"
+
+msgid "List Script Names As"
+msgstr "Betik İsimlerini Şöyle Listele"
+
+msgid "External"
+msgstr "Harici"
+
+msgid "Exec Path"
+msgstr "Uygulama Yolu"
+
+msgid "Exec Flags"
+msgstr "Uygulama Bayrakları"
 
 msgid "Completion"
 msgstr "Tamamlanma"
@@ -1479,23 +1438,17 @@ msgstr "Tek Tırnak İşareti Kullan"
 msgid "Colorize Suggestions"
 msgstr "Önerileri Renklendir"
 
+msgid "Use External Editor"
+msgstr "Harici Düzenleyici Kullan"
+
+msgid "Help"
+msgstr "Yardım"
+
 msgid "Show Help Index"
 msgstr "Yardım İndeksini Göster"
 
-msgid "Help Font Size"
-msgstr "Yardım Yazı Tipi Boyutu"
-
-msgid "Help Source Font Size"
-msgstr "Yardım Kaynak Yazı Tipi Boyutu"
-
-msgid "Help Title Font Size"
-msgstr "Yardım Başlık Yazı Tipi Boyutu"
-
-msgid "Class Reference Examples"
-msgstr "Sınıf Başvuru Örnekleri"
-
-msgid "Editors"
-msgstr "Düzenleyiciler"
+msgid "Sort Functions Alphabetically"
+msgstr "Fonksiyonları Alfabetik Olarak Sırala"
 
 msgid "Grid Map"
 msgstr "Izgara Haritası"
@@ -1503,11 +1456,8 @@ msgstr "Izgara Haritası"
 msgid "Pick Distance"
 msgstr "Mesafe Seç"
 
-msgid "Primary Grid Color"
-msgstr "Birincil Izgara Rengi"
-
-msgid "Secondary Grid Color"
-msgstr "İkincil Izgara Rengi"
+msgid "Palette Min Width"
+msgstr "Palet En Az Genişliği"
 
 msgid "Selection Box Color"
 msgstr "Seçim Kutusu Rengi"
@@ -1527,11 +1477,74 @@ msgstr "Eklem"
 msgid "AABB"
 msgstr "Eksen-Hizalı Sınırlayıcı Kutu"
 
-msgid "Primary Grid Steps"
-msgstr "Birincil Izgara Adımları"
+msgid "Stream Player 3D"
+msgstr "Akış Oynatıcı 3B"
 
-msgid "Grid Size"
-msgstr "Izgara Boyutu"
+msgid "Camera"
+msgstr "Kamera"
+
+msgid "Decal"
+msgstr "Çıkartma"
+
+msgid "Fog Volume"
+msgstr "Sis Hacmi"
+
+msgid "Particles"
+msgstr "Parçacıklar"
+
+msgid "Particle Attractor"
+msgstr "Parçacık Çekici"
+
+msgid "Particle Collision"
+msgstr "Parçacık Çarpışması"
+
+msgid "Joint Body A"
+msgstr "Eklem Beden A"
+
+msgid "Joint Body B"
+msgstr "Eklem Beden B"
+
+msgid "Lightmap Lines"
+msgstr "Işıkharitası Çizgileri"
+
+msgid "Lightprobe Lines"
+msgstr "Işıksondası Çizgileri"
+
+msgid "Occluder"
+msgstr "Perdeleyici"
+
+msgid "Reflection Probe"
+msgstr "Yansıma Sondası"
+
+msgid "Visibility Notifier"
+msgstr "Görünürlük Bildiricisi"
+
+msgid "Voxel GI"
+msgstr "Voxel GI"
+
+msgid "Path Tilt"
+msgstr "Yol Eğimi"
+
+msgid "Skeleton"
+msgstr "İskelet"
+
+msgid "Selected Bone"
+msgstr "Seçili İskelet"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Gizmo Settings"
+msgstr "Alet Ayarları"
+
+msgid "Bone Axis Length"
+msgstr "Kemik Eksen Uzunluğu"
+
+msgid "Bone Shape"
+msgstr "Kemik Şekli"
+
+msgid "Path 3D Tilt Disk Size"
+msgstr "3B Yolu Eğme Diski Boyutu"
 
 msgid "Grid Division Level Max"
 msgstr "En Fazla Izgara Bölme Seviyesi"
@@ -1551,41 +1564,17 @@ msgstr "Izgara XY Düzlemi"
 msgid "Grid YZ Plane"
 msgstr "Izgara YZ Düzlemi"
 
-msgid "Default FOV"
-msgstr "Varsayılan Görüş Alanı"
-
-msgid "Default Z Near"
-msgstr "Varsayılan Z Yakın"
-
-msgid "Default Z Far"
-msgstr "Varsayılan Z Uzak"
-
 msgid "Invert X Axis"
 msgstr "X Eksenini Çevir"
 
 msgid "Invert Y Axis"
 msgstr "Y Eksenini Çevir"
 
-msgid "Navigation Scheme"
-msgstr "Gezinti Düzeni"
-
-msgid "Zoom Style"
-msgstr "Yakınlaştırma Biçimi"
-
 msgid "Emulate Numpad"
 msgstr "Sayı Tuşlarına Benzeşim Yap"
 
 msgid "Emulate 3 Button Mouse"
 msgstr "3 Düğmeli Fareye Benzeşim Yap"
-
-msgid "Orbit Modifier"
-msgstr "Yörünge Değiştirici"
-
-msgid "Pan Modifier"
-msgstr "Kaydırma Değiştirici"
-
-msgid "Zoom Modifier"
-msgstr "Yakınlaştırma Değiştirici"
 
 msgid "Warped Mouse Panning"
 msgstr "Sürekli Fare Kaydırması"
@@ -1605,11 +1594,14 @@ msgstr "Öteleme Ataleti"
 msgid "Zoom Inertia"
 msgstr "Yakınlaştırma Ataleti"
 
+msgid "Show Viewport Rotation Gizmo"
+msgstr "Çerçevede Döndürme Aletini Göster"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "Çerçevede Gezinti Aletini Göster"
+
 msgid "Freelook"
 msgstr "Serbest Bakış"
-
-msgid "Freelook Navigation Scheme"
-msgstr "Serbest Bakış Gezinti Düzeni"
 
 msgid "Freelook Sensitivity"
 msgstr "Serbest Bakış Hassasiyeti"
@@ -1617,14 +1609,14 @@ msgstr "Serbest Bakış Hassasiyeti"
 msgid "Freelook Inertia"
 msgstr "Serbest Bakış Ataleti"
 
-msgid "Freelook Base Speed"
-msgstr "Serbest Bakış Taban Hızı"
-
-msgid "Freelook Activation Modifier"
-msgstr "Serbest Bakış Etkinleştirme Değiştirici"
-
 msgid "Freelook Speed Zoom Link"
 msgstr "Serbest Bakış Hızlı Yakınlaştırma Bağı"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Değiştirici Alet Boyutu"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Değiştirici Alet Şeffaflığı"
 
 msgid "Grid Color"
 msgstr "Izgara Rengi"
@@ -1662,17 +1654,26 @@ msgstr "Çerçeve Kenar Rengi"
 msgid "Use Integer Zoom by Default"
 msgstr "Varsayılan Olarak Tamsayı Yakınlaştırma Kullan"
 
+msgid "Bone Mapper"
+msgstr "Kemik Haritalayıcı"
+
+msgid "Handle Colors"
+msgstr "Renkleri Hallet"
+
+msgid "Unset"
+msgstr "Kaldır"
+
+msgid "Set"
+msgstr "Ayarla"
+
+msgid "Missing"
+msgstr "Eksik"
+
+msgid "Error"
+msgstr "Hata"
+
 msgid "Panning"
 msgstr "Kaydırma"
-
-msgid "2D Editor Panning Scheme"
-msgstr "2B Düzenleyici Kaydırma Düzeni"
-
-msgid "Sub Editors Panning Scheme"
-msgstr "Alt Düzenleyici Kaydırma Düzeni"
-
-msgid "Animation Editors Panning Scheme"
-msgstr "Animasyon Düzenleyici Kaydırma Düzeni"
 
 msgid "Simple Panning"
 msgstr "Basit Kaydırma"
@@ -1728,6 +1729,9 @@ msgstr "Açılışta Gölgelendiricileri Geri Yükle"
 msgid "Visual Editors"
 msgstr "Görsel Düzenleyiciler"
 
+msgid "Color Theme"
+msgstr "Renk Teması"
+
 msgid "Minimap Opacity"
 msgstr "Mini Harita Şeffaflığı"
 
@@ -1743,20 +1747,20 @@ msgstr "Görsel Gölgelendirici"
 msgid "Port Preview Size"
 msgstr "Port Önizleme Boyutu"
 
+msgid "Export"
+msgstr "Dışa Aktar"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
 msgid "Window Placement"
 msgstr "Pencere Yerleşimi"
 
-msgid "Rect"
-msgstr "Dikdörtgen"
-
 msgid "Rect Custom Position"
 msgstr "Dikdörtgen Özel Konumu"
-
-msgid "Screen"
-msgstr "Ekran"
-
-msgid "Android Window"
-msgstr "Android Penceresi"
 
 msgid "Auto Save"
 msgstr "Otomatik Kaydet"
@@ -1764,20 +1768,8 @@ msgstr "Otomatik Kaydet"
 msgid "Save Before Running"
 msgstr "Çalıştırmadan Önce Kaydet"
 
-msgid "Bottom Panel"
-msgstr "Alt Panel"
-
-msgid "Action on Play"
-msgstr "Oynatma Eylemi"
-
-msgid "Action on Stop"
-msgstr "Durdurma Eylemi"
-
 msgid "Output"
 msgstr "Çıktı"
-
-msgid "Font Size"
-msgstr "Yazı Tipi Boyutu"
 
 msgid "Always Clear Output on Play"
 msgstr "Oynatıldığında Çıktıyı Her Zaman Temizle"
@@ -1788,14 +1780,8 @@ msgstr "En Fazla Çizgi Sayısı"
 msgid "Platforms"
 msgstr "Platformlar"
 
-msgid "Linuxbsd"
-msgstr "Linuxbsd"
-
 msgid "Prefer Wayland"
 msgstr "Wayland Tercih Et"
-
-msgid "Network Mode"
-msgstr "Ağ Kipi"
 
 msgid "HTTP Proxy"
 msgstr "HTTP Vekil"
@@ -1812,9 +1798,6 @@ msgstr "Uzak Ana Bilgisayar"
 msgid "Debugger"
 msgstr "Hata Ayıklayıcı"
 
-msgid "Auto Switch to Remote Scene Tree"
-msgstr "Uzak Sahne Ağacına Otomatik Geçiş"
-
 msgid "Profiler Frame History Size"
 msgstr "Profil Oluşturucu Kare Geçmişi Boyutu"
 
@@ -1827,8 +1810,17 @@ msgstr "Uzak Sahne Ağacı Yenileme Sıklığı"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Uzak Denetleme Yenileme Aralığı"
 
-msgid "Profile Native Calls"
-msgstr "Profil Özgün Çağrıları"
+msgid "Version Control"
+msgstr "Sürüm Kontrol"
+
+msgid "Username"
+msgstr "Kullanıcı İsmi"
+
+msgid "SSH Public Key Path"
+msgstr "SSH Genel Anahtar Yolu"
+
+msgid "SSH Private Key Path"
+msgstr "SSH Özel Anahtar Yolu"
 
 msgid "Input"
 msgstr "Giriş"
@@ -1844,12 +1836,6 @@ msgstr "Proje Yöneticisi"
 
 msgid "Sorting Order"
 msgstr "Sıralama Düzeni"
-
-msgid "Directory Naming Convention"
-msgstr "Dizin Adlandırma Geleneği"
-
-msgid "Default Renderer"
-msgstr "Varsayılan İşleyici"
 
 msgid "Highlighting"
 msgstr "Vurgulama"
@@ -2046,15 +2032,6 @@ msgstr "S3TC BPTC"
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
 
-msgid "Export"
-msgstr "Dışa Aktar"
-
-msgid "SSH"
-msgstr "SSH"
-
-msgid "SCP"
-msgstr "SCP"
-
 msgid "Export Path"
 msgstr "Dışa Aktarım Yolu"
 
@@ -2112,9 +2089,6 @@ msgstr "Konum İzlerini Normalize Et"
 msgid "Reset All Bone Poses After Import"
 msgstr "İçe Aktarım Sonrası Tüm Kemik Pozlarını Sıfırla"
 
-msgid "Overwrite Axis"
-msgstr "Eksenlerin Üzerine Yaz"
-
 msgid "Keep Global Rest on Leftovers"
 msgstr "Genel Rahat Duruşu Artıkların üzerinde Tut"
 
@@ -2145,14 +2119,14 @@ msgstr "Haritalanmamış Kemikler"
 msgid "Generate Tangents"
 msgstr "Teğetler Oluştur"
 
+msgid "Generate LODs"
+msgstr "Detay Seviyeleri Oluştur"
+
 msgid "Scale Mesh"
 msgstr "Örgüyü Ölçekle"
 
 msgid "Offset Mesh"
 msgstr "Örgü Kaydırma"
-
-msgid "Optimize Mesh"
-msgstr "Örgüyü En İyileştir"
 
 msgid "Force Disable Mesh Compression"
 msgstr "Örgü Sıkıştırmayı Devre Dışı Bırakmayı Zorla"
@@ -2259,9 +2233,6 @@ msgstr "Yükseklik"
 msgid "Radius"
 msgstr "Yarıçap"
 
-msgid "Occluder"
-msgstr "Perdeleyici"
-
 msgid "Simplification Distance"
 msgstr "Basitleştirme Mesafesi"
 
@@ -2279,9 +2250,6 @@ msgstr "UV Işık-haritası"
 
 msgid "LODs"
 msgstr "Detay Seviyeleri (LOD)"
-
-msgid "Normal Split Angle"
-msgstr "Normal Ayırma Açısı"
 
 msgid "Normal Merge Angle"
 msgstr "Normal Birleştirme Açısı"
@@ -2360,9 +2328,6 @@ msgstr "Örgüler"
 
 msgid "Ensure Tangents"
 msgstr "Teğetlerden Emin Ol"
-
-msgid "Generate LODs"
-msgstr "Detay Seviyeleri Oluştur"
 
 msgid "Create Shadow Meshes"
 msgstr "Gölge Örgüleri Oluştur"
@@ -2620,12 +2585,6 @@ msgstr "Döngü Başlangıcı"
 msgid "Loop End"
 msgstr "Döngü Sonu"
 
-msgid "Asset Library"
-msgstr "Varlık Kütüphanesi"
-
-msgid "Use Threads"
-msgstr "İş Parçacıklarını Kullan"
-
 msgid "Available URLs"
 msgstr "Kullanılabilir URL'ler"
 
@@ -2634,132 +2593,6 @@ msgstr "Geçerli Grup İndeksi"
 
 msgid "Current Bone Idx"
 msgstr "Geçerli Kemik İndeksi"
-
-msgid "Bone Mapper"
-msgstr "Kemik Haritalayıcı"
-
-msgid "Handle Colors"
-msgstr "Renkleri Hallet"
-
-msgid "Unset"
-msgstr "Kaldır"
-
-msgid "Set"
-msgstr "Ayarla"
-
-msgid "Missing"
-msgstr "Eksik"
-
-msgid "Error"
-msgstr "Hata"
-
-msgid "Stream Player 3D"
-msgstr "Akış Oynatıcı 3B"
-
-msgid "Camera"
-msgstr "Kamera"
-
-msgid "Particles"
-msgstr "Parçacıklar"
-
-msgid "Decal"
-msgstr "Çıkartma"
-
-msgid "Fog Volume"
-msgstr "Sis Hacmi"
-
-msgid "Particle Attractor"
-msgstr "Parçacık Çekici"
-
-msgid "Particle Collision"
-msgstr "Parçacık Çarpışması"
-
-msgid "Joint Body A"
-msgstr "Eklem Beden A"
-
-msgid "Joint Body B"
-msgstr "Eklem Beden B"
-
-msgid "Lightmap Lines"
-msgstr "Işıkharitası Çizgileri"
-
-msgid "Lightprobe Lines"
-msgstr "Işıksondası Çizgileri"
-
-msgid "Reflection Probe"
-msgstr "Yansıma Sondası"
-
-msgid "Visibility Notifier"
-msgstr "Görünürlük Bildiricisi"
-
-msgid "Voxel GI"
-msgstr "Voxel GI"
-
-msgid "Manipulator Gizmo Size"
-msgstr "Değiştirici Alet Boyutu"
-
-msgid "Manipulator Gizmo Opacity"
-msgstr "Değiştirici Alet Şeffaflığı"
-
-msgid "Show Viewport Rotation Gizmo"
-msgstr "Çerçevede Döndürme Aletini Göster"
-
-msgid "Show Viewport Navigation Gizmo"
-msgstr "Çerçevede Gezinti Aletini Göster"
-
-msgid "Gizmo Settings"
-msgstr "Alet Ayarları"
-
-msgid "Path 3D Tilt Disk Size"
-msgstr "3B Yolu Eğme Diski Boyutu"
-
-msgid "Path Tilt"
-msgstr "Yol Eğimi"
-
-msgid "Auto Reload and Parse Scripts on Save"
-msgstr "Kaydederken Betikleri Otomatik Tekrar Yükle ve Çözümle"
-
-msgid "Open Dominant Script on Scene Change"
-msgstr "Sahne Değişiminde Baskın Betiği Aç"
-
-msgid "External"
-msgstr "Harici"
-
-msgid "Use External Editor"
-msgstr "Harici Düzenleyici Kullan"
-
-msgid "Exec Path"
-msgstr "Uygulama Yolu"
-
-msgid "Script Temperature Enabled"
-msgstr "Betik Sıcaklığı Etkin"
-
-msgid "Script Temperature History Size"
-msgstr "Betik Sıcaklığı Geçmiş Boyutu"
-
-msgid "Group Help Pages"
-msgstr "Yardım Sayfalarını Grupla"
-
-msgid "Sort Scripts By"
-msgstr "Betikleri Şöyle Sırala"
-
-msgid "List Script Names As"
-msgstr "Betik İsimlerini Şöyle Listele"
-
-msgid "Exec Flags"
-msgstr "Uygulama Bayrakları"
-
-msgid "Skeleton"
-msgstr "İskelet"
-
-msgid "Selected Bone"
-msgstr "Seçili İskelet"
-
-msgid "Bone Axis Length"
-msgstr "Kemik Eksen Uzunluğu"
-
-msgid "Bone Shape"
-msgstr "Kemik Şekli"
 
 msgid "ID"
 msgstr "ID"
@@ -2796,18 +2629,6 @@ msgstr "Kare Sayısı"
 
 msgid "Duration"
 msgstr "Süre"
-
-msgid "Version Control"
-msgstr "Sürüm Kontrol"
-
-msgid "Username"
-msgstr "Kullanıcı İsmi"
-
-msgid "SSH Public Key Path"
-msgstr "SSH Genel Anahtar Yolu"
-
-msgid "SSH Private Key Path"
-msgstr "SSH Özel Anahtar Yolu"
 
 msgid "Main Run Args"
 msgstr "Oynatma Ana Girdi Değişkenleri"
@@ -2851,20 +2672,29 @@ msgstr "Eklenti İsmi"
 msgid "Autoload on Startup"
 msgstr "Başlangıçta Otomatik Yükle"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Sahne Ağacı Kök Seçimini Göster"
-
-msgid "Derive Script Globals by Name"
-msgstr "Betik Genellerini İsmiyle Türet"
-
-msgid "Ask Before Deleting Related Animation Tracks"
-msgstr "İlişkili Animasyon İzlerini Silmeden Önce Sor"
-
 msgid "Use Favorites Root Selection"
 msgstr "Sık Kullanılan Kök Seçimini Kullan"
 
 msgid "Flush stdout on Print"
 msgstr "Print kullanınca stdout'u temizle"
+
+msgid "Low Processor Mode"
+msgstr "Düşük İşlemci Kipi"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "FPS'yi Yazdır"
+
+msgid "Print GPU Profile"
+msgstr "GPU Profilini Yazdır"
+
+msgid "Verbose stdout"
+msgstr "Ayrıntılı stdout"
+
+msgid "Physics Interpolation"
+msgstr "Fizik Ara Değerleme"
 
 msgid "Max Chars per Second"
 msgstr "Saniyede En Fazla Karakter"
@@ -2911,9 +2741,6 @@ msgstr "Son Çare Angle'a Geri Dön"
 msgid "Fallback to Native"
 msgstr "Son Çare Yerel'e Geri Dön"
 
-msgid "Fallback to Gles"
-msgstr "Son Çare Gles'e Geri Dön"
-
 msgid "Force Angle on Devices"
 msgstr "Cihazlarda Angle kullanımını Zorla"
 
@@ -2953,26 +2780,14 @@ msgstr "Elde-taşınır"
 msgid "Orientation"
 msgstr "Yönelim"
 
+msgid "V-Sync Mode"
+msgstr "Dikey-Eşleme Kipi"
+
 msgid "Output Latency"
 msgstr "Çıkış Gecikmesi"
 
-msgid "stdout"
-msgstr "stdout"
-
-msgid "Print FPS"
-msgstr "FPS'yi Yazdır"
-
-msgid "Print GPU Profile"
-msgstr "GPU Profilini Yazdır"
-
-msgid "Verbose stdout"
-msgstr "Ayrıntılı stdout"
-
 msgid "Frame Delay Msec"
 msgstr "Kare Gecikmesi Msn"
-
-msgid "Low Processor Mode"
-msgstr "Düşük İşlemci Kipi"
 
 msgid "Allow High Refresh Rate"
 msgstr "Yüksek Tazeleme Oranına İzin Ver"
@@ -3057,15 +2872,6 @@ msgstr "macOS Özgün Simgesi"
 
 msgid "Windows Native Icon"
 msgstr "Windows Özgün Simgesi"
-
-msgid "Pointing"
-msgstr "İşaretçi"
-
-msgid "Android"
-msgstr "Android"
-
-msgid "Rotary Input Scroll Axis"
-msgstr "Döner Giriş Kaydırma Ekseni"
 
 msgid "Text Driver"
 msgstr "Metin Sürücüsü"
@@ -3214,9 +3020,6 @@ msgstr "Boştaki Kenarlar"
 msgid "Operation"
 msgstr "İşlem"
 
-msgid "Snap"
-msgstr "Tutunma"
-
 msgid "Calculate Tangents"
 msgstr "Teğetleri Hesapla"
 
@@ -3306,9 +3109,6 @@ msgstr "Yol U Mesafesi"
 
 msgid "Path Joined"
 msgstr "Yol Birleşti"
-
-msgid "CSG"
-msgstr "CSG"
 
 msgid "Importer"
 msgstr "İçe Aktarıcı"
@@ -3673,15 +3473,6 @@ msgstr "S Sarması"
 msgid "Wrap T"
 msgstr "T Sarması"
 
-msgid "Palette Min Width"
-msgstr "Palet En Az Genişliği"
-
-msgid "Preview Size"
-msgstr "Önizleme Boyutu"
-
-msgid "Editor Side"
-msgstr "Düzenleyici Kenarı"
-
 msgid "Mesh Library"
 msgstr "Örgü Kütüphanesi"
 
@@ -3709,11 +3500,11 @@ msgstr "Öncelik"
 msgid "Bake Navigation"
 msgstr "Gezintiyi Pişir"
 
-msgid "Initial Clip"
-msgstr "Başlangıç Parçası"
-
 msgid "Clip Count"
 msgstr "Parça Sayısı"
+
+msgid "Initial Clip"
+msgstr "Başlangıç Parçası"
 
 msgid "Shuffle"
 msgstr "Karıştır"
@@ -3949,9 +3740,6 @@ msgstr "Eylem Türü"
 msgid "Toplevel Paths"
 msgstr "Üstseviye Yollar"
 
-msgid "Paths"
-msgstr "Yollar"
-
 msgid "Interaction Profile Path"
 msgstr "Etkileşim Profili Yolu"
 
@@ -4096,21 +3884,6 @@ msgstr "Etkinleştirilmiş Özellikler"
 msgid "Visibility State"
 msgstr "Görünebilirlik Durumu"
 
-msgid "Java SDK Path"
-msgstr "Java SDK Yolu"
-
-msgid "Android SDK Path"
-msgstr "Android SDK Yolu"
-
-msgid "Debug Keystore"
-msgstr "Hata Ayıklama Anahtar deposu"
-
-msgid "Debug Keystore User"
-msgstr "Hata Ayıklama Anahtar deposu Kullanıcısı"
-
-msgid "Debug Keystore Pass"
-msgstr "Hata Ayıklama Anahtar deposu Şifresi"
-
 msgid "Force System User"
 msgstr "Sistem Kullanıcısına Zorla"
 
@@ -4225,6 +3998,9 @@ msgstr "XR Özellikleri"
 msgid "XR Mode"
 msgstr "XR Kipi"
 
+msgid "Screen"
+msgstr "Ekran"
+
 msgid "Immersive Mode"
 msgstr "Yoğun Etkili Kip"
 
@@ -4273,30 +4049,6 @@ msgstr "iOS Dağıtım"
 msgid "Icons"
 msgstr "Simgeler"
 
-msgid "iPhone 120 X 120"
-msgstr "iPhone 120 X 120"
-
-msgid "iPhone 180 X 180"
-msgstr "iPhone 180 X 180"
-
-msgid "iPad 76 X 76"
-msgstr "iPad 76 X 76"
-
-msgid "iPad 152 X 152"
-msgstr "iPad 152 X 152"
-
-msgid "iPad 167 X 167"
-msgstr "iPad 167 X 167"
-
-msgid "App Store 1024 X 1024"
-msgstr "App Store 1024 X 1024"
-
-msgid "Spotlight 40 X 40"
-msgstr "Spot ışığı 40 X 40"
-
-msgid "Spotlight 80 X 80"
-msgstr "Spot ışığı 80 X 80"
-
 msgid "Settings 58 X 58"
 msgstr "Ayarlar 58 X 58"
 
@@ -4309,23 +4061,41 @@ msgstr "Bildirim 40 X 40"
 msgid "Notification 60 X 60"
 msgstr "Bildirim 60 X 60"
 
+msgid "Spotlight 80 X 80"
+msgstr "Spot ışığı 80 X 80"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
 msgid "App Store Team ID"
 msgstr "Uygulama Mağazası Takım Kimliği"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "Önhazırlık Profili Benzersiz Kimliği Hata Ayıklama"
-
-msgid "Code Sign Identity Debug"
-msgstr "Kod İmzası Kimliği Hata Ayıklama"
 
 msgid "Export Method Debug"
 msgstr "Dışa Aktarma Yöntemi Hata Ayıklama"
 
-msgid "Provisioning Profile UUID Release"
-msgstr "Ön hazırlık Profil Benzersiz Kimliği Yayınlama"
+msgid "Code Sign Identity Debug"
+msgstr "Kod İmzası Kimliği Hata Ayıklama"
 
 msgid "Code Sign Identity Release"
 msgstr "Kod İmzalama Kimliği Yayınlama"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Önhazırlık Profili Benzersiz Kimliği Hata Ayıklama"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Ön hazırlık Profil Benzersiz Kimliği Yayınlama"
 
 msgid "Export Method Release"
 msgstr "Dışa Aktarma Yöntemi Yayınlama"
@@ -4357,17 +4127,17 @@ msgstr "Yalnızca Projeyi Dışa Aktar"
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Eski Dışa Aktarma Dosyalarını Koşulsuz Sil"
 
-msgid "Generate Simulator Library If Missing"
-msgstr "Eksik ise, Simülatör Kitaplığı Oluştur"
+msgid "Entitlements"
+msgstr "Yetkilendirmeler"
+
+msgid "Push Notifications"
+msgstr "Anlık Bildirimler"
 
 msgid "Capabilities"
 msgstr "Yetenekler"
 
 msgid "Access Wi-Fi"
 msgstr "Wi-Fi'ye Eriş"
-
-msgid "Push Notifications"
-msgstr "Anlık Bildirimler"
 
 msgid "Performance Gaming Tier"
 msgstr "Performans Oyun Sınıfı"
@@ -4447,20 +4217,11 @@ msgstr "Çalıştırma Betiği"
 msgid "Cleanup Script"
 msgstr "Temizleme Betiği"
 
-msgid "macOS"
-msgstr "macOS"
-
-msgid "rcodesign"
-msgstr "rcodesign"
-
 msgid "Distribution Type"
 msgstr "Dağıtım Türü"
 
 msgid "Copyright Localized"
 msgstr "Telif Hakkı Yerelleştirilmiş"
-
-msgid "Min macOS Version"
-msgstr "En Küçük macOS Sürümü"
 
 msgid "Export Angle"
 msgstr "Açıyı Dışa Aktar"
@@ -4509,9 +4270,6 @@ msgstr "Sertifika Şifresi"
 
 msgid "Provisioning Profile"
 msgstr "Ön Hazırlık Profili"
-
-msgid "Entitlements"
-msgstr "Yetkilendirmeler"
 
 msgid "Custom File"
 msgstr "Özel Dosya"
@@ -4729,21 +4487,6 @@ msgstr "Simge 180 X 180"
 msgid "Icon 512 X 512"
 msgstr "Simge 512 X 512"
 
-msgid "Windows"
-msgstr "Windows"
-
-msgid "rcedit"
-msgstr "rcedit"
-
-msgid "signtool"
-msgstr "signtool"
-
-msgid "osslsigncode"
-msgstr "osslsigncode"
-
-msgid "wine"
-msgstr "wine"
-
 msgid "Identity Type"
 msgstr "Kimlik Türü"
 
@@ -4811,7 +4554,7 @@ msgid "Volume dB"
 msgstr "Ses Seviyesi dB"
 
 msgid "Pitch Scale"
-msgstr "Atım Ölçeği"
+msgstr "Perde Ölçeği"
 
 msgid "Playing"
 msgstr "Oynatılıyor"
@@ -4845,6 +4588,9 @@ msgstr "Oynatma Türü"
 
 msgid "Copy Mode"
 msgstr "Kopyalama Kipi"
+
+msgid "Rect"
+msgstr "Dikdörtgen"
 
 msgid "Anchor Mode"
 msgstr "Çapa Kipi"
@@ -5110,14 +4856,11 @@ msgstr "Miktar Oranı"
 msgid "Sub Emitter"
 msgstr "Alt Yayıcı"
 
-msgid "Process Material"
-msgstr "İşleme Malzemesi"
+msgid "Interp to End"
+msgstr "Sona Ara Değerle"
 
 msgid "Interpolate"
 msgstr "Ara Değerle"
-
-msgid "Interp to End"
-msgstr "Sona Ara Değerle"
 
 msgid "Base Size"
 msgstr "Temel Boyut"
@@ -5133,6 +4876,9 @@ msgstr "Bölümler"
 
 msgid "Section Subdivisions"
 msgstr "Bölüm Altbölümleri"
+
+msgid "Process Material"
+msgstr "İşleme Malzemesi"
 
 msgid "Editor Only"
 msgstr "Sadece Düzenleyici"
@@ -5651,9 +5397,6 @@ msgstr "Dönme Kuvveti"
 msgid "Margin"
 msgstr "Kenar Boşluğu"
 
-msgid "Max Results"
-msgstr "En Fazla Sonuç"
-
 msgid "Constant Linear Velocity"
 msgstr "Sabit Doğrusal Hız"
 
@@ -6000,6 +5743,9 @@ msgstr "Anahat Ton Değişimi"
 msgid "Font"
 msgstr "Yazı Tipi"
 
+msgid "Font Size"
+msgstr "Yazı Tipi Boyutu"
+
 msgid "Horizontal Alignment"
 msgstr "Yatay Hizalama"
 
@@ -6105,9 +5851,6 @@ msgstr "Noktasal"
 msgid "Angle Attenuation"
 msgstr "Açısal Zayıflama"
 
-msgid "Light Texture"
-msgstr "Işık Dokusu"
-
 msgid "Quality"
 msgstr "Kalite"
 
@@ -6161,6 +5904,12 @@ msgstr "Altbölüm"
 
 msgid "Light Data"
 msgstr "Işık Verisi"
+
+msgid "Target Node"
+msgstr "Hedef Düğüm"
+
+msgid "From"
+msgstr "Şuradan"
 
 msgid "Surface Material Override"
 msgstr "Yüzey Malzemesi Üzerine Yaz"
@@ -6507,8 +6256,8 @@ msgstr "Ortamsal"
 msgid "Color Energy"
 msgstr "Renk Enerjisi"
 
-msgid "Bones"
-msgstr "Kemikler"
+msgid "Profile"
+msgstr "Profil"
 
 msgid "Motion Scale"
 msgstr "Hareket Ölçeği"
@@ -6545,9 +6294,6 @@ msgstr "Mıknatıs Kullan"
 
 msgid "Magnet"
 msgstr "Mıknatıs"
-
-msgid "Target Node"
-msgstr "Hedef Düğüm"
 
 msgid "Min Distance"
 msgstr "En Az Mesafe"
@@ -6593,6 +6339,9 @@ msgstr "Yavaşlatma Katsayısı"
 
 msgid "Drag Coefficient"
 msgstr "Sürükleme Katsayısı"
+
+msgid "Position Offset"
+msgstr "Konum Kayması"
 
 msgid "Track Physics Step"
 msgstr "Fizik Adımını Takip Et"
@@ -7167,14 +6916,8 @@ msgstr "MiniHarita Düğmesini Göster"
 msgid "Show Arrange Button"
 msgstr "Düzenle Düğmesini Göster"
 
-msgid "Position Offset"
-msgstr "Konum Kayması"
-
 msgid "Draggable"
 msgstr "Sürüklenebilir"
-
-msgid "Selectable"
-msgstr "Seçilebilir"
 
 msgid "Selected"
 msgstr "Seçili"
@@ -7795,9 +7538,6 @@ msgstr "Grup Sırası"
 msgid "Messages"
 msgstr "İletiler"
 
-msgid "Physics Interpolation"
-msgstr "Fizik Ara Değerleme"
-
 msgid "Auto Translate"
 msgstr "Otomatik Taşı"
 
@@ -7827,6 +7567,9 @@ msgstr "Şekil Rengi"
 
 msgid "Contact Color"
 msgstr "Bağlantı Rengi"
+
+msgid "Paths"
+msgstr "Yollar"
 
 msgid "Geometry Color"
 msgstr "Geometri Rengi"
@@ -7878,6 +7621,9 @@ msgstr "Detay Seviyesi Değişimi"
 
 msgid "Threshold Pixels"
 msgstr "Eşik Pikselleri"
+
+msgid "Snap"
+msgstr "Tutunma"
 
 msgid "Snap 2D Transforms to Pixel"
 msgstr "2B Dönüşümleri Piksellere Tuttur"
@@ -7971,6 +7717,9 @@ msgstr "Ölçekleme 3B Ölçeği"
 
 msgid "Texture Mipmap Bias"
 msgstr "Doku Mipharitası Sapması"
+
+msgid "Anisotropic Filtering Level"
+msgstr "Eşyönsüz Filtreleme Seviyesi"
 
 msgid "FSR Sharpness"
 msgstr "FSR Keskinliği"
@@ -8107,6 +7856,12 @@ msgstr "3B Gezinti"
 msgid "Segments"
 msgstr "Dilimler"
 
+msgid "Sampling"
+msgstr "Örnekleme"
+
+msgid "Partition Type"
+msgstr "Bölüntü Sayısı"
+
 msgid "Parsed Geometry Type"
 msgstr "Çözümlenmiş Geometri Türü"
 
@@ -8238,18 +7993,6 @@ msgstr "Araziler"
 
 msgid "Custom Data"
 msgstr "Özel Veri"
-
-msgid "Tile Proxies"
-msgstr "Karo Vekilleri"
-
-msgid "Source Level"
-msgstr "Kaynak Seviyesi"
-
-msgid "Coords Level"
-msgstr "Konum Seviyesi"
-
-msgid "Alternative Level"
-msgstr "Diğer Seviye"
 
 msgid "Tile Shape"
 msgstr "Karo Şekli"
@@ -8499,9 +8242,6 @@ msgstr "Karıştırma Oranı"
 
 msgid "Stereo"
 msgstr "Çiftli Ses"
-
-msgid "Profile"
-msgstr "Profil"
 
 msgid "Bonemap"
 msgstr "Kemikharitası"
@@ -8827,6 +8567,9 @@ msgstr "Ayarlamalar"
 msgid "Brightness"
 msgstr "Aydınlık"
 
+msgid "Contrast"
+msgstr "Karşıtlık"
+
 msgid "Saturation"
 msgstr "Doygunluk"
 
@@ -8877,9 +8620,6 @@ msgstr "Kaydırmalar"
 
 msgid "Use HDR"
 msgstr "HDR Kullan"
-
-msgid "From"
-msgstr "Şuradan"
 
 msgid "To"
 msgstr "Şuraya"
@@ -9010,9 +8750,6 @@ msgstr "Dünya Üç-düzlemi"
 msgid "UV2"
 msgstr "UV2"
 
-msgid "Sampling"
-msgstr "Örnekleme"
-
 msgid "Shadows"
 msgstr "Gölgeler"
 
@@ -9091,9 +8828,6 @@ msgstr "Örnek Sayısı"
 msgid "Visible Instance Count"
 msgstr "Görünür Örnekleme Sayısı"
 
-msgid "Partition Type"
-msgstr "Bölüntü Sayısı"
-
 msgid "Source Group Name"
 msgstr "Kaynak Grup İsmi"
 
@@ -9138,9 +8872,6 @@ msgstr "AABB Pişirme"
 
 msgid "Baking AABB Offset"
 msgstr "AABB Kayması Pişirme"
-
-msgid "Bundled"
-msgstr "Paketlenmiş"
 
 msgid "Damping as Friction"
 msgstr "Sönümlemeyi Sürtünme Olarak Al"
@@ -9363,9 +9094,6 @@ msgstr "Önizleme için Çıkış Portu"
 
 msgid "Modes"
 msgstr "Kipler"
-
-msgid "Varyings"
-msgstr "Değişenler"
 
 msgid "Input Name"
 msgstr "Giriş İsmi"
@@ -9808,6 +9536,9 @@ msgstr "Yeniden Boyutlandırıcı Rengi"
 msgid "Port H Offset"
 msgstr "Port Yatay Kayması"
 
+msgid "Hovered"
+msgstr "Üzerine Gelindi"
+
 msgid "Selected Focus"
 msgstr "Seçili Odak"
 
@@ -9855,6 +9586,9 @@ msgstr "Başlık Düğmesi Yazı Tipi Boyutu"
 
 msgid "Title Button Color"
 msgstr "Başlık Düğmesi Rengi"
+
+msgid "Font Hovered Color"
+msgstr "Yazı Tipi Üzerine Gelindi Rengi"
 
 msgid "Guide Color"
 msgstr "Rehber Rengi"
@@ -9936,12 +9670,6 @@ msgstr "Kaydırma Çubuğu Dikey Ayırım"
 
 msgid "Icon Margin"
 msgstr "Simge Kenar Boşluğu"
-
-msgid "Font Hovered Color"
-msgstr "Yazı Tipi Üzerine Gelindi Rengi"
-
-msgid "Hovered"
-msgstr "Üzerine Gelindi"
 
 msgid "Tab Selected"
 msgstr "Sekme Seçildi"
@@ -10035,9 +9763,6 @@ msgstr "Seçici İmleci"
 
 msgid "Color Hue"
 msgstr "Renk Tonu"
-
-msgid "Color Okhsl Hue"
-msgstr "Renk Okhsl Tonu"
 
 msgid "BG"
 msgstr "BG"
@@ -10839,9 +10564,6 @@ msgstr "Varsayılan Filtreler"
 
 msgid "Use Nearest Mipmap Filter"
 msgstr "En Yakın Mipharitası Filtresini Kullan"
-
-msgid "Anisotropic Filtering Level"
-msgstr "Eşyönsüz Filtreleme Seviyesi"
 
 msgid "Depth of Field"
 msgstr "Alan Derinliği"

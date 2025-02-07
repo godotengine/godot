@@ -19,6 +19,9 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Все разрешённые"
+
 msgid "New Code Region"
 msgstr "Новая область кода"
 
@@ -76,14 +79,14 @@ msgstr "Открыть"
 msgid "Select Current Folder"
 msgstr "Выбрать текущую папку"
 
+msgid "Save"
+msgstr "Сохранить"
+
 msgid "Select This Folder"
 msgstr "Выбрать эту папку"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "У вас нет прав для доступа к содержимому этой папки."
-
-msgid "All Recognized"
-msgstr "Все разрешённые"
 
 msgid "All Files"
 msgstr "Все файлы"
@@ -99,9 +102,6 @@ msgstr "Открыть каталог"
 
 msgid "Open a File or Directory"
 msgstr "Открыть каталог или файл"
-
-msgid "Save"
-msgstr "Сохранить"
 
 msgid "Save a File"
 msgstr "Сохранить файл"
