@@ -1256,6 +1256,167 @@ struct ExportLibsData {
 	String dest_dir;
 };
 
+bool EditorExportPlatformIOS::_archive_has_arm64(const String &p_path, uint32_t *r_cputype, uint32_t *r_cpusubtype) const {
+	bool has_arm64_image = false;
+	if (FileAccess::exists(p_path)) {
+		if (LipO::is_lipo(p_path)) {
+			// LipO.
+			Ref<LipO> lipo;
+			lipo.instantiate();
+			if (lipo->open_file(p_path)) {
+				for (int i = 0; i < lipo->get_arch_count(); i++) {
+					if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
+						has_arm64_image = true;
+						break;
+					}
+				}
+			}
+			lipo->close();
+		} else {
+			// Single architecture archive.
+			Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ);
+			if (sim_f.is_valid()) {
+				char magic[9] = {};
+				sim_f->get_buffer((uint8_t *)&magic[0], 8);
+				if (String(magic) == String("!<arch>\n")) {
+					while (!sim_f->eof_reached()) {
+						// Read file metadata.
+						char name_short[17] = {};
+						char size_short[11] = {};
+						sim_f->get_buffer((uint8_t *)&name_short[0], 16);
+						sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
+						sim_f->get_buffer((uint8_t *)&size_short[0], 10);
+						sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
+
+						int64_t file_size = String(size_short).to_int();
+						int64_t next_off = sim_f->get_position() + file_size;
+
+						String name = String(name_short); // Skip extended name.
+						if (name.is_empty() || file_size == 0) {
+							break;
+						}
+						if (name.begins_with("#1/")) {
+							int64_t name_len = String(name_short).replace("#1/", "").to_int();
+							sim_f->seek(sim_f->get_position() + name_len);
+						}
+
+						// Read file content.
+						uint32_t obj_magic = sim_f->get_32();
+
+						bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
+						if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+							uint32_t cputype = sim_f->get_32();
+							uint32_t cpusubtype = sim_f->get_32();
+							if (swap) {
+								cputype = BSWAP32(cputype);
+								cpusubtype = BSWAP32(cpusubtype);
+							}
+							if (r_cputype) {
+								*r_cputype = cputype;
+							}
+							if (r_cpusubtype) {
+								*r_cpusubtype = cpusubtype;
+							}
+							if (cputype == 0x100000c && cpusubtype == 0) {
+								has_arm64_image = true;
+							}
+							break;
+						}
+						sim_f->seek(next_off);
+					}
+				}
+				sim_f->close();
+			}
+		}
+	}
+	return has_arm64_image;
+}
+
+int EditorExportPlatformIOS::_archive_convert_to_simulator(const String &p_path) const {
+	int commands_patched = 0;
+	Ref<FileAccess> sim_f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (sim_f.is_valid()) {
+		char magic[9] = {};
+		sim_f->get_buffer((uint8_t *)&magic[0], 8);
+		if (String(magic) == String("!<arch>\n")) {
+			while (!sim_f->eof_reached()) {
+				// Read file metadata.
+				char name_short[17] = {};
+				char size_short[11] = {};
+				sim_f->get_buffer((uint8_t *)&name_short[0], 16);
+				sim_f->seek(sim_f->get_position() + 12 + 6 + 6 + 8); // Skip modification time, owner ID, group ID, file mode.
+				sim_f->get_buffer((uint8_t *)&size_short[0], 10);
+				sim_f->seek(sim_f->get_position() + 2); // Skip end marker.
+
+				int64_t file_size = String(size_short).to_int();
+				int64_t next_off = sim_f->get_position() + file_size;
+
+				String name = String(name_short); // Skip extended name.
+				if (name.is_empty() || file_size == 0) {
+					break;
+				}
+				if (name.begins_with("#1/")) {
+					int64_t name_len = String(name_short).replace("#1/", "").to_int();
+					sim_f->seek(sim_f->get_position() + name_len);
+				}
+
+				// Read file content.
+				uint32_t obj_magic = sim_f->get_32();
+
+				bool swap = (obj_magic == 0xcffaedfe || obj_magic == 0xcefaedfe);
+				if (obj_magic == 0xcefaedfe || obj_magic == 0xfeedface || obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+					uint32_t cputype = sim_f->get_32();
+					uint32_t cpusubtype = sim_f->get_32();
+					uint32_t filetype = sim_f->get_32();
+					uint32_t ncmds = sim_f->get_32();
+					sim_f->get_32(); // Commands total size.
+					sim_f->get_32(); // Commands flags.
+					if (obj_magic == 0xcffaedfe || obj_magic == 0xfeedfacf) {
+						sim_f->get_32(); // Reserved, 64-bit only.
+					}
+					if (swap) {
+						ncmds = BSWAP32(ncmds);
+						cputype = BSWAP32(cputype);
+						cpusubtype = BSWAP32(cpusubtype);
+						filetype = BSWAP32(filetype);
+					}
+					if (cputype == 0x100000C && cpusubtype == 0 && filetype == 1) {
+						// ARM64, object file.
+						for (uint32_t i = 0; i < ncmds; i++) {
+							int64_t cmdofs = sim_f->get_position();
+							uint32_t cmdid = sim_f->get_32();
+							uint32_t cmdsize = sim_f->get_32();
+							if (swap) {
+								cmdid = BSWAP32(cmdid);
+								cmdsize = BSWAP32(cmdsize);
+							}
+							if (cmdid == MachO::LoadCommandID::LC_BUILD_VERSION) {
+								int64_t platform = sim_f->get_32();
+								if (swap) {
+									platform = BSWAP32(platform);
+								}
+								if (platform == MachO::PlatformID::PLATFORM_IOS) {
+									sim_f->seek(cmdofs + 4 + 4);
+									uint32_t new_id = MachO::PlatformID::PLATFORM_IOSSIMULATOR;
+									if (swap) {
+										new_id = BSWAP32(new_id);
+									}
+									sim_f->store_32(new_id);
+									commands_patched++;
+								}
+							}
+							sim_f->seek(cmdofs + cmdsize);
+						}
+					}
+				}
+				sim_f->seek(next_off);
+			}
+		}
+		sim_f->close();
+	}
+	return commands_patched;
+}
+
 void EditorExportPlatformIOS::_check_xcframework_content(const String &p_path, int &r_total_libs, int &r_static_libs, int &r_dylibs, int &r_frameworks) const {
 	Ref<PList> plist;
 	plist.instantiate();
@@ -2258,6 +2419,82 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	if (!found_library) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template library '%s' not found. It might be missing from your template archive."), library_to_use));
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	// HACK: We don't want to run the simulator library generation code anymore after GH-102179, but removing it
+	// triggers an internal compiler error with latest mingw-gcc... For now we bring it back as a workaround
+	// with a condition that should never be true (that project setting doesn't exist).
+
+	// Check and generate missing ARM64 simulator library.
+	if (ProjectSettings::get_singleton()->has_setting("__dummy_setting_blame_akien_if_you_define_this_somehow")) {
+		String sim_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64_x86_64-simulator").path_join("libgodot.a");
+		String dev_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64").path_join("libgodot.a");
+		String tmp_lib_path = EditorPaths::get_singleton()->get_temp_dir().path_join(binary_name + "_lipo_");
+		uint32_t cputype = 0;
+		uint32_t cpusubtype = 0;
+		if (!_archive_has_arm64(sim_lib_path, &cputype, &cpusubtype) && _archive_has_arm64(dev_lib_path) && FileAccess::exists(dev_lib_path)) {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("ARM64 simulator library, generating from device library."));
+
+			Vector<String> tmp_lib_files;
+			Vector<Vector2i> tmp_lib_cputypes;
+			// Extract/copy simulator lib.
+			if (FileAccess::exists(sim_lib_path)) {
+				if (LipO::is_lipo(sim_lib_path)) {
+					Ref<LipO> lipo;
+					lipo.instantiate();
+					if (lipo->open_file(sim_lib_path)) {
+						for (int i = 0; i < lipo->get_arch_count(); i++) {
+							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+							lipo->extract_arch(i, f_name);
+							tmp_lib_files.push_back(f_name);
+							tmp_lib_cputypes.push_back(Vector2i(lipo->get_arch_cputype(i), lipo->get_arch_cpusubtype(i)));
+						}
+					}
+				} else {
+					const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+					tmp_app_path->copy(sim_lib_path, f_name);
+					tmp_lib_files.push_back(f_name);
+					tmp_lib_cputypes.push_back(Vector2i(cputype, cpusubtype));
+				}
+			}
+			// Copy device lib.
+			if (LipO::is_lipo(dev_lib_path)) {
+				Ref<LipO> lipo;
+				lipo.instantiate();
+				if (lipo->open_file(dev_lib_path)) {
+					for (int i = 0; i < lipo->get_arch_count(); i++) {
+						if (lipo->get_arch_cputype(i) == 0x100000c && lipo->get_arch_cpusubtype(i) == 0) {
+							const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+							lipo->extract_arch(i, f_name);
+							tmp_lib_files.push_back(f_name);
+							tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
+							break;
+						}
+					}
+				}
+			} else {
+				const String &f_name = tmp_lib_path + itos(tmp_lib_files.size());
+				tmp_app_path->copy(dev_lib_path, f_name);
+				tmp_lib_files.push_back(f_name);
+				tmp_lib_cputypes.push_back(Vector2i(0x100000c, 0)); // ARM64.
+			}
+
+			// Patch device lib.
+			int patch_count = _archive_convert_to_simulator(tmp_lib_path + itos(tmp_lib_files.size() - 1));
+			if (patch_count == 0) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), TTR("Unable to generate ARM64 simulator library."));
+			} else {
+				// Repack.
+				Ref<LipO> lipo;
+				lipo.instantiate();
+				lipo->create_file(sim_lib_path, tmp_lib_files, tmp_lib_cputypes);
+			}
+
+			// Cleanup.
+			for (const String &E : tmp_lib_files) {
+				tmp_app_path->remove(E);
+			}
+		}
 	}
 
 	// Generate translations files.
