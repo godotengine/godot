@@ -543,7 +543,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		time_vals.push_back(oe.sec);
 		time_vals.push_back(oe.msec);
 		bool e;
-		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
+		String time = String("%d:%02d:%02d:%03d").sprintf(time_vals, &e);
 
 		// Rest of the error data.
 		bool source_is_project_file = oe.source_file.begins_with("res://");
