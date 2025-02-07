@@ -84,6 +84,8 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
 
+	bool is_pixel = false;
+
 	// Root layout
 	Label *label_warn = nullptr;
 	TabContainer *main_pages = nullptr;
