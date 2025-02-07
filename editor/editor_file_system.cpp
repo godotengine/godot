@@ -48,6 +48,9 @@
 #include "scene/resources/packed_scene.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
+int EditorFileSystem::nb_files_total = 0;
+EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
+
 //the name is the version, to keep compatibility with different versions of Godot
 #define CACHE_FILE_NAME "filesystem_cache10"
 
@@ -237,16 +240,72 @@ EditorFileSystem::ScannedDirectory::~ScannedDirectory() {
 	}
 }
 
-void EditorFileSystem::_first_scan_filesystem() {
-	EditorProgress ep = EditorProgress("first_scan_filesystem", TTR("Project initialization"), 5);
+void EditorFileSystem::_load_first_scan_root_dir() {
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	first_scan_root_dir = memnew(ScannedDirectory);
 	first_scan_root_dir->full_path = "res://";
+
+	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
+}
+
+void EditorFileSystem::scan_for_uid() {
+	// Load file structure into memory.
+	_load_first_scan_root_dir();
+
+	// Load extensions for which an .import should exists.
+	List<String> extensionsl;
+	HashSet<String> import_extensions;
+	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
+	for (const String &E : extensionsl) {
+		import_extensions.insert(E);
+	}
+
+	// Scan the file system to load uid.
+	_scan_for_uid_directory(first_scan_root_dir, import_extensions);
+
+	// It's done, resetting the callback method to prevent a second scan.
+	ResourceUID::scan_for_uid_on_startup = nullptr;
+}
+
+void EditorFileSystem::_scan_for_uid_directory(const ScannedDirectory *p_scan_dir, const HashSet<String> &p_import_extensions) {
+	for (ScannedDirectory *scan_sub_dir : p_scan_dir->subdirs) {
+		_scan_for_uid_directory(scan_sub_dir, p_import_extensions);
+	}
+
+	for (const String &scan_file : p_scan_dir->files) {
+		const String ext = scan_file.get_extension().to_lower();
+
+		if (ext == "uid" || ext == "import") {
+			continue;
+		}
+
+		const String path = p_scan_dir->full_path.path_join(scan_file);
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
+		if (p_import_extensions.has(ext)) {
+			if (FileAccess::exists(path + ".import")) {
+				uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
+			}
+		} else {
+			uid = ResourceLoader::get_resource_uid(path);
+		}
+
+		if (uid != ResourceUID::INVALID_ID) {
+			if (!ResourceUID::get_singleton()->has_id(uid)) {
+				ResourceUID::get_singleton()->add_id(uid, path);
+			}
+		}
+	}
+}
+
+void EditorFileSystem::_first_scan_filesystem() {
+	EditorProgress ep = EditorProgress("first_scan_filesystem", TTR("Project initialization"), 5);
 	HashSet<String> existing_class_names;
 	HashSet<String> extensions;
 
-	ep.step(TTR("Scanning file structure..."), 0, true);
-	nb_files_total = _scan_new_dir(first_scan_root_dir, d);
+	if (!first_scan_root_dir) {
+		ep.step(TTR("Scanning file structure..."), 0, true);
+		_load_first_scan_root_dir();
+	}
 
 	// Preloading GDExtensions file extensions to prevent looping on all the resource loaders
 	// for each files in _first_scan_process_scripts.
@@ -440,6 +499,7 @@ void EditorFileSystem::_scan_filesystem() {
 		sd = first_scan_root_dir;
 		// Will be updated on scan.
 		ResourceUID::get_singleton()->clear();
+		ResourceUID::scan_for_uid_on_startup = nullptr;
 		processed_files = memnew(HashSet<String>());
 	} else {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);

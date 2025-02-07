@@ -182,7 +182,7 @@ class EditorFileSystem : public Node {
 	static void _thread_func(void *_userdata);
 
 	EditorFileSystemDirectory *new_filesystem = nullptr;
-	ScannedDirectory *first_scan_root_dir = nullptr;
+	static ScannedDirectory *first_scan_root_dir;
 
 	bool filesystem_changed_queued = false;
 	bool scanning = false;
@@ -192,12 +192,16 @@ class EditorFileSystem : public Node {
 	float scan_total;
 	String filesystem_settings_version_for_import;
 	bool revalidate_import_files = false;
-	int nb_files_total = 0;
+	static int nb_files_total;
 
 	void _notify_filesystem_changed();
 	void _scan_filesystem();
 	void _first_scan_filesystem();
 	void _first_scan_process_scripts(const ScannedDirectory *p_scan_dir, List<String> &p_gdextension_extensions, HashSet<String> &p_existing_class_names, HashSet<String> &p_extensions);
+
+	static void _scan_for_uid_directory(const ScannedDirectory *p_scan_dir, const HashSet<String> &p_import_extensions);
+
+	static void _load_first_scan_root_dir();
 
 	HashSet<String> late_update_files;
 
@@ -255,7 +259,7 @@ class EditorFileSystem : public Node {
 	HashSet<String> valid_extensions;
 	HashSet<String> import_extensions;
 
-	int _scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da);
+	static int _scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da);
 	void _process_file_system(const ScannedDirectory *p_scan_dir, EditorFileSystemDirectory *p_dir, ScanProgress &p_progress, HashSet<String> *p_processed_files);
 
 	Thread thread_sources;
@@ -411,6 +415,8 @@ public:
 	Error copy_directory(const String &p_from, const String &p_to);
 
 	static bool _should_skip_directory(const String &p_path);
+
+	static void scan_for_uid();
 
 	void add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
 	void remove_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query);
