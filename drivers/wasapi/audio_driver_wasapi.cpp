@@ -917,6 +917,12 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 							} else if (ad->audio_input.channels == 1) {
 								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
 							} else if (ad->audio_input.channels >= 2) {
+								// Average all channels to left and right channels.
+								// This is done to cater to microphones with 3 channels or more,
+								// some of which may be used for specialized purposes
+								// like noise reduction or better spatialization.
+								// However, since we cannot presume the exact purpose of each channel,
+								// the best course of action is to downmix to stereo.
 								int64_t ltemp = 0, rtemp = 0;
 								int channels = ad->audio_input.channels;
 								for (int ch = 0; ch < channels - 1; ch++) {
