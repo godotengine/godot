@@ -27,175 +27,151 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+#ifndef LINE_2D_H
+#define LINE_2D_H
 
-#ifndef LIGHT_2D_H
-#define LIGHT_2D_H
+#include "node_2d.h"
 
-#include "scene/2d/node_2d.h"
-
-class Light2D : public Node2D {
-	GDCLASS(Light2D, Node2D);
+class Line2D : public Node2D {
+	GDCLASS(Line2D, Node2D);
 
 public:
-	enum ShadowFilter {
-		SHADOW_FILTER_NONE,
-		SHADOW_FILTER_PCF5,
-		SHADOW_FILTER_PCF13,
-		SHADOW_FILTER_MAX
+	// Enums for joint, cap and texture modes.
+	enum LineJointMode {
+		LINE_JOINT_SHARP = 0,
+		LINE_JOINT_BEVEL,
+		LINE_JOINT_ROUND
 	};
 
-	enum BlendMode {
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MIX,
+	enum LineCapMode {
+		LINE_CAP_NONE = 0,
+		LINE_CAP_BOX,
+		LINE_CAP_ROUND
 	};
 
-private:
-	RID canvas_light;
-	bool enabled = true;
-	bool editor_only = false;
-	bool shadow = false;
-	Color color = Color(1, 1, 1);
-	Color shadow_color = Color(0, 0, 0, 0);
-	real_t height = 0.0;
-	real_t energy = 1.0;
-	int z_min = -1024;
-	int z_max = 1024;
-	int layer_min = 0;
-	int layer_max = 0;
-	int item_mask = 1;
-	int item_shadow_mask = 1;
-	real_t shadow_smooth = 0.0;
-	Ref<Texture2D> texture;
-	Vector2 texture_offset;
-	ShadowFilter shadow_filter = SHADOW_FILTER_NONE;
-	BlendMode blend_mode = BLEND_MODE_ADD;
-
-	void _update_light_visibility();
-
-	virtual void owner_changed_notify() override;
-	virtual void _physics_interpolated_changed() override;
-
-protected:
-	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
-
-public:
-	void set_enabled(bool p_enabled);
-	bool is_enabled() const;
-
-	void set_editor_only(bool p_editor_only);
-	bool is_editor_only() const;
-
-	void set_color(const Color &p_color);
-	Color get_color() const;
-
-	void set_height(real_t p_height);
-	real_t get_height() const;
-
-	void set_energy(real_t p_energy);
-	real_t get_energy() const;
-
-	void set_z_range_min(int p_min_z);
-	int get_z_range_min() const;
-
-	void set_z_range_max(int p_max_z);
-	int get_z_range_max() const;
-
-	void set_layer_range_min(int p_min_layer);
-	int get_layer_range_min() const;
-
-	void set_layer_range_max(int p_max_layer);
-	int get_layer_range_max() const;
-
-	void set_item_cull_mask(int p_mask);
-	int get_item_cull_mask() const;
-
-	void set_item_shadow_cull_mask(int p_mask);
-	int get_item_shadow_cull_mask() const;
-
-	void set_shadow_enabled(bool p_enabled);
-	bool is_shadow_enabled() const;
-
-	void set_shadow_filter(ShadowFilter p_filter);
-	ShadowFilter get_shadow_filter() const;
-
-	void set_shadow_color(const Color &p_shadow_color);
-	Color get_shadow_color() const;
-
-	void set_shadow_smooth(real_t p_amount);
-	real_t get_shadow_smooth() const;
-
-	void set_blend_mode(BlendMode p_mode);
-	BlendMode get_blend_mode() const;
-
-	Light2D();
-	~Light2D();
-};
-
-VARIANT_ENUM_CAST(Light2D::ShadowFilter);
-VARIANT_ENUM_CAST(Light2D::BlendMode);
-
-class PointLight2D : public Light2D {
-	GDCLASS(PointLight2D, Light2D);
-
-private:
-	real_t _scale = 1.0;
-	Ref<Texture2D> texture;
-	Vector2 texture_offset;
-
-protected:
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-#endif // DISABLE_DEPRECATED
-	static void _bind_methods();
-
-public:
-#ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
-
-	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
-	virtual Point2 _edit_get_pivot() const override;
-	virtual bool _edit_use_pivot() const override;
-#endif // TOOLS_ENABLED
+	enum LineTextureMode {
+		LINE_TEXTURE_NONE = 0,
+		LINE_TEXTURE_TILE,
+		LINE_TEXTURE_STRETCH
+	};
 
 #ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif // DEBUG_ENABLED
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif
 
-	virtual Rect2 get_anchorable_rect() const override;
+	Line2D();
 
-	void set_texture(const Ref<Texture2D> &p_texture);
+	// Point manipulation
+	void set_points(const Vector<Vector2> &p_points);
+	Vector<Vector2> get_points() const;
+
+	void set_point_position(int i, Vector2 pos);
+	Vector2 get_point_position(int i) const;
+
+	int get_point_count() const;
+
+	void clear_points();
+
+	void add_point(Vector2 pos, int atpos = -1);
+	void remove_point(int i);
+
+	// Closed polyline?
+	void set_closed(bool p_closed);
+	bool is_closed() const;
+
+	// Width and curves
+	void set_width(float width);
+	float get_width() const;
+
+	void set_curve(const Ref<Curve> &curve);
+	Ref<Curve> get_curve() const;
+
+	// Colors, gradients and textures
+	void set_default_color(Color color);
+	Color get_default_color() const;
+
+	void set_gradient(const Ref<Gradient> &gradient);
+	Ref<Gradient> get_gradient() const;
+
+	void set_texture(const Ref<Texture2D> &texture);
 	Ref<Texture2D> get_texture() const;
 
-	void set_texture_offset(const Vector2 &p_offset);
-	Vector2 get_texture_offset() const;
+	void set_texture_mode(const LineTextureMode mode);
+	LineTextureMode get_texture_mode() const;
 
-	void set_texture_scale(real_t p_scale);
-	real_t get_texture_scale() const;
+	// Joint and cap modes
+	void set_joint_mode(LineJointMode mode);
+	LineJointMode get_joint_mode() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	void set_begin_cap_mode(LineCapMode mode);
+	LineCapMode get_begin_cap_mode() const;
 
-	PointLight2D();
-};
+	void set_end_cap_mode(LineCapMode mode);
+	LineCapMode get_end_cap_mode() const;
 
-class DirectionalLight2D : public Light2D {
-	GDCLASS(DirectionalLight2D, Light2D);
+	// Border options
+	void set_sharp_limit(float limit);
+	float get_sharp_limit() const;
 
-	real_t max_distance = 10000.0;
+	void set_round_precision(int precision);
+	int get_round_precision() const;
+
+	void set_antialiased(bool p_antialiased);
+	bool get_antialiased() const;
+
+	// --- New dashed/dotted line properties ---
+
+	/// If true the line will be drawn in a dashed/dotted pattern.
+	void set_dashed(bool p_dashed);
+	bool is_dashed() const;
+
+	/// The length (in pixels) of each dash segment.
+	void set_dash_length(float p_length);
+	float get_dash_length() const;
+
+	/// The gap (in pixels) between dashes.
+	void set_gap_length(float p_gap);
+	float get_gap_length() const;
 
 protected:
+	void _notification(int p_what);
+	void _draw();
+
 	static void _bind_methods();
 
-public:
-	void set_max_distance(real_t p_distance);
-	real_t get_max_distance() const;
+private:
+	void _gradient_changed();
+	void _curve_changed();
 
-	DirectionalLight2D();
+	// Helper for dashed-line processing: given the full polyline, split it into dash segments.
+	Vector<Vector<Vector2>> _compute_dashed_segments(const Vector<Vector2>& points, bool closed, float dash_length, float gap_length) const;
+
+private:
+	Vector<Vector2> _points;
+	LineJointMode _joint_mode = LINE_JOINT_SHARP;
+	LineCapMode _begin_cap_mode = LINE_CAP_NONE;
+	LineCapMode _end_cap_mode = LINE_CAP_NONE;
+	bool _closed = false;
+	float _width = 10.0;
+	Ref<Curve> _curve;
+	Color _default_color = Color(1, 1, 1);
+	Ref<Gradient> _gradient;
+	Ref<Texture2D> _texture;
+	LineTextureMode _texture_mode = LINE_TEXTURE_NONE;
+	float _sharp_limit = 2.f;
+	int _round_precision = 8;
+	bool _antialiased = false;
+
+	// New dashed/dotted line properties:
+	bool _dashed = false;
+	float _dash_length = 10.0f;
+	float _gap_length = 5.0f;
 };
 
-#endif // LIGHT_2D_H
+VARIANT_ENUM_CAST(Line2D::LineJointMode)
+VARIANT_ENUM_CAST(Line2D::LineCapMode)
+VARIANT_ENUM_CAST(Line2D::LineTextureMode)
+
+#endif // LINE_2D_H

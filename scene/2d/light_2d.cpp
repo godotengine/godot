@@ -27,487 +27,584 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+#include "line_2d.h"
 
-#include "light_2d.h"
+#include "core/math/geometry_2d.h"
+#include "line_builder.h"
 
-void Light2D::owner_changed_notify() {
-	// For cases where owner changes _after_ entering tree (as example, editor editing).
-	_update_light_visibility();
-}
-
-void Light2D::_update_light_visibility() {
-	if (!is_inside_tree()) {
-		return;
+#ifdef DEBUG_ENABLED
+Rect2 Line2D::_edit_get_rect() const {
+	if (_points.size() == 0) {
+		return Rect2(0, 0, 0, 0);
 	}
-
-	bool editor_ok = true;
-
-#ifdef TOOLS_ENABLED
-	if (editor_only) {
-		if (!Engine::get_singleton()->is_editor_hint()) {
-			editor_ok = false;
-		} else {
-			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
-		}
+	Vector2 min = _points[0];
+	Vector2 max = min;
+	for (int i = 1; i < _points.size(); i++) {
+		min = min.min(_points[i]);
+		max = max.max(_points[i]);
 	}
-#else
-	if (editor_only) {
-		editor_ok = false;
-	}
-#endif // TOOLS_ENABLED
-
-	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
+	return Rect2(min, max - min).grow(_width);
 }
 
-void Light2D::set_enabled(bool p_enabled) {
-	enabled = p_enabled;
-	_update_light_visibility();
-}
-
-bool Light2D::is_enabled() const {
-	return enabled;
-}
-
-void Light2D::set_editor_only(bool p_editor_only) {
-	editor_only = p_editor_only;
-	_update_light_visibility();
-}
-
-bool Light2D::is_editor_only() const {
-	return editor_only;
-}
-
-void Light2D::set_color(const Color &p_color) {
-	color = p_color;
-	RS::get_singleton()->canvas_light_set_color(canvas_light, color);
-}
-
-Color Light2D::get_color() const {
-	return color;
-}
-
-void Light2D::set_height(real_t p_height) {
-	height = p_height;
-	RS::get_singleton()->canvas_light_set_height(canvas_light, height);
-}
-
-real_t Light2D::get_height() const {
-	return height;
-}
-
-void Light2D::set_energy(real_t p_energy) {
-	energy = p_energy;
-	RS::get_singleton()->canvas_light_set_energy(canvas_light, energy);
-}
-
-real_t Light2D::get_energy() const {
-	return energy;
-}
-
-void Light2D::set_z_range_min(int p_min_z) {
-	z_min = p_min_z;
-	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
-}
-
-int Light2D::get_z_range_min() const {
-	return z_min;
-}
-
-void Light2D::set_z_range_max(int p_max_z) {
-	z_max = p_max_z;
-	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
-}
-
-int Light2D::get_z_range_max() const {
-	return z_max;
-}
-
-void Light2D::set_layer_range_min(int p_min_layer) {
-	layer_min = p_min_layer;
-	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
-}
-
-int Light2D::get_layer_range_min() const {
-	return layer_min;
-}
-
-void Light2D::set_layer_range_max(int p_max_layer) {
-	layer_max = p_max_layer;
-	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
-}
-
-int Light2D::get_layer_range_max() const {
-	return layer_max;
-}
-
-void Light2D::set_item_cull_mask(int p_mask) {
-	item_mask = p_mask;
-	RS::get_singleton()->canvas_light_set_item_cull_mask(canvas_light, item_mask);
-}
-
-int Light2D::get_item_cull_mask() const {
-	return item_mask;
-}
-
-void Light2D::set_item_shadow_cull_mask(int p_mask) {
-	item_shadow_mask = p_mask;
-	RS::get_singleton()->canvas_light_set_item_shadow_cull_mask(canvas_light, item_shadow_mask);
-}
-
-int Light2D::get_item_shadow_cull_mask() const {
-	return item_shadow_mask;
-}
-
-void Light2D::set_shadow_enabled(bool p_enabled) {
-	shadow = p_enabled;
-	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
-	notify_property_list_changed();
-}
-
-bool Light2D::is_shadow_enabled() const {
-	return shadow;
-}
-
-void Light2D::set_shadow_filter(ShadowFilter p_filter) {
-	ERR_FAIL_INDEX(p_filter, SHADOW_FILTER_MAX);
-	shadow_filter = p_filter;
-	RS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, RS::CanvasLightShadowFilter(p_filter));
-	notify_property_list_changed();
-}
-
-Light2D::ShadowFilter Light2D::get_shadow_filter() const {
-	return shadow_filter;
-}
-
-void Light2D::set_shadow_color(const Color &p_shadow_color) {
-	shadow_color = p_shadow_color;
-	RS::get_singleton()->canvas_light_set_shadow_color(canvas_light, shadow_color);
-}
-
-Color Light2D::get_shadow_color() const {
-	return shadow_color;
-}
-
-void Light2D::set_blend_mode(BlendMode p_mode) {
-	blend_mode = p_mode;
-	RS::get_singleton()->canvas_light_set_blend_mode(_get_light(), RS::CanvasLightBlendMode(p_mode));
-}
-
-Light2D::BlendMode Light2D::get_blend_mode() const {
-	return blend_mode;
-}
-
-void Light2D::_physics_interpolated_changed() {
-	RenderingServer::get_singleton()->canvas_light_set_interpolated(canvas_light, is_physics_interpolated());
-}
-
-void Light2D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_CANVAS: {
-			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
-			_update_light_visibility();
-		} break;
-
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-			RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
-		} break;
-
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			_update_light_visibility();
-		} break;
-
-		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
-				// Explicitly make sure the transform is up to date in RenderingServer before
-				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
-				// is normally deferred, and a client change to transform will not always be sent
-				// before the reset, so we need to guarantee this.
-				RS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
-				RS::get_singleton()->canvas_light_reset_physics_interpolation(canvas_light);
-			}
-		} break;
-
-		case NOTIFICATION_EXIT_CANVAS: {
-			RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
-			_update_light_visibility();
-		} break;
-	}
-}
-
-void Light2D::set_shadow_smooth(real_t p_amount) {
-	shadow_smooth = p_amount;
-	RS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
-}
-
-real_t Light2D::get_shadow_smooth() const {
-	return shadow_smooth;
-}
-
-void Light2D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_color" || p_property.name == "shadow_filter" || p_property.name == "shadow_filter_smooth" || p_property.name == "shadow_item_cull_mask")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-
-	if (shadow && p_property.name == "shadow_filter_smooth" && shadow_filter == SHADOW_FILTER_NONE) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-}
-
-void Light2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Light2D::set_enabled);
-	ClassDB::bind_method(D_METHOD("is_enabled"), &Light2D::is_enabled);
-
-	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light2D::set_editor_only);
-	ClassDB::bind_method(D_METHOD("is_editor_only"), &Light2D::is_editor_only);
-
-	ClassDB::bind_method(D_METHOD("set_color", "color"), &Light2D::set_color);
-	ClassDB::bind_method(D_METHOD("get_color"), &Light2D::get_color);
-
-	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &Light2D::set_energy);
-	ClassDB::bind_method(D_METHOD("get_energy"), &Light2D::get_energy);
-
-	ClassDB::bind_method(D_METHOD("set_z_range_min", "z"), &Light2D::set_z_range_min);
-	ClassDB::bind_method(D_METHOD("get_z_range_min"), &Light2D::get_z_range_min);
-
-	ClassDB::bind_method(D_METHOD("set_z_range_max", "z"), &Light2D::set_z_range_max);
-	ClassDB::bind_method(D_METHOD("get_z_range_max"), &Light2D::get_z_range_max);
-
-	ClassDB::bind_method(D_METHOD("set_layer_range_min", "layer"), &Light2D::set_layer_range_min);
-	ClassDB::bind_method(D_METHOD("get_layer_range_min"), &Light2D::get_layer_range_min);
-
-	ClassDB::bind_method(D_METHOD("set_layer_range_max", "layer"), &Light2D::set_layer_range_max);
-	ClassDB::bind_method(D_METHOD("get_layer_range_max"), &Light2D::get_layer_range_max);
-
-	ClassDB::bind_method(D_METHOD("set_item_cull_mask", "item_cull_mask"), &Light2D::set_item_cull_mask);
-	ClassDB::bind_method(D_METHOD("get_item_cull_mask"), &Light2D::get_item_cull_mask);
-
-	ClassDB::bind_method(D_METHOD("set_item_shadow_cull_mask", "item_shadow_cull_mask"), &Light2D::set_item_shadow_cull_mask);
-	ClassDB::bind_method(D_METHOD("get_item_shadow_cull_mask"), &Light2D::get_item_shadow_cull_mask);
-
-	ClassDB::bind_method(D_METHOD("set_shadow_enabled", "enabled"), &Light2D::set_shadow_enabled);
-	ClassDB::bind_method(D_METHOD("is_shadow_enabled"), &Light2D::is_shadow_enabled);
-
-	ClassDB::bind_method(D_METHOD("set_shadow_smooth", "smooth"), &Light2D::set_shadow_smooth);
-	ClassDB::bind_method(D_METHOD("get_shadow_smooth"), &Light2D::get_shadow_smooth);
-
-	ClassDB::bind_method(D_METHOD("set_shadow_filter", "filter"), &Light2D::set_shadow_filter);
-	ClassDB::bind_method(D_METHOD("get_shadow_filter"), &Light2D::get_shadow_filter);
-
-	ClassDB::bind_method(D_METHOD("set_shadow_color", "shadow_color"), &Light2D::set_shadow_color);
-	ClassDB::bind_method(D_METHOD("get_shadow_color"), &Light2D::get_shadow_color);
-
-	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &Light2D::set_blend_mode);
-	ClassDB::bind_method(D_METHOD("get_blend_mode"), &Light2D::get_blend_mode);
-
-	ClassDB::bind_method(D_METHOD("set_height", "height"), &Light2D::set_height);
-	ClassDB::bind_method(D_METHOD("get_height"), &Light2D::get_height);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Add,Subtract,Mix"), "set_blend_mode", "get_blend_mode");
-	ADD_GROUP("Range", "range_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_max", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_max", "get_layer_range_max");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_cull_mask", "get_item_cull_mask");
-
-	ADD_GROUP("Shadow", "shadow_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow_enabled", "is_shadow_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_filter", PROPERTY_HINT_ENUM, "None (Fast),PCF5 (Average),PCF13 (Slow)"), "set_shadow_filter", "get_shadow_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_shadow_cull_mask", "get_item_shadow_cull_mask");
-
-	BIND_ENUM_CONSTANT(SHADOW_FILTER_NONE);
-	BIND_ENUM_CONSTANT(SHADOW_FILTER_PCF5);
-	BIND_ENUM_CONSTANT(SHADOW_FILTER_PCF13);
-
-	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
-	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
-	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
-}
-
-Light2D::Light2D() {
-	canvas_light = RenderingServer::get_singleton()->canvas_light_create();
-	set_notify_transform(true);
-}
-
-Light2D::~Light2D() {
-	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_light);
-}
-
-//////////////////////////////
-
-#ifdef TOOLS_ENABLED
-Dictionary PointLight2D::_edit_get_state() const {
-	Dictionary state = Node2D::_edit_get_state();
-	state["offset"] = get_texture_offset();
-	return state;
-}
-
-void PointLight2D::_edit_set_state(const Dictionary &p_state) {
-	Node2D::_edit_set_state(p_state);
-	set_texture_offset(p_state["offset"]);
-}
-
-void PointLight2D::_edit_set_pivot(const Point2 &p_pivot) {
-	set_position(get_transform().xform(p_pivot));
-	set_texture_offset(get_texture_offset() - p_pivot);
-}
-
-Point2 PointLight2D::_edit_get_pivot() const {
-	return Vector2();
-}
-
-bool PointLight2D::_edit_use_pivot() const {
+bool Line2D::_edit_use_rect() const {
 	return true;
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
-Rect2 PointLight2D::_edit_get_rect() const {
-	if (texture.is_null()) {
-		return Rect2();
-	}
-
-	Size2 s = texture->get_size() * _scale;
-	return Rect2(texture_offset - s / 2.0, s);
-}
-
-bool PointLight2D::_edit_use_rect() const {
-	return texture.is_valid();
-}
-#endif // DEBUG_ENABLED
-
-Rect2 PointLight2D::get_anchorable_rect() const {
-	if (texture.is_null()) {
-		return Rect2();
-	}
-
-	Size2 s = texture->get_size() * _scale;
-	return Rect2(texture_offset - s / 2.0, s);
-}
-
-void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
-	texture = p_texture;
-	if (texture.is_valid()) {
-#ifdef DEBUG_ENABLED
-		if (
-				p_texture->is_class("AnimatedTexture") ||
-				p_texture->is_class("AtlasTexture") ||
-				p_texture->is_class("CameraTexture") ||
-				p_texture->is_class("CanvasTexture") ||
-				p_texture->is_class("MeshTexture") ||
-				p_texture->is_class("Texture2DRD") ||
-				p_texture->is_class("ViewportTexture")) {
-			WARN_PRINT(vformat("%s cannot be used as a PointLight2D texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	const real_t d = _width / 2 + p_tolerance;
+	const Vector2 *points = _points.ptr();
+	for (int i = 0; i < _points.size() - 1; i++) {
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
+		if (p_point.distance_to(p) <= d) {
+			return true;
 		}
-#endif
-
-		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
-	} else {
-		RS::get_singleton()->canvas_light_set_texture(_get_light(), RID());
 	}
-
-	update_configuration_warnings();
-}
-
-Ref<Texture2D> PointLight2D::get_texture() const {
-	return texture;
-}
-
-void PointLight2D::set_texture_offset(const Vector2 &p_offset) {
-	texture_offset = p_offset;
-	RS::get_singleton()->canvas_light_set_texture_offset(_get_light(), texture_offset);
-	item_rect_changed();
-}
-
-Vector2 PointLight2D::get_texture_offset() const {
-	return texture_offset;
-}
-
-PackedStringArray PointLight2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Light2D::get_configuration_warnings();
-
-	if (texture.is_null()) {
-		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
-	}
-
-	return warnings;
-}
-
-void PointLight2D::set_texture_scale(real_t p_scale) {
-	_scale = p_scale;
-	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (_scale == 0) {
-		_scale = CMP_EPSILON;
-	}
-	RS::get_singleton()->canvas_light_set_texture_scale(_get_light(), _scale);
-	item_rect_changed();
-}
-
-real_t PointLight2D::get_texture_scale() const {
-	return _scale;
-}
-
-#ifndef DISABLE_DEPRECATED
-bool PointLight2D::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "mode" && p_value.is_num()) { // Compatibility with Godot 3.x.
-		set_blend_mode((BlendMode)(int)p_value);
-		return true;
+	if (_closed && _points.size() > 2) {
+		const Vector2 closing_segment[2] = { points[0], points[_points.size() - 1] };
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, closing_segment);
+		if (p_point.distance_to(p) <= d) {
+			return true;
+		}
 	}
 
 	return false;
 }
-#endif // DISABLE_DEPRECATED
+#endif
 
-void PointLight2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &PointLight2D::get_texture);
-
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &PointLight2D::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &PointLight2D::get_texture_offset);
-
-	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &PointLight2D::set_texture_scale);
-	ClassDB::bind_method(D_METHOD("get_texture_scale"), &PointLight2D::get_texture_scale);
-
-	// Only allow texture types that display correctly.
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1024,1,or_greater,suffix:px"), "set_height", "get_height");
+// Constructor
+Line2D::Line2D() {
+	// (Default values are already set in the member declarations.)
 }
 
-PointLight2D::PointLight2D() {
-	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
-	set_hide_clip_children(true);
+void Line2D::set_points(const Vector<Vector2> &p_points) {
+	_points = p_points;
+	queue_redraw();
 }
 
-//////////
-
-void DirectionalLight2D::set_max_distance(real_t p_distance) {
-	max_distance = p_distance;
-	RS::get_singleton()->canvas_light_set_directional_distance(_get_light(), max_distance);
+Vector<Vector2> Line2D::get_points() const {
+	return _points;
 }
 
-real_t DirectionalLight2D::get_max_distance() const {
-	return max_distance;
+void Line2D::set_point_position(int i, Vector2 p_pos) {
+	ERR_FAIL_INDEX(i, _points.size());
+	_points.set(i, p_pos);
+	queue_redraw();
 }
 
-void DirectionalLight2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_max_distance", "pixels"), &DirectionalLight2D::set_max_distance);
-	ClassDB::bind_method(D_METHOD("get_max_distance"), &DirectionalLight2D::get_max_distance);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384.0,1.0,or_greater,suffix:px"), "set_max_distance", "get_max_distance");
+Vector2 Line2D::get_point_position(int i) const {
+	ERR_FAIL_INDEX_V(i, _points.size(), Vector2());
+	return _points.get(i);
 }
 
-DirectionalLight2D::DirectionalLight2D() {
-	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
-	set_max_distance(max_distance); // Update RenderingServer.
-	set_hide_clip_children(true);
+int Line2D::get_point_count() const {
+	return _points.size();
+}
+
+void Line2D::clear_points() {
+	if (!_points.empty()) {
+		_points.clear();
+		queue_redraw();
+	}
+}
+
+void Line2D::add_point(Vector2 p_pos, int p_atpos) {
+	if (p_atpos < 0 || _points.size() < p_atpos) {
+		_points.push_back(p_pos);
+	} else {
+		_points.insert(p_atpos, p_pos);
+	}
+	queue_redraw();
+}
+
+void Line2D::remove_point(int i) {
+	_points.remove_at(i);
+	queue_redraw();
+}
+
+void Line2D::set_closed(bool p_closed) {
+	_closed = p_closed;
+	queue_redraw();
+}
+
+bool Line2D::is_closed() const {
+	return _closed;
+}
+
+void Line2D::set_width(float p_width) {
+	if (p_width < 0.0) {
+		p_width = 0.0;
+	}
+	_width = p_width;
+	queue_redraw();
+}
+
+float Line2D::get_width() const {
+	return _width;
+}
+
+void Line2D::set_curve(const Ref<Curve> &p_curve) {
+	if (_curve.is_valid()) {
+		_curve->disconnect_changed(callable_mp(this, &Line2D::_curve_changed));
+	}
+
+	_curve = p_curve;
+
+	if (_curve.is_valid()) {
+		_curve->connect_changed(callable_mp(this, &Line2D::_curve_changed));
+	}
+
+	queue_redraw();
+}
+
+Ref<Curve> Line2D::get_curve() const {
+	return _curve;
+}
+
+void Line2D::set_default_color(Color p_color) {
+	_default_color = p_color;
+	queue_redraw();
+}
+
+Color Line2D::get_default_color() const {
+	return _default_color;
+}
+
+void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
+	if (_gradient.is_valid()) {
+		_gradient->disconnect_changed(callable_mp(this, &Line2D::_gradient_changed));
+	}
+
+	_gradient = p_gradient;
+
+	if (_gradient.is_valid()) {
+		_gradient->connect_changed(callable_mp(this, &Line2D::_gradient_changed));
+	}
+
+	queue_redraw();
+}
+
+Ref<Gradient> Line2D::get_gradient() const {
+	return _gradient;
+}
+
+void Line2D::set_texture(const Ref<Texture2D> &p_texture) {
+	_texture = p_texture;
+	queue_redraw();
+}
+
+Ref<Texture2D> Line2D::get_texture() const {
+	return _texture;
+}
+
+void Line2D::set_texture_mode(const LineTextureMode p_mode) {
+	_texture_mode = p_mode;
+	queue_redraw();
+}
+
+Line2D::LineTextureMode Line2D::get_texture_mode() const {
+	return _texture_mode;
+}
+
+void Line2D::set_joint_mode(LineJointMode p_mode) {
+	_joint_mode = p_mode;
+	queue_redraw();
+}
+
+Line2D::LineJointMode Line2D::get_joint_mode() const {
+	return _joint_mode;
+}
+
+void Line2D::set_begin_cap_mode(LineCapMode p_mode) {
+	_begin_cap_mode = p_mode;
+	queue_redraw();
+}
+
+Line2D::LineCapMode Line2D::get_begin_cap_mode() const {
+	return _begin_cap_mode;
+}
+
+void Line2D::set_end_cap_mode(LineCapMode p_mode) {
+	_end_cap_mode = p_mode;
+	queue_redraw();
+}
+
+Line2D::LineCapMode Line2D::get_end_cap_mode() const {
+	return _end_cap_mode;
+}
+
+void Line2D::set_sharp_limit(float p_limit) {
+	if (p_limit < 0.f) {
+		p_limit = 0.f;
+	}
+	_sharp_limit = p_limit;
+	queue_redraw();
+}
+
+float Line2D::get_sharp_limit() const {
+	return _sharp_limit;
+}
+
+void Line2D::set_round_precision(int p_precision) {
+	_round_precision = MAX(1, p_precision);
+	queue_redraw();
+}
+
+int Line2D::get_round_precision() const {
+	return _round_precision;
+}
+
+void Line2D::set_antialiased(bool p_antialiased) {
+	_antialiased = p_antialiased;
+	queue_redraw();
+}
+
+bool Line2D::get_antialiased() const {
+	return _antialiased;
+}
+
+// --- New dashed/dotted setters and getters ---
+
+void Line2D::set_dashed(bool p_dashed) {
+	_dashed = p_dashed;
+	queue_redraw();
+}
+
+bool Line2D::is_dashed() const {
+	return _dashed;
+}
+
+void Line2D::set_dash_length(float p_length) {
+	_dash_length = (p_length < 0 ? 0 : p_length);
+	queue_redraw();
+}
+
+float Line2D::get_dash_length() const {
+	return _dash_length;
+}
+
+void Line2D::set_gap_length(float p_gap) {
+	_gap_length = (p_gap < 0 ? 0 : p_gap);
+	queue_redraw();
+}
+
+float Line2D::get_gap_length() const {
+	return _gap_length;
+}
+
+// Notification (only handling the draw notification)
+void Line2D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
+	}
+}
+
+// --- Dashed/dotted helper ---
+// Given the full polyline, compute an array of “dash” segments.
+// Each dash segment is represented as a vector of Vector2 points.
+// (The dash pattern is continuous along the line.)
+Vector<Vector<Vector2>> Line2D::_compute_dashed_segments(const Vector<Vector2>& points, bool closed, float dash_length, float gap_length) const {
+	Vector<Vector<Vector2>> segments;
+	if (points.size() < 2)
+		return segments;
+	if (dash_length <= 0)
+		return segments; // nothing to draw if dash length is zero.
+	// If gap_length is zero, the line is continuous.
+	
+	// State for the dash pattern:
+	bool drawing = true; // true means we are currently drawing a dash.
+	float phase_remaining = dash_length; // remaining length in the current dash or gap.
+	Vector<Vector2> current_dash;
+
+	// Number of segments to process:
+	int num_segments = closed ? points.size() : points.size() - 1;
+
+	// Process each segment in the polyline.
+	for (int i = 0; i < num_segments; i++) {
+		Vector2 p0 = points[i];
+		// For closed polyline, wrap around; otherwise next point:
+		Vector2 p1 = (i == points.size() - 1 && closed) ? points[0] : points[i + 1];
+		Vector2 segment = p1 - p0;
+		float seg_len = segment.length();
+		if (seg_len == 0)
+			continue;
+		Vector2 dir = segment / seg_len;
+		float seg_remaining = seg_len;
+		Vector2 pos = p0;
+
+		while (seg_remaining > 0) {
+			if (phase_remaining <= seg_remaining) {
+				// We can complete the current phase within this segment.
+				Vector2 new_pos = pos + dir * phase_remaining;
+				if (drawing) {
+					// Start a new dash segment if needed.
+					if (current_dash.empty())
+						current_dash.push_back(pos);
+					current_dash.push_back(new_pos);
+				} else {
+					// End the current dash (if any) when a gap finishes.
+					if (!current_dash.empty()) {
+						segments.push_back(current_dash);
+						current_dash.clear();
+					}
+				}
+				pos = new_pos;
+				seg_remaining -= phase_remaining;
+				// Toggle mode and reset phase_remaining.
+				drawing = !drawing;
+				phase_remaining = drawing ? dash_length : gap_length;
+			} else {
+				// The segment ends before finishing the current phase.
+				if (drawing) {
+					if (current_dash.empty())
+						current_dash.push_back(pos);
+					current_dash.push_back(p1);
+				}
+				phase_remaining -= seg_remaining;
+				pos = p1;
+				seg_remaining = 0;
+			}
+		}
+	}
+	// If we ended in a drawing phase, output the current dash segment.
+	if (!current_dash.empty()) {
+		segments.push_back(current_dash);
+	}
+	return segments;
+}
+
+// --- Drawing function ---
+void Line2D::_draw() {
+	int len = _points.size();
+	if (len <= 1 || _width == 0.f)
+		return;
+
+	// If dashed mode is enabled, compute dash segments and build geometry for each.
+	if (_dashed) {
+		Vector<Vector<Vector2>> dash_segments = _compute_dashed_segments(_points, _closed, _dash_length, _gap_length);
+
+		// We will combine the geometry from each dash segment into a single triangle array.
+		Vector<int> combined_indices;
+		Vector<Vector2> combined_vertices;
+		Vector<Color> combined_colors;
+		Vector<Vector2> combined_uvs;
+		int vertex_offset = 0;
+
+		// For each dash segment, build geometry if there are at least two points.
+		for (int i = 0; i < dash_segments.size(); i++) {
+			Vector<Vector2> seg_points = dash_segments[i];
+			if (seg_points.size() < 2)
+				continue;
+
+			LineBuilder lb;
+			lb.points = seg_points;
+			// Even if the full line was marked as closed, individual dashes are drawn as open segments.
+			lb.closed = false;
+			lb.default_color = _default_color;
+			// If a gradient is assigned, use it; otherwise, the builder will use default_color.
+			if (_gradient.is_valid())
+				lb.gradient = *_gradient;
+			lb.texture_mode = _texture_mode;
+			lb.joint_mode = _joint_mode;
+			lb.begin_cap_mode = _begin_cap_mode;
+			lb.end_cap_mode = _end_cap_mode;
+			lb.round_precision = _round_precision;
+			lb.sharp_limit = _sharp_limit;
+			lb.width = _width;
+			if (_curve.is_valid())
+				lb.curve = *_curve;
+			if (_texture.is_valid()) {
+				lb.tile_aspect = _texture->get_size().aspect();
+			}
+			// Build the geometry for this dash.
+			lb.build();
+
+			// Append this dash’s geometry to the combined arrays.
+			for (int idx : lb.indices) {
+				combined_indices.push_back(idx + vertex_offset);
+			}
+			for (int j = 0; j < lb.vertices.size(); j++) {
+				combined_vertices.push_back(lb.vertices[j]);
+				combined_colors.push_back(lb.colors[j]);
+				combined_uvs.push_back(lb.uvs[j]);
+			}
+			vertex_offset += lb.vertices.size();
+		}
+
+		// Get the texture RID if a texture is used.
+		RID texture_rid;
+		if (_texture.is_valid())
+			texture_rid = _texture->get_rid();
+
+		RS::get_singleton()->canvas_item_add_triangle_array(
+				get_canvas_item(),
+				combined_indices,
+				combined_vertices,
+				combined_colors,
+				combined_uvs, Vector<int>(), Vector<float>(),
+				texture_rid);
+
+	} else {
+		// Non-dashed mode: use the normal procedure.
+		LineBuilder lb;
+		lb.points = _points;
+		lb.closed = _closed;
+		lb.default_color = _default_color;
+		if (_gradient.is_valid())
+			lb.gradient = *_gradient;
+		lb.texture_mode = _texture_mode;
+		lb.joint_mode = _joint_mode;
+		lb.begin_cap_mode = _begin_cap_mode;
+		lb.end_cap_mode = _end_cap_mode;
+		lb.round_precision = _round_precision;
+		lb.sharp_limit = _sharp_limit;
+		lb.width = _width;
+		if (_curve.is_valid())
+			lb.curve = *_curve;
+		RID texture_rid;
+		if (_texture.is_valid()) {
+			texture_rid = _texture->get_rid();
+			lb.tile_aspect = _texture->get_size().aspect();
+		}
+
+		lb.build();
+
+		RS::get_singleton()->canvas_item_add_triangle_array(
+				get_canvas_item(),
+				lb.indices,
+				lb.vertices,
+				lb.colors,
+				lb.uvs, Vector<int>(), Vector<float>(),
+				texture_rid);
+	}
+
+	// DEBUG: (Optional) Draw wireframe for debugging.
+	// Uncomment the following block to see the underlying triangles.
+	/*
+		if (_dashed) {
+			// Draw the combined wireframe if needed.
+		} else if (lb.indices.size() % 3 == 0) {
+			Color col(0, 0, 0);
+			for (int i = 0; i < lb.indices.size(); i += 3) {
+				Vector2 a = lb.vertices[lb.indices[i]];
+				Vector2 b = lb.vertices[lb.indices[i+1]];
+				Vector2 c = lb.vertices[lb.indices[i+2]];
+				draw_line(a, b, col);
+				draw_line(b, c, col);
+				draw_line(c, a, col);
+			}
+			for (int i = 0; i < lb.vertices.size(); ++i) {
+				Vector2 p = lb.vertices[i];
+				draw_rect(Rect2(p.x - 1, p.y - 1, 2, 2), Color(0, 0, 0, 0.5));
+			}
+		}
+	*/
+}
+
+void Line2D::_gradient_changed() {
+	queue_redraw();
+}
+
+void Line2D::_curve_changed() {
+	queue_redraw();
+}
+
+// --- Binding methods ---
+void Line2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
+	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
+
+	ClassDB::bind_method(D_METHOD("set_point_position", "index", "position"), &Line2D::set_point_position);
+	ClassDB::bind_method(D_METHOD("get_point_position", "index"), &Line2D::get_point_position);
+
+	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
+
+	ClassDB::bind_method(D_METHOD("add_point", "position", "index"), &Line2D::add_point, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Line2D::remove_point);
+
+	ClassDB::bind_method(D_METHOD("clear_points"), &Line2D::clear_points);
+
+	ClassDB::bind_method(D_METHOD("set_closed", "closed"), &Line2D::set_closed);
+	ClassDB::bind_method(D_METHOD("is_closed"), &Line2D::is_closed);
+
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &Line2D::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &Line2D::get_width);
+
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Line2D::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Line2D::get_curve);
+
+	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
+	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
+
+	ClassDB::bind_method(D_METHOD("set_gradient", "gradient"), &Line2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &Line2D::get_gradient);
+
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Line2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &Line2D::get_texture);
+
+	ClassDB::bind_method(D_METHOD("set_texture_mode", "mode"), &Line2D::set_texture_mode);
+	ClassDB::bind_method(D_METHOD("get_texture_mode"), &Line2D::get_texture_mode);
+
+	ClassDB::bind_method(D_METHOD("set_joint_mode", "mode"), &Line2D::set_joint_mode);
+	ClassDB::bind_method(D_METHOD("get_joint_mode"), &Line2D::get_joint_mode);
+
+	ClassDB::bind_method(D_METHOD("set_begin_cap_mode", "mode"), &Line2D::set_begin_cap_mode);
+	ClassDB::bind_method(D_METHOD("get_begin_cap_mode"), &Line2D::get_begin_cap_mode);
+
+	ClassDB::bind_method(D_METHOD("set_end_cap_mode", "mode"), &Line2D::set_end_cap_mode);
+	ClassDB::bind_method(D_METHOD("get_end_cap_mode"), &Line2D::get_end_cap_mode);
+
+	ClassDB::bind_method(D_METHOD("set_sharp_limit", "limit"), &Line2D::set_sharp_limit);
+	ClassDB::bind_method(D_METHOD("get_sharp_limit"), &Line2D::get_sharp_limit);
+
+	ClassDB::bind_method(D_METHOD("set_round_precision", "precision"), &Line2D::set_round_precision);
+	ClassDB::bind_method(D_METHOD("get_round_precision"), &Line2D::get_round_precision);
+
+	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &Line2D::set_antialiased);
+	ClassDB::bind_method(D_METHOD("get_antialiased"), &Line2D::get_antialiased);
+
+	// Bind the new dashed/dotted properties.
+	ClassDB::bind_method(D_METHOD("set_dashed", "dashed"), &Line2D::set_dashed);
+	ClassDB::bind_method(D_METHOD("is_dashed"), &Line2D::is_dashed);
+	ClassDB::bind_method(D_METHOD("set_dash_length", "length"), &Line2D::set_dash_length);
+	ClassDB::bind_method(D_METHOD("get_dash_length"), &Line2D::get_dash_length);
+	ClassDB::bind_method(D_METHOD("set_gap_length", "gap"), &Line2D::set_gap_length);
+	ClassDB::bind_method(D_METHOD("get_gap_length"), &Line2D::get_gap_length);
+
+	// Register properties.
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
+	ADD_GROUP("Fill", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile,Stretch"), "set_texture_mode", "get_texture_mode");
+	ADD_GROUP("Capping", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round"), "set_joint_mode", "get_joint_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_begin_cap_mode", "get_begin_cap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_end_cap_mode", "get_end_cap_mode");
+	ADD_GROUP("Border", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision", PROPERTY_HINT_RANGE, "1,32,1"), "set_round_precision", "get_round_precision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
+
+	// Bind new dashed/dotted properties.
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dashed"), "set_dashed", "is_dashed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dash_length", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_dash_length", "get_dash_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gap_length", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_gap_length", "get_gap_length");
+
+	BIND_ENUM_CONSTANT(LINE_JOINT_SHARP);
+	BIND_ENUM_CONSTANT(LINE_JOINT_BEVEL);
+	BIND_ENUM_CONSTANT(LINE_JOINT_ROUND);
+
+	BIND_ENUM_CONSTANT(LINE_CAP_NONE);
+	BIND_ENUM_CONSTANT(LINE_CAP_BOX);
+	BIND_ENUM_CONSTANT(LINE_CAP_ROUND);
+
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_NONE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_TILE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_STRETCH);
 }
