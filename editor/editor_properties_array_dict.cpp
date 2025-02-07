@@ -592,6 +592,28 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_null()) {
+			return false;
+		}
+
+		String res_type = res->get_class();
+		StringName script_class;
+		if (res->get_script()) {
+			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		}
+
+		for (String at : allowed_type.split(",")) {
+			at = at.strip_edges();
+			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	if (drop_type == "nodes") {
 		Array node_paths = drag_data["nodes"];
 
@@ -677,6 +699,16 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		emit_changed(get_edited_property(), array);
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+
+		if (res.is_valid()) {
+			array.call("push_back", res);
+
+			emit_changed(get_edited_property(), array);
+		}
 	}
 
 	if (drop_type == "nodes") {
