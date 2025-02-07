@@ -628,10 +628,12 @@ class EditorPropertyNodePath : public EditorProperty {
 	SceneTreeDialog *scene_tree = nullptr;
 	bool use_path_from_scene_root = false;
 	bool editing_node = false;
+	bool dropping = false;
 
 	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
+	void _assign_draw();
 	Node *get_base_node();
 	void _update_menu();
 	void _menu_option(int p_idx);
