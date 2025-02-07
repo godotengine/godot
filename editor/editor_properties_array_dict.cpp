@@ -460,6 +460,8 @@ void EditorPropertyArray::update_property() {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
 			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
 
@@ -548,6 +550,13 @@ void EditorPropertyArray::_button_draw() {
 	if (dropping) {
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
+	}
+}
+
+void EditorPropertyArray::_button_add_item_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		button_add_item->draw_rect(Rect2(Point2(), button_add_item->get_size()), color, false);
 	}
 }
 
@@ -766,6 +775,9 @@ void EditorPropertyArray::_notification(int p_what) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
 					edit->queue_redraw();
+					if (button_add_item) {
+						button_add_item->queue_redraw();
+					}
 				}
 			}
 		} break;
@@ -774,6 +786,9 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				edit->queue_redraw();
+				if (button_add_item) {
+					button_add_item->queue_redraw();
+				}
 			}
 		} break;
 	}
