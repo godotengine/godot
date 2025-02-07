@@ -3,6 +3,7 @@
 
 #include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "flecs_prefab.h"
 #include "flecs_world.h"
 
 class FlecsComponent;
@@ -11,6 +12,7 @@ class FlecsEntity : public RefCounted {
 	GDCLASS(FlecsEntity, RefCounted);
 
 private:
+	Ref<FlecsPrefab> prefab;
 	flecs::entity entity;
 
 protected:
@@ -29,6 +31,9 @@ public:
 
 	flecs::entity get_entity() const { return entity; }
 	void set_entity(flecs::entity p_entity) { entity = p_entity; }
+
+	void set_prefab(Ref<FlecsPrefab> p_prefab) { prefab = p_prefab; }
+	Ref<FlecsPrefab> get_prefab() const { return prefab; }
 };
 
 #endif // FLECS_ENTITY_H

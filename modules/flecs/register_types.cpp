@@ -13,6 +13,9 @@
 #include "flecs_entity_node.h"
 #include "modules/flecs_root_node_module.h"
 #include "components/flecs_root_node_component.h"
+#include "modules/flecs_packed_scene_module.h"
+#include "components/flecs_packed_scene_component.h"
+#include "modules/flecs_packed_scene_module.h"
 
 void initialize_flecs_module(ModuleInitializationLevel p_level) {
 
@@ -31,6 +34,9 @@ void initialize_flecs_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<FlecsTransformComponent>();
 	ClassDB::register_class<FlecsRootNodeMod>();
 	ClassDB::register_class<FlecsRootNodeComponent>();
+	ClassDB::register_class<FlecsPackedSceneMod>();
+	ClassDB::register_class<FlecsPackedSceneComponent>();
+	ClassDB::register_class<FlecsPackedSceneMod>();	
 
 	FlecsComponent::generate_component_enum();
 

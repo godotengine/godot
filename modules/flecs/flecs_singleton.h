@@ -12,12 +12,10 @@ class FlecsSingleton : public Object {
 
 protected:
 	static void _bind_methods() {
-		GDVIRTUAL_BIND(_register_singleton, "flecs_world");
 	}
 
 
 public:
-	GDVIRTUAL1(_register_singleton, FlecsWorld*)
 	virtual void _register_singleton(FlecsWorld* flecs_world) {}
 };
 

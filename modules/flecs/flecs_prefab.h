@@ -4,10 +4,10 @@
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
-#include "flecs_entity.h"
-#include "flecs_mod.h"
 #include "flecs_world.h"
 
+class FlecsEntity;
+class FlecsMod;
 class FlecsEntityNode;
 
 class FlecsPrefab : public Resource {
@@ -17,6 +17,7 @@ public:
 	Ref<FlecsEntity> instantiate() const;
 	TypedArray<FlecsEntity> instantiate_num(int p_num) const;
 
+	void post_instantiate(Ref<FlecsEntity> entity) const;
 	void initialize_entity_data(FlecsEntityNode *entity) const;
 
 protected:
@@ -32,6 +33,10 @@ protected:
 	TypedArray<FlecsMod> get_modules() const;
 
 	flecs::entity instantiate_with_parent() const;
+
+private:
+
+	void _resolve_module_dependencies(TypedArray<FlecsMod> p_modules);
 
 private:
 	String prefab_name;
