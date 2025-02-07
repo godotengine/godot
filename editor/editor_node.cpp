@@ -7436,7 +7436,7 @@ EditorNode::EditorNode() {
 	main_menu->set_switch_on_hover(true);
 
 	file_menu = memnew(PopupMenu);
-	file_menu->set_name(TTR("Scene"));
+	file_menu->set_name(TTRC("Scene"));
 	main_menu->add_child(file_menu);
 	main_menu->set_menu_tooltip(0, TTR("Operations with scene files."));
 
@@ -7562,7 +7562,7 @@ EditorNode::EditorNode() {
 #endif
 
 	project_menu = memnew(PopupMenu);
-	project_menu->set_name(TTR("Project"));
+	project_menu->set_name(TTRC("Project"));
 	main_menu->add_child(project_menu);
 
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings")), PROJECT_OPEN_SETTINGS);
@@ -7619,11 +7619,11 @@ EditorNode::EditorNode() {
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
-	debug_menu->set_name(TTR("Debug"));
+	debug_menu->set_name(TTRC("Debug"));
 	main_menu->add_child(debug_menu);
 
 	settings_menu = memnew(PopupMenu);
-	settings_menu->set_name(TTR("Editor"));
+	settings_menu->set_name(TTRC("Editor"));
 	main_menu->add_child(settings_menu);
 
 #ifdef MACOS_ENABLED
@@ -7673,7 +7673,7 @@ EditorNode::EditorNode() {
 #endif
 
 	help_menu = memnew(PopupMenu);
-	help_menu->set_name(TTR("Help"));
+	help_menu->set_name(TTRC("Help"));
 	if (global_menu && NativeMenu::get_singleton()->has_system_menu(NativeMenu::HELP_MENU_ID)) {
 		help_menu->set_system_menu(NativeMenu::HELP_MENU_ID);
 	}
