@@ -895,6 +895,12 @@ void TextEdit::_notification(int p_what) {
 					int line_wrap_amount = get_line_wrap_count(minimap_line);
 					int last_wrap_column = 0;
 
+					int first_indent_line = 0;
+					float wrap_indent_line = 0.0;
+					if (text.is_indent_wrapped_lines()) {
+						wrap_indent_line = _get_wrapped_indent_level(minimap_line, first_indent_line);
+						wrap_indent_line = MIN(wrap_indent_line, (minimap_width / minimap_char_size.x) * 0.6);
+					}
 					for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
 						if (line_wrap_index != 0) {
 							i++;
@@ -904,7 +910,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						const String &str = wrap_rows[line_wrap_index];
-						int indent_px = line_wrap_index != 0 ? get_indent_level(minimap_line) : 0;
+						int indent_px = line_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 						if (indent_px >= wrap_at_column) {
 							indent_px = 0;
 						}
@@ -1052,6 +1058,12 @@ void TextEdit::_notification(int p_what) {
 				const Vector<String> wrap_rows = draw_placeholder ? placeholder_wrapped_rows : get_line_wrapped_text(line);
 				int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
 
+				int first_indent_line = 0;
+				float wrap_indent_line = 0.0;
+				if (text.is_indent_wrapped_lines()) {
+					wrap_indent_line = _get_wrapped_indent_level(line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+					wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+				}
 				for (int line_wrap_index = 0; line_wrap_index <= line_wrap_amount; line_wrap_index++) {
 					if (line_wrap_index != 0) {
 						i++;
@@ -1183,7 +1195,7 @@ void TextEdit::_notification(int p_what) {
 					// Draw line.
 					RID rid = ldata->get_line_rid(line_wrap_index);
 					float text_height = TS->shaped_text_get_size(rid).y;
-					float wrap_indent = (text.is_indent_wrapped_lines() && line_wrap_index > 0) ? get_indent_level(line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+					float wrap_indent = line_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 
 					if (rtl) {
 						char_margin = size.width - char_margin - (TS->shaped_text_get_size(rid).x + wrap_indent);
@@ -3565,6 +3577,32 @@ int TextEdit::get_line_height() const {
 	return MAX(text.get_line_height() + theme_cache.line_spacing, 1);
 }
 
+int TextEdit::_get_wrapped_indent_level(int p_line, int &r_first_wrap) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	const Vector<Vector2i> wr = text.get_line_wrap_ranges(p_line);
+	r_first_wrap = 0;
+
+	int tab_count = 0;
+	int whitespace_count = 0;
+	int line_length = text[p_line].size();
+	for (int i = 0; i < line_length - 1; i++) {
+		if (r_first_wrap < wr.size() && i >= wr[r_first_wrap].y) {
+			tab_count = 0;
+			whitespace_count = 0;
+			r_first_wrap++;
+		}
+		if (text[p_line][i] == '\t') {
+			tab_count++;
+		} else if (text[p_line][i] == ' ') {
+			whitespace_count++;
+		} else {
+			break;
+		}
+	}
+	return tab_count * text.get_tab_size() + whitespace_count;
+}
+
 int TextEdit::get_indent_level(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
@@ -4488,7 +4526,13 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	}
 
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
-	float wrap_indent = (text.is_indent_wrapped_lines() && wrap_index > 0) ? get_indent_level(row) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(row, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 	if (is_layout_rtl()) {
 		colx = TS->shaped_text_get_size(text_rid).x - colx + wrap_indent;
 	} else {
@@ -7590,7 +7634,13 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	p_wrap_index = MIN(p_wrap_index, text.get_line_data(p_line)->get_line_count() - 1);
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(p_wrap_index);
-	float wrap_indent = (text.is_indent_wrapped_lines() && p_wrap_index > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(p_line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = p_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 	if (is_layout_rtl()) {
 		p_px = TS->shaped_text_get_size(text_rid).x - p_px + wrap_indent;
 	} else {
@@ -7659,7 +7709,13 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	}
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(row);
-	float wrap_indent = (text.is_indent_wrapped_lines() && row > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(p_line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = row > first_indent_line ? wrap_indent_line : 0.0;
 	CaretInfo ts_caret = TS->shaped_text_get_carets(text_rid, p_column);
 	if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
 		return ts_caret.l_caret.position.x + (is_layout_rtl() ? -wrap_indent : wrap_indent);
