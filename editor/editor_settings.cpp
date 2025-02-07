@@ -68,6 +68,10 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (changed && initialized) {
 		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
+
+		if (p_name == SNAME("interface/editor/editor_language")) {
+			setup_language();
+		}
 	}
 	return true;
 }
@@ -1256,9 +1260,9 @@ fail:
 
 void EditorSettings::setup_language() {
 	String lang = get("interface/editor/editor_language");
-	TranslationServer::get_singleton()->set_locale(lang);
 
 	if (lang == "en") {
+		TranslationServer::get_singleton()->set_locale(lang);
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
@@ -1270,6 +1274,8 @@ void EditorSettings::setup_language() {
 
 	// Load extractable translation for projects.
 	load_extractable_translations(lang);
+
+	TranslationServer::get_singleton()->set_locale(lang);
 }
 
 void EditorSettings::setup_network() {
