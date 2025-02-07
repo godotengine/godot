@@ -37,12 +37,14 @@
 # bedo david <bedo.david7676@gmail.com>, 2024.
 # Attila Diós <xatixatix@gmail.com>, 2024.
 # TheFocusDev <thefocusdev@protonmail.com>, 2024.
+# Milán Had <hadobas.milan10@gmail.com>, 2024.
+# Dávid Groniewsky <gro.david.d@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-30 16:40+0000\n"
+"PO-Revision-Date: 2024-12-01 17:13+0000\n"
 "Last-Translator: TheFocusDev <thefocusdev@protonmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
@@ -51,10 +53,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.9-dev\n"
 
 msgid "Main Thread"
-msgstr "Fő thread"
+msgstr "Fő vonal"
 
 msgid "Unset"
 msgstr "Nincs beállítva"
@@ -129,10 +131,10 @@ msgid "Joystick 4 Y-Axis"
 msgstr "Joystick 4 Y-tengely"
 
 msgid "Unknown Joypad Axis"
-msgstr "Ismeretlen Joypad tengely"
+msgstr "Ismeretlen Joystick tengely"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Joypad Mozgatás a(z) %d (%s) tengelyen, ennyivel: %.2f"
+msgstr "Joystick Mozgatás a(z) %d (%s) tengelyen, ennyivel: %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Alsó Akciógomb, Sony Kereszt, Xbox A, Nintendo B"
@@ -227,7 +229,7 @@ msgid "MIDI Input on Channel=%s Message=%s"
 msgstr "MIDI Bevitel: Csatorna=%s Üzenet=%s"
 
 msgid "Input Event with Shortcut=%s"
-msgstr "Input Esemény: Gyorsbillentyű=%s"
+msgstr "Bemenet Esemény: Gyorsbillentyű=%s"
 
 msgid "Accept"
 msgstr "Elfogad"
@@ -257,16 +259,16 @@ msgid "Down"
 msgstr "Le"
 
 msgid "Page Up"
-msgstr "Page Up"
+msgstr "Lap fel"
 
 msgid "Page Down"
-msgstr "Page Down"
+msgstr "Lap Le"
 
 msgid "Home"
 msgstr "Home"
 
 msgid "End"
-msgstr "End"
+msgstr "Vége"
 
 msgid "Cut"
 msgstr "Kivágás"
@@ -311,7 +313,7 @@ msgid "Backspace all to Left"
 msgstr "Törlés a Sor Elejéig"
 
 msgid "Delete"
-msgstr "Törlés Jobbra"
+msgstr "Törlés"
 
 msgid "Delete Word"
 msgstr "Szó Törlése Jobbra"
@@ -370,6 +372,12 @@ msgstr "Szó Kijelölése a Kurzor Alatt"
 msgid "Add Selection for Next Occurrence"
 msgstr "Kijelölés Hozzáadása Következő Esetnél"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Kijelölés kihagyása a következő esetnél"
+
+msgid "Clear Carets and Selection"
+msgstr "Kijelölés és Keretezések törlése"
+
 msgid "Toggle Insert Mode"
 msgstr "Beillesztés Mód Be-/Kikapcsolása"
 
@@ -416,7 +424,7 @@ msgid "On call to '%s':"
 msgstr "'%s' hívásánál:"
 
 msgid "Built-in script"
-msgstr "Beépített szkript"
+msgstr "Beépített program"
 
 msgid "Built-in"
 msgstr "Beépített"
@@ -452,6 +460,9 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "'%s' nevű művelet már létezik."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Nem lehet visszavonni mert nincs változás"
+
 msgid "Revert Action"
 msgstr "Művelet Visszavonása"
 
@@ -459,7 +470,7 @@ msgid "Add Event"
 msgstr "Esemény hozzáadása"
 
 msgid "Cannot Remove Action"
-msgstr "Művelet Nem Eltávolítható"
+msgstr "Esemény Nem távolítható el"
 
 msgid "Edit Event"
 msgstr "Esemény Szerkesztése"
@@ -469,6 +480,9 @@ msgstr "Esemény Eltávolítása"
 
 msgid "Filter by Name"
 msgstr "Szűrés név szerint"
+
+msgid "Clear all search filters."
+msgstr "A keresési szűrök törlése."
 
 msgid "Add New Action"
 msgstr "Művelet hozzáadása"
@@ -500,6 +514,15 @@ msgstr "Kulcs Beszúrása Ide"
 msgid "Duplicate Selected Key(s)"
 msgstr "Kiválasztott Kulcs(ok) Megkettőzése"
 
+msgid "Cut Selected Key(s)"
+msgstr "Kiválasztott Kulcs(ok) Kivágása"
+
+msgid "Copy Selected Key(s)"
+msgstr "Kiválasztott Kulcs(ok) Másolása"
+
+msgid "Paste Key(s)"
+msgstr "Kulcs(ok) Beillesztése"
+
 msgid "Delete Selected Key(s)"
 msgstr "Kiválasztott Kulcs(ok) Törlése"
 
@@ -511,6 +534,12 @@ msgstr "Bézier Pontok Mozgatása"
 
 msgid "Animation Duplicate Keys"
 msgstr "Animáció - Kulcsok Megkettőzése"
+
+msgid "Animation Cut Keys"
+msgstr "Animáció - Kulcsok Kivágása"
+
+msgid "Animation Paste Keys"
+msgstr "Animáció - Kulcsok Beillesztése"
 
 msgid "Animation Delete Keys"
 msgstr "Animáció - Kulcsok Törlése"
@@ -1024,6 +1053,9 @@ msgstr "Hibakereső"
 msgid "Debug"
 msgstr "Hibakeresés"
 
+msgid "Save Branch as Scene"
+msgstr "Ág mentése Jelenetként"
+
 msgid "Copy Node Path"
 msgstr "Node Útvonal Másolása"
 
@@ -1104,6 +1136,9 @@ msgstr "Összes becsukása"
 
 msgid "Type"
 msgstr "Típus"
+
+msgid "Format"
+msgstr "Formátum"
 
 msgid "Search Replacement For:"
 msgstr "Csere keresése:"
@@ -2269,8 +2304,20 @@ msgstr "Válasszon sablonfájlt"
 msgid "Godot Export Templates"
 msgstr "Godot export sablonok"
 
+msgid "Runnable"
+msgstr "Futtatható"
+
+msgid "Resources to export:"
+msgstr "Az exportálandó Erőforrások:"
+
+msgid "Export With Debug"
+msgstr "Exportálás Hibakereséssel"
+
 msgid "Exporting All"
 msgstr "Összes exportálása"
+
+msgid "Presets"
+msgstr "Előbeállítások"
 
 msgid "Duplicate"
 msgstr "Megkettőzés"
@@ -2280,6 +2327,24 @@ msgstr "Haladó beállítások"
 
 msgid "Export Path"
 msgstr "Exportálási Útvonal"
+
+msgid "Options"
+msgstr "Opciók"
+
+msgid "Resources"
+msgstr "Erőforrások"
+
+msgid "Export all resources in the project"
+msgstr "Az összes projekt beli erőforrás exportálása"
+
+msgid "Export selected scenes (and dependencies)"
+msgstr "A kiválasztott jelenetek (és a tőle függők) exportálása"
+
+msgid "Export selected resources (and dependencies)"
+msgstr "A kiválasztott erőforrások (és a tőlük függők) exportálása"
+
+msgid "Export Mode:"
+msgstr "Exportálási Mód:"
 
 msgid "Features"
 msgstr "Funkciók"
@@ -2557,6 +2622,12 @@ msgstr "Szkript megnyitása:"
 msgid "Open in Editor"
 msgstr "Megnyitás Szerkesztőben"
 
+msgid "Scene Tree (Nodes):"
+msgstr "Jeleneti Fa (Node-ok):"
+
+msgid "Select a Node"
+msgstr "Node Kiválasztása"
+
 msgid "Importing Scene..."
 msgstr "Jelenet importálása..."
 
@@ -2629,6 +2700,9 @@ msgstr "Fordítások"
 
 msgid "Translations:"
 msgstr "Fordítások:"
+
+msgid "Resources:"
+msgstr "Erőforrások:"
 
 msgid "Groups"
 msgstr "Csoportok"
@@ -3578,11 +3652,41 @@ msgstr "Z-Tengely Transzformáció."
 msgid "View Plane Transform."
 msgstr "Megnéz a Síklap transzformációját."
 
+msgid "Animation Key Inserted."
+msgstr "Animációs Kulcs Beillesztve."
+
 msgid "Objects: %d\n"
 msgstr "Objektumok: %d\n"
 
 msgid "FPS: %d"
 msgstr "FPS: %d"
+
+msgid "Top View."
+msgstr "Felső nézet."
+
+msgid "Bottom View."
+msgstr "Alsó nézet."
+
+msgid "Left View."
+msgstr "Bal nézet."
+
+msgid "Right View."
+msgstr "Jobb nézet."
+
+msgid "Front View."
+msgstr "Első nézet."
+
+msgid "Rear View."
+msgstr "Hátsó nézet."
+
+msgid "Rotating %s degrees."
+msgstr "%s fokkal való forgatás."
+
+msgid "Display Normal"
+msgstr "Normális Nézet"
+
+msgid "Display Wireframe"
+msgstr "Drótváz Nézet"
 
 msgid "Normal Buffer"
 msgstr "Normál Buffer"
@@ -3590,14 +3694,41 @@ msgstr "Normál Buffer"
 msgid "Internal Buffer"
 msgstr "Belső Buffer"
 
+msgid "View Grid"
+msgstr "Négyzethálós Nézet"
+
 msgid "Cinematic Preview"
 msgstr "Filmszerű előnézet"
 
 msgid "Use Snap"
 msgstr "Illesztés Használata"
 
+msgid "Bottom View"
+msgstr "Alsó Nézet"
+
+msgid "Top View"
+msgstr "Felső Nézet"
+
+msgid "Rear View"
+msgstr "Hátsó Nézet"
+
+msgid "Front View"
+msgstr "Első Nézet"
+
+msgid "Left View"
+msgstr "Bal Nézet"
+
+msgid "Right View"
+msgstr "Jobb Nézet"
+
 msgid "Insert Animation Key"
 msgstr "Animációs Kulcs Beszúrása"
+
+msgid "Focus Origin"
+msgstr "Eredet Fókuszálása"
+
+msgid "Focus Selection"
+msgstr "Kiválasztott Fókuszálása"
 
 msgid "Transform"
 msgstr "átalakítás"
@@ -3605,8 +3736,20 @@ msgstr "átalakítás"
 msgid "Snap Object to Floor"
 msgstr "Objektum illesztése a padlóhoz"
 
+msgid "View Origin"
+msgstr "Eredet Nézet"
+
 msgid "Settings..."
 msgstr "Beállítások..."
+
+msgid "Transform Change"
+msgstr "Átalakítás Módosítása"
+
+msgid "Translate:"
+msgstr "Átalakítás:"
+
+msgid "Rotate (deg.):"
+msgstr "Forgatás (fok):"
 
 msgid "Tonemap"
 msgstr "Tonemap"
@@ -4008,14 +4151,29 @@ msgstr "Előnézet frissítése"
 msgid "Settings:"
 msgstr "Beállítások:"
 
+msgid "Add Frame"
+msgstr "Kép Hozzáadása"
+
 msgid "Unable to load images"
 msgstr "Nem lehet betölteni a képeket"
+
+msgid "ERROR: Couldn't load frame resource!"
+msgstr "HIBA: A kép erőforrást nem lehetett betölteni!"
+
+msgid "Add Empty"
+msgstr "Üres Hozzáadása"
 
 msgid "Move Frame"
 msgstr "Keret mozgatása"
 
 msgid "Delete Animation?"
 msgstr "Animáció Törlése?"
+
+msgid "Change Animation FPS"
+msgstr "Animáció FPS Módosítása"
+
+msgid "(empty)"
+msgstr "(üres)"
 
 msgid "Animations:"
 msgstr "Animációk:"
@@ -4038,11 +4196,20 @@ msgstr "Újramentés"
 msgid "Set Margin"
 msgstr "Margó Beállítása"
 
+msgid "Step:"
+msgstr "Lépés:"
+
+msgid "Remove Class Items"
+msgstr "Osztály Elem Eltávolítása"
+
 msgid "Toggle Button"
 msgstr "Váltógomb"
 
 msgid "Disabled Button"
 msgstr "Letiltott gomb"
+
+msgid "Item"
+msgstr "Elem"
 
 msgid "Disabled Item"
 msgstr "Letiltott elem"
@@ -4056,8 +4223,20 @@ msgstr "Alelem 1"
 msgid "Subitem 2"
 msgstr "Alelem 2"
 
+msgid "Many"
+msgstr "Sok"
+
 msgid "Disabled LineEdit"
 msgstr "Letiltott szerkesztősor"
+
+msgid "Tab 1"
+msgstr "Tab 1"
+
+msgid "Tab 2"
+msgstr "Tab 2"
+
+msgid "Tab 3"
+msgstr "Tab 3"
 
 msgid "Editable Item"
 msgstr "Szerkeszthető elem"
@@ -4073,6 +4252,9 @@ msgstr "Csempék"
 
 msgid "Yes"
 msgstr "Igen"
+
+msgid "Error"
+msgstr "Hiba"
 
 msgid "Password"
 msgstr "Jelszó"
@@ -4191,8 +4373,14 @@ msgstr "A következő fájlokat nem sikerült kibontani a csomagból:"
 msgid "Create & Edit"
 msgstr "Létrehozás és Szerkesztés"
 
+msgid "Install Project:"
+msgstr "Projekt telepítése:"
+
 msgid "Project Name:"
 msgstr "Projekt neve:"
+
+msgid "Project Path:"
+msgstr "Projekt Elérési Útja:"
 
 msgid "Missing Project"
 msgstr "Hiányzó projekt"
@@ -4203,6 +4391,12 @@ msgstr "Újraindítás most"
 msgid "Delete Item"
 msgstr "Elem törlése"
 
+msgid "Add Input Action"
+msgstr "Beviteli Akció Hozzáadása"
+
+msgid "Input Map"
+msgstr "Beviteli Térkép"
+
 msgid "Localization"
 msgstr "Lokalizáció"
 
@@ -4211,6 +4405,9 @@ msgstr "Automatikus betöltés"
 
 msgid "Plugins"
 msgstr "Bővítmények"
+
+msgid "Select Property"
+msgstr "Tulajdonság Kiválasztása"
 
 msgid "Select Virtual Method"
 msgstr "Virtuális metódus kiválasztása"
@@ -4260,8 +4457,14 @@ msgstr "3D Jelenet"
 msgid "User Interface"
 msgstr "Felhasználói Felület"
 
+msgid "Error loading scene from %s"
+msgstr "Hiba a %s jelenet betöltése közben"
+
 msgid "Detach Script"
 msgstr "Szkript leválasztása"
+
+msgid "This operation can't be done on the tree root."
+msgstr "Ezt a műveletet nem lehet a fa gyökerén végrehajtani."
 
 msgid "Duplicate Node(s)"
 msgstr "Node(ok) Megkettőzése"
@@ -4275,11 +4478,32 @@ msgstr "Gyökér Node Létrehozása:"
 msgid "Other Node"
 msgstr "Másik Node"
 
+msgid "Attach Script"
+msgstr "Kód Csatolása"
+
+msgid "Remove Node(s)"
+msgstr "Node(-ok) eltávolítása"
+
+msgid "This operation requires a single selected node."
+msgstr "Ehez a művelethez egy kiválasztott Node szükséges."
+
+msgid "Error saving scene."
+msgstr "Hiba a jelenet mentése közben."
+
 msgid "Sub-Resources"
 msgstr "Al-Erőforrások"
 
+msgid "Clear Inheritance"
+msgstr "Függősék Törlése"
+
+msgid "Editable Children"
+msgstr "Módosítható Gyerekek"
+
 msgid "Can't paste root node into the same scene."
 msgstr "Gyökér node nem illeszthető be azonos jelenetbe."
+
+msgid "Clear Inheritance? (No Undo!)"
+msgstr "Függőség Törlése? (Nem Visszavonható!)"
 
 msgid "Path is empty."
 msgstr "Az útvonal üres."
@@ -4302,6 +4526,9 @@ msgstr "Érvénytelen kiterjesztés."
 msgid "Template:"
 msgstr "Sablon:"
 
+msgid "Error loading script from %s"
+msgstr "Hiba a %s kód betöltése közben"
+
 msgid "Open Script"
 msgstr "Szkript megnyitása"
 
@@ -4322,6 +4549,9 @@ msgstr "Létrehoz egy új szkriptfájlt."
 
 msgid "Built-in Script:"
 msgstr "Beépített szkript:"
+
+msgid "N/A"
+msgstr "N/A"
 
 msgid "Invalid base path."
 msgstr "Érvénytelen Alapútvonal."

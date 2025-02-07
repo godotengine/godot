@@ -79,13 +79,19 @@
 # Tycho <tychoschurink@outlook.com>, 2024.
 # Leroy <Leroyvanraaij@gmail.com>, 2024.
 # pim wagemans <pimwagemans09@gmail.com>, 2024.
+# Yannick Kartodikromo <yannickkartodikromo0001@gmail.com>, 2024.
+# NicolasDed <nicolas-dedoyard@outlook.com>, 2024.
+# "Julian F." <info@julianfitzpatrick.nl>, 2024.
+# bas van den burg <basburgoss@gmail.com>, 2024.
+# Luka Verbrugghe <verbruggheluka0@gmail.com>, 2024.
+# tristanvong <tristan.vong@student.ehb.be>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-09-10 14:09+0000\n"
-"Last-Translator: pim wagemans <pimwagemans09@gmail.com>\n"
+"PO-Revision-Date: 2025-02-03 04:50+0000\n"
+"Last-Translator: tristanvong <tristan.vong@student.ehb.be>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -93,13 +99,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
-msgstr "Hoofdthread"
+msgstr "Hoofd Thread"
 
 msgid "Unset"
-msgstr "Niet ingesteld"
+msgstr "Ongezet"
 
 msgid "Physical"
 msgstr "Fysiek"
@@ -619,6 +625,9 @@ msgstr "Animatie Plak Sleutels"
 msgid "Animation Delete Keys"
 msgstr "Animatiesleutels verwijderen"
 
+msgid "Animation Bezier Curve Change Call"
+msgstr "Bezier-curve animatie aanroep wijzigen"
+
 msgid "Focus"
 msgstr "Focus"
 
@@ -701,7 +710,7 @@ msgid "Bezier Curve Track..."
 msgstr "Bézier Curve Track..."
 
 msgid "Audio Playback Track..."
-msgstr "Audio Afspeel Track"
+msgstr "Audio Afspeel Track..."
 
 msgid "Animation Playback Track..."
 msgstr "Animatie-afspelen-track..."
@@ -1283,7 +1292,7 @@ msgid "Animation Baker"
 msgstr "Animatie­bakker"
 
 msgid "3D Pos/Rot/Scl Track:"
-msgstr "3D-Pos.-/-Rot.-/-Sch.-spoor"
+msgstr "3D-Pos.-/-Rot.-/-Sch.-spoor:"
 
 msgid "Blendshape Track:"
 msgstr "Mengvorm-spoor:"
@@ -2096,7 +2105,7 @@ msgid "Licenses"
 msgstr "Licenties"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr "Fout bij het openen van het bron-bestand (niet in ZIP-formaat)."
+msgstr "Fout bij het openen van het bron-bestand \"%s\" (niet in ZIP-formaat)."
 
 msgid "%s (already exists)"
 msgstr "%s (bestaat al)"
@@ -2389,7 +2398,7 @@ msgid "XR"
 msgstr "XR"
 
 msgid "RenderingDevice"
-msgstr "RenderingApparaat:"
+msgstr "RenderingApparaat"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -2538,9 +2547,6 @@ msgstr "Acties:"
 msgid "Configure Engine Compilation Profile:"
 msgstr "Engine-bouwprofiel configureren:"
 
-msgid "Please Confirm:"
-msgstr "Gelieve te bevestigen:"
-
 msgid "Engine Compilation Profile"
 msgstr "Engine-bouwprofiel"
 
@@ -2549,6 +2555,9 @@ msgstr "Profiel laden"
 
 msgid "Export Profile"
 msgstr "Profiel exporteren"
+
+msgid "Edit Compilation Configuration Profile"
+msgstr "Profiel voor compilatieconfiguratie bewerken"
 
 msgid ""
 "Failed to execute command \"%s\":\n"
@@ -2561,7 +2570,7 @@ msgid "Filter Commands"
 msgstr "Commando's filteren"
 
 msgid "Paste Params"
-msgstr "Parameters plakken"
+msgstr "Plak parameters"
 
 msgid "Updating Scene"
 msgstr "Scène bijwerken"
@@ -2582,7 +2591,7 @@ msgid "%s - Godot Engine"
 msgstr "%s - Godot Engine"
 
 msgid "Move this dock right one tab."
-msgstr "Beweeg dit paneel een tabblad naar links."
+msgstr "Beweeg dit paneel een tab naar rechts."
 
 msgid "Move this dock left one tab."
 msgstr "Beweeg dit paneel een tabblad naar links."
@@ -2593,20 +2602,26 @@ msgstr "Paneelpositie"
 msgid "Make Floating"
 msgstr "Maak zwevend"
 
+msgid "Make this dock floating."
+msgstr "Maak dit paneel zwevend."
+
 msgid "Move to Bottom"
 msgstr "Verplaats naar Bodem"
+
+msgid "Move this dock to the bottom panel."
+msgstr "Verplaats dit dock naar het onderste paneel."
 
 msgid "Close this dock."
 msgstr "Sluit dit paneel."
 
 msgid "3D Editor"
-msgstr "3D-bewerker"
+msgstr "3D Editor"
 
 msgid "Script Editor"
-msgstr "Script-bewerker"
+msgstr "Scriptbewerker"
 
 msgid "Asset Library"
-msgstr "Materiaalbibliotheek"
+msgstr "Assetbibliotheek"
 
 msgid "Scene Tree Editing"
 msgstr "Scèneboombewerking"
@@ -2749,6 +2764,11 @@ msgstr "Profiel(en) importeren"
 msgid "Manage Editor Feature Profiles"
 msgstr "Eigenschapsprofielen Editor beheren"
 
+msgid "Some extensions need the editor to restart to take effect."
+msgstr ""
+"Sommige extensies vereisen dat de editor opnieuw wordt opgestart om effect te "
+"hebben."
+
 msgid "Restart"
 msgstr "Herstarten"
 
@@ -2757,6 +2777,12 @@ msgstr "Opslaan en herstarten"
 
 msgid "ScanSources"
 msgstr "Bronnen scannen"
+
+msgid "Update Scene Groups"
+msgstr "Scènegroepen bijwerken"
+
+msgid "Updating Scene Groups..."
+msgstr "Scènegroepen aan het bijwerken..."
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2830,6 +2856,17 @@ msgstr "Constructor-beschrijvingen"
 msgid "Operator Descriptions"
 msgstr "Operator-beschrijvingen"
 
+msgid "This method may be changed or removed in future versions."
+msgstr "Deze methode kan in toekomstige versies worden gewijzigd of verwijderd."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr ""
+"Deze constructor kan in toekomstige versies worden gewijzigd of verwijderd."
+
+msgid "This operator may be changed or removed in future versions."
+msgstr ""
+"Deze operator kan in toekomstige versies worden gewijzigd of verwijderd."
+
 msgid "Error codes returned:"
 msgstr "Foutcodes teruggegeven:"
 
@@ -2868,6 +2905,9 @@ msgstr "Boven"
 
 msgid "Class:"
 msgstr "Klasse:"
+
+msgid "This class may be changed or removed in future versions."
+msgstr "Deze klasse kan in toekomstige versies worden gewijzigd of verwijderd."
 
 msgid "Inherits:"
 msgstr "Erft:"
@@ -2934,8 +2974,40 @@ msgstr "Iconen"
 msgid "Styles"
 msgstr "Stijlen"
 
+msgid "There is currently no description for this theme property."
+msgstr "Er is momenteel geen beschrijving voor deze thema-eigenschap."
+
+msgid ""
+"There is currently no description for this theme property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Er is momenteel geen beschrijving voor deze thema-eigenschap. Help ons "
+"alstublieft door [color=$color][url=$url]een bijdrage te leveren[/url][/"
+"color]!"
+
+msgid "This signal may be changed or removed in future versions."
+msgstr "Dit signaal kan in toekomstige versies worden gewijzigd of verwijderd."
+
+msgid "There is currently no description for this signal."
+msgstr "Er is momenteel geen beschrijving voor dit signaal."
+
+msgid ""
+"There is currently no description for this signal. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Er is momenteel geen beschrijving voor dit signaal. Help ons alstublieft door "
+"[color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
+
 msgid "Enumerations"
 msgstr "Enumeraties"
+
+msgid "This enumeration may be changed or removed in future versions."
+msgstr ""
+"Deze opsomming kan in toekomstige versies worden gewijzigd of verwijderd."
+
+msgid "This constant may be changed or removed in future versions."
+msgstr ""
+"Deze constante kan in toekomstige versies worden gewijzigd of verwijderd."
 
 msgid "Annotations"
 msgstr "Annotaties"
@@ -2955,6 +3027,10 @@ msgstr "Eigenschap-beschrijvingen"
 
 msgid "(value)"
 msgstr "(waarde)"
+
+msgid "This property may be changed or removed in future versions."
+msgstr ""
+"Deze eigenschap kan in toekomstige versies worden gewijzigd of verwijderd."
 
 msgid ""
 "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
@@ -2991,6 +3067,12 @@ msgstr "Instelling:"
 msgid "Property:"
 msgstr "Eigenschap:"
 
+msgid "Internal Property:"
+msgstr "Interne eigenschap:"
+
+msgid "This property can only be set in the Inspector."
+msgstr "Deze eigenschap kan alleen worden ingesteld in de Inspector."
+
 msgid "Method:"
 msgstr "Methode:"
 
@@ -2999,6 +3081,9 @@ msgstr "Signaal:"
 
 msgid "Theme Property:"
 msgstr "Thema Eigenschap:"
+
+msgid "%d match."
+msgstr "%d overeenkomst."
 
 msgid "%d matches."
 msgstr "%d overeenkomst(en)."
@@ -3161,6 +3246,9 @@ msgstr "Meerdere instellen: %s"
 msgid "Remove metadata %s"
 msgstr "Metadata %s verwijderen"
 
+msgid "Pinned %s"
+msgstr "%s opgepind"
+
 msgid "Unpinned %s"
 msgstr "%s losgemaakt"
 
@@ -3307,8 +3395,14 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Draait wanneer het editor venster wordt hertekend."
 
+msgid "Imported resources can't be saved."
+msgstr "Geïmporteerde bronnen kunnen niet worden opgeslagen."
+
 msgid "OK"
 msgstr "Oké"
+
+msgid "Error saving resource!"
+msgstr "Fout bij het opslaan van de hulpbron."
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -3317,11 +3411,37 @@ msgstr ""
 "Deze hulpbron kan niet opgeslagen worden omdat het niet bij de bewerkte scène "
 "hoort. Maak het eerst uniek."
 
+msgid ""
+"This resource can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"Deze hulpbron kan niet opgeslagen worden omdat het geïmporteerd is uit een "
+"ander bestand. Maak het eerst uniek."
+
 msgid "Save Resource As..."
 msgstr "Bron opslaan als..."
 
+msgid "Can't open file for writing:"
+msgstr "Kan bestand niet openen voor schrijven:"
+
+msgid "Requested file format unknown:"
+msgstr "Gevraagde bestandsindeling onbekend:"
+
+msgid "Error while saving."
+msgstr "Fout bij het opslaan."
+
+msgid "Can't open file '%s'. The file could have been moved or deleted."
+msgstr ""
+"Kan bestand '%s' niet openen. Het bestand kan verplaatst of verwijderd zijn."
+
+msgid "Error while parsing file '%s'."
+msgstr "Fout bij het parsen van bestand '%s'."
+
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "Scène bestand \"%s\" lijkt invalide of corrupt te zijn."
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Bestand '%s' of een van de afhankelijkheden ontbreekt."
 
 msgid ""
 "File '%s' is saved in a format that is newer than the formats supported by "
@@ -3330,6 +3450,9 @@ msgstr ""
 "Bestand \"%s\" is in een bestandsformaat opgeslagen dat nieuwer is dan de "
 "bestandsformaten die ondersteund worden door deze versie van Godot, dus kan "
 "het niet opgeslagen worden."
+
+msgid "Error while loading file '%s'."
+msgstr "Fout bij het laden van bestand '%s'."
 
 msgid "Saving Scene"
 msgstr "Scène aan het opslaan"
@@ -3340,6 +3463,9 @@ msgstr "Aan Het Analyseren"
 msgid "Creating Thumbnail"
 msgstr "Thumbnail Aan Het Maken"
 
+msgid "This operation can't be done without a tree root."
+msgstr "Deze operatie kan niet worden uitgevoerd zonder een boomwortel."
+
 msgid ""
 "This scene can't be saved because there is a cyclic instance inclusion.\n"
 "Please resolve it and then attempt to save again."
@@ -3347,6 +3473,13 @@ msgstr ""
 "Deze scène kan niet opgeslagen worden omdat er een cyclische instantie "
 "inclusie is.\n"
 "Los dit op en probeer het dan opnieuw op te slaan."
+
+msgid ""
+"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
+"be satisfied."
+msgstr ""
+"Kon scène niet opslaan. Waarschijnlijk konden (instantie- of "
+"overerving-)afhankelijkheden niet voldaan worden."
 
 msgid "Save scene before running..."
 msgstr "Scène opslaan voor het afspelen..."
@@ -3363,8 +3496,14 @@ msgstr "Kan geen scènes overschrijven die nog open zijn!"
 msgid "Merge With Existing"
 msgstr "Met bestaande samenvoegen"
 
+msgid "Apply MeshInstance Transforms"
+msgstr "Mesh instantie transformatie toepassen"
+
 msgid "Can't load MeshLibrary for merging!"
 msgstr "Kan MeshLibrary niet laden voor invoegen!"
+
+msgid "Error saving MeshLibrary!"
+msgstr "Fout bij het opslaan van MeshLibrary!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3402,11 +3541,32 @@ msgstr ""
 "begrijpen."
 
 msgid ""
+"This resource belongs to a scene that was instantiated or inherited.\n"
+"Changes to it must be made inside the original scene."
+msgstr ""
+"Deze hulpbron behoort bij een scene die geïnstantieerd of overgeërfd werd.\n"
+"Wijzigingen moeten worden aangebracht binnen de originele scène."
+
+msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
 "Deze bron werd geïmporteerd en kan dus niet bewerkt worden. Pas de "
 "instellingen aan in het importvenster en importeer het nadien opnieuw."
+
+msgid ""
+"This scene was imported, so changes to it won't be kept.\n"
+"Instantiating or inheriting it will allow you to make changes to it.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"Deze scène is geïmporteerd, dus wijzigingen worden niet bewaard.\n"
+"Door de scène te instantiëren of te erven, kunt u wijzigingen aanbgrengen.\n"
+"Lees de documentatie over het importeren van scènes om deze workflow beter te "
+"begrijpen."
+
+msgid "Changes may be lost!"
+msgstr "Veranderingen kunnen verloren gaan!"
 
 msgid "This object is read-only."
 msgstr "Dit object heeft alleen-lezen status."
@@ -3426,6 +3586,20 @@ msgstr "Script snel openen..."
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s bestaat niet meer! Specificeer alstublieft een nieuwe opslaglocatie."
 
+msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"De huidige scène heeft geen root node, maar externe resource(s), die werden "
+"gewijzigd door %d, werden toch opgeslagen."
+
+msgid ""
+"A root node is required to save the scene. You can add a root node using the "
+"Scene tree dock."
+msgstr ""
+"Een root node is nodig om de scène op te slaan. Je kan een rood node "
+"toevoegen door de tree dock scène te gebruiken."
+
 msgid "Save Scene As..."
 msgstr "Scène opslaan als..."
 
@@ -3438,14 +3612,29 @@ msgstr "Kan niet ongedaan maken terwijl de muis knoppen ingedrukt zijn."
 msgid "Nothing to undo."
 msgstr "Niks om ongedaan te maken."
 
+msgid "Global Undo: %s"
+msgstr "Globaal ongedaan maken: %s"
+
 msgid "Remote Undo: %s"
 msgstr "Op afstand ongedaan maken: %s"
+
+msgid "Scene Undo: %s"
+msgstr "Ongedaan maken in scène: %s"
 
 msgid "Can't redo while mouse buttons are pressed."
 msgstr "Kan niet opnieuw doen terwijl de muis knoppen ingedrukt zijn."
 
+msgid "Nothing to redo."
+msgstr "Niks om te herdoen."
+
+msgid "Global Redo: %s"
+msgstr "Globaal opnieuw doen: %s"
+
 msgid "Remote Redo: %s"
 msgstr "Op afstand opnieuw doen: %s"
+
+msgid "Scene Redo: %s"
+msgstr "Opnieuw doen in scène: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Een scène die nooit opgeslagen is kan niet opnieuw laden worden."
@@ -3460,8 +3649,23 @@ msgstr ""
 "De huidige scène bevat niet opgeslagen veranderingen.\n"
 "Scène desondanks herladen? Dit kan niet ongedaan gemaakt worden."
 
+msgid "Save & Reload"
+msgstr "Opslaan & Herstarten"
+
+msgid "Save modified resources before reloading?"
+msgstr "Sla gewijzigde bestanden op voor het afsluiten?"
+
 msgid "Save & Quit"
 msgstr "Opslaan & Afsluiten"
+
+msgid "Save modified resources before closing?"
+msgstr "Sla gewijzigde bestanden op voor het afsluiten?"
+
+msgid "Save changes to the following scene(s) before reloading?"
+msgstr "Wijzigen aan de volgende scène(s) opslaan voor het herladen?"
+
+msgid "Save changes to the following scene(s) before quitting?"
+msgstr "Wijzigen aan de volgende scène(s) opslaan voor het afsluiten?"
 
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr ""
@@ -3476,6 +3680,9 @@ msgstr ""
 
 msgid "Pick a Main Scene"
 msgstr "Kies een startscène"
+
+msgid "This operation can't be done without a scene."
+msgstr "Deze operatie kan niet worden uitgevoerd zonder scènes."
 
 msgid "Export Mesh Library"
 msgstr "Exporteer Mesh Library"
@@ -3499,6 +3706,12 @@ msgstr ""
 "Extra script kon niet geladen worden van het pad: '%s'. Dit kan veroorzaakt "
 "worden door een fout in dat script.\n"
 "Schakel de extra uit op '%s' om toekomstige fouten te vermijden."
+
+msgid ""
+"Unable to load addon script from path: '%s'. Base type is not 'EditorPlugin'."
+msgstr ""
+"Volgend addon-script kon niet geladen worden: '%s' Basistype is niet "
+"EditorPlugin."
 
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
@@ -3635,6 +3848,12 @@ msgstr ""
 msgid "Preparing scenes for reload"
 msgstr "Scènes aan het voorbereiden voor herladen"
 
+msgid "Analyzing scene %s"
+msgstr "Scène %s aan het analyseren"
+
+msgid "Preparation done."
+msgstr "Voorbereiding gedaan."
+
 msgid "Reloading done."
 msgstr "Herladen voltooid."
 
@@ -3719,6 +3938,9 @@ msgstr "Bewerkers­instellingen…"
 
 msgid "Project"
 msgstr "Project"
+
+msgid "Project Settings..."
+msgstr "Project­instellingen..."
 
 msgid "Project Settings"
 msgstr "Project­instellingen"
@@ -3896,6 +4118,9 @@ msgstr ""
 msgid "Keep local changes and overwrite"
 msgstr "Behoud lokale veranderingen en overschrijf"
 
+msgid "Create/Override Version Control Metadata..."
+msgstr "Metadata voor versiebeheer maken/overschrijven..."
+
 msgid "Version Control Settings..."
 msgstr "Versiebeheer­instellingen…"
 
@@ -3938,6 +4163,9 @@ msgstr "Tekst bewerken:"
 msgid "On"
 msgstr "Aan"
 
+msgid "Renaming layer %d:"
+msgstr "Mapnaam %d wijzigen:"
+
 msgid "No name provided."
 msgstr "Geen naam opgegeven."
 
@@ -3949,6 +4177,9 @@ msgstr "Bit %d, waarde %d"
 
 msgid "Rename"
 msgstr "Naam wijzigen"
+
+msgid "Layer %d"
+msgstr "Laag %d"
 
 msgid "<empty>"
 msgstr "<leeg>"
@@ -4075,6 +4306,9 @@ msgstr "Nieuw %s"
 msgid "New Script..."
 msgstr "Nieuw Script..."
 
+msgid "Extend Script..."
+msgstr "Script uitbreiden..."
+
 msgid "New Shader..."
 msgstr "Nieuwe Shader..."
 
@@ -4099,11 +4333,17 @@ msgstr ""
 "Waarschuwing: De CPU architectuur '%s' is niet actief in jouw export preset.\n"
 "\n"
 
+msgid "Run 'Remote Debug' anyway?"
+msgstr "Toch 'Debug op afstand' uitvoeren?"
+
 msgid "Write your logic in the _run() method."
 msgstr "Schrijf je logica in de _run() methode."
 
 msgid "The current scene already has a root node."
 msgstr "De huidige scène heeft al een wortel-node."
+
+msgid "Edit Built-in Action: %s"
+msgstr "Bewerk ingebouwde actie: %s"
 
 msgid "Common"
 msgstr "Gemeen­schappelijk"
@@ -4225,14 +4465,38 @@ msgstr "Info.plist hash krijgen is niet gelukt."
 msgid "Invalid Info.plist, no bundle id."
 msgstr "Invalide Info.plist, geen bundel id."
 
+msgid "Failed to extract thin binary."
+msgstr "Het uitpakken van de thin binary is mislukt."
+
+msgid "Already signed!"
+msgstr "Reeds gesigneerd!"
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Het aanmaken van een _CodeSignature‐subfolder is mislukt."
+
+msgid "Can't resize signature load command."
+msgstr "Kan het signature load command niet vergroten of verkleinen."
+
+msgid "Failed to create fat binary."
+msgstr "Het aanmaken van de fat binary is mislukt."
+
+msgid "Unknown bundle type."
+msgstr "Onbekend bundeltype."
+
 msgid "Unknown object type."
 msgstr "Onbekend object type."
 
 msgid "Project export for platform:"
 msgstr "Project export voor platform:"
 
+msgid "Completed with warnings."
+msgstr "Gemaakt met waarschuwingens."
+
 msgid "Failed."
 msgstr "Mislukt."
+
+msgid "Unknown Error"
+msgstr "Onbekend Fout"
 
 msgid "Export failed with error code %d."
 msgstr "Export gefaald met code %d."
@@ -4485,6 +4749,15 @@ msgstr "Exporteer als aangewezen server"
 msgid "Export Mode:"
 msgstr "Exporteermodus:"
 
+msgid ""
+"\"Strip Visuals\" will replace the following resources with placeholders:"
+msgstr ""
+"\"Visualisaties Weglaten\" zal de volgende bronnen vervangen door "
+"plaatshouders:"
+
+msgid "Strip Visuals"
+msgstr "Visualisaties Weglaten"
+
 msgid "Keep"
 msgstr "Houd"
 
@@ -4578,6 +4851,22 @@ msgstr "Vermiste Exportsjablonen voor dit platform:"
 msgid "Manage Export Templates"
 msgstr "Beheer Export Templates"
 
+msgid ""
+"Canceling this dialog will disable the FBX2glTF importer and use the ufbx "
+"importer.\n"
+"You can re-enable FBX2glTF in the Project Settings under Filesystem > Import "
+"> FBX > Enabled.\n"
+"\n"
+"The editor will restart as importers are registered when the editor starts."
+msgstr ""
+"Het annuleren van dit dialoogvenster zal de FBX2glTF-Importer uitschakelen en "
+"in plaats daarvan de ufbx importer gebruiken.\n"
+"FBX2glTF kan in Projectinstellingen onder Bestandssysteem > Importeren > FBX "
+"weer worden ingeschakeld.\n"
+"\n"
+"De editor zal zich opnieuw opstarten, aangezien de importers worden "
+"geregistreerd bij het opstarten."
+
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Pad naar FBX2glTF excecutable is leeg."
 
@@ -4588,6 +4877,16 @@ msgid "Error executing this file (wrong version or architecture)."
 msgstr ""
 "Foutmelding tijdens het uitvoeren van dit bestand (verkeerde versie of "
 "architectuur)."
+
+msgid ""
+"FBX2glTF is required for importing FBX files if using FBX2glTF.\n"
+"Alternatively, you can use ufbx by disabling FBX2glTF.\n"
+"Please download the necessary tool and provide a valid path to the binary:"
+msgstr ""
+"FBX2glTF is vereist voor het importeren van FBX-bestanden middels FBX2glTF.\n"
+"Het is anders ook mogelijk om ufbx te gebruiken door FBX2glTF uit te "
+"schakelen in de Projectinstellingen.\n"
+"Download het vereiste hulpmiddel en geef een pad naar de binary:"
 
 msgid "Click this link to download FBX2glTF"
 msgstr "Klik op deze link om FBX2glTF te downloaden"
@@ -4735,6 +5034,9 @@ msgstr "Uit favorieten verwijderen"
 msgid "Reimport"
 msgstr "Opnieuw importeren"
 
+msgid "Open Containing Folder in Terminal"
+msgstr "Open bovenliggende map in Terminal"
+
 msgid "Open in File Manager"
 msgstr "Openen in Bestandsbeheer"
 
@@ -4863,6 +5165,9 @@ msgstr "Verwijder referenties van alle scènes"
 msgid "Rename references in all scenes"
 msgstr "Hernoem referenties in alle scènes"
 
+msgid "This group belongs to another scene and can't be edited."
+msgstr "Deze groep behoort tot een andere scène en kan dus niet bewerkt worden."
+
 msgid "Global Groups"
 msgstr "Globale Groepen"
 
@@ -4881,6 +5186,13 @@ msgstr "Creëer Nieuwe Groep"
 msgid "Global"
 msgstr "Globaal"
 
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version information."
+msgstr ""
+"Git-commit datum: %s\n"
+"Klik om de versie-informatie te kopiëren."
+
 msgid "Expand Bottom Panel"
 msgstr "Vergroot Onderste Paneel"
 
@@ -4895,6 +5207,21 @@ msgstr "Netwerk"
 
 msgid "Select Current Folder"
 msgstr "Huidige Map Selecteren"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Bestand kan niet met lege bestandsnaam opgeslagen worden."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr ""
+"Bestand kan niet met een bestandsnaam beginnend met een punt opgeslagen "
+"worden."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Bestand \"%s\" bestaat al.\n"
+"Overschrijven?"
 
 msgid "Select This Folder"
 msgstr "Deze map selecteren"
@@ -4919,6 +5246,9 @@ msgstr "Bestand of map openen"
 
 msgid "Save a File"
 msgstr "Sla een Bestand Op"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "De gefavoriete folder bestaat niet (meer) en zal dus verwijderd worden."
 
 msgid "Go Back"
 msgstr "Ga Terug"
@@ -4986,6 +5316,41 @@ msgstr "Speel de bewerkte scène af."
 msgid "Quick Run Scene..."
 msgstr "Scène snel starten..."
 
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"Movie Maker-modus is ingeschakeld, maar er is geen bestandspad ingesteld.\n"
+"Het is mogelijk om een standaard bestandspad in te stellen in de "
+"projectinstellingen onder Editor > Movie Writer.\n"
+"Als alternatief is het ook mogelijk om, voor het uitvoeren van één scène, een "
+"`movie_file` string metadata toe te voegen aan de wortelknoop.\n"
+"Het is daarbij vereist om een pad naar het filmbestand dat gebruikt zal "
+"worden voor het opnemen van de scène op te geven."
+
+msgid "Run the project's default scene."
+msgstr "De standaardscène van het project uitvoeren."
+
+msgid "Run a specific scene."
+msgstr "Een specifieke scène uitvoeren."
+
+msgid "Run Specific Scene"
+msgstr "Speel specifieke scène af"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"Zet de Movie Maker modus aan.\n"
+"Het project loopt met een stabiele FPS en de visuele en audio-uitvoer wordt "
+"opgeslagen in een videobestand."
+
 msgid "Play This Scene"
 msgstr "Speel deze scène af"
 
@@ -5029,6 +5394,15 @@ msgstr "(Verbonden vanaf)"
 msgid "Node configuration warning:"
 msgstr "Waarschuwing over knoopconfiguratie:"
 
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"Deze node is vanuit elke plek in de scène toegankelijk door '%s' voor de naam "
+"te zetten in een nodepad.\n"
+"Klik om dit uit te schakelen."
+
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "Node heeft een connectie."
@@ -5038,6 +5412,12 @@ msgid "Node is in this group:"
 msgid_plural "Node is in the following groups:"
 msgstr[0] "Node is in deze groep:"
 msgstr[1] "Node is in de volgende groepen:"
+
+msgid "This script is currently running in the editor."
+msgstr "Dit script loopt huidelijk in de editor."
+
+msgid "This script is a custom type."
+msgstr "Dit script is een aangepast type."
 
 msgid "Open Script:"
 msgstr "Open Script:"
@@ -5059,6 +5439,9 @@ msgstr ""
 msgid "Open in Editor"
 msgstr "Openen in Editor"
 
+msgid "\"%s\" is not a known filter."
+msgstr "\"%s\" is niet een bekend filter."
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
 
@@ -5073,6 +5456,9 @@ msgstr "Toegestaan:"
 
 msgid "Select a Node"
 msgstr "Knoop uitkiezen"
+
+msgid "The Beginning"
+msgstr "Het begin"
 
 msgid "Importing Scene..."
 msgstr "Scène wordt geïmporteerd..."
@@ -5095,8 +5481,58 @@ msgstr "Fout bij uitvoeren post-import script:"
 msgid "Saving..."
 msgstr "Opslaan..."
 
+msgid "Import ID: %s"
+msgstr "Import ID: %s"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"Soort: %s\n"
+"Import ID: %s"
+
+msgid "Error opening scene"
+msgstr "Fout bij het openen van scène"
+
+msgid "Advanced Import Settings for Scene '%s'"
+msgstr "Geadvanceerde Import instellingen for Scène '%s'"
+
+msgid "Select folder where animations will save on import"
+msgstr "Selecteer de map waarin animaties worden opgeslagen bij het importeren"
+
+msgid "Existing file with the same name will be replaced."
+msgstr "Bestaand bestand met dezelfde naam zal vervangen worden."
+
+msgid "Already External"
+msgstr "Reeds Extern"
+
+msgid ""
+"This material already references an external file, no action will be taken.\n"
+"Disable the external property for it to be extracted again."
+msgstr ""
+"Dit materiaal verwijst al naar een extern bestand, er wordt geen actie "
+"uitgevoerd.\n"
+"Schakel de externe eigenschap uit om het opnieuw te extraheren."
+
+msgid "No import ID"
+msgstr "Geen import ID"
+
+msgid ""
+"Material has no name nor any other way to identify on re-import.\n"
+"Please name it or ensure it is exported with an unique ID."
+msgstr ""
+"Het materiaal heeft geen naam of andere manier om het te identificeren bij "
+"het opnieuw importeren.\n"
+"Geef het een naam of zorg ervoor dat het wordt geëxporteerd met een uniek ID."
+
+msgid "Extract Materials to Resource Files"
+msgstr "Materialen extraheren naar bronbestanden"
+
 msgid "Extract"
 msgstr "Extraheren"
+
+msgid "Existing file with the same name will be replaced on import."
+msgstr "Bestaande bestand met dezelfde naam wordt vervangen bij het importeren."
 
 msgid "Actions..."
 msgstr "Acties…"
@@ -5115,6 +5551,9 @@ msgstr "Lus:"
 
 msgid "BPM:"
 msgstr "BPM:"
+
+msgid "Advanced Import Settings for '%s'"
+msgstr "Geavanceerde importinstellingen voor '%s'"
 
 msgid "Configuration:"
 msgstr "Configuratie:"
@@ -6102,6 +6541,9 @@ msgstr "%s aan het toevoegen..."
 
 msgid "Create Node"
 msgstr "Knoop maken"
+
+msgid "Instantiating: "
+msgstr "Instantie "
 
 msgid "Change Default Type"
 msgstr "Wijzig standaard type"

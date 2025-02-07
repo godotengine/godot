@@ -1,0 +1,4031 @@
+# Vietnamese translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# 01lifeleft <01lifeleft@gmail.com>, 2018.
+# Dlean Jeans <dleanjeans@gmail.com>, 2018.
+# Hai Le <dark.hades.1102@gmail.com>, 2017.
+# Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
+# Tung Le <tungkradle@gmail.com>, 2017.
+# 38569459 <xxx38569459@gmail.com>, 2018.
+# TyTYct Hihi <tytyct@gmail.com>, 2019.
+# Steve Dang <itsnguu@outlook.com>, 2019, 2020.
+# Peter Anh <peteranh3105@gmail.com>, 2019.
+# Dũng Đinh <dqdthanhthanh@gmail.com>, 2019.
+# Steve Dang <bynguu@outlook.com>, 2020.
+# Harry Mitchell <minhyh0987@gmail.com>, 2020.
+# HSGamer <huynhqtienvtag@gmail.com>, 2020.
+# LetterC67 <hoangdeptoong@gmail.com>, 2020, 2021.
+# Rev <revolnoom7801@gmail.com>, 2021.
+# SyliawDeV <thanhlongstranger@gmail.com>, 2021.
+# IoeCmcomc <hopdaigia2004@gmail.com>, 2021, 2022.
+# Hung <hungthitkhia@gmail.com>, 2021.
+# Paweł Fertyk <pfertyk@pfertyk.me>, 2022.
+# MInhTriet <luckyblockblack@gmail.com>, 2022.
+# Nhật Huy <nhat.huy.7996@gmail.com>, 2022.
+# Trần Văn Luyện <lightlyn203@gmail.com>, 2023.
+# Bế Trọng Nghĩa <benghia1st@gmail.com>, 2023.
+# Ky Bui Van <ky.buivan.dev@gmail.com>, 2023.
+# plantcraft94 <plantcraft60@gmail.com>, 2023.
+# Đăng khoa Phạm <phamkhoafunny@gmail.com>, 2024.
+# xanhAD <tnhuthao414@gmail.com>, 2024.
+# a <anhkietcb2008@gmail.com>, 2024.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-12-12 20:14+0000\n"
+"Last-Translator: a <anhkietcb2008@gmail.com>\n"
+"Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
+"godot-properties/vi/>\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.9-dev\n"
+
+msgid "Application"
+msgstr "Ứng dụng"
+
+msgid "Config"
+msgstr "Cấu hình"
+
+msgid "Name"
+msgstr "Tên"
+
+msgid "Name Localized"
+msgstr "Tên được bản địa hóa"
+
+msgid "Description"
+msgstr "Mô tả"
+
+msgid "Version"
+msgstr "Phiên bản"
+
+msgid "Run"
+msgstr "Chạy"
+
+msgid "Main Scene"
+msgstr "Cảnh chính"
+
+msgid "Disable stdout"
+msgstr "Tắt stdout"
+
+msgid "Disable stderr"
+msgstr "Tắt stderr"
+
+msgid "Print Header"
+msgstr "Tiêu đê in"
+
+msgid "Enable Alt Space Menu"
+msgstr "Bật Menu không gian Alt"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "Dùng thư mục dữ liệu ẩn của dự án"
+
+msgid "Use Custom User Dir"
+msgstr "Sử dụng thư mục người dùng tùy chỉnh"
+
+msgid "Custom User Dir Name"
+msgstr "Tên thư mục người dùng tùy chỉnh"
+
+msgid "Project Settings Override"
+msgstr "Ghi đè thiết đặt dự án"
+
+msgid "Main Loop Type"
+msgstr "Loại vòng lặp chính"
+
+msgid "Auto Accept Quit"
+msgstr "Tự động Đồng ý Thoát"
+
+msgid "Quit on Go Back"
+msgstr "Trở lại"
+
+msgid "Display"
+msgstr "Hiển thị"
+
+msgid "Window"
+msgstr "Cửa sổ"
+
+msgid "Size"
+msgstr "Kích thước"
+
+msgid "Viewport Width"
+msgstr "Chiều rộng khung nhìn"
+
+msgid "Viewport Height"
+msgstr "Chiều cao khung nhìn"
+
+msgid "Mode"
+msgstr "Chế đ"
+
+msgid "Initial Position Type"
+msgstr "Vị trí toàn cục"
+
+msgid "Initial Position"
+msgstr "Vị trí toàn cục"
+
+msgid "Initial Screen"
+msgstr "Khởi tạo"
+
+msgid "Resizable"
+msgstr "Đổi kích cỡ được"
+
+msgid "Borderless"
+msgstr "Không có viền cửa sổ"
+
+msgid "Always on Top"
+msgstr "Luôn hiện thư mục"
+
+msgid "Transparent"
+msgstr "Trong suốt"
+
+msgid "Extend to Title"
+msgstr "Mở rộng tiêu đề"
+
+msgid "No Focus"
+msgstr "Đường dẫn Tập trung"
+
+msgid "Window Width Override"
+msgstr "Ghi đè chiều rộng cửa sổ"
+
+msgid "Window Height Override"
+msgstr "Ghi đè chiều cao cửa sổ"
+
+msgid "Energy Saving"
+msgstr "tiết kiệm năng lượng"
+
+msgid "Keep Screen On"
+msgstr "Giữ màn hình mở"
+
+msgid "Animation"
+msgstr "Hoạt hình"
+
+msgid "Warnings"
+msgstr "Cảnh báo"
+
+msgid "Check Invalid Track Paths"
+msgstr "Kiểm tra Đường dẫn theo dõi không hợp lệ"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Kiểm tra loại nội suy góc xung đột"
+
+msgid "Audio"
+msgstr "Âm thanh"
+
+msgid "Buses"
+msgstr "Xe buýt"
+
+msgid "Default Bus Layout"
+msgstr "Bố trí xe buýt mặc định"
+
+msgid "General"
+msgstr "Tổng quan"
+
+msgid "Default Playback Type"
+msgstr "Loại phát lại mặc định"
+
+msgid "Text to Speech"
+msgstr "chữ sang giọng nói"
+
+msgid "2D Panning Strength"
+msgstr "Sức mạnh Panning 2D"
+
+msgid "3D Panning Strength"
+msgstr "Sức mạnh của Panning 3D"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Thể loại phiên"
+
+msgid "Mix With Others"
+msgstr "Trộn với những người khác"
+
+msgid "Subwindows"
+msgstr "Cửa sổ phụ"
+
+msgid "Embed Subwindows"
+msgstr "Nhúng cửa sổ phụ"
+
+msgid "Physics"
+msgstr "Vật lí"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Chạy trên luồng riêng biệt"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Stretch"
+msgstr "Kéo giãn"
+
+msgid "Aspect"
+msgstr "Tỉ lệ"
+
+msgid "Scale"
+msgstr "Tỷ lệ"
+
+msgid "Scale Mode"
+msgstr "Chế độ tỷ lệ"
+
+msgid "Debug"
+msgstr "Gỡ lỗi"
+
+msgid "Settings"
+msgstr "Thiết đặt"
+
+msgid "Profiler"
+msgstr "Người lập hồ sơ"
+
+msgid "Max Functions"
+msgstr "Chức năng tối đa"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Các phần tử truy vấn dấu thời gian tối đa"
+
+msgid "Compression"
+msgstr "Nén"
+
+msgid "Formats"
+msgstr "Định dạng"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Thêm vào Cảnh"
+
+msgid "Compression Level"
+msgstr "Nén"
+
+msgid "Window Log Size"
+msgstr "Cỡ phông chính"
+
+msgid "Zlib"
+msgstr "Ựa"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Message"
+msgstr "Thông điệp"
+
+msgid "Rendering"
+msgstr "Kết xuất"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Bắt buộc hướng bố cục từ phải sang trái"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Tìm kiếm gia tăng Tối đa Interval Msec"
+
+msgid "Tooltip Delay (sec)"
+msgstr "Trì hoãn chú giải công cụ (giây)"
+
+msgid "Fonts"
+msgstr "Phông chữ"
+
+msgid "Dynamic Fonts"
+msgstr "Phông chữ động"
+
+msgid "Use Oversampling"
+msgstr "Sử dụng Oversampling"
+
+msgid "Rendering Device"
+msgstr "Thiết bị Kết xuất"
+
+msgid "Block Size (KB)"
+msgstr "Kích cỡ Khối (KB)"
+
+msgid "Max Size (MB)"
+msgstr "Kích cỡ tối đa (MB)"
+
+msgid "Pipeline Cache"
+msgstr "Bộ đệm đường ống"
+
+msgid "Enable"
+msgstr "Mở"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Mô tả tối đa cho mỗi nhóm"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Textures"
+msgstr "Hình kết cấu"
+
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Sử dụng Ambient"
+
+msgid "Low Processor Usage Mode"
+msgstr "Chế độ tiết kiệm của bộ vi xử lý"
+
+msgid "Print Error Messages"
+msgstr "In thông điệp lỗi"
+
+msgid "Physics Ticks per Second"
+msgstr "Số tích tắc vật lý mỗi giây"
+
+msgid "Max FPS"
+msgstr "FPS tối đa"
+
+msgid "Time Scale"
+msgstr "độ giãn nở thời gian"
+
+msgid "Emulate Mouse From Touch"
+msgstr "Mô phỏng chuột từ cảm ứng"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Mô phỏng cảm ứng từ chuột"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Hành vi Just Pressed cũ"
+
+msgid "Device"
+msgstr "Thiết bị"
+
+msgid "Command or Control Autoremap"
+msgstr "Lệnh hoặc Kiểm soát Autoremap"
+
+msgid "Pressed"
+msgstr "Được ấn"
+
+msgid "Keycode"
+msgstr "Mã khóa"
+
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Echo"
+msgstr "Tiếng vang"
+
+msgid "Position"
+msgstr "Vị trí"
+
+msgid "Global Position"
+msgstr "Vị trí toàn cục"
+
+msgid "Button Index"
+msgstr "Chỉ số của phím"
+
+msgid "Double Click"
+msgstr "Nháy Đúp"
+
+msgid "Tilt"
+msgstr "Nghiêng"
+
+msgid "Pressure"
+msgstr "Áp lực"
+
+msgid "Pen Inverted"
+msgstr "Đảo ngược bút"
+
+msgid "Relative"
+msgstr "Tương đối"
+
+msgid "Velocity"
+msgstr "Vận tốc"
+
+msgid "Axis"
+msgstr "Trục"
+
+msgid "Axis Value"
+msgstr "Giá trị trục"
+
+msgid "Index"
+msgstr "Chỉ mục"
+
+msgid "Double Tap"
+msgstr "Nhấn đúp"
+
+msgid "Action"
+msgstr "Hành động"
+
+msgid "Strength"
+msgstr "Độ mạnh"
+
+msgid "Delta"
+msgstr "Delta"
+
+msgid "Channel"
+msgstr "Kênh"
+
+msgid "Instrument"
+msgstr "Nhạc cụ"
+
+msgid "Controller Value"
+msgstr "Giá trị bộ điều khiển"
+
+msgid "Big Endian"
+msgstr "Big Endian"
+
+msgid "Blocking Mode Enabled"
+msgstr "Đã bật chế độ chặn"
+
+msgid "Read Chunk Size"
+msgstr "Kích thước đoạn đọc"
+
+msgid "Data"
+msgstr "Dữ liệu"
+
+msgid "Object ID"
+msgstr "ID đối tượng"
+
+msgid "Encode Buffer Max Size"
+msgstr "Kích thước tối đa của bộ đệm mã hóa"
+
+msgid "Input Buffer Max Size"
+msgstr "Kích thước tối đa của bộ đệm đầu vào"
+
+msgid "Output Buffer Max Size"
+msgstr "Kích thước tối đa của bộ đệm đầu ra"
+
+msgid "Resource"
+msgstr "Tài nguyên"
+
+msgid "Path"
+msgstr "Đường dẫn"
+
+msgid "Data Array"
+msgstr "Mảng dữ liệu"
+
+msgid "Region"
+msgstr "Khu vực"
+
+msgid "Cell Size"
+msgstr "Kích thước ô"
+
+msgid "Seed"
+msgstr "Số nguồn"
+
+msgid "State"
+msgstr "Trạng thái"
+
+msgid "Memory"
+msgstr "Bộ nhớ"
+
+msgid "Limits"
+msgstr "Giới hạn"
+
+msgid "Network"
+msgstr "Mạng"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Packet Peer Stream"
+msgstr "Luồng ngang hàng gói"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Bộ đệm tối đa (Lũy thừa của 2)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Worker Pool"
+msgstr "Nhóm công nhân"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Tỷ lệ luồng ưu tiên thấp"
+
+msgid "Locale"
+msgstr "Vùng vị trí"
+
+msgid "Test"
+msgstr "Kiểm thử"
+
+msgid "Fallback"
+msgstr "Dự phòng"
+
+msgid "Pseudolocalization"
+msgstr "Bản địa hoá giả"
+
+msgid "Use Pseudolocalization"
+msgstr "Sử dụng bản địa hóa giả"
+
+msgid "Double Vowels"
+msgstr "Nguyên âm đôi"
+
+msgid "Fake BiDi"
+msgstr "BiDi giả"
+
+msgid "Prefix"
+msgstr "Tiền tố"
+
+msgid "Suffix"
+msgstr "Hậu tố"
+
+msgid "Skip Placeholders"
+msgstr "Bỏ qua chỗ giữ chỗ"
+
+msgid "Value"
+msgstr "Giá trị"
+
+msgid "Args"
+msgstr "Đối số"
+
+msgid "Type"
+msgstr "Kiểu"
+
+msgid "Stream"
+msgstr "Luồng"
+
+msgid "Easing"
+msgstr "Làm dễ dàng"
+
+msgid "FileSystem"
+msgstr "Hệ thống tệp tin"
+
+msgid "File Server"
+msgstr "Máy chủ tệp"
+
+msgid "Port"
+msgstr "Cổng"
+
+msgid "Password"
+msgstr "Mật khẩu"
+
+msgid "Text Editor"
+msgstr "Trình soạn thảo"
+
+msgid "Help"
+msgstr "Trợ giúp"
+
+msgid "Sort Functions Alphabetically"
+msgstr "Sắp xếp các hàm theo bảng chữ cái"
+
+msgid "Label"
+msgstr "Nhãn"
+
+msgid "Read Only"
+msgstr "Chỉ đọc"
+
+msgid "Checkable"
+msgstr "Tích được"
+
+msgid "Checked"
+msgstr "Đã được tích"
+
+msgid "Distraction Free Mode"
+msgstr "Chế độ tập trung"
+
+msgid "Theme"
+msgstr "Tông màu"
+
+msgid "Line Spacing"
+msgstr "Khoảng cách dòng"
+
+msgid "Base Type"
+msgstr "loại cơ sở"
+
+msgid "Editable"
+msgstr "Sửa được"
+
+msgid "Toggle Mode"
+msgstr "Bật tắt Chức năng"
+
+msgid "Interface"
+msgstr "Giao diễn"
+
+msgid "Editor"
+msgstr "Trình chỉnh sửa"
+
+msgid "Editor Language"
+msgstr "Ngôn ngữ trình chỉnh sửa"
+
+msgid "Localize Settings"
+msgstr "Thiết đặt địa phương hoá"
+
+msgid "Dock Tab Style"
+msgstr "Kiểu tab Dock"
+
+msgid "Display Scale"
+msgstr "Tỉ lệ hiển thị"
+
+msgid "Custom Display Scale"
+msgstr "Tỉ lệ hiển thị tuỳ chỉnh"
+
+msgid "Use Embedded Menu"
+msgstr "Sử dụng Menu nhúng"
+
+msgid "Main Font Size"
+msgstr "Cỡ phông chính"
+
+msgid "Code Font Size"
+msgstr "Cỡ phông mã"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Phông chữ mã hóa Chữ ghép theo ngữ cảnh"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Tính năng OpenType tùy chỉnh của phông chữ mã hóa"
+
+msgid "Font Hinting"
+msgstr "Gợi ý phông chữ"
+
+msgid "Main Font"
+msgstr "Phông chính"
+
+msgid "Main Font Bold"
+msgstr "Phông chữ chính đậm"
+
+msgid "Code Font"
+msgstr "Phông mã"
+
+msgid "Automatically Open Screenshots"
+msgstr "Tự động mở ảnh chụp màn hình"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Nút bổ sung của chuột Điều hướng Lịch sử"
+
+msgid "Save on Focus Loss"
+msgstr "Lưu khi Mất tiêu điểm"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Hộp thoại Chấp nhận Hủy Nút OK"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Hiển thị Lỗi nội bộ trong Thông báo Toast"
+
+msgid "Import Resources When Unfocused"
+msgstr "Nhập Tài nguyên khi Không tập trung"
+
+msgid "Update Continuously"
+msgstr "Cập nhật Liên tục"
+
+msgid "Inspector"
+msgstr "Quan Sát Viên"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Số mục từ điển Mảng tối đa trên mỗi Trang"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Hiển thị Tính năng OpenType Cấp thấp"
+
+msgid "Delimitate All Container and Resources"
+msgstr "Phân định Tất cả Vùng chứa và Tài nguyên"
+
+msgid "Default Float Step"
+msgstr "Bước thả nổi Mặc định"
+
+msgid "Disable Folding"
+msgstr "Tắt gập"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "Tự động Mở rộng Cảnh lạ"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "Chỉnh sửa Vector2 ngang"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "Chỉnh sửa Kiểu Vector ngang"
+
+msgid "Default Color Picker Mode"
+msgstr "Chế độ Bộ chọn Màu Mặc định"
+
+msgid "Preset"
+msgstr "Cài sẵn"
+
+msgid "Base Color"
+msgstr "Màu cơ sở"
+
+msgid "Accent Color"
+msgstr "Màu đặc trưng"
+
+msgid "Contrast"
+msgstr "Tương phản"
+
+msgid "Draw Extra Borders"
+msgstr "Vẽ Đường viền Bổ sung"
+
+msgid "Relationship Line Opacity"
+msgstr "Độ mờ của Đường quan hệ"
+
+msgid "Border Size"
+msgstr "Cỡ viền"
+
+msgid "Additional Spacing"
+msgstr "Khoảng cách bổ sung"
+
+msgid "Custom Theme"
+msgstr "Chủ đề tuỳ chỉnh"
+
+msgid "Touchscreen"
+msgstr "Màn hình cảm ứng"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "Tăng Vùng cảm ứng Thanh cuộn"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Bật Dài Nhấn khi Nhấp chuột phải"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Kích hoạt Cử chỉ Xoay và Thu phóng"
+
+msgid "Scale Gizmo Handles"
+msgstr "Tay cầm Gizmo Thu phóng"
+
+msgid "Scene Tabs"
+msgstr "Thẻ cảnh"
+
+msgid "Show Thumbnail on Hover"
+msgstr "Hiển thị Hình thu nhỏ khi Di chuột qua"
+
+msgid "Raster Image Editor"
+msgstr "Trình chỉnh sửa ảnh raster"
+
+msgid "Vector Image Editor"
+msgstr "Trình chỉnh sửa ảnh vector"
+
+msgid "Audio Editor"
+msgstr "Trình chỉnh sửa âm thanh"
+
+msgid "3D Model Editor"
+msgstr "Trình chỉnh sửa mô hình 3D"
+
+msgid "Terminal Emulator"
+msgstr "Trình giả lập Thiết bị đầu cuối"
+
+msgid "Terminal Emulator Flags"
+msgstr "Cờ Trình giả lập Thiết bị đầu cuối"
+
+msgid "Directories"
+msgstr "Thư mục"
+
+msgid "Default Project Path"
+msgstr "Đường dẫn dự án mặc định:"
+
+msgid "Compress Binary Resources"
+msgstr "Nén tài nguyên nhị phân"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Lưu An toàn khi Sao lưu rồi Đổi tên"
+
+msgid "File Dialog"
+msgstr "Hộp thoại tệp"
+
+msgid "Show Hidden Files"
+msgstr "Hiện các tệp ẩn"
+
+msgid "Display Mode"
+msgstr "Chế độ hiển thị"
+
+msgid "Thumbnail Size"
+msgstr "Cỡ ảnh thu nhỏ"
+
+msgid "Import"
+msgstr "Nhập"
+
+msgid "RPC Server Uptime"
+msgstr "Thời gian Hoạt động của Máy chủ RPC"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "Đường dẫn FBX2glTF"
+
+msgid "OIDN"
+msgstr "OIDN"
+
+msgid "Docks"
+msgstr "Các bến đỗ"
+
+msgid "Scene Tree"
+msgstr "Cây chứa cảnh"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "Bắt đầu Tạo Hộp thoại Mở rộng Hoàn toàn"
+
+msgid "Center Node on Reparent"
+msgstr "Center Node trên Reparent"
+
+msgid "Always Show Folders"
+msgstr "Luôn hiện thư mục"
+
+msgid "Property Editor"
+msgstr "Trình chỉnh sửa thuộc tính"
+
+msgid "Auto Refresh Interval"
+msgstr "Tự động Làm mới Khoảng thời gian"
+
+msgid "Appearance"
+msgstr "Ngoại hình"
+
+msgid "Caret"
+msgstr "Vị trí con trỏ"
+
+msgid "Caret Blink"
+msgstr "Nháy Dấu nháy"
+
+msgid "Caret Blink Interval"
+msgstr "Khoảng thời gian nháy Dấu nháy"
+
+msgid "Highlight Current Line"
+msgstr "Đánh dấu Dòng Hiện tại"
+
+msgid "Highlight All Occurrences"
+msgstr "Đánh dấu Tất cả Các lần Xuất hiện"
+
+msgid "Guidelines"
+msgstr "Hướng dẫn"
+
+msgid "Show Line Length Guidelines"
+msgstr "Hiển thị Hướng dẫn Độ dài Dòng"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "Hướng dẫn Độ dài Dòng Cột Mềm"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "Hướng dẫn Độ dài Dòng Cột Cứng"
+
+msgid "Highlight Type Safe Lines"
+msgstr "Kiểu tô sáng Dòng an toàn"
+
+msgid "Show Info Gutter"
+msgstr "Hiển thị thông tin Gutter"
+
+msgid "Minimap"
+msgstr "Bản đồ thu nhỏ"
+
+msgid "Minimap Width"
+msgstr "Chiều rộng Bản đồ thu nhỏ"
+
+msgid "Code Folding"
+msgstr "Gập mã"
+
+msgid "Word Wrap"
+msgstr "Bọc văn bản"
+
+msgid "Whitespace"
+msgstr "Khoảng trắng"
+
+msgid "Behavior"
+msgstr "Hành vi"
+
+msgid "Navigation"
+msgstr "Điều hướng"
+
+msgid "Move Caret on Right Click"
+msgstr "Di chuyển Dấu nháy khi Nhấp chuột phải"
+
+msgid "Scroll Past End of File"
+msgstr "Cuộn qua Cuối Tệp"
+
+msgid "Smooth Scrolling"
+msgstr "Cuộn mượt"
+
+msgid "V Scroll Speed"
+msgstr "Tốc độ Cuộn V"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "Ở trong Trình chỉnh sửa tập lệnh khi Node Selected"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "Mở Script khi kết nối Signal với phương thức hiện có"
+
+msgid "Use Default Word Separators"
+msgstr "Sử dụng bộ phân cách từ mặc định"
+
+msgid "Indent"
+msgstr "Thụt lề"
+
+msgid "Auto Indent"
+msgstr "Thụt lề Tự động"
+
+msgid "Indent Wrapped Lines"
+msgstr "Thụt lề các dòng được ngắt dòng"
+
+msgid "Files"
+msgstr "Tệp"
+
+msgid "Autosave Interval Secs"
+msgstr "Tự động lưu Khoảng thời gian giây"
+
+msgid "Script List"
+msgstr "Danh sách tập lệnh"
+
+msgid "Show Members Overview"
+msgstr "Hiển thị Tổng quan về thành viên"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "Sắp xếp thành viên theo phác thảo bảng chữ cái"
+
+msgid "Completion"
+msgstr "Tự hoàn thành"
+
+msgid "Idle Parse Delay"
+msgstr "Trì hoãn phân tích cú pháp nhàn rỗi"
+
+msgid "Auto Brace Complete"
+msgstr "Tự động hoàn thành dấu ngoặc nhọn"
+
+msgid "Code Complete Delay"
+msgstr "Trì hoãn hoàn thành mã"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "Đặt công cụ Callhint bên dưới dòng hiện tại"
+
+msgid "Add Node Path Literals"
+msgstr "Thêm ký tự đường dẫn nút"
+
+msgid "Use Single Quotes"
+msgstr "Dùng dấu nháy đơn"
+
+msgid "Help Font Size"
+msgstr "Kích thước phông chữ trợ giúp"
+
+msgid "Help Source Font Size"
+msgstr "Kích thước phông chữ nguồn trợ giúp"
+
+msgid "Help Title Font Size"
+msgstr "Kích thước phông chữ tiêu đề trợ giúp"
+
+msgid "Editors"
+msgstr "Trình chỉnh sửa"
+
+msgid "Grid Map"
+msgstr "Bản đồ Lưới"
+
+msgid "Primary Grid Color"
+msgstr "Màu lưới chính"
+
+msgid "Secondary Grid Color"
+msgstr "Màu lưới phụ"
+
+msgid "3D Gizmos"
+msgstr "Gizmo 3D"
+
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Grid Division Level Max"
+msgstr "Mức chia lưới Max"
+
+msgid "Grid Division Level Min"
+msgstr "Mức chia lưới Min"
+
+msgid "Grid Division Level Bias"
+msgstr "Độ lệch mức chia lưới"
+
+msgid "Grid XZ Plane"
+msgstr "Mặt phẳng lưới XZ"
+
+msgid "Grid XY Plane"
+msgstr "Mặt phẳng lưới XY"
+
+msgid "Grid YZ Plane"
+msgstr "Mặt phẳng lưới YZ"
+
+msgid "Emulate Numpad"
+msgstr "Mô phỏng bàn phím số"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "Mô phỏng chuột 3 nút"
+
+msgid "Warped Mouse Panning"
+msgstr "Di chuyển chuột cong vênh"
+
+msgid "Orbit Sensitivity"
+msgstr "Độ nhạy quỹ đạo"
+
+msgid "Orbit Inertia"
+msgstr "Quán tính quỹ đạo"
+
+msgid "Freelook"
+msgstr "Khoá tự do"
+
+msgid "Freelook Sensitivity"
+msgstr "Độ nhạy Freelook"
+
+msgid "Freelook Inertia"
+msgstr "Quán tính Freelook"
+
+msgid "Freelook Base Speed"
+msgstr "Tốc độ cơ sở Freelook"
+
+msgid "Freelook Activation Modifier"
+msgstr "Bộ điều chỉnh kích hoạt Freelook"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "Tốc độ Freelook Liên kết thu phóng"
+
+msgid "Bone Width"
+msgstr "Chiều rộng xương"
+
+msgid "Bone IK Color"
+msgstr "Màu xương IK"
+
+msgid "Bone Outline Color"
+msgstr "Màu đường viền xương"
+
+msgid "Viewport Border Color"
+msgstr "Màu viền khung nhìn"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Sử dụng Thu phóng số nguyên theo Mặc định"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Sơ đồ Panning của Trình chỉnh sửa phụ"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Sơ đồ Panning của Trình chỉnh sửa hoạt hình"
+
+msgid "Simple Panning"
+msgstr "Panning đơn giản"
+
+msgid "Highlight Selected Layer"
+msgstr "Đánh dấu lớp đã chọn"
+
+msgid "Polygon Editor"
+msgstr "Trình chỉnh sửa đa giác"
+
+msgid "Point Grab Radius"
+msgstr "Bán kính Point Grab"
+
+msgid "Confirm Insert Track"
+msgstr "Xác nhận chèn bản nhạc"
+
+msgid "Default Create Bezier Tracks"
+msgstr "Mặc định Tạo các bản nhạc Bezier"
+
+msgid "Onion Layers Past Color"
+msgstr "Màu trước của các lớp Onion"
+
+msgid "Onion Layers Future Color"
+msgstr "Màu tương lai của các lớp Onion"
+
+msgid "Minimap Opacity"
+msgstr "Độ mờ của bản đồ thu nhỏ"
+
+msgid "Window Placement"
+msgstr "Vị trí cửa sổ"
+
+msgid "Screen"
+msgstr "Màn hình"
+
+msgid "Auto Save"
+msgstr "Tự động lưu"
+
+msgid "Save Before Running"
+msgstr "Lưu trược khi chạy"
+
+msgid "Output"
+msgstr "Đầu ra"
+
+msgid "Linuxbsd"
+msgstr "Linuxbsd"
+
+msgid "Prefer Wayland"
+msgstr "Ưu tiên Wayland"
+
+msgid "HTTP Proxy"
+msgstr "Proxy HTTP"
+
+msgid "Host"
+msgstr "Máy chủ"
+
+msgid "Debugger"
+msgstr "Trình gỡ lỗi"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Tự động chuyển sang Cây cảnh từ xa"
+
+msgid "Profiler Frame History Size"
+msgstr "Kích thước lịch sử khung Profiler"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Khoảng thời gian làm mới cây cảnh từ xa"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Khoảng thời gian làm mới Kiểm tra từ xa"
+
+msgid "Profile Native Calls"
+msgstr "Gọi gốc của Profile"
+
+msgid "Input"
+msgstr "Đầu vào"
+
+msgid "Buffering"
+msgstr "Đệm"
+
+msgid "Agile Event Flushing"
+msgstr "Xả sự kiện Agile"
+
+msgid "Project Manager"
+msgstr "Trình quản lý Dự án"
+
+msgid "Directory Naming Convention"
+msgstr "Quy ước đặt tên thư mục"
+
+msgid "Highlighting"
+msgstr "Tô sáng"
+
+msgid "Symbol Color"
+msgstr "Màu biểu tượng"
+
+msgid "Keyword Color"
+msgstr "Màu từ khóa"
+
+msgid "Control Flow Keyword Color"
+msgstr "Màu từ khóa luồng điều khiển"
+
+msgid "Engine Type Color"
+msgstr "Màu loại công cụ"
+
+msgid "User Type Color"
+msgstr "Màu loại người dùng"
+
+msgid "Comment Color"
+msgstr "Màu bình luận"
+
+msgid "Completion Existing Color"
+msgstr "Màu hiện tại của hoàn thành"
+
+msgid "Completion Scroll Color"
+msgstr "Màu cuộn hoàn thành"
+
+msgid "Completion Font Color"
+msgstr "Màu phông chữ hoàn thành"
+
+msgid "Caret Color"
+msgstr "Màu dấu nháy"
+
+msgid "Brace Mismatch Color"
+msgstr "Màu dấu ngoặc nhọn"
+
+msgid "Line Length Guideline Color"
+msgstr "Dòng hiện tại Màu sắc"
+
+msgid "Number Color"
+msgstr "Màu tô sáng từ"
+
+msgid "Executing Line Color"
+msgstr "Màu điểm ngắt"
+
+msgid "Code Folding Color"
+msgstr "Màu đường thực thi"
+
+msgid "Custom Template"
+msgstr "Bản mẫu tuỳ chỉnh"
+
+msgid "Release"
+msgstr "Phát hành"
+
+msgid "Binary Format"
+msgstr "Định dạng nhị phân"
+
+msgid "Embed PCK"
+msgstr "PCK nhúng"
+
+msgid "Texture Format"
+msgstr "Định dạng hình kết cấu"
+
+msgid "Export"
+msgstr "Xuất ra"
+
+msgid "SSH"
+msgstr "ETC2 ASTC"
+
+msgid "SCP"
+msgstr "SSH"
+
+msgid "Export Path"
+msgstr "Đường dẫn xuất"
+
+msgid "Access"
+msgstr "Truy cập"
+
+msgid "Filters"
+msgstr "Bộ lọc"
+
+msgid "Disable Overwrite Warning"
+msgstr "Tắt cảnh báo ghi đè"
+
+msgid "Flat"
+msgstr "Tùy chọn"
+
+msgid "Make Unique"
+msgstr "Duy nhất"
+
+msgid "Rest Fixer"
+msgstr "Tên bộ xương"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "Chuẩn hóa đường dẫn vị trí"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Ghi đè Trục"
+
+msgid "Fix Silhouette"
+msgstr "Giữ nguyên trạng thái nghỉ toàn cục trên phần còn lại"
+
+msgid "Threshold"
+msgstr "Bộ lọc"
+
+msgid "Base Height Adjustment"
+msgstr "Ngưỡng"
+
+msgid "Unmapped Bones"
+msgstr "Vị trí không quan trọng"
+
+msgid "Physics Material Override"
+msgstr "Kiểu hình dạng"
+
+msgid "Layer"
+msgstr "Lớp"
+
+msgid "Mask"
+msgstr "Vật lý Ghi đè vật liệu"
+
+msgid "Advanced"
+msgstr "Nâng cao"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Độ lõm tối đa"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Mặt phẳng đối xứng Độ lệch cắt"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Độ lệch cắt trục quay"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Độ phân giải"
+
+msgid "Plane Downsampling"
+msgstr "Số đỉnh tối đa trên mỗi thân lồi"
+
+msgid "Convexhull Downsampling"
+msgstr "Giảm mẫu mặt phẳng"
+
+msgid "Height"
+msgstr "Chiều cao"
+
+msgid "Radius"
+msgstr "Bán kính"
+
+msgid "Enabled"
+msgstr "Bật"
+
+msgid "LODs"
+msgstr "Lightmap UV"
+
+msgid "Normal Split Angle"
+msgstr "LODs"
+
+msgid "Page Size"
+msgstr "Cỡ trang"
+
+msgid "Nodes"
+msgstr "Nút"
+
+msgid "Import as Skeleton Bones"
+msgstr "Root Scale"
+
+msgid "Skins"
+msgstr "Force Disable Compression"
+
+msgid "FPS"
+msgstr "Khung hình(FPS)"
+
+msgid "Trimming"
+msgstr "Use Named Skins"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Disable Embedded Bitmap"
+
+msgid "MSDF Pixel Range"
+msgstr "Trường khoảng cách có dấu đa kênh"
+
+msgid "Hinting"
+msgstr "Buộc tự động gợi ý"
+
+msgid "Oversampling"
+msgstr "Định vị điểm ảnh phụ"
+
+msgid "Fallbacks"
+msgstr "Fallbacks"
+
+msgid "Embolden"
+msgstr "Đậm"
+
+msgid "Transform"
+msgstr "Biến đổi"
+
+msgid "Delimiter"
+msgstr "Dấu phân cách"
+
+msgid "Rows"
+msgstr "Hàng"
+
+msgid "Ascent"
+msgstr "Tăng dần"
+
+msgid "Descent"
+msgstr "Giảm dần"
+
+msgid "Lossy Quality"
+msgstr "Chất lượng mất mát"
+
+msgid "Limit"
+msgstr "Giới hạn"
+
+msgid "Layout"
+msgstr "Bố cục"
+
+msgid "Normal Map"
+msgstr "Bản đồ chuẩn"
+
+msgid "Roughness"
+msgstr "Độ nhám"
+
+msgid "Fix Alpha Border"
+msgstr "Sửa đường viền Alpha"
+
+msgid "HDR as sRGB"
+msgstr "HDR dưới dạng sRGB"
+
+msgid "Detect 3D"
+msgstr "Phát hiện 3D"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Convert Colors With Editor Theme"
+msgstr "Chuyển đổi màu với chủ đề trình chỉnh sửa"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Cắt đường viền Alpha từ vùng"
+
+msgid "8 Bit"
+msgstr "8 bit"
+
+msgid "Mono"
+msgstr "Đơn sắc"
+
+msgid "Edit"
+msgstr "Chỉnh sửa"
+
+msgid "Trim"
+msgstr "Cắt"
+
+msgid "Asset Library"
+msgstr "Thư viện tài nguyên"
+
+msgid "Use Threads"
+msgstr "Sử dụng luồng"
+
+msgid "Unset"
+msgstr "Hủy bỏ"
+
+msgid "Error"
+msgstr "Lỗi"
+
+msgid "Stream Player 3D"
+msgstr "Stream Player 3D"
+
+msgid "Camera"
+msgstr "Camera"
+
+msgid "Particles"
+msgstr "Hạt"
+
+msgid "Decal"
+msgstr "Hình ảnh dán"
+
+msgid "Joint Body A"
+msgstr "Thân khớp A"
+
+msgid "Joint Body B"
+msgstr "Thân khớp B"
+
+msgid "Visibility Notifier"
+msgstr "Trình thông báo khả năng hiển thị"
+
+msgid "Voxel GI"
+msgstr "Voxel GI"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Kích thước Gizmo của Manipulator"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Độ mờ của Gizmo của Manipulator"
+
+msgid "Path 3D Tilt Disk Size"
+msgstr "Đường nghiêng 3D Kích thước đĩa"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "Mở tập lệnh chiếm ưu thế khi thay đổi cảnh"
+
+msgid "External"
+msgstr "Bên ngoài"
+
+msgid "Script Temperature History Size"
+msgstr "Kích thước lịch sử nhiệt độ tập lệnh"
+
+msgid "Exec Flags"
+msgstr "Cờ thực thi"
+
+msgid "Skeleton"
+msgstr "Khung xương"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Alternative ID"
+msgstr "ID thay thế"
+
+msgid "Speed"
+msgstr "Tốc độ"
+
+msgid "Version Control"
+msgstr "Theo dõi phiên bản"
+
+msgid "Username"
+msgstr "Tên người dùng"
+
+msgid "SSH Public Key Path"
+msgstr "Đường dẫn khoá SSH công khai"
+
+msgid "SSH Private Key Path"
+msgstr "Đường dẫn khoá SSH riêng tư"
+
+msgid "Naming"
+msgstr "Đặt tên"
+
+msgid "Default Signal Callback Name"
+msgstr "Tên gọi lại tín hiệu mặc định"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Tên gọi lại tín hiệu mặc định đến Self Name"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Nhập lại các tệp đã được nhập bị thiếu"
+
+msgid "Derive Script Globals by Name"
+msgstr "Dẫn xuất toàn cục tập lệnh theo tên"
+
+msgid "Flush stdout on Print"
+msgstr "Xả stdout khi in"
+
+msgid "Max Chars per Second"
+msgstr "Tối đa ký tự mỗi giây"
+
+msgid "Max Queued Messages"
+msgstr "Tối đa tin nhắn xếp hàng"
+
+msgid "Max Warnings per Second"
+msgstr "Tối đa cảnh báo mỗi giây"
+
+msgid "File Logging"
+msgstr "Ghi nhật ký tệp"
+
+msgid "Driver"
+msgstr "Trình điều khiển"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Tắt tối ưu hóa luồng"
+
+msgid "Force Angle on Devices"
+msgstr "Bật góc Thiết bị"
+
+msgid "Include Text Server Data"
+msgstr "Bao gồm dữ liệu máy chủ văn bản"
+
+msgid "DPI"
+msgstr "DPI"
+
+msgid "Allow hiDPI"
+msgstr "Cho phép hiDPI"
+
+msgid "Per Pixel Transparency"
+msgstr "Độ trong suốt theo pixel"
+
+msgid "Allowed"
+msgstr "Được phép"
+
+msgid "Threads"
+msgstr "Luồng"
+
+msgid "Handheld"
+msgstr "Cầm tay"
+
+msgid "Orientation"
+msgstr "Hướng xoay"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "In FPS"
+
+msgid "Verbose stdout"
+msgstr "Verbose stdout"
+
+msgid "Frame Delay Msec"
+msgstr "Độ trễ khung hình Msec"
+
+msgid "Low Processor Mode"
+msgstr "Chế độ bộ xử lý thấp"
+
+msgid "Allow High Refresh Rate"
+msgstr "Cho phép tốc độ làm mới cao"
+
+msgid "Hide Home Indicator"
+msgstr "Ẩn chỉ báo trang chủ"
+
+msgid "Hide Status Bar"
+msgstr "Ẩn thanh trạng thái"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "View Configuration"
+msgstr "Cấu hình chế độ xem"
+
+msgid "Foveation Dynamic"
+msgstr "Foveation động"
+
+msgid "Submit Depth Buffer"
+msgstr "Gửi bộ đệm độ sâu"
+
+msgid "Boot Splash"
+msgstr "Bắn tung khởi động"
+
+msgid "Environment"
+msgstr "Môi trường"
+
+msgid "Default Clear Color"
+msgstr "Màu xóa mặc định"
+
+msgid "Icon"
+msgstr "Biểu tượng"
+
+msgid "macOS Native Icon"
+msgstr "Biểu tượng gốc macOS"
+
+msgid "Windows Native Icon"
+msgstr "Biểu tượng gốc Windows"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "Trục cuộn đầu vào quay"
+
+msgid "Custom Image Hotspot"
+msgstr "Điểm phát sóng hình ảnh tùy chỉnh"
+
+msgid "Image"
+msgstr "Ảnh"
+
+msgid "Fullsize"
+msgstr "Kích thước đầy đủ"
+
+msgid "Dotnet"
+msgstr "Dotnet"
+
+msgid "Project"
+msgstr "Dự Án"
+
+msgid "Assembly Reload Attempts"
+msgstr "Số lần thử tải lại Assembly"
+
+msgid "Time"
+msgstr "Thời gian"
+
+msgid "Msg Buf Max"
+msgstr "Msg Buf tối đa"
+
+msgid "Orphan Nodes"
+msgstr "Nút mồ côi"
+
+msgid "Raster"
+msgstr "Raster"
+
+msgid "Total Objects Drawn"
+msgstr "Tổng số đối tượng đã vẽ"
+
+msgid "Total Primitives Drawn"
+msgstr "Tổng số đối tượng nguyên thủy đã vẽ"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Video Mem"
+msgstr "Video Mem"
+
+msgid "Islands"
+msgstr "Đảo"
+
+msgid "Links"
+msgstr "Liên kết"
+
+msgid "Polygons"
+msgstr "Đa giác"
+
+msgid "Edges"
+msgstr "Cạnh"
+
+msgid "Edges Merged"
+msgstr "Cạnh đã hợp nhất"
+
+msgid "Edges Free"
+msgstr "Cạnh không có đối tượng"
+
+msgid "Operation"
+msgstr "Thao tác"
+
+msgid "Snap"
+msgstr "Dính"
+
+msgid "Calculate Tangents"
+msgstr "Tính toán đường tiếp tuyến"
+
+msgid "Collision"
+msgstr "Va chạm"
+
+msgid "Mesh"
+msgstr "Lưới"
+
+msgid "Smooth Faces"
+msgstr "Mặt nhẵn"
+
+msgid "Cone"
+msgstr "Hình nón"
+
+msgid "Ring Sides"
+msgstr "Cạnh vòng"
+
+msgid "Depth"
+msgstr "Chiều sâu"
+
+msgid "Spin Degrees"
+msgstr "Độ spin"
+
+msgid "Spin Sides"
+msgstr "Cạnh spin"
+
+msgid "Path Interval Type"
+msgstr "Kiểu khoảng đường dẫn"
+
+msgid "Path Interval"
+msgstr "Khoảng đường dẫn"
+
+msgid "Path Simplify Angle"
+msgstr "Góc đơn giản hóa đường dẫn"
+
+msgid "Path U Distance"
+msgstr "Khoảng cách U đường dẫn"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "Cho phép các nút trợ giúp hình học"
+
+msgid "Embedded Image Handling"
+msgstr "Xử lý hình ảnh nhúng"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
+
+msgid "GDScript"
+msgstr "GDScript"
+
+msgid "Function Definition Color"
+msgstr "Màu định nghĩa hàm"
+
+msgid "Max Call Stack"
+msgstr "Ngăn xếp cuộc gọi tối đa"
+
+msgid "Exclude Addons"
+msgstr "Loại trừ tiện ích bổ sung"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Hiển thị ký hiệu gốc trong trình soạn thảo"
+
+msgid "Use Thread"
+msgstr "Sử dụng luồng"
+
+msgid "Poll Limit (µsec)"
+msgstr "Giới hạn thăm dò (µgiây)"
+
+msgid "glTF"
+msgstr "glTF"
+
+msgid "Intensity"
+msgstr "Cường độ"
+
+msgid "Inner Cone Angle"
+msgstr "Góc hình nón bên trong"
+
+msgid "Outer Cone Angle"
+msgstr "Góc hình nón bên ngoài"
+
+msgid "Diffuse Img"
+msgstr "Hình ảnh khuếch tán"
+
+msgid "Diffuse Factor"
+msgstr "Hệ số khuếch tán"
+
+msgid "Gloss Factor"
+msgstr "Độ bóng Yếu tố"
+
+msgid "Spec Gloss Img"
+msgstr "Spec Gloss Img"
+
+msgid "Mass"
+msgstr "Khối lượng"
+
+msgid "Angular Velocity"
+msgstr "Vận tốc góc"
+
+msgid "Is Trigger"
+msgstr "Is Trigger"
+
+msgid "Json"
+msgstr "Json"
+
+msgid "Use Named Skin Binds"
+msgstr "Sử dụng liên kết da có tên"
+
+msgid "Buffers"
+msgstr "Bộ đệm"
+
+msgid "Accessors"
+msgstr "Accessors"
+
+msgid "Images"
+msgstr "Ảnh"
+
+msgid "Cameras"
+msgstr "Cameras"
+
+msgid "Lights"
+msgstr "Ánh sáng"
+
+msgid "Unique Names"
+msgstr "Tên duy nhất"
+
+msgid "Skeletons"
+msgstr "Khung xương"
+
+msgid "Animations"
+msgstr "Hoạt hình"
+
+msgid "Handle Binary Image"
+msgstr "Xử lý hình ảnh nhị phân"
+
+msgid "Sparse Indices Buffer View"
+msgstr "Chỉ số thưa thớt Lượt xem bộ đệm"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "Chỉ số thưa thớt Bù trừ byte"
+
+msgid "Sparse Indices Component Type"
+msgstr "Loại thành phần chỉ số thưa thớt"
+
+msgid "Sparse Values Buffer View"
+msgstr "Giá trị thưa thớt Lượt xem bộ đệm"
+
+msgid "Sparse Values Byte Offset"
+msgstr "Giá trị thưa thớt Bù trừ byte"
+
+msgid "Loop"
+msgstr "Lặp"
+
+msgid "Byte Stride"
+msgstr "Bước Byte"
+
+msgid "Perspective"
+msgstr "Phối cảnh"
+
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Skin"
+msgstr "Da"
+
+msgid "Light"
+msgstr "Ánh sáng"
+
+msgid "Roots"
+msgstr "Gốc"
+
+msgid "Godot Skin"
+msgstr "Godot Skin"
+
+msgid "Sampler"
+msgstr "Trình lấy mẫu"
+
+msgid "Wrap S"
+msgstr "Gói S"
+
+msgid "Wrap T"
+msgstr "Gói T"
+
+msgid "Palette Min Width"
+msgstr "Chiều rộng tối thiểu của bảng màu"
+
+msgid "Mesh Library"
+msgstr "Thư viện Lưới"
+
+msgid "Cell"
+msgstr "Ô"
+
+msgid "Priority"
+msgstr "Ưu tiên"
+
+msgid "Shuffle"
+msgstr "Trộn"
+
+msgid "Lightmapping"
+msgstr "Ánh xạ ánh sáng"
+
+msgid "Low Quality Ray Count"
+msgstr "Số lượng tia chất lượng thấp"
+
+msgid "Medium Quality Ray Count"
+msgstr "Số lượng tia chất lượng trung bình"
+
+msgid "High Quality Ray Count"
+msgstr "Số lượng tia chất lượng cao"
+
+msgid "Ultra Quality Ray Count"
+msgstr "Số lượng tia chất lượng cực cao"
+
+msgid "Bake Performance"
+msgstr "Hiệu suất Bake"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "Số lượng tia thăm dò chất lượng thấp"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "Số lượng tia thăm dò chất lượng trung bình"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "Số lượng tia thăm dò chất lượng cực cao"
+
+msgid "Max Rays per Probe Pass"
+msgstr "Số tia tối đa trên mỗi lần đi qua thăm dò"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Eye Height"
+msgstr "Chiều cao mắt"
+
+msgid "IOD"
+msgstr "IOD"
+
+msgid "Oversample"
+msgstr "Lấy mẫu quá mức"
+
+msgid "K1"
+msgstr "K1"
+
+msgid "K2"
+msgstr "K2"
+
+msgid "Auth Callback"
+msgstr "Gọi lại xác thực"
+
+msgid "Allow Object Decoding"
+msgstr "Cho phép giải mã đối tượng"
+
+msgid "Refuse New Connections"
+msgstr "Từ chối kết nối mới"
+
+msgid "Server Relay"
+msgstr "Chuyển tiếp máy chủ"
+
+msgid "Frequency"
+msgstr "Tần số"
+
+msgid "Fractal"
+msgstr "Fractal"
+
+msgid "Octaves"
+msgstr "Quãng tám"
+
+msgid "Lacunarity"
+msgstr "Độ lệch"
+
+msgid "Gain"
+msgstr "Tăng"
+
+msgid "Jitter"
+msgstr "Độ rung"
+
+msgid "Domain Warp"
+msgstr "Độ cong miền"
+
+msgid "Fractal Lacunarity"
+msgstr "Độ lệch fractal"
+
+msgid "Width"
+msgstr "Chiều rộng"
+
+msgid "Invert"
+msgstr "Đảo ngược"
+
+msgid "Seamless"
+msgstr "Không liền mạch"
+
+msgid "Seamless Blend Skirt"
+msgstr "Váy pha trộn liền mạch"
+
+msgid "Bump Strength"
+msgstr "Độ mạnh va chạm"
+
+msgid "Noise"
+msgstr "Nhiễu"
+
+msgid "Subject"
+msgstr "Chủ đề"
+
+msgid "Discover Multicast If"
+msgstr "Khám phá đa hướng nếu"
+
+msgid "Discover Local Port"
+msgstr "Khám phá cổng cục bộ"
+
+msgid "Discover IPv6"
+msgstr "Khám phá IPv6"
+
+msgid "IGD Control URL"
+msgstr "URL điều khiển IGD"
+
+msgid "IGD Our Addr"
+msgstr "Địa chỉ của chúng tôi IGD"
+
+msgid "WebRTC"
+msgstr "WebRTC"
+
+msgid "Max Queued Packets"
+msgstr "Gói hàng đợi tối đa"
+
+msgid "Requested Reference Space Types"
+msgstr "Các loại không gian tham chiếu được yêu cầu"
+
+msgid "Reference Space Type"
+msgstr "Loại không gian tham chiếu"
+
+msgid "Visibility State"
+msgstr "Trạng thái khả năng hiển thị"
+
+msgid "Java SDK Path"
+msgstr "Đường dẫn SDK Java"
+
+msgid "Android SDK Path"
+msgstr "Đường dẫn SDK Android"
+
+msgid "Debug Keystore User"
+msgstr "Gỡ lỗi Keystore User"
+
+msgid "Debug Keystore Pass"
+msgstr "Debug Keystore Pass"
+
+msgid "Force System User"
+msgstr "Buộc System User"
+
+msgid "Shutdown ADB on Exit"
+msgstr "Tắt ADB khi Thoát"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Sử dụng Wi-Fi để Gỡ lỗi từ xa"
+
+msgid "Launcher Icons"
+msgstr "Biểu tượng Launcher"
+
+msgid "Main 192 X 192"
+msgstr "Main 192 X 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "Adaptive Foreground 432 X 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "Adaptive Background 432 X 432"
+
+msgid "Gradle Build"
+msgstr "Gradle Build"
+
+msgid "Use Gradle Build"
+msgstr "Sử dụng Gradle Build"
+
+msgid "Android Source Template"
+msgstr "Mẫu nguồn Android"
+
+msgid "Compress Native Libraries"
+msgstr "Nén thư viện gốc"
+
+msgid "Plugins"
+msgstr "Tiện ích"
+
+msgid "Debug Password"
+msgstr "Gỡ lỗi mật khẩu"
+
+msgid "Code"
+msgstr "Mã"
+
+msgid "Retain Data on Uninstall"
+msgstr "Giữ lại dữ liệu khi gỡ cài đặt"
+
+msgid "Show in Android TV"
+msgstr "Hiển thị trong Android TV"
+
+msgid "Show as Launcher App"
+msgstr "Hiển thị dưới dạng ứng dụng Launcher"
+
+msgid "Allow"
+msgstr "Cho phép"
+
+msgid "Salt"
+msgstr "Salt"
+
+msgid "iOS Deploy"
+msgstr "Triển khai iOS"
+
+msgid "Icons"
+msgstr "Biểu tượng"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 76 X 76"
+msgstr "iPad 76 X 76"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "Spotlight 40 X 40"
+msgstr "Spotlight 40 X 40"
+
+msgid "Spotlight 80 X 80"
+msgstr "Spotlight 80 X 80"
+
+msgid "App Store Team ID"
+msgstr "ID nhóm App Store"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Gỡ lỗi UUID hồ sơ cung cấp"
+
+msgid "Code Sign Identity Debug"
+msgstr "Gỡ lỗi nhận dạng ký hiệu mã"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Phát hành UUID hồ sơ cung cấp"
+
+msgid "Code Sign Identity Release"
+msgstr "Phát hành nhận dạng ký hiệu mã"
+
+msgid "Targeted Device Family"
+msgstr "Họ thiết bị mục tiêu"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Xóa các tệp xuất cũ vô điều kiện"
+
+msgid "Generate Simulator Library If Missing"
+msgstr "Tạo thư viện mô phỏng nếu thiếu"
+
+msgid "Performance Gaming Tier"
+msgstr "Hiệu suất chơi game Cấp độ"
+
+msgid "Performance A 12"
+msgstr "Hiệu suất A 12"
+
+msgid "Accessible From Files App"
+msgstr "Có thể truy cập từ ứng dụng Tệp"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Có thể truy cập từ iTunes Chia sẻ"
+
+msgid "Privacy"
+msgstr "Quyền riêng tư"
+
+msgid "Storyboard"
+msgstr "Storyboard"
+
+msgid "SSH Remote Deploy"
+msgstr "SSH triển khai từ xa"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "High Res"
+msgstr "Độ phân giải cao"
+
+msgid "Apple Team ID"
+msgstr "ID nhóm Apple"
+
+msgid "Allow JIT Code Execution"
+msgstr "Cho phép thực thi mã JIT"
+
+msgid "Allow Unsigned Executable Memory"
+msgstr "Cho phép bộ nhớ thực thi không dấu"
+
+msgid "Allow Dyld Environment Variables"
+msgstr "Cho phép biến môi trường Dyld"
+
+msgid "Address Book"
+msgstr "Sổ địa chỉ"
+
+msgid "Calendars"
+msgstr "Lịch"
+
+msgid "App Sandbox"
+msgstr "Hộp cát ứng dụng"
+
+msgid "Device Bluetooth"
+msgstr "Thiết bị Bluetooth"
+
+msgid "Helper Executables"
+msgstr "Trợ lý thực thi"
+
+msgid "Apple ID Name"
+msgstr "Tên ID Apple"
+
+msgid "Apple ID Password"
+msgstr "Mật khẩu ID Apple"
+
+msgid "API UUID"
+msgstr "API UUID"
+
+msgid "API Key"
+msgstr "Khóa API"
+
+msgid "API Key ID"
+msgstr "ID khóa API"
+
+msgid "Address Book Usage Description"
+msgstr "Mô tả sử dụng sổ địa chỉ"
+
+msgid "Downloads Folder Usage Description"
+msgstr "Mô tả sử dụng ổ đĩa mạng"
+
+msgid "Network Volumes Usage Description"
+msgstr "Mô tả sử dụng ổ đĩa có thể di chuyển"
+
+msgid "Removable Volumes Usage Description"
+msgstr "Web"
+
+msgid "Web"
+msgstr "Cổng HTTP"
+
+msgid "HTTP Host"
+msgstr "Sử dụng TLS"
+
+msgid "HTTP Port"
+msgstr "TLS Khóa"
+
+msgid "TLS Key"
+msgstr "Biến thể"
+
+msgid "Extensions Support"
+msgstr "Nén kết cấu VRAM"
+
+msgid "For Desktop"
+msgstr "HTML"
+
+msgid "For Mobile"
+msgstr "Biểu tượng xuất"
+
+msgid "HTML"
+msgstr "Vỏ HTML tùy chỉnh"
+
+msgid "Head Include"
+msgstr "Tập trung Canvas khi bắt đầu"
+
+msgid "Canvas Resize Policy"
+msgstr "Bàn phím ảo thử nghiệm"
+
+msgid "Focus Canvas on Start"
+msgstr "Ứng dụng web lũy tiến"
+
+msgid "Progressive Web App"
+msgstr "Trang ngoại tuyến"
+
+msgid "Ensure Cross Origin Isolation Headers"
+msgstr "Biểu tượng 144 X 144"
+
+msgid "Offline Page"
+msgstr "Biểu tượng 180 X 180"
+
+msgid "Icon 144 X 144"
+msgstr "Biểu tượng 512 X 512"
+
+msgid "Icon 180 X 180"
+msgstr "Windows"
+
+msgid "Icon 512 X 512"
+msgstr "rcedit"
+
+msgid "rcedit"
+msgstr "osslsigncode"
+
+msgid "osslsigncode"
+msgstr "Loại danh tính"
+
+msgid "wine"
+msgstr "Dấu thời gian"
+
+msgid "Identity Type"
+msgstr "URL máy chủ dấu thời gian"
+
+msgid "Timestamp Server URL"
+msgstr "Sửa đổi tài nguyên"
+
+msgid "Console Wrapper Icon"
+msgstr "Phiên bản sản phẩm"
+
+msgid "Trademarks"
+msgstr "D3D12 Agility SDK Multiarch"
+
+msgid "D3D12 Agility SDK Multiarch"
+msgstr "Khung"
+
+msgid "Flip H"
+msgstr "Hiện tại"
+
+msgid "Flip V"
+msgstr "Âm lượng dB"
+
+msgid "Stream Paused"
+msgstr "Độ suy giảm"
+
+msgid "Area Mask"
+msgstr "Chế độ sao chép"
+
+msgid "Left"
+msgstr "Trái"
+
+msgid "Top"
+msgstr "Trên đầu"
+
+msgid "Right"
+msgstr "Phải"
+
+msgid "Smoothed"
+msgstr "Làm mịn xoay"
+
+msgid "Drag"
+msgstr "Bật dọc"
+
+msgid "Tweaks"
+msgstr "Sử dụng Mipmap"
+
+msgid "Lifetime"
+msgstr "Độ bùng nổ"
+
+msgid "Explosiveness"
+msgstr "FPS cố định"
+
+msgid "Lifetime Randomness"
+msgstr "Vẽ"
+
+msgid "Fract Delta"
+msgstr "Thứ tự vẽ"
+
+msgid "Drawing"
+msgstr "Hình dạng phát xạ"
+
+msgid "Draw Order"
+msgstr "Mức độ mở rộng hình chữ nhật"
+
+msgid "Shape"
+msgstr "Hình dạng"
+
+msgid "Rect Extents"
+msgstr "Căn chỉnh Y"
+
+msgid "Points"
+msgstr "Các Điểm"
+
+msgid "Colors"
+msgstr "Màu"
+
+msgid "Spread"
+msgstr "Vận tốc tối thiểu"
+
+msgid "Gravity"
+msgstr "Vận tốc tối đa"
+
+msgid "Orbit Velocity"
+msgstr "Gia tốc tối đa"
+
+msgid "Radial Accel"
+msgstr "Giảm chấn tối thiểu"
+
+msgid "Tangential Accel"
+msgstr "Giảm chấn tối đa"
+
+msgid "Damping"
+msgstr "Đường cong giảm chấn"
+
+msgid "Angle"
+msgstr "Đường cong góc"
+
+msgid "Angle Min"
+msgstr "Lượng tỷ lệ tối thiểu"
+
+msgid "Angle Max"
+msgstr "Lượng tỷ lệ tối đa"
+
+msgid "Color Initial Ramp"
+msgstr "Biến đổi tối đa"
+
+msgid "Sub Emitter"
+msgstr "Interp đến End"
+
+msgid "Process Material"
+msgstr "Kích thước cơ sở"
+
+msgid "Section Subdivisions"
+msgstr "Chế độ pha trộn"
+
+msgid "Energy"
+msgstr "Z tối đa"
+
+msgid "Z Min"
+msgstr "Lớp tối đa"
+
+msgid "Z Max"
+msgstr "Loại bỏ mục Mặt nạ"
+
+msgid "Item Cull Mask"
+msgstr "Tỷ lệ kết cấu"
+
+msgid "Fill"
+msgstr "Độ phủ"
+
+msgid "Capping"
+msgstr "Chế độ phủ kết thúc"
+
+msgid "Sharp Limit"
+msgstr "Mở rộng Gizmo"
+
+msgid "Round Precision"
+msgstr "Nhiều lưới"
+
+msgid "Gizmo Extents"
+msgstr "Khoảng cách mong muốn của đường dẫn"
+
+msgid "Multimesh"
+msgstr "Khoảng cách mong muốn của mục tiêu"
+
+msgid "Target Desired Distance"
+msgstr "Thuật toán tìm đường"
+
+msgid "Path Max Distance"
+msgstr "Hậu xử lý đường dẫn"
+
+msgid "Path Metadata Flags"
+msgstr "Tránh"
+
+msgid "Simplify Epsilon"
+msgstr "Khoảng cách hàng xóm"
+
+msgid "Max Neighbors"
+msgstr "Tốc độ tối đa"
+
+msgid "Skew"
+msgstr "Độ nghiêng"
+
+msgid "Repeat"
+msgstr "Lặp lại"
+
+msgid "End"
+msgstr "Cuối"
+
+msgid "Ignore Camera Scroll"
+msgstr "Bỏ qua cuộn camera"
+
+msgid "Scroll"
+msgstr "Cuộn"
+
+msgid "Limit Begin"
+msgstr "Giới hạn bắt đầu"
+
+msgid "Ignore Camera Zoom"
+msgstr "Bỏ qua thu phóng camera"
+
+msgid "Cubic Interp"
+msgstr "Phép xen kẽ khối"
+
+msgid "Point"
+msgstr "Điểm"
+
+msgid "Angular Damp"
+msgstr "Độ ẩm góc"
+
+msgid "Wall Min Slide Angle"
+msgstr "Tường Góc trượt tối thiểu"
+
+msgid "Stop on Slope"
+msgstr "Dừng trên dốc"
+
+msgid "On Leave"
+msgstr "Khi rời đi"
+
+msgid "Disabled"
+msgstr "Vô hiệu"
+
+msgid "Length"
+msgstr "Chiều dài"
+
+msgid "Rest Length"
+msgstr "Chiều dài nghỉ"
+
+msgid "Stiffness"
+msgstr "Độ cứng"
+
+msgid "Bias"
+msgstr "Độ lệch"
+
+msgid "Softness"
+msgstr "Độ mềm"
+
+msgid "Angular Limit"
+msgstr "Giới hạn góc"
+
+msgid "Motor"
+msgstr "Động cơ"
+
+msgid "Follow Bone When Simulating"
+msgstr "Theo xương khi mô phỏng"
+
+msgid "Exclude Parent"
+msgstr "Loại trừ cha mẹ"
+
+msgid "Hit From Inside"
+msgstr "Đánh từ bên trong"
+
+msgid "Collide With"
+msgstr "Va chạm với"
+
+msgid "Areas"
+msgstr "Diện tích"
+
+msgid "Bodies"
+msgstr "Cơ thể"
+
+msgid "Gravity Scale"
+msgstr "Thang trọng lực"
+
+msgid "Solver"
+msgstr "Trình giải"
+
+msgid "Max Contacts Reported"
+msgstr "Số tiếp xúc tối đa được báo cáo"
+
+msgid "Linear"
+msgstr "Tịnh tuyến"
+
+msgid "Damp"
+msgstr "Ẩm"
+
+msgid "Angular"
+msgstr "Góc"
+
+msgid "Torque"
+msgstr "Mô men xoắn"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Update"
+msgstr "Cập nhật"
+
+msgid "Auto Calculate Length and Angle"
+msgstr "Tự động tính toán chiều dài và góc"
+
+msgid "Editor Settings"
+msgstr "Cài đặt Trình biên tập"
+
+msgid "Hframes"
+msgstr "Hframes"
+
+msgid "Vframes"
+msgstr "Vframes"
+
+msgid "X Draw Order Reversed"
+msgstr "Thứ tự vẽ X bị đảo ngược"
+
+msgid "Use Kinematic Bodies"
+msgstr "Sử dụng Vật thể động học"
+
+msgid "Bitmask"
+msgstr "Bitmask"
+
+msgid "Passby Press"
+msgstr "Nhấn qua"
+
+msgid "Unit Size"
+msgstr "Kích thước đơn vị"
+
+msgid "Max dB"
+msgstr "dB tối đa"
+
+msgid "Attenuation Filter"
+msgstr "Bộ lọc suy giảm"
+
+msgid "Cutoff Hz"
+msgstr "Hz cắt"
+
+msgid "Keep Aspect"
+msgstr "Giữ nguyên khía cạnh"
+
+msgid "Cull Mask"
+msgstr "Mặt nạ loại bỏ"
+
+msgid "Attributes"
+msgstr "Thuộc tính"
+
+msgid "Far"
+msgstr "Xa"
+
+msgid "Flatness"
+msgstr "Độ phẳng"
+
+msgid "Albedo"
+msgstr "Albedo"
+
+msgid "Orm"
+msgstr "Orm"
+
+msgid "Albedo Mix"
+msgstr "Hỗn hợp Albedo"
+
+msgid "Distance Fade"
+msgstr "Fade khoảng cách"
+
+msgid "Thickness"
+msgstr "Độ dày"
+
+msgid "Flags"
+msgstr "Cờ"
+
+msgid "Billboard"
+msgstr "Biển quảng cáo"
+
+msgid "Double Sided"
+msgstr "Hai mặt"
+
+msgid "No Depth Test"
+msgstr "Không kiểm tra độ sâu"
+
+msgid "Alpha Cut"
+msgstr "Cắt alpha"
+
+msgid "Alpha Scissor Threshold"
+msgstr "Cắt kéo alpha Ngưỡng"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "Chế độ khử răng cưa Alpha"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "Cạnh khử răng cưa Alpha"
+
+msgid "Text"
+msgstr "Văn bản"
+
+msgid "Uppercase"
+msgstr "Chữ hoa"
+
+msgid "BiDi"
+msgstr "BiDi"
+
+msgid "Structured Text BiDi Override"
+msgstr "Ghi đè BiDi văn bản có cấu trúc"
+
+msgid "Structured Text BiDi Override Options"
+msgstr "Tùy chọn ghi đè BiDi văn bản có cấu trúc"
+
+msgid "Intensity Lumens"
+msgstr "Độ sáng cường độ"
+
+msgid "Intensity Lux"
+msgstr "Độ sáng cường độ"
+
+msgid "Volumetric Fog Energy"
+msgstr "Năng lượng sương mù thể tích"
+
+msgid "Normal Bias"
+msgstr "Độ lệch bình thường"
+
+msgid "Opacity"
+msgstr "Độ mờ"
+
+msgid "Blur"
+msgstr "Làm mờ"
+
+msgid "Blend Splits"
+msgstr "Phân chia pha trộn"
+
+msgid "Omni"
+msgstr "Omni"
+
+msgid "Spot"
+msgstr "Điểm"
+
+msgid "Quality"
+msgstr "Chất lượng"
+
+msgid "Bounces"
+msgstr "Độ nảy"
+
+msgid "Interior"
+msgstr "Nội thất"
+
+msgid "Subdiv"
+msgstr "Subdiv"
+
+msgid "Quaternion"
+msgstr "Quaternion"
+
+msgid "Basis"
+msgstr "Cơ sở"
+
+msgid "Visibility"
+msgstr "Khả năng hiển thị"
+
+msgid "Use Model Front"
+msgstr "Sử dụng mặt trước của mô hình"
+
+msgid "Reverb Bus"
+msgstr "Xe buýt hồi âm"
+
+msgid "Ray Pickable"
+msgstr "Có thể chọn tia"
+
+msgid "Twist Span"
+msgstr "Khoảng cách xoắn"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Equilibrium Point"
+msgstr "Điểm cân bằng"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Impulse Clamp"
+msgstr "Kẹp xung"
+
+msgid "Angular Spring Stiffness"
+msgstr "Độ cứng lò xo góc"
+
+msgid "Angular Spring Damping"
+msgstr "Giảm chấn lò xo góc"
+
+msgid "Angular Equilibrium Point"
+msgstr "Điểm cân bằng góc"
+
+msgid "Bounce"
+msgstr "Độ nảy"
+
+msgid "Angular X"
+msgstr "Góc X"
+
+msgid "Angular Y"
+msgstr "Góc Y"
+
+msgid "Angular Z"
+msgstr "Góc Z"
+
+msgid "Hit Back Faces"
+msgstr "Đánh mặt sau"
+
+msgid "Spring Length"
+msgstr "Chiều dài lò xo"
+
+msgid "Brake"
+msgstr "Phanh"
+
+msgid "Steering"
+msgstr "Lái xe"
+
+msgid "VehicleBody3D Motion"
+msgstr "Chuyển động thân xe3D"
+
+msgid "Roll Influence"
+msgstr "Ảnh hưởng của lực lăn"
+
+msgid "Travel"
+msgstr "Di chuyển"
+
+msgid "Mesh LOD Threshold"
+msgstr "Mạng lưới Ngưỡng LOD"
+
+msgid "Bones"
+msgstr "Xương"
+
+msgid "Deprecated"
+msgstr "Đã lỗi thời"
+
+msgid "Target"
+msgstr "Mục tiêu"
+
+msgid "Use Magnet"
+msgstr "Sử dụng Nam châm"
+
+msgid "Magnet"
+msgstr "Nam châm"
+
+msgid "Influence"
+msgstr "Ảnh hưởng"
+
+msgid "Spatial Attachment Path"
+msgstr "Đường dẫn tệp đính kèm không gian"
+
+msgid "Linear Stiffness"
+msgstr "Độ cứng tuyến tính"
+
+msgid "Pressure Coefficient"
+msgstr "Hệ số áp suất"
+
+msgid "Damping Coefficient"
+msgstr "Hệ số giảm chấn"
+
+msgid "Drag Coefficient"
+msgstr "Hệ số kéo"
+
+msgid "Use AABB Center"
+msgstr "Sử dụng AABB Trung tâm"
+
+msgid "Custom AABB"
+msgstr "AABB tùy chỉnh"
+
+msgid "LOD Bias"
+msgstr "Độ lệch LOD"
+
+msgid "Lightmap Scale"
+msgstr "Tỷ lệ bản đồ ánh sáng"
+
+msgid "Use Two Bounces"
+msgstr "Sử dụng hai lần nảy"
+
+msgid "Show When Tracked"
+msgstr "Hiển thị khi được theo dõi"
+
+msgid "Sync"
+msgstr "Đồng bộ hoá"
+
+msgid "Fadeout Time"
+msgstr "Thời gian mờ dần"
+
+msgid "Delay"
+msgstr "Trì hoãn"
+
+msgid "Xfade Time"
+msgstr "Thời gian Xfade"
+
+msgid "Allow Transition to Self"
+msgstr "Cho phép chuyển đổi thành Tự động"
+
+msgid "Root Node"
+msgstr "Nút gốc"
+
+msgid "Root Motion"
+msgstr "Chuyển động gốc"
+
+msgid "Track"
+msgstr "Rãnh"
+
+msgid "Method"
+msgstr "Phương pháp"
+
+msgid "Discrete"
+msgstr "Rời rạc"
+
+msgid "Reset"
+msgstr "Đặt lại"
+
+msgid "Switch"
+msgstr "Chuyển đổi"
+
+msgid "Condition"
+msgstr "Điều kiện"
+
+msgid "Expression"
+msgstr "Biểu thức"
+
+msgid "Current Animation"
+msgstr "Hoạt hình hiện tại"
+
+msgid "Movie Quit on Finish"
+msgstr "Thoát phim khi Kết thúc"
+
+msgid "Animation Path"
+msgstr "Đường dẫn hoạt hình"
+
+msgid "Mix Target"
+msgstr "Mục tiêu pha trộn"
+
+msgid "Alignment"
+msgstr "Căn chỉnh"
+
+msgid "Keep Pressed Outside"
+msgstr "Giữ nút được nhấn"
+
+msgid "Allow Unpress"
+msgstr "Cho phép Nhả"
+
+msgid "Text Overrun Behavior"
+msgstr "Hành vi tràn văn bản"
+
+msgid "Symbol Lookup on Click"
+msgstr "Tra cứu biểu tượng khi nhấp"
+
+msgid "Line Length Guidelines"
+msgstr "Hướng dẫn về độ dài dòng"
+
+msgid "Automatic Prefixes"
+msgstr "Tiền tố tự động"
+
+msgid "Pairs"
+msgstr "Cặp"
+
+msgid "Can Add Swatches"
+msgstr "Có thể thêm mẫu"
+
+msgid "Constants"
+msgstr "Các hằng số"
+
+msgid "Localization"
+msgstr "Bản địa hoá"
+
+msgid "Localize Numeral System"
+msgstr "Tỷ lệ kéo giãn"
+
+msgid "Next"
+msgstr "Tiếp theo"
+
+msgid "Previous"
+msgstr "Trước đó"
+
+msgid "Mouse"
+msgstr "Neighbor Bottom"
+
+msgid "Force Pass Scroll Events"
+msgstr "Chuột"
+
+msgid "Dialog"
+msgstr "Văn bản nút OK"
+
+msgid "Show Grid"
+msgstr "Điền ngược"
+
+msgid "Toolbar Menu"
+msgstr "Bước thu nhỏ"
+
+msgid "Title"
+msgstr "Đã chọn"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "Bỏ qua Loại kết nối không hợp lệ"
+
+msgid "Select Mode"
+msgstr "Chế độ chọn"
+
+msgid "Max Text Lines"
+msgstr "Số dòng văn bản tối đa"
+
+msgid "Items"
+msgstr "Mục"
+
+msgid "Max Columns"
+msgstr "Số cột tối đa"
+
+msgid "Same Column Width"
+msgstr "Chiều rộng cột giống nhau"
+
+msgid "Fixed Column Width"
+msgstr "Chiều rộng cột cố định"
+
+msgid "Icon Mode"
+msgstr "Chế độ biểu tượng"
+
+msgid "Ellipsis Char"
+msgstr "Ký tự dấu ba chấm"
+
+msgid "Tab Stops"
+msgstr "Điểm dừng tab"
+
+msgid "Lines Skipped"
+msgstr "Số dòng bị bỏ qua"
+
+msgid "Max Lines Visible"
+msgstr "Số dòng tối đa có thể nhìn thấy"
+
+msgid "Placeholder Text"
+msgstr "Văn bản giữ chỗ"
+
+msgid "Max Length"
+msgstr "Độ dài tối đa"
+
+msgid "Context Menu Enabled"
+msgstr "Menu ngữ cảnh được bật"
+
+msgid "Blink"
+msgstr "Nháy mắt"
+
+msgid "Blink Interval"
+msgstr "Khoảng thời gian nháy mắt"
+
+msgid "Mid Grapheme"
+msgstr "Ghi chú giữa"
+
+msgid "Secret"
+msgstr "Bí mật"
+
+msgid "Underline"
+msgstr "Gạch chân"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Prefer Global Menu"
+msgstr "Ưu tiên Menu toàn cục"
+
+msgid "Axis Stretch"
+msgstr "Trục kéo dài"
+
+msgid "Fit to Longest Item"
+msgstr "Vừa với mục dài nhất"
+
+msgid "Submenu Popup Delay"
+msgstr "Trì hoãn bật lên của menu phụ"
+
+msgid "System Menu ID"
+msgstr "ID menu hệ thống"
+
+msgid "Prefer Native Menu"
+msgstr "Ưu tiên Menu gốc"
+
+msgid "Step"
+msgstr "Bước"
+
+msgid "Allow Greater"
+msgstr "Cho phép lớn hơn"
+
+msgid "Allow Lesser"
+msgstr "Cho phép nhỏ hơn"
+
+msgid "Glyph Flags"
+msgstr "Cờ Glyph"
+
+msgid "Scroll Active"
+msgstr "Cuộn đang hoạt động"
+
+msgid "Scroll Following"
+msgstr "Cuộn theo sau"
+
+msgid "Markup"
+msgstr "Đánh dấu"
+
+msgid "Meta Underlined"
+msgstr "Meta gạch chân"
+
+msgid "Hint Underlined"
+msgstr "Gợi ý gạch chân"
+
+msgid "Follow Focus"
+msgstr "Theo dõi tiêu điểm"
+
+msgid "Default Scroll Deadzone"
+msgstr "Vùng chết cuộn mặc định"
+
+msgid "Scrollable"
+msgstr "Có thể cuộn"
+
+msgid "Dragger Visibility"
+msgstr "Khả năng hiển thị của trình kéo"
+
+msgid "Tab Close Display Policy"
+msgstr "Chính sách hiển thị đóng tab"
+
+msgid "Scrolling Enabled"
+msgstr "Bật cuộn"
+
+msgid "Tabs Visible"
+msgstr "Tab có thể nhìn thấy"
+
+msgid "Use Hidden Tabs for Min Size"
+msgstr "Sử dụng tab ẩn để có kích thước tối thiểu"
+
+msgid "Past End of File"
+msgstr "Kết thúc tệp trước"
+
+msgid "Move on Right Click"
+msgstr "Di chuyển khi nhấp chuột phải"
+
+msgid "Syntax Highlighter"
+msgstr "Nổi màu cú pháp"
+
+msgid "Text Edit Idle Detect (sec)"
+msgstr "Phát hiện trạng thái nhàn rỗi khi chỉnh sửa văn bản (giây)"
+
+msgid "Text Edit Undo Stack Max Size"
+msgstr "Kích thước tối đa của ngăn xếp hoàn tác chỉnh sửa văn bản"
+
+msgid "Hover"
+msgstr "Di chuột"
+
+msgid "Radial Fill"
+msgstr "Điền màu"
+
+msgid "Under"
+msgstr "Dưới"
+
+msgid "Progress Offset"
+msgstr "Bù trừ tiến trình"
+
+msgid "Tint"
+msgstr "Màu"
+
+msgid "Custom Minimum Height"
+msgstr "Chiều cao tối thiểu tùy chỉnh"
+
+msgid "Column Titles Visible"
+msgstr "Tiêu đề cột có thể nhìn thấy"
+
+msgid "Drop Mode Flags"
+msgstr "Cờ chế độ thả"
+
+msgid "Audio Track"
+msgstr "Rãnh âm thanh"
+
+msgid "Paused"
+msgstr "Tạm dừng"
+
+msgid "Show Behind Parent"
+msgstr "Hiển thị phía sau phần cha"
+
+msgid "Z Index"
+msgstr "Chỉ số Z"
+
+msgid "Use Parent Material"
+msgstr "Sử dụng vật liệu phần cha"
+
+msgid "NormalMap"
+msgstr "Bản đồ bình thường"
+
+msgid "Shininess"
+msgstr "Độ bóng"
+
+msgid "Body Size Limit"
+msgstr "Giới hạn kích thước phần thân"
+
+msgid "Max Redirects"
+msgstr "Chuyển hướng tối đa"
+
+msgid "Transfer Mode"
+msgstr "Chế độ truyền"
+
+msgid "Node Name Num Separator"
+msgstr "Tên nút Bộ phân cách số"
+
+msgid "Node Name Casing"
+msgstr "Tên nút Vỏ"
+
+msgid "Shapes"
+msgstr "Hình dạng"
+
+msgid "Shape Color"
+msgstr "Màu hình dạng"
+
+msgid "Geometry Color"
+msgstr "Màu hình học"
+
+msgid "Anti Aliasing"
+msgstr "Chống răng cưa"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
+msgid "Screen Space AA"
+msgstr "Khoảng cách màn hình AA"
+
+msgid "Use Debanding"
+msgstr "Sử dụng Debanding"
+
+msgid "LOD Change"
+msgstr "Thay đổi LOD"
+
+msgid "Threshold Pixels"
+msgstr "Ngưỡng điểm ảnh"
+
+msgid "VRS"
+msgstr "VRS"
+
+msgid "Lights and Shadows"
+msgstr "Ánh sáng và bóng đổ"
+
+msgid "SDF"
+msgstr "SDF"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Own World 3D"
+msgstr "Thế giới riêng 3D"
+
+msgid "FSR Sharpness"
+msgstr "Độ sắc nét FSR"
+
+msgid "Variable Rate Shading"
+msgstr "Tỷ lệ đổ bóng thay đổi"
+
+msgid "Quad 0"
+msgstr "Quad 0"
+
+msgid "Quad 1"
+msgstr "Quad 1"
+
+msgid "Quad 2"
+msgstr "Quad 2"
+
+msgid "Quad 3"
+msgstr "Quad 3"
+
+msgid "Canvas Cull Mask"
+msgstr "Mặt nạ loại bỏ Canvas"
+
+msgid "Current Screen"
+msgstr "Màn hình hiện có"
+
+msgid "Unfocusable"
+msgstr "Không thể lấy nét"
+
+msgid "Mouse Passthrough"
+msgstr "Di chuyển chuột"
+
+msgid "Parsed Geometry Type"
+msgstr "Loại hình học đã phân tích"
+
+msgid "Source Geometry Mode"
+msgstr "Chế độ hình học nguồn"
+
+msgid "Cells"
+msgstr "Ô"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Custom Solver Bias"
+msgstr "Độ lệch của trình giải tùy chỉnh"
+
+msgid "CCDIK Data Chain Length"
+msgstr "Độ dài chuỗi dữ liệu CCDIK"
+
+msgid "FABRIK Data Chain Length"
+msgstr "Độ dài chuỗi dữ liệu FABRIK"
+
+msgid "Jiggle Data Chain Length"
+msgstr "Độ dài chuỗi dữ liệu Jiggle"
+
+msgid "Terrains"
+msgstr "Địa hình"
+
+msgid "Alternative Level"
+msgstr "Mức thay thế"
+
+msgid "UV Clipping"
+msgstr "Cắt UV"
+
+msgid "One Way"
+msgstr "Một chiều"
+
+msgid "Transpose"
+msgstr "Chuyển vị"
+
+msgid "Terrain"
+msgstr "Địa hình"
+
+msgid "Miscellaneous"
+msgstr "Khác"
+
+msgid "Probability"
+msgstr "Xác suất"
+
+msgid "Density"
+msgstr "Mật độ"
+
+msgid "Edge Fade"
+msgstr "Mờ dần cạnh"
+
+msgid "Map Width"
+msgstr "Chiều rộng bản đồ"
+
+msgid "Item"
+msgstr "Mục"
+
+msgid "Preview"
+msgstr "Xem thử"
+
+msgid "Subdivide Width"
+msgstr "Chiều rộng chia nhỏ"
+
+msgid "Subdivide Height"
+msgstr "Chiều cao chia nhỏ"
+
+msgid "Subdivide Depth"
+msgstr "Độ sâu chia nhỏ"
+
+msgid "Cap Top"
+msgstr "Mũ trên cùng"
+
+msgid "Is Hemisphere"
+msgstr "Là bán cầu"
+
+msgid "Bind"
+msgstr "Liên kết"
+
+msgid "Sky"
+msgstr "Bầu trời"
+
+msgid "Cover"
+msgstr "Bìa"
+
+msgid "Panorama"
+msgstr "Toàn cảnh"
+
+msgid "Rayleigh"
+msgstr "Rayleigh"
+
+msgid "Coefficient"
+msgstr "Hệ số"
+
+msgid "Eccentricity"
+msgstr "Độ lệch tâm"
+
+msgid "Turbidity"
+msgstr "Độ đục"
+
+msgid "Fallback Environment"
+msgstr "Môi trường dự phòng"
+
+msgid "Format"
+msgstr "Định dạng"
+
+msgid "Stereo"
+msgstr "Âm thanh nổi"
+
+msgid "Auto Exposure"
+msgstr "Độ phơi sáng tự động"
+
+msgid "DOF Blur"
+msgstr "Độ mờ DOF"
+
+msgid "Camera Feed ID"
+msgstr "ID nguồn cấp dữ liệu máy ảnh"
+
+msgid "Which Feed"
+msgstr "Nguồn cấp dữ liệu nào"
+
+msgid "Particles Animation"
+msgstr "Hoạt hình hạt hiệu ứng"
+
+msgid "Particles Anim H Frames"
+msgstr "Hạt hoạt hình Khung hình H"
+
+msgid "Particles Anim V Frames"
+msgstr "Hạt hoạt hình Khung hình V"
+
+msgid "Access Resolved Depth"
+msgstr "Truy cập độ sâu đã giải quyết"
+
+msgid "Needs Motion Vectors"
+msgstr "Cần vectơ chuyển động"
+
+msgid "Needs Normal Roughness"
+msgstr "Cần bình thường Độ nhám"
+
+msgid "Needs Separate Specular"
+msgstr "Cần hiệu ứng phản chiếu riêng biệt"
+
+msgid "Bake Interval"
+msgstr "Khoảng thời gian Bake"
+
+msgid "Background"
+msgstr "Nền"
+
+msgid "Canvas Max Layer"
+msgstr "Lớp Canvas Max"
+
+msgid "Source"
+msgstr "Nguồn"
+
+msgid "Tonemap"
+msgstr "Bản đồ tông màu"
+
+msgid "White"
+msgstr "Trắng"
+
+msgid "SSR"
+msgstr "SSR"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "Detail"
+msgstr "Chi tiết"
+
+msgid "Sharpness"
+msgstr "Độ sắc nét"
+
+msgid "AO Channel Affect"
+msgstr "Ảnh hưởng của kênh AO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Cascades"
+msgstr "Thác đổ"
+
+msgid "Probe Bias"
+msgstr "Độ lệch thăm dò"
+
+msgid "Glow"
+msgstr "Ánh sáng"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "Trộn"
+
+msgid "Bloom"
+msgstr "Bloom"
+
+msgid "HDR Threshold"
+msgstr "Ngưỡng HDR"
+
+msgid "HDR Luminance Cap"
+msgstr "Giới hạn độ sáng HDR"
+
+msgid "Fog"
+msgstr "Sương mù"
+
+msgid "Sun Scatter"
+msgstr "Tán xạ mặt trời"
+
+msgid "GI Inject"
+msgstr "GI Inject"
+
+msgid "Anisotropy"
+msgstr "Độ dị hướng"
+
+msgid "Adjustments"
+msgstr "Điều chỉnh"
+
+msgid "Features"
+msgstr "Tính năng"
+
+msgid "Glyph"
+msgstr "Glyph"
+
+msgid "Use HDR"
+msgstr "Sử dụng HDR"
+
+msgid "Shader"
+msgstr "Shader"
+
+msgid "Use as Albedo"
+msgstr "Sử dụng làm Albedo"
+
+msgid "Is sRGB"
+msgstr "Là sRGB"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "Kim loại"
+
+msgid "Operator"
+msgstr "Toán tử"
+
+msgid "On UV2"
+msgstr "Trên UV2"
+
+msgid "Rim"
+msgstr "Vành"
+
+msgid "Flowmap"
+msgstr "Flowmap"
+
+msgid "Deep Parallax"
+msgstr "Sâu Parallax"
+
+msgid "Flip Tangent"
+msgstr "Lật Tangent"
+
+msgid "Subsurface Scattering"
+msgstr "Phân tán dưới bề mặt"
+
+msgid "Boost"
+msgstr "Tăng cường"
+
+msgid "Triplanar"
+msgstr "Triplanar"
+
+msgid "Triplanar Sharpness"
+msgstr "Độ sắc nét của Tripplanar"
+
+msgid "World Triplanar"
+msgstr "World Tripplanar"
+
+msgid "Grow"
+msgstr "Phát triển"
+
+msgid "MSDF"
+msgstr "MSDF"
+
+msgid "Lightmap Size Hint"
+msgstr "Gợi ý kích thước bản đồ ánh sáng"
+
+msgid "Visible Instance Count"
+msgstr "Số lượng phiên bản có thể nhìn thấy"
+
+msgid "Max Climb"
+msgstr "Độ trèo tối đa"
+
+msgid "Max Slope"
+msgstr "Độ dốc tối đa"
+
+msgid "Sample Distance"
+msgstr "Khoảng cách mẫu"
+
+msgid "Sample Max Error"
+msgstr "Lỗi tối đa của mẫu"
+
+msgid "Low Hanging Obstacles"
+msgstr "Chướng ngại vật treo thấp"
+
+msgid "Ledge Spans"
+msgstr "Khoảng cách gờ"
+
+msgid "Walkable Low Height Spans"
+msgstr "Khoảng cách chiều cao thấp có thể đi bộ"
+
+msgid "Bundled"
+msgstr "Được đóng gói"
+
+msgid "Turbulence"
+msgstr "Độ nhiễu loạn"
+
+msgid "Influence over Life"
+msgstr "Ảnh hưởng đến sự sống"
+
+msgid "Rough"
+msgstr "Thô"
+
+msgid "Absorbent"
+msgstr "Thấm hút"
+
+msgid "Keep Compressed Buffer"
+msgstr "Giữ bộ đệm nén"
+
+msgid "Blend"
+msgstr "Hoà"
+
+msgid "Top Left"
+msgstr "Góc trên trái"
+
+msgid "Top Right"
+msgstr "Góc trên phải"
+
+msgid "Bottom Right"
+msgstr "Góc dưới phải"
+
+msgid "Bottom Left"
+msgstr "Góc dưới trái"
+
+msgid "Corner Detail"
+msgstr "Chi tiết góc"
+
+msgid "Grow Begin"
+msgstr "Bắt đầu phát triển"
+
+msgid "Grow End"
+msgstr "Kết thúc phát triển"
+
+msgid "File"
+msgstr "Tệp"
+
+msgid "Output Port for Preview"
+msgstr "Cổng đầu ra để xem trước"
+
+msgid "Constant"
+msgstr "Hằng số"
+
+msgid "Cube Map"
+msgstr "Bản đồ khối"
+
+msgid "Function"
+msgstr "Hàm"
+
+msgid "Hint"
+msgstr "Gợi ý"
+
+msgid "Align to Largest Stylebox"
+msgstr "Căn chỉnh theo hộp kiểu lớn nhất"
+
+msgid "Arrow"
+msgstr "Mũi tên"
+
+msgid "Radio Unchecked"
+msgstr "Radio Chưa kiểm tra"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radio Chưa kiểm tra Đã tắt"
+
+msgid "Clear"
+msgstr "Xoá"
+
+msgid "Tab"
+msgstr "Tab"
+
+msgid "Folded EOL Icon"
+msgstr "Biểu tượng EOL đã gập lại"
+
+msgid "Grabber"
+msgstr "Ghi lại"
+
+msgid "Increment Pressed"
+msgstr "Tăng dần đã nhấn"
+
+msgid "Decrement"
+msgstr "Giảm dần"
+
+msgid "Decrement Pressed"
+msgstr "Giảm dần Nhấn"
+
+msgid "Grabber Area"
+msgstr "Khu vực Grabber"
+
+msgid "Grabber Area Highlight"
+msgstr "Đánh dấu khu vực Grabber"
+
+msgid "Tick"
+msgstr "Đánh dấu"
+
+msgid "Updown"
+msgstr "Lên xuống"
+
+msgid "Embedded Border"
+msgstr "Đường viền nhúng"
+
+msgid "Embedded Unfocused Border"
+msgstr "Đường viền không lấy nét nhúng"
+
+msgid "Close"
+msgstr "Đóng"
+
+msgid "Reload"
+msgstr "Tải lại"
+
+msgid "Labeled Separator Left"
+msgstr "Dấu phân cách có nhãn bên trái"
+
+msgid "Labeled Separator Right"
+msgstr "Dấu phân cách có nhãn bên phải"
+
+msgid "Submenu"
+msgstr "Bảng chọn phụ"
+
+msgid "Slot"
+msgstr "Khe"
+
+msgid "Cursor"
+msgstr "Con trỏ"
+
+msgid "Cursor Unfocused"
+msgstr "Con trỏ không được lấy nét"
+
+msgid "Custom Button Font Highlight"
+msgstr "Nét phông chữ nút tùy chỉnh Tô sáng"
+
+msgid "Draw Relationship Lines"
+msgstr "Vẽ đường quan hệ"
+
+msgid "Center Slider Grabbers"
+msgstr "Thanh trượt Grabber ở giữa"
+
+msgid "Screen Picker"
+msgstr "Bộ chọn màn hình"
+
+msgid "Sample BG"
+msgstr "BG mẫu"
+
+msgid "Overbright Indicator"
+msgstr "Chỉ báo quá sáng"
+
+msgid "Bar Arrow"
+msgstr "Mũi tên thanh"
+
+msgid "Bold Italics Font"
+msgstr "Phông chữ in đậm"
+
+msgid "Table Odd Row BG"
+msgstr "BG hàng lẻ của bảng"
+
+msgid "Table Even Row BG"
+msgstr "BG hàng chẵn của bảng"
+
+msgid "H Grabber"
+msgstr "H Grabber"
+
+msgid "V Grabber"
+msgstr "V Grabber"
+
+msgid "Minimap Toggle"
+msgstr "Bản đồ thu nhỏ Chuyển đổi"
+
+msgid "Snapping Toggle"
+msgstr "Chuyển đổi chụp"
+
+msgid "Menu Panel"
+msgstr "Bảng điều khiển menu"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Mép cổng Hotzone bên trong"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Mở rộng bên ngoài cổng Hotzone"
+
+msgid "Node"
+msgstr "Nút"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "Trường khoảng cách có dấu đa kênh phông chữ mặc định"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "Tạo bản đồ Mipmap phông chữ mặc định"
+
+msgid "Fallback values"
+msgstr "Giá trị dự phòng"
+
+msgid "Random Volume Offset dB"
+msgstr "Độ lệch âm lượng ngẫu nhiên dB"
+
+msgid "Buffer Length"
+msgstr "Độ dài bộ đệm"
+
+msgid "Voice Count"
+msgstr "Số lượng giọng nói"
+
+msgid "Dry"
+msgstr "Khô"
+
+msgid "Wet"
+msgstr "Ướt"
+
+msgid "Voice"
+msgstr "Giọng nói"
+
+msgid "Delay (ms)"
+msgstr "Độ trễ (ms)"
+
+msgid "Rate Hz"
+msgstr "Tốc độ Hz"
+
+msgid "Level dB"
+msgstr "Mức dB"
+
+msgid "Sidechain"
+msgstr "Chuỗi bên"
+
+msgid "Tap 1"
+msgstr "Nhấn 1"
+
+msgid "Tap 2"
+msgstr "Nhấn 2"
+
+msgid "Pre Gain"
+msgstr "Độ lợi trước"
+
+msgid "Keep Hf Hz"
+msgstr "Giữ tần số cao tần Hz"
+
+msgid "Drive"
+msgstr "Lái xe"
+
+msgid "Ceiling dB"
+msgstr "Ceiling dB"
+
+msgid "Threshold dB"
+msgstr "Threshold dB"
+
+msgid "Soft Clip dB"
+msgstr "Soft Clip dB"
+
+msgid "Soft Clip Ratio"
+msgstr "Soft Clip Ratio"
+
+msgid "Range Min Hz"
+msgstr "Range Min Hz"
+
+msgid "Range Max Hz"
+msgstr "Range Max Hz"
+
+msgid "Predelay"
+msgstr "Predelay"
+
+msgid "Msec"
+msgstr "Msec"
+
+msgid "Room Size"
+msgstr "Kích thước phòng"
+
+msgid "Tap Back Pos"
+msgstr "Tap Back Pos"
+
+msgid "Pan Pullout"
+msgstr "Pan Pullout"
+
+msgid "Surround"
+msgstr "Surround"
+
+msgid "Channel Disable Threshold dB"
+msgstr "Kênh Disable Threshold dB"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "Video Delay Compensation (ms)"
+
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Metadata Flags"
+msgstr "Cờ siêu dữ liệu"
+
+msgid "Path Owner IDs"
+msgstr "ID chủ sở hữu đường dẫn"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "Hợp nhất Tỷ lệ ô Rasterizer"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Bật đường cạnh X-Ray"
+
+msgid "Obstacles Radius Color"
+msgstr "Màu bán kính chướng ngại vật"
+
+msgid "Obstacles Static Face Pushin Color"
+msgstr "Màu đẩy mặt tĩnh chướng ngại vật"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "Màu đẩy cạnh tĩnh chướng ngại vật"
+
+msgid "Obstacles Static Face Pushout Color"
+msgstr "Màu đẩy mặt tĩnh chướng ngại vật"
+
+msgid "Obstacles Static Edge Pushout Color"
+msgstr "Màu đẩy cạnh tĩnh chướng ngại vật"
+
+msgid "Enable Obstacles Static"
+msgstr "Bật Chướng ngại vật tĩnh"
+
+msgid "Inverse Mass"
+msgstr "Khối lượng nghịch đảo"
+
+msgid "Total Angular Damp"
+msgstr "Độ ẩm góc tổng"
+
+msgid "Exclude"
+msgstr "Loại trừ"
+
+msgid "Collide With Areas"
+msgstr "Va chạm với diện tích"
+
+msgid "Shape RID"
+msgstr "RID hình dạng"
+
+msgid "Sleep Threshold Linear"
+msgstr "Ngưỡng ngủ tuyến tính"
+
+msgid "Sleep Threshold Angular"
+msgstr "Ngưỡng ngủ góc"
+
+msgid "Time Before Sleep"
+msgstr "Thời gian trước khi ngủ"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "Độ xuyên thấu được phép tối đa tiếp xúc"
+
+msgid "Principal Inertia Axes"
+msgstr "Trục quán tính chính"
+
+msgid "Tighter Shadow Caster Culling"
+msgstr "Loại bỏ bóng đổ chặt hơn"
+
+msgid "Vertex"
+msgstr "Đỉnh"
+
+msgid "Fragment"
+msgstr "Mảnh"
+
+msgid "Tesselation Evaluation"
+msgstr "Đánh giá Tesselation"
+
+msgid "Syntax"
+msgstr "Cú pháp"
+
+msgid "Bytecode"
+msgstr "Mã byte"
+
+msgid "IDs"
+msgstr "ID"
+
+msgid "Depth Prepass Alpha"
+msgstr "Phép đo độ sâu trước Alpha"
+
+msgid "SSS Mode Skin"
+msgstr "SSS Mode Skin"
+
+msgid "Cull"
+msgstr "tỉa bớt đối tượng"
+
+msgid "Unshaded"
+msgstr "Không đổ bóng"
+
+msgid "Wireframe"
+msgstr "Wireframe"
+
+msgid "Alpha to Coverage"
+msgstr "Alpha đến phạm vi phủ sóng"
+
+msgid "Alpha to Coverage and One"
+msgstr "Alpha đến phạm vi phủ sóng và một"
+
+msgid "Use Half Res Pass"
+msgstr "Sử dụng Half Res Pass"
+
+msgid "Use Quarter Res Pass"
+msgstr "Sử dụng Quarter Res Pass"
+
+msgid "Lossless Compression"
+msgstr "Nén không mất dữ liệu"
+
+msgid "Time Rollover Secs"
+msgstr "Giây chuyển đổi thời gian"
+
+msgid "Use Physical Light Units"
+msgstr "Sử dụng Đơn vị ánh sáng vật lý"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "Chất lượng bộ lọc bóng đổ mềm"
+
+msgid "Reflections"
+msgstr "Phản xạ"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Overrides"
+msgstr "Ghi đè"
+
+msgid "Force Vertex Shading"
+msgstr "Bắt buộc đổ bóng đỉnh"
+
+msgid "Force Lambert over Burley"
+msgstr "Bắt buộc Lambert qua Burley"
+
+msgid "Depth Prepass"
+msgstr "Độ sâu trước khi vượt qua"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "Sử dụng Bộ lọc Mipmap gần nhất"
+
+msgid "Anisotropic Filtering Level"
+msgstr "Mức lọc dị hướng"
+
+msgid "Depth of Field Use Jitter"
+msgstr "Độ sâu trường ảnh sử dụng Độ rung"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "Bộ giới hạn độ nhám không gian màn hình"
+
+msgid "Decals"
+msgstr "Hình dán"
+
+msgid "Occlusion Rays per Thread"
+msgstr "Tia che khuất trên mỗi luồng"
+
+msgid "Subsurface Scattering Quality"
+msgstr "Chất lượng tán xạ dưới bề mặt"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "Tỷ lệ độ sâu tán xạ dưới bề mặt"
+
+msgid "Probe Capture"
+msgstr "Chụp đầu dò"
+
+msgid "Frames to Update Lights"
+msgstr "Khung để cập nhật đèn"
+
+msgid "Update Iterations per Frame"
+msgstr "Cập nhật số lần lặp lại trên mỗi khung hình"
+
+msgid "Max Clustered Elements"
+msgstr "Số lượng cụm thành phần tối đa"
+
+msgid "Max Renderable Elements"
+msgstr "Số lượng thành phần có thể kết xuất tối đa"
+
+msgid "Max Renderable Lights"
+msgstr "Số lượng đèn có thể kết xuất tối đa"
+
+msgid "Max Lights per Object"
+msgstr "Số lượng đèn tối đa trên mỗi đối tượng"
+
+msgid "Treat Warnings as Errors"
+msgstr "Xử lý cảnh báo là lỗi"
+
+msgid "Is Primary"
+msgstr "Là chính"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "Đã bật phát hiện neo chưa"
+
+msgid "Tracking Confidence"
+msgstr "Độ tin cậy theo dõi"

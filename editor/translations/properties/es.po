@@ -108,13 +108,15 @@
 # José Artigas <squander@users.noreply.hosted.weblate.org>, 2024.
 # Zgtale <zgtale1@hotmail.com>, 2024.
 # Juan Matias Olmos <ma7as@protonmail.com>, 2024.
+# simomi 073 <arcemoyanomanuel@gmail.com>, 2024.
+# José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-01 02:20+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2025-02-06 23:02+0000\n"
+"Last-Translator: José Andrés Urdaneta <urdaneta7834@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -122,7 +124,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -362,7 +364,7 @@ msgid "Rendering"
 msgstr "Renderizado"
 
 msgid "Occlusion Culling"
-msgstr "Occlusion Culling"
+msgstr "Eliminación por oclusión"
 
 msgid "BVH Build Quality"
 msgstr "Calidad de Construcción BVH"
@@ -1847,7 +1849,7 @@ msgid "Input"
 msgstr "Entrada"
 
 msgid "Buffering"
-msgstr "Búfer de Entrada"
+msgstr "Buffering"
 
 msgid "Agile Event Flushing"
 msgstr "Evento Ágil de Vaciado"

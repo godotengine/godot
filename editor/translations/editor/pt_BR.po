@@ -192,13 +192,19 @@
 # Christian <cristianvito22@gmail.com>, 2024.
 # Mateus Bueno <mateusmbdev@gmail.com>, 2024.
 # Gustavo Lopes <gustavolr035@gmail.com>, 2024.
+# Helio Nunes Santos <helio.batimarqui@gmail.com>, 2024.
+# Anaclecio Brederodes <anacleciobrederodes@outlook.com>, 2024.
+# Ruan Victor <ruanvictordossantoscorrea128@gmail.com>, 2024.
+# GSPAtens <g007sp@gmail.com>, 2024.
+# dweob <dweob@c0de.wtf>, 2024.
+# DX_studios1 <biel.escarabichi@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2024-09-11 06:33+0000\n"
-"Last-Translator: Douglas Leão <djlsplays@gmail.com>\n"
+"PO-Revision-Date: 2025-01-22 04:17+0000\n"
+"Last-Translator: DX_studios1 <biel.escarabichi@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -206,7 +212,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread Principal"
@@ -729,6 +735,9 @@ msgstr "Colar Chaves de Animação"
 
 msgid "Animation Delete Keys"
 msgstr "Excluir Chaves da Animação"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Mudar chamada de animação de Curva de Bezier"
 
 msgid "Focus"
 msgstr "Foco"
@@ -2419,13 +2428,13 @@ msgid "Must not collide with an existing global script class name."
 msgstr "Não deve coincidir com um nome de classe global existente."
 
 msgid "Must not collide with an existing built-in type name."
-msgstr "O nome não pode estar em conflito com o de um tipo interno existente."
+msgstr "Não deve coincidir com um nome de tipo embutido existente."
 
 msgid "Must not collide with an existing global constant name."
 msgstr "Não deve coincidir com um nome de constante global existente."
 
 msgid "Keyword cannot be used as an Autoload name."
-msgstr "Palavra-chave não pode ser usado como nome para autocarregamento."
+msgstr "As palavras-chave não podem ser usadas como nomes de Autocarregamento."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' já existe!"
@@ -2724,7 +2733,7 @@ msgid "Node Dock"
 msgstr "Dock de Nós"
 
 msgid "FileSystem Dock"
-msgstr "Painel de Sistema de Arquivos"
+msgstr "Dock de Sistema de Arquivos"
 
 msgid "Import Dock"
 msgstr "Importar Dock"
@@ -3945,6 +3954,9 @@ msgstr "Analisando scene %s"
 msgid "Preparation done."
 msgstr "Preparação concluída."
 
+msgid "Scenes reloading"
+msgstr "Recarregando cenas"
+
 msgid "Reloading..."
 msgstr "Recarregando..."
 
@@ -4922,6 +4934,9 @@ msgstr "Baixando"
 msgid "Connection Error"
 msgstr "Erro de Conexão"
 
+msgid "TLS Handshake Error"
+msgstr "Erro de negociação TLS"
+
 msgid "Can't open the export templates file."
 msgstr "Não foi possível abrir o arquivo de modelos de exportação."
 
@@ -5665,6 +5680,9 @@ msgstr "O grupo já existe."
 
 msgid "Add Group"
 msgstr "Adicionar Grupo"
+
+msgid "Renaming Group References"
+msgstr "Renomeando Referências de Grupo"
 
 msgid "Removing Group References"
 msgstr "Remover Referências ao Grupo"
@@ -7796,11 +7814,17 @@ msgstr "Centrar Visualização"
 msgid "Select Mode"
 msgstr "Modo de Seleção"
 
+msgid "Drag: Rotate selected node around pivot."
+msgstr "Arrastar: Rotação de nódulo selecionado ao redor de pivô."
+
 msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Arrastar: Mover nó selecionado."
 
 msgid "Alt+Drag: Scale selected node."
 msgstr "Alt+Arrastar: Dimensionar tamanho do nó selecionado."
+
+msgid "V: Set selected node's pivot position."
+msgstr "V: Estabelece a posição do nódulo selecionado."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
@@ -8050,14 +8074,39 @@ msgstr "Erro ao instanciar cena de %s."
 msgid "Create Node"
 msgstr "Criar Nó"
 
+msgid "Can't instantiate multiple nodes without root."
+msgstr "Impossível instanciar múltiplos nós sem um nó raiz."
+
 msgid "Circular dependency found at %s."
 msgstr "Dependência circular encontrada em %s."
+
+msgid "Can't instantiate: %s"
+msgstr "Não foi possível instanciar: %s"
+
+msgid "Creating inherited scene from: %s"
+msgstr "Criando uma cena herdada a partir de: %s"
 
 msgid "Instantiating: "
 msgstr "Instanciando. "
 
+msgid "Adding %s and %s..."
+msgstr "Adicionando %s e %s ..."
+
+msgid ""
+"Drag and drop to add as sibling of selected node (except when root is "
+"selected)."
+msgstr ""
+"Arraste e solte para adicionar como irmão do nó selecionado (exceto quando o "
+"nó raiz está selecionado)."
+
+msgid "Hold Shift when dropping to add as child of selected node."
+msgstr "Segure Shift ao soltar para adicionar como filho do nó selecionado."
+
 msgid "Hold Alt when dropping to add as child of root node."
 msgstr "Segure Alt quando for soltar para adicionar como um filho do Nó Raiz."
+
+msgid "Hold Alt + Shift when dropping to add as different node type."
+msgstr "Segure Alt+Shift ao soltar para adicionar o nó como um de outro tipo."
 
 msgid "Change Default Type"
 msgstr "Mudar Tipo Padrão"
@@ -8194,6 +8243,12 @@ msgstr "Alterar Marcadores Verticais de Tamanho"
 msgid "Change Horizontal Size Flags"
 msgstr "Alterar Marcadores Horizontais de Tamanho"
 
+msgid "Change Vertical Expand Flag"
+msgstr "Alterar marcador de Expansão Vertical"
+
+msgid "Change Horizontal Expand Flag"
+msgstr "Alterar marcador de Expansão Horizontal"
+
 msgid "Presets for the anchor and offset values of a Control node."
 msgstr ""
 "Predefinições para os valores de âncora e deslocamento de um nó Control."
@@ -8257,6 +8312,9 @@ msgstr "Capturar Cores do Pixel"
 
 msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
 msgstr "Gerando Visibilidade AABB (Aguardando Simulação de Partículas)"
+
+msgid "Generating..."
+msgstr "Gerando..."
 
 msgid "Generate Visibility AABB"
 msgstr "Gerar Visibilidade AABB"
@@ -8516,6 +8574,9 @@ msgstr "Funcionalidades (%d de %d definidas)"
 msgid "Add Feature"
 msgstr "Adicionar Funcionalidade"
 
+msgid "Stylistic Sets"
+msgstr "Conjuntos de estilo"
+
 msgid "Character Variants"
 msgstr "Variantes do Caractere"
 
@@ -8584,6 +8645,9 @@ msgstr "Alterar o Raio"
 
 msgid "Change Light Radius"
 msgstr "Alterar Raio da Iluminação"
+
+msgid "Start Location"
+msgstr "Localização inicial"
 
 msgid "End Location"
 msgstr "Localização Final"
@@ -9262,6 +9326,9 @@ msgstr "Definir Superfície %d Substituir Material"
 msgid "Set Material Override"
 msgstr "Definir Substituição de Material"
 
+msgid "Can't instantiate: %s."
+msgstr "Não foi possível instanciar: '%s'."
+
 msgid "Circular dependency found at %s"
 msgstr "Dependência circular encontrada em %s"
 
@@ -9855,11 +9922,26 @@ msgstr "Fechar Curva"
 msgid "Clear Curve Points"
 msgstr "Limpar Pontos de Curva"
 
+msgid "Select Points"
+msgstr "Selecionar pontos"
+
+msgid "Shift+Drag: Select Control Points"
+msgstr "Shift+Clique: Selecionar Pontos de Controle"
+
+msgid "Click: Add Point"
+msgstr "Clique: Adicionar Ponto"
+
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Clique Esquerdo: Dividir Segmentos (na curva)"
+
 msgid "Right Click: Delete Point"
 msgstr "Clique Direito: Excluir Ponto"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Selecionar Pontos de Controle (Shift+Arrastar)"
+
+msgid "Add Point (in empty space)"
+msgstr "Adicionar Ponto (em espaço vazio)"
 
 msgid "Delete Point"
 msgstr "Excluir Ponto"
@@ -9921,6 +10003,12 @@ msgstr "Redefinir Ponto de Controle de Entrada"
 msgid "Reset Point Tilt"
 msgstr "Redefinir Ponto de inclinação"
 
+msgid "Shift+Click: Select multiple Points"
+msgstr "Shift+Clique: Selecionar múltiplos Pontos"
+
+msgid "Select Control Points"
+msgstr "Selecionar Pontos de Controle"
+
 msgid "Shift+Click: Drag out Control Points"
 msgstr "Shift+Clique: Arrasta Pontos de Controle"
 
@@ -9958,6 +10046,9 @@ msgstr "Editar um Plugin"
 
 msgid "Create a Plugin"
 msgstr "Criar um Plugin"
+
+msgid "Update"
+msgstr "Atualizar"
 
 msgid "Plugin Name:"
 msgstr "Nome do Plugin:"
@@ -10100,6 +10191,15 @@ msgstr "Polígonos"
 msgid "Bones"
 msgstr "Ossos"
 
+msgid "Move Points"
+msgstr "Mover Pontos"
+
+msgid ": Rotate"
+msgstr ": Rotacionar"
+
+msgid "Shift: Move All"
+msgstr "Shift: Mover Tudo"
+
 msgid "Shift: Scale"
 msgstr "Shift: Escala"
 
@@ -10220,6 +10320,9 @@ msgstr "Erro ao gravar o TextFile:"
 msgid "Error saving file!"
 msgstr "Erro ao salvar o arquivo!"
 
+msgid "Error while saving theme."
+msgstr "Erro ao salvar o tema."
+
 msgid "Error Saving"
 msgstr "Erro ao Salvar"
 
@@ -10280,6 +10383,9 @@ msgstr "Salvar Tema Como..."
 
 msgid "Open '%s' in Godot online documentation."
 msgstr "Abrir '%s' na documentação online do Godot."
+
+msgid "Open in Online Docs"
+msgstr "Abrir na Documentação Online"
 
 msgid "Online Docs"
 msgstr "Documentação Online"
@@ -10379,6 +10485,9 @@ msgstr "Os seguintes arquivos são mais recentes no disco."
 
 msgid "What action should be taken?:"
 msgstr "Que ação deve ser tomada?:"
+
+msgid "Search Results"
+msgstr "Resultados da Pesquisa"
 
 msgid "Toggle Search Results Bottom Panel"
 msgstr "Alternar Painel Inferior de Resultados de Busca"
@@ -10616,6 +10725,9 @@ msgstr ""
 "Estrutura de arquivo para '%s' contém erros irrecuperáveis:\n"
 "\n"
 
+msgid "ShaderFile"
+msgstr "Arquivo Shader"
+
 msgid "Toggle ShaderFile Bottom Panel"
 msgstr "Alternar Painel Inferior de ShaderFile"
 
@@ -10687,6 +10799,12 @@ msgid ""
 msgstr ""
 "Modo Edição\n"
 "Mostrar botões nas junções."
+
+msgid "Insert key (based on mask) for bones with an existing track."
+msgstr "Inserir chave (baseada na máscara) para ossos com uma faixa existente."
+
+msgid "Insert key (based on mask) for all bones."
+msgstr "Inserir chave (baseada na máscara) para todos os ossos."
 
 msgid "Insert Key (All Bones)"
 msgstr "Inserir Chave (Todos os Ossos)"
@@ -10918,6 +11036,9 @@ msgstr "Deslocamento"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Criar Quadros a partir da Folha de Sprite"
+
+msgid "SpriteFrames"
+msgstr "Quadros de Sprite"
 
 msgid "Toggle SpriteFrames Bottom Panel"
 msgstr "Alternar Painel Inferior de SpriteFrames"
@@ -11710,6 +11831,9 @@ msgstr "Colar Tiles"
 msgid "Selection"
 msgstr "Seleção"
 
+msgid "Shift: Draw line."
+msgstr "Shift: Desenhar Linha."
+
 msgid "Shift: Draw rectangle."
 msgstr "Shift: Desenha Retângulo."
 
@@ -12184,6 +12308,19 @@ msgstr ""
 "é relativo ao Z-Index do próprio TileMap."
 
 msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"O deslocamento vertical a ser usado para classificação de blocos com base na "
+"coordenada Y (em pixels). Isso permite usar camadas como se estivessem em "
+"alturas diferentes para jogos Top-Down. Ajustar isso pode ajudar a aliviar "
+"problemas com a classificação de determinados blocos. Efetivo apenas se Y "
+"Sort ativado for verdadeiro na camada TileMap em que o bloco é colocado."
+
+msgid ""
 "The index of the terrain set this tile belongs to. [code]-1[/code] means it "
 "will not be used in terrains."
 msgstr ""
@@ -12380,6 +12517,18 @@ msgstr "Borracha"
 msgid "Picker"
 msgstr "Seletor de cor"
 
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Toggle TileMap Bottom Panel"
+msgstr "Alternar Painel Inferior de TileMap"
+
+msgid "TileSet"
+msgstr "TileSet"
+
+msgid "Toggle TileSet Bottom Panel"
+msgstr "Alternar Painel Inferior de TileSet"
+
 msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
 "integration features."
@@ -12425,6 +12574,9 @@ msgstr "Deseja remover a ramificação %s?"
 
 msgid "Do you want to remove the %s remote?"
 msgstr "Deseja remover o controle remoto %s?"
+
+msgid "Toggle Version Control Bottom Panel"
+msgstr "Alternar Painel Inferior de Controle da Versão"
 
 msgid "Create Version Control Metadata"
 msgstr "Criar Metadados de Controle de versão"
@@ -12673,6 +12825,9 @@ msgstr "Redimensionar Nó do VisualShader"
 msgid "Show Port Preview"
 msgstr "Mostrar Visualização da Porta"
 
+msgid "Toggle Frame Color"
+msgstr "Alternar Cor do Quadro"
+
 msgid "Set Frame Color"
 msgstr "Definir Cor do Quadro"
 
@@ -12694,8 +12849,11 @@ msgstr "Adicionar Varying ao Visual Shader: %s"
 msgid "Remove Varying from Visual Shader: %s"
 msgstr "Remover Varying do Visual Shader: %s"
 
+msgid "Move VisualShader Node(s)"
+msgstr "Mover Nó(s) VisualShader"
+
 msgid "Move and Attach VisualShader Node(s) to parent frame"
-msgstr "Mover e Acoplar nós VisualShader ao frame pai"
+msgstr "Mover e Acoplar nó(s) VisualShader ao frame pai"
 
 msgid "Insert node"
 msgstr "Inserir nó (node)"
@@ -12795,6 +12953,9 @@ msgstr "Limpar Buffer de Cópia"
 
 msgid "Insert New Node"
 msgstr "Inserir Novo Nó"
+
+msgid "Insert New Reroute"
+msgstr "Inserir novo redirecionamento"
 
 msgid "High-end node"
 msgstr "Nó Superior"
@@ -14129,9 +14290,30 @@ msgstr "As tags são capitalizadas automaticamente quando exibidas."
 msgid "It would be a good idea to name your project."
 msgstr "Seria uma boa ideia nomear o seu projeto."
 
+msgid "Invalid \".zip\" project file; it is not in ZIP format."
+msgstr "Arquivo de Projeto \".zip\" inválido; isso não está no formato ZIP."
+
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr "Projeto '.zip' inválido; não contém um arquivo 'project.godot'."
+
+msgid "Valid project found at path."
+msgstr "Projeto válido encontrado neste caminho."
+
+msgid ""
+"Please choose a \"project.godot\", a directory with one, or a \".zip\" file."
+msgstr ""
+"Por favor, escolha um \"project.godot\", um diretório com um, ou um arquivo "
+"\".zip\"."
+
+msgid "The path specified is invalid."
+msgstr "O caminho especificado é inválido."
+
+msgid ""
+"The directory name specified contains invalid characters or trailing "
+"whitespace."
+msgstr ""
+"O nome da pasta contém caracteres inválidos ou espaço em branco à direita."
 
 msgid ""
 "Creating a project at the engine's working directory or executable directory "
@@ -14139,6 +14321,19 @@ msgid ""
 msgstr ""
 "Criar um projeto no diretório da engine ou diretório executável não é "
 "permitido, pois impediria o gerenciador do projeto de iniciar."
+
+msgid ""
+"You cannot save a project at the selected path. Please create a subfolder or "
+"choose a new path."
+msgstr ""
+"Você não pode salvar um projeto no caminho selecionado. Por favor, crie uma "
+"subpasta ou escolha um novo caminho."
+
+msgid "The parent directory of the path specified doesn't exist."
+msgstr "A pasta pai do caminho especificado não existe."
+
+msgid "The project folder already exists and is empty."
+msgstr "A pasta do projeto já existe e está vazia."
 
 msgid "The project folder will be automatically created."
 msgstr "A pasta do projeto será criada automaticamente."
@@ -14213,6 +14408,9 @@ msgstr ""
 "Todo o conteúdo desta pasta será importado como recursos do projeto!\n"
 "\n"
 "Tem certeza que deseja continuar?"
+
+msgid "Couldn't create project directory, check permissions."
+msgstr "Não foi possível criar a pasta do projeto, verifique as permissões."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "Não foi possível criar project.godot no caminho do projeto."
@@ -14354,6 +14552,9 @@ msgstr "Mapa de Entrada"
 
 msgid "Localization"
 msgstr "Localização"
+
+msgid "Globals"
+msgstr "Globais"
 
 msgid "Autoload"
 msgstr "Autoload"
@@ -14595,6 +14796,9 @@ msgid_plural "Instantiate Scenes"
 msgstr[0] "Instanciar Cena"
 msgstr[1] "Instanciar Cenas"
 
+msgid "Error loading audio stream from %s"
+msgstr "Erro ao carregar transmissão de áudio de %s"
+
 msgid "Create AudioStreamPlayer"
 msgid_plural "Create AudioStreamPlayers"
 msgstr[0] "Criar nó AudioStreamPlayer3D"
@@ -14778,6 +14982,9 @@ msgstr "Remover Nó(s)"
 msgid "Change type of node(s)"
 msgstr "Alterar tipo do(s) nó(s)"
 
+msgid "Reparent to New Node"
+msgstr "Reparentar para Novo Nó"
+
 msgid "This operation requires a single selected node."
 msgstr "Essa operação requer um único nó selecionado."
 
@@ -14863,6 +15070,9 @@ msgstr ""
 
 msgid "Can't paste root node into the same scene."
 msgstr "Não é possível colar o nó raiz na mesma cena."
+
+msgid "Paste Node(s) as Sibling of %s"
+msgstr "Colar Nó(s) como Irmão(s) de %s"
 
 msgid "Paste Node(s) as Child of %s"
 msgstr "Colar Nó(s) como filho(a) de %s"
@@ -15227,20 +15437,24 @@ msgid "Not based on a resource file"
 msgstr "Não baseado em um arquivo de recurso"
 
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Dicionário de instância inválido (@path está faltando)"
+msgstr "Formato inválido de dicionário de instâncias (@path está faltando)"
 
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Dicionário de instância inválido (não foi possível carregar o script em @path)"
+"Formato inválido de dicionário de instâncias (não se pode carregar um script "
+"em @path)"
 
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Dicionário de instância inválido (script inválido em @path)"
+msgstr "Formato inválido de dicionário de instâncias (script inválido em @path)"
 
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr "Dicionário de instâncias inválido (subclasses inválidas)"
 
 msgid "Cannot instantiate GDScript class."
 msgstr "Não é possível instanciar a classe GDScript."
+
+msgid "Value of type '%s' can't provide a length."
+msgstr "O valor do tipo '%s' não pode fornecer um tamanho."
 
 msgid ""
 "Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
@@ -15260,6 +15474,9 @@ msgstr "Exportar Configurações:"
 
 msgid "glTF 2.0 Scene..."
 msgstr "Cena glTF 2.0..."
+
+msgid "Path does not point to a valid executable."
+msgstr "O Caminho não aponta à um executável válido."
 
 msgid ""
 "Found Blender version %d.x, which is too old for this importer (3.0+ is "
@@ -15402,8 +15619,18 @@ msgid "Clip End"
 msgstr "Fim do Clipe"
 
 msgctxt "Transition Time Position"
+msgid "Same"
+msgstr "Igual"
+
+msgctxt "Transition Time Position"
 msgid "Prev"
 msgstr "Anterior"
+
+msgid "From / To"
+msgstr "De / Para"
+
+msgid "Any Clip"
+msgstr "Qualquer Clipe"
 
 msgid "Use Transition:"
 msgstr "Usar Transição:"
@@ -15563,6 +15790,9 @@ msgstr "Adicionar propriedade para sincronizar..."
 
 msgid "Add from path"
 msgstr "Adicionar do caminho"
+
+msgid "Pin replication editor"
+msgstr "Fixar editor de replicação"
 
 msgid "Spawn"
 msgstr "Gerar"
@@ -15791,8 +16021,15 @@ msgstr ""
 "Não é possível usar o mesmo SubViewport com múltiplas camadas de composição "
 "OpenXR. Limpe-o da sua camada atual antes."
 
+msgid "Package name is missing."
+msgstr "Está faltando o nome do pacote."
+
 msgid "Package segments must be of non-zero length."
 msgstr "Segmentos de pacote devem ter tamanho diferente de zero."
+
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+"O caractere '%s' não é permitido em nomes de pacotes de aplicações do Android."
 
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
@@ -17575,7 +17812,7 @@ msgid ""
 "editable children edits (if existing)."
 msgstr ""
 "Salvar a cena atual descartará a instância e todas as suas propriedades, "
-"incluindo edições filhos editáveis (se existentes)."
+"incluindo edições filhas editáveis (se existentes)."
 
 msgid ""
 "This node was saved as class type '%s', which was no longer available when "

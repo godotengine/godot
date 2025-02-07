@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-14 12:59+0000\n"
+"PO-Revision-Date: 2024-11-21 08:24+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.9-dev\n"
 
 msgid "Main Thread"
 msgstr "მთავარი ნაკადი"
@@ -3799,6 +3799,9 @@ msgstr "წავშალო კვანძი \"%s\"?"
 msgid "Filters"
 msgstr "ფილტრები"
 
+msgid "Reparent to New Node"
+msgstr "მშობლობის ახალ კვანძზე გადატანა"
+
 msgid "Filter by Type"
 msgstr "ტიპით გაფილტვრა"
 
@@ -3913,6 +3916,9 @@ msgstr "წინა"
 
 msgid "Hold Previous:"
 msgstr "წინას შენარჩუნება:"
+
+msgid "Denoising %d%%"
+msgstr "ხმაურის მოშორება %d%%"
 
 msgid "Class name must be a valid identifier"
 msgstr "კლასის სახელი სწორ იდენტიფიკატორს უნდა წარმოადგენდეს"

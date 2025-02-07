@@ -31,13 +31,15 @@
 # Diego22rct <diegorafaelcisnerostafur@gmail.com>, 2024.
 # Carlos Mena <menacarlos.asir@gmail.com>, 2024.
 # Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>, 2024.
+# David Pepice <davitogaming@gmail.com>, 2025.
+# LCDF <lcdf1001@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-03-18 13:37+0000\n"
-"Last-Translator: Franco Ezequiel Ibañez <francoibanez.dev@gmail.com>\n"
+"PO-Revision-Date: 2025-01-29 23:00+0000\n"
+"Last-Translator: LCDF <lcdf1001@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -45,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -196,6 +198,9 @@ msgstr "Bottón de Joypad %d"
 
 msgid "Pressure:"
 msgstr "Presión:"
+
+msgid "touched"
+msgstr "tocado"
 
 msgid "released"
 msgstr "Publicado"
@@ -473,6 +478,9 @@ msgstr "Filtrar por nombre"
 
 msgid "Clear All"
 msgstr "Limpiar Todo"
+
+msgid "Clear all search filters."
+msgstr "Borrar todos los filtros de búsqueda"
 
 msgid "Add New Action"
 msgstr "Agregar Acción Nueva"

@@ -24,7 +24,7 @@
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019, 2020, 2022, 2023.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 # Zatherz <zatherz@linux.pl>, 2017, 2020, 2021.
-# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
+# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
 # Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020, 2021.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
@@ -93,12 +93,14 @@
 # Kuba <wiechciu@gmail.com>, 2024.
 # OskarO 140 <oskarek.o140@gmail.com>, 2024.
 # User <user938193@gmail.com>, 2024.
+# Piotr Wieczorek <wieczorek.piotr.praga@protonmail.com>, 2024.
+# Cyprian Klimaszewski <cyprian.klimaszewski@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-09-02 17:25+0000\n"
+"PO-Revision-Date: 2025-01-16 14:00+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -108,7 +110,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -1420,7 +1422,7 @@ msgid "Trim Trailing Whitespace on Save"
 msgstr "Przytnij końcowe białe znaki przy zapisie"
 
 msgid "Trim Final Newlines on Save"
-msgstr "Przytnij końcowe białe znaki przy zapisie"
+msgstr "Przytnij ostatnie puste linie przy zapisie"
 
 msgid "Autosave Interval Secs"
 msgstr "czas autozapisu sek"
@@ -2439,6 +2441,9 @@ msgstr "Wsparcie skryptów"
 msgid "OpenType Features"
 msgstr "Funkcje OpenType"
 
+msgid "Fallbacks"
+msgstr "Błędy"
+
 msgid "Compress"
 msgstr "Skompresuj"
 
@@ -2456,6 +2461,9 @@ msgstr "OpenType"
 
 msgid "Embolden"
 msgstr "Pogrub"
+
+msgid "Face Index"
+msgstr "Indeks ściany"
 
 msgid "Transform"
 msgstr "Przekształcanie"
@@ -2540,6 +2548,9 @@ msgstr "Odwróć Y mapy normalnych"
 
 msgid "HDR as sRGB"
 msgstr "HDR jako sRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "Ekspozycja zacisku HDR"
 
 msgid "Size Limit"
 msgstr "Limit rozmiaru"
@@ -2698,6 +2709,9 @@ msgstr "Rozmiar dysku nachylenia Ścieżki 3D"
 msgid "Path Tilt"
 msgstr "Odchył ścieżki"
 
+msgid "Open Dominant Script on Scene Change"
+msgstr "Otwórz główny skrypt przy zmianie sceny"
+
 msgid "External"
 msgstr "Zewnętrzne"
 
@@ -2730,6 +2744,9 @@ msgstr "Szkielet"
 
 msgid "Selected Bone"
 msgstr "Zaznaczona kość"
+
+msgid "Bone Axis Length"
+msgstr "Długość osi kości"
 
 msgid "Bone Shape"
 msgstr "Kształt kości"
@@ -2800,8 +2817,17 @@ msgstr "Nazwa wtyczki"
 msgid "Autoload on Startup"
 msgstr "Automatyczne ładowanie podczas uruchamiania"
 
+msgid "Show Scene Tree Root Selection"
+msgstr "Pokazuj zaznaczenie korzenia sceny"
+
+msgid "Derive Script Globals by Name"
+msgstr "Zaciągaj zmienne globalne skryptu po nazwach"
+
 msgid "Ask Before Deleting Related Animation Tracks"
 msgstr "Zapytaj przed usunięciem powiązanych ścieżek animacji"
+
+msgid "Use Favorites Root Selection"
+msgstr "Użyj wybierania ulubionych korzeni sceny"
 
 msgid "Flush stdout on Print"
 msgstr "Wyczyść stdout podczas używania Print"
@@ -2811,6 +2837,9 @@ msgstr "Maksymalna liczba błędów na sekundę"
 
 msgid "File Logging"
 msgstr "Rejestrowanie plików"
+
+msgid "Enable File Logging"
+msgstr "Włącz rejestrowanie do pliku"
 
 msgid "Log Path"
 msgstr "Ścieżka logowania"
@@ -2836,6 +2865,12 @@ msgstr "Renderer"
 msgid "Rendering Method"
 msgstr "Sposób renderowania"
 
+msgid "Include Text Server Data"
+msgstr "Dołącz dane serwera tekstów"
+
+msgid "DPI"
+msgstr "DPI"
+
 msgid "Allow hiDPI"
 msgstr "Zezwalaj na hiDPI"
 
@@ -2848,6 +2883,9 @@ msgstr "Zezwolono"
 msgid "Threads"
 msgstr "Wątki"
 
+msgid "Thread Model"
+msgstr "Model wątkowy"
+
 msgid "Handheld"
 msgstr "Konsola przenośna"
 
@@ -2856,6 +2894,9 @@ msgstr "Ustawienie"
 
 msgid "stdout"
 msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "Wyświetl FPS"
 
 msgid "Print GPU Profile"
 msgstr "Wyświetl profil GPU"
@@ -2874,6 +2915,9 @@ msgstr "Zezwól na wysoką częstotliwość odświeżania"
 
 msgid "Hide Home Indicator"
 msgstr "Ukryj wskaźnik powitalny"
+
+msgid "Hide Status Bar"
+msgstr "Schowaj pasek postępu"
 
 msgid "Suppress UI Gesture"
 msgstr "Ignoruj gesty UI"
@@ -2902,6 +2946,12 @@ msgstr "Ekran uruchamiania"
 msgid "BG Color"
 msgstr "Kolor tła"
 
+msgid "Pen Tablet"
+msgstr "Tablet graficzny"
+
+msgid "Environment"
+msgstr "Środowisko"
+
 msgid "Defaults"
 msgstr "Domyślne"
 
@@ -2911,8 +2961,14 @@ msgstr "Domyślny pusty kolor"
 msgid "Icon"
 msgstr "Ikona"
 
+msgid "Pointing"
+msgstr "Wskazywanie"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Text Driver"
+msgstr "Sterownik tekstów"
 
 msgid "Search in File Extensions"
 msgstr "Rozszerzenia szukania w plikach"
@@ -2952,6 +3008,9 @@ msgstr "Projekt"
 
 msgid "Assembly Name"
 msgstr "Nazwa zespołu"
+
+msgid "Solution Directory"
+msgstr "Katalog rozwiązania"
 
 msgid "Time"
 msgstr "Czas"
@@ -3025,6 +3084,12 @@ msgstr "Warstwa kolizji"
 msgid "Collision Mask"
 msgstr "Maska kolizji"
 
+msgid "Collision Priority"
+msgstr "Priorytet kolizji"
+
+msgid "Flip Faces"
+msgstr "Odbij ściany"
+
 msgid "Mesh"
 msgstr "Mesh"
 
@@ -3060,6 +3125,9 @@ msgstr "Głębia"
 
 msgid "Spin Degrees"
 msgstr "Stopnie obrotu"
+
+msgid "Spin Sides"
+msgstr "Obróć ściany"
 
 msgid "Path Node"
 msgstr "Ścieżka węzła"
@@ -4335,6 +4403,9 @@ msgstr "Shadery"
 
 msgid "Shader Language"
 msgstr "Język shadera"
+
+msgid "Treat Warnings as Errors"
+msgstr "Traktuj ostrzeżenia jako błędy"
 
 msgid "Has Tracking Data"
 msgstr "Posiada dane śledzenia"

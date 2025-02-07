@@ -95,8 +95,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-30 21:09+0000\n"
-"Last-Translator: Dawid Kobylewski <d.kobylewski@gmail.com>\n"
+"PO-Revision-Date: 2024-10-23 08:26+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.8.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny Wątek"
@@ -630,6 +630,9 @@ msgstr "Klawisze wklejania animacji"
 msgid "Animation Delete Keys"
 msgstr "Animacja usuń klucze"
 
+msgid "Animation Bezier Curve Change Call"
+msgstr "Animacja wywołania zmiany krzywej Beziera"
+
 msgid "Focus"
 msgstr "Zaznacz"
 
@@ -1124,7 +1127,7 @@ msgid "Set End Offset (Audio)"
 msgstr "Ustaw przesunięcie końcowe (audio)"
 
 msgid "Make Easing Selection..."
-msgstr "Dokonaj ułatwienia wyboru..."
+msgstr "Dokonaj wyboru wygładzenia..."
 
 msgid "Duplicate Selected Keys"
 msgstr "Zduplikuj wybrane klucze"
@@ -1157,7 +1160,7 @@ msgid "Apply Reset"
 msgstr "Zastosuj reset"
 
 msgid "Bake Animation..."
-msgstr "Wstępnie obliczone..."
+msgstr "Wypiecz animację..."
 
 msgid "Optimize Animation (no undo)..."
 msgstr "Optymalizuj animację (nie można cofnąć)..."
@@ -7856,7 +7859,7 @@ msgid "Show Origin"
 msgstr "Pokaż pozycję początkową"
 
 msgid "Show Viewport"
-msgstr "Pokaż widok"
+msgstr "Pokaż ekran"
 
 msgid "Lock"
 msgstr "Zablokuj"
@@ -14395,6 +14398,9 @@ msgstr "Sygnatura czasowa ostatniej edycji"
 msgid "Missing Project"
 msgstr "Brakujący projekt"
 
+msgid "Missing Date"
+msgstr "Brakująca data"
+
 msgid "Restart Now"
 msgstr "Uruchom ponownie"
 
@@ -14899,6 +14905,9 @@ msgstr "Usuń węzeł(y)"
 
 msgid "Change type of node(s)"
 msgstr "Zmień typ węzła/ów"
+
+msgid "Reparent to New Node"
+msgstr "Zmień nadrzędny węzeł na nowy"
 
 msgid "This operation requires a single selected node."
 msgstr "Ta operacja wymaga pojedynczego wybranego węzła."
@@ -15667,6 +15676,9 @@ msgstr "Wykreślanie siatki w strukturze przyspieszenia %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "Optymalizacja struktury przyspieszenia"
+
+msgid "Denoising %d%%"
+msgstr "Usuwanie szumów %d%%"
 
 msgid "Begin Bake"
 msgstr "Zacznij wypalanie"
@@ -17820,6 +17832,11 @@ msgid ""
 msgstr ""
 "Właściwość \"Remote Path\" musi wskazywać na poprawny węzeł Node3D lub "
 "pochodny Node3D, aby działał."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Węzeł Skeleton3D nie jest ustawiony! SkeletonModifier3D musi być węzłem "
+"potomnym Skeleton3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "To ciało będzie ignorowane, dopóki nie ustawisz siatki."

@@ -52,13 +52,14 @@
 # Avirur Rahman <avirahmandev@gmail.com>, 2023.
 # Zubub <ziwaonoob002@gmail.com>, 2024.
 # Opsan <ovi.sanjaya11@gmail.com>, 2024.
+# Fakhri Roihan <archerlimit1@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-05-22 07:05+0000\n"
-"Last-Translator: Opsan <ovi.sanjaya11@gmail.com>\n"
+"PO-Revision-Date: 2024-12-07 12:00+0000\n"
+"Last-Translator: Fakhri Roihan <archerlimit1@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -66,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.9-dev\n"
 
 msgid "Application"
 msgstr "Aplikasi"
@@ -97,6 +98,12 @@ msgstr "Nonaktifkan stdout"
 
 msgid "Disable stderr"
 msgstr "Nonaktifkan stderr"
+
+msgid "Print Header"
+msgstr "cetak judul"
+
+msgid "Enable Alt Space Menu"
+msgstr "izinkan Alt Space Menu"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Gunakan Direktori Data Proyek Tersembunyi"

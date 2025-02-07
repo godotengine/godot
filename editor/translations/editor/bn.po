@@ -16,13 +16,13 @@
 # Safuan <safuanhossain12616@gmail.com>, 2023.
 # Zayeed Bin Syed <zayeed.dev@gmail.com>, 2023.
 # Rakib Ryan <rakib.remon12@gmail.com>, 2024.
-# shahriarlabib000 <shahriarlabib000@gmail.com>, 2024.
+# shahriarlabib000 <shahriarlabib000@gmail.com>, 2024, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-24 11:09+0000\n"
+"PO-Revision-Date: 2025-02-02 17:03+0000\n"
 "Last-Translator: shahriarlabib000 <shahriarlabib000@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "প্রধান থ্রেড"
@@ -1718,6 +1718,9 @@ msgstr "সংরক্ষন করুন"
 msgid "Profile:"
 msgstr "প্রোফাইল:"
 
+msgid "Detect from Project"
+msgstr "প্রজেক্ট থেকে শনাক্ত করুন"
+
 msgid "Configure Engine Compilation Profile:"
 msgstr "ইঞ্জিন কম্পাইলেশন প্রোফাইল কনফিগার:"
 
@@ -2251,8 +2254,14 @@ msgstr "প্রস্থান করুন"
 msgid "Editor Settings..."
 msgstr "এডিটরের সেটিংস…"
 
+msgid "Project"
+msgstr "প্রজেক্ট"
+
 msgid "Project Settings..."
 msgstr "প্রকল্পের সেটিংস…"
+
+msgid "Project Settings"
+msgstr "প্রজেক্ট সেটিংস"
 
 msgid "Version Control"
 msgstr "ভার্সন কন্ট্রোল"
@@ -2265,6 +2274,9 @@ msgstr "সরঞ্জাম-সমূহ"
 
 msgid "Orphan Resource Explorer..."
 msgstr "মালিকবিহীন রিসোর্সের অনুসন্ধানকারী…"
+
+msgid "Reload Current Project"
+msgstr "বর্তমানের প্রজেক্ট রিলোড করুন"
 
 msgid "Quit to Project List"
 msgstr "প্রকল্পের তালিকায় প্রস্থান করুন"
@@ -2414,6 +2426,9 @@ msgstr "নতুন শেডার…"
 msgid "Run 'Remote Debug' anyway?"
 msgstr "যাইহোক 'রিমোট ডিবাগ' চালান?"
 
+msgid "Project Run"
+msgstr "প্রজেক্ট রান করুন"
+
 msgid "Write your logic in the _run() method."
 msgstr "আপনার লজিক/যুক্তি-সমূহ _run() মেথডে লিখুন।"
 
@@ -2461,6 +2476,9 @@ msgstr "অবৈধ এনটাইটেলমেন্ট ফাইল।"
 
 msgid "Invalid executable file."
 msgstr "অবৈধ এক্সিকিউটেবল ফাইল।"
+
+msgid "Project export for platform:"
+msgstr "প্লাটফর্মসমূহের জন্য প্রজেক্ট এক্সপোর্ট:"
 
 msgid "Completed with warnings."
 msgstr "সতর্কবাণীসহ সম্পন্ন হয়েছে।"

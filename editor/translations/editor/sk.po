@@ -22,13 +22,14 @@
 # Lmpsk <adamgramblicka@hotmail.com>, 2024.
 # Gelissean <gelu586@gmail.com>, 2024.
 # Bobo <ctiborboborkapor@gmail.com>, 2024.
+# David Chorváth <dadulo33@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-30 21:09+0000\n"
-"Last-Translator: Bobo <ctiborboborkapor@gmail.com>\n"
+"PO-Revision-Date: 2024-10-28 14:43+0000\n"
+"Last-Translator: David Chorváth <dadulo33@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.8.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavné vlákno"
@@ -560,6 +561,9 @@ msgstr "Animácia: Vložiť kľúče"
 msgid "Animation Delete Keys"
 msgstr "Animácia: Zmazať kľúče"
 
+msgid "Animation Bezier Curve Change Call"
+msgstr "Animácia: Volanie zmeny bezierovej krivky"
+
 msgid "Focus"
 msgstr "Zamerať"
 
@@ -574,6 +578,9 @@ msgstr "Animácia: Zmeniť prechod"
 
 msgid "Animation Change Position3D"
 msgstr "Animácia Zmeniť Pozíciu3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Animácia: Zmena 3D Rotácie"
 
 msgid "Change Animation Length"
 msgstr "Zmeniť Dĺžku Animácie (Change Animation Length)"
@@ -657,6 +664,18 @@ msgstr "Typ:"
 
 msgid "(Invalid, expected type: %s)"
 msgstr "(Neplatné, očakávaný typ: %s)"
+
+msgid "Easing:"
+msgstr "Vyhladenie:"
+
+msgid "Handle mode: Free\n"
+msgstr "Režim prichytenia: Voľný\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Režim prichytenia: Lineárny\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Režim prichytenia: Vyvážený\n"
 
 msgid "Toggle Track Enabled"
 msgstr "Zmena Tracku Povolená"

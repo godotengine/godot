@@ -20,13 +20,14 @@
 # Vosh <vosh4k@gmail.com>, 2022.
 # 100daysummer <bobbydochev@gmail.com>, 2023, 2024.
 # Филип Узунов <filkata@gmail.com>, 2024.
+# "П@₿€л" <pavel.veselinov.georgiev@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-06-30 18:47+0000\n"
-"Last-Translator: 100daysummer <bobbydochev@gmail.com>\n"
+"PO-Revision-Date: 2024-10-02 07:34+0000\n"
+"Last-Translator: \"П@₿€л\" <pavel.veselinov.georgiev@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Главна нишка"
@@ -111,6 +112,30 @@ msgstr "Джойстик 4 X-Ос"
 msgid "Joystick 4 Y-Axis"
 msgstr "Джойстик 4 Y-Ос"
 
+msgid "Unknown Joypad Axis"
+msgstr "Неизвестна ос на джойпада"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Движение на джойстика по ос %d (%s) със стойност %.2f"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Ръководство, Sony PS, Xbox Начало"
+
+msgid "Start, Xbox Menu, Nintendo +"
+msgstr "Старт, Xbox меню, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Ляв Стик, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Десен Стик, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Ляво Рамо, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Дясно Рамо, Sony R1, Xbox RB"
+
 msgid "D-pad Up"
 msgstr "Кръстат бутон нагоре"
 
@@ -123,8 +148,29 @@ msgstr "Кръстат бутон наляво"
 msgid "D-pad Right"
 msgstr "Кръстат бутон надясно"
 
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Споделяне, PS5 Микрофон, Nintendo Улавяне"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Гребло 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Гребло 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Гребло 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Гребло 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Тъчпад"
+
 msgid "Joypad Button %d"
 msgstr "Бутон %d на контролера"
+
+msgid "Pressure:"
+msgstr "Налягане:"
 
 msgid "canceled"
 msgstr "отменен"
@@ -135,8 +181,27 @@ msgstr "докоснат"
 msgid "released"
 msgstr "пуснат"
 
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Екран %s на (%s) с %s точки на допир"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Екранът е плъзнат с %s точки на допир на позиция (%s) със скорост (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Жест за увеличете на (%s) с фактор %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Жест с писалка на (%s) с делта (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI вход на Канал=%s Съобщение=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Входящо Събитие с пряк път=%s"
+
 msgid "Accept"
-msgstr "Потвърждаване"
+msgstr "Приеми"
 
 msgid "Select"
 msgstr "Избери"
@@ -145,10 +210,10 @@ msgid "Cancel"
 msgstr "Отказ"
 
 msgid "Focus Next"
-msgstr "Фокусиране върху следващото"
+msgstr "Фокусирай следващото"
 
 msgid "Focus Prev"
-msgstr "Фокусиране върху предишното"
+msgstr "Фокусирай предишното"
 
 msgid "Left"
 msgstr "Наляво"
@@ -168,6 +233,9 @@ msgstr "Страница нагоре"
 msgid "Page Down"
 msgstr "Страница надолу"
 
+msgid "Home"
+msgstr "Начало"
+
 msgid "End"
 msgstr "Край"
 
@@ -186,6 +254,9 @@ msgstr "Отмяна"
 msgid "Redo"
 msgstr "Повторение"
 
+msgid "Completion Query"
+msgstr "Заявка за завършване"
+
 msgid "New Line"
 msgstr "Нов ред"
 
@@ -200,6 +271,15 @@ msgstr "Увеличаване на отстъпа"
 
 msgid "Dedent"
 msgstr "Намаляване на отстъпа"
+
+msgid "Backspace"
+msgstr "Стъпка Назад"
+
+msgid "Backspace Word"
+msgstr "Стъпка назад Дума"
+
+msgid "Backspace all to Left"
+msgstr "Стъпка назад всички Наляво"
 
 msgid "Delete"
 msgstr "Изтриване"

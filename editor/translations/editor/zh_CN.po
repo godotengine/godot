@@ -58,7 +58,7 @@
 # idleman <1524328475@qq.com>, 2019.
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022, 2023, 2024.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020, 2021, 2022, 2023, 2024, 2025.
 # Revan Ji <jiruifancr@gmail.com>, 2020.
 # nieyuanhong <15625988003@163.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
@@ -105,16 +105,16 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2024-08-23 10:34+0000\n"
+"PO-Revision-Date: 2025-01-09 02:15+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
-"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
-"godot-engine/godot/zh_Hans/>\n"
+"Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
+"projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -634,6 +634,9 @@ msgstr "粘贴动画关键帧"
 
 msgid "Animation Delete Keys"
 msgstr "删除动画关键帧"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "修改动画贝赛尔曲线调用"
 
 msgid "Focus"
 msgstr "聚焦"
@@ -2595,7 +2598,7 @@ msgid "Import Dock"
 msgstr "导入面板"
 
 msgid "History Dock"
-msgstr "历史停靠面板"
+msgstr "历史面板"
 
 msgid "Allows to view and edit 3D scenes."
 msgstr "允许查看并编辑 3D 场景。"
@@ -3300,7 +3303,7 @@ msgid "Toggle visibility of editor messages."
 msgstr "切换编辑器消息的可见性。"
 
 msgid "Native Shader Source Inspector"
-msgstr "本地着色器源检查器"
+msgstr "原生着色器源检查器"
 
 msgid "Unnamed Project"
 msgstr "未命名项目"
@@ -10796,7 +10799,7 @@ msgid "Select all Theme items with item data."
 msgstr "选择所有主题项目及项目数据。"
 
 msgid "Deselect All"
-msgstr "取消全选"
+msgstr "取消选择"
 
 msgid "Deselect all Theme items."
 msgstr "取消选择所有主题项目。"
@@ -11539,7 +11542,7 @@ msgid "From Coords"
 msgstr "从坐标"
 
 msgid "From Alternative"
-msgstr "从替代"
+msgstr "从备选"
 
 msgid "To Source"
 msgstr "到源"
@@ -11548,7 +11551,7 @@ msgid "To Coords"
 msgstr "到坐标"
 
 msgid "To Alternative"
-msgstr "到替代"
+msgstr "到备选"
 
 msgid "Global actions:"
 msgstr "全局动作："
@@ -13874,6 +13877,9 @@ msgstr "最近编辑时间戳"
 msgid "Missing Project"
 msgstr "缺失项目"
 
+msgid "Missing Date"
+msgstr "日期缺失"
+
 msgid "Restart Now"
 msgstr "立即重启"
 
@@ -14361,6 +14367,9 @@ msgstr "移除节点"
 
 msgid "Change type of node(s)"
 msgstr "修改节点的类型"
+
+msgid "Reparent to New Node"
+msgstr "重设父节点为新节点"
 
 msgid "This operation requires a single selected node."
 msgstr "此操作只能应用于单个选中节点。"
@@ -15091,6 +15100,9 @@ msgstr "正在加速结构中构造网格 %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "正在优化加速结构"
+
+msgid "Denoising %d%%"
+msgstr "降噪 %d%%"
 
 msgid "Begin Bake"
 msgstr "开始烘焙"
@@ -17015,6 +17027,9 @@ msgid ""
 "node to work."
 msgstr ""
 "“Remote Path”属性必须指向有效的 Node3D 或从 Node3D 派生的节点才能正常工作。"
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr "未设置 Skeleton3D 节点！SkeletonModifier3D 必须是 Skeleton3D 的子节点。"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "在设置网格之前，将忽略该实体。"

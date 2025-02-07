@@ -74,7 +74,7 @@
 # Björn Reißig <bjoern.reissig@bytestorm.eu>, 2023.
 # Cerno_b <jan.biel@arcor.de>, 2023.
 # Cerno_b <cerno.b@gmail.com>, 2023, 2024.
-# Janosch Lion <janorico@posteo.de>, 2023.
+# Janosch Lion <janorico@posteo.de>, 2023, 2024.
 # Tobias Mohr <tobias_mohr_1991@gmx.de>, 2023.
 # Florian Schaupp <fschaupp@hotmail.com>, 2023.
 # Eric Brändli <ericbraendli@gmail.com>, 2024.
@@ -93,13 +93,21 @@
 # Random Person Games <ranpergames@gmail.com>, 2024.
 # thereisno anderson <thereisnoanderson@users.noreply.hosted.weblate.org>, 2024.
 # Johannes Oskar Silvennoinen <johannes.silvennoinen44@gmail.com>, 2024.
+# Fabien Göhl <fabien-goehl@web.de>, 2024.
+# Xfox20 <136956349+Xfox20@users.noreply.github.com>, 2024.
+# Nicolas Hilberg <legginsun@gmail.com>, 2024.
+# Jiri-Dever <arjiris.keller03@gmail.com>, 2024.
+# Michael S <michi.mega123@gmail.com>, 2024.
+# FluLu <floriprolohner@gmail.com>, 2024.
+# tct123 <tct1234@protonmail.com>, 2024.
+# Daniel Schmid <daniel.ds.schmid@gmail.com>, 2025.
+# Michael Domanek <michael.domanek2@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-08-13 23:09+0000\n"
-"Last-Translator: Johannes Oskar Silvennoinen <johannes.silvennoinen44@gmail."
-"com>\n"
+"PO-Revision-Date: 2025-01-25 20:47+0000\n"
+"Last-Translator: Michael Domanek <michael.domanek2@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "class-reference/de/>\n"
 "Language: de\n"
@@ -107,7 +115,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "All classes"
 msgstr "Alle Klassen"
@@ -116,19 +124,19 @@ msgid "Globals"
 msgstr "Globale Klassen"
 
 msgid "Nodes"
-msgstr "Nodes"
+msgstr "Knoten"
 
 msgid "Resources"
 msgstr "Ressourcen"
 
 msgid "Editor-only"
-msgstr "Editor-intern"
+msgstr "nur Editor"
 
 msgid "Other objects"
 msgstr "Andere Objekte"
 
 msgid "Variant types"
-msgstr "Variant-Typen"
+msgstr "Varianten-Typen"
 
 msgid "Description"
 msgstr "Beschreibung"
@@ -149,7 +157,7 @@ msgid "Operators"
 msgstr "Operatoren"
 
 msgid "Theme Properties"
-msgstr "Theme-Eigenschaften"
+msgstr "Themen-Eigenschaften"
 
 msgid "Signals"
 msgstr "Signale"
@@ -164,19 +172,19 @@ msgid "Annotations"
 msgstr "Annotationen"
 
 msgid "Property Descriptions"
-msgstr "Eigenschafts-Beschreibungen"
+msgstr "Eigenschaftsbeschreibungen"
 
 msgid "Constructor Descriptions"
-msgstr "Konstruktor-Beschreibungen"
+msgstr "Konstruktorbeschreibungen"
 
 msgid "Method Descriptions"
-msgstr "Methoden-Beschreibungen"
+msgstr "Methodenbeschreibungen"
 
 msgid "Operator Descriptions"
-msgstr "Operator-Beschreibungen"
+msgstr "Operatorbeschreibungen"
 
 msgid "Theme Property Descriptions"
-msgstr "Theme-Eigenschafts-Beschreibungen"
+msgstr "Themen-Eigenschafts-Beschreibungen"
 
 msgid "Inherits:"
 msgstr "Erbt von:"
@@ -188,7 +196,7 @@ msgid "(overrides %s)"
 msgstr "(überschreibt %s)"
 
 msgid "Default"
-msgstr "Default"
+msgstr "Standard"
 
 msgid "Setter"
 msgstr "Setter"
@@ -215,7 +223,7 @@ msgstr ""
 msgid ""
 "This method accepts any number of arguments after the ones described here."
 msgstr ""
-"Diese Methode akzeptiert eine beliebige Anzahl von Argumenten nach den hier "
+"Diese Methode akzeptiert eine beliebige Anzahl von Argumenten nach denen hier "
 "beschriebenen."
 
 msgid "This method is used to construct a type."
@@ -233,7 +241,7 @@ msgid ""
 "operand."
 msgstr ""
 "Diese Methode beschreibt einen gültigen Operator, der mit diesem Typ als "
-"linker Operand zu verwenden ist."
+"linker Operan zu verwenden ist."
 
 msgid "This value is an integer composed as a bitmask of the following flags."
 msgstr ""
@@ -4579,25 +4587,25 @@ msgid ""
 "[method wrapf] is more flexible than using the [method fposmod] approach by "
 "giving the user control over the minimum value."
 msgstr ""
-"Schließt den Float [param value] zwischen [param min] und [param max] ein. "
-"Kann verwendet werden, um schleifenähnliches Verhalten oder unendliche "
-"Oberflächen zu erzeugen.\n"
+"Klemmt den Float [param Wert] zwischen [param min] und [param max] ein. Kann "
+"verwendet werden, um schleifenähnliches Verhalten oder unendliche Oberflächen "
+"zu erzeugen.\n"
 "[codeblock]\n"
 "# Endlosschleife zwischen 5,0 und 9,9\n"
 "value = wrapf(value + 0.1, 5.0, 10.0)\n"
 "[/codeblock]\n"
 "[codeblock]\n"
-"# Unendliche Drehung (im Radiant)\n"
+"# Unendliche Rotation (in Radiant)\n"
 "angle = wrapf(angle + 0.1, 0.0, TAU)\n"
 "[/codeblock]\n"
 "[codeblock]\n"
-"# Unendliche Drehung (im Radiant)\n"
+"# Unendliche Rotation (in Radiant)\n"
 "angle = wrapf(angle + 0.1, -PI, PI)\n"
 "[/codeblock]\n"
 "[b]Hinweis:[/b] Wenn [param min] den Wert [code]0[/code] hat, entspricht dies "
 "der [method fposmod], so dass Sie stattdessen lieber diese Methode verwenden "
 "sollten.\n"
-"[method wrapf]  ist flexibler als [method fposmod], da es dem Benutzer die "
+"[method wrapf] ist flexibler als [method fposmod], da es dem Benutzer die "
 "Kontrolle über den Mindestwert gibt."
 
 msgid ""
@@ -7437,6 +7445,50 @@ msgstr ""
 "Als Beispiel, siehe [method get_longest_axis]."
 
 msgid ""
+"Returns the shortest normalized axis of this bounding box's [member size], as "
+"a [Vector3] ([constant Vector3.RIGHT], [constant Vector3.UP], or [constant "
+"Vector3.BACK]).\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var box = AABB(Vector3(0, 0, 0), Vector3(2, 4, 8))\n"
+"\n"
+"print(box.get_shortest_axis())       # Prints (1, 0, 0)\n"
+"print(box.get_shortest_axis_index()) # Prints 0\n"
+"print(box.get_shortest_axis_size())  # Prints 2\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var box = new Aabb(new Vector3(0, 0, 0), new Vector3(2, 4, 8));\n"
+"\n"
+"GD.Print(box.GetShortestAxis());      // Prints (1, 0, 0)\n"
+"GD.Print(box.GetShortestAxisIndex()); // Prints 0\n"
+"GD.Print(box.GetShortestAxisSize());  // Prints 2\n"
+"[/csharp]\n"
+"[/codeblocks]\n"
+"See also [method get_shortest_axis_index] and [method get_shortest_axis_size]."
+msgstr ""
+"Gibt die kürzeste normalisierte Achse der [member size] dieser Bounding Box "
+"zurück, entweder als [Vector3] ([constant Vector3.RIGHT], [constant Vector3."
+"UP], oder als [constant Vector3.BACK]).\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var box = AABB(Vector3(0, 0, 0), Vector3(2, 4, 8))\n"
+"\n"
+"print(box.get_shortest_axis())       # Gibt (1, 0, 0) aus\n"
+"print(box.get_shortest_axis_index()) # Gibt 0 aus\n"
+"print(box.get_shortest_axis_size())  # Gibt 2 aus\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var box = new Aabb(new Vector3(0, 0, 0), new Vector3(2, 4, 8));\n"
+"\n"
+"GD.Print(box.GetShortestAxis());      // Gibt (1, 0, 0) aus\n"
+"GD.Print(box.GetShortestAxisIndex()); // Gibt 0 aus\n"
+"GD.Print(box.GetShortestAxisSize());  // Gibt 2 aus\n"
+"[/csharp]\n"
+"[/codeblocks]\n"
+"Siehe auch [method get_shortest_axis_index] und [method "
+"get_shortest_axis_size]."
+
+msgid ""
 "Returns the index to the shortest axis of this bounding box's [member size] "
 "(see [constant Vector3.AXIS_X], [constant Vector3.AXIS_Y], and [constant "
 "Vector3.AXIS_Z]).\n"
@@ -9289,6 +9341,9 @@ msgstr ""
 "[Member AnimationPlayer.playback_auto_capture] und [Methode AnimationPlayer."
 "play_with_capture]."
 
+msgid "At both ends of the animation, the animation will stop playing."
+msgstr "Die Animation stoppt an beiden Enden."
+
 msgid ""
 "At both ends of the animation, the animation will be repeated without "
 "changing the playback direction."
@@ -9318,14 +9373,34 @@ msgstr ""
 "Dieses Flag zeigt an, dass die Animation den Anfang der Animation erreicht "
 "hat und kurz nach der Schleife verarbeitet wurde."
 
+msgid "Finds the nearest time key."
+msgstr "Findet den nächsten time key."
+
 msgid "Finds only the key with approximating the time."
 msgstr "Findet nur den Schlüssel mit annähernder Zeitangabe."
 
 msgid "Finds only the key with matching the time."
 msgstr "Findet nur den Schlüssel, der mit der Zeit übereinstimmt."
 
+msgid "Container for [Animation] resources."
+msgstr "Container für [Animation]-Ressourcen."
+
+msgid ""
+"An animation library stores a set of animations accessible through "
+"[StringName] keys, for use with [AnimationPlayer] nodes."
+msgstr ""
+"Eine Animationsbibliothek speichert eine Reihe von Animationen, auf die über "
+"[StringName] Tasten zugegriffen werden kann, zur Verwendung mit "
+"[AnimationPlayer]-Nodes ab."
+
 msgid "Animation tutorial index"
 msgstr "Animations-Tutorial-Index"
+
+msgid ""
+"Adds the [param animation] to the library, accessible by the key [param name]."
+msgstr ""
+"Fügt die [param animation] mit dem Schlüssel [param name] zu der Bibliothek "
+"hinzu."
 
 msgid ""
 "Returns the [Animation] with the key [param name]. If the animation does not "
@@ -9335,12 +9410,18 @@ msgstr ""
 "Animation nicht existiert, wird [code]null[/code] zurückgegeben und ein "
 "Fehler protokolliert."
 
+msgid "Returns the keys for the [Animation]s stored in the library."
+msgstr "Gibt die Schlüssel für alle [Animation]en in der Bibliothek zurück."
+
 msgid ""
 "Returns [code]true[/code] if the library stores an [Animation] with [param "
 "name] as the key."
 msgstr ""
 "Gibt [code]true[/code] zurück, wenn die Bibliothek eine [Animation] mit "
 "[param name] als Schlüssel speichert."
+
+msgid "Removes the [Animation] with the key [param name]."
+msgstr "Entfernt die [Animation] mit dem Schlüssel [param name]."
 
 msgid ""
 "Changes the key of the [Animation] associated with the key [param name] to "
@@ -9365,12 +9446,21 @@ msgstr ""
 "[param name] ist der Schlüssel der Animation, die geändert wurde.\n"
 "Siehe auch [signal Resource.changed], für das dies als Relais fungiert."
 
+msgid "Emitted when an [Animation] stored with the key [param name] is removed."
+msgstr ""
+"Wird ausgegeben, wenn eine mit dem Schlüssel [Paramname] gespeicherte "
+"[Animation] entfernt wird."
+
 msgid ""
 "Emitted when the key for an [Animation] is changed, from [param name] to "
 "[param to_name]."
 msgstr ""
 "Wird ausgegeben, wenn der Schlüssel für eine [Animation] von [param name] auf "
 "[param to_name] geändert wird."
+
+msgid "Base class for [AnimationPlayer] and [AnimationTree]."
+msgstr ""
+"Basisressource für den [AnimationPlayer]- und den [AnimationTree]- Knoten."
 
 msgid ""
 "Base class for [AnimationPlayer] and [AnimationTree] to manage animation "
@@ -9384,9 +9474,101 @@ msgstr ""
 "Nach der Instanziierung der Wiedergabeinformationsdaten innerhalb der "
 "erweiterten Klasse wird Blending durch den [AnimationMixer] verarbeitet."
 
+msgid "Migrating Animations from Godot 4.0 to 4.3"
+msgstr "Migriere Animationen von Godot 4.0 zu 4.3"
+
+msgid "A virtual function for processing after getting a key during playback."
+msgstr ""
+"Eine virtuelle Funktion für die Verarbeitung nach dem Tastendruck während der "
+"Wiedergabe."
+
+msgid ""
+"Adds [param library] to the animation player, under the key [param name].\n"
+"AnimationMixer has a global library by default with an empty string as key. "
+"For adding an animation to the global library:\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var global_library = mixer.get_animation_library(\"\")\n"
+"global_library.add_animation(\"animation_name\", animation_resource)\n"
+"[/gdscript]\n"
+"[/codeblocks]"
+msgstr ""
+"Fügt [param library] zu dem Animationsspieler mit [param name] als Schlüssel "
+"hinzu.\n"
+"[AnimationMixer] hat standardmäßig eine globale Bibliothek mit einem leeren "
+"String als Schlüssel. Um eine Animation der globalen Bibliothek "
+"hinzuzufügen:\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var global_library = mixer.get_animation_library(\"\")\n"
+"global_library.add_animation(\"animation_name\", animation_resource)\n"
+"[/gdscript]\n"
+"[/codeblocks]"
+
 msgid "Manually advance the animations by the specified time (in seconds)."
 msgstr ""
 "Bewegt die Animationen manuell um die angegebene Zeit (in Sekunden) weiter."
+
+msgid ""
+"If the animation track specified by [param name] has an option [constant "
+"Animation.UPDATE_CAPTURE], stores current values of the objects indicated by "
+"the track path as a cache. If there is already a captured cache, the old "
+"cache is discarded.\n"
+"After this it will interpolate with current animation blending result during "
+"the playback process for the time specified by [param duration], working like "
+"a crossfade.\n"
+"You can specify [param trans_type] as the curve for the interpolation. For "
+"better results, it may be appropriate to specify [constant Tween."
+"TRANS_LINEAR] for cases where the first key of the track begins with a non-"
+"zero value or where the key value does not change, and [constant Tween."
+"TRANS_QUAD] for cases where the key value changes linearly."
+msgstr ""
+"Wenn die durch [param name] angegebene Animationsspur eine Option [constant "
+"Animation.UPDATE_CAPTURE] hat, werden aktuelle Werte der durch den Spurpfad "
+"angegebenen Objekte als Cache gespeichert. Wenn bereits ein erfasster Cache "
+"vorhanden ist, wird der alte Cache verworfen.\n"
+"\n"
+"Danach wird während des Wiedergabevorgangs für die durch [param duration] "
+"angegebene Zeit mit dem aktuellen Ergebnis der Animationsmischung "
+"interpoliert, was wie ein Crossfade funktioniert.\n"
+"\n"
+"Sie können [param trans_type] als Kurve für die Interpolation angeben. Für "
+"bessere Ergebnisse kann es angebracht sein, [constant Tween.TRANS_LINEAR] für "
+"Fälle anzugeben, in denen der erste Schlüssel der Spur mit einem Wert "
+"ungleich Null beginnt oder sich der Schlüsselwert nicht ändert, und [constant "
+"Tween.TRANS_QUAD] für Fälle, in denen sich der Schlüsselwert linear ändert."
+
+msgid ""
+"[AnimationMixer] caches animated nodes. It may not notice if a node "
+"disappears; [method clear_caches] forces it to update the cache again."
+msgstr ""
+"Der [AnimationMixer] speichert animierte Knoten im Cache. Er bemerkt "
+"möglicherweise nicht, wenn ein Knoten verschwindet; [method clear_caches] "
+"zwingt ihn, den Cache erneut zu aktualisieren."
+
+msgid ""
+"Returns the key of [param animation] or an empty [StringName] if not found."
+msgstr ""
+"Gibt den Schlüssel von [param animation] zurück oder einen leeren "
+"[StringName], wenn nicht gefunden."
+
+msgid ""
+"Returns the key for the [AnimationLibrary] that contains [param animation] or "
+"an empty [StringName] if not found."
+msgstr ""
+"Gibt den Schlüssel der [AnimationLibrary] welche [param animation] enthält "
+"zurück oder einen leeren [StringName], wenn dieser nicht gefunden wurde."
+
+msgid ""
+"Returns the first [AnimationLibrary] with key [param name] or [code]null[/"
+"code] if not found.\n"
+"To get the [AnimationMixer]'s global animation library, use "
+"[code]get_animation_library(\"\")[/code]."
+msgstr ""
+"Gibt die erste [AnimationLibrary] mit dem Schlüssel [param name] zurück oder "
+"[code]null[/code], falls nicht gefunden.\n"
+"Um die globale Animationsbibliothek des [AnimationMixer] zu erhalten, "
+"verwenden Sie [code]get_animation_library(\"\")[/code]."
 
 msgid ""
 "Retrieve the blended value of the position tracks with the [member "
@@ -9578,6 +9760,13 @@ msgstr ""
 "unbeabsichtigten diskreten Änderung kommen, so dass dies nur für einige "
 "einfache Anwendungsfälle sinnvoll ist."
 
+msgid ""
+"Returns [code]true[/code] if the [AnimationMixer] stores an [Animation] with "
+"key [param name]."
+msgstr ""
+"Gibt [code]true[/code] zurück, wenn der [AnimationMixer] eine [Animation] mit "
+"dem Schlüssel [param name] gespeichert hat."
+
 msgid "Removes the [AnimationLibrary] associated with the key [param name]."
 msgstr "Entfernt die [AnimationLibrary] mit der Taste [param name]."
 
@@ -9716,8 +9905,29 @@ msgstr ""
 msgid "Make method calls immediately when reached in the animation."
 msgstr "Methodenaufrufe sofort bei Erreichen in der Animation durchführen."
 
+msgid ""
+"An [constant Animation.UPDATE_DISCRETE] track value takes precedence when "
+"blending [constant Animation.UPDATE_CONTINUOUS] or [constant Animation."
+"UPDATE_CAPTURE] track values and [constant Animation.UPDATE_DISCRETE] track "
+"values."
+msgstr ""
+"Ein [constant Animation.UPDATE_DISCRETE] Spurwert hat eine höhere Priorität "
+"wenn [constant Animation.UPDATE_CONTINUOUS] oder [constant Animation."
+"UPDATE_CAPTURE] Spurwerte mit [constant Animation.UPDATE_DISCRETE] Spurwerten "
+"gemischt werden."
+
 msgid "Using AnimationTree"
 msgstr "Verwendung des AnimationTree"
+
+msgid ""
+"Currently this is mostly useless as there is a lack of many APIs to extend "
+"AnimationNode by GDScript. It is planned that a more flexible API using "
+"structures will be provided in the future."
+msgstr ""
+"Ausgehend der geringen Anzahl verfügbarer API-Schnittstellen welche die "
+"AnimationNode mittels GDScript erweitern, ist die Nützlichkeit eher "
+"limitiert. Es ist geplant, dass in der Zukunft flexiblere API-Schnittstellen "
+"über structures bereitgestellt werden."
 
 msgid ""
 "Adds an input to the animation node. This is only useful for animation nodes "
@@ -11744,6 +11954,41 @@ msgstr ""
 
 msgid "Returns the number of times an element is in the array."
 msgstr "Gibt die Anzahl der Vorkommen eines Elements im Array zurück."
+
+msgid ""
+"Returns a random element from the array. Generates an error and returns "
+"[code]null[/code] if the array is empty.\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"# May print 1, 2, 3.25, or \"Hi\".\n"
+"print([1, 2, 3.25, \"Hi\"].pick_random())\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var array = new Godot.Collections.Array { 1, 2, 3.25f, \"Hi\" };\n"
+"GD.Print(array.PickRandom()); // May print 1, 2, 3.25, or \"Hi\".\n"
+"[/csharp]\n"
+"[/codeblocks]\n"
+"[b]Note:[/b] Like many similar functions in the engine (such as [method "
+"@GlobalScope.randi] or [method shuffle]), this method uses a common, global "
+"random seed. To get a predictable outcome from this method, see [method "
+"@GlobalScope.seed]."
+msgstr ""
+"Gibt einen zufälligen Wert aus dem Ziel-Array zurück. Gibt einen Fehler aus "
+"und liefert [code]null[/code], falls das Array leer ist.\n"
+"[codeblocks]\n"
+"[gdscript]\n"
+"var array: Array[int] = [1, 2, 3, 4]\n"
+"print(array.pick_random()) # Gibt eine der vier Zahlen aus.\n"
+"[/gdscript]\n"
+"[csharp]\n"
+"var array = new Godot.Collections.Array { 1, 2, 3.25f, \"Hi\" };\n"
+"GD.Print(array.PickRandom()); // Gibt eine der vier Zahlen oder \"Hi\" aus.\n"
+"[/csharp]\n"
+"[/codeblocks]\n"
+"[b]Hinweis:[/b] Wie viele andere Funktionen der Engine (z.B. [method "
+"@GlobalScope.randi] oder [method shuffle]), verwendet diese Methode einen "
+"zufälligen, globalen Seed. Um von dieser Methode ein vorhersehbares Verhalten "
+"zu erhalten, siehe [method @GlobalScope.seed]."
 
 msgid ""
 "Compares the left operand [Array] against the [param right] [Array]. Returns "
@@ -14869,12 +15114,11 @@ msgid ""
 "greater than [code]0.0[/code] to achieve linear attenuation clamped to a "
 "sphere of a defined size."
 msgstr ""
-"Keine Abschwächung der Lautstärke in Abhängigkeit von der Entfernung. Der Ton "
-"wird im Gegensatz zu einem [AudioStreamPlayer] immer noch positionsbezogen "
-"gehört. Die [Konstante ATTENUATION_DISABLED] kann mit einem [member "
-"max_distance]-Wert größer als [code]0.0[/code] kombiniert werden, um eine "
-"lineare Dämpfung zu erreichen, die auf eine Kugel definierter Größe begrenzt "
-"ist."
+"Keine entfernungsabhängige Abschwächung der Lautstärke. Der Ton wird im "
+"Gegensatz zu einem [AudioStreamPlayer] immer noch positionsbezogen gehört. "
+"Die [Konstante ATTENUATION_DISABLED] kann mit einem [member max_distance]-"
+"Wert größer als [code]0.0[/code] kombiniert werden, um eine lineare Dämpfung "
+"zu erreichen, die auf eine Kugel definierter Größe begrenzt ist."
 
 msgid "Disables doppler tracking."
 msgstr "Deaktiviert die Dopplerverfolgung."
@@ -16350,6 +16594,12 @@ msgstr ""
 "Versteckt allen [CanvasItem]s unter diesem [CanvasLayer]. Eqivalent dazu, "
 "[member visible] auf [code]false[/code] zu setzten."
 
+msgid "The layer's scale."
+msgstr "Die Skalierung der Ebene."
+
+msgid "Using CharacterBody2D"
+msgstr "Verwendung von CharacterBody2D"
+
 msgid "The circle's radius."
 msgstr "Radius des Kreises."
 
@@ -17297,6 +17547,18 @@ msgstr ""
 "(Node) gibt.\n"
 "Siehe [Methode add_theme_stylebox_override]."
 
+msgid "Maximum angle."
+msgstr "Maximaler Winkel."
+
+msgid "Minimum angle."
+msgstr "Minimaler Winkel."
+
+msgid "Maximum damping."
+msgstr "Maximale Dämpfung."
+
+msgid "SSL certificates"
+msgstr "SSL Zertifikat"
+
 msgid ""
 "The physics layers this area is in.\n"
 "Collidable objects can exist in any of 32 different layers. These layers work "
@@ -17704,6 +17966,13 @@ msgstr ""
 msgid "Name of the application."
 msgstr "Name der Anwendung."
 
+msgid ""
+"See [url=https://developer.android.com/reference/android/Manifest."
+"permission#MASTER_CLEAR]MASTER_CLEAR[/url]."
+msgstr ""
+"Siehe [url=https://developer.android.com/reference/android/Manifest."
+"permission#MASTER_CLEAR]MASTER_CLEAR[/url]."
+
 msgid "Deprecated in API level 15."
 msgstr "Veraltet in API-Level 15."
 
@@ -17808,6 +18077,15 @@ msgstr ""
 "Gibt [code]true[/code] zurück, wenn die Datei am Index [param idx] korrekt "
 "importiert wurde."
 
+msgid "Import plugins"
+msgstr "Importieren von Plugins"
+
+msgid "Inspector plugins"
+msgstr "Inspektor-Plugins"
+
+msgid "Godot editor's interface."
+msgstr "Oberfläche des Godot Editors."
+
 msgid "Returns the editor's [EditorSettings] instance."
 msgstr "Gibt die [EditorSettings] Instanz des Editors zurück."
 
@@ -17846,6 +18124,9 @@ msgstr "Gesendet wenn das Rechteck Element geändert wurde."
 
 msgid "Version control systems"
 msgstr "Versionsverwaltungssysteme"
+
+msgid "High-level multiplayer"
+msgstr "High-Level-Multiplayer"
 
 msgid ""
 "Returns [code]true[/code] if the peer is currently active (i.e. the "
@@ -17948,6 +18229,9 @@ msgstr "Volumetrischer Nebel und Nebelvolumen"
 msgid "Removes all font sizes from the cache entry"
 msgstr "Entfernt alle Schriftgrößen aus dem Cache-Eintrag"
 
+msgid "GDExtension overview"
+msgstr "GDExtension Übersicht"
+
 msgid ""
 "Returns [code]true[/code] if [param point] is inside the circle or if it's "
 "located exactly [i]on[/i] the circle's boundary, otherwise returns "
@@ -17988,6 +18272,9 @@ msgstr ""
 
 msgid "Using gridmaps"
 msgstr "Verwendung von Gridmaps"
+
+msgid "TLS certificates"
+msgstr "TLS Zertifikate"
 
 msgid "Making HTTP requests"
 msgstr "HTTP-Anfragen stellen"
@@ -18517,6 +18804,9 @@ msgstr "Stellt die Größe der Aufzählung [enum ArrayType] dar."
 msgid "Using the MeshDataTool"
 msgstr "Verwendung des MeshDataTools"
 
+msgid "2D meshes"
+msgstr "2D-Meshes"
+
 msgid ""
 "Returns the number of blend shapes available. Produces an error if [member "
 "mesh] is [code]null[/code]."
@@ -18540,6 +18830,9 @@ msgid "Returns [code]true[/code] if there is a [member multiplayer_peer] set."
 msgstr ""
 "Gibt [code]true[/code] zurück, wenn ein [member multiplayer_peer] gesetzt ist."
 
+msgid "Thread-safe APIs"
+msgstr "Thread-sichere APIs"
+
 msgid "Using NavigationAgents"
 msgstr "Verwenden von NavigationAgents"
 
@@ -18559,6 +18852,9 @@ msgstr ""
 "Legt die [RID] der Navigationsmap fest, die dieser NavigationObstacle-Knoten "
 "(Node) verwenden soll, und aktualisiert außerdem das [code]obstacle[/code] "
 "auf dem NavigationServer."
+
+msgid "Using NavigationPathQueryObjects"
+msgstr "NavigationPathQueryObjects verwenden"
 
 msgid "Navigation Polygon 2D Demo"
 msgstr "Navigation Polygon 2D-Demo"
@@ -18607,6 +18903,9 @@ msgstr ""
 msgid "Sets the global transformation for the region."
 msgstr "Legt die globale Transformation für die Region fest."
 
+msgid "All Demos"
+msgstr "Alle Demos"
+
 msgid ""
 "Returns [code]true[/code] if the node is ready, i.e. it's inside scene tree "
 "and all its children are initialized.\n"
@@ -18625,8 +18924,17 @@ msgstr "Globale Rotation im Bogenmaß."
 msgid "Global scale."
 msgstr "Globaler Maßstab."
 
+msgid "Global [Transform2D]."
+msgstr "Globaler [Transform2D]."
+
+msgid "Local [Transform2D]."
+msgstr "Lokaler [Transform2D]."
+
 msgid "Object class introduction"
 msgstr "Einführung der Objektklasse"
+
+msgid "Object notifications"
+msgstr "Objekt-Benachrichtigungen"
 
 msgid ""
 "Returns the object's [Script] instance, or [code]null[/code] if no script is "
@@ -18640,6 +18948,36 @@ msgstr "Eine Aktionsmenge hinzufügen."
 
 msgid "Add an interaction profile."
 msgstr "Ein Interaktionsprofil hinzufügen."
+
+msgid "XrResult documentation"
+msgstr "XrResult Dokumentation"
+
+msgid "XrInstance documentation"
+msgstr "XrInstance Dokumentation"
+
+msgid "XrSpace documentation"
+msgstr "XrSpace Dokumentation"
+
+msgid "XrSession documentation"
+msgstr "XrSession Dokumentation"
+
+msgid "XrSystemId documentation"
+msgstr "XrSystemId Dokumentation"
+
+msgid "xrBeginSession documentation"
+msgstr "xrBeginSession Dokumentation"
+
+msgid "XrPosef documentation"
+msgstr "XrPosef Dokumentation"
+
+msgid "Left hand."
+msgstr "Linke Hand."
+
+msgid "Palm joint."
+msgstr "Handflächengelenk."
+
+msgid "Wrist joint."
+msgstr "Handgelenk."
 
 msgid ""
 "Returns the ID of the selected item, or [code]-1[/code] if no item is "
@@ -18885,6 +19223,9 @@ msgstr ""
 "Intern wird dabei derselbe Kodierungsmechanismus wie bei der Methode [method "
 "@GlobalScope.var_to_bytes] verwendet."
 
+msgid "2D Parallax"
+msgstr "2D-Parallaxe"
+
 msgid ""
 "If [code]true[/code], the [PhysicalBone2D] will keep the transform of the "
 "bone it is bound to when simulating physics."
@@ -18897,6 +19238,9 @@ msgstr "Legt die Transformation des Körpers fest."
 
 msgid "Sets the joint's transform."
 msgstr "Legt die Transformation des Gelenks fest."
+
+msgid "Ray-casting"
+msgstr "Raycasting"
 
 msgid ""
 "Returns the local transform matrix of the shape with the given index in the "
@@ -19001,8 +19345,14 @@ msgstr ""
 "[b]Hinweis:[/b] Wenn die [Größe des Elements] ungerade ist, wird das Ergebnis "
 "auf [Position des Elements] gerundet."
 
+msgid "Reflection probes"
+msgstr "Reflection-Probes"
+
 msgid "Using compute shaders"
 msgstr "Verwendung von Compute-Shadern"
+
+msgid "\"Equal\" comparison."
+msgstr "\"Equal\"- Vergleich."
 
 msgid "Returns the [Transform3D] of the specified instance."
 msgstr "Gibt das [Transform3D] der angegebenen Instanz zurück."
@@ -19019,6 +19369,9 @@ msgstr ""
 
 msgid "2D particles."
 msgstr "2D-Partikel."
+
+msgid "Disable reflections."
+msgstr "Deaktiviere Reflektionen."
 
 msgid "3D Particle trails"
 msgstr "3D-Partikelspuren"
@@ -19052,6 +19405,21 @@ msgstr "SceneTree"
 
 msgid "One-shot timer."
 msgstr "Einmaliger Timer."
+
+msgid "Shading language"
+msgstr "Shader-Sprache"
+
+msgid "Shader preprocessor"
+msgstr "Shader-Präprozessor"
+
+msgid "GDScript Basics"
+msgstr "GDScript Grundlagen"
+
+msgid "2D skeletons"
+msgstr "2D-Skelette"
+
+msgid "SoftBody"
+msgstr "SoftBody"
 
 msgid ""
 "The physics layers this SoftBody3D [b]is in[/b]. Collision objects can exist "
@@ -19208,6 +19576,12 @@ msgstr "Gibt [code]true[/code] zurück, wenn eine \"redo\" Aktion möglich ist."
 msgid "Returns [code]true[/code] if an \"undo\" action is available."
 msgstr "Gibt [code]true[/code] zurück, wenn eine \"undo\" Aktion möglich ist."
 
+msgid "Text orientation."
+msgstr "Textorientierung."
+
+msgid "Removes dropcap."
+msgstr "Entfernt dropcap."
+
 msgid "Emitted when a new interface has been added."
 msgstr "Wird ausgesendet, wenn eine neue Schnittstelle hinzugefügt wurde."
 
@@ -19266,8 +19640,20 @@ msgstr ""
 "Gibt [code]false[/code] zurück, wenn sie nicht vorhanden ist. Verwenden Sie "
 "[method set_stylebox], um sie zu definieren."
 
+msgid "Using Tilemaps"
+msgstr "TileMaps verwenden"
+
+msgid "Horizontal half-offset."
+msgstr "Horizontaler halb-offset."
+
+msgid "Vertical half-offset."
+msgstr "Vertikaler halb-offset."
+
 msgid "Always visible."
 msgstr "Immer sichtbar."
+
+msgid "Locales"
+msgstr "Locale"
 
 msgid "The custom minimum height."
 msgstr "Die benutzerdefinierte kleinstmögliche Höhe."
@@ -20099,6 +20485,12 @@ msgstr ""
 "beispielsweise auf einen Tisch in der realen Welt bezieht, ist dies die "
 "geschätzte Größe der Oberfläche dieses Tisches."
 
+msgid "Root joint."
+msgstr "Wurzelgelenk."
+
+msgid "Hips joint."
+msgstr "Hüftgelenk."
+
 msgid ""
 "A camera node with a few overrules for AR/VR applied, such as location "
 "tracking."
@@ -20147,6 +20539,60 @@ msgstr "Wird ausgesendet, wenn eine Taste auf diesem Steuergerät gedrückt wird
 msgid "Emitted when a button on this controller is released."
 msgstr ""
 "Wird ausgesendet, wenn eine Taste an diesem Controller losgelassen wird."
+
+msgid "Returns the requested face blend shape weight."
+msgstr "Gibt die Gewichtung der Blend-Shape an diesem Index zurück."
+
+msgid "Sets a face blend shape weight."
+msgstr "Setzt die Gewichtung der Blend-Shape an diesem Index."
+
+msgid "Right eye looks outwards."
+msgstr "Rechtes Auge schaut nach außen."
+
+msgid "Right eye looks inwards."
+msgstr "Rechtes Auge schaut nach innen."
+
+msgid "Right eye looks upwards."
+msgstr "Rechtes Auge schaut nach oben."
+
+msgid "Right eye looks downwards."
+msgstr "Rechtes Auge schaut nach unten."
+
+msgid "Left eye looks outwards."
+msgstr "Linkes Auge schaut nach außen."
+
+msgid "Left eye looks inwards."
+msgstr "Linkes Auge schaut nach innen."
+
+msgid "Left eye looks upwards."
+msgstr "Linkes Auge schaut nach oben."
+
+msgid "Left eye looks downwards."
+msgstr "Linkes Auge schaut nach unten."
+
+msgid "Closes the right eyelid."
+msgstr "Schließt rechtes Augenlid."
+
+msgid "Closes the left eyelid."
+msgstr "Schließt linkes Augenlid."
+
+msgid "Right eyelid widens beyond relaxed."
+msgstr "Rechtes Augenlid öffnet sich über entspannten Zustand."
+
+msgid "Left eyelid widens beyond relaxed."
+msgstr "Linkes Augenlid öffnet sich über entspannten Zustand."
+
+msgid "Dilates the right eye pupil."
+msgstr "Erweitert rechte Pupille."
+
+msgid "Dilates the left eye pupil."
+msgstr "Erweitert linke Pupille."
+
+msgid "Opens jawbone."
+msgstr "Öffnet Kieferknochen."
+
+msgid "Mouth stretches."
+msgstr "Mund zieht sich."
 
 msgid ""
 "If this is an AR interface that requires displaying a camera feed as the "

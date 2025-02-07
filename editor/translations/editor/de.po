@@ -112,13 +112,17 @@
 # TrueJole <jole.koop@gmail.com>, 2024.
 # Dirk Graf <bb3234@web.de>, 2024.
 # tct123 <tct1234@protonmail.com>, 2024.
+# Michael S <michi.mega123@gmail.com>, 2024.
+# jl <jl-friesen@gmx.de>, 2024.
+# Leona 'leo' Gottfried <s6573328@stud.uni-frankfurt.de>, 2024.
+# Deleted User <noreply+102345@weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-16 17:39+0000\n"
-"Last-Translator: tct123 <tct1234@protonmail.com>\n"
+"PO-Revision-Date: 2025-01-09 02:15+0000\n"
+"Last-Translator: Deleted User <noreply+102345@weblate.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -126,7 +130,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Hauptthread"
@@ -135,7 +139,7 @@ msgid "Unset"
 msgstr "Nicht gesetzt"
 
 msgid "Physical"
-msgstr "Physisch"
+msgstr "physischPhysisch"
 
 msgid "Left Mouse Button"
 msgstr "Linke Maustaste"
@@ -652,6 +656,9 @@ msgstr "Animations-Keys einfügen"
 
 msgid "Animation Delete Keys"
 msgstr "Animations-Keys löschen"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Animation Bézierkurve Aufruf ändern"
 
 msgid "Focus"
 msgstr "Fokus"
@@ -6626,13 +6633,13 @@ msgid "Property Name Style"
 msgstr "Eigenschaftennamensstil"
 
 msgid "Raw (e.g. \"%s\")"
-msgstr "Roh (z.B. „%s“)"
+msgstr "Roh (z. B. \"%s\")"
 
 msgid "Capitalized (e.g. \"%s\")"
-msgstr "Große Anfangsbuchstaben (z.B. „%s“)"
+msgstr "Groß geschrieben (z.B. \"%s\")"
 
 msgid "Localized (e.g. \"Z Index\")"
-msgstr "Lokalisiert (z.B. „Z-Index“)"
+msgstr "Lokalisiert (z. B. \"Z-Index\")"
 
 msgid "Localization not available for current language."
 msgstr "Keine Übersetzung für die aktuelle Sprache vorhanden."
@@ -8836,8 +8843,8 @@ msgid ""
 "Failed fitting a lightmap image into an atlas. This should never happen and "
 "should be reported."
 msgstr ""
-"Die Einpassung eines Lichtkartenbildes in einen Atlas ist fehlgeschlagen. "
-"Dies sollte nie passieren und gemeldet werden."
+"Die Anpassung eines Lichtkartenbildes in einen Atlas ist fehlgeschlagen. Dies "
+"sollte nie passieren und gemeldet werden."
 
 msgid "Bake Lightmaps"
 msgstr "Lightmaps backen"
@@ -11604,19 +11611,19 @@ msgid "Item"
 msgstr "Element"
 
 msgid "Disabled Item"
-msgstr "Deaktiviertes Objekt"
+msgstr "Deaktiviertes Element"
 
 msgid "Check Item"
-msgstr "Überprüfe Element"
+msgstr "Checkbox Element"
 
 msgid "Checked Item"
-msgstr "Überprüftes Element"
+msgstr "Markiertes Checkbox Element"
 
 msgid "Radio Item"
-msgstr "Element der Auswahl"
+msgstr "Auswahlelement"
 
 msgid "Checked Radio Item"
-msgstr "Markiertes Element der Auswahl"
+msgstr "Markiertes Auswahlelement"
 
 msgid "Named Separator"
 msgstr "Benannter Trenner"
@@ -13157,8 +13164,8 @@ msgid ""
 "Returns an associated 4D vector if the provided boolean value is true or "
 "false."
 msgstr ""
-"Gibt den jeweiligen 4D-Vektor zurück, wenn der angegebene boolsche Wert wahr "
-"oder falsch ist."
+"Gibt einen zugehörigen 4D-Vektor zurück, wenn der angegebene boolesche Wert "
+"true oder false ist."
 
 msgid ""
 "Returns an associated boolean if the provided boolean value is true or false."
@@ -14595,6 +14602,9 @@ msgstr "Zeitstempel der letzten Bearbeitung"
 msgid "Missing Project"
 msgstr "Fehlendes Projekt"
 
+msgid "Missing Date"
+msgstr "Fehlendes Datum"
+
 msgid "Restart Now"
 msgstr "Jetzt Neustarten"
 
@@ -15110,6 +15120,9 @@ msgstr "Entferne Node(s)"
 
 msgid "Change type of node(s)"
 msgstr "Node-Typ(en) ändern"
+
+msgid "Reparent to New Node"
+msgstr "Node unter neuen Node hängen"
 
 msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt einen einzelnen ausgewählten Node."
@@ -15883,6 +15896,9 @@ msgstr "Am Einzeichnen des Meshs in einen Beschleunigungsstruktur %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "Am Optimieren der Beschleunigungsstruktur"
+
+msgid "Denoising %d%%"
+msgstr "Rauschunterdrückung%d%%"
 
 msgid "Begin Bake"
 msgstr "Backen beginnen"
@@ -17606,12 +17622,12 @@ msgid ""
 "panel with this node selected, click the toolbox icon in the top-right corner "
 "and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
 msgstr ""
-"Der TileMap-Knoten ist veraltet, da er durch die Verwendung mehrerer "
-"TileMapLayer-Knoten ersetzt wird.\n"
-"Um eine TileMap in einen Satz von TileMapLayer-Knoten umzuwandeln, öffnen Sie "
-"das untere TileMap-Bedienfeld mit diesem ausgewählten Knoten, klicken Sie auf "
-"das Toolbox-Symbol in der oberen rechten Ecke und wählen Sie „TileMap-Ebenen "
-"als einzelne TileMapLayer-Knoten extrahieren“."
+"Der TileMap-Node ist veraltet, da dieser durch die Verwendung mehrerer "
+"TileMapLayer-Nodes ersetzt wird.\n"
+"Um eine TileMap in einen Satz von TileMapLayer-Nodes umzuwandeln, öffnen Sie "
+"das untere TileMap-Bedienfeld mit diesem ausgewählten Node, klicken Sie auf "
+"das Toolbox-Symbol in der oberen rechten Ecke und wählen Sie „Extrahieren von "
+"TileMap-Ebenen als einzelne TileMapLayer-Nodes“."
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
@@ -18067,6 +18083,11 @@ msgid ""
 msgstr ""
 "Die „Remote-Pfad“-Eigenschaft muss auf ein gültiges Node3D oder einen von "
 "Node3D abgeleiteten Node verweisen."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Skeleton3D-Node nicht gesetzt! SkeletonModifier3D muss Child von Skeleton3D "
+"sein."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Dieser Körper wird ignoriert bis Sie ein Mesh zuweisen."

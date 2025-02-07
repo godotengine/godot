@@ -54,13 +54,15 @@
 # Koji Horaguchi <koji.horaguchi@gmail.com>, 2023.
 # ueshita <nalto32@gmail.com>, 2023, 2024.
 # Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
+# SonSui <sonsui37@gmail.com>, 2024.
+# Binnaga <polycharacter@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-07-22 14:23+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2024-12-22 21:02+0000\n"
+"Last-Translator: Binnaga <polycharacter@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -68,7 +70,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -190,6 +192,12 @@ msgstr "アニメーション"
 msgid "Warnings"
 msgstr "警告"
 
+msgid "Check Invalid Track Paths"
+msgstr "無効なトラックパスを確認"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "角度補間タイプの衝突を確認"
+
 msgid "Audio"
 msgstr "オーディオ"
 
@@ -201,6 +209,9 @@ msgstr "デフォルトのバスレイアウト"
 
 msgid "General"
 msgstr "一般"
+
+msgid "Default Playback Type"
+msgstr "デフォルトの Playback Type"
 
 msgid "Text to Speech"
 msgstr "テキストの音声スピーチ化"

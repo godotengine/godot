@@ -200,13 +200,17 @@
 # LLIax <aultero@gmail.com>, 2024.
 # Dmitry <prostoikanal99@gmail.com>, 2024.
 # fingerionam <hurdanukka@gufum.com>, 2024.
+# Dainis K <bonanzaaa.mad@gmail.com>, 2024.
+# СТАРЫЙ ХЛЕБ <ctapiuxleb1@gmail.com>, 2024.
+# Kiril Yakymchuk <stbestich@gmail.com>, 2025.
+# ogyrec <ogyrec.off@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-09-08 19:09+0000\n"
-"Last-Translator: fingerionam <hurdanukka@gufum.com>\n"
+"PO-Revision-Date: 2025-01-26 10:28+0000\n"
+"Last-Translator: ogyrec <ogyrec.off@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -215,7 +219,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -248,10 +252,10 @@ msgid "Mouse Wheel Right"
 msgstr "Колесо мыши вправо"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Кнопка большого пальца мыши 1"
+msgstr "Кнопка ползунка мыши 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Кнопка большого пальца мыши 2"
+msgstr "Боковая Кнопка Мыши 2"
 
 msgid "Button"
 msgstr "Кнопка"
@@ -260,7 +264,7 @@ msgid "Double Click"
 msgstr "Двойной щелчок"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "Движение мыши в местоположении (%s) с быстротой (%s)"
+msgstr "Перемещение мыши в нужном положении (%s) со скоростью (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
 msgstr "Левый стик по оси X, джойстик 0 по оси X"
@@ -296,7 +300,7 @@ msgid "Unknown Joypad Axis"
 msgstr "Неизвестная ось джойстика"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "Движение джойстика по оси %d (%s) со значением %.2f"
+msgstr "Перемещение джойстика по оси %d (%s) со значением %.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Нижнее действие, Sony Cross, Xbox A, Nintendo B"
@@ -317,7 +321,7 @@ msgid "Guide, Sony PS, Xbox Home"
 msgstr "Руководство, Sony PS, Xbox Home"
 
 msgid "Start, Xbox Menu, Nintendo +"
-msgstr "Start, Xbox Menu, Nintendo +"
+msgstr "Старт, Xbox Меню, Nintendo+"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Левый стик, Sony L3, Xbox L/LS"
@@ -344,7 +348,7 @@ msgid "D-pad Right"
 msgstr "D-pad Вправо"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
-msgstr "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, PS5 Микрофон, Nintendo Capture"
 
 msgid "Xbox Paddle 1"
 msgstr "Xbox Крестовина 1"
@@ -387,7 +391,7 @@ msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "Жест увеличения в (%s) с коэффициентом %s"
 
 msgid "Pan Gesture at (%s) with delta (%s)"
-msgstr "Жест панорамирования на (%s) с дельтой (%s)"
+msgstr "Жест панорамирования по направлению (%s) с дельтой (%s)"
 
 msgid "MIDI Input on Channel=%s Message=%s"
 msgstr "MIDI Вход на канале=%s Сообщение=%s"
@@ -738,6 +742,9 @@ msgstr "Вставить ключи анимации"
 
 msgid "Animation Delete Keys"
 msgstr "Удалить ключи анимации"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Вызов изменения кривой Безье анимации"
 
 msgid "Focus"
 msgstr "Фокус"
@@ -6803,9 +6810,9 @@ msgid ""
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
-"Редактирование точек.\n"
+"Редактировать точки.\n"
 "ЛКМ: переместить точку.\n"
-"ПКМ: стереть точку."
+"ПКМ: удалить точку."
 
 msgid "Erase points."
 msgstr "Удалить точки."
@@ -14555,6 +14562,9 @@ msgstr "Временная метка последнего изменения"
 msgid "Missing Project"
 msgstr "Отсутствующий проект"
 
+msgid "Missing Date"
+msgstr "Отсутствующие данные"
+
 msgid "Restart Now"
 msgstr "Перезапустить сейчас"
 
@@ -15065,6 +15075,9 @@ msgstr "Удалить узлы"
 
 msgid "Change type of node(s)"
 msgstr "Изменить тип узлов"
+
+msgid "Reparent to New Node"
+msgstr "Изменить родительский узел на новый"
 
 msgid "This operation requires a single selected node."
 msgstr "Для этой операции требуется один выбранный узел."
@@ -15833,6 +15846,9 @@ msgstr "Построение сетки в структуре ускорения
 
 msgid "Optimizing acceleration structure"
 msgstr "Оптимизация структуры ускорения"
+
+msgid "Denoising %d%%"
+msgstr "Устранение шума %d%%"
 
 msgid "Begin Bake"
 msgstr "Начать запекание"
@@ -17979,6 +17995,11 @@ msgid ""
 msgstr ""
 "Свойство «Удалённый путь» должно указывать на действительный узел Node3D или "
 "на действительный производный от Node3D узел."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Узел Skeleton3D не задан! SkeletonModifier3D должен быть дочерним элементом "
+"Skeleton3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Это тело будет игнорироваться, пока вы не установите сетку."

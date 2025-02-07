@@ -142,13 +142,14 @@
 # dvddvd300 <daviddeleon2001@gmail.com>, 2024.
 # LuisGFlorez <lgfgcoder@gmail.com>, 2024.
 # Juan Matias Olmos <ma7as@protonmail.com>, 2024.
+# José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-23 10:34+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2025-02-06 23:02+0000\n"
+"Last-Translator: José Andrés Urdaneta <urdaneta7834@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -156,13 +157,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
 
 msgid "Unset"
-msgstr "Desligar"
+msgstr "Desactivado"
 
 msgid "Physical"
 msgstr "Física"
@@ -342,7 +343,7 @@ msgid "Accept"
 msgstr "Aceptar"
 
 msgid "Select"
-msgstr "Elegir"
+msgstr "Seleccionar"
 
 msgid "Cancel"
 msgstr "Cancelar"
@@ -423,10 +424,10 @@ msgid "Delete"
 msgstr "Borrar"
 
 msgid "Delete Word"
-msgstr "Borra Palabra"
+msgstr "Borrar palabra"
 
 msgid "Delete all to Right"
-msgstr "Borra todo a Derecha"
+msgstr "Borrar todo a la derecha"
 
 msgid "Caret Left"
 msgstr "Cursor Izquierda"
@@ -583,10 +584,10 @@ msgid "Add Event"
 msgstr "Añadir Evento"
 
 msgid "Remove Action"
-msgstr "Eliminar acción"
+msgstr "Eliminar Acción"
 
 msgid "Cannot Remove Action"
-msgstr "No Puede Eliminarse la Acción"
+msgstr "No se puede eliminar la acción"
 
 msgid "Edit Event"
 msgstr "Editar Evento"
@@ -680,6 +681,9 @@ msgstr "Pegar Claves de Animación"
 
 msgid "Animation Delete Keys"
 msgstr "Eliminar Claves de Animación"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Cambiar Llamada de Animación de Curva Bezier"
 
 msgid "Focus"
 msgstr "Foco"
@@ -3557,7 +3561,7 @@ msgid "Can't load MeshLibrary for merging!"
 msgstr "No se puede cargar la MeshLibrary para unir!"
 
 msgid "Error saving MeshLibrary!"
-msgstr "Error al guardar la MeshLibrary!"
+msgstr "¡Error al guardar MeshLibrary!"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -4050,7 +4054,7 @@ msgid "Project"
 msgstr "Proyecto"
 
 msgid "Project Settings..."
-msgstr "Configuración del proyecto..."
+msgstr "Configuración del Proyecto..."
 
 msgid "Project Settings"
 msgstr "Configuración del Proyecto"
@@ -4466,7 +4470,7 @@ msgid "Make Unique (Recursive)"
 msgstr "Hacer Único (Recursivo)"
 
 msgid "Save As..."
-msgstr "Guardar como..."
+msgstr "Guardar Como..."
 
 msgid "Show in FileSystem"
 msgstr "Mostrar en Sistema de Archivos"
@@ -5269,8 +5273,8 @@ msgstr ""
 "Puede volver a habilitar FBX2lTF en la Configuración del Proyecto en Sistema "
 "de Archivos > Importar > FBX > Habilitado.\n"
 "\n"
-"El editor se reiniciará ya que los importadores se registran cuando el editor "
-"se inicia."
+"El editor se reiniciará, ya que los importadores se registran cuando el "
+"editor se inicia."
 
 msgid "Path to FBX2glTF executable is empty."
 msgstr "La ruta al ejecutable FBX2glTF está vacía."
@@ -7765,7 +7769,7 @@ msgid "Unlock Selected"
 msgstr "Desbloquear Seleccionado"
 
 msgid "Group Selected"
-msgstr "Agrupar Seleccionados"
+msgstr "Grupo seleccionado"
 
 msgid "Ungroup Selected"
 msgstr "Desagrupar Seleccionados"
@@ -8017,7 +8021,7 @@ msgid "Editor theme"
 msgstr "Editor de Themes"
 
 msgid "Default theme"
-msgstr "Theme predeterminado"
+msgstr "Tema predeterminado"
 
 msgid "Preview Theme"
 msgstr "Vista Previa del Theme"
@@ -14584,6 +14588,9 @@ msgstr "Marca de tiempo de la última edición"
 msgid "Missing Project"
 msgstr "Proyecto Faltante"
 
+msgid "Missing Date"
+msgstr "Fecha Faltante"
+
 msgid "Restart Now"
 msgstr "Reiniciar Ahora"
 
@@ -14591,7 +14598,7 @@ msgid "Quick Settings"
 msgstr "Configuración Rápida"
 
 msgid "Interface Theme"
-msgstr "Tema de Interfaz"
+msgstr "Tema de la Interfaz"
 
 msgid "Custom preset can be further configured in the editor."
 msgstr "El preset personalizado puede ser configurado aún más en el editor."
@@ -15094,6 +15101,9 @@ msgstr "Eliminar Nodo(s)"
 
 msgid "Change type of node(s)"
 msgstr "Cambiar tipo de nodo(s)"
+
+msgid "Reparent to New Node"
+msgstr "Reasignar a Nuevo Nodo"
 
 msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
@@ -15731,7 +15741,7 @@ msgid "Cursor Clear Rotation"
 msgstr "Eliminar Rotación del Cursor"
 
 msgid "Paste Selects"
-msgstr "Pegar Seleccionados"
+msgstr "Pegar Selecciones"
 
 msgid "Cut Selection"
 msgstr "Cortar Selección"
@@ -15868,8 +15878,11 @@ msgstr "Graficando la malla en la estructura de aceleración %d/%d"
 msgid "Optimizing acceleration structure"
 msgstr "Optimizando la estructura de aceleración"
 
+msgid "Denoising %d%%"
+msgstr "Reducción de Ruido %d%%"
+
 msgid "Begin Bake"
-msgstr "Empezar a Bakear"
+msgstr "Iniciar Bake"
 
 msgid "Preparing shaders"
 msgstr "Preparando shaders"
@@ -17537,7 +17550,7 @@ msgid "Node B must be a PhysicsBody2D"
 msgstr "El nodo B debe ser un PhysicsBody2D"
 
 msgid "Joint is not connected to two PhysicsBody2Ds"
-msgstr "La unión no está conectada a dos PhysicsBody2D"
+msgstr "La articulación no está conectada a dos PhysicsBody2Ds"
 
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "El Nodo A y el Nodo B deben ser diferentes PhysicsBody2D"
@@ -18055,6 +18068,11 @@ msgid ""
 msgstr ""
 "La propiedad \"Remote Path\" debe apuntar a un Node3D valido o un Node3D "
 "derivado para que funcione."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"¡Nodo Skeleton3D no establecido! SkeletonModifier3D debe ser hijo de "
+"Skeleton3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este cuerpo será ignorado hasta que se establezca una malla."

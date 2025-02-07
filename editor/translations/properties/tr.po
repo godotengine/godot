@@ -95,12 +95,13 @@
 # Ufuk SARIALTIN <sarialtinufuk@gmail.com>, 2023.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2023.
 # Ahmet <ahmet2006ozbay@gmail.com>, 2023.
+# ulk <ulk.info@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-05 14:04+0000\n"
+"PO-Revision-Date: 2024-12-29 05:09+0000\n"
 "Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -109,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -4811,7 +4812,7 @@ msgid "Volume dB"
 msgstr "Ses Seviyesi dB"
 
 msgid "Pitch Scale"
-msgstr "Atım Ölçeği"
+msgstr "Perde Ölçeği"
 
 msgid "Playing"
 msgstr "Oynatılıyor"

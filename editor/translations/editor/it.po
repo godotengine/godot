@@ -106,13 +106,16 @@
 # Nicholas <nicholas.ricci.92@gmail.com>, 2024.
 # Samuel Mediani <medianisamuel@gmail.com>, 2024.
 # Daniele Basso <d.bass05@proton.me>, 2024.
+# Lorenzo Tilli <lorenzo.tilli@students.uniroma2.eu>, 2024.
+# norax Nnx <norax.noxx@gmail.com>, 2024.
+# ali elmoutaouakil <elmoutaouakil.ali08@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-09-03 22:09+0000\n"
-"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
+"PO-Revision-Date: 2024-12-28 01:45+0000\n"
+"Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -120,7 +123,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principale"
@@ -476,7 +479,7 @@ msgid "Show Hidden"
 msgstr "Mostra i file nascosti"
 
 msgid "Swap Input Direction"
-msgstr "Inverti la direzione d'ingresso"
+msgstr "Inverti la direzione di input"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Input %d non valido (assente) nell'espressione"
@@ -643,6 +646,9 @@ msgstr "Incolla le chiavi di un'animazione"
 
 msgid "Animation Delete Keys"
 msgstr "Elimina le chiavi di un'animazione"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Cambia la chiamata di un'animazione"
 
 msgid "Focus"
 msgstr "Focalizza"
@@ -1030,10 +1036,10 @@ msgid "Animation Scale Keys"
 msgstr "Scala chiavi d'animazione"
 
 msgid "Animation Set Start Offset"
-msgstr "Imposta Inizio Offset d'Animazione"
+msgstr "Imposta lo scostamento iniziale di in un'animazione"
 
 msgid "Animation Set End Offset"
-msgstr "Imposta Fine Offset d'Animazione"
+msgstr "Imposta lo scostamento finale di in un'animazione"
 
 msgid "Make Easing Keys"
 msgstr "Crea chiavi di easing"
@@ -1042,7 +1048,7 @@ msgid "Animation Add RESET Keys"
 msgstr "Aggiungi le chiavi RESET di un'animazione"
 
 msgid "Bake Animation as Linear Keys"
-msgstr "Preprocessa l'animazione come chiavi lineari"
+msgstr "Precalcola l'animazione come chiavi lineari"
 
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
@@ -1400,7 +1406,7 @@ msgid "Tabs"
 msgstr "Tabulazioni"
 
 msgid "Toggle Scripts Panel"
-msgstr "Commuta il pannello degli script"
+msgstr "Commuta pannello degli script"
 
 msgid "Zoom In"
 msgstr "Ingrandisci"
@@ -2321,7 +2327,7 @@ msgid "Save this Bus Layout to a file."
 msgstr "Salva questo layout dei bus in un file."
 
 msgid "Load Default"
-msgstr "Carica predefinita"
+msgstr "Carica predefinito"
 
 msgid "Load the default Bus Layout."
 msgstr "Carica il layout predefinito dei bus."
@@ -2903,22 +2909,22 @@ msgid ""
 "There is currently no description for this method. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Attualmente non esiste alcuna descrizione per questo metodo. Aiutaci "
-"[color=$color][url=$url]aggiungendone una[/url][/color]!"
+"Attualmente non esiste alcuna descrizione per questo metodo. Per favore "
+"aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid ""
 "There is currently no description for this constructor. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Attualmente non esiste alcuna descrizione per questo costruttore. Aiutaci "
-"[color=$color][url=$url]aggiungendone una[/url][/color]!"
+"Attualmente non esiste alcuna descrizione per questo costruttore. Per favore "
+"aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid ""
 "There is currently no description for this operator. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Attualmente non esiste alcuna descrizione per questo operatore. Aiutaci "
-"[color=$color][url=$url]aggiungendone una[/url][/color]!"
+"Attualmente non esiste alcuna descrizione per questo operatore. Per favore "
+"aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "Top"
 msgstr "In cima"
@@ -2945,7 +2951,7 @@ msgid ""
 "There is currently no description for this class. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Al momento non esiste alcune descrizione per questa classe. Per piacere "
+"Al momento non esiste alcune descrizione per questa classe. Per favore "
 "aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "Note:"
@@ -3001,8 +3007,8 @@ msgid ""
 "There is currently no description for this theme property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Attualmente non c'è alcuna descrizione per questa proprietà del tema. Aiutaci "
-"[color=$color][url=$url]aggiungendone una[/url][/color]!"
+"Attualmente non c'è alcuna descrizione per questa proprietà del tema. Per "
+"favore aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "This signal may be changed or removed in future versions."
 msgstr "Questo segnale potrebbe cambiare o essere rimosso in versioni future."
@@ -3014,7 +3020,7 @@ msgid ""
 "There is currently no description for this signal. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Attualmente non c'è alcuna descrizione per questo segnale. Aiutaci "
+"Attualmente non c'è alcuna descrizione per questo segnale. Per favore aiutaci "
 "[color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "Enumerations"
@@ -3037,7 +3043,7 @@ msgid ""
 "There is currently no description for this annotation. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Al momento non esiste alcune descrizione per quest'annotazoine. Per piacere "
+"Al momento non esiste alcune descrizione per quest'annotazoine. Per favore "
 "aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "Property Descriptions"
@@ -3064,8 +3070,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Al momento non esiste alcuna descrizione per questa proprietà. Aiutaci "
-"[color=$color][url=$url]aggiungendone una[/url][/color]!"
+"Al momento non esiste alcuna descrizione per questa proprietà. Per favore "
+"aiutaci [color=$color][url=$url]aggiungendone una[/url][/color]!"
 
 msgid "Editor"
 msgstr "Editor"
@@ -3131,7 +3137,7 @@ msgid "Annotation"
 msgstr "Annotazione"
 
 msgid "Search Help"
-msgstr "Cerca aiuto"
+msgstr "Cerca nella guida"
 
 msgid "Case Sensitive"
 msgstr "Distingui tra maiuscole e minuscole"
@@ -3372,7 +3378,7 @@ msgid "Filter Messages"
 msgstr "Filtra i messaggi"
 
 msgid "Clear Output"
-msgstr "Svuota uscita"
+msgstr "Svuota output"
 
 msgid "Copy Selection"
 msgstr "Copia selezione"
@@ -3387,7 +3393,7 @@ msgid "Focus Search/Filter Bar"
 msgstr "Seleziona la barra di ricerca/filtraggio"
 
 msgid "Toggle visibility of standard output messages."
-msgstr "Commuta la visibilità dei messaggi dall'uscita standard."
+msgstr "Commuta la visibilità dei messaggi dall'output standard."
 
 msgid "Toggle visibility of errors."
 msgstr "Commuta la visibilità degli errori."
@@ -4168,7 +4174,7 @@ msgid "History"
 msgstr "Cronologia"
 
 msgid "Output"
-msgstr "Ouput"
+msgstr "Output"
 
 msgid "Toggle Output Bottom Panel"
 msgstr "Commuta pannello inferiore dell'Output"
@@ -5935,7 +5941,7 @@ msgid ""
 "Hold %s to round to integers.\n"
 "Hold Shift for more precise changes."
 msgstr ""
-"Tenere premuto %s per arrotondare gli interi.\n"
+"Tenere premuto %s per arrotondare ai numeri interi.\n"
 "Tenere premuto Maiusc per cambiamenti più precisi."
 
 msgid "No notifications."
@@ -9865,7 +9871,7 @@ msgid "Could not save the new occluder at the specified path:"
 msgstr "Impossibile salvare il nuovo occlusore nel percorso specificato:"
 
 msgid "Bake Occluders"
-msgstr "Preprocessa gli occlusori"
+msgstr "Precalcola gli occlusori"
 
 msgid "Select occluder bake file:"
 msgstr "Selezionare il file di precalcolo degli occlusori:"
@@ -10685,7 +10691,7 @@ msgid "There are unsaved changes in the following built-in shaders(s):"
 msgstr "Ci sono dei cambiamenti non salvati nei seguenti shader integrati:"
 
 msgid "Shader Editor"
-msgstr "Editor degli shader"
+msgstr "Editor di shader"
 
 msgid "New Shader Include..."
 msgstr "Nuova inclusione di shader..."
@@ -10706,10 +10712,10 @@ msgid "Close File"
 msgstr "Chiudi file"
 
 msgid "Make the shader editor floating."
-msgstr "Rendi l'editor degli shader fluttuante."
+msgstr "Rendi l'editor di shader fluttuante."
 
 msgid "Toggle Shader Editor Bottom Panel"
-msgstr "Commuta pannello inferiore degli shader"
+msgstr "Commuta pannello inferiore dell'Editor di shader"
 
 msgid "No valid shader stages found."
 msgstr "Nessun fase di shader valida trovata."
@@ -11951,7 +11957,7 @@ msgid "Replace Tiles with Proxies"
 msgstr "Sostituisci i tasselli con i proxy"
 
 msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "Estrai livelli di TileMap come nodi TileMapLayer"
+msgstr "Estrai livelli del TileMap come nodi TileMapLayer"
 
 msgid "Can't edit multiple layers at once."
 msgstr "Non è possibile modificare più di un livello alla volta."
@@ -14582,6 +14588,9 @@ msgstr "Data dell'ultima modifica"
 msgid "Missing Project"
 msgstr "Progetto mancante"
 
+msgid "Missing Date"
+msgstr "Nessuna data"
+
 msgid "Restart Now"
 msgstr "Riavvia ora"
 
@@ -14603,7 +14612,7 @@ msgid "Network Mode"
 msgstr "Modalità di rete"
 
 msgid "Directory Naming Convention"
-msgstr "Convenzioni di nomenclatura delle cartelle"
+msgstr "Convenzione di nomenclatura delle cartelle"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -14918,7 +14927,7 @@ msgid "Instantiate Child Scene"
 msgstr "Istanzia una scena figlia"
 
 msgid "Detach Script"
-msgstr "Rimuovi uno script"
+msgstr "Rimuovi script"
 
 msgid "This operation can't be done on the tree root."
 msgstr "Questa operazione non può essere eseguita sulla radice dell'albero."
@@ -15096,6 +15105,9 @@ msgstr "Rimuovi un nodo(i)"
 
 msgid "Change type of node(s)"
 msgstr "Cambia il tipo di nodo(i)"
+
+msgid "Reparent to New Node"
+msgstr "Riaccoppia a nuovo nodo"
 
 msgid "This operation requires a single selected node."
 msgstr "Questa operazione richiede un solo nodo selezionato."
@@ -15410,7 +15422,7 @@ msgstr "Scelta errata dell'estensione."
 
 msgid "Note: Built-in shaders can't be edited using an external editor."
 msgstr ""
-"Nota: Gli script integrati non possono essere modificati attraverso un'editor "
+"Nota: Gli shader integrati non possono essere modificati attraverso un'editor "
 "esterno."
 
 msgid "Built-in shader (into scene file)."
@@ -15868,6 +15880,9 @@ msgstr "Pianificando i mesh nella struttura di accelerazione %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "Ottimizzando la struttura di accelerazione"
+
+msgid "Denoising %d%%"
+msgstr "Eliminazione del rumore %d %%"
 
 msgid "Begin Bake"
 msgstr "Iniziando il precalcolo"
@@ -17612,7 +17627,7 @@ msgstr ""
 "Per convertire una TileMap in una serie di nodi TileMapLayer, apri il "
 "pannello inferiore di TileMap con questo nodo selezionato, clicca sull'icona "
 "della casella degli strumenti nell'angolo in alto a destra, e scegli \"Estrai "
-"livelli di TileMap come nodi TileMapLayer\"."
+"livelli del TileMap come nodi TileMapLayer\"."
 
 msgid ""
 "A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
@@ -18068,6 +18083,11 @@ msgstr ""
 "La proprietà \"Remote Path\" deve puntare a un Node3D o a un nodo derivato da "
 "Node3D per funzionare."
 
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Nodo Skeleton3D non impostato! SkeletonModifier3D deve essere figlio di "
+"Skeleton3D."
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "Questo corpo verrà ignorato finché non imposterai una mesh."
 
@@ -18147,8 +18167,8 @@ msgid ""
 "No VoxelGI data set, so this node is disabled. Bake static objects to enable "
 "GI."
 msgstr ""
-"Niente dati per VoxelGI impostati, quindi questo nodo è disabilitato. "
-"Preprocessa oggetti statici per abilitare GI."
+"Niente dati per il VoxelGI impostati, quindi questo nodo è disabilitato. "
+"Precalcola gli oggetti statici per abilitare l'illuminazione globale."
 
 msgid ""
 "To have any visible effect, WorldEnvironment requires its \"Environment\" "

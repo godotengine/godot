@@ -65,7 +65,7 @@
 # Fabrice <fabricecipolla@gmail.com>, 2019.
 # Romain Paquet <titou.paquet@gmail.com>, 2019.
 # Xavier Sellier <contact@binogure-studio.com>, 2019.
-# Sofiane <Sofiane-77@caramail.fr>, 2019, 2021, 2022.
+# Sofiane <Sofiane-77@caramail.fr>, 2019, 2021, 2022, 2024.
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019, 2023.
 # Pierre Caye <pierrecaye@laposte.net>, 2020, 2021, 2022.
@@ -174,13 +174,19 @@
 # Unreal Vision <unrealvisionyt@gmail.com>, 2024.
 # Jokod <jb.jokod@gmail.com>, 2024.
 # didierGuieu <didier.guieu@hotmail.fr>, 2024.
+# The Kiwy <tttthekiwy@gmail.com>, 2024.
+# François de la Taste <canardbleu@gmail.com>, 2024.
+# Patou <75997617+xorblo-doitus@users.noreply.github.com>, 2024.
+# Florian Echelard <florian.echelard@gmail.com>, 2024.
+# paul-arg <paul.arguillere@gmail.com>, 2024, 2025.
+# Patrice Ferlet <metal3d@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-13 23:09+0000\n"
-"Last-Translator: #Guigui <guillaume.grosjean@outlook.fr>\n"
+"PO-Revision-Date: 2025-01-28 15:53+0000\n"
+"Last-Translator: Patrice Ferlet <metal3d@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -188,10 +194,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
-msgstr "Thread principal"
+msgstr "Fil principal"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -713,6 +719,9 @@ msgstr "Clés de collage d’animation"
 
 msgid "Animation Delete Keys"
 msgstr "Supprimer les clés d’animation"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Changer l’appel d'animation"
 
 msgid "Focus"
 msgstr "Focus"
@@ -5211,13 +5220,13 @@ msgid "Feature List:"
 msgstr "Liste des fonctionnalités :"
 
 msgid "Encryption"
-msgstr "Cryptage"
+msgstr "Chiffrement"
 
 msgid "Encrypt Exported PCK"
 msgstr "Encrypter le PCK exporté"
 
 msgid "Encrypt Index (File Names and Info)"
-msgstr "Encrypter l'index (noms de fichiers et infos)"
+msgstr "Chiffrer l'index (noms de fichiers et infos)"
 
 msgid ""
 "Filters to include files/folders\n"
@@ -5243,7 +5252,7 @@ msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
-"Note : La clé de cryptage doit être stocké dans le binaire,\n"
+"Note : La clé de chiffrement doit être stockée dans le binaire,\n"
 "vous devez compiler les modèles d'exportation depuis les sources."
 
 msgid "More Info..."
@@ -8578,7 +8587,7 @@ msgstr ""
 "l'éditeur lui-même."
 
 msgid "Customize Run Instances..."
-msgstr "Personnalise les instances d'exécution..."
+msgstr "Personnaliser les instances d'exécution..."
 
 msgid ""
 "Name: %s\n"
@@ -14496,7 +14505,7 @@ msgstr ""
 "godot\"."
 
 msgid "Valid project found at path."
-msgstr "Valider le projet trouvé au chemin."
+msgstr "Projet valide trouvé au chemin."
 
 msgid ""
 "Please choose a \"project.godot\", a directory with one, or a \".zip\" file."
@@ -14684,6 +14693,9 @@ msgstr "Date de dernière modification"
 
 msgid "Missing Project"
 msgstr "Projet manquant"
+
+msgid "Missing Date"
+msgstr "Date manquante"
 
 msgid "Restart Now"
 msgstr "Redémarrer maintenant"
@@ -14901,7 +14913,7 @@ msgid "Space-separated arguments, example: host player1 blue"
 msgstr "Arguments séparés par un espace, exemple : hôte joueur1 bleu"
 
 msgid "Comma-separated tags, example: demo, steam, event"
-msgstr "Des balises séparées par une virgule, exemple : démo, vapeur, événement"
+msgstr "Des balises séparées par une virgule, exemple : demo, steam, evenement"
 
 msgid "Instance Configuration"
 msgstr "Configuration des instances"
@@ -15197,6 +15209,9 @@ msgstr "Supprimer le(s) nœud(s)"
 
 msgid "Change type of node(s)"
 msgstr "Changer le type de nœud (s)"
+
+msgid "Reparent to New Node"
+msgstr "Reparenter à un nouveau nœud"
 
 msgid "This operation requires a single selected node."
 msgstr ""
@@ -15913,7 +15928,7 @@ msgid "Next Bar"
 msgstr "Barre suivante"
 
 msgid "Clip End"
-msgstr "Arrêter le clip"
+msgstr "Fin du clip"
 
 msgctxt "Transition Time Position"
 msgid "Same"
@@ -15949,7 +15964,7 @@ msgid "Same Position"
 msgstr "Même position"
 
 msgid "Clip Start"
-msgstr "Démarrer le clip"
+msgstr "Début du clip"
 
 msgid "Prev Position"
 msgstr "Position précédente"
@@ -15958,7 +15973,7 @@ msgid "Fade Mode:"
 msgstr "Mode fondu :"
 
 msgid "Fade Beats:"
-msgstr "Disparition de battements :"
+msgstr "Durée du fondu en battements :"
 
 msgid "Filler Clip:"
 msgstr "Clip de remplissage :"
@@ -15977,6 +15992,9 @@ msgstr "Tracer un maillage dans la structure d'accélération %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "Optimise la structure d'accélération"
+
+msgid "Denoising %d%%"
+msgstr "Suppression du bruit à %d%%"
 
 msgid "Begin Bake"
 msgstr "Commencer le précalcul"
@@ -18199,6 +18217,11 @@ msgid ""
 msgstr ""
 "La propriété \"Remote Path\" doit pointer vers un nœud 3D valide ou un nœud "
 "3D dérivé d'un nœud pour fonctionner."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Nœud Skeleton3D non défini ! SkeletonModifier3D doit être un enfant de "
+"Skeleton3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Ce corps sera ignoré jusqu'à ce que vous définissiez un maillage."

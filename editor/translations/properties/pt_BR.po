@@ -95,7 +95,7 @@
 # Felipe Jesus Macedo <fmacedo746@gmail.com>, 2020.
 # José Paulo <jose.paulo1919@gmail.com>, 2020.
 # Necco <necco@outlook.com>, 2020.
-# Marcelo Silveira Hayden <mshayden.1998@gmail.com>, 2020, 2021, 2022.
+# Marcelo Silveira Hayden <mshayden.1998@gmail.com>, 2020, 2021, 2022, 2024.
 # GUILHERME SOUZA REIS DE MELO LOPES <guilhermesrml@unipam.edu.br>, 2020.
 # Gabriela Araújo <Gabirin@outlook.com.br>, 2020.
 # Jairo Tuboi <tuboi.jairo@gmail.com>, 2020.
@@ -165,13 +165,16 @@
 # Davi Felipe <daviminion007@gmail.com>, 2024.
 # Bryan Alves Sindra Costa <bsindra98@gmail.com>, 2024.
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
+# Ruan Victor <ruanvictordossantoscorrea128@gmail.com>, 2024.
+# GSPAtens <g007sp@gmail.com>, 2024.
+# dweob <dweob@c0de.wtf>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2024-05-28 16:22+0000\n"
-"Last-Translator: Marcia Perez <cristianemarcia50@gmail.com>\n"
+"PO-Revision-Date: 2024-12-14 01:25+0000\n"
+"Last-Translator: dweob <dweob@c0de.wtf>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -179,7 +182,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.6-dev\n"
+"X-Generator: Weblate 5.9-rc\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -319,6 +322,9 @@ msgstr "Layout Padrão de Barramento"
 msgid "General"
 msgstr "Geral"
 
+msgid "Default Playback Type"
+msgstr "Tipo Padrão de Reprodução"
+
 msgid "Text to Speech"
 msgstr "Texto para Voz"
 
@@ -330,6 +336,9 @@ msgstr "Intensidade da Panorâmica 3D"
 
 msgid "iOS"
 msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Categoria da Sessão"
 
 msgid "Mix With Others"
 msgstr "Misturar com Outros"
@@ -360,6 +369,9 @@ msgstr "Aspecto"
 
 msgid "Scale"
 msgstr "Escala"
+
+msgid "Scale Mode"
+msgstr "Modo de Escalonamento"
 
 msgid "Debug"
 msgstr "Depuração"
@@ -421,6 +433,9 @@ msgstr "Forçar Direção de Layout Direita para Esquerda"
 msgid "Root Node Layout Direction"
 msgstr "Direção da Estrutura do Nó Raiz"
 
+msgid "Root Node Auto Translate"
+msgstr "Auto Traduzir Nó Raiz"
+
 msgid "GUI"
 msgstr "GUI (Interface Gráfica de Usuário)"
 
@@ -453,6 +468,9 @@ msgstr "Aparato de Renderização"
 
 msgid "V-Sync"
 msgstr "Sincronização Vertical (V-Sync)"
+
+msgid "Frame Queue Size"
+msgstr "Tamanho da Fila de Quadros"
 
 msgid "Staging Buffer"
 msgstr "Buffer de preparação"
@@ -751,6 +769,9 @@ msgstr "Limites"
 msgid "Message Queue"
 msgstr "Fila de mensagens"
 
+msgid "Max Steps"
+msgstr "Máximo de Passos"
+
 msgid "Network"
 msgstr "Rede"
 
@@ -1004,7 +1025,7 @@ msgid "Automatically Open Screenshots"
 msgstr "Abrir Capturas de Tela Automaticamente"
 
 msgid "Single Window Mode"
-msgstr "Modo de janela simples"
+msgstr "Modo de Janela Única"
 
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "Botões Extra do Mouse Navegam o Histórico"
@@ -1075,8 +1096,14 @@ msgstr "Modo de Seletor de Cores Padrão"
 msgid "Default Color Picker Shape"
 msgstr "Formato Padrão do Seletor de Cores"
 
+msgid "Follow System Theme"
+msgstr "Seguir Tema do Sistema"
+
 msgid "Preset"
 msgstr "Predefinição"
+
+msgid "Spacing Preset"
+msgstr "Predefinição de espaçamento"
 
 msgid "Base Color"
 msgstr "Cor Base"
@@ -1343,7 +1370,7 @@ msgid "Sort Members Outline Alphabetically"
 msgstr "Ordenar Prévia de Membros Automaticamente"
 
 msgid "Completion"
-msgstr "Conclusão"
+msgstr "Sugestões"
 
 msgid "Idle Parse Delay"
 msgstr "Atraso Ocioso Para Interpretação"
@@ -1709,7 +1736,7 @@ msgid "Background Color"
 msgstr "Cor de Fundo"
 
 msgid "Completion Background Color"
-msgstr "Cor de Fundo de Acabamento"
+msgstr "Cor de Fundo das Sugestões"
 
 msgid "Completion Selected Color"
 msgstr "Cor de Sugestão Selecionada"
@@ -1719,6 +1746,9 @@ msgstr "Cor de Sugestão Existente"
 
 msgid "Completion Scroll Color"
 msgstr "Cor da Barra de Rolagem de Sugestão"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Cor da Barra de Rolagem de Sugestão ao pairar"
 
 msgid "Completion Font Color"
 msgstr "Cor da Fonte de Sugestão"
@@ -5018,6 +5048,9 @@ msgstr "Comportamento de saturação de texto"
 
 msgid "Symbol Lookup on Click"
 msgstr "Pesquisa de símbolo ao clicar"
+
+msgid "Code Completion"
+msgstr "Sugestão de Código"
 
 msgid "Indentation"
 msgstr "Recuo"

@@ -41,7 +41,7 @@
 # Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
 # Muhammad Zainal Abidin <eviepk12@gmail.com>, 2022.
-# adfriz <aditiyaafrizal2@gmail.com>, 2023.
+# adfriz <aditiyaafrizal2@gmail.com>, 2023, 2024.
 # Taufiq Rahman <pxpiksy@gmail.com>, 2023.
 # Muhammad Azri Fatihah Susanto <muhammad.azri.f.s@gmail.com>, 2023.
 # ammar sajili <sjlammar@gmail.com>, 2023.
@@ -64,13 +64,14 @@
 # "@andiDermawan" <andidermawan2004@gmail.com>, 2024.
 # Bintang AP <prep77070@gmail.com>, 2024.
 # "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
+# meghundul <meghundul@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-28 12:59+0000\n"
-"Last-Translator: \"Achmad Izzuddin (Adin)\" <achmadizzuddin999@gmail.com>\n"
+"PO-Revision-Date: 2025-01-23 17:31+0000\n"
+"Last-Translator: meghundul <meghundul@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
@@ -96,7 +97,7 @@ msgid "Right Mouse Button"
 msgstr "Tombol kanan Mouse"
 
 msgid "Middle Mouse Button"
-msgstr "Tombol Tengah mouse"
+msgstr "Tombol Tengah Mouse"
 
 msgid "Mouse Wheel Up"
 msgstr "Gulir Mouse ke atas"
@@ -593,6 +594,9 @@ msgstr "Pindah Titik-titik Bezier"
 
 msgid "Animation Duplicate Keys"
 msgstr "Kunci Duplikat Animasi"
+
+msgid "Animation Paste Keys"
+msgstr "Tempel Kunci Animasi"
 
 msgid "Animation Delete Keys"
 msgstr "Kunci Hapus Animasi"
@@ -1117,6 +1121,9 @@ msgstr "Pergi ke Langkah Sebelumnya"
 msgid "Apply Reset"
 msgstr "Terapkan Reset"
 
+msgid "Bake Animation..."
+msgstr "Kemas Animasi..."
+
 msgid "Optimize Animation (no undo)..."
 msgstr "Optimalkan Animasi (tanpa undo)..."
 
@@ -1484,7 +1491,7 @@ msgid "Copy Name"
 msgstr "Salin Nama"
 
 msgid "Edit..."
-msgstr "Edit..."
+msgstr "Sunting..."
 
 msgid "Go to Method"
 msgstr "Menuju Ke Metode"
@@ -1636,6 +1643,9 @@ msgstr ""
 "termasuk fungsi yang dipanggil.\n"
 "Gunakan ini untuk menemukan fungsi individual untuk optimalisasi."
 
+msgid "Display internal functions"
+msgstr "Menampilkan fungsi internal"
+
 msgid "Frame #:"
 msgstr "Bingkai #:"
 
@@ -1665,6 +1675,9 @@ msgstr "Eksekusi dilanjutkan."
 
 msgid "Bytes:"
 msgstr "Bytes:"
+
+msgid "Warning:"
+msgstr "Peringatan:"
 
 msgid "Error:"
 msgstr "Error:"
@@ -1751,7 +1764,7 @@ msgid "Collapse All"
 msgstr "Lipat Semua"
 
 msgid "Profiler"
-msgstr "Profiler"
+msgstr "Pembuat profil"
 
 msgid "Visual Profiler"
 msgstr "Profiler Visual"
@@ -2058,6 +2071,9 @@ msgstr "Berkas ini gagal mengekstrak dari aset \"%s\":"
 msgid "(and %s more files)"
 msgstr "(dan %s berkas lebih banyak)"
 
+msgid "Asset \"%s\" installed successfully!"
+msgstr "Aset \"%s\" berhasil di install!"
+
 msgid "Success!"
 msgstr "Sukses!"
 
@@ -2225,6 +2241,12 @@ msgstr "Buat Layout Bus Baru."
 msgid "Audio Bus Layout"
 msgstr "Tata Letak Bus Audio"
 
+msgid "Valid characters:"
+msgstr "Karakter yang valid:"
+
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Kata kunci tidak dapat digunakan sebagai nama Muat Otomatis."
+
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' telah ada!"
 
@@ -2385,8 +2407,14 @@ msgstr "Fitur Umum:"
 msgid "Text Rendering and Font Options:"
 msgstr "Opsi Perenderan Teks dan Jenis Huruf:"
 
+msgid "Reset the edited profile?"
+msgstr "Setel ulang profil yang telah diedit?"
+
 msgid "File saving failed."
 msgstr "Penyimpanan file gagal."
+
+msgid "Create a new profile?"
+msgstr "Buat profil baru?"
 
 msgid "Nodes and Classes:"
 msgstr "Node dan Kelas:"
@@ -6930,6 +6958,13 @@ msgstr "Buat Node"
 msgid "Change Default Type"
 msgstr "Ubah Tipe Baku"
 
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Semua CanvasItem yang dipilih tidak terlihat atau terkunci dalam beberapa "
+"cara dan tidak dapat diubah."
+
 msgid "Set Target Position"
 msgstr "Tetapkan Posisi Target"
 
@@ -7222,6 +7257,15 @@ msgstr "Navigasi Terlihat"
 
 msgid "Visible Avoidance"
 msgstr "Penghindaran Terlihat"
+
+msgid ""
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
+msgstr ""
+"Ketika opsi ini diaktifkan, sumber daya kurva yang digunakan oleh node path "
+"akan terlihat pada proyek yang sedang berjalan.\n"
+"Ini berguna untuk memecahkan masalah pada mode prosesor rendah."
 
 msgid "Synchronize Scene Changes"
 msgstr "Sinkronkan Perubahan Skena"
@@ -8760,8 +8804,8 @@ msgid ""
 "Cannot run the script because it's not a tool script (add the @tool "
 "annotation at the top)."
 msgstr ""
-"Tidak bisa menjalankan skrip karena itu bukan alat skrip (tambahkan @tool "
-"anotasi di bagian atas)"
+"Tidak bisa menjalankan skrip karena itu bukan skrip tool (tambahkan @tool "
+"anotasi di bagian atas)."
 
 msgid "Cannot run the script because it's not a tool script."
 msgstr "Tidak bisa menjalankan skrip karena itu bukan sebuah alat skrip."
@@ -11843,8 +11887,42 @@ msgstr "Konstanta tidak dapat dimodifikasi."
 msgid "Invalid argument name."
 msgstr "Nama argumen tidak valid."
 
+msgid "Unmatched endif."
+msgstr "Endif tidak sesuai."
+
+msgid "Invalid endif."
+msgstr "Endif tidak sah."
+
+msgid "Invalid ifdef."
+msgstr "Ifdef tidak sah."
+
+msgid "Invalid ifndef."
+msgstr "Ifndef tidak sah."
+
+msgid "Shader include file does not exist:"
+msgstr "File shader tidak ada."
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Memuat shader gagal. Apakah menyematkan shader ada? Apakah ada ketergantungan "
+"siklus?"
+
+msgid "Shader include resource type is wrong."
+msgstr "Jenis shader termasuk sumber salah."
+
+msgid "Cyclic include found"
+msgstr "Siklus muat ditemukan"
+
+msgid "Shader max include depth exceeded."
+msgstr "Maksimum shader termasuk kedalaman terlampaui."
+
 msgid "Invalid undef."
 msgstr "Tidak valid."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Ekspansi macro melebihi batas."
 
 msgid "Invalid macro argument list."
 msgstr "Daftar Argumen Macro Tidak Valid."

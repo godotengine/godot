@@ -13,13 +13,14 @@
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
 # Andrejs <ledaviskylv@gmail.com>, 2023.
 # Peter Lauris <peterlauris@gmail.com>, 2023.
+# GGLVXD <85647114+GGLVXD@users.noreply.github.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-11-16 07:52+0000\n"
-"Last-Translator: Peter Lauris <peterlauris@gmail.com>\n"
+"PO-Revision-Date: 2024-10-17 12:15+0000\n"
+"Last-Translator: GGLVXD <85647114+GGLVXD@users.noreply.github.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.8-rc\n"
 
 msgid "Main Thread"
 msgstr "Galvenais Pavediens"
@@ -75,8 +76,59 @@ msgstr "Dubultklikšķis"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Peles kustība pozīcijā (%s) ar ātrumu (%s)"
 
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Kreisā svira X-Axis, Kursorsvira 0 X-Axis"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Kreisā sviras Y-ass, kursorsviras 0 Y-ass"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Labā svira X-Axis, Kursorsvira 1 X-Axis"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Labā sviras Y-ass, kursorsviras 1 Y-ass"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Kursorsvira 2 X-Axis, kreisais trigeris, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Kursorsvira 2 Y-ass, labais trigeris, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Kursorsvira 3 X-Axis"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Kursorsvira 3 Y-ass"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Kursorsvira 4 X-Axis"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Kursorsvira 4 Y-ass"
+
+msgid "Unknown Joypad Axis"
+msgstr "Nezināma Joypad ass"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypad kustība uz ass %d (%s) ar vērtību %.2f"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Rokasgrāmata, Sony PS, Xbox Home"
+
 msgid "Start, Xbox Menu, Nintendo +"
 msgstr "Sākums, Xbox Izvēlne, Nintendo +"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Right Stick, Sony R3, Xbox R/RS"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Labais plecs, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad uz augšu"
+
+msgid "D-pad Down"
+msgstr "D-pad uz leju"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Dalīties, PS5 Mikrofons, Nintendo Notvert"

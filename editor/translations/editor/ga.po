@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-08-14 12:59+0000\n"
+"PO-Revision-Date: 2024-09-18 19:41+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.8-dev\n"
 
 msgid "Main Thread"
 msgstr "Príomhshnáithe"
@@ -540,6 +540,9 @@ msgstr "Eochracha Greamaigh Beochana"
 
 msgid "Animation Delete Keys"
 msgstr "Scrios Eochracha Beochana"
+
+msgid "Animation Bezier Curve Change Call"
+msgstr "Glao Athraithe Cuar Beochan Bezier"
 
 msgid "Focus"
 msgstr "Fócas"
@@ -14478,6 +14481,9 @@ msgstr "Stampa ama is déanaí curtha in eagar"
 msgid "Missing Project"
 msgstr "Tionscadal ar Iarraidh"
 
+msgid "Missing Date"
+msgstr "Dáta ar Iarraidh"
+
 msgid "Restart Now"
 msgstr "Atosaigh Anois"
 
@@ -14996,6 +15002,9 @@ msgstr "Bain Nód(anna)"
 
 msgid "Change type of node(s)"
 msgstr "Athraigh cineál nód(anna)"
+
+msgid "Reparent to New Node"
+msgstr "Tuismitheoir ar ais chuig Nód Nua"
 
 msgid "This operation requires a single selected node."
 msgstr "Tá nód roghnaithe amháin de dhíth ar an oibríocht seo."
@@ -15761,6 +15770,9 @@ msgstr "Mogalra á bhreacadh i struchtúr luasghéaraithe %d/%d"
 
 msgid "Optimizing acceleration structure"
 msgstr "Struchtúr luasghéaraithe a bharrfheabhsú"
+
+msgid "Denoising %d%%"
+msgstr "%d%% á shéanadh"
 
 msgid "Begin Bake"
 msgstr "Tosaigh Bácáil"
@@ -17910,6 +17922,11 @@ msgid ""
 msgstr ""
 "Ní mór don mhaoin \"Conair Chianda\" nód bailí Node3D nó Node3D-díorthaithe a "
 "chur in iúl chun oibriú."
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Nód creatlach3D gan a bheith socraithe! Ní mór do Chnámharlach Modifier3D a "
+"bheith ina leanbh de Chnámharlach3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Déanfar neamhaird den chorp seo go dtí go socraíonn tú mogalra."

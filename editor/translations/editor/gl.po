@@ -14,19 +14,21 @@
 # ninjum <ninhum@gmx.com>, 2024.
 # spukes <soyceltista@hotmail.com>, 2024.
 # "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
+# Guachipoto <guachipoto993@gmail.com>, 2024.
+# "Miguel A. Bouzada" <mbouzada@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-09-05 14:09+0000\n"
-"Last-Translator: \"Aquiles T. M.\" <aquiles.sonido@gmail.com>\n"
+"PO-Revision-Date: 2025-02-06 23:02+0000\n"
+"Last-Translator: \"Miguel A. Bouzada\" <mbouzada@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Fío principal"
@@ -38,49 +40,49 @@ msgid "Physical"
 msgstr "Físico"
 
 msgid "Left Mouse Button"
-msgstr "Botón Esquerdo do Rato"
+msgstr "Botón esquerdo do rato"
 
 msgid "Right Mouse Button"
-msgstr "Botón Dereito do Rato"
+msgstr "Botón dereito do rato"
 
 msgid "Middle Mouse Button"
-msgstr "Botón Central do Rato"
+msgstr "Botón central do rato"
 
 msgid "Mouse Wheel Up"
-msgstr "Roda do Rato Cara Arriba"
+msgstr "Roda do rato cara arriba"
 
 msgid "Mouse Wheel Down"
-msgstr "Roda do Rato Cara Abaixo"
+msgstr "Roda do rato cara abaixo"
 
 msgid "Mouse Wheel Left"
-msgstr "Roda do Rato Cara a Esquerda"
+msgstr "Roda do rato cara a esquerda"
 
 msgid "Mouse Wheel Right"
-msgstr "Roda do Rato Cara a Dereita"
+msgstr "Roda do rato cara a dereita"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Botón do Rato Polgar 1"
+msgstr "Botón de Polgar do Rato 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Botón do Rato Polgar 2"
+msgstr "Botón de Polgar do Rato 2"
 
 msgid "Button"
 msgstr "Botón"
 
 msgid "Double Click"
-msgstr "Dobre clic"
+msgstr "Duplo Clic"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Movemento do rato na posición (%s) con velocidade (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
-msgstr "Eixe X da Panca Esquerda, Eixe X do Joystick 0"
+msgstr "Eixo X da Panca Esquerda, Eixo X do Joystick 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
-msgstr "Eixe Y da Panca Esquerda, Eixe Y do Joystick 0"
+msgstr "Eixo Y da Panca Esquerda, Eixo Y do Joystick 0"
 
 msgid "Right Stick X-Axis, Joystick 1 X-Axis"
-msgstr "Eixe X da Panca Dereita, Eixe X do Joystick 1"
+msgstr "Eixo X da Panca Dereita, Eixo X do Joystick 1"
 
 msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
 msgstr "Eixe Y da Panca Dereita, Eixe Y do Joystick 1"
