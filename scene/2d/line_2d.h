@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+
 #ifndef LINE_2D_H
 #define LINE_2D_H
 
@@ -36,7 +37,6 @@ class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);
 
 public:
-	// Enums for joint, cap and texture modes.
 	enum LineJointMode {
 		LINE_JOINT_SHARP = 0,
 		LINE_JOINT_BEVEL,
@@ -63,7 +63,6 @@ public:
 
 	Line2D();
 
-	// Point manipulation
 	void set_points(const Vector<Vector2> &p_points);
 	Vector<Vector2> get_points() const;
 
@@ -77,18 +76,15 @@ public:
 	void add_point(Vector2 pos, int atpos = -1);
 	void remove_point(int i);
 
-	// Closed polyline?
 	void set_closed(bool p_closed);
 	bool is_closed() const;
 
-	// Width and curves
 	void set_width(float width);
 	float get_width() const;
 
 	void set_curve(const Ref<Curve> &curve);
 	Ref<Curve> get_curve() const;
 
-	// Colors, gradients and textures
 	void set_default_color(Color color);
 	Color get_default_color() const;
 
@@ -101,7 +97,6 @@ public:
 	void set_texture_mode(const LineTextureMode mode);
 	LineTextureMode get_texture_mode() const;
 
-	// Joint and cap modes
 	void set_joint_mode(LineJointMode mode);
 	LineJointMode get_joint_mode() const;
 
@@ -111,7 +106,6 @@ public:
 	void set_end_cap_mode(LineCapMode mode);
 	LineCapMode get_end_cap_mode() const;
 
-	// Border options
 	void set_sharp_limit(float limit);
 	float get_sharp_limit() const;
 
@@ -121,17 +115,13 @@ public:
 	void set_antialiased(bool p_antialiased);
 	bool get_antialiased() const;
 
-	// --- New dashed/dotted line properties ---
-
-	/// If true the line will be drawn in a dashed/dotted pattern.
+	/* --- New dashed/dotted line properties --- */
 	void set_dashed(bool p_dashed);
 	bool is_dashed() const;
 
-	/// The length (in pixels) of each dash segment.
 	void set_dash_length(float p_length);
 	float get_dash_length() const;
 
-	/// The gap (in pixels) between dashes.
 	void set_gap_length(float p_gap);
 	float get_gap_length() const;
 
@@ -145,8 +135,8 @@ private:
 	void _gradient_changed();
 	void _curve_changed();
 
-	// Helper for dashed-line processing: given the full polyline, split it into dash segments.
-	Vector<Vector<Vector2>> _compute_dashed_segments(const Vector<Vector2>& points, bool closed, float dash_length, float gap_length) const;
+	/* Helper to compute dashed segments from the polyline */
+	Vector<Vector<Vector2>> _compute_dashed_segments(const Vector<Vector2> &points, bool closed, float dash_length, float gap_length) const;
 
 private:
 	Vector<Vector2> _points;
@@ -164,10 +154,10 @@ private:
 	int _round_precision = 8;
 	bool _antialiased = false;
 
-	// New dashed/dotted line properties:
+	/* New dashed/dotted properties */
 	bool _dashed = false;
-	float _dash_length = 10.0f;
-	float _gap_length = 5.0f;
+	float _dash_length = 10.0;
+	float _gap_length = 5.0;
 };
 
 VARIANT_ENUM_CAST(Line2D::LineJointMode)
