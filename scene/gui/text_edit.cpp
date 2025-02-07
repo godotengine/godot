@@ -1674,6 +1674,7 @@ void TextEdit::_notification(int p_what) {
 			selection_drag_attempt = false;
 			drag_action = false;
 			drag_caret_force_displayed = false;
+			dragging_selection = false;
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT_SELF: {
@@ -3112,6 +3113,14 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (dragging_selection) {
+		return get_default_cursor_shape();
+	}
+
+	if (dragging_minimap) {
+		return CURSOR_ARROW;
+	}
+
 	Vector2i current_hovered_gutter = _get_hovered_gutter(p_pos);
 	if (current_hovered_gutter != Vector2i(-1, -1)) {
 		if (gutters[current_hovered_gutter.x].clickable || is_line_gutter_clickable(current_hovered_gutter.y, current_hovered_gutter.x)) {

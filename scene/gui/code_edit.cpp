@@ -660,6 +660,10 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_POINTING_HAND;
 	}
 
+	if (is_dragging_cursor()) {
+		return TextEdit::get_cursor_shape(p_pos);
+	}
+
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (!is_editable() && (!is_selecting_enabled() || get_line_count() == 0))) {
 		return CURSOR_ARROW;
 	}
