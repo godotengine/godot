@@ -600,7 +600,7 @@ extern "C" {
 	#endif
 #endif
 
-#if !defined(UFBX_STANDARD_C) && !defined(UFBX_NO_SSE) && (defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)) || ((defined(__GNUC__) || defined(__clang__)) && defined(__x86_64__)) || defined(UFBX_USE_SSE)
+#if defined(UFBX_USE_SSE) || (!defined(UFBX_STANDARD_C) && !defined(UFBX_NO_SSE) && ((defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)) || ((defined(__GNUC__) || defined(__clang__)) && defined(__x86_64__))))
 	#define UFBXI_HAS_SSE 1
 	#include <xmmintrin.h>
 	#include <emmintrin.h>
@@ -830,7 +830,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 15, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 17, 1)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -968,7 +968,7 @@ ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEAD
 	#define ufbxi_regression_assert(cond) (void)0
 #endif
 
-#if defined(UFBX_REGRESSION) || defined(UFBX_DEV)
+#if defined(UFBX_REGRESSION) || defined(UFBX_DEV) || defined(UFBX_UBSAN)
 	#define ufbxi_dev_assert(cond) ufbx_assert(cond)
 #else
 	#define ufbxi_dev_assert(cond) (void)0
@@ -1400,7 +1400,7 @@ static ufbxi_noinline void ufbxi_bigint_shift_left(ufbxi_bigint *bigint, uint32_
 	bigint->length += words + (b.limbs[b.length - 1] >> 1 >> bits_down != 0 ? 1 : 0);
 	b.limbs[b.length] = 0;
 	if (b.length <= 3 && words <= 3) {
-		ufbxi_bigint_limb l0 = ufbxi_maybe_uninit(b.length >= 0, b.limbs[0], ~0u);
+		ufbxi_bigint_limb l0 = b.limbs[0];
 		ufbxi_bigint_limb l1 = ufbxi_maybe_uninit(b.length >= 1, b.limbs[1], ~0u);
 		ufbxi_bigint_limb l2 = ufbxi_maybe_uninit(b.length >= 2, b.limbs[2], ~0u);
 		b.limbs[0] = 0;
@@ -1491,6 +1491,7 @@ static ufbxi_noinline double ufbxi_parse_double(const char *str, size_t max_leng
 				digits = digits * 10 + (uint64_t)(c - '0');
 				num_digits++;
 				if (num_digits >= 18) {
+					ufbxi_dev_assert(num_digits < ufbxi_arraycount(ufbxi_pow5_tab));
 					ufbxi_bigint_mad(&big_mantissa, ufbxi_pow5_tab[num_digits] << num_digits, digits);
 					digits = 0;
 					num_digits = 0;
@@ -1553,6 +1554,7 @@ static ufbxi_noinline double ufbxi_parse_double(const char *str, size_t max_leng
 		big_mantissa.length = (digits >> 32u) ? 2 : digits ? 1 : 0;
 		if (big_mantissa.length == 0) return negative ? -0.0 : 0.0;
 	} else {
+		ufbxi_dev_assert(num_digits < ufbxi_arraycount(ufbxi_pow5_tab));
 		ufbxi_bigint_mad(&big_mantissa, ufbxi_pow5_tab[num_digits] << num_digits, digits);
 	}
 
@@ -6438,6 +6440,8 @@ typedef struct {
 	bool parse_threaded;
 	ufbxi_thread_pool thread_pool;
 
+	uint8_t *base64_table;
+
 } ufbxi_context;
 
 static ufbxi_noinline int ufbxi_fail_imp(ufbxi_context *uc, const char *cond, const char *func, uint32_t line)
@@ -10009,6 +10013,66 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_ascii_read_float_array(ufbxi_con
 	return 1;
 }
 
+ufbxi_noinline static int ufbxi_setup_base64(ufbxi_context *uc)
+{
+	uint8_t *table = ufbxi_push(&uc->tmp, uint8_t, 256);
+	ufbxi_check(table);
+	uc->base64_table = table;
+
+	memset(table, 0x80, 256);
+	ufbxi_nounroll for (char c = 'A'; c <= 'Z'; c++) table[(size_t)c] = (uint8_t)(c - 'A');
+	ufbxi_nounroll for (char c = 'a'; c <= 'z'; c++) table[(size_t)c] = (uint8_t)(26 + (c - 'a'));
+	ufbxi_nounroll for (char c = '0'; c <= '9'; c++) table[(size_t)c] = (uint8_t)(52 + (c - '0'));
+	table[(size_t)'+'] = 62;
+	table[(size_t)'/'] = 63;
+	table[(size_t)'='] = 0x40;
+
+	return 1;
+}
+
+ufbxi_noinline static int ufbxi_decode_base64(ufbxi_context *uc, ufbx_string *p_result, const char *src, size_t src_length, bool *p_failed)
+{
+	if (!uc->base64_table) ufbxi_check(ufbxi_setup_base64(uc));
+
+	uint8_t *table = uc->base64_table;
+	uint32_t error_mask = 0, pad_error = 0;
+
+	char *p = (char*)p_result->data;
+	for (size_t i = 0; i + 4 <= src_length; i += 4) {
+		uint32_t a = table[(size_t)(uint8_t)src[i + 0]];
+		uint32_t b = table[(size_t)(uint8_t)src[i + 1]];
+		uint32_t c = table[(size_t)(uint8_t)src[i + 2]];
+		uint32_t d = table[(size_t)(uint8_t)src[i + 3]];
+		pad_error = error_mask;
+		error_mask |= a | b | c | d;
+
+		p[0] = (char)(uint8_t)(a << 2 | b >> 4);
+		p[1] = (char)(uint8_t)(b << 4 | c >> 2);
+		p[2] = (char)(uint8_t)(c << 6 | d);
+		p += 3;
+	}
+
+	if (src_length >= 4) {
+		const char *end = src + src_length - 4;
+		uint32_t padding = 0;
+		padding |= end[0] == '=' ? 0x8 : 0x0;
+		padding |= end[1] == '=' ? 0x4 : 0x0;
+		padding |= end[2] == '=' ? 0x2 : 0x0;
+		padding |= end[3] == '=' ? 0x1 : 0x0;
+		if (padding <= 0x1) p -= padding; // "xxx=" or "xxxx"
+		else if (padding == 0x3) p -= 2;  // "xx=="
+		else pad_error |= 0x40;           // anything else
+	}
+
+	if (((error_mask & 0x80) != 0 || (pad_error & 0x40) != 0 || src_length % 4 != 0) && !*p_failed) {
+		ufbxi_check(ufbxi_warnf(UFBX_WARNING_BAD_BASE64_CONTENT, "Ignored bad base64 embedded content"));
+		*p_failed = true;
+	}
+
+	p_result->length = ufbxi_to_size(p - p_result->data);
+	return 1;
+}
+
 // Recursion limited by check at the start
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_parse_node(ufbxi_context *uc, uint32_t depth, ufbxi_parse_state parent_state, bool *p_end, ufbxi_buf *tmp_buf, bool recursive)
 	ufbxi_recursive_function(int, ufbxi_ascii_parse_node, (uc, depth, parent_state, p_end, tmp_buf, recursive), UFBXI_MAX_NODE_DEPTH + 1,
@@ -10054,6 +10118,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_parse_node(ufbxi_context *
 	int arr_type = 0;
 	ufbxi_buf *arr_buf = NULL;
 	size_t arr_elem_size = 0;
+	bool arr_error = false;
 
 	// Check if the values of the node we're parsing currently should be
 	// treated as an array.
@@ -10134,13 +10199,16 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_parse_node(ufbxi_context *
 					bool raw = arr_type == 's';
 					ufbx_string *v = ufbxi_push(&uc->tmp_stack, ufbx_string, 1);
 					ufbxi_check(v);
-					v->data = tok->str_data;
-					v->length = tok->str_len;
 					if (arr_type == 'C') {
 						ufbxi_buf *buf = uc->opts.retain_dom ? &uc->result : tmp_buf;
-						v->data = ufbxi_push_copy(buf, char, v->length, v->data);
+						size_t capacity = tok->str_len / 4 * 3 + 3;
+						v->data = ufbxi_push(buf, char, capacity);
 						ufbxi_check(v->data);
+						ufbxi_check(ufbxi_decode_base64(uc, v, tok->str_data, tok->str_len, &arr_error));
+						ufbx_assert(v->length <= capacity);
 					} else {
+						v->data = tok->str_data;
+						v->length = tok->str_len;
 						ufbxi_check(ufbxi_push_string_place_str(&uc->string_pool, v, raw));
 					}
 				} else {
@@ -10324,6 +10392,10 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_parse_node(ufbxi_context *
 				if (num_values > 0) {
 					ufbxi_pop_size(&uc->tmp_stack, arr_elem_size, num_values, arr_data, false);
 				}
+			} else if (arr_error) {
+				ufbxi_pop_size(&uc->tmp_stack, arr_elem_size, num_values, NULL, false);
+				num_values = 0;
+				arr_data = (void*)ufbxi_zero_size_buffer;
 			} else {
 				arr_data = ufbxi_push_pop_size(arr_buf, &uc->tmp_stack, arr_elem_size, num_values);
 			}
@@ -11454,28 +11526,6 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_load_maps(ufbxi_context *uc)
 
 // -- Reading the parsed data
 
-ufbxi_noinline static void ufbxi_decode_base64(char *dst, const char *src, size_t src_length)
-{
-	uint8_t table[256] = { 0 };
-	for (char c = 'A'; c <= 'Z'; c++) table[(size_t)c] = (uint8_t)(c - 'A');
-	for (char c = 'a'; c <= 'z'; c++) table[(size_t)c] = (uint8_t)(26 + (c - 'a'));
-	for (char c = '0'; c <= '9'; c++) table[(size_t)c] = (uint8_t)(52 + (c - '0'));
-	table[(size_t)'+'] = 62;
-	table[(size_t)'/'] = 63;
-
-	for (size_t i = 0; i + 4 <= src_length; i += 4) {
-		uint32_t a = table[(size_t)(uint8_t)src[i + 0]];
-		uint32_t b = table[(size_t)(uint8_t)src[i + 1]];
-		uint32_t c = table[(size_t)(uint8_t)src[i + 2]];
-		uint32_t d = table[(size_t)(uint8_t)src[i + 3]];
-
-		dst[0] = (char)(uint8_t)(a << 2 | b >> 4);
-		dst[1] = (char)(uint8_t)(b << 4 | c >> 2);
-		dst[2] = (char)(uint8_t)(c << 6 | d);
-		dst += 3;
-	}
-}
-
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_embedded_blob(ufbxi_context *uc, ufbx_blob *dst_blob, ufbxi_node *node)
 {
 	if (!node) return 1;
@@ -11485,15 +11535,15 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_embedded_blob(ufbxi_context
 		ufbx_string content;
 		size_t num_parts = content_arr->size;
 		ufbx_string *parts = (ufbx_string*)content_arr->data;
-		if (num_parts == 1) {
+
+		if (num_parts == 1 && !uc->from_ascii) {
 			content = parts[0];
 		} else {
 			size_t total_size = 0;
 			ufbxi_for(ufbx_string, part, parts, num_parts) {
 				total_size += part->length;
 			}
-			ufbxi_buf *dst_buf = uc->from_ascii ? &uc->tmp_parse : &uc->result;
-			char *dst = ufbxi_push(dst_buf, char, total_size);
+			char *dst = ufbxi_push(&uc->result, char, total_size);
 			ufbxi_check(dst);
 			content.data = dst;
 			content.length = total_size;
@@ -11503,23 +11553,8 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_embedded_blob(ufbxi_context
 			}
 		}
 
-		if (uc->from_ascii) {
-			if (content.length % 4 == 0) {
-				size_t padding = 0;
-				while (padding < 2 && padding < content.length && content.data[content.length - 1 - padding] == '=') {
-					padding++;
-				}
-
-				dst_blob->size = content.length / 4 * 3 - padding;
-				dst_blob->data = ufbxi_push(&uc->result, char, dst_blob->size + 3);
-				ufbxi_check(dst_blob->data);
-
-				ufbxi_decode_base64((char*)dst_blob->data, content.data, content.length);
-			}
-		} else {
-			dst_blob->data = content.data;
-			dst_blob->size = content.length;
-		}
+		dst_blob->data = content.data;
+		dst_blob->size = content.length;
 	}
 
 	return 1;
