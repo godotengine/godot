@@ -927,6 +927,8 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 								int channels = ad->audio_input.channels;
 								for (int ch = 0; ch < channels - 1; ch++) {
 									int32_t sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + ch);
+									// Consider all odd channel indices to be right channels,
+									// and all even channel indices to be left channels.
 									if (ch % 2 == 0) {
 										rtemp += sample;
 									} else {
