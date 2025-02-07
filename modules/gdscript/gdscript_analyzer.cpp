@@ -31,6 +31,7 @@
 #include "gdscript_analyzer.h"
 
 #include "gdscript.h"
+#include "gdscript_annotation.h"
 #include "gdscript_utility_callable.h"
 #include "gdscript_utility_functions.h"
 
@@ -619,9 +620,11 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 	p_class->set_datatype(class_type);
 
 	// Apply annotations.
-	for (GDScriptParser::AnnotationNode *&E : p_class->annotations) {
-		resolve_annotation(E);
-		E->apply(parser, p_class, p_class->outer);
+	Array annotations = resolve_and_apply_annotations(p_class, p_class->outer);
+	if (p_class->get_global_name()) {
+		parser->member_annotations.push_back(Pair(p_class->identifier->name, annotations));
+	} else {
+		parser->class_annotations = annotations;
 	}
 
 	parser->current_class = previous_class;
@@ -1033,9 +1036,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 		if (member_node && member_node->type != GDScriptParser::Node::ANNOTATION) {
 			// Apply @warning_ignore annotations before resolving member.
 			for (GDScriptParser::AnnotationNode *&E : member_node->annotations) {
-				if (E->name == SNAME("@warning_ignore")) {
+				if (E->is_builtin && E->name == SNAME("@warning_ignore")) {
 					resolve_annotation(E);
-					E->apply(parser, member.variable, p_class);
+					E->apply(parser, member.function, p_class);
 				}
 			}
 		}
@@ -1052,13 +1055,8 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				resolve_pending_lambda_bodies();
 
 				// Apply annotations.
-				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
-					if (E->name != SNAME("@warning_ignore")) {
-						resolve_annotation(E);
-						E->apply(parser, member.variable, p_class);
-					}
-				}
-
+				Array annotations = resolve_and_apply_annotations(member.variable, p_class);
+				parser->member_annotations.push_back(Pair(member.variable->identifier->name, annotations));
 				static_context = previous_static_context;
 
 #ifdef DEBUG_ENABLED
@@ -1135,10 +1133,8 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.signal->method_info = mi;
 
 				// Apply annotations.
-				for (GDScriptParser::AnnotationNode *&E : member.signal->annotations) {
-					resolve_annotation(E);
-					E->apply(parser, member.signal, p_class);
-				}
+				Array annotations = resolve_and_apply_annotations(member.signal, p_class);
+				parser->member_annotations.push_back(Pair(member.signal->identifier->name, annotations));
 			} break;
 			case GDScriptParser::ClassNode::Member::ENUM: {
 				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
@@ -1195,13 +1191,18 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					E->apply(parser, member.m_enum, p_class);
 				}
 			} break;
-			case GDScriptParser::ClassNode::Member::FUNCTION:
+			case GDScriptParser::ClassNode::Member::FUNCTION: {
 				for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
-					resolve_annotation(E);
-					E->apply(parser, member.function, p_class);
+					if (E->is_builtin && E->name == SNAME("@rpc")) {
+						resolve_annotation(E);
+						E->apply(parser, member.function, p_class);
+					}
 				}
 				resolve_function_signature(member.function, p_source);
-				break;
+				// Apply annotations.
+				Array annotations = resolve_and_apply_annotations(member.function, p_class);
+				parser->member_annotations.push_back(Pair(member.function->identifier->name, annotations));
+			} break;
 			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
 				member.enum_value.identifier->set_datatype(resolving_datatype);
 
@@ -1401,12 +1402,16 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 	for (int i = 0; i < p_class->members.size(); i++) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
-			// Apply annotations.
 			for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
-				resolve_annotation(E);
-				E->apply(parser, member.function, p_class);
+				if (E->is_builtin && E->name == SNAME("@rpc")) {
+					resolve_annotation(E);
+					E->apply(parser, member.function, p_class);
+				}
 			}
 			resolve_function_body(member.function);
+			// Apply annotations.
+			Array annotations = resolve_and_apply_annotations(member.function, p_class);
+			parser->member_annotations.push_back(Pair(member.function->identifier->name, annotations));
 		} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable->property != GDScriptParser::VariableNode::PROP_NONE) {
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (member.variable->getter != nullptr) {
@@ -1626,59 +1631,221 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 }
 
 void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_annotation) {
-	ERR_FAIL_COND_MSG(!parser->valid_annotations.has(p_annotation->name), vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
+	ERR_FAIL_COND_MSG(p_annotation->is_builtin && !parser->valid_annotations.has(p_annotation->name), vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
 
 	if (p_annotation->is_resolved) {
 		return;
 	}
 	p_annotation->is_resolved = true;
 
-	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
+	MethodInfo annotation_info;
+	Ref<GDScript> script;
+	if (!p_annotation->is_builtin) {
+		// Here we figure out how to create the GDScriptAnnotation, and then call _init.
+		// If error_message is set during the execution of _init, the annotation object is discarded.
+		GDScriptParser::DataType result;
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		if (GDScriptParser::get_builtin_type(p_annotation->name) < Variant::VARIANT_MAX) {
+			push_error(vformat(R"(%s does not inherit from GDScriptAnnotation.)", p_annotation->name), p_annotation);
+			return;
+		} else if (class_exists(p_annotation->name)) {
+			// Native Annotations.
+			if (!ClassDB::is_parent_class(p_annotation->name, "GDScriptAnnotation")) {
+				push_error(vformat(R"(%s does not inherit from GDScriptAnnotation.)", p_annotation->name), p_annotation);
+				return;
+			}
 
-	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
-		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
-		const PropertyInfo &argument_info = E->get();
+			if (ClassDB::is_abstract(p_annotation->name)) {
+				push_error(vformat(R"(Abstract GDScriptAnnotation "%s" is not allowed.)", p_annotation->name), p_annotation);
+				return;
+			}
 
-		if (E->next() != nullptr) {
-			E = E->next();
-		}
+			if (ClassDB::is_virtual(p_annotation->name)) {
+				push_error(vformat(R"(Virtual GDScriptAnnotation "%s" is not allowed.)", p_annotation->name), p_annotation);
+				return;
+			}
 
-		reduce_expression(argument);
+			if (!ClassDB::get_method_info(p_annotation->name, GDScriptLanguage::get_singleton()->strings._init, &annotation_info)) {
+				// Since it's a native annotation, _init must be implemented in C++.
+				push_error(vformat(R"(%s is missing a constructor. (_init))", p_annotation->name), p_annotation);
+				return;
+			}
 
-		if (!argument->is_constant) {
-			push_error(vformat(R"(Argument %d of annotation "%s" isn't a constant expression.)", i + 1, p_annotation->name), argument);
+			if (annotation_info.return_val.type != Variant::NIL) {
+				push_error(R"(Constructor cannot have an explicit return type.)", p_annotation);
+				return;
+			}
+
+		} else if (ScriptServer::is_global_class(p_annotation->name)) {
+			String path;
+			GDScriptParser::ClassNode *head;
+			if (GDScript::is_canonically_equal_paths(parser->script_path, ScriptServer::get_global_class_path(p_annotation->name))) {
+				path = parser->script_path;
+				head = parser->head;
+				result = head->get_datatype();
+				if (!ClassDB::is_parent_class(result.native_type, "GDScriptAnnotation")) {
+					push_error(vformat(R"(%s inherits from %s, which does not inherit from GDScriptAnnotation.)", p_annotation->name, result.native_type), p_annotation);
+					return;
+				}
+
+			} else {
+				path = ScriptServer::get_global_class_path(p_annotation->name);
+				String ext = path.get_extension();
+				if (ext == GDScriptLanguage::get_singleton()->get_extension()) {
+					Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(path);
+					if (ref.is_null() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
+						push_error(vformat(R"(Could not parse global class "%s" from "%s".)", p_annotation->name, ScriptServer::get_global_class_path(p_annotation->name)), p_annotation);
+						return;
+					}
+					head = ref->get_parser()->head;
+					result = head->get_datatype();
+					if (!ClassDB::is_parent_class(result.native_type, "GDScriptAnnotation")) {
+						push_error(vformat(R"(%s inherits from %s, which does not inherit from GDScriptAnnotation.)", p_annotation->name, result.native_type), p_annotation);
+						return;
+					}
+
+					if (ClassDB::is_abstract(result.native_type)) {
+						push_error(vformat(R"(%s inherits from %s, which is an abstract class and is not allowed.)", p_annotation->name, result.native_type), p_annotation);
+						return;
+					}
+
+				} else {
+					push_error(R"(GDScriptAnnotations can only be implemented by GDScript files.)", p_annotation);
+					return;
+				}
+			}
+
+			// Early validation.
+			if (!head->has_member(GDScriptLanguage::get_singleton()->strings._init)) {
+				push_error(vformat(R"(%s is missing a constructor. (_init))", p_annotation->name), p_annotation);
+				return;
+			}
+
+			if (head->get_member(GDScriptLanguage::get_singleton()->strings._init).type != GDScriptParser::ClassNode::Member::FUNCTION) {
+				push_error(R"(_init should be a function.)", p_annotation);
+				return;
+			}
+
+			if (head->get_member(GDScriptLanguage::get_singleton()->strings._init).function->is_static) {
+				push_error(R"(Static constructor is not allowed.)", p_annotation);
+				return;
+			}
+
+			if (head->get_member(GDScriptLanguage::get_singleton()->strings._init).function->return_type->get_datatype().builtin_type != Variant::NIL) {
+				push_error(R"(Constructor cannot have an explicit return type.)", p_annotation);
+				return;
+			}
+
+			script = ResourceLoader::load(path, "GDScript");
+			annotation_info = script->get_method_info(GDScriptLanguage::get_singleton()->strings._init);
+		} else {
+			push_error(vformat(R"(Could not find type "%s" in the current scope.)", p_annotation->name), p_annotation);
 			return;
 		}
 
-		Variant value = argument->reduced_value;
+		p_annotation->annotation_object_info = annotation_info;
+		p_annotation->annotation_object_info.name = p_annotation->name;
+	} else {
+		annotation_info = parser->valid_annotations[p_annotation->name].info;
+	}
 
-		if (value.get_type() != argument_info.type) {
-#ifdef DEBUG_ENABLED
-			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
-				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
+	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
+	if (E != nullptr) {
+		for (int i = 0; i < p_annotation->arguments.size(); i++) {
+			GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
+			const PropertyInfo &argument_info = E->get();
+
+			if (E->next() != nullptr) {
+				E = E->next();
 			}
+
+			reduce_expression(argument);
+
+			if (!argument->is_constant) {
+				push_error(vformat(R"(Argument %d of annotation "%s" isn't a constant expression.)", i + 1, p_annotation->name), argument);
+				return;
+			}
+
+			Variant value = argument->reduced_value;
+
+			if (value.get_type() != argument_info.type) {
+#ifdef DEBUG_ENABLED
+				if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
+					parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
+				}
 #endif
 
-			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
-				push_error(vformat(R"(Invalid argument for annotation "%s": argument %d should be "%s" but is "%s".)", p_annotation->name, i + 1, Variant::get_type_name(argument_info.type), argument->get_datatype().to_string()), argument);
-				return;
+				if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
+					push_error(vformat(R"(Invalid argument for annotation "%s": argument %d should be "%s" but is "%s".)", p_annotation->name, i + 1, Variant::get_type_name(argument_info.type), argument->get_datatype().to_string()), argument);
+					return;
+				}
+
+				Variant converted_to;
+				const Variant *converted_from = &value;
+				Callable::CallError call_error;
+				Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
+
+				if (call_error.error != Callable::CallError::CALL_OK) {
+					push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
+					return;
+				}
+
+				value = converted_to;
 			}
 
-			Variant converted_to;
-			const Variant *converted_from = &value;
-			Callable::CallError call_error;
-			Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
+			p_annotation->resolved_arguments.push_back(value);
+		}
+	}
 
-			if (call_error.error != Callable::CallError::CALL_OK) {
-				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
-				return;
-			}
+	if (!p_annotation->is_builtin) {
+		// Create GDScriptAnnotation object.
+		Callable::CallError call_error;
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * p_annotation->resolved_arguments.size());
 
-			value = converted_to;
+		for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+			argptrs[i] = p_annotation->resolved_arguments.ptr() + i;
+		}
+		if (script.is_valid()) {
+			// _new will call the constructor (_init) automatically.
+			// Set p_show_error to false because we'll handle it here.
+			p_annotation->annotation_object = script->_new_internal(argptrs, p_annotation->resolved_arguments.size(), call_error, false);
+		} else {
+			p_annotation->annotation_object = Object::cast_to<GDScriptAnnotation>(ClassDB::instantiate(p_annotation->name));
+			p_annotation->annotation_object->callp(GDScriptLanguage::get_singleton()->strings._init, argptrs, p_annotation->resolved_arguments.size(), call_error);
 		}
 
-		p_annotation->resolved_arguments.push_back(value);
+		if (call_error.error != Callable::CallError::CALL_OK) {
+			switch (call_error.error) {
+				case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+					push_error(vformat(R"*(Invalid argument for "%s()" constructor: argument %d should be "%s" but is "%s".)*",
+									   (String)p_annotation->name,
+									   call_error.argument + 1,
+									   Variant::get_type_name((Variant::Type)call_error.expected),
+									   p_annotation->arguments[call_error.argument]->get_datatype().to_string()),
+							p_annotation->arguments[call_error.argument]);
+					break;
+				case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+					push_error(vformat(R"*(Failed to call "%s()" constructor.)*", (String)p_annotation->name), p_annotation);
+					break;
+				case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+					push_error(vformat(R"*(Too many arguments for "%s()" constructor. Expected at most %d but received %d.)*", (String)p_annotation->name, call_error.expected, p_annotation->arguments.size()), p_annotation);
+					break;
+				case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+					push_error(vformat(R"*(Too few arguments for "%s()" constructor. Expected at least %d but received %d.)*", (String)p_annotation->name, call_error.expected, p_annotation->arguments.size()), p_annotation);
+					break;
+				case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
+				case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+					break; // Can't happen in a builtin constructor.
+				case Callable::CallError::CALL_OK:
+					break; // Not reachable.
+			}
+			p_annotation->annotation_object = nullptr;
+		} else if (p_annotation->annotation_object.is_valid() && p_annotation->annotation_object->has_error_message()) {
+			push_error(p_annotation->annotation_object->get_error_message(), p_annotation);
+			p_annotation->annotation_object = nullptr;
+		} else {
+			p_annotation->annotation_object->name = p_annotation->name;
+		}
 	}
 }
 

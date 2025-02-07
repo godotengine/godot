@@ -12,6 +12,25 @@
 		<link title="GDScript documentation index">$DOCS_URL/tutorials/scripting/gdscript/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_class_annotations" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns all [GDScriptAnnotation]s targeting the top-level class of this script.
+			</description>
+		</method>
+		<method name="get_member_annotations" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="member" type="StringName" />
+			<description>
+				Returns all [GDScriptAnnotation]s targeting [param member].
+			</description>
+		</method>
+		<method name="get_members_with_annotations" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all members of this script that is targeted by at least one [GDScriptAnnotation].
+			</description>
+		</method>
 		<method name="new" qualifiers="vararg">
 			<return type="Variant" />
 			<description>

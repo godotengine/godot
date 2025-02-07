@@ -31,6 +31,8 @@
 #include "gdscript_parser.h"
 
 #include "gdscript.h"
+#include "gdscript_annotation.h"
+#include "gdscript_member_annotations.h"
 #include "gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
@@ -1650,13 +1652,15 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function(bool p_is_static) {
 GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_valid_targets) {
 	AnnotationNode *annotation = alloc_node<AnnotationNode>();
 
-	annotation->name = previous.literal;
+	const String name = previous.literal;
+	annotation->is_builtin = !name.begins_with("@@");
+	annotation->name = annotation->is_builtin ? name : name.trim_prefix("@@");
 
-	make_completion_context(COMPLETION_ANNOTATION, annotation);
+	make_completion_context(annotation->is_builtin ? COMPLETION_ANNOTATION : COMPLETION_USER_ANNOTATION, annotation);
 
 	bool valid = true;
 
-	if (!valid_annotations.has(annotation->name)) {
+	if (annotation->is_builtin && !valid_annotations.has(annotation->name)) {
 		if (annotation->name == "@deprecated") {
 			push_error(R"("@deprecated" annotation does not exist. Use "## @deprecated: Reason here." instead.)");
 		} else if (annotation->name == "@experimental") {
@@ -1669,7 +1673,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		valid = false;
 	}
 
-	if (valid) {
+	if (annotation->is_builtin && valid) {
 		annotation->info = &valid_annotations[annotation->name];
 
 		if (!annotation->applies_to(p_valid_targets)) {
@@ -1682,7 +1686,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		}
 	}
 
-	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+	if (valid && check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 		push_multiline(true);
 		advance();
 		// Arguments.
@@ -1720,7 +1724,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 
 	match(GDScriptTokenizer::Token::NEWLINE); // Newline after annotation is optional.
 
-	if (valid) {
+	if (annotation->is_builtin && valid) {
 		valid = validate_annotation_arguments(annotation);
 	}
 
@@ -4160,10 +4164,132 @@ bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_targe
 		return true;
 	}
 	is_applied = true;
-	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target, p_class);
+	if (is_builtin) {
+		return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target, p_class);
+	} else {
+		// The annotation object can be invalid if _init has reported an error by user code.
+		if (annotation_object.is_valid()) {
+#define ANNOTATION_MESSAGE_CHECK                                          \
+	if (annotation_object->has_error_message()) {                         \
+		p_this->push_error(annotation_object->get_error_message(), this); \
+		annotation_object = nullptr;                                      \
+		return false;                                                     \
+	}
+
+			GDScriptAnnotation::TargetFlags target_mask = annotation_object->get_target_mask();
+			GDScriptAnnotation::TargetFlags target_type = GDScriptAnnotation::TARGET_NONE;
+			switch (p_target->type) {
+				case Node::CLASS: {
+					target_type = GDScriptAnnotation::TARGET_CLASS;
+				} break;
+				case Node::FUNCTION: {
+					target_type = GDScriptAnnotation::TARGET_FUNCTION;
+				} break;
+				case Node::SIGNAL: {
+					target_type = GDScriptAnnotation::TARGET_SIGNAL;
+				} break;
+				case Node::VARIABLE: {
+					target_type = GDScriptAnnotation::TARGET_VARIABLE;
+				} break;
+				default: {
+					target_type = GDScriptAnnotation::TARGET_NONE;
+				} break;
+			}
+
+			int mask_result = target_mask & target_type;
+			if (!mask_result) {
+				p_this->push_error(vformat(R"*(Annotation "%s" is not compatible with target type: %s.)*", name, GDScriptAnnotation::target_to_name(target_type)), this);
+				return false;
+			}
+
+			// Call _analyze.
+			switch (p_target->type) {
+				case Node::CLASS: {
+					GDScriptClassAnnotation *class_annotation = Object::cast_to<GDScriptClassAnnotation>(annotation_object.ptr());
+					if (class_annotation) {
+						ClassNode *m_class = static_cast<ClassNode *>(p_target);
+						class_annotation->analyze(m_class->get_global_name());
+						ANNOTATION_MESSAGE_CHECK;
+					}
+				} break;
+				case Node::FUNCTION: {
+					GDScriptFunctionAnnotation *function_annotation = Object::cast_to<GDScriptFunctionAnnotation>(annotation_object.ptr());
+					if (function_annotation) {
+						FunctionNode *function = static_cast<FunctionNode *>(p_target);
+						StringName function_name = function->identifier->name;
+						PackedStringArray parameter_names;
+						PackedStringArray parameter_type_names;
+						PackedInt32Array parameter_builtin_types;
+						for (const ParameterNode *parameter : function->parameters) {
+							parameter_names.push_back(parameter->identifier->name);
+							parameter_type_names.push_back(parameter->get_datatype().to_string());
+							parameter_builtin_types.push_back(parameter->get_datatype().builtin_type);
+						}
+						Array default_arguments;
+						for (const Variant &arg : function->default_arg_values) {
+							default_arguments.push_back(arg);
+						}
+						StringName return_type_name = function->return_type->get_datatype().to_string();
+						Variant::Type return_builtin_type = function->return_type->get_datatype().builtin_type;
+						function_annotation->analyze(
+								function_name,
+								parameter_names,
+								parameter_type_names,
+								parameter_builtin_types,
+								return_type_name,
+								return_builtin_type,
+								default_arguments,
+								function->is_static,
+								function->is_coroutine);
+						ANNOTATION_MESSAGE_CHECK;
+					}
+				} break;
+				case Node::SIGNAL: {
+					GDScriptSignalAnnotation *signal_annotation = Object::cast_to<GDScriptSignalAnnotation>(annotation_object.ptr());
+					if (signal_annotation) {
+						SignalNode *signal = static_cast<SignalNode *>(p_target);
+						StringName signal_name = signal->identifier->name;
+						PackedStringArray parameter_names;
+						PackedStringArray parameter_type_names;
+						PackedInt32Array parameter_builtin_types;
+						for (const ParameterNode *parameter : signal->parameters) {
+							parameter_names.push_back(parameter->identifier->name);
+							parameter_type_names.push_back(parameter->get_datatype().to_string());
+							parameter_builtin_types.push_back(parameter->get_datatype().builtin_type);
+						}
+						signal_annotation->analyze(signal_name, parameter_names, parameter_type_names, parameter_builtin_types);
+						ANNOTATION_MESSAGE_CHECK;
+					}
+				} break;
+				case Node::VARIABLE: {
+					GDScriptVariableAnnotation *variable_annotation = Object::cast_to<GDScriptVariableAnnotation>(annotation_object.ptr());
+					if (variable_annotation) {
+						VariableNode *variable = static_cast<VariableNode *>(p_target);
+						variable_annotation->analyze(
+								variable->identifier->name,
+								variable->get_datatype().to_string(),
+								variable->get_datatype().builtin_type,
+								variable->is_static);
+						ANNOTATION_MESSAGE_CHECK;
+						variable_annotation->apply(variable, p_class);
+					}
+				} break;
+				default: {
+					// Not reachable.
+				} break;
+			}
+
+			return true;
+#undef ANNOTATION_MESSAGE_CHECK
+		}
+		return false;
+	}
 }
 
 bool GDScriptParser::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
+	if (!is_builtin) {
+		return (AnnotationInfo::CLASS_LEVEL & p_target_kinds) > 0;
+	}
 	return (info->target_kind & p_target_kinds) > 0;
 }
 

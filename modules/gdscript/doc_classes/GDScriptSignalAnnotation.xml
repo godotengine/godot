@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptSignalAnnotation" inherits="GDScriptAnnotation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A user annotation that can only target signals.
+	</brief_description>
+	<description>
+		A user annotation that can only target signals.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_analyze" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="parameter_names" type="PackedStringArray" />
+			<param index="2" name="parameter_type_names" type="PackedStringArray" />
+			<param index="3" name="parameter_builtin_types" type="PackedInt32Array" />
+			<description>
+				Override to access the targeted signal's information. This can be used for validation, for example requiring the signal to have a specific signature.
+				- [param name] is the signal's name;
+				- [param parameter_names] is an array containing every parameter's name.
+				- [param parameter_type_names] is an array containing every parameter's type name.
+				- [param parameter_builtin_types] is an array containing every parameter's type, as an [int] (see [enum Variant.Type]).
+			</description>
+		</method>
+		<method name="_get_allow_multiple" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override to specify if there can be multiple instances of this annotation on the same target. If not overridden, the default is [code]false[/code].
+			</description>
+		</method>
+	</methods>
+</class>

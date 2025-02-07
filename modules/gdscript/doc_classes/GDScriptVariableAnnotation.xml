@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptVariableAnnotation" inherits="GDScriptAnnotation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A user annotation that can only target variables.
+	</brief_description>
+	<description>
+		A user annotation that can only target variables. By overriding [method _is_export_annotation], this annotation can also act as an export annotation like [annotation @GDScript.@export_custom].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_analyze" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="type_name" type="StringName" />
+			<param index="2" name="type" type="int" enum="Variant.Type" />
+			<param index="3" name="is_static" type="bool" />
+			<description>
+				Override to access the targeted variable's information. This can be used for validation, for example requiring the variable to be a certain type.
+				- [param name] is the variable's name;
+				- [param type_name] is the variable's type name;
+				- [param type] is the variable's type, as an [int] (see [enum Variant.Type]);
+				- [param is_static] is whether the variable is static or not.
+			</description>
+		</method>
+		<method name="_get_allow_multiple" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override to specify if there can be multiple instances of this annotation on the same target. If not overridden, the default is [code]false[/code].
+			</description>
+		</method>
+		<method name="_get_property_hint" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Override to specify the annotation's property hint. If not overridden, the default is [constant PROPERTY_HINT_NONE].
+			</description>
+		</method>
+		<method name="_get_property_hint_string" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Override to specify the annotation's property hint string. If not overridden, the default is an empty string.
+			</description>
+		</method>
+		<method name="_get_property_usage" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Override to specify the annotation's property usage. If not overridden, the default is [constant PROPERTY_USAGE_DEFAULT].
+			</description>
+		</method>
+		<method name="_is_export_annotation" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override to specify if the annotation should be treated as an export annotation. If not overridden, the default is [code]false[/code].
+			</description>
+		</method>
+	</methods>
+</class>

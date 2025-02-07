@@ -889,7 +889,12 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
-	r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	if (p_annotation->is_builtin) {
+		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	} else {
+		r_arghint = _make_arguments_hint(p_annotation->annotation_object_info, p_argument, true);
+		return;
+	}
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.
@@ -3234,6 +3239,19 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			}
 			r_forced = true;
 		} break;
+		case GDScriptParser::COMPLETION_USER_ANNOTATION: {
+			List<MethodInfo> annotations;
+			GDScriptAnnotation::find_user_annotations(&annotations);
+			GDScriptAnnotation::find_native_user_annotations(&annotations);
+			for (const MethodInfo &E : annotations) {
+				ScriptLanguage::CodeCompletionOption option(E.name.substr(2), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				if (E.arguments.size() > 0) {
+					option.insert_text += "(";
+				}
+				options.insert(option.display, option);
+			}
+			r_forced = true;
+		} break;
 		case GDScriptParser::COMPLETION_ANNOTATION_ARGUMENTS: {
 			if (completion_context.node == nullptr || completion_context.node->type != GDScriptParser::Node::ANNOTATION) {
 				break;
@@ -4335,6 +4353,9 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				r_result.class_member = annotation_symbol;
 				return OK;
 			}
+		} break;
+		case GDScriptParser::COMPLETION_USER_ANNOTATION: {
+			// Nothing here. Should have been resolved as a class lookup.
 		} break;
 		default: {
 		}

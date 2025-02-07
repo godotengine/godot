@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptFunctionAnnotation" inherits="GDScriptAnnotation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A user annotation that can only target functions.
+	</brief_description>
+	<description>
+		A user annotation that can only target functions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_analyze" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="parameter_names" type="PackedStringArray" />
+			<param index="2" name="parameter_type_names" type="PackedStringArray" />
+			<param index="3" name="parameter_builtin_types" type="PackedInt32Array" />
+			<param index="4" name="return_type_name" type="StringName" />
+			<param index="5" name="return_builtin_type" type="int" enum="Variant.Type" />
+			<param index="6" name="default_arguments" type="Array" />
+			<param index="7" name="is_static" type="bool" />
+			<param index="8" name="is_coroutine" type="bool" />
+			<description>
+				Override to access the targeted function's information. This can be used for validation, for example requiring the function to have a specific signature.
+				- [param name] is the function's name;
+				- [param parameter_names] is an array containing every parameter's name.
+				- [param parameter_type_names] is an array containing every parameter's type name.
+				- [param parameter_builtin_types] is an array containing every parameter's type, as an [int] (see [enum Variant.Type]);
+				- [param return_type_name] is the return type's type name;
+				- [param return_builtin_type] is the return type, as an [int] (see [enum Variant.Type]);
+				- [param default_arguments] is an array containing default arguments for the function;
+				- [param is_static] is whether the function is static or not;
+				- [param is_coroutine] is whether the function is a coroutine or not.
+			</description>
+		</method>
+		<method name="_get_allow_multiple" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override to specify if there can be multiple instances of this annotation on the same target. If not overridden, the default is [code]false[/code].
+			</description>
+		</method>
+	</methods>
+</class>

@@ -581,6 +581,17 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 		if (k->is_action("ui_text_backspace", true)) {
+			// If the backspace would break a digraph, we need to re-request code completion.
+			int cofs = get_caret_column();
+			if (cofs > 1) {
+				const String line = get_line(get_caret_line());
+				if (code_completion_digraph_prefixes.has(*(const uint64_t *)(const char *)(&line[cofs - 2]))) {
+					backspace();
+					request_code_completion();
+					accept_event();
+					return;
+				}
+			}
 			backspace();
 			_filter_code_completion_candidates_impl();
 			accept_event();
@@ -2086,7 +2097,13 @@ void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes
 		const String prefix = p_prefixes[i];
 
 		ERR_CONTINUE_MSG(prefix.is_empty(), "Code completion prefix cannot be empty.");
-		code_completion_prefixes.insert(prefix[0]);
+		if (prefix.length() == 1) {
+			code_completion_prefixes.insert(prefix[0]);
+		} else if (prefix.length() == 2) {
+			code_completion_digraph_prefixes.insert(*(const uint64_t *)(const char *)(prefix.ptr()));
+		} else {
+			ERR_PRINT("Code completion prefix cannot be more than two characters long.");
+		}
 	}
 }
 
@@ -2094,6 +2111,10 @@ TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 	TypedArray<String> prefixes;
 	for (const char32_t &E : code_completion_prefixes) {
 		prefixes.push_back(String::chr(E));
+	}
+	for (const uint64_t &E : code_completion_digraph_prefixes) {
+		const char32_t *str = (const char32_t *)(const char *)(&E);
+		prefixes.push_back(String(str, 2));
 	}
 	return prefixes;
 }
@@ -2156,7 +2177,11 @@ void CodeEdit::request_code_completion(bool p_force) {
 	String line = get_line(get_caret_line());
 	int ofs = CLAMP(get_caret_column(), 0, line.length());
 
-	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || !is_symbol(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
+	if (ofs > 1 && (is_in_string(get_caret_line(), ofs) != -1 || !is_symbol(line[ofs - 1]) || !is_symbol(line[ofs - 2]) || code_completion_digraph_prefixes.has(*(const uint64_t *)(const char *)(&line[ofs - 2])))) {
+		emit_signal(SNAME("code_completion_requested"));
+	} else if (ofs > 2 && line[ofs - 1] == ' ' && code_completion_digraph_prefixes.has(*(const uint64_t *)(const char *)(&line[ofs - 3]))) {
+		emit_signal(SNAME("code_completion_requested"));
+	} else if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || !is_symbol(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
 		emit_signal(SNAME("code_completion_requested"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
 		emit_signal(SNAME("code_completion_requested"));
@@ -2245,6 +2270,11 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	}
 
 	char32_t caret_last_completion_char = 0;
+	union {
+		char32_t chars[2];
+		uint64_t digraph;
+	} caret_last_completion_digraph;
+	caret_last_completion_digraph.digraph = 0;
 	begin_complex_operation();
 	begin_multicaret_edit();
 
@@ -2312,6 +2342,9 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		char32_t last_completion_char = insert_text[insert_text.length() - 1];
 		if (i == 0) {
 			caret_last_completion_char = last_completion_char;
+		} else if (i == 1) {
+			caret_last_completion_digraph.chars[0] = caret_last_completion_char;
+			caret_last_completion_digraph.chars[1] = last_completion_char;
 		}
 		char32_t last_completion_char_display = display_text[display_text.length() - 1];
 
@@ -2350,7 +2383,9 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	end_complex_operation();
 
 	cancel_code_completion();
-	if (code_completion_prefixes.has(caret_last_completion_char)) {
+	if (code_completion_digraph_prefixes.has(caret_last_completion_digraph.digraph)) {
+		request_code_completion();
+	} else if (code_completion_prefixes.has(caret_last_completion_char)) {
 		request_code_completion();
 	}
 }
@@ -3512,7 +3547,11 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	/* If all else fails, check for a prefix.         */
 	/* Single space between caret and prefix is okay. */
 	bool prev_is_prefix = false;
-	if (cofs > 0 && code_completion_prefixes.has(line[cofs - 1])) {
+	if (cofs > 1 && code_completion_digraph_prefixes.has(*(const uint64_t *)(const char *)(&line[cofs - 2]))) {
+		prev_is_prefix = true;
+	} else if (cofs > 2 && line[cofs - 1] == ' ' && code_completion_digraph_prefixes.has(*(const uint64_t *)(const char *)(&line[cofs - 3]))) {
+		prev_is_prefix = true;
+	} else if (cofs > 0 && code_completion_prefixes.has(line[cofs - 1])) {
 		prev_is_prefix = true;
 	} else if (cofs > 1 && line[cofs - 1] == ' ' && code_completion_prefixes.has(line[cofs - 2])) {
 		prev_is_prefix = true;

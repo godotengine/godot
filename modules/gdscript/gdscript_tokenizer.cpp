@@ -481,9 +481,17 @@ GDScriptTokenizer::Token GDScriptTokenizerText::check_vcs_marker(char32_t p_test
 GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	if (is_unicode_identifier_start(_peek())) {
 		_advance(); // Consume start character.
+	} else if (_peek() == '@') {
+		_advance(); // Consume the second @ in @@ (user annotations).
+		if (is_unicode_identifier_start(_peek())) {
+			_advance(); // Consume start character.
+		} else {
+			push_error("Expected annotation identifier after \"@@\".");
+		}
 	} else {
-		push_error("Expected annotation identifier after \"@\".");
+		push_error("Expected annotation identifier or @ after \"@\".");
 	}
+
 	while (is_unicode_identifier_continue(_peek())) {
 		// Consume all identifier characters.
 		_advance();

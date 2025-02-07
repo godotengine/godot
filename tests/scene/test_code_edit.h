@@ -3936,20 +3936,22 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->set_code_completion_enabled(true);
 		CHECK(code_edit->is_code_completion_enabled());
 
-		/* Set prefixes, single char only, disallow empty. */
+		/* Set prefixes, single char or double chars (digraphs) only, disallow empty. */
 		TypedArray<String> completion_prefixes;
 		completion_prefixes.push_back("");
 		completion_prefixes.push_back(".");
 		completion_prefixes.push_back(".");
+		completion_prefixes.push_back(",");
 		completion_prefixes.push_back(",,");
 
 		ERR_PRINT_OFF;
 		code_edit->set_code_completion_prefixes(completion_prefixes);
 		ERR_PRINT_ON;
 		completion_prefixes = code_edit->get_code_completion_prefixes();
-		CHECK(completion_prefixes.size() == 2);
+		CHECK(completion_prefixes.size() == 3);
 		CHECK(completion_prefixes.has("."));
 		CHECK(completion_prefixes.has(","));
+		CHECK(completion_prefixes.has(",,"));
 
 		code_edit->set_text("test\ntest");
 		CHECK(code_edit->get_text_for_code_completion() == String::chr(0xFFFF) + "test\ntest");

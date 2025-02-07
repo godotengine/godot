@@ -73,6 +73,25 @@ class GDScriptAnalyzer {
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
+	template <typename T>
+	Array resolve_and_apply_annotations(T *p_target, GDScriptParser::ClassNode *p_class) {
+		HashSet<StringName> annotation_name_set;
+		Array annotations;
+		for (GDScriptParser::AnnotationNode *E : p_target->annotations) {
+			resolve_annotation(E);
+			if (E->annotation_object.is_valid() && !E->annotation_object->get_allow_multiple() && annotation_name_set.has(E->name)) {
+				push_error(vformat(R"(Annotation "%s" can only be applied once.)", E->name), E);
+				E->annotation_object = nullptr;
+				continue;
+			}
+			E->apply(parser, p_target, p_class);
+			if (E->annotation_object.is_valid()) {
+				annotations.push_back(E->annotation_object);
+				annotation_name_set.insert(E->name);
+			}
+		}
+		return annotations;
+	}
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, int p_index, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);

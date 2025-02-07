@@ -1956,6 +1956,7 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back("=");
 	cs.push_back("$");
 	cs.push_back("@");
+	cs.push_back("@@");
 	cs.push_back("\"");
 	cs.push_back("\'");
 	text_editor->set_code_completion_prefixes(cs);

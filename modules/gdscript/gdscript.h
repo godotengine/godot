@@ -110,6 +110,9 @@ class GDScript : public Script {
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
+	Array class_annotations;
+	HashMap<StringName, Array> member_annotations;
+
 public:
 	struct LambdaInfo {
 		int capture_count;
@@ -194,7 +197,7 @@ private:
 
 	GDScriptFunction *_super_constructor(GDScript *p_script);
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
-	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error, bool p_show_error = true);
 
 	String _get_debug_path() const;
 
@@ -286,6 +289,7 @@ public:
 	StringName debug_get_static_var_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _new_internal(const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_show_error);
 	virtual bool can_instantiate() const override;
 
 	virtual Ref<Script> get_base_script() const override;
@@ -342,6 +346,18 @@ public:
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
+	PackedStringArray get_members_with_annotations() const {
+		PackedStringArray arr;
+		for (const KeyValue<StringName, Array> &E : member_annotations) {
+			arr.push_back(E.key);
+		}
+		return arr;
+	}
+	Array get_member_annotations(const StringName &p_member) const {
+		const Array *ret = member_annotations.getptr(p_member);
+		return ret ? *ret : Array();
+	}
+	Array get_class_annotations() const { return class_annotations; }
 
 	virtual Variant get_rpc_config() const override;
 

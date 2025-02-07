@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptClassAnnotation" inherits="GDScriptAnnotation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A user annotation that can only target classes.
+	</brief_description>
+	<description>
+		A user annotation that can only target classes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_analyze" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Override to access the targeted class's information.
+				- [param name] is the class's name.
+			</description>
+		</method>
+		<method name="_get_allow_multiple" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override to specify if there can be multiple instances of this annotation on the same target. If not overridden, the default is [code]false[/code].
+			</description>
+		</method>
+	</methods>
+</class>

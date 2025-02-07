@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "gdscript_annotation.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
@@ -371,11 +372,14 @@ public:
 		StringName name;
 		Vector<ExpressionNode *> arguments;
 		Vector<Variant> resolved_arguments;
+		Ref<GDScriptAnnotation> annotation_object;
+		MethodInfo annotation_object_info;
 
 		AnnotationInfo *info = nullptr;
 		PropertyInfo export_info;
 		bool is_resolved = false;
 		bool is_applied = false;
+		bool is_builtin = true;
 
 		bool apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class);
 		bool applies_to(uint32_t p_target_kinds) const;
@@ -1287,6 +1291,7 @@ public:
 	enum CompletionType {
 		COMPLETION_NONE,
 		COMPLETION_ANNOTATION, // Annotation (following @).
+		COMPLETION_USER_ANNOTATION, // User annotation (following @@).
 		COMPLETION_ANNOTATION_ARGUMENTS, // Annotation arguments hint.
 		COMPLETION_ASSIGN, // Assignment based on type (e.g. enum values).
 		COMPLETION_ATTRIBUTE, // After id.| to look for members.
@@ -1331,6 +1336,8 @@ public:
 private:
 	friend class GDScriptAnalyzer;
 	friend class GDScriptParserRef;
+	friend class GDScriptAnnotation;
+	friend struct GDScriptParserApplyCallbackInterface;
 
 	bool _is_tool = false;
 	String script_path;
@@ -1398,6 +1405,9 @@ private:
 	};
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
+	// Class annotations that target the top-level class of the script.
+	Array class_annotations;
+	Vector<Pair<StringName, Array>> member_annotations;
 
 	typedef ExpressionNode *(GDScriptParser::*ParseFunction)(ExpressionNode *p_previous_operand, bool p_can_assign);
 	// Higher value means higher precedence (i.e. is evaluated first).
@@ -1589,6 +1599,8 @@ public:
 	CompletionCall get_completion_call() const { return completion_call; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
+	_FORCE_INLINE_ Array get_class_annotations() const { return class_annotations; }
+	_FORCE_INLINE_ Vector<Pair<StringName, Array>> get_member_annotations() const { return member_annotations; }
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<String> get_dependencies() const {

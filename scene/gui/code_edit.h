@@ -220,6 +220,7 @@ private:
 	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
+	HashSet<uint64_t> code_completion_digraph_prefixes;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;

@@ -31,6 +31,7 @@
 #include "gdscript.h"
 
 #include "gdscript_analyzer.h"
+#include "gdscript_annotation.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -150,7 +151,7 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 	}
 }
 
-GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error) {
+GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error, bool p_show_error) {
 	/* STEP 1, CREATE */
 
 	GDScriptInstance *instance = memnew(GDScriptInstance);
@@ -182,7 +183,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			MutexLock lock(GDScriptLanguage::singleton->mutex);
 			instances.erase(p_owner);
 		}
-		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
+		if (p_show_error) {
+			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
+		}
 	}
 
 	if (p_argcount < 0) {
@@ -200,7 +203,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
 				instances.erase(p_owner);
 			}
-			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
+			if (p_show_error) {
+				ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
+			}
 		}
 	}
 	//@TODO make thread safe
@@ -208,6 +213,10 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 }
 
 Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	return _new_internal(p_args, p_argcount, r_error, true);
+}
+
+Variant GDScript::_new_internal(const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_show_error) {
 	/* STEP 1, CREATE */
 
 	if (!valid) {
@@ -237,7 +246,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 		ref = Ref<RefCounted>(r);
 	}
 
-	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
+	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error, p_show_error);
 	if (!instance) {
 		if (ref.is_null()) {
 			memdelete(owner); //no owner, sorry
@@ -581,6 +590,11 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						break; // Nothing.
 				}
 			}
+
+			member_annotations.clear();
+			for (int i = 0; i < parser.get_member_annotations().size(); i++) {
+				member_annotations[parser.get_member_annotations()[i].first] = parser.get_member_annotations()[i].second;
+			}
 		} else {
 			placeholder_fallback_enabled = true;
 			return false;
@@ -850,6 +864,12 @@ Error GDScript::reload(bool p_keep_state) {
 
 	can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
+	class_annotations = parser.get_class_annotations();
+	member_annotations.clear();
+	for (int i = 0; i < parser.get_member_annotations().size(); i++) {
+		member_annotations[parser.get_member_annotations()[i].first] = parser.get_member_annotations()[i].second;
+	}
+
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this, p_keep_state);
 
@@ -1073,6 +1093,9 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
+	ClassDB::bind_method(D_METHOD("get_members_with_annotations"), &GDScript::get_members_with_annotations);
+	ClassDB::bind_method(D_METHOD("get_member_annotations", "member"), &GDScript::get_member_annotations);
+	ClassDB::bind_method(D_METHOD("get_class_annotations"), &GDScript::get_class_annotations);
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {

@@ -57,6 +57,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_node_path = false;
 	bool in_node_ref = false;
 	bool in_annotation = false;
+	bool in_user_annotation = false;
 	bool in_string_name = false;
 	bool is_hex_notation = false;
 	bool is_bin_notation = false;
@@ -593,8 +594,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		if (!in_annotation && in_region == -1 && str[j] == '@') {
 			in_annotation = true;
+		} else if (in_annotation && in_region == -1 && str[j] == '@') {
+			in_user_annotation = true;
 		} else if (in_region != -1 || is_a_symbol) {
 			in_annotation = false;
+			in_user_annotation = false;
 		}
 
 		const bool in_raw_string_prefix = in_region == -1 && str[j] == 'r' && j + 1 < line_length && (str[j + 1] == '"' || str[j + 1] == '\'');
@@ -604,7 +608,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (in_node_ref) {
 			next_type = NODE_REF;
 			color = node_ref_color;
-		} else if (in_annotation) {
+		} else if (in_annotation || in_user_annotation) {
 			next_type = ANNOTATION;
 			color = annotation_color;
 		} else if (in_string_name) {

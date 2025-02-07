@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptAnnotation" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A user annotation implemented in the GDScript language.
+	</brief_description>
+	<description>
+		A user annotation implemented in the GDScript language. User annotations are metadata that can be associated with a GDScript.
+		You can create a new GDScriptAnnotation by extending GDScriptAnnotation's subclasses, such as [GDScriptVariableAnnotation] and [GDScriptFunctionAnnotation].
+		User annotations must have a class name, cannot be a nested class, and must define the constructor [code]_init[/code], which defines the annotation's parameters.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the annotation's name, which is equal to the class name.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="error_message" type="String" setter="set_error_message" getter="get_error_message">
+			The annotation's current error message. Setting this to a non-empty value when the annotation is being compiled will cause the GDScript parser to emit an error.
+		</member>
+	</members>
+</class>

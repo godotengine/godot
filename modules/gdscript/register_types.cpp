@@ -32,6 +32,7 @@
 
 #include "gdscript.h"
 #include "gdscript_cache.h"
+#include "gdscript_member_annotations.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_utility_functions.h"
@@ -153,6 +154,11 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		gdscript_cache = memnew(GDScriptCache);
 
 		GDScriptUtilityFunctions::register_functions();
+		GDREGISTER_ABSTRACT_CLASS(GDScriptAnnotation);
+		GDREGISTER_VIRTUAL_CLASS(GDScriptVariableAnnotation);
+		GDREGISTER_VIRTUAL_CLASS(GDScriptFunctionAnnotation);
+		GDREGISTER_VIRTUAL_CLASS(GDScriptSignalAnnotation);
+		GDREGISTER_VIRTUAL_CLASS(GDScriptClassAnnotation);
 	}
 
 #ifdef TOOLS_ENABLED
