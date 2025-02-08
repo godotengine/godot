@@ -65,6 +65,10 @@ class NavigationAgent2D : public Node {
 	real_t path_max_distance = 100.0;
 	bool simplify_path = false;
 	real_t simplify_epsilon = 0.0;
+	float path_return_max_length = 0.0;
+	float path_return_max_radius = 0.0;
+	int path_search_max_polygons = NavigationDefaults2D::path_search_max_polygons;
+	float path_search_max_distance = 0.0;
 
 	Vector2 target_position;
 
@@ -184,6 +188,20 @@ public:
 
 	void set_simplify_epsilon(real_t p_epsilon);
 	real_t get_simplify_epsilon() const;
+
+	void set_path_return_max_length(float p_length);
+	float get_path_return_max_length() const;
+
+	void set_path_return_max_radius(float p_radius);
+	float get_path_return_max_radius() const;
+
+	void set_path_search_max_polygons(int p_max_polygons);
+	int get_path_search_max_polygons() const;
+
+	void set_path_search_max_distance(float p_distance);
+	float get_path_search_max_distance() const;
+
+	float get_path_length() const;
 
 	Vector2 get_next_path_position();
 
