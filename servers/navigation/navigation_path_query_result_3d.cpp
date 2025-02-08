@@ -110,6 +110,14 @@ void NavigationPathQueryResult3D::set_data(const LocalVector<Vector3> &p_path, c
 	}
 }
 
+void NavigationPathQueryResult3D::set_path_length(float p_length) {
+	path_length = p_length;
+}
+
+float NavigationPathQueryResult3D::get_path_length() const {
+	return path_length;
+}
+
 void NavigationPathQueryResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult3D::set_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult3D::get_path);
@@ -123,12 +131,16 @@ void NavigationPathQueryResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_owner_ids", "path_owner_ids"), &NavigationPathQueryResult3D::set_path_owner_ids);
 	ClassDB::bind_method(D_METHOD("get_path_owner_ids"), &NavigationPathQueryResult3D::get_path_owner_ids);
 
+	ClassDB::bind_method(D_METHOD("set_path_length", "length"), &NavigationPathQueryResult3D::set_path_length);
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationPathQueryResult3D::get_path_length);
+
 	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult3D::reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "path"), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_length"), "set_path_length", "get_path_length");
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);
