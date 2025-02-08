@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TileSet" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Tile library for tilemap layers.
+		Tile library for tilemaps.
 	</brief_description>
 	<description>
 		A TileSet is a library of tiles for a [TileMapLayer]. A TileSet handles a list of [TileSetSource], each of them storing a set of tiles.
@@ -656,7 +656,7 @@
 		</constant>
 		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 			Diamond tile shape (for isometric look).
-			[b]Note:[/b] Isometric [TileSet] works best if [TileMapLayer] has Y-sort enabled.
+			[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent Node2D need Y-sort enabled.
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 			Rectangular tile shape with one row/column out of two offset by half a tile.
