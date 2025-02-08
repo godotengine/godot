@@ -61,6 +61,7 @@ private:
 	Vector2 panning;
 	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
 	void _zoom_widget_changed();
+	void _toggle_background();
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -81,6 +82,7 @@ private:
 	void _draw_background_left();
 	Control *background_right = nullptr;
 	void _draw_background_right();
+	Button *background_toggle = nullptr;
 
 	// Left side.
 	Control *base_tiles_root_control = nullptr;

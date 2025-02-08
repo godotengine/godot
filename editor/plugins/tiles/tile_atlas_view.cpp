@@ -152,6 +152,11 @@ void TileAtlasView::_zoom_widget_changed() {
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
+void TileAtlasView::_toggle_background() {
+	background_left->set_visible(!background_left->is_visible());
+	background_right->set_visible(!background_right->is_visible());
+}
+
 void TileAtlasView::_center_view() {
 	panning = Vector2();
 	button_center_view->set_disabled(true);
@@ -618,6 +623,7 @@ void TileAtlasView::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			button_center_view->set_button_icon(theme_cache.center_view_icon);
+			background_toggle->set_button_icon(theme_cache.checkerboard);
 		} break;
 	}
 }
@@ -637,6 +643,14 @@ TileAtlasView::TileAtlasView() {
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(panel);
 
+	HBoxContainer *hbox2 = memnew(HBoxContainer);
+	hbox2->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	hbox2->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	hbox2->set_v_size_flags(SIZE_SHRINK_END);
+	hbox2->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
+	hbox2->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
+	add_child(hbox2);
+
 	zoom_widget = memnew(EditorZoomWidget);
 	add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
@@ -650,7 +664,23 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
-	add_child(button_center_view);
+	hbox2->add_child(button_center_view);
+
+	background_toggle = memnew(Button);
+	background_toggle->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
+	background_toggle->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
+	background_toggle->connect(SceneStringName(pressed), callable_mp(this, &TileAtlasView::_toggle_background));
+	background_toggle->set_flat(true);
+	background_toggle->set_tooltip_text(TTR("Toggle Background"));
+
+	// Retrieve the icon
+	Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
+
+	// Scale it to match center view icon
+	background_toggle->set_button_icon(checkerboard);
+	background_toggle->add_theme_constant_override("icon_max_width", get_editor_theme_icon(SNAME("CenterView"))->get_size().x * EDSCALE);
+
+	hbox2->add_child(background_toggle);
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
