@@ -1378,7 +1378,10 @@ void Node::_propagate_translation_domain_dirty() {
 			child->_propagate_translation_domain_dirty();
 		}
 	}
-	notification(NOTIFICATION_TRANSLATION_CHANGED);
+
+	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+		notification(NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 StringName Node::get_name() const {
