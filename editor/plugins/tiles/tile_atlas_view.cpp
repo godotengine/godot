@@ -513,7 +513,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	}
 
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 

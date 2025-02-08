@@ -34,8 +34,8 @@
 #ifdef IOS_ENABLED
 
 #import "ios.h"
-#import "joypad_ios.h"
 
+#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
@@ -58,15 +58,14 @@ private:
 
 	iOS *ios = nullptr;
 
-	JoypadIOS *joypad_ios = nullptr;
+	JoypadApple *joypad_apple = nullptr;
 
 	MainLoop *main_loop = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
-	virtual void initialize_joypads() override {
-	}
+	virtual void initialize_joypads() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual MainLoop *get_main_loop() const override;
@@ -114,7 +113,7 @@ public:
 
 	virtual Error shell_open(const String &p_uri) override;
 
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;

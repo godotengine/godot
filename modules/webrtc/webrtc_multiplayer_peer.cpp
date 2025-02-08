@@ -293,7 +293,7 @@ Error WebRTCMultiplayerPeer::add_peer(Ref<WebRTCPeerConnection> p_peer, int p_pe
 	ERR_FAIL_COND_V(p_unreliable_lifetime < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(is_refusing_new_connections(), ERR_UNAUTHORIZED);
 	// Peer must be valid, and in new state (to create data channels)
-	ERR_FAIL_COND_V(!p_peer.is_valid(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_peer.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_peer->get_connection_state() != WebRTCPeerConnection::STATE_NEW, ERR_INVALID_PARAMETER);
 
 	Ref<ConnectedPeer> peer = memnew(ConnectedPeer);

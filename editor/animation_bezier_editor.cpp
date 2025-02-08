@@ -689,7 +689,7 @@ void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
-	if (!animation.is_valid() || play_position_pos < 0) {
+	if (animation.is_null() || play_position_pos < 0) {
 		return;
 	}
 

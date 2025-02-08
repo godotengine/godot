@@ -592,7 +592,7 @@ void AudioStreamPlaybackInteractive::start(double p_from_pos) {
 	if (current < 0 || current >= stream->clip_count) {
 		return; // No playback possible.
 	}
-	if (!states[current].playback.is_valid()) {
+	if (states[current].playback.is_null()) {
 		return; //no playback possible
 	}
 	active = true;

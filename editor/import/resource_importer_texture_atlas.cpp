@@ -314,7 +314,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	//update cache if existing, else create
 	Ref<Texture2D> cache;
 	cache = ResourceCache::get_ref(p_group_file);
-	if (!cache.is_valid()) {
+	if (cache.is_null()) {
 		Ref<ImageTexture> res_cache = ImageTexture::create_from_image(new_atlas);
 		res_cache->set_path(p_group_file);
 		cache = res_cache;

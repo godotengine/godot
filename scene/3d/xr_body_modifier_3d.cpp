@@ -250,7 +250,7 @@ void XRBodyModifier3D::_process_modification() {
 	}
 
 	const Ref<XRBodyTracker> tracker = xr_server->get_tracker(tracker_name);
-	if (!tracker.is_valid()) {
+	if (tracker.is_null()) {
 		return;
 	}
 

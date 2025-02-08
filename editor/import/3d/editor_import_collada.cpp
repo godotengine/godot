@@ -1287,7 +1287,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 				}
 			}
 
-			if (!mesh.is_null()) {
+			if (mesh.is_valid()) {
 				mi->set_mesh(mesh);
 				if (!use_mesh_builtin_materials) {
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
@@ -1795,10 +1795,6 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 /*********************************************************************************/
 /*************************************** SCENE ***********************************/
 /*********************************************************************************/
-
-uint32_t EditorSceneFormatImporterCollada::get_import_flags() const {
-	return IMPORT_SCENE | IMPORT_ANIMATION;
-}
 
 void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("dae");

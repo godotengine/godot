@@ -70,7 +70,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	struct Device {
 		String id;
 		String name;
-		bool simulator = false;
 		bool wifi = false;
 		bool use_ios_deploy = false;
 	};
@@ -148,7 +147,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const Ref<EditorExportPreset> &p_preset, const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug);
 
-	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick);
+	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 

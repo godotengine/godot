@@ -824,6 +824,7 @@ public:
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);

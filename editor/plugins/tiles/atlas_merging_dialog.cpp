@@ -177,7 +177,7 @@ void AtlasMergingDialog::_update_texture() {
 }
 
 void AtlasMergingDialog::_merge_confirmed(const String &p_path) {
-	ERR_FAIL_COND(!merged.is_valid());
+	ERR_FAIL_COND(merged.is_null());
 
 	Ref<ImageTexture> output_image_texture = merged->get_texture();
 	output_image_texture->get_image()->save_png(p_path);
@@ -216,7 +216,7 @@ void AtlasMergingDialog::_merge_confirmed(const String &p_path) {
 		}
 	}
 	undo_redo->commit_action();
-	commited_actions_count++;
+	committed_actions_count++;
 
 	hide();
 }
@@ -228,10 +228,10 @@ void AtlasMergingDialog::ok_pressed() {
 
 void AtlasMergingDialog::cancel_pressed() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	for (int i = 0; i < commited_actions_count; i++) {
+	for (int i = 0; i < committed_actions_count; i++) {
 		undo_redo->undo();
 	}
-	commited_actions_count = 0;
+	committed_actions_count = 0;
 }
 
 void AtlasMergingDialog::custom_action(const String &p_action) {
@@ -269,7 +269,7 @@ void AtlasMergingDialog::_notification(int p_what) {
 }
 
 void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	tile_set = p_tile_set;
 
 	atlas_merging_atlases_list->clear();
@@ -289,7 +289,7 @@ void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 	get_ok_button()->set_disabled(true);
 	merge_button->set_disabled(true);
 
-	commited_actions_count = 0;
+	committed_actions_count = 0;
 }
 
 AtlasMergingDialog::AtlasMergingDialog() {

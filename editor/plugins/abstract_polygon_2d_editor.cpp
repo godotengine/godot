@@ -587,7 +587,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 			if (vertex == hover_point) {
 				Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 				int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
-				String num = String::num(vertex.vertex);
+				String num = String::num_int64(vertex.vertex);
 				Size2 num_size = font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				const float outline_size = 4;
 				Color font_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));

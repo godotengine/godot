@@ -61,6 +61,7 @@ class KeyMappingX11 {
 public:
 	static void initialize();
 
+	static bool is_sym_numpad(KeySym p_keysym);
 	static Key get_keycode(KeySym p_keysym);
 	static unsigned int get_xlibcode(Key p_keysym);
 	static Key get_scancode(unsigned int p_code);

@@ -293,7 +293,7 @@ void NativeMenuMacOS::popup(const RID &p_rid, const Vector2i &p_position) {
 		position += ds->_get_screens_origin();
 		position /= ds->screen_get_max_scale();
 
-		[md->menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(position.x, position.y) inView:nil];
+		[md->menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(position.x, position.y - 5) inView:nil]; // Menu vertical position doesn't include rounded corners, add `5` display pixels to better align it with Godot buttons.
 	}
 }
 

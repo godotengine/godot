@@ -100,6 +100,8 @@ public:
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
 		SCALING_3D_MODE_FSR2,
+		SCALING_3D_MODE_METALFX_SPATIAL,
+		SCALING_3D_MODE_METALFX_TEMPORAL,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -486,6 +488,9 @@ private:
 	void _process_dirty_canvas_parent_orders();
 	void _propagate_world_2d_changed(Node *p_node);
 
+	void _window_start_drag(Window *p_window);
+	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
+
 protected:
 	bool _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
 
@@ -591,6 +596,8 @@ public:
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
+	void notify_mouse_entered();
+	void notify_mouse_exited();
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

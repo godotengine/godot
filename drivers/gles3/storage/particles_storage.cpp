@@ -223,6 +223,19 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	ERR_FAIL_NULL(particles);
 	particles->pre_process_time = p_time;
 }
+
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->request_process_time = p_request_process_time;
+}
+
+void ParticlesStorage::particles_set_seed(RID p_particles, uint32_t p_seed) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->random_seed = p_seed;
+}
+
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -507,7 +520,6 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	if (p_particles->clear) {
 		p_particles->cycle_number = 0;
-		p_particles->random_seed = Math::rand();
 	} else if (new_phase < p_particles->phase) {
 		if (p_particles->one_shot) {
 			p_particles->emitting = false;
@@ -1136,6 +1148,24 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
+		if (particles->request_process_time > 0.0) {
+			double frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
+			} else {
+				frame_time = 1.0 / 30.0;
+			}
+			float tmp_scale = particles->speed_scale;
+			particles->speed_scale = 1.0;
+			double todo = particles->request_process_time;
+			while (todo >= 0) {
+				_particles_process(particles, frame_time);
+				todo -= frame_time;
+			}
+			particles->speed_scale = tmp_scale;
+			particles->request_process_time = 0.0;
+		}
+
 		// Copy particles to instance buffer and pack Color/Custom.
 		// We don't have camera information here, so don't copy here if we need camera information for view depth or align mode.
 		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
@@ -1400,6 +1430,18 @@ bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collis
 	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, false);
 	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
+
+uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, false);
+	return particles_collision->heightfield_mask;
+}
+
+void ParticlesStorage::particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	particles_collision->heightfield_mask = p_heightfield_mask;
 }
 
 Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {

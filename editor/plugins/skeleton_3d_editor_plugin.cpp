@@ -1338,11 +1338,11 @@ void Skeleton3DEditor::_subgizmo_selection_change() {
 		Vector<Ref<Node3DGizmo>> gizmos = skeleton->get_gizmos();
 		for (int i = 0; i < gizmos.size(); i++) {
 			Ref<EditorNode3DGizmo> gizmo = gizmos[i];
-			if (!gizmo.is_valid()) {
+			if (gizmo.is_null()) {
 				continue;
 			}
 			Ref<Skeleton3DGizmoPlugin> plugin = gizmo->get_plugin();
-			if (!plugin.is_valid()) {
+			if (plugin.is_null()) {
 				continue;
 			}
 			skeleton->set_subgizmo_selection(gizmo, selected, skeleton->get_bone_global_pose(selected));

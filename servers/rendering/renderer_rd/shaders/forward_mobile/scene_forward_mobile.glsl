@@ -557,7 +557,14 @@ void main() {
 #endif // MODE_RENDER_DEPTH
 #ifdef MODE_RENDER_MATERIAL
 	if (scene_data.material_uv2_mode) {
-		gl_Position.xy = (uv2_attrib.xy + draw_call.uv_offset) * 2.0 - 1.0;
+		vec2 uv_dest_attrib;
+		if (uv_scale != vec4(0.0)) {
+			uv_dest_attrib = (uv2_attrib.xy - 0.5) * uv_scale.zw;
+		} else {
+			uv_dest_attrib = uv2_attrib.xy;
+		}
+
+		gl_Position.xy = (uv_dest_attrib + draw_call.uv_offset) * 2.0 - 1.0;
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
 	}
@@ -837,8 +844,9 @@ void main() {
 #endif
 #ifdef MODE_DUAL_PARABOLOID
 
-	if (dp_clip > 0.0)
+	if (dp_clip > 0.0) {
 		discard;
+	}
 #endif
 
 	//lay out everything, whatever is unused is optimized away anyway
@@ -898,7 +906,6 @@ void main() {
 		normal = -normal;
 	}
 #endif // DO_SIDE_CHECK
-	vec3 geo_normal = normalize(normal);
 #endif // NORMAL_USED
 
 #ifdef UV_USED
@@ -974,6 +981,10 @@ void main() {
 	view = -normalize(vertex);
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
+
+#ifdef NORMAL_USED
+	vec3 geo_normal = normalize(normal);
+#endif // NORMAL_USED
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 #ifdef SSS_MODE_SKIN
@@ -1393,16 +1404,29 @@ void main() {
 		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
 		for (uint i = 0; i < sc_reflection_probes(); i++) {
 			uint reflection_index = (i > 3) ? ((reflection_indices.y >> ((i - 4) * 8)) & 0xFF) : ((reflection_indices.x >> (i * 8)) & 0xFF);
-			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+
+			if (reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
+				break;
+			}
+
+			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+		}
+
+		if (ambient_accum.a < 1.0) {
+			ambient_accum.rgb = mix(ambient_light, ambient_accum.rgb, ambient_accum.a);
+		}
+
+		if (reflection_accum.a < 1.0) {
+			reflection_accum.rgb = mix(specular_light, reflection_accum.rgb, reflection_accum.a);
 		}
 
 		if (reflection_accum.a > 0.0) {
-			specular_light = reflection_accum.rgb / reflection_accum.a;
+			specular_light = reflection_accum.rgb;
 		}
 
 #if !defined(USE_LIGHTMAP)
 		if (ambient_accum.a > 0.0) {
-			ambient_light = ambient_accum.rgb / ambient_accum.a;
+			ambient_light = ambient_accum.rgb;
 		}
 #endif
 	} //Reflection probes

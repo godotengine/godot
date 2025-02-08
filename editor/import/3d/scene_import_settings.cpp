@@ -1225,6 +1225,20 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		}
 		_update_camera();
 	}
+	Ref<InputEventMagnifyGesture> mg = p_input;
+	if (mg.is_valid()) {
+		real_t mg_factor = mg->get_factor();
+		if (mg_factor == 0.0) {
+			mg_factor = 1.0;
+		}
+		(*zoom) /= mg_factor;
+		if ((*zoom) < 0.1) {
+			(*zoom) = 0.1;
+		} else if ((*zoom) > 10.0) {
+			(*zoom) = 10.0;
+		}
+		_update_camera();
+	}
 }
 
 void SceneImportSettingsDialog::_re_import() {

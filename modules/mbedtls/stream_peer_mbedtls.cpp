@@ -235,7 +235,7 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 
 void StreamPeerMbedTLS::poll() {
 	ERR_FAIL_COND(status != STATUS_CONNECTED && status != STATUS_HANDSHAKING);
-	ERR_FAIL_COND(!base.is_valid());
+	ERR_FAIL_COND(base.is_null());
 
 	if (status == STATUS_HANDSHAKING) {
 		_do_handshake();

@@ -652,8 +652,15 @@ void vertex_shader(vec3 vertex_input,
 #endif
 #ifdef MODE_RENDER_MATERIAL
 	if (scene_data.material_uv2_mode) {
+		vec2 uv_dest_attrib;
+		if (uv_scale != vec4(0.0)) {
+			uv_dest_attrib = (uv2_attrib.xy - 0.5) * uv_scale.zw;
+		} else {
+			uv_dest_attrib = uv2_attrib.xy;
+		}
+
 		vec2 uv_offset = unpackHalf2x16(draw_call.uv_offset);
-		gl_Position.xy = (uv2_attrib.xy + uv_offset) * 2.0 - 1.0;
+		gl_Position.xy = (uv_dest_attrib + uv_offset) * 2.0 - 1.0;
 		gl_Position.z = 0.00001;
 		gl_Position.w = 1.0;
 	}
@@ -1174,7 +1181,6 @@ void fragment_shader(in SceneData scene_data) {
 		normal = -normal;
 	}
 #endif // DO_SIDE_CHECK
-	vec3 geo_normal = normalize(normal);
 #endif // NORMAL_USED
 
 #ifdef UV_USED
@@ -1253,6 +1259,10 @@ void fragment_shader(in SceneData scene_data) {
 	view = -normalize(vertex);
 #endif //USE_MULTIVIEW
 #endif //LIGHT_VERTEX_USED
+
+#ifdef NORMAL_USED
+	vec3 geo_normal = normalize(normal);
+#endif // NORMAL_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
@@ -1925,17 +1935,29 @@ void fragment_shader(in SceneData scene_data) {
 					continue; //not masked
 				}
 
+				if (reflection_accum.a >= 1.0 && ambient_accum.a >= 1.0) {
+					break;
+				}
+
 				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 			}
 		}
 
+		if (ambient_accum.a < 1.0) {
+			ambient_accum.rgb = mix(ambient_light, ambient_accum.rgb, ambient_accum.a);
+		}
+
+		if (reflection_accum.a < 1.0) {
+			reflection_accum.rgb = mix(specular_light, reflection_accum.rgb, reflection_accum.a);
+		}
+
 		if (reflection_accum.a > 0.0) {
-			specular_light = reflection_accum.rgb / reflection_accum.a;
+			specular_light = reflection_accum.rgb;
 		}
 
 #if !defined(USE_LIGHTMAP)
 		if (ambient_accum.a > 0.0) {
-			ambient_light = ambient_accum.rgb / ambient_accum.a;
+			ambient_light = ambient_accum.rgb;
 		}
 #endif
 	}
@@ -2588,7 +2610,7 @@ void fragment_shader(in SceneData scene_data) {
 				vec3(0, -1, 0),
 				vec3(0, 0, -1));
 
-		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * geo_normal;
+		vec3 cam_normal = mat3(scene_data.inv_view_matrix) * normalize(normal_interp);
 
 		float closest_dist = -1e20;
 
@@ -2790,8 +2812,9 @@ void main() {
 #endif
 #ifdef MODE_DUAL_PARABOLOID
 
-	if (dp_clip > 0.0)
+	if (dp_clip > 0.0) {
 		discard;
+	}
 #endif
 
 	fragment_shader(scene_data_block.data);

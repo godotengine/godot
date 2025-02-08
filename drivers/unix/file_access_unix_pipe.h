@@ -61,7 +61,7 @@ public:
 	virtual void seek(uint64_t p_position) override {}
 	virtual void seek_end(int64_t p_position = 0) override {}
 	virtual uint64_t get_position() const override { return 0; }
-	virtual uint64_t get_length() const override { return 0; }
+	virtual uint64_t get_length() const override;
 
 	virtual bool eof_reached() const override { return false; }
 

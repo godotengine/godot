@@ -105,7 +105,7 @@ void AnimationLibraryEditor::_add_library_confirm() {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		Ref<AnimationLibrary> al = mixer->get_animation_library(adding_animation_to_library);
-		ERR_FAIL_COND(!al.is_valid());
+		ERR_FAIL_COND(al.is_null());
 
 		Ref<Animation> anim;
 		anim.instantiate();
@@ -562,7 +562,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 			} break;
 			case LIB_BUTTON_PASTE: {
 				Ref<Animation> anim = EditorSettings::get_singleton()->get_resource_clipboard();
-				if (!anim.is_valid()) {
+				if (anim.is_null()) {
 					error_dialog->set_text(TTR("No animation resource in clipboard!"));
 					error_dialog->popup_centered();
 					return;
@@ -605,7 +605,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				file_popup->add_separator();
 				file_popup->add_item(TTR("Open in Inspector"), FILE_MENU_EDIT_LIBRARY);
 				Rect2 pos = tree->get_item_rect(p_item, 1, 0);
-				Vector2 popup_pos = tree->get_screen_transform().xform(pos.position + Vector2(0, pos.size.height)) - tree->get_scroll();
+				Vector2 popup_pos = tree->get_screen_transform().xform(pos.position + Vector2(0, pos.size.height));
 				file_popup->popup(Rect2(popup_pos, Size2()));
 
 				file_dialog_animation = StringName();
@@ -628,7 +628,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		StringName anim_name = p_item->get_metadata(0);
 		Ref<AnimationLibrary> al = mixer->get_animation_library(lib_name);
 		Ref<Animation> anim = al->get_animation(anim_name);
-		ERR_FAIL_COND(!anim.is_valid());
+		ERR_FAIL_COND(anim.is_null());
 		switch (p_id) {
 			case ANIM_BUTTON_COPY: {
 				if (anim->get_name() == "") {
@@ -645,7 +645,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				file_popup->add_separator();
 				file_popup->add_item(TTR("Open in Inspector"), FILE_MENU_EDIT_ANIMATION);
 				Rect2 pos = tree->get_item_rect(p_item, 1, 0);
-				Vector2 popup_pos = tree->get_screen_transform().xform(pos.position + Vector2(0, pos.size.height)) - tree->get_scroll();
+				Vector2 popup_pos = tree->get_screen_transform().xform(pos.position + Vector2(0, pos.size.height));
 				file_popup->popup(Rect2(popup_pos, Size2()));
 
 				file_dialog_animation = anim_name;

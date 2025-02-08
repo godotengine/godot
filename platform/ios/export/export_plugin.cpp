@@ -46,10 +46,8 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -255,7 +253,6 @@ bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPre
 
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option.begins_with("privacy") ||
-			p_option == "application/generate_simulator_library_if_missing" ||
 			(p_option.begins_with("icons/") && !p_option.begins_with("icons/icon") && !p_option.begins_with("icons/app_store")) ||
 			p_option == "custom_template/debug" ||
 			p_option == "custom_template/release" ||
@@ -296,8 +293,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
-	// TODO(sgc): set to iOS 14.0 for Metal
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "12.0"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "14.0"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 
@@ -305,7 +301,6 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/generate_simulator_library_if_missing"), true));
 
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
@@ -425,12 +420,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
 	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "iPhone Developer" && rel_sign_id != "iPhone Distribution");
 
-	bool valid_dbg_specifier = false;
-	bool valid_rel_specifier = false;
-	Variant provisioning_profile_specifier_dbg_variant = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_IOS_PROFILE_SPECIFIER_DEBUG, &valid_dbg_specifier);
+	String provisioning_profile_specifier_dbg = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_IOS_PROFILE_SPECIFIER_DEBUG).operator String();
+	bool valid_dbg_specifier = !provisioning_profile_specifier_dbg.is_empty();
 	dbg_manual |= valid_dbg_specifier;
 
-	Variant provisioning_profile_specifier_rel_variant = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_IOS_PROFILE_SPECIFIER_RELEASE, &valid_rel_specifier);
+	String provisioning_profile_specifier_rel = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_IOS_PROFILE_SPECIFIER_RELEASE).operator String();
+	bool valid_rel_specifier = !provisioning_profile_specifier_rel.is_empty();
 	rel_manual |= valid_rel_specifier;
 
 	String str;
@@ -468,13 +463,11 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier_debug")) {
-			String specifier = provisioning_profile_specifier_dbg_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_dbg_variant : "";
-			strnew += lines[i].replace("$provisioning_profile_specifier_debug", specifier) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_specifier_debug", provisioning_profile_specifier_dbg) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier_release")) {
-			String specifier = provisioning_profile_specifier_rel_variant.get_type() != Variant::NIL ? provisioning_profile_specifier_rel_variant : "";
-			strnew += lines[i].replace("$provisioning_profile_specifier_release", specifier) + "\n";
+			strnew += lines[i].replace("$provisioning_profile_specifier_release", provisioning_profile_specifier_rel) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_specifier")) {
-			String specifier = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
+			String specifier = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
 			strnew += lines[i].replace("$provisioning_profile_specifier", specifier) + "\n";
 		} else if (lines[i].contains("$provisioning_profile_uuid_release")) {
 			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE)) + "\n";
@@ -493,11 +486,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
 			}
 		} else if (lines[i].contains("$provisioning_profile_uuid")) {
-			bool valid = false;
-			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG, &valid) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE, &valid);
-			if (!valid || uuid.is_empty()) {
-				Variant variant = p_debug ? provisioning_profile_specifier_dbg_variant : provisioning_profile_specifier_rel_variant;
-				valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
+			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_IOS_PROFILE_UUID_RELEASE);
+			if (uuid.is_empty()) {
+				Variant variant = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
+				bool valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
 				uuid = valid ? variant : "";
 			}
 			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
@@ -987,9 +979,9 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				}
 				// Resize main app icon.
 				icon_path = GLOBAL_GET("application/config/icon");
-				Ref<Image> img = memnew(Image);
-				Error err = ImageLoader::load_image(icon_path, img);
-				if (err != OK) {
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
 					return ERR_UNCONFIGURED;
 				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
@@ -1008,9 +1000,9 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 				}
 			} else {
 				// Load custom icon and resize if required.
-				Ref<Image> img = memnew(Image);
-				Error err = ImageLoader::load_image(icon_path, img);
-				if (err != OK) {
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
 					return ERR_UNCONFIGURED;
 				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
@@ -1094,13 +1086,11 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 	const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
 
 	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
-		Ref<Image> image;
 		String image_path = p_dest_dir.path_join("splash@2x.png");
-		image.instantiate();
-		Error err = ImageLoader::load_image(custom_launch_image_2x, image);
+		Error err = OK;
+		Ref<Image> image = _load_icon_or_splash_image(custom_launch_image_2x, &err);
 
-		if (err) {
-			image.unref();
+		if (err != OK || image.is_null() || image->is_empty()) {
 			return err;
 		}
 
@@ -1108,13 +1098,10 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 			return ERR_FILE_CANT_WRITE;
 		}
 
-		image.unref();
 		image_path = p_dest_dir.path_join("splash@3x.png");
-		image.instantiate();
-		err = ImageLoader::load_image(custom_launch_image_3x, image);
+		image = _load_icon_or_splash_image(custom_launch_image_3x, &err);
 
-		if (err) {
-			image.unref();
+		if (err != OK || image.is_null() || image->is_empty()) {
 			return err;
 		}
 
@@ -1122,19 +1109,16 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 			return ERR_FILE_CANT_WRITE;
 		}
 	} else {
+		Error err = OK;
 		Ref<Image> splash;
 
 		const String splash_path = GLOBAL_GET("application/boot_splash/image");
 
 		if (!splash_path.is_empty()) {
-			splash.instantiate();
-			const Error err = ImageLoader::load_image(splash_path, splash);
-			if (err) {
-				splash.unref();
-			}
+			splash = _load_icon_or_splash_image(splash_path, &err);
 		}
 
-		if (splash.is_null()) {
+		if (err != OK || splash.is_null() || splash->is_empty()) {
 			splash.instantiate(boot_splash_png);
 		}
 
@@ -2136,10 +2120,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
+	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
 }
 
-Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_simulator, bool p_oneclick) {
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
@@ -2437,8 +2421,12 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		return ERR_FILE_NOT_FOUND;
 	}
 
+	// HACK: We don't want to run the simulator library generation code anymore after GH-102179, but removing it
+	// triggers an internal compiler error with latest mingw-gcc... For now we bring it back as a workaround
+	// with a condition that should never be true (that project setting doesn't exist).
+
 	// Check and generate missing ARM64 simulator library.
-	if (p_preset->get("application/generate_simulator_library_if_missing").operator bool()) {
+	if (ProjectSettings::get_singleton()->has_setting("__dummy_setting_blame_akien_if_you_define_this_somehow")) {
 		String sim_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64_x86_64-simulator").path_join("libgodot.a");
 		String dev_lib_path = dest_dir + String(binary_name + ".xcframework").path_join("ios-arm64").path_join("libgodot.a");
 		String tmp_lib_path = EditorPaths::get_singleton()->get_temp_dir().path_join(binary_name + "_lipo_");
@@ -2654,19 +2642,11 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	archive_args.push_back("-scheme");
 	archive_args.push_back(binary_name);
 	archive_args.push_back("-sdk");
-	if (p_simulator) {
-		archive_args.push_back("iphonesimulator");
-	} else {
-		archive_args.push_back("iphoneos");
-	}
+	archive_args.push_back("iphoneos");
 	archive_args.push_back("-configuration");
 	archive_args.push_back(p_debug ? "Debug" : "Release");
 	archive_args.push_back("-destination");
-	if (p_simulator) {
-		archive_args.push_back("generic/platform=iOS Simulator");
-	} else {
-		archive_args.push_back("generic/platform=iOS");
-	}
+	archive_args.push_back("generic/platform=iOS");
 	archive_args.push_back("archive");
 	archive_args.push_back("-allowProvisioningUpdates");
 	archive_args.push_back("-archivePath");
@@ -2837,9 +2817,7 @@ Ref<ImageTexture> EditorExportPlatformIOS::get_option_icon(int p_index) const {
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			if (devices[p_index].simulator) {
-				icon = theme->get_icon("IOSSimulator", EditorStringName(EditorIcons));
-			} else if (devices[p_index].wifi) {
+			if (devices[p_index].wifi) {
 				icon = theme->get_icon("IOSDeviceWireless", EditorStringName(EditorIcons));
 			} else {
 				icon = theme->get_icon("IOSDeviceWired", EditorStringName(EditorIcons));
@@ -2963,82 +2941,7 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 							nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
 							nd.wifi = device_event["Interface"] == "WIFI";
 							nd.use_ios_deploy = true;
-							nd.simulator = false;
 							ldevices.push_back(nd);
-						}
-					}
-				}
-			}
-		}
-
-		// Enum simulators.
-		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			{
-				String devices;
-				List<String> args;
-				args.push_back("devicectl");
-				args.push_back("list");
-				args.push_back("devices");
-				args.push_back("-j");
-				args.push_back("-");
-				args.push_back("-q");
-				int ec = 0;
-				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
-				if (err == OK && ec == 0) {
-					Ref<JSON> json;
-					json.instantiate();
-					err = json->parse(devices);
-					if (err == OK) {
-						const Dictionary &data = json->get_data();
-						const Dictionary &result = data["result"];
-						const Array &devices = result["devices"];
-						for (int i = 0; i < devices.size(); i++) {
-							const Dictionary &device_info = devices[i];
-							const Dictionary &conn_props = device_info["connectionProperties"];
-							const Dictionary &dev_props = device_info["deviceProperties"];
-							if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
-								Device nd;
-								nd.id = device_info["identifier"];
-								nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
-								nd.wifi = conn_props["transportType"] == "localNetwork";
-								nd.simulator = false;
-								ldevices.push_back(nd);
-							}
-						}
-					}
-				}
-			}
-
-			// Enum simulators.
-			if (ea->has_runnable_preset.is_set()) {
-				String devices;
-				List<String> args;
-				args.push_back("simctl");
-				args.push_back("list");
-				args.push_back("devices");
-				args.push_back("-j");
-
-				int ec = 0;
-				Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
-				if (err == OK && ec == 0) {
-					Ref<JSON> json;
-					json.instantiate();
-					err = json->parse(devices);
-					if (err == OK) {
-						const Dictionary &data = json->get_data();
-						const Dictionary &devices = data["devices"];
-						for (const Variant *key = devices.next(nullptr); key; key = devices.next(key)) {
-							const Array &os_devices = devices[*key];
-							for (int i = 0; i < os_devices.size(); i++) {
-								const Dictionary &device_info = os_devices[i];
-								if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
-									Device nd;
-									nd.id = device_info["udid"];
-									nd.name = device_info["name"].operator String() + " (simulator)";
-									nd.simulator = true;
-									ldevices.push_back(nd);
-								}
-							}
 						}
 					}
 				}
@@ -3137,7 +3040,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	Device dev = devices[p_device];
 
 	// Export before sending to device.
-	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, dev.simulator, true);
+	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true);
 
 	if (err != OK) {
 		CLEANUP_AND_RETURN(err);
@@ -3165,7 +3068,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 	if (p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG)) {
 		cmd_args_list.push_back("--remote-debug");
 
-		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
+		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num_int64(remote_port));
 
 		List<String> breakpoints;
 		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
@@ -3192,57 +3095,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 		cmd_args_list.push_back("--debug-navigation");
 	}
 
-	if (dev.simulator) {
-		// Deploy and run on simulator.
-		if (ep.step("Installing to simulator...", 3)) {
-			CLEANUP_AND_RETURN(ERR_SKIP);
-		} else {
-			List<String> args;
-			args.push_back("simctl");
-			args.push_back("install");
-			args.push_back(dev.id);
-			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
-
-			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
-			if (ec != 0) {
-				print_line("simctl install:\n" + log);
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
-				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
-			}
-		}
-
-		if (ep.step("Running on simulator...", 4)) {
-			CLEANUP_AND_RETURN(ERR_SKIP);
-		} else {
-			List<String> args;
-			args.push_back("simctl");
-			args.push_back("launch");
-			args.push_back("--terminate-running-process");
-			args.push_back(dev.id);
-			args.push_back(p_preset->get("application/bundle_identifier"));
-			for (const String &E : cmd_args_list) {
-				args.push_back(E);
-			}
-
-			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
-			if (ec != 0) {
-				print_line("simctl launch:\n" + log);
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
-			}
-		}
-	} else if (dev.use_ios_deploy) {
+	if (dev.use_ios_deploy) {
 		// Deploy and run on real device (via ios-deploy).
 		if (ep.step("Installing and running on device...", 4)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
@@ -3349,7 +3202,6 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -3358,7 +3210,6 @@ EditorExportPlatformIOS::EditorExportPlatformIOS() {
 
 		ImageLoaderSVG::create_image_from_string(img, _ios_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		plugins_changed.set();
 		devices_changed.set();

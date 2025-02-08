@@ -7,7 +7,6 @@ dithered = "#define BC1_DITHER";
 #version 450
 
 #include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
 
 #define FLT_MAX 340282346638528859811704183484516925440.0f
 
@@ -108,8 +107,9 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 
 	// determine covariance matrix
 	float cov[6];
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < 6; ++i) {
 		cov[i] = 0;
+	}
 
 	for (int i = 0; i < 16; ++i) {
 		const float3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
@@ -124,8 +124,9 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 	}
 
 	// convert covariance matrix to float, find principal axis via power iter
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < 6; ++i) {
 		cov[i] /= 255.0f;
+	}
 
 	float3 vF = maxColor - minColor;
 
@@ -180,8 +181,9 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 	float3 dir = color[0] - color[1];
 	float stops[4];
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; ++i) {
 		stops[i] = dot(color[i], dir);
+	}
 
 	// think of the colors as arranged on a line; project point onto that line, then choose
 	// next color out of available ones. we compute the crossover points for "best color in top
@@ -203,10 +205,11 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		const float dotValue = dot(currColor, dir);
 		mask <<= 2u;
 
-		if (dotValue < halfPoint)
+		if (dotValue < halfPoint) {
 			mask |= ((dotValue < c0Point) ? 1u : 3u);
-		else
+		} else {
 			mask |= ((dotValue < c3Point) ? 2u : 0u);
+		}
 	}
 #else
 	// with floyd-steinberg dithering
@@ -228,10 +231,11 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		dotValue = dot(currColor, dir);
 
 		ditherDot = (dotValue * 16.0f) + (3 * ep2[1] + 5 * ep2[0]);
-		if (ditherDot < halfPoint)
+		if (ditherDot < halfPoint) {
 			step = (ditherDot < c0Point) ? 1u : 3u;
-		else
+		} else {
 			step = (ditherDot < c3Point) ? 2u : 0u;
+		}
 		ep1[0] = dotValue - stops[step];
 		lmask = step;
 
@@ -239,10 +243,11 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		dotValue = dot(currColor, dir);
 
 		ditherDot = (dotValue * 16.0f) + (7 * ep1[0] + 3 * ep2[2] + 5 * ep2[1] + ep2[0]);
-		if (ditherDot < halfPoint)
+		if (ditherDot < halfPoint) {
 			step = (ditherDot < c0Point) ? 1u : 3u;
-		else
+		} else {
 			step = (ditherDot < c3Point) ? 2u : 0u;
+		}
 		ep1[1] = dotValue - stops[step];
 		lmask |= step << 2u;
 
@@ -250,10 +255,11 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		dotValue = dot(currColor, dir);
 
 		ditherDot = (dotValue * 16.0f) + (7 * ep1[1] + 3 * ep2[3] + 5 * ep2[2] + ep2[1]);
-		if (ditherDot < halfPoint)
+		if (ditherDot < halfPoint) {
 			step = (ditherDot < c0Point) ? 1u : 3u;
-		else
+		} else {
 			step = (ditherDot < c3Point) ? 2u : 0u;
+		}
 		ep1[2] = dotValue - stops[step];
 		lmask |= step << 4u;
 
@@ -261,10 +267,11 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		dotValue = dot(currColor, dir);
 
 		ditherDot = (dotValue * 16.0f) + (7 * ep1[2] + 5 * ep2[3] + ep2[2]);
-		if (ditherDot < halfPoint)
+		if (ditherDot < halfPoint) {
 			step = (ditherDot < c0Point) ? 1u : 3u;
-		else
+		} else {
 			step = (ditherDot < c3Point) ? 2u : 0u;
+		}
 		ep1[3] = dotValue - stops[step];
 		lmask |= step << 6u;
 
@@ -294,8 +301,9 @@ bool RefineBlock(const uint srcPixelsBlock[16], uint mask, inout float inOutMinE
 		// yes, linear system would be singular; solve using optimal
 		// single-color match on average color
 		float3 rgbVal = float3(8.0f / 255.0f, 8.0f / 255.0f, 8.0f / 255.0f);
-		for (int i = 0; i < 16; ++i)
+		for (int i = 0; i < 16; ++i) {
 			rgbVal += unpackUnorm4x8(srcPixelsBlock[i]).xyz;
+		}
 
 		rgbVal = floor(rgbVal * (255.0f / 16.0f));
 

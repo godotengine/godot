@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Đã nhận diện hết"
+
 msgid "Network"
 msgstr "Mạng"
 
@@ -27,11 +30,11 @@ msgstr "Mở"
 msgid "Select Current Folder"
 msgstr "Chọn thư mục hiện tại"
 
+msgid "Save"
+msgstr "Lưu"
+
 msgid "Select This Folder"
 msgstr "Chọn thư mục này"
-
-msgid "All Recognized"
-msgstr "Đã nhận diện hết"
 
 msgid "Open a File"
 msgstr "Mở một Tệp tin"
@@ -44,9 +47,6 @@ msgstr "Mở một thư mục"
 
 msgid "Open a File or Directory"
 msgstr "Mở một tệp tin hoặc thư mục"
-
-msgid "Save"
-msgstr "Lưu"
 
 msgid "Save a File"
 msgstr "Lưu thành tệp tin"

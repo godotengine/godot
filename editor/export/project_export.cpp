@@ -138,7 +138,7 @@ void ProjectExportDialog::popup_export() {
 
 void ProjectExportDialog::_add_preset(int p_platform) {
 	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_platform(p_platform)->create_preset();
-	ERR_FAIL_COND(!preset.is_valid());
+	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
 	bool make_runnable = true;
@@ -668,7 +668,7 @@ void ProjectExportDialog::_duplicate_preset() {
 	}
 
 	Ref<EditorExportPreset> preset = current->get_platform()->create_preset();
-	ERR_FAIL_COND(!preset.is_valid());
+	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = current->get_name() + " (copy)";
 	bool make_runnable = true;

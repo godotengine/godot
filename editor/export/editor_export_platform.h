@@ -202,6 +202,8 @@ protected:
 	Error _load_patches(const Vector<String> &p_patches);
 	void _unload_patches();
 
+	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
+
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
@@ -277,7 +279,8 @@ public:
 		return worst_type;
 	}
 
-	static Dictionary get_internal_export_files();
+	Dictionary get_internal_export_files(const Ref<EditorExportPreset> &p_preset, bool p_debug);
+
 	static Vector<String> get_forced_export_files();
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
