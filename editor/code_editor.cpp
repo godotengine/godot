@@ -961,6 +961,11 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
+			if (ED_IS_SHORTCUT("script_editor/toggle_tab_key_moves_focus", p_event)) {
+				set_tab_key_moving_focus(!is_tab_key_moving_focus());
+				accept_event();
+				return;
+			}
 		}
 	}
 }
@@ -1561,6 +1566,7 @@ void CodeTextEditor::_update_text_editor_theme() {
 	error->add_theme_color_override(SceneStringName(font_color), error_color);
 	error_button->add_theme_color_override(SceneStringName(font_color), error_color);
 	warning_button->add_theme_color_override(SceneStringName(font_color), warning_color);
+	tab_moves_focus_button->add_theme_color_override(SceneStringName(font_color), warning_color);
 
 	_update_font_ligatures();
 }
@@ -1617,6 +1623,11 @@ void CodeTextEditor::_warning_button_pressed() {
 	_set_show_errors_panel(false);
 }
 
+void CodeTextEditor::_tab_moves_focus_button_pressed() {
+	set_tab_key_moving_focus(false);
+	text_editor->grab_focus();
+}
+
 void CodeTextEditor::_zoom_popup_id_pressed(int p_idx) {
 	_zoom_to(zoom_button->get_popup()->get_item_metadata(p_idx));
 }
@@ -1649,6 +1660,7 @@ void CodeTextEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			set_error_count(0);
 			set_warning_count(0);
+			set_tab_key_moving_focus(EditorSettings::get_singleton()->get_project_metadata("code_text_edtior", "tab_key_moves_focus", false));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1802,6 +1814,23 @@ float CodeTextEditor::get_zoom_factor() {
 	return zoom_factor;
 }
 
+void CodeTextEditor::set_tab_key_moving_focus(bool p_enabled) {
+	if (is_tab_moving_focus == p_enabled) {
+		return;
+	}
+
+	is_tab_moving_focus = p_enabled;
+	tab_moves_focus_button->set_visible(p_enabled);
+	get_text_editor()->set_tab_moves_focus_enabled(p_enabled);
+
+	EditorSettings::get_singleton()->set_project_metadata("code_text_edtior", "tab_key_moves_focus", p_enabled);
+	EditorNode::get_singleton()->emit_signal(SNAME("script_tab_moves_focus"), p_enabled);
+}
+
+bool CodeTextEditor::is_tab_key_moving_focus() {
+	return is_tab_moving_focus;
+}
+
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
@@ -1833,10 +1862,13 @@ void CodeTextEditor::update_toggle_scripts_button() {
 
 CodeTextEditor::CodeTextEditor() {
 	code_complete_func = nullptr;
+	ED_SHORTCUT("script_editor/toggle_tab_key_moves_focus", TTRC("Toggle Tab Key Moves Focus"), KeyModifierMask::CMD_OR_CTRL | Key::M);
 	ED_SHORTCUT("script_editor/zoom_in", TTRC("Zoom In"), KeyModifierMask::CMD_OR_CTRL | Key::EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTRC("Zoom Out"), KeyModifierMask::CMD_OR_CTRL | Key::MINUS);
 	ED_SHORTCUT_ARRAY("script_editor/reset_zoom", TTRC("Reset Zoom"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KEY_0), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_0) });
+
+	EditorNode::get_singleton()->connect("script_tab_moves_focus", callable_mp(this, &CodeTextEditor::set_tab_key_moving_focus));
 
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);
@@ -1902,6 +1934,16 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_warning_button_pressed));
 	warning_button->set_tooltip_text(TTR("Warnings"));
+
+	// Tab moves focus display
+	tab_moves_focus_button = memnew(Button);
+	tab_moves_focus_button->set_theme_type_variation("FlatButton");
+	status_bar->add_child(tab_moves_focus_button);
+	tab_moves_focus_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	tab_moves_focus_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	tab_moves_focus_button->set_text(TTR("Tab Moves Focus"));
+	tab_moves_focus_button->set_tooltip_text(vformat(TTR("Toggle Tab Key Moves Focus (%s)"), ED_GET_SHORTCUT("script_editor/toggle_tab_key_moves_focus")->get_as_text()));
+	tab_moves_focus_button->connect(SceneStringName(pressed), callable_mp(this, &CodeTextEditor::_tab_moves_focus_button_pressed));
 
 	status_bar->add_child(memnew(VSeparator));
 

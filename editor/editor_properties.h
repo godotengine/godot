@@ -86,6 +86,7 @@ class EditorPropertyMultilineText : public EditorProperty {
 	void _big_text_changed();
 	void _text_changed();
 	void _open_big_text();
+	void _big_text_dialog_visibility_changed();
 	bool expression = false;
 
 protected:

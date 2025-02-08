@@ -111,6 +111,7 @@ public:
 		MENU_INSERT_WJ,
 		MENU_INSERT_SHY,
 		MENU_EMOJI_AND_SYMBOL,
+		MENU_TAB_MOVES_FOCUS,
 		MENU_MAX
 
 	};
@@ -318,6 +319,7 @@ private:
 	bool virtual_keyboard_enabled = true;
 	bool middle_mouse_paste_enabled = true;
 	bool empty_selection_clipboard_enabled = true;
+	bool tab_moves_focus_enabled = false;
 
 	// Overridable actions.
 	String cut_copy_line = "";
@@ -779,6 +781,9 @@ public:
 
 	void set_empty_selection_clipboard_enabled(bool p_enabled);
 	bool is_empty_selection_clipboard_enabled() const;
+
+	void set_tab_moves_focus_enabled(bool p_enabled);
+	bool is_tab_moves_focus_enabled() const;
 
 	// Text manipulation
 	void clear();

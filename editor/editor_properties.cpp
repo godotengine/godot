@@ -159,6 +159,13 @@ void EditorPropertyMultilineText::_big_text_changed() {
 	emit_changed(get_edited_property(), big_text->get_text(), "", true);
 }
 
+void EditorPropertyMultilineText::_big_text_dialog_visibility_changed() {
+	if (big_text_dialog->is_visible()) {
+		return;
+	}
+	text->set_tab_moves_focus_enabled(big_text->is_tab_moves_focus_enabled());
+}
+
 void EditorPropertyMultilineText::_text_changed() {
 	text->set_tooltip_text(get_tooltip_string(text->get_text()));
 	emit_changed(get_edited_property(), text->get_text(), "", true);
@@ -175,6 +182,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 		big_text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_changed));
 		big_text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 		big_text_dialog = memnew(AcceptDialog);
+		big_text_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorPropertyMultilineText::_big_text_dialog_visibility_changed));
 		big_text_dialog->add_child(big_text);
 		big_text_dialog->set_title(TTR("Edit Text:"));
 		add_child(big_text_dialog);
@@ -182,6 +190,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 
 	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
 	big_text->set_text(text->get_text());
+	big_text->set_tab_moves_focus_enabled(text->is_tab_moves_focus_enabled());
 	big_text->grab_focus();
 }
 
@@ -232,6 +241,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 	text = memnew(TextEdit);
 	text->connect(SceneStringName(text_changed), callable_mp(this, &EditorPropertyMultilineText::_text_changed));
 	text->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+	text->set_tab_moves_focus_enabled(true);
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
