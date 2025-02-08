@@ -16,7 +16,10 @@ struct FlecsRootNodeModule {
 
 		world.module<FlecsRootNodeModule>();
 		world.component<components::FlecsRootNode>();
+		_register_systems(world);
 	}
+
+	void _register_systems(flecs::world &world);
 };
 
 } //namespace modules
@@ -31,6 +34,14 @@ protected:
 public:
 	virtual void initialize(flecs::entity &prefab, flecs::world &world) override;
 	virtual void initialize_entity_data(FlecsEntityNode *entity, flecs::world &world) override;
+
+	ModuleSyncDirection get_sync_direction() const;
+	void set_sync_direction(ModuleSyncDirection p_sync_direction);
+
+protected:
+
+	ModuleSyncDirection sync_direction = ModuleSyncDirection::FLECS_TO_GODOT;
+
 };
 
 #endif

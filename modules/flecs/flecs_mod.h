@@ -11,6 +11,16 @@ class FlecsEntityNode;
 class FlecsMod : public Resource {
 	GDCLASS(FlecsMod, Resource);
 
+public:
+
+	enum ModuleSyncDirection
+		{
+			NONE = 0,
+			FLECS_TO_GODOT = 1,
+			GODOT_TO_FLECS = 2
+		};
+
+
 
 protected:
 	static void _bind_methods();
@@ -26,5 +36,7 @@ public:
 
 	virtual void initialize_entity_data(FlecsEntityNode *entity, flecs::world &world) {};
 };
+
+VARIANT_ENUM_CAST(FlecsMod::ModuleSyncDirection);
 
 #endif // FLECS_MOD_H

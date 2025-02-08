@@ -15,7 +15,6 @@ private:
 
 protected:
     static void _bind_methods();
-	void _process(double delta); // Override directly
 
 	void _notification(int p_what);
 

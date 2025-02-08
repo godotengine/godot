@@ -19,24 +19,24 @@ void FlecsEntityNode::_notification(int p_what) {
 		return;
 	}
 
-	// switch(p_what) {
-	// 	case NOTIFICATION_ENTER_TREE: {
-	// 		if(prefab != nullptr && prefab.is_valid() && !owned_by_flecs) {
+	switch(p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if(prefab != nullptr && prefab.is_valid() && !owned_by_flecs) {
 
-	// 			if(!entity.is_valid()) {
-	// 				entity = prefab->instantiate();
-	// 			}
-	// 			entity->get_prefab()->initialize_entity_data(this);
-	// 		}
+				if(!entity.is_valid()) {
+					entity = prefab->instantiate();
+				}
+				entity->get_prefab()->initialize_entity_data(this);
+			}
 
-	// 	}
+		}
 
-	// 	case NOTIFICATION_EXIT_TREE: {
-	// 		if(owned_by_flecs) {
-	// 			entity->destroy();
-	// 		}
-	// 	}
-	// }
+		case NOTIFICATION_EXIT_TREE: {
+			if(entity.is_valid() && owned_by_flecs) {
+				entity->destroy();
+			}
+		}
+	}
 }
 
 void FlecsEntityNode::set_prefab(Ref<FlecsPrefab> p_prefab) {

@@ -5,12 +5,21 @@
 #include "../flecs_component.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "modules/jolt_physics/objects/jolt_body_3d.h"
 
 namespace components {
 
 struct FlecsRootNode {
 	Node3D *value{ nullptr };
+	RID physics_body_rid = RID();
+	JoltBody3D * jolt_body{ nullptr };
 };
+
+
+struct FlecsRootNodeToGodotSyncTag{};
+struct GodotToFlecsRootNodeSyncTag{};
+struct HasPhysicsBody3DTag{};
+
 
 } // namespace components
 
