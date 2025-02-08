@@ -11,14 +11,11 @@ namespace components {
 
 struct FlecsRootNode {
 	Node3D *value{ nullptr };
-	RID physics_body_rid = RID();
-	JoltBody3D * jolt_body{ nullptr };
 };
 
 
 struct FlecsRootNodeToGodotSyncTag{};
 struct GodotToFlecsRootNodeSyncTag{};
-struct HasPhysicsBody3DTag{};
 
 
 } // namespace components

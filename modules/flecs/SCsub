@@ -9,6 +9,8 @@ env_flecs = env_modules.Clone()
 env_flecs.Prepend(CPPPATH=["#thirdparty/jolt_physics/", "#thirdparty/xsimd/include"])
 
 env_flecs.Append(CPPPATH=["#modules/flecs/thirdparty", "#core"])
+env_flecs.Append(CPPPATH=["#modules/flecs/components", "#modules/flecs/modules"])
+
 
 # Compile Flecs
 env_flecs.add_source_files(env.modules_sources, "thirdparty/flecs.c")

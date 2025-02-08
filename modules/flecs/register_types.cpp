@@ -16,6 +16,9 @@
 #include "modules/flecs_packed_scene_module.h"
 #include "components/flecs_packed_scene_component.h"
 #include "modules/flecs_packed_scene_module.h"
+#include "modules/flecs_jolt_body3d_physics_module.h"
+#include "components/flecs_physics_component.h"
+#include "flecs_jolt_body3d_module.h"
 
 void initialize_flecs_module(ModuleInitializationLevel p_level) {
 
@@ -37,6 +40,10 @@ void initialize_flecs_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<FlecsPackedSceneMod>();
 	ClassDB::register_class<FlecsPackedSceneComponent>();
 	ClassDB::register_class<FlecsPackedSceneMod>();	
+	ClassDB::register_class<FlecsJoltBody3DMod>();
+	ClassDB::register_class<FlecsJoltBody3DComponent>();
+	ClassDB::register_class<FlecsJoltBody3DPhysicsMod>();
+	ClassDB::register_class<FlecsPhysicsComponent>();
 
 	FlecsComponent::generate_component_enum();
 

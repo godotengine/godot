@@ -1,8 +1,7 @@
-#ifndef FLECS_ROOT_NODE_MODULE_H
-#define FLECS_ROOT_NODE_MODULE_H
+#ifndef FLECS_JOLT_BODY3D_MODULE_H
+#define FLECS_JOLT_BODY3D_MODULE_H
 
-
-#include "../components/flecs_root_node_component.h"
+#include "../components/flecs_jolt_body3d_component.h"
 #include "../flecs_sync_mod.h"
 #include "../flecs_world.h"
 #include "core/object/class_db.h"
@@ -11,12 +10,14 @@
 
 namespace modules {
 
-struct FlecsRootNodeModule {
-	FlecsRootNodeModule(flecs::world &world) {
+struct FlecsJoltBody3DModule {
+	FlecsJoltBody3DModule(flecs::world &world) {
 
-		world.module<FlecsRootNodeModule>();
-		world.component<components::FlecsRootNode>();
+
+		world.module<FlecsJoltBody3DModule>();
+		world.component<components::FlecsJoltBody3D>();
 		_register_systems(world);
+
 	}
 
 	void _register_systems(flecs::world &world);
@@ -24,8 +25,8 @@ struct FlecsRootNodeModule {
 
 } //namespace modules
 
-class FlecsRootNodeMod : public FlecsSyncMod {
-	GDCLASS(FlecsRootNodeMod, FlecsSyncMod);
+class FlecsJoltBody3DMod : public FlecsSyncMod {
+	GDCLASS(FlecsJoltBody3DMod, FlecsSyncMod);
 
 protected:
 	static void _bind_methods();
@@ -36,4 +37,4 @@ public:
 
 };
 
-#endif
+#endif // FLECS_JOLT_BODY3D_MODULE_H
