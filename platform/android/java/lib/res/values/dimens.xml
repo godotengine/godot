@@ -5,4 +5,5 @@
 	<dimen name="button_padding">10dp</dimen>
 	<dimen name="dialog_padding_horizontal">16dp</dimen>
 	<dimen name="dialog_padding_vertical">8dp</dimen>
+	<dimen name="snackbar_bottom_margin">10dp</dimen>
 </resources>
