@@ -210,6 +210,8 @@ void RasterizerGLES3::initialize() {
 }
 
 void RasterizerGLES3::finalize() {
+	// Has to be a separate call due to TextureStorage & MaterialStorage needing to interact for TexBlit Shaders
+	texture_storage->_tex_blit_shader_free();
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(gi);
@@ -372,6 +374,8 @@ RasterizerGLES3::RasterizerGLES3() {
 	fog = memnew(GLES3::Fog);
 	canvas = memnew(RasterizerCanvasGLES3());
 	scene = memnew(RasterizerSceneGLES3());
+	// Has to be a separate call due to TextureStorage & MaterialStorage needing to interact for TexBlit Shaders
+	texture_storage->_tex_blit_shader_initialize();
 
 	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
 	if (config->srgb_framebuffer_supported) {

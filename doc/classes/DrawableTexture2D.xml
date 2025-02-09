@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DrawableTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D texture that supports drawing to itself via Blit calls.
+	</brief_description>
+	<description>
+		A 2D texture that can be modified via blit calls, copying from a target texture to itself. Primarily intended to be managed in code, a user must call [method setup] to initialize the state before drawing. Each [method blit_rect] call takes at least a rectangle, the area to draw to, and another texture, what to be drawn. The draw calls use a Texture_Blit Shader to process and calculate the result, pixel by pixel. Users can supply their own ShaderMaterial with custom Texture_Blit shaders for more complex behaviors.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="blit_rect" experimental="This function and its parameters are likely to change in the 4.6 Dev Cycle">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="source" type="Texture2D" />
+			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="3" name="mipmap" type="int" default="0" />
+			<param index="4" name="material" type="Material" default="null" />
+			<description>
+				Draws to given [param rect] on this texture by copying from the given [param source]. A [param modulate] color can be passed in for the shader to use, but defaults to White. The [param mipmap] value can specify a draw to a lower mipmap level. The [param material] parameter can take a ShaderMaterial with a TextureBlit Shader for custom drawing behavior.
+			</description>
+		</method>
+		<method name="blit_rect_multi" experimental="This function and its parameters are likely to change in the 4.6 Dev Cycle">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="sources" type="Texture2D[]" />
+			<param index="2" name="extra_targets" type="DrawableTexture2D[]" />
+			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="mipmap" type="int" default="0" />
+			<param index="5" name="material" type="Material" default="null" />
+			<description>
+				Draws to the given [param rect] on this texture, as well as on up to 3 DrawableTexture [param extra_targets]. All [param extra_targets] must be the same size and DrawableFormat as the original target, otherwise the Shader may fail. Expects up to 4 Texture [param sources], but will replace missing [param sources] with default Black Textures.
+			</description>
+		</method>
+		<method name="generate_mipmaps">
+			<return type="void" />
+			<description>
+				Re-calculates the mipmaps for this texture on demand.
+			</description>
+		</method>
+		<method name="setup" experimental="This function and its parameters are likely to change in the 4.6 Dev Cycle">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="format" type="int" enum="DrawableTexture2D.DrawableFormat" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="use_mipmaps" type="bool" default="false" />
+			<description>
+				Initializes the DrawableTexture to a White texture of the given [param width], [param height], and [param format].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+	</members>
+	<constants>
+		<constant name="DRAWABLE_FORMAT_RGBA8" value="0" enum="DrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+		</constant>
+		<constant name="DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="DrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			When drawn to, an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="DRAWABLE_FORMAT_RGBAH" value="2" enum="DrawableFormat">
+			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="DRAWABLE_FORMAT_RGBAF" value="3" enum="DrawableFormat">
+			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point value.
+		</constant>
+	</constants>
+</class>

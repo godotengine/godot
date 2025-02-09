@@ -74,5 +74,8 @@
 		<constant name="MODE_FOG" value="4" enum="Mode">
 			Mode used for setting the color and density of volumetric fog effect.
 		</constant>
+		<constant name="MODE_TEXTURE_BLIT" value="5" enum="Mode">
+			Mode used for drawing to DrawableTexture resources via blit calls.
+		</constant>
 	</constants>
 </class>

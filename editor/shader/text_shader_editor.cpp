@@ -380,6 +380,8 @@ void ShaderTextEditor::_check_shader_mode() {
 		mode = Shader::MODE_SKY;
 	} else if (type == "fog") {
 		mode = Shader::MODE_FOG;
+	} else if (type == "texture_blit") {
+		mode = Shader::MODE_TEXTURE_BLIT;
 	} else {
 		mode = Shader::MODE_SPATIAL;
 	}

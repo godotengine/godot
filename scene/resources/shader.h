@@ -48,6 +48,7 @@ public:
 		MODE_PARTICLES,
 		MODE_SKY,
 		MODE_FOG,
+		MODE_TEXTURE_BLIT,
 		MODE_MAX
 	};
 

@@ -174,6 +174,28 @@ public:
 		return ret;                                                                                                  \
 	}
 
+#define FUNCRIDTEX4(m_type, m_type1, m_type2, m_type3, m_type4)                                                          \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4) override {                               \
+		RID ret = RSG::texture_storage->texture_allocate();                                                              \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                 \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4);                                              \
+		} else {                                                                                                         \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4); \
+		}                                                                                                                \
+		return ret;                                                                                                      \
+	}
+
+#define FUNCRIDTEX5(m_type, m_type1, m_type2, m_type3, m_type4, m_type5)                                                     \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5) override {                       \
+		RID ret = RSG::texture_storage->texture_allocate();                                                                  \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                     \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4, p5);                                              \
+		} else {                                                                                                             \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4, p5); \
+		}                                                                                                                    \
+		return ret;                                                                                                          \
+	}
+
 #define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
@@ -191,6 +213,7 @@ public:
 	FUNCRIDTEX6(texture_3d, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	FUNCRIDTEX3(texture_external, int, int, uint64_t)
 	FUNCRIDTEX1(texture_proxy, RID)
+	FUNCRIDTEX5(texture_drawable, int, int, TextureDrawableFormat, const Color &, bool)
 
 	// Called directly, not through the command queue.
 	virtual RID texture_create_from_native_handle(TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, TextureLayeredType p_layered_type = TEXTURE_LAYERED_2D_ARRAY) override {
@@ -203,6 +226,8 @@ public:
 	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
 
+	FUNC6(texture_drawable_blit_rect, const TypedArray<RID> &, const Rect2i &, RID, const Color &, const TypedArray<RID> &, int)
+
 	//these also go pass-through
 	FUNCRIDTEX0(texture_2d_placeholder)
 	FUNCRIDTEX1(texture_2d_layered_placeholder, TextureLayeredType)
@@ -211,6 +236,9 @@ public:
 	FUNC1RC(Ref<Image>, texture_2d_get, RID)
 	FUNC2RC(Ref<Image>, texture_2d_layer_get, RID, int)
 	FUNC1RC(Vector<Ref<Image>>, texture_3d_get, RID)
+
+	FUNC1(texture_drawable_generate_mipmaps, RID)
+	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
 
