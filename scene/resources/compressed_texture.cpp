@@ -146,6 +146,8 @@ Error CompressedTexture2D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_create(image);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
+
 	if (lw || lh) {
 		RS::get_singleton()->texture_set_size_override(texture, lw, lh);
 	}
@@ -567,6 +569,7 @@ Error CompressedTexture3D::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data);
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 
 	w = tw;
 	h = th;
@@ -756,6 +759,7 @@ Error CompressedTextureLayered::load(const String &p_path) {
 	} else {
 		texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type));
 	}
+	RS::get_singleton()->texture_set_path(texture, get_path());
 
 	w = images[0]->get_width();
 	h = images[0]->get_height();
