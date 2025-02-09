@@ -2890,9 +2890,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!scene->get_scene_file_path().is_empty()) {
 				String path = scene->get_scene_file_path();
+				String root_name = EditorNode::adjust_scene_name_casing(scene->get_name());
+				String ext = path.get_extension().to_lower();
+				path = path.get_base_dir().path_join(root_name + "." + ext);
+
 				file->set_current_path(path);
 				if (extensions.size()) {
-					String ext = path.get_extension().to_lower();
 					if (extensions.find(ext) == nullptr) {
 						file->set_current_path(path.replacen("." + ext, "." + extensions.front()->get()));
 					}
