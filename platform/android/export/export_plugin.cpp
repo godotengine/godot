@@ -55,6 +55,10 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
 
+#ifdef MODULE_MONO_ENABLED
+#include "modules/mono/utils/path_utils.h"
+#endif
+
 #ifdef ANDROID_ENABLED
 #include "../os_android.h"
 #endif
@@ -2526,6 +2530,43 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 	return valid;
 }
 
+#ifdef MODULE_MONO_ENABLED
+bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
+	String assembly_name = path::get_csharp_project_name();
+	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
+
+	if (!FileAccess::exists(project_path)) {
+		return true;
+	}
+
+	String pipe;
+	List<String> args;
+	args.push_back("build");
+	args.push_back(project_path);
+	args.push_back("--getProperty:TargetFramework");
+
+	int exitcode;
+	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+	if (err != OK || exitcode != 0) {
+		if (err != OK) {
+			WARN_PRINT("Failed to execute dotnet command. Error " + String(error_names[err]));
+		} else if (exitcode != 0) {
+			print_line(pipe);
+			WARN_PRINT("dotnet command exited with code " + itos(exitcode) + ". See output above for more details.");
+		}
+		r_error += vformat(TTR("Unable to determine the C# project's TFM, it may be incompatible. The export template only supports '%s'. Make sure the project targets '%s' or consider using gradle builds instead."), required_tfm, required_tfm) + "\n";
+	} else {
+		String tfm = pipe.strip_edges();
+		if (tfm != required_tfm) {
+			r_error += vformat(TTR("C# project targets '%s' but the export template only supports '%s'. Consider using gradle builds instead."), tfm, required_tfm) + "\n";
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif
+
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
@@ -2534,6 +2575,15 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+
+	if (!gradle_build_enabled) {
+		// For template exports we only support .NET 8 because the template
+		// includes .jar dependencies that may only be compatible with .NET 8.
+		if (!_validate_dotnet_tfm("net8.0", err)) {
+			r_error = err;
+			return false;
+		}
+	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
