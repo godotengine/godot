@@ -255,6 +255,7 @@ private:
 
 	bool camera_first_override = true;
 	bool camera_freelook = false;
+	real_t freelook_speed = FREELOOK_BASE_SPEED;
 
 	Vector2 previous_mouse_position;
 
@@ -309,6 +310,7 @@ private:
 	bool _handle_3d_input(const Ref<InputEvent> &p_event);
 	void _set_camera_freelook_enabled(bool p_enabled);
 	void _cursor_scale_distance(real_t p_scale);
+	void _scale_freelook_speed(real_t p_scale);
 	void _cursor_look(Ref<InputEventWithModifiers> p_event);
 	void _cursor_pan(Ref<InputEventWithModifiers> p_event);
 	void _cursor_orbit(Ref<InputEventWithModifiers> p_event);
