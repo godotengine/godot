@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Jolt/Core/QuickSort.h>
+#include <Jolt/Core/STLLocalAllocator.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
 
 //#define JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
@@ -17,10 +18,13 @@ JPH_NAMESPACE_BEGIN
 
 /// Removes internal edges from collision results. Can be used to filter out 'ghost collisions'.
 /// Based on: Contact generation for meshes - Pierre Terdiman (https://www.codercorner.com/MeshContacts.pdf)
+///
+/// Note that this class requires that CollideSettingsBase::mActiveEdgeMode == EActiveEdgeMode::CollideWithAll
+/// and CollideSettingsBase::mCollectFacesMode == ECollectFacesMode::CollectFaces.
 class InternalEdgeRemovingCollector : public CollideShapeCollector
 {
-	static constexpr uint cMaxDelayedResults = 16;
-	static constexpr uint cMaxVoidedFeatures = 128;
+	static constexpr uint cMaxLocalDelayedResults = 32;
+	static constexpr uint cMaxLocalVoidedFeatures = 128;
 
 	/// Check if a vertex is voided
 	inline bool				IsVoided(const SubShapeID &inSubShapeID, Vec3 inV) const
@@ -35,17 +39,14 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
 	/// Add all vertices of a face to the voided features
 	inline void				VoidFeatures(const CollideShapeResult &inResult)
 	{
-		if (mVoidedFeatures.size() < cMaxVoidedFeatures)
-			for (const Vec3 &v : inResult.mShape2Face)
-				if (!IsVoided(inResult.mSubShapeID1, v))
-				{
-					Voided vf;
-					v.StoreFloat3(&vf.mFeature);
-					vf.mSubShapeID = inResult.mSubShapeID1;
-					mVoidedFeatures.push_back(vf);
-					if (mVoidedFeatures.size() == cMaxVoidedFeatures)
-						break;
-				}
+		for (const Vec3 &v : inResult.mShape2Face)
+			if (!IsVoided(inResult.mSubShapeID1, v))
+			{
+				Voided vf;
+				v.StoreFloat3(&vf.mFeature);
+				vf.mSubShapeID = inResult.mSubShapeID1;
+				mVoidedFeatures.push_back(vf);
+			}
 	}
 
 	/// Call the chained collector
@@ -119,8 +120,6 @@ public:
 			return ChainAndVoid(inResult);
 
 		// Delayed processing
-		if (mDelayedResults.size() == cMaxDelayedResults)
-			return ChainAndVoid(inResult);
 		mDelayedResults.push_back(inResult);
 	}
 
@@ -128,10 +127,11 @@ public:
 	void					Flush()
 	{
 		// Sort on biggest penetration depth first
-		uint sorted_indices[cMaxDelayedResults];
+		Array<uint, STLLocalAllocator<uint, cMaxLocalDelayedResults>> sorted_indices;
+		sorted_indices.resize(mDelayedResults.size());
 		for (uint i = 0; i < uint(mDelayedResults.size()); ++i)
 			sorted_indices[i] = i;
-		QuickSort(sorted_indices, sorted_indices + mDelayedResults.size(), [this](uint inLHS, uint inRHS) { return mDelayedResults[inLHS].mPenetrationDepth > mDelayedResults[inRHS].mPenetrationDepth; });
+		QuickSort(sorted_indices.begin(), sorted_indices.end(), [this](uint inLHS, uint inRHS) { return mDelayedResults[inLHS].mPenetrationDepth > mDelayedResults[inRHS].mPenetrationDepth; });
 
 		// Loop over all results
 		for (uint i = 0; i < uint(mDelayedResults.size()); ++i)
@@ -243,8 +243,8 @@ private:
 	};
 
 	CollideShapeCollector &	mChainedCollector;
-	StaticArray<Voided, cMaxVoidedFeatures> mVoidedFeatures;
-	StaticArray<CollideShapeResult, cMaxDelayedResults> mDelayedResults;
+	Array<Voided, STLLocalAllocator<Voided, cMaxLocalVoidedFeatures>> mVoidedFeatures;
+	Array<CollideShapeResult, STLLocalAllocator<CollideShapeResult, cMaxLocalDelayedResults>> mDelayedResults;
 };
 
 JPH_NAMESPACE_END
