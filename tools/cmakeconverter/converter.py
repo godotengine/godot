@@ -3,8 +3,8 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
-from interpreter import SConsInterpreter, SConsError
-from cmake_generator import GodotCMakeGenerator
+from .interpreter import SConsInterpreter, SConsError
+from .cmake_generator import GodotCMakeGenerator
 
 class BuildSystemConverter:
     """Converts SCons build system to CMake"""
@@ -19,10 +19,17 @@ class BuildSystemConverter:
     def process_scons(self, sconstruct_path: str):
         """Process the SCons build system"""
         try:
-            # Add project root to Python path
+            # Create interpreter with project root
             project_root = os.path.dirname(os.path.abspath(sconstruct_path))
+            converter_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
+            # Add project root and converter root to Python path
             if project_root not in sys.path:
                 sys.path.insert(0, project_root)
+            if converter_root not in sys.path:
+                sys.path.insert(0, converter_root)
+                
+            self.interpreter = SConsInterpreter(project_root=project_root)
 
             # Parse SCons configuration
             self.interpreter.interpret_file(sconstruct_path)
@@ -32,13 +39,19 @@ class BuildSystemConverter:
             
             # Get default environment
             env = self.interpreter.default_env
-            if hasattr(env, 'Dictionary'):
-                self.scons_env = env.Dictionary()
-            else:
-                self.scons_env = {}
+            self.scons_env = env.variables.copy()
+            self.scons_env.update({
+                'CCFLAGS': env.get('CCFLAGS', []),
+                'CXXFLAGS': env.get('CXXFLAGS', []),
+                'LINKFLAGS': env.get('LINKFLAGS', []),
+                'CPPPATH': env.get('CPPPATH', []),
+                'CPPDEFINES': env.get('CPPDEFINES', []),
+                'LIBS': env.get('LIBS', []),
+                'LIBPATH': env.get('LIBPATH', []),
+            })
 
             # Get platform
-            self.platform = self.scons_env.get('platform', '')
+            self.platform = self.scons_vars.get('platform', 'linuxbsd')
 
             # Get modules
             self.modules = self._detect_modules()
@@ -48,16 +61,25 @@ class BuildSystemConverter:
             raise
 
     def _detect_modules(self) -> List[str]:
-        """Detect available Godot modules"""
+        """Detect available and enabled Godot modules"""
         modules = []
-        modules_path = os.path.join(os.path.dirname(self.interpreter.current_script_dir), "modules")
         
-        if os.path.exists(modules_path):
-            for item in os.listdir(modules_path):
-                if os.path.isdir(os.path.join(modules_path, item)):
-                    # Check if it's a valid module (has a SCons file)
-                    if os.path.exists(os.path.join(modules_path, item, "SCsub")):
-                        modules.append(item)
+        # First check enabled modules from variables
+        for key, value in self.scons_vars.items():
+            if key.startswith('module_') and key.endswith('_enabled'):
+                if value:
+                    module = key[7:-8]  # Remove 'module_' prefix and '_enabled' suffix
+                    modules.append(module)
+        
+        # Then check for modules with SCsub files
+        if not modules:  # Only if no modules were found in variables
+            modules_path = os.path.join(os.path.dirname(self.interpreter.current_script_dir), "modules")
+            if os.path.exists(modules_path):
+                for item in os.listdir(modules_path):
+                    if os.path.isdir(os.path.join(modules_path, item)):
+                        # Check if it's a valid module (has a SCons file)
+                        if os.path.exists(os.path.join(modules_path, item, "SCsub")):
+                            modules.append(item)
         
         return modules
 
@@ -76,6 +98,37 @@ class BuildSystemConverter:
             # Process platform
             if self.platform:
                 self.cmake_generator.process_platform(self.platform)
+
+            # Process builders
+            for builder in self.interpreter.default_env.builders:
+                if builder['type'] == 'program':
+                    target = self.cmake_generator.project.add_target(
+                        name=builder['target'][0],
+                        target_type='executable'
+                    )
+                    target.add_sources(builder['source'])
+                    if 'include_dirs' in builder:
+                        target.add_include_dirs(builder['include_dirs'])
+                    if 'compile_flags' in builder:
+                        target.add_compile_options(builder['compile_flags'])
+                    if 'link_flags' in builder:
+                        target.add_link_options(builder['link_flags'])
+                    if 'libraries' in builder:
+                        target.add_link_libraries(builder['libraries'])
+                elif builder['type'] == 'library':
+                    target = self.cmake_generator.project.add_target(
+                        name=builder['target'][0],
+                        target_type='shared' if builder.get('shared', False) else 'static'
+                    )
+                    target.add_sources(builder['source'])
+                    if 'include_dirs' in builder:
+                        target.add_include_dirs(builder['include_dirs'])
+                    if 'compile_flags' in builder:
+                        target.add_compile_options(builder['compile_flags'])
+                    if 'link_flags' in builder:
+                        target.add_link_options(builder['link_flags'])
+                    if 'libraries' in builder:
+                        target.add_link_libraries(builder['libraries'])
 
             # Generate CMake files
             self.cmake_generator.generate(output_path)

@@ -2,6 +2,7 @@
 from typing import Any, Dict, List, Optional, Union, Callable
 import os
 import copy
+from . import methods
 from .base import SConsError, Node, FileNode, DirNode
 from .variables import Variable
 
@@ -12,7 +13,27 @@ class SConsEnvironment:
         self.builders: List[Dict[str, Any]] = []
         self.tools: List[str] = []
         self.env_dict: Dict[str, str] = os.environ.copy()
+        self.disabled_classes: List[str] = []
+        self.core_sources: List[str] = []
+        self.source_files: Dict[str, List[str]] = {}
+        self._dict = {}
+        self.version_info = {
+            'short_name': 'godot',
+            'name': 'Godot Engine',
+            'major': 4,
+            'minor': 4,
+            'patch': 0,
+            'status': 'beta',
+            'build': 'custom_build',
+            'module_config': '',
+            'website': 'https://godotengine.org',
+            'docs_branch': 'latest',
+            'git_hash': '',
+            'git_timestamp': 0,
+        }
         self._dict = {
+            'disabled_classes': self.disabled_classes,
+            'version_info': self.version_info,
             'ENV': self.env_dict,
             'BUILDERS': {},
             'TOOLS': self.tools,
@@ -181,6 +202,8 @@ class SConsEnvironment:
         for key, value in kwargs.items():
             if key not in self.variables:
                 self.variables[key] = []
+            elif not isinstance(self.variables[key], list):
+                self.variables[key] = [self.variables[key]]
             if value is None:
                 continue
             if isinstance(value, (list, tuple)):
@@ -350,6 +373,22 @@ class SConsEnvironment:
         self.builders.append(obj)
         return obj
         
+    def Program(self, target: Union[str, List[str]], source: Optional[Union[str, List[str]]] = None, **kwargs) -> Any:
+        """Create an executable program"""
+        # For now, just record that we want to build this program
+        if isinstance(target, str):
+            target = [target]
+        if isinstance(source, str):
+            source = [source]
+        prog = {
+            'type': 'program',
+            'target': target,
+            'source': source,
+            **kwargs
+        }
+        self.builders.append(prog)
+        return prog
+        
     def Glob(self, pattern: str) -> List[str]:
         """Find files matching a glob pattern"""
         import glob
@@ -373,6 +412,198 @@ class SConsEnvironment:
             
         pattern = os.path.join(base_dir, pattern)
         return glob.glob(pattern)
+        
+    def Run(self, func: Callable) -> Callable:
+        """Run a function"""
+        def wrapper(target, source, env):
+            if isinstance(source, list):
+                source = [s.path if hasattr(s, 'path') else str(s) for s in source]
+            if isinstance(target, list):
+                target = [t.path if hasattr(t, 'path') else str(t) for t in target]
+            return func(target, source, env)
+        return wrapper
+        
+    def Command(self, target: Union[str, List[str]], source: Union[str, List[str]], action: Union[str, Callable], **kwargs) -> Any:
+        """Run a command"""
+        if isinstance(action, str):
+            def action_func(target, source, env):
+                os.system(action)
+                return 0
+            action = action_func
+        return action(target, source, self)
+        
+    def Value(self, value: Any) -> Any:
+        """Create a value node that mimics SCons' Value node behavior"""
+        class ValueNode:
+            def __init__(self, value):
+                self.value = value if value is not None else []
+                if not isinstance(self.value, (list, tuple)):
+                    self.value = [str(self.value)]
+            def read(self):
+                """Return the value in a form suitable for iteration"""
+                return self.value
+            def __getitem__(self, key):
+                """Support list indexing, always returning a ValueNode"""
+                if isinstance(key, slice):
+                    return ValueNode(self.value[key])
+                try:
+                    return ValueNode(self.value[key])
+                except IndexError:
+                    return ValueNode([])
+            def __len__(self):
+                """Support len() operation"""
+                return len(self.value)
+            def __iter__(self):
+                """Support iteration"""
+                return iter(self.value)
+            def __str__(self):
+                """String representation"""
+                if len(self.value) == 1:
+                    return str(self.value[0])
+                return str(self.value)
+            def __bool__(self):
+                """Truth value testing"""
+                return bool(self.value)
+            def __call__(self, *args, **kwargs):
+                """Support callable nodes"""
+                return self
+        return ValueNode(value)
+        
+    def NoCache(self, target: Any) -> Any:
+        """Mark a target as not cacheable"""
+        return target
+        
+    def Glob(self, pattern: str) -> List[str]:
+        """Return a list of files matching the pattern"""
+        print(f"DEBUG: Glob called with pattern={pattern}")
+        import glob
+        import os
+        
+        if pattern is None:
+            print("DEBUG: Warning: pattern is None")
+            return []
+            
+        print(f"DEBUG: Original pattern: {pattern}")
+        if pattern.startswith('#'):
+            pattern = pattern[1:]  # Remove the # prefix
+            print(f"DEBUG: Pattern after removing #: {pattern}")
+            
+        if not pattern.startswith('/'):
+            # Relative path, use current directory
+            old_pattern = pattern
+            pattern = os.path.join(os.getcwd(), pattern)
+            print(f"DEBUG: Pattern converted from {old_pattern} to {pattern}")
+            
+        dirname = os.path.dirname(pattern)
+        print(f"DEBUG: Directory name: {dirname}")
+        if not os.path.exists(dirname):
+            print(f"DEBUG: Warning: directory {dirname} does not exist")
+            print(f"DEBUG: Current directory: {os.getcwd()}")
+            print(f"DEBUG: Parent directory contents: {os.listdir(os.path.dirname(dirname))}")
+            return []
+            
+        print(f"DEBUG: Directory contents: {os.listdir(dirname)}")
+        result = glob.glob(pattern)
+        print(f"DEBUG: Raw glob result: {result}")
+        
+        # Convert absolute paths to relative paths
+        cwd = os.getcwd()
+        print(f"DEBUG: Current working directory: {cwd}")
+        result = [os.path.relpath(p, cwd) for p in result]
+        print(f"DEBUG: Relative path result: {result}")
+        
+        if not result:
+            print(f"DEBUG: Warning: no files found matching pattern {pattern}")
+            return []  # Return empty list instead of None
+            
+        return result
+        
+    def Dir(self, path: str) -> Any:
+        """Return a directory node"""
+        print(f"DEBUG: Dir called with path={path}")
+        class DirNode:
+            def __init__(self, path):
+                print(f"DEBUG: Creating DirNode with path={path}")
+                self.path = path
+                if path.startswith('#'):
+                    self.path = path[1:]  # Remove the # prefix
+                    print(f"DEBUG: Path after removing #: {self.path}")
+            @property
+            def tpath(self):
+                print(f"DEBUG: Getting tpath: {self.path}")
+                return self.path
+            def __str__(self):
+                return f"DirNode({self.path})"
+            def __repr__(self):
+                return self.__str__()
+        result = DirNode(path)
+        print(f"DEBUG: Dir result: {result}")
+        return result
+        
+    def Object(self, path: str) -> Any:
+        """Return an object node"""
+        print(f"DEBUG: Object called with path={path}")
+        class ObjectNode:
+            def __init__(self, path):
+                print(f"DEBUG: Creating ObjectNode with path={path}")
+                self.path = path
+                if path.startswith('#'):
+                    self.path = path[1:]  # Remove the # prefix
+                    print(f"DEBUG: Path after removing #: {self.path}")
+            def __eq__(self, other):
+                print(f"DEBUG: Comparing {self} with {other}")
+                if isinstance(other, ObjectNode):
+                    result = self.path == other.path
+                    print(f"DEBUG: Comparison result: {result}")
+                    return result
+                print("DEBUG: Other object is not an ObjectNode")
+                return False
+            def __str__(self):
+                return f"ObjectNode({self.path})"
+            def __repr__(self):
+                return self.__str__()
+            def __hash__(self):
+                result = hash(self.path)
+                print(f"DEBUG: Hash for {self}: {result}")
+                return result
+        result = ObjectNode(path)
+        print(f"DEBUG: Object result: {result}")
+        return result
+        
+    def add_source_files(self, target: str, files: List[str], allow_gen: bool = True) -> None:
+        """Add source files to a target"""
+        print(f"DEBUG: add_source_files called with target={target}, files={files}, allow_gen={allow_gen}")
+        print(f"DEBUG: Current source_files: {self.source_files}")
+        print(f"DEBUG: Type of files: {type(files)}")
+        
+        if target not in self.source_files:
+            print(f"DEBUG: Creating new list for target {target}")
+            self.source_files[target] = []
+            
+        if isinstance(files, str):
+            print(f"DEBUG: Converting string to list: {files}")
+            files = [files]
+            
+        if files is not None:
+            print(f"DEBUG: Extending source files: {files}")
+            try:
+                self.source_files[target].extend(files)
+                print(f"DEBUG: Source files after extend: {self.source_files[target]}")
+            except Exception as e:
+                print(f"DEBUG: Error extending source files: {e}")
+        else:
+            print("DEBUG: Warning: files is None")
+            
+        print(f"DEBUG: Final source_files: {self.source_files}")
+        
+    def CommandNoCache(self, target: Union[str, List[str]], source: Union[str, List[str]], action: Union[str, Callable]) -> Any:
+        """Run a command without caching"""
+        if isinstance(action, str):
+            def action_func(target, source, env):
+                os.system(action)
+                return 0
+            action = action_func
+        return action(target, source, self)
         
     def Add(self, variable: Union[str, Variable], help_text: str = '', default: Any = None, **kwargs) -> None:
         """Add a construction variable"""

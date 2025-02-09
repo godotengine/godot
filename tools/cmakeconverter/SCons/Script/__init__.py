@@ -1,6 +1,6 @@
 """Mock SCons.Script module"""
-from interpreter.variables import Variables, EnumVariable, BoolVariable, PathVariable, ListVariable
-from interpreter.builders import Action, Builder, Program, StaticLibrary, SharedLibrary, Object
+from tools.cmakeconverter.interpreter.variables import Variables, EnumVariable, BoolVariable, PathVariable, ListVariable
+from tools.cmakeconverter.interpreter.builders import Action, Builder, Program, StaticLibrary, SharedLibrary, Object
 
 # Global variables
 ARGUMENTS = {}

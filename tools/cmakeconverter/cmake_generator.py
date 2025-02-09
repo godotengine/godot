@@ -18,7 +18,10 @@ class CMakeTarget:
 
     def add_sources(self, sources: List[str]):
         """Add source files to the target"""
-        self.sources.extend(sources)
+        for src in sources:
+            if not os.path.isabs(src):
+                src = "${CMAKE_SOURCE_DIR}/" + src
+            self.sources.append(src)
 
     def add_include_dirs(self, dirs: List[str]):
         """Add include directories"""
@@ -290,13 +293,15 @@ class GodotCMakeGenerator:
         cmake_content = self.project.generate()
         
         # Write the main CMakeLists.txt
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_dir = os.path.dirname(output_path)
+        if output_dir:  # Only create directory if path has a directory part
+            os.makedirs(output_dir, exist_ok=True)
         with open(output_path, "w") as f:
             f.write(cmake_content)
 
         # Generate module CMakeLists.txt files
         for module in self.enabled_modules:
-            module_path = f"modules/{module}/CMakeLists.txt"
+            module_path = os.path.join(os.path.dirname(output_path), "modules", module, "CMakeLists.txt")
             module_content = self._generate_module_cmake(module)
             os.makedirs(os.path.dirname(module_path), exist_ok=True)
             with open(module_path, "w") as f:

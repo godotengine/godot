@@ -61,6 +61,26 @@ class Program(Builder):
     """Builder for executable programs"""
     def __init__(self, **kwargs):
         super().__init__(suffix='.exe' if sys.platform == 'win32' else '', **kwargs)
+        
+    def __call__(self, env: Any, target: Union[str, List[str]], 
+                 source: Optional[Union[str, List[str]]] = None, **kwargs) -> List[Node]:
+        """Build the target"""
+        if isinstance(target, str):
+            target = [target]
+        if isinstance(source, str):
+            source = [source]
+            
+        # Convert targets and sources to nodes
+        target_nodes = [FileNode(t) for t in target]
+        source_nodes = [FileNode(s) for s in (source or [])]
+        
+        # Execute the action if one exists
+        if self.action:
+            result = self.action(target_nodes, source_nodes, env)
+            if result != 0:
+                raise SConsError(f"Builder action failed with code {result}")
+                
+        return target_nodes
 
 class StaticLibrary(Builder):
     """Builder for static libraries"""
