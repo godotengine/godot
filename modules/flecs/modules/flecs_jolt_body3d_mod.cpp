@@ -1,4 +1,4 @@
-#include "flecs_jolt_body3d_module.h"
+#include "flecs_jolt_body3d_mod.h"
 #include "../flecs_entity_node.h"
 #include "modules/jolt_physics/jolt_physics_server_3d.h"
 #include "modules/jolt_physics/objects/jolt_body_3d.h"
@@ -47,10 +47,10 @@ void FlecsJoltBody3DMod::initialize(flecs::entity &prefab, flecs::world &world) 
 	prefab.auto_override<components::FlecsJoltBody3D>();
 
 	switch (sync_direction) {
-		case FlecsMod::ModuleSyncDirection::FLECS_TO_GODOT:
+		case ModuleSyncDirection::FLECS_TO_GODOT:
 			prefab.add<components::FlecsToJoltBody3DSyncTag>();
 			break;
-		case FlecsMod::ModuleSyncDirection::GODOT_TO_FLECS:
+		case ModuleSyncDirection::GODOT_TO_FLECS:
 			prefab.add<components::JoltBody3DToFlecsSyncTag>();
 			break;
 	}

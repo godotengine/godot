@@ -18,8 +18,8 @@
 #include "modules/flecs_packed_scene_module.h"
 #include "modules/flecs_jolt_body3d_physics_module.h"
 #include "components/flecs_physics_component.h"
-#include "flecs_jolt_body3d_module.h"
-
+#include "flecs_jolt_body3d_mod.h"
+#include "flecs_sync_mod.h"
 void initialize_flecs_module(ModuleInitializationLevel p_level) {
 
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -31,6 +31,7 @@ void initialize_flecs_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<FlecsEntity>();
 	ClassDB::register_abstract_class<FlecsComponent>();
 	ClassDB::register_abstract_class<FlecsMod>();
+	ClassDB::register_abstract_class<FlecsSyncMod>();
 	ClassDB::register_class<FlecsPrefab>();
 	ClassDB::register_class<FlecsEntityNode>();
 	ClassDB::register_class<FlecsTransformMod>();

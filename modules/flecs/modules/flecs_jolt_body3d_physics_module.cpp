@@ -1,5 +1,5 @@
 #include "flecs_jolt_body3d_physics_module.h"
-#include "flecs_jolt_body3d_module.h"
+#include "flecs_jolt_body3d_mod.h"
 
 void modules::FlecsJoltBody3DPhysicsModule::_register_systems(flecs::world &world) {
 

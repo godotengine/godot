@@ -7,18 +7,14 @@ class FlecsSyncMod : public FlecsMod {
 	GDCLASS(FlecsSyncMod, FlecsMod);
 
 public:
-
-	FlecsMod::ModuleSyncDirection get_sync_direction() const;
-	void set_sync_direction(FlecsMod::ModuleSyncDirection p_sync_direction);
-
+	ModuleSyncDirection get_sync_direction() const {return sync_direction;}
+	void set_sync_direction(ModuleSyncDirection p_sync_direction) {sync_direction = p_sync_direction;}
 
 protected:
 	static void _bind_methods();
 
 protected:
-
-	FlecsMod::ModuleSyncDirection sync_direction = FlecsMod::ModuleSyncDirection::NONE;
-
+	ModuleSyncDirection sync_direction = ModuleSyncDirection::NONE;
 };
 
 #endif // FLECS_SYNC_MOD_H

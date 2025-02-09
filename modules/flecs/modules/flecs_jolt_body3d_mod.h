@@ -1,5 +1,5 @@
-#ifndef FLECS_JOLT_BODY3D_MODULE_H
-#define FLECS_JOLT_BODY3D_MODULE_H
+#ifndef FLECS_JOLT_BODY3D_MOD_H
+#define FLECS_JOLT_BODY3D_MOD_H
 
 #include "../components/flecs_jolt_body3d_component.h"
 #include "../flecs_sync_mod.h"
@@ -37,4 +37,4 @@ public:
 
 };
 
-#endif // FLECS_JOLT_BODY3D_MODULE_H
+#endif // FLECS_JOLT_BODY3D_MOD_H

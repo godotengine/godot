@@ -4,7 +4,6 @@
 #include "../flecs_entity_node.h"
 #include "scene/3d/node_3d.h"
 
-
 void modules::FlecsRootNodeModule::_register_systems(flecs::world &world) {
 	world.system<const components::FlecsRootNode, components::FlecsLocation, components::FlecsRotation, components::FlecsScale>("godot_to_flecs_root_node_sync")
 			.with<components::GodotToFlecsRootNodeSyncTag>()
@@ -34,10 +33,10 @@ void FlecsRootNodeMod::initialize(flecs::entity &prefab, flecs::world &world) {
 	prefab.auto_override<components::FlecsRootNode>();
 
 	switch (sync_direction) {
-		case FlecsMod::ModuleSyncDirection::FLECS_TO_GODOT:
+		case ModuleSyncDirection::FLECS_TO_GODOT:
 			prefab.add<components::FlecsRootNodeToGodotSyncTag>();
 			break;
-		case FlecsMod::ModuleSyncDirection::GODOT_TO_FLECS:
+		case ModuleSyncDirection::GODOT_TO_FLECS:
 			prefab.add<components::GodotToFlecsRootNodeSyncTag>();
 			break;
 	}
