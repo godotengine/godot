@@ -38,6 +38,9 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
 
+// include color picker
+#include "scene/gui/color_picker.h"
+
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
@@ -152,9 +155,11 @@ void TileAtlasView::_zoom_widget_changed() {
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
-void TileAtlasView::_toggle_background() {
-	background_left->set_visible(!background_left->is_visible());
-	background_right->set_visible(!background_right->is_visible());
+void TileAtlasView::_change_background_color(Color p_color) {
+	background_left->set_self_modulate(p_color.inverted());
+	background_right->set_self_modulate(p_color.inverted());
+	panel->set_self_modulate(p_color);
+	background_color_picker->set_self_modulate(p_color.inverted().lerp(Color(1, 1, 1, 0.5), 0.4));
 }
 
 void TileAtlasView::_center_view() {
@@ -623,7 +628,6 @@ void TileAtlasView::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			button_center_view->set_button_icon(theme_cache.center_view_icon);
-			background_toggle->set_button_icon(theme_cache.checkerboard);
 		} break;
 	}
 }
@@ -635,7 +639,7 @@ void TileAtlasView::_bind_methods() {
 TileAtlasView::TileAtlasView() {
 	set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 
-	Panel *panel = memnew(Panel);
+	panel = memnew(Panel);
 	panel->set_clip_contents(true);
 	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	panel->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
@@ -666,21 +670,19 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->set_tooltip_text(TTR("Center View"));
 	hbox2->add_child(button_center_view);
 
-	background_toggle = memnew(Button);
-	background_toggle->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
-	background_toggle->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
-	background_toggle->connect(SceneStringName(pressed), callable_mp(this, &TileAtlasView::_toggle_background));
-	background_toggle->set_flat(true);
-	background_toggle->set_tooltip_text(TTR("Toggle Background"));
+	// add color picker button to HBOX
+	background_color_picker = memnew(ColorPickerButton);
+	background_color_picker->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_KEEP_WIDTH, 5);
+	background_color_picker->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
+	background_color_picker->connect("color_changed", callable_mp(this, &TileAtlasView::_change_background_color));
+	background_color_picker->set_pick_color(Color(0.5, 0.5, 0.5, 0.4));
+	background_color_picker->set_flat(true);
 
-	// Retrieve the icon
-	Ref<Texture2D> checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
-
-	// Scale it to match center view icon
-	background_toggle->set_button_icon(checkerboard);
-	background_toggle->add_theme_constant_override("icon_max_width", get_editor_theme_icon(SNAME("CenterView"))->get_size().x * EDSCALE);
-
-	hbox2->add_child(background_toggle);
+	// set icon
+	Ref<Texture2D> color_picker_icon = get_editor_theme_icon(SNAME("ColorPicker"));
+	background_color_picker->set_button_icon(color_picker_icon);
+	background_color_picker->set_tooltip_text(TTR("Background Color"));
+	hbox2->add_child(background_color_picker);
 
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));

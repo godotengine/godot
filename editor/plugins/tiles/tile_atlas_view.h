@@ -36,6 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/margin_container.h"
 #include "scene/resources/2d/tile_set.h"
 
@@ -57,11 +58,13 @@ private:
 	float previous_zoom = 1.0;
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *button_center_view = nullptr;
+	Panel *panel = nullptr;
+	ColorPickerButton *background_color_picker = nullptr;
 	CenterContainer *center_container = nullptr;
 	Vector2 panning;
 	void _update_zoom_and_panning(bool p_zoom_on_mouse_pos = false);
 	void _zoom_widget_changed();
-	void _toggle_background();
+	void _change_background_color(Color p_color);
 	void _center_view();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -82,7 +85,6 @@ private:
 	void _draw_background_left();
 	Control *background_right = nullptr;
 	void _draw_background_right();
-	Button *background_toggle = nullptr;
 
 	// Left side.
 	Control *base_tiles_root_control = nullptr;
