@@ -1237,6 +1237,9 @@
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
 		</member>
+		<member name="text_editor/behavior/documentation/enable_tooltips" type="bool" setter="" getter="">
+			If [code]true[/code], documentation tooltips will appear when hovering over a symbol.
+		</member>
 		<member name="text_editor/behavior/files/auto_reload_and_parse_scripts_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], tool scripts will be automatically soft-reloaded after they are saved.
 		</member>

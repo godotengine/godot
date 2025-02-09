@@ -497,6 +497,24 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
 
+String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *p_se) {
+	if (EDITOR_GET("text_editor/behavior/documentation/enable_tooltips")) {
+		return String();
+	}
+
+	// NOTE: See also `ScriptTextEditor::_show_symbol_tooltip()` for documentation tooltips enabled.
+	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
+	if (!debug_value.is_empty()) {
+		constexpr int DISPLAY_LIMIT = 1024;
+		if (debug_value.size() > DISPLAY_LIMIT) {
+			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
+		}
+		debug_value = TTR("Current value: ") + debug_value;
+	}
+
+	return debug_value;
+}
+
 void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	if (external_editor_active) {
 		return;
@@ -2626,9 +2644,12 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	// If we delete a script within the filesystem, the original resource path
-	// is lost, so keep it as metadata to figure out the exact tab to delete.
+	// is lost, so keep it as `edited_file_data` to figure out the exact tab to delete.
 	se->edited_file_data.path = p_resource->get_path();
 	se->edited_file_data.last_modified_time = FileAccess::get_modified_time(p_resource->get_path());
+
+	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
+
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());
