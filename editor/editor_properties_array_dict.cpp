@@ -569,12 +569,10 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (drop_type == "files") {
 		PackedStringArray files = drag_data["files"];
 
-		for (int i = 0; i < files.size(); i++) {
-			const String &file = files[i];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
-
-			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
-				String at = allowed_type.get_slice(",", j).strip_edges();
+		for (const String &file : files) {
+			const String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			for (String at : allowed_type.split(",")) {
+				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
 				if (!ClassDB::is_parent_class(ftype, at)) {
 					return false;
@@ -594,8 +592,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			if (subtype_hint_string == "NodePath") {
 				return true;
 			} else {
-				for (int j = 0; j < subtype_hint_string.get_slice_count(","); j++) {
-					String ast = subtype_hint_string.get_slice(",", j).strip_edges();
+				for (String ast : subtype_hint_string.split(",")) {
+					ast = ast.strip_edges();
 					allowed_subtype_array.append(ast);
 				}
 			}
@@ -644,8 +642,6 @@ bool EditorPropertyArray::can_drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
 	Dictionary drag_data = p_data;
 	const String drop_type = drag_data.get("type", "");
 	Variant array = object->get_array();
