@@ -33,8 +33,10 @@
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/tex_blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -45,6 +47,8 @@ class MaterialStorage;
 
 class TextureStorage : public RendererTextureStorage {
 public:
+	const int SAMPLERS_BINDING_FIRST_INDEX = 2;
+
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
 		DEFAULT_RD_TEXTURE_BLACK,
@@ -140,6 +144,7 @@ private:
 	public:
 		TextureType type;
 		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
+		RS::TextureDrawableFormat drawable_type = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
 
 		RenderingDevice::TextureType rd_type;
 		RID rd_texture;
@@ -476,8 +481,21 @@ private:
 		RID pipelines[SHADER_MAX];
 	} rt_sdf;
 
+	struct TextureBlitShader {
+		TexBlitShaderRD shader;
+		ShaderCompiler compiler;
+
+		bool initialized = false;
+		RID default_shader;
+		RID default_material;
+		RID default_shader_version;
+	} tex_blit_shader;
+
 public:
 	static TextureStorage *get_singleton();
+
+	void _tex_blit_shader_initialize();
+	void _tex_blit_shader_free();
 
 	_FORCE_INLINE_ RID texture_rd_get_default(DefaultRDTexture p_texture) {
 		return default_rd_textures[p_texture];
@@ -517,6 +535,7 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, bool p_with_mipmaps) override;
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
@@ -524,6 +543,8 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+
+	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;
@@ -538,6 +559,9 @@ public:
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override;
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override;
+
+	virtual void texture_drawable_generate_mipmaps(RID p_texture) override;
+	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
