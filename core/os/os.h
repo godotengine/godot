@@ -161,6 +161,8 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const;
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	struct GDExtensionData {

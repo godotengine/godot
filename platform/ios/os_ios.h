@@ -132,6 +132,8 @@ public:
 
 	void on_enter_background();
 	void on_exit_background();
+
+	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
 };
 
 #endif // IOS_ENABLED
