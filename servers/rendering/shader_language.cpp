@@ -220,6 +220,10 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_SCREEN_TEXTURE",
 	"HINT_NORMAL_ROUGHNESS_TEXTURE",
 	"HINT_DEPTH_TEXTURE",
+	"HINT_BLIT_SOURCE",
+	"HINT_BLIT_SOURCE1",
+	"HINT_BLIT_SOURCE2",
+	"HINT_BLIT_SOURCE3",
 	"FILTER_NEAREST",
 	"FILTER_LINEAR",
 	"FILTER_NEAREST_MIPMAP",
@@ -390,7 +394,10 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_SCREEN_TEXTURE, "hint_screen_texture", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_NORMAL_ROUGHNESS_TEXTURE, "hint_normal_roughness_texture", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_DEPTH_TEXTURE, "hint_depth_texture", CF_UNSPECIFIED, {}, {} },
-
+	{ TK_HINT_BLIT_SOURCE, "hint_blit_source", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_BLIT_SOURCE2, "hint_blit_source2", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_BLIT_SOURCE3, "hint_blit_source3", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_BLIT_SOURCE4, "hint_blit_source4", CF_UNSPECIFIED, {}, {} },
 	{ TK_FILTER_NEAREST, "filter_nearest", CF_UNSPECIFIED, {}, {} },
 	{ TK_FILTER_LINEAR, "filter_linear", CF_UNSPECIFIED, {}, {} },
 	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap", CF_UNSPECIFIED, {}, {} },
@@ -1234,6 +1241,18 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 		} break;
 		case ShaderNode::Uniform::HINT_DEPTH_TEXTURE: {
 			result = "hint_depth_texture";
+		} break;
+		case ShaderNode::Uniform::HINT_BLIT_SOURCE: {
+			result = "hint_blit_source";
+		} break;
+		case ShaderNode::Uniform::HINT_BLIT_SOURCE2: {
+			result = "hint_blit_source2";
+		} break;
+		case ShaderNode::Uniform::HINT_BLIT_SOURCE3: {
+			result = "hint_blit_source3";
+		} break;
+		case ShaderNode::Uniform::HINT_BLIT_SOURCE4: {
+			result = "hint_blit_source4";
 		} break;
 		default:
 			break;
@@ -9994,6 +10013,42 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										return ERR_PARSE_ERROR;
 									}
 								} break;
+								case TK_HINT_BLIT_SOURCE: {
+									new_hint = ShaderNode::Uniform::HINT_BLIT_SOURCE;
+									--texture_uniforms;
+									--texture_binding;
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "texture_blit") {
+										_set_error(vformat(RTR("'hint_blit_source' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
+								} break;
+								case TK_HINT_BLIT_SOURCE2: {
+									new_hint = ShaderNode::Uniform::HINT_BLIT_SOURCE2;
+									--texture_uniforms;
+									--texture_binding;
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "texture_blit") {
+										_set_error(vformat(RTR("'hint_blit_source2' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
+								} break;
+								case TK_HINT_BLIT_SOURCE3: {
+									new_hint = ShaderNode::Uniform::HINT_BLIT_SOURCE3;
+									--texture_uniforms;
+									--texture_binding;
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "texture_blit") {
+										_set_error(vformat(RTR("'hint_blit_source3' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
+								} break;
+								case TK_HINT_BLIT_SOURCE4: {
+									new_hint = ShaderNode::Uniform::HINT_BLIT_SOURCE4;
+									--texture_uniforms;
+									--texture_binding;
+									if (shader_type_identifier != StringName() && String(shader_type_identifier) != "texture_blit") {
+										_set_error(vformat(RTR("'hint_blit_source4' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
+								} break;
 								case TK_FILTER_NEAREST: {
 									new_filter = FILTER_NEAREST;
 								} break;
@@ -11872,6 +11927,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						options.push_back("hint_screen_texture");
 						options.push_back("hint_normal_roughness_texture");
 						options.push_back("hint_depth_texture");
+						options.push_back("hint_blit_source");
+						options.push_back("hint_blit_source2");
+						options.push_back("hint_blit_source3");
+						options.push_back("hint_blit_source4");
 						options.push_back("source_color");
 					}
 				}
