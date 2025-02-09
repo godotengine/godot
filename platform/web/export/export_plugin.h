@@ -77,20 +77,28 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	}
 
 	Ref<Image> _get_project_icon() const {
+		Error err = OK;
 		Ref<Image> icon;
 		icon.instantiate();
 		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
-		if (icon_path.is_empty() || ImageLoader::load_image(icon_path, icon) != OK) {
+		if (!icon_path.is_empty()) {
+			icon = _load_icon_or_splash_image(icon_path, &err);
+		}
+		if (icon_path.is_empty() || err != OK || icon.is_null() || icon->is_empty()) {
 			return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("DefaultProjectIcon"), EditorStringName(EditorIcons))->get_image();
 		}
 		return icon;
 	}
 
 	Ref<Image> _get_project_splash() const {
+		Error err = OK;
 		Ref<Image> splash;
 		splash.instantiate();
 		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
-		if (splash_path.is_empty() || ImageLoader::load_image(splash_path, splash) != OK) {
+		if (!splash_path.is_empty()) {
+			splash = _load_icon_or_splash_image(splash_path, &err);
+		}
+		if (splash_path.is_empty() || err != OK || splash.is_null() || splash->is_empty()) {
 			return Ref<Image>(memnew(Image(boot_splash_png)));
 		}
 		return splash;

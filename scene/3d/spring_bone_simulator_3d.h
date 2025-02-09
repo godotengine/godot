@@ -36,6 +36,10 @@
 class SpringBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(SpringBoneSimulator3D, SkeletonModifier3D);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
 	bool joints_dirty = false;
 
 	LocalVector<ObjectID> collisions; // To process collisions for sync position with skeleton.
@@ -72,7 +76,7 @@ public:
 		Vector3 prev_tail;
 		Vector3 current_tail;
 		Vector3 forward_vector;
-		Quaternion prev_rot;
+		Quaternion current_rot;
 		float length = 0.0;
 	};
 
@@ -104,7 +108,6 @@ public:
 		bool extend_end_bone = false;
 		BoneDirection end_bone_direction = BONE_DIRECTION_FROM_PARENT;
 		float end_bone_length = 0.0;
-		float end_bone_tip_radius = 0.02;
 
 		CenterFrom center_from = CENTER_FROM_WORLD_ORIGIN;
 		NodePath center_node;
@@ -274,6 +277,10 @@ public:
 
 	// To process manually.
 	void reset();
+
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);

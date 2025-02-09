@@ -495,7 +495,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	curr_load_task = curr_load_task_backup;
 }
 
-static String _validate_local_path(const String &p_path) {
+String ResourceLoader::_validate_local_path(const String &p_path) {
 	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
 	if (uid != ResourceUID::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
@@ -1193,6 +1193,20 @@ bool ResourceLoader::has_custom_uid_support(const String &p_path) {
 		}
 	}
 
+	return false;
+}
+
+bool ResourceLoader::should_create_uid_file(const String &p_path) {
+	const String local_path = _validate_local_path(p_path);
+	if (FileAccess::exists(local_path + ".uid")) {
+		return false;
+	}
+
+	for (int i = 0; i < loader_count; i++) {
+		if (loader[i]->recognize_path(local_path)) {
+			return !loader[i]->has_custom_uid_support();
+		}
+	}
 	return false;
 }
 

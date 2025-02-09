@@ -397,6 +397,12 @@ void SpringBoneSimulator3D::_notification(int p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			update_gizmos();
 		} break;
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			saving = true;
+		} break;
+		case NOTIFICATION_EDITOR_POST_SAVE: {
+			saving = false;
+		} break;
 #endif // TOOLS_ENABLED
 	}
 }
@@ -1357,12 +1363,12 @@ void SpringBoneSimulator3D::_make_collisions_dirty() {
 
 void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 	_make_joints_dirty(p_index);
-	set_joint_count(p_index, 0);
 
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone;
 	int root_bone = settings[p_index]->root_bone;
 	if (!sk || current_bone < 0 || root_bone < 0) {
+		set_joint_count(p_index, 0);
 		return;
 	}
 
@@ -1375,7 +1381,11 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 		}
 		current_bone = sk->get_bone_parent(current_bone);
 	}
-	ERR_FAIL_COND_EDMSG(!valid, "End bone must be the same as or a child of root bone.");
+
+	if (!valid) {
+		set_joint_count(p_index, 0);
+		ERR_FAIL_EDMSG("End bone must be the same as or a child of root bone.");
+	}
 
 	Vector<int> new_joints;
 	current_bone = settings[p_index]->end_bone;
@@ -1401,6 +1411,7 @@ void SpringBoneSimulator3D::_update_joints() {
 			continue;
 		}
 		if (settings[i]->individual_config) {
+			settings[i]->simulation_dirty = true;
 			settings[i]->joints_dirty = false;
 			continue; // Abort.
 		}
@@ -1462,6 +1473,13 @@ void SpringBoneSimulator3D::_process_modification() {
 	}
 	_find_collisions();
 	_process_collisions();
+
+#ifdef TOOLS_ENABLED
+	if (saving) {
+		return; // Collision position has been reset but we don't want to process simulating on saving. Abort.
+	}
+#endif //TOOLS_ENABLED
+
 	double delta = skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE ? skeleton->get_process_delta_time() : skeleton->get_physics_process_delta_time();
 	for (int i = 0; i < settings.size(); i++) {
 		_init_joints(skeleton, settings[i]);
@@ -1520,7 +1538,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
 			setting->joints[i]->verlet->forward_vector = axis.normalized();
 			setting->joints[i]->verlet->length = axis.length();
-			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		} else if (setting->extend_end_bone && setting->end_bone_length > 0) {
 			Vector3 axis = get_end_bone_axis(setting->end_bone, setting->end_bone_direction);
 			if (axis.is_zero_approx()) {
@@ -1531,7 +1549,7 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 			setting->joints[i]->verlet->length = setting->end_bone_length;
 			setting->joints[i]->verlet->current_tail = setting->cached_center.xform(p_skeleton->get_bone_global_pose(setting->joints[i]->bone).xform(axis * setting->end_bone_length));
 			setting->joints[i]->verlet->prev_tail = setting->joints[i]->verlet->current_tail;
-			setting->joints[i]->verlet->prev_rot = Quaternion(0, 0, 0, 1);
+			setting->joints[i]->verlet->current_rot = Quaternion(0, 0, 0, 1);
 		}
 	}
 	setting->simulation_dirty = false;
@@ -1597,8 +1615,8 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		// Convert position to rotation.
 		Vector3 from = current_rot.xform(verlet->forward_vector);
 		Vector3 to = p_inverted_center_transform.basis.xform(next_tail - current_origin).normalized();
-		Quaternion from_to = get_from_to_rotation(from, to, verlet->prev_rot);
-		verlet->prev_rot = from_to;
+		Quaternion from_to = get_from_to_rotation(from, to, verlet->current_rot);
+		verlet->current_rot = from_to;
 
 		// Apply rotation.
 		from_to *= current_rot;

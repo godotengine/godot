@@ -545,7 +545,10 @@ TEST_CASE("[String] String to integer") {
 		CHECK(String(nums[i]).to_int() == num[i]);
 	}
 	CHECK(String("0b1011").to_int() == 1011); // Looks like a binary number, but to_int() handles this as a base-10 number, "b" is just ignored.
+	CHECK(String("0B1011").to_int() == 1011);
+
 	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
+	CHECK(String("0X1012").to_int() == 1012);
 
 	ERR_PRINT_OFF
 	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
@@ -554,10 +557,10 @@ TEST_CASE("[String] String to integer") {
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[12] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-" };
-	static const int64_t num[12] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0 };
+	static const char *nums[13] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-", "0XFFAE" };
+	static const int64_t num[13] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0, 0xFFAE };
 
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 13; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
 
@@ -575,10 +578,10 @@ TEST_CASE("[String] Hex to integer") {
 }
 
 TEST_CASE("[String] Bin to integer") {
-	static const char *nums[10] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111" };
-	static const int64_t num[10] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF };
+	static const char *nums[11] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111", "0B1010" };
+	static const int64_t num[11] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF, 10 };
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 11; i++) {
 		CHECK(String(nums[i]).bin_to_int() == num[i]);
 	}
 
@@ -1885,15 +1888,15 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
-	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
-	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
-	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, false };
-	static bool isaid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
-	static bool isuid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, true };
-	for (int i = 0; i < 12; i++) {
+	static const char *data[] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字", "1E2", "1E-2" };
+	static bool isnum[] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[] = { true, true, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[] = { true, true, false, false, true, false, true, false, true, false, false, false, false, true, false };
+	static bool ishex_p[] = { false, false, false, false, false, false, false, true, false, false, false, false, false, false, false };
+	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
+	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
+	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
+	for (unsigned int i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);

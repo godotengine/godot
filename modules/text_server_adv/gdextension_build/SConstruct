@@ -110,7 +110,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 
     lib = env_tvg.Library(
-        f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"tvg_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_tvg_sources,
     )
     env.Append(LIBS=[lib])
@@ -155,7 +155,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"msdfgen_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -284,7 +284,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"freetype_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -418,7 +418,7 @@ if env["freetype_enabled"]:
 env.Append(CPPPATH=["../../../thirdparty/harfbuzz/src"])
 
 lib = env_harfbuzz.Library(
-    f'harfbuzz_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+    f"harfbuzz_builtin{env['suffix']}{env['LIBSUFFIX']}",
     thirdparty_harfbuzz_sources,
 )
 env.Prepend(LIBS=[lib])
@@ -478,7 +478,7 @@ if env["graphite_enabled"] and env["freetype_enabled"]:
     )
 
     lib = env_graphite.Library(
-        f'graphite_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"graphite_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_graphite_sources,
     )
     env.Append(LIBS=[lib])
@@ -737,7 +737,7 @@ env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/ic
 if env["platform"] == "windows":
     env.Append(LIBS=["advapi32"])
 
-lib = env_icu.Library(f'icu_builtin{env["suffix"]}{env["LIBSUFFIX"]}', thirdparty_icu_sources)
+lib = env_icu.Library(f"icu_builtin{env['suffix']}{env['LIBSUFFIX']}", thirdparty_icu_sources)
 env.Append(LIBS=[lib])
 
 env.Append(CPPDEFINES=["GDEXTENSION"])
@@ -746,18 +746,18 @@ sources = Glob("../*.cpp")
 
 if env["platform"] == "macos":
     methods.write_macos_plist(
-        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework',
-        f'libtextserver_advanced.macos.{env["target"]}',
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework",
+        f"libtextserver_advanced.macos.{env['target']}",
         "org.godotengine.textserver_advanced",
         "ICU / HarfBuzz / Graphite Text Server",
     )
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced.macos.{env["target"]}.framework/libtextserver_advanced.macos.{env["target"]}',
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework/libtextserver_advanced.macos.{env['target']}",
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced{env["suffix"]}{env["SHLIBSUFFIX"]}',
+        f"./bin/libtextserver_advanced{env['suffix']}{env['SHLIBSUFFIX']}",
         source=sources,
     )
 

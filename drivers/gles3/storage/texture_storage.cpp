@@ -334,7 +334,9 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 
 /* Texture API */
 
-static inline Error _get_gl_uncompressed_format(Image::Format p_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type) {
+static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type) {
+	Config *config = Config::get_singleton();
+
 	switch (p_format) {
 		case Image::FORMAT_L8: {
 			if (RasterizerGLES3::is_gles_over_gl()) {
@@ -389,24 +391,68 @@ static inline Error _get_gl_uncompressed_format(Image::Format p_format, GLenum &
 			r_gl_type = GL_UNSIGNED_SHORT_5_6_5;
 		} break;
 		case Image::FORMAT_RF: {
-			r_gl_internal_format = GL_R32F;
-			r_gl_format = GL_RED;
-			r_gl_type = GL_FLOAT;
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_R32F;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_FLOAT;
+			} else {
+				ERR_PRINT("R32 float texture not supported, converting to R16.");
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RH);
+				}
+				r_real_format = Image::FORMAT_RH;
+				r_gl_internal_format = GL_R16F;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGF: {
-			r_gl_internal_format = GL_RG32F;
-			r_gl_format = GL_RG;
-			r_gl_type = GL_FLOAT;
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RG32F;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_FLOAT;
+			} else {
+				ERR_PRINT("RG32 float texture not supported, converting to RG16.");
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGH);
+				}
+				r_real_format = Image::FORMAT_RGH;
+				r_gl_internal_format = GL_RG16F;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGBF: {
-			r_gl_internal_format = GL_RGB32F;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_FLOAT;
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RGB32F;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
+			} else {
+				ERR_PRINT("RGB32 float texture not supported, converting to RGB16.");
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGBH);
+				}
+				r_real_format = Image::FORMAT_RGBH;
+				r_gl_internal_format = GL_RGB16F;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGBAF: {
-			r_gl_internal_format = GL_RGBA32F;
-			r_gl_format = GL_RGBA;
-			r_gl_type = GL_FLOAT;
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RGBA32F;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_FLOAT;
+			} else {
+				ERR_PRINT("RGBA32 float texture not supported, converting to RGBA16.");
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGBAH);
+				}
+				r_real_format = Image::FORMAT_RGBAH;
+				r_gl_internal_format = GL_RGBA16F;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RH: {
 			r_gl_internal_format = GL_R16F;
@@ -449,7 +495,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 	r_real_format = p_format;
 
 	if (!Image::is_format_compressed(p_format)) {
-		Error err = _get_gl_uncompressed_format(p_format, r_gl_format, r_gl_internal_format, r_gl_type);
+		Error err = _get_gl_uncompressed_format(p_image, p_format, r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
 		ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", p_format));
 		return p_image;
 	}
@@ -694,7 +740,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				image->convert(Image::FORMAT_RG8);
 			}
 
-			Error err = _get_gl_uncompressed_format(image->get_format(), r_gl_format, r_gl_internal_format, r_gl_type);
+			Error err = _get_gl_uncompressed_format(image, image->get_format(), r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
 			ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", image->get_format()));
 
 			r_real_format = image->get_format();
@@ -1509,8 +1555,17 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	GLenum internal_format;
 	bool compressed = false;
 
+	bool needs_decompress = texture->resize_to_po2;
+
+	// Support for RGTC-compressed Texture Arrays isn't mandated by GLES3/WebGL.
+	if (!RasterizerGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
+		if (p_image->get_format() == Image::FORMAT_RGTC_R || p_image->get_format() == Image::FORMAT_RGTC_RG) {
+			needs_decompress = true;
+		}
+	}
+
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, needs_decompress);
 	ERR_FAIL_COND(img.is_null());
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {

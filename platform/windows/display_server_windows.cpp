@@ -796,21 +796,59 @@ void DisplayServerWindows::beep() const {
 	MessageBeep(MB_OK);
 }
 
-void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerWindows::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (mouse_mode == p_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (mouse_mode == wanted_mouse_mode) {
 		// Already in the same mode; do nothing.
 		return;
 	}
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
-	_set_mouse_mode_impl(p_mode);
+	_set_mouse_mode_impl(wanted_mouse_mode);
+}
+
+void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerWindows::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWindows::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWindows::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
@@ -2966,6 +3004,21 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	return OK;
 }
 
+Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	// Send a close message to gracefully close the process.
+	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
+
+	return OK;
+}
+
 Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
@@ -2974,6 +3027,8 @@ Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 	}
 
 	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	request_close_embedded_process(p_pid);
 
 	// This is a workaround to ensure the parent window correctly regains focus after the
 	// embedded window is closed. When the embedded window is closed while it has focus,
@@ -3051,8 +3106,14 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 		buttons.push_back(s.utf16());
 	}
 
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
 	config.pszWindowTitle = (LPCWSTR)(title.get_data());
 	config.pszContent = (LPCWSTR)(message.get_data());
+	config.hwndParent = windows[window_id].hWnd;
 
 	const int button_count = buttons.size();
 	config.cButtons = button_count;
@@ -3061,7 +3122,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
 	if (tbuttons) {
 		for (int i = 0; i < button_count; i++) {
-			tbuttons[i].nButtonID = i;
+			tbuttons[i].nButtonID = i + 100;
 			tbuttons[i].pszButtonText = (LPCWSTR)(buttons[i].get_data());
 		}
 	}
@@ -3078,7 +3139,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
 			if (p_callback.is_valid()) {
-				Variant button = button_pressed;
+				Variant button = button_pressed - 100;
 				const Variant *args[1] = { &button };
 				Variant ret;
 				Callable::CallError ce;
@@ -3228,7 +3289,7 @@ Error DisplayServerWindows::dialog_input_text(String p_title, String p_descripti
 		WCHAR font[13]; // must be "MS Shell Dlg"
 	} template_base = {
 		1, 0xFFFF, 0, 0,
-		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION,
 		3, 0, 0, 20, 20, L"", L"#32770", L"", 8, FW_NORMAL, 0, DEFAULT_CHARSET, L"MS Shell Dlg"
 	};
 
@@ -4684,7 +4745,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
+						// Make sure to check the latest key state since
+						// we're in the middle of the message queue.
+						if (GetAsyncKeyState(VK_SHIFT) < 0) {
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
@@ -5838,7 +5901,9 @@ void DisplayServerWindows::_process_key_events() {
 					Ref<InputEventKey> k;
 					k.instantiate();
 
-					Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK));
+					UINT vk = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK);
+					bool is_oem = (vk >= 0xB8) && (vk <= 0xE6);
+					Key keycode = KeyMappingWindows::get_keysym(vk);
 					Key key_label = keycode;
 					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
@@ -5851,7 +5916,7 @@ void DisplayServerWindows::_process_key_events() {
 						if (!keysym.is_empty()) {
 							char32_t unicode_value = keysym[0];
 							// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
-							if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+							if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
 								keycode = fix_keycode(unicode_value, (Key)unicode_value);
 							}
 							key_label = fix_key_label(unicode_value, keycode);
@@ -5894,6 +5959,7 @@ void DisplayServerWindows::_process_key_events() {
 				k->set_window_id(ke.window_id);
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
+				bool is_oem = (ke.wParam >= 0xB8) && (ke.wParam <= 0xE6);
 				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
@@ -5912,7 +5978,7 @@ void DisplayServerWindows::_process_key_events() {
 					if (!keysym.is_empty()) {
 						char32_t unicode_value = keysym[0];
 						// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
-						if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+						if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
 							keycode = fix_keycode(unicode_value, (Key)unicode_value);
 						}
 						key_label = fix_key_label(unicode_value, keycode);

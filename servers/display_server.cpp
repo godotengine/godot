@@ -501,6 +501,22 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+void DisplayServer::mouse_set_mode_override(MouseMode p_mode) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+DisplayServer::MouseMode DisplayServer::mouse_get_mode_override() const {
+	return MOUSE_MODE_VISIBLE;
+}
+
+void DisplayServer::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+bool DisplayServer::mouse_is_mode_override_enabled() const {
+	return false;
+}
+
 void DisplayServer::warp_mouse(const Point2i &p_position) {
 }
 
@@ -659,6 +675,11 @@ void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 Error DisplayServer::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return ERR_UNAVAILABLE;
+}
+
+Error DisplayServer::request_close_embedded_process(OS::ProcessID p_pid) {
 	WARN_PRINT("Embedded process not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
@@ -1098,6 +1119,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
 	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);
 	BIND_CONSTANT(SCREEN_WITH_KEYBOARD_FOCUS);
@@ -1266,6 +1288,22 @@ Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());
 }
 
+void DisplayServer::_input_set_mouse_mode_override(Input::MouseMode p_mode) {
+	singleton->mouse_set_mode_override(MouseMode(p_mode));
+}
+
+Input::MouseMode DisplayServer::_input_get_mouse_mode_override() {
+	return Input::MouseMode(singleton->mouse_get_mode_override());
+}
+
+void DisplayServer::_input_set_mouse_mode_override_enabled(bool p_enabled) {
+	singleton->mouse_set_mode_override_enabled(p_enabled);
+}
+
+bool DisplayServer::_input_is_mouse_mode_override_enabled() {
+	return singleton->mouse_is_mode_override_enabled();
+}
+
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
@@ -1347,6 +1385,10 @@ DisplayServer::DisplayServer() {
 	singleton = this;
 	Input::set_mouse_mode_func = _input_set_mouse_mode;
 	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::set_mouse_mode_override_func = _input_set_mouse_mode_override;
+	Input::get_mouse_mode_override_func = _input_get_mouse_mode_override;
+	Input::set_mouse_mode_override_enabled_func = _input_set_mouse_mode_override_enabled;
+	Input::is_mouse_mode_override_enabled_func = _input_is_mouse_mode_override_enabled;
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;

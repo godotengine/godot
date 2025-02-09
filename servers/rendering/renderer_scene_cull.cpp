@@ -2510,7 +2510,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 				}
 
 				real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
-				real_t z_near = MIN(0.005f, radius);
+				real_t z_near = MIN(0.025f, radius);
 				Projection cm;
 				cm.set_perspective(90, 1, z_near, radius);
 
@@ -2600,7 +2600,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 			real_t angle = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
-			real_t z_near = MIN(0.005f, radius);
+			real_t z_near = MIN(0.025f, radius);
 
 			Projection cm;
 			cm.set_perspective(angle * 2.0, 1.0, z_near, radius);
@@ -3971,15 +3971,19 @@ void RendererSceneCull::render_particle_colliders() {
 
 			struct CullAABB {
 				PagedArray<Instance *> *result;
+				uint32_t heightfield_mask;
 				_FORCE_INLINE_ bool operator()(void *p_data) {
 					Instance *p_instance = (Instance *)p_data;
-					result->push_back(p_instance);
+					if (p_instance->layer_mask & heightfield_mask) {
+						result->push_back(p_instance);
+					}
 					return false;
 				}
 			};
 
 			CullAABB cull_aabb;
 			cull_aabb.result = &instance_cull_result;
+			cull_aabb.heightfield_mask = RSG::particles_storage->particles_collision_get_height_field_mask(hfpc->base);
 			hfpc->scenario->indexers[Scenario::INDEXER_GEOMETRY].aabb_query(hfpc->transformed_aabb, cull_aabb);
 			hfpc->scenario->indexers[Scenario::INDEXER_VOLUMES].aabb_query(hfpc->transformed_aabb, cull_aabb);
 

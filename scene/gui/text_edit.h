@@ -152,6 +152,9 @@ private:
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
 
+			String ime_data;
+			Array ime_bidi_override;
+
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
 			int line_count = 0;
@@ -191,9 +194,6 @@ private:
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
 
-		void _calculate_line_height() const;
-		void _calculate_max_line_width() const;
-
 	public:
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
@@ -216,7 +216,6 @@ private:
 		void set_use_custom_word_separators(bool p_enabled);
 		bool is_custom_word_separators_enabled() const;
 
-		void set_word_separators(const String &p_separators);
 		void set_custom_word_separators(const String &p_separators);
 		String get_enabled_word_separators() const;
 		String get_custom_word_separators() const;
@@ -232,6 +231,7 @@ private:
 		const Ref<TextParagraph> get_line_data(int p_line) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
+		void set_ime(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_hidden(int p_line, bool p_hidden);
 		bool is_hidden(int p_line) const;
 		void insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override);
@@ -239,12 +239,13 @@ private:
 		int size() const { return text.size(); }
 		void clear();
 
-		void invalidate_cache(int p_line, int p_column = -1, bool p_text_changed = false, const String &p_ime_text = String(), const Array &p_bidi_override = Array());
+		void invalidate_cache(int p_line, bool p_text_changed = false);
 		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
 
 		_FORCE_INLINE_ String operator[](int p_line) const;
+		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
 
 		/* Gutters. */
 		void add_gutter(int p_at);
@@ -538,6 +539,8 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
+	void _adjust_viewport_to_caret_horizontally(int p_caret = 0);
+
 	// Minimap.
 	bool draw_minimap = false;
 
@@ -565,6 +568,7 @@ private:
 	Vector2i hovered_gutter = Vector2i(-1, -1); // X = gutter index, Y = row.
 
 	void _update_gutter_width();
+	Vector2i _get_hovered_gutter(const Point2 &p_mouse_pos) const;
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
@@ -658,6 +662,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -794,6 +799,7 @@ public:
 
 	void set_line(int p_line, const String &p_new_text);
 	String get_line(int p_line) const;
+	String get_line_with_ime(int p_line) const;
 
 	int get_line_width(int p_line, int p_wrap_index = -1) const;
 	int get_line_height() const;
@@ -860,7 +866,7 @@ public:
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
 
-	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
+	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
 

@@ -163,6 +163,7 @@
 #include "editor/surface_upgrade_tool.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "editor/uid_upgrade_tool.h"
 #include "editor/window_wrapper.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -467,6 +468,7 @@ void EditorNode::_update_from_settings() {
 
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	scene_root->set_use_hdr_2d(use_hdr_2d);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d);
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
@@ -651,6 +653,10 @@ void EditorNode::_notification(int p_what) {
 					run_surface_upgrade_tool = false;
 					SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
 					SurfaceUpgradeTool::get_singleton()->finish_upgrade();
+				} else if (run_uid_upgrade_tool) {
+					run_uid_upgrade_tool = false;
+					UIDUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+					UIDUpgradeTool::get_singleton()->finish_upgrade();
 				} else {
 					EditorFileSystem::get_singleton()->scan();
 				}
@@ -735,6 +741,23 @@ void EditorNode::_notification(int p_what) {
 
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			if (DisplayServer::get_singleton()->window_can_draw()) {
+				// Try to determine if this project's Godot version was less than 4.4 - if
+				// so, we'll ask the user if they want to upgrade the project.
+				PackedStringArray features = ProjectSettings::get_singleton()->get_setting("application/config/features");
+				if (!features.is_empty()) {
+					String version_str = features[0];
+					PackedStringArray version_parts = version_str.split(".", true, 1);
+					if (version_parts.size() >= 2) {
+						if (version_parts[0].is_valid_int() && version_parts[1].is_valid_int()) {
+							int major_ver = version_parts[0].to_int();
+							int minor_ver = version_parts[1].to_int();
+							if (major_ver < 4 || (major_ver == 4 && minor_ver < 4)) {
+								should_prompt_uid_upgrade_tool = true;
+							}
+						}
+					}
+				}
+
 				ProjectSettings::get_singleton()->save();
 			}
 
@@ -1180,6 +1203,11 @@ void EditorNode::_sources_changed(bool p_exist) {
 			EditorResourcePreview::get_singleton()->start();
 		}
 
+		if (should_prompt_uid_upgrade_tool) {
+			should_prompt_uid_upgrade_tool = false;
+			uid_upgrade_dialog->popup_on_demand();
+		}
+
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
 }
@@ -1442,15 +1470,10 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		file->add_filter("*." + E, E.to_upper());
 		preferred.push_back(E);
 	}
-	// Lowest priority extension.
+	// Lowest provided extension priority.
 	List<String>::Element *res_element = preferred.find("res");
 	if (res_element) {
 		preferred.move_to_back(res_element);
-	}
-	// Highest priority extension.
-	List<String>::Element *tres_element = preferred.find("tres");
-	if (tres_element) {
-		preferred.move_to_front(tres_element);
 	}
 
 	if (!p_at_path.is_empty()) {
@@ -1480,16 +1503,6 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 	file->set_title(TTR("Save Resource As..."));
 	file->popup_file_dialog();
-}
-
-void EditorNode::ensure_uid_file(const String &p_new_resource_path) {
-	if (ResourceLoader::exists(p_new_resource_path) && !ResourceLoader::has_custom_uid_support(p_new_resource_path) && !FileAccess::exists(p_new_resource_path + ".uid")) {
-		Ref<FileAccess> f = FileAccess::open(p_new_resource_path + ".uid", FileAccess::WRITE);
-		if (f.is_valid()) {
-			const ResourceUID::ID id = ResourceUID::get_singleton()->create_id();
-			f->store_line(ResourceUID::get_singleton()->id_to_text(id));
-		}
-	}
 }
 
 void EditorNode::_menu_option(int p_option) {
@@ -1923,14 +1936,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
-	_reset_animation_mixers(scene, &anim_backups);
-
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
 
 	editor_data.apply_changes_in_editors();
 	save_default_environment();
-
+	List<Pair<AnimationMixer *, Ref<AnimatedValuesBackup>>> anim_backups;
+	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
 	Ref<PackedScene> sdata;
@@ -2058,6 +2069,13 @@ void EditorNode::restart_editor(bool p_goto_project_manager) {
 
 	if (p_goto_project_manager) {
 		args.push_back("--project-manager");
+
+		// Setup working directory.
+		const String exec_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		if (!exec_dir.is_empty()) {
+			args.push_back("--path");
+			args.push_back(exec_dir);
+		}
 	} else {
 		args.push_back("--path");
 		args.push_back(ProjectSettings::get_singleton()->get_resource_path());
@@ -2232,11 +2250,6 @@ void EditorNode::_dialog_action(String p_file) {
 		case RESOURCE_SAVE_AS: {
 			ERR_FAIL_COND(saving_resource.is_null());
 			save_resource_in_path(saving_resource, p_file);
-
-			if (current_menu_option == RESOURCE_SAVE_AS) {
-				// Create .uid file when making new Resource.
-				ensure_uid_file(p_file);
-			}
 
 			saving_resource = Ref<Resource>();
 			ObjectID current_id = editor_history.get_current();
@@ -3332,6 +3345,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		case TOOLS_SURFACE_UPGRADE: {
 			surface_upgrade_dialog->popup_on_demand();
 		} break;
+		case TOOLS_UID_UPGRADE: {
+			uid_upgrade_dialog->popup_on_demand();
+		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
 				Callable callback = tool_menu->get_item_metadata(p_idx);
@@ -3694,7 +3710,9 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
 	if (script_path.length() > 0) {
 		script_path = addon_path.get_base_dir().path_join(script_path);
-		scr = ResourceLoader::load(script_path, "Script", ResourceFormatLoader::CACHE_MODE_IGNORE);
+		// We should not use the cached version on startup to prevent a script reload
+		// if it is already loaded and potentially running from autoloads. See GH-100750.
+		scr = ResourceLoader::load(script_path, "Script", EditorFileSystem::get_singleton()->doing_first_scan() ? ResourceFormatLoader::CACHE_MODE_REUSE : ResourceFormatLoader::CACHE_MODE_IGNORE);
 
 		if (scr.is_null()) {
 			show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), script_path));
@@ -4820,13 +4838,13 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback, bool p_fallback_script_to_theme) {
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback, bool p_fallback_script_to_theme) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 	EditorData &ed = EditorNode::get_editor_data();
 
 	// Check for a script icon first.
-	if (p_script.is_valid()) {
-		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
+	if (!p_script_path.is_empty()) {
+		Ref<Texture2D> script_icon = ed.get_script_icon(p_script_path);
 		if (script_icon.is_valid()) {
 			return script_icon;
 		}
@@ -4834,14 +4852,15 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		if (p_fallback_script_to_theme) {
 			// Look for the native base type in the editor theme. This is relevant for
 			// scripts extending other scripts and for built-in classes.
-			String script_class_name = p_script->get_language()->get_global_class_name(p_script->get_path());
 			String base_type;
-			if (script_class_name.is_empty()) {
-				base_type = p_script->get_instance_base_type();
+			if (ScriptServer::is_global_class(p_class)) {
+				base_type = ScriptServer::get_global_class_native_base(p_class);
 			} else {
-				base_type = ScriptServer::get_global_class_native_base(script_class_name);
+				Ref<Script> scr = ResourceLoader::load(p_script_path, "Script");
+				if (scr.is_valid()) {
+					base_type = scr->get_instance_base_type();
+				}
 			}
-
 			if (theme.is_valid() && theme->has_icon(base_type, EditorStringName(EditorIcons))) {
 				return theme->get_icon(base_type, EditorStringName(EditorIcons));
 			}
@@ -4914,21 +4933,21 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	if (Object::cast_to<MultiNodeEdit>(p_object)) {
 		return get_class_icon(Object::cast_to<MultiNodeEdit>(p_object)->get_edited_class_name(), p_fallback);
 	} else {
-		return _get_class_or_script_icon(p_object->get_class(), scr, p_fallback);
+		return _get_class_or_script_icon(p_object->get_class(), scr.is_valid() ? scr->get_path() : String(), p_fallback);
 	}
 }
 
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 
-	Ref<Script> scr;
+	String script_path;
 	if (ScriptServer::is_global_class(p_class)) {
-		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
+		script_path = ScriptServer::get_global_class_path(p_class);
 	} else if (ResourceLoader::exists(p_class)) { // If the script is not a class_name we check if the script resource exists.
-		scr = ResourceLoader::load(p_class);
+		script_path = p_class;
 	}
 
-	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
+	return _get_class_or_script_icon(p_class, script_path, p_fallback, true);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
@@ -5713,6 +5732,12 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 void EditorNode::_cancel_close_scene_tab() {
 	if (_is_closing_editor()) {
 		tab_closing_menu_option = -1;
+	}
+}
+
+void EditorNode::_prepare_save_confirmation_popup() {
+	if (save_confirmation->get_window() != get_last_exclusive_window()) {
+		save_confirmation->reparent(get_last_exclusive_window());
 	}
 }
 
@@ -6879,6 +6904,13 @@ EditorNode::EditorNode() {
 		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
 	}
 
+	// Same for UID upgrade tool.
+	uid_upgrade_tool = memnew(UIDUpgradeTool);
+	run_uid_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata(UIDUpgradeTool::META_UID_UPGRADE_TOOL, UIDUpgradeTool::META_RUN_ON_RESTART, false);
+	if (run_uid_upgrade_tool) {
+		UIDUpgradeTool::get_singleton()->begin_upgrade();
+	}
+
 	{
 		bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
 		bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
@@ -7421,6 +7453,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_mesh_surfaces", TTRC("Upgrade Mesh Surfaces...")), TOOLS_SURFACE_UPGRADE);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_uids", TTRC("Upgrade UIDs...")), TOOLS_UID_UPGRADE);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
@@ -7701,6 +7734,9 @@ EditorNode::EditorNode() {
 	surface_upgrade_dialog = memnew(SurfaceUpgradeDialog);
 	gui_base->add_child(surface_upgrade_dialog);
 
+	uid_upgrade_dialog = memnew(UIDUpgradeDialog);
+	gui_base->add_child(uid_upgrade_dialog);
+
 	confirmation = memnew(ConfirmationDialog);
 	gui_base->add_child(confirmation);
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
@@ -7712,6 +7748,7 @@ EditorNode::EditorNode() {
 	save_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 	save_confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_close_scene_tab));
+	save_confirmation->connect("about_to_popup", callable_mp(this, &EditorNode::_prepare_save_confirmation_popup));
 
 	gradle_build_manage_templates = memnew(ConfirmationDialog);
 	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
@@ -8094,6 +8131,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
 	memdelete(surface_upgrade_tool);
+	memdelete(uid_upgrade_tool);
 	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();

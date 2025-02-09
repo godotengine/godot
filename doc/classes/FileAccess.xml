@@ -204,7 +204,7 @@
 		<method name="get_length" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the size of the file in bytes.
+				Returns the size of the file in bytes. For a pipe, returns the number of bytes available for reading from the pipe.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">

@@ -14,6 +14,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
+#: editor/gui/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Recognized"
+msgstr ""
+
 #: scene/gui/code_edit.cpp
 msgid "New Code Region"
 msgstr ""
@@ -40,7 +44,27 @@ msgid ""
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "The changes to this palette have not been saved to a file."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save the current color palette to reuse later."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Save the current color palette as a new to reuse later."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Load existing color palette."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Clear the currently loaded color palettes in the picker."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -52,7 +76,23 @@ msgid "Select a picker mode."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Colorized Sliders"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Hex"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Hex code or named color"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Show all options available."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Recent Colors"
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -94,15 +134,23 @@ msgid "Select Current Folder"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
 msgid "Select This Folder"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
-msgid "You don't have permission to access contents of this folder."
+msgid "Open in File Manager"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
-msgid "All Recognized"
+msgid "Show Package Contents"
+msgstr ""
+
+#: scene/gui/file_dialog.cpp
+msgid "You don't have permission to access contents of this folder."
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -123,10 +171,6 @@ msgstr ""
 
 #: scene/gui/file_dialog.cpp
 msgid "Open a File or Directory"
-msgstr ""
-
-#: scene/gui/file_dialog.cpp
-msgid "Save"
 msgstr ""
 
 #: scene/gui/file_dialog.cpp
@@ -295,6 +339,10 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Soft Hyphen (SHY)"
+msgstr ""
+
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Emoji & Symbols"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
