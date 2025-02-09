@@ -40,6 +40,12 @@ void EmbeddedProcess::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			window = get_window();
 		} break;
+		case NOTIFICATION_PROCESS: {
+			if (updated_embedded_process_queued) {
+				updated_embedded_process_queued = false;
+				_update_embedded_process();
+			}
+		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
 		} break;
@@ -179,6 +185,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	start_embedding_time = OS::get_singleton()->get_ticks_msec();
 	embedding_grab_focus = has_focus();
 	timer_update_embedded_process->start();
+	set_process(true);
 	set_notify_transform(true);
 
 	// Attempt to embed the process, but if it has just started and the window is not ready yet,
@@ -196,6 +203,7 @@ void EmbeddedProcess::reset() {
 	embedding_grab_focus = false;
 	timer_embedding->stop();
 	timer_update_embedded_process->stop();
+	set_process(false);
 	set_notify_transform(false);
 	queue_redraw();
 }
@@ -250,11 +258,6 @@ void EmbeddedProcess::_timer_update_embedded_process_timeout() {
 			last_global_rect = new_global_rect;
 			queue_update_embedded_process();
 		}
-	}
-
-	if (updated_embedded_process_queued) {
-		updated_embedded_process_queued = false;
-		_update_embedded_process();
 	}
 }
 
