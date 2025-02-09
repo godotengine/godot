@@ -182,6 +182,7 @@ struct Texture {
 
 	Type type = TYPE_2D;
 	RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
+	RS::TextureDrawableFormat drawable_type = RS::TEXTURE_DRAWABLE_FORMAT_RGBA8;
 
 	GLenum target = GL_TEXTURE_2D;
 	GLenum gl_format_cache = 0;
@@ -487,8 +488,24 @@ private:
 		RID shader_version;
 	} sdf_shader;
 
+	/* Texture Blit Shader API */
+
+	struct TexBlitShader {
+		bool initialized = false;
+		RID default_shader;
+		RID default_material;
+		RID default_shader_version;
+	} tex_blit_shader;
+
+	GLuint tex_blit_fbo;
+	GLuint tex_blit_quad;
+	GLuint tex_blit_quad_array;
+
 public:
 	static TextureStorage *get_singleton();
+
+	void _tex_blit_shader_initialize();
+	void _tex_blit_shader_free();
 
 	TextureStorage();
 	virtual ~TextureStorage();
@@ -535,6 +552,7 @@ public:
 	virtual void texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_initialize(RID p_texture, RID p_base) override; //all slices, then all the mipmaps, must be coherent
+	virtual void texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) override;
 
 	virtual RID texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers = 1, RS::TextureLayeredType p_layered_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 
@@ -543,6 +561,8 @@ public:
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 	void texture_remap_proxies(RID p_from_texture, RID p_to_texture);
+
+	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;
@@ -557,6 +577,9 @@ public:
 	virtual Ref<Image> texture_2d_get(RID p_texture) const override;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const override;
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const override;
+
+	virtual void texture_drawable_generate_mipmaps(RID p_texture) override;
+	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;

@@ -222,7 +222,10 @@
 		<constant name="TYPE_FOG" value="9" enum="Type">
 			A compute shader that runs for each froxel of the volumetric fog map.
 		</constant>
-		<constant name="TYPE_MAX" value="10" enum="Type">
+		<constant name="TYPE_TEXTURE_BLIT" value="10" enum="Type">
+			A shader used to process blit calls to a DrawableTexture.
+		</constant>
+		<constant name="TYPE_MAX" value="11" enum="Type">
 			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="VARYING_MODE_VERTEX_TO_FRAG_LIGHT" value="0" enum="VaryingMode">
