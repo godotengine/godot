@@ -33,11 +33,21 @@ package org.godotengine.godot.utils
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.os.Handler
+import android.os.Looper
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.TextView
 
 import org.godotengine.godot.R
+import kotlin.math.abs
 
 /**
  * Utility class for managing dialogs.
@@ -182,6 +192,92 @@ internal class DialogUtils {
 				dialog.setCancelable(false)
 				dialog.show()
 			}
+		}
+
+		/**
+		 * Displays a Snackbar with an optional action button.
+		 *
+		 * @param context The Context in which the Snackbar should be displayed.
+		 * @param message The message to display in the Snackbar.
+		 * @param duration The duration for which the Snackbar should be visible (in milliseconds).
+		 * @param actionText (Optional) The text for the action button. If `null`, the button is hidden.
+		 * @param actionCallback (Optional) A callback function to execute when the action button is clicked. If `null`, no action is performed.
+		 */
+		fun showSnackbar(activity: Activity, message: String, duration: Long = 3000, actionText: String? = null, action: (() -> Unit)? = null) {
+			activity.runOnUiThread {
+				val bottomMargin = activity.resources.getDimensionPixelSize(R.dimen.snackbar_bottom_margin)
+				val inflater = LayoutInflater.from(activity)
+				val customView = inflater.inflate(R.layout.snackbar, null)
+
+				val popupWindow = PopupWindow(
+					customView,
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+				)
+
+				val messageView = customView.findViewById<TextView>(R.id.snackbar_text)
+				messageView.text = message
+
+				val actionButton = customView.findViewById<Button>(R.id.snackbar_action)
+
+				if (actionText != null && action != null) {
+					actionButton.text = actionText
+					actionButton.visibility = View.VISIBLE
+					actionButton.setOnClickListener {
+						action.invoke()
+						popupWindow.dismiss()
+					}
+				} else {
+					actionButton.visibility = View.GONE
+				}
+
+				addSwipeToDismiss(customView, popupWindow)
+				popupWindow.showAtLocation(customView, Gravity.BOTTOM, 0, bottomMargin)
+
+				Handler(Looper.getMainLooper()).postDelayed({ popupWindow.dismiss() }, duration)
+			}
+		}
+
+		private fun addSwipeToDismiss(view: View, popupWindow: PopupWindow) {
+			view.setOnTouchListener(object : View.OnTouchListener {
+				private var initialX = 0f
+				private var dX = 0f
+				private val threshold = 300f  // Swipe distance threshold.
+
+				override fun onTouch(v: View?, event: MotionEvent): Boolean {
+					when (event.action) {
+						MotionEvent.ACTION_DOWN -> {
+							initialX = event.rawX
+							dX = view.translationX
+						}
+
+						MotionEvent.ACTION_MOVE -> {
+							val deltaX = event.rawX - initialX
+							view.translationX = dX + deltaX
+						}
+
+						MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+							val finalX = event.rawX - initialX
+
+							if (abs(finalX) > threshold) {
+								// If swipe exceeds threshold, dismiss smoothly.
+								view.animate()
+									.translationX(if (finalX > 0) view.width.toFloat() else -view.width.toFloat())
+									.setDuration(200)
+									.withEndAction { popupWindow.dismiss() }
+									.start()
+							} else {
+								// If swipe is canceled, return smoothly.
+								view.animate()
+									.translationX(0f)
+									.setDuration(200)
+									.start()
+							}
+						}
+					}
+					return true
+				}
+			})
 		}
 	}
 }
