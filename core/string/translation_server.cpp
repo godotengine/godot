@@ -503,7 +503,7 @@ String TranslationServer::get_tool_locale() {
 		// Look for best matching loaded translation.
 		Ref<Translation> t = main_domain->get_translation_object(locale);
 		if (t.is_null()) {
-			return "en";
+			return fallback;
 		}
 		return t->get_locale();
 	}
