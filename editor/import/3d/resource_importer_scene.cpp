@@ -1416,6 +1416,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	if (!isroot && node_settings.has("import/exposed")) {
 		p_node->set_meta(META_EXPOSED_IN_OWNER, bool(node_settings["import/exposed"]));
+		p_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, true);
 	}
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
@@ -2633,6 +2634,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 			} break;
 		}
 		mesh_node->set_meta(META_EXPOSED_IN_OWNER, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
+		mesh_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
 		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
 		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
 		mesh_node->set_visible(src_mesh_node->is_visible());

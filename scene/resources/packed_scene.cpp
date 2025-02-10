@@ -232,6 +232,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
 #ifdef TOOLS_ENABLED
 					if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
+						node->set_meta(META_CONTAINS_EXPOSED_NODES, sdata->get_state()->exposed_nodes.size() > 0);
 						for (const NodePath &e_path : sdata->get_state()->exposed_nodes) {
 							Node *ei = node->get_node_or_null(e_path);
 							if (ei) {
@@ -644,6 +645,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 #ifdef TOOLS_ENABLED
+	ret_nodes[0]->set_meta(META_CONTAINS_EXPOSED_NODES, exposed_nodes.size() > 0);
 	for (const NodePath &e_path : exposed_nodes) {
 		Node *ei = ret_nodes[0]->get_node_or_null(e_path);
 		if (ei) {
@@ -790,7 +792,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	nd.instance = -1; //not instantiated by default
 
 	//really convoluted condition, but it basically checks that index is only saved when part of an inherited scene OR the node parent is from the edited scene
-	if (p_owner->get_scene_inherited_state().is_null() && (p_node == p_owner || (p_node->get_owner() == p_owner && (p_node->get_parent() == p_owner || p_node->get_parent()->get_owner() == p_owner)))) {
+	if (p_owner->get_scene_inherited_state().is_null() && (p_node == p_owner || (p_node->get_owner() == p_owner && p_node->get_parent() == p_owner))) {
 		//do not save index, because it belongs to saved scene and scene is not inherited
 		nd.index = -1;
 	} else if (p_node == p_owner) {

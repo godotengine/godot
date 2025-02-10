@@ -317,8 +317,9 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(p_files[i]));
 
 		instances.push_back(instantiated_scene);
-
-		for (const NodePath &e_path : sdata->get_state()->get_exposed_nodes()) {
+		Vector<NodePath> exposed_nodes = sdata->get_state()->get_exposed_nodes();
+		instantiated_scene->set_meta(META_CONTAINS_EXPOSED_NODES, exposed_nodes.size() > 0);
+		for (const NodePath &e_path : exposed_nodes) {
 			Node *ei = instantiated_scene->get_node_or_null(e_path);
 			if (ei) {
 				ei->set_meta(META_EXPOSED_IN_INSTANCE, true);
@@ -3521,6 +3522,10 @@ static bool _has_visible_children(Node *p_node) {
 		return true;
 	}
 
+	if (p_node->has_exposed_nodes()) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -3533,9 +3538,13 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 			to_node = nullptr;
 			ERR_FAIL_MSG("Cannot perform drop above the root node!");
 		}
-
-		to_pos = to_node->get_index(false);
-		to_node = to_node->get_parent();
+		if (to_node->has_meta(META_EXPOSED_IN_OWNER)) {
+			to_node = to_node->get_owner();
+			to_pos = -1;
+		} else {
+			to_pos = to_node->get_index(false);
+			to_node = to_node->get_parent();
+		}
 
 	} else if (p_type == 1) {
 		//drop at below selected node
@@ -3548,7 +3557,11 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 		Node *lower_sibling = nullptr;
 
 		if (_has_visible_children(to_node)) {
-			to_pos = 0;
+			if (to_node->has_exposed_nodes()) {
+				to_pos = -1;
+			} else {
+				to_pos = 0;
+			}
 		} else {
 			for (int i = to_node->get_index(false) + 1; i < to_node->get_parent()->get_child_count(false); i++) {
 				Node *c = to_node->get_parent()->get_child(i, false);
@@ -3561,7 +3574,12 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 				to_pos = lower_sibling->get_index(false);
 			}
 
-			to_node = to_node->get_parent();
+			if (to_node->has_meta(META_EXPOSED_IN_OWNER)) {
+				to_pos = to_node->get_index(false) + 1;
+				to_node = to_node->get_owner();
+			} else {
+				to_node = to_node->get_parent();
+			}
 		}
 	}
 }

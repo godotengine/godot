@@ -2172,15 +2172,20 @@ bool Node::is_unique_name_in_owner() const {
 	return data.unique_name_in_owner;
 }
 
-bool Node::has_exposed_nodes() const {
+bool Node::has_exposed_nodes() {
+	if (has_meta(META_CONTAINS_EXPOSED_NODES)) {
+		return true;
+	}
 	for (const KeyValue<StringName, Node *> &KV : data.children) {
 		if (!KV.value->data.owner) {
 			continue;
 		}
 		if (KV.value->has_meta(META_EXPOSED_IN_INSTANCE)) {
+			set_meta(META_CONTAINS_EXPOSED_NODES, true);
 			return true;
 		}
 		if (KV.value->has_exposed_nodes()) {
+			set_meta(META_CONTAINS_EXPOSED_NODES, true);
 			return true;
 		}
 	}

@@ -346,7 +346,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 
 	bool is_new = false;
 
-	if (I) {
+	if (I && I->value.item) {
 		item = I->value.item;
 		TreeItem *current_parent = item->get_parent();
 
@@ -386,7 +386,9 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		return;
 	}
 
-	_update_node(p_node, item, part_of_subscene);
+	if (item) {
+		_update_node(p_node, item, part_of_subscene);
+	}
 	I->value.dirty = false;
 	I->value.can_process = p_node->can_process();
 
