@@ -153,6 +153,19 @@ public:
 					wp = (wp + 1) & rb_mask;
 				}
 			} break;
+			case 8: {
+				for (uint32_t i = 0; i < p_frames; i++) {
+					rb[(wp << 3) + 0] = read_buf[(i << 3) + 0];
+					rb[(wp << 3) + 1] = read_buf[(i << 3) + 1];
+					rb[(wp << 3) + 2] = read_buf[(i << 3) + 2];
+					rb[(wp << 3) + 3] = read_buf[(i << 3) + 3];
+					rb[(wp << 3) + 4] = read_buf[(i << 3) + 4];
+					rb[(wp << 3) + 5] = read_buf[(i << 3) + 5];
+					rb[(wp << 3) + 6] = read_buf[(i << 3) + 6];
+					rb[(wp << 3) + 7] = read_buf[(i << 3) + 7];
+					wp = (wp + 1) & rb_mask;
+				}
+			} break;
 		}
 
 		rb_write_pos.set(wp);
