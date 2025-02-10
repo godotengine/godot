@@ -236,6 +236,17 @@ void Label::_shape() const {
 		if (para.lines_dirty) {
 			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 			switch (overrun_behavior) {
+				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
+				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
@@ -1394,7 +1405,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "paragraph_separator"), "set_paragraph_separator", "get_paragraph_separator");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
