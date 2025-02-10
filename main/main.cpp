@@ -3444,6 +3444,17 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
 
+#if TOOLS_ENABLED
+
+	// Setting up the callback to execute a scan for UIDs on disk when a UID
+	// does not exist in the UID cache on startup. This prevents invalid UID errors
+	// when opening a project without a UID cache file or with an invalid cache.
+	if (editor) {
+		ResourceUID::scan_for_uid_on_startup = EditorFileSystem::scan_for_uid;
+	}
+
+#endif
+
 	theme_db->initialize_theme();
 	audio_server->load_default_bus_layout();
 
@@ -3496,9 +3507,21 @@ void Main::setup_boot_logo() {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const String boot_logo_path = ResourceUID::ensure_path(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
 		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
+		String boot_logo_path = GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String());
+
+		// If the UID cache is missing or invalid, it could be 'normal' for the UID to not exist in memory.
+		// It's too soon to scan the project files since the ResourceFormatImporter is not loaded yet,
+		// so to prevent printing errors, we will just skip the custom boot logo this time.
+		if (boot_logo_path.begins_with("uid://")) {
+			const ResourceUID::ID logo_id = ResourceUID::get_singleton()->text_to_id(boot_logo_path);
+			if (ResourceUID::get_singleton()->has_id(logo_id)) {
+				boot_logo_path = ResourceUID::get_singleton()->get_id_path(logo_id).strip_edges();
+			} else {
+				boot_logo_path = String();
+			}
+		}
 
 		Ref<Image> boot_logo;
 
@@ -4215,7 +4238,7 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
-				if (!recovery_mode && (game_path != String(GLOBAL_GET("application/run/main_scene")) || !editor_node->has_scenes_in_session())) {
+				if (!recovery_mode && (game_path != ResourceUID::ensure_path(String(GLOBAL_GET("application/run/main_scene"))) || !editor_node->has_scenes_in_session())) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK) {
 						ERR_PRINT("Failed to load scene");
