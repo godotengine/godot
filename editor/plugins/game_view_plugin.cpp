@@ -482,13 +482,13 @@ void GameView::_update_ui() {
 			state_label->set_text(TTR("Game embedding not available on your OS."));
 			break;
 		case EMBED_NOT_AVAILABLE_MINIMIZED:
-			state_label->set_text(TTR("Game embedding not available when the game starts minimized.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding not available when the game starts minimized.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_MAXIMIZED:
-			state_label->set_text(TTR("Game embedding not available when the game starts maximized.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding not available when the game starts maximized.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_FULLSCREEN:
-			state_label->set_text(TTR("Game embedding not available when the game starts in fullscreen.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding not available when the game starts in fullscreen.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE:
 			state_label->set_text(TTR("Game embedding not available in single window mode."));
