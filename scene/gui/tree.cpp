@@ -2841,7 +2841,9 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 	TreeItem *c = p_current->first_child;
 
 	while (c) {
-		select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		if (c->is_visible()) {
+			select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		}
 		c = c->next;
 	}
 }
