@@ -31,6 +31,7 @@
 #include "tile_map_layer.h"
 
 #include "core/io/marshalls.h"
+#include "core/math/geometry_2d.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
@@ -40,15 +41,15 @@
 Callable TileMapLayer::_navmesh_source_geometry_parsing_callback;
 RID TileMapLayer::_navmesh_source_geometry_parser;
 
+Vector2i TileMapLayer::_coords_to_quadrant_coords(const Vector2i &p_coords, const int p_quadrant_size) const {
+	return Vector2i(
+			p_coords.x > 0 ? p_coords.x / p_quadrant_size : (p_coords.x - (p_quadrant_size - 1)) / p_quadrant_size,
+			p_coords.y > 0 ? p_coords.y / p_quadrant_size : (p_coords.y - (p_quadrant_size - 1)) / p_quadrant_size);
+}
+
 #ifdef DEBUG_ENABLED
 /////////////////////////////// Debug //////////////////////////////////////////
 constexpr int TILE_MAP_DEBUG_QUADRANT_SIZE = 16;
-
-Vector2i TileMapLayer::_coords_to_debug_quadrant_coords(const Vector2i &p_coords) const {
-	return Vector2i(
-			p_coords.x > 0 ? p_coords.x / TILE_MAP_DEBUG_QUADRANT_SIZE : (p_coords.x - (TILE_MAP_DEBUG_QUADRANT_SIZE - 1)) / TILE_MAP_DEBUG_QUADRANT_SIZE,
-			p_coords.y > 0 ? p_coords.y / TILE_MAP_DEBUG_QUADRANT_SIZE : (p_coords.y - (TILE_MAP_DEBUG_QUADRANT_SIZE - 1)) / TILE_MAP_DEBUG_QUADRANT_SIZE);
-}
 
 void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -78,106 +79,84 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		}
 	}
 
-	// List all debug quadrants to update, creating new ones if needed.
-	SelfList<DebugQuadrant>::List dirty_debug_quadrant_list;
-
+	// List all debug quadrants to update.
+	HashSet<Vector2i> quadrants_to_updates;
 	if (_debug_was_cleaned_up || anything_changed) {
 		// Update all cells.
 		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 			CellData &cell_data = kv.value;
-			_debug_quadrants_update_cell(cell_data, dirty_debug_quadrant_list);
+			quadrants_to_updates.insert(_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE));
+			// Physics quadrants are drawn from their origin.
+			Vector2i physics_quadrant_origin = _coords_to_quadrant_coords(cell_data.coords, physics_quadrant_size) * physics_quadrant_size;
+			quadrants_to_updates.insert(_coords_to_quadrant_coords(physics_quadrant_origin, TILE_MAP_DEBUG_QUADRANT_SIZE));
 		}
 	} else {
 		// Update dirty cells.
 		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 			CellData &cell_data = *cell_data_list_element->self();
-			_debug_quadrants_update_cell(cell_data, dirty_debug_quadrant_list);
+			quadrants_to_updates.insert(_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE));
+			// Physics quadrants are drawn from their origin.
+			Vector2i physics_quadrant_origin = _coords_to_quadrant_coords(cell_data.coords, physics_quadrant_size) * physics_quadrant_size;
+			quadrants_to_updates.insert(_coords_to_quadrant_coords(physics_quadrant_origin, TILE_MAP_DEBUG_QUADRANT_SIZE));
 		}
 	}
 
 	// Update those quadrants.
 	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
-	for (SelfList<DebugQuadrant> *quadrant_list_element = dirty_debug_quadrant_list.first(); quadrant_list_element;) {
-		SelfList<DebugQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
+	for (const Vector2i &quadrant_coords : quadrants_to_updates) {
+		if (!debug_quadrant_map.has(quadrant_coords)) {
+			// Create a new quadrant and add it to the quadrant map.
+			Ref<DebugQuadrant> new_quadrant;
+			new_quadrant.instantiate();
+			new_quadrant->quadrant_coords = quadrant_coords;
+			debug_quadrant_map[quadrant_coords] = new_quadrant;
+		}
 
-		DebugQuadrant &debug_quadrant = *quadrant_list_element->self();
+		Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[quadrant_coords];
 
-		// Check if the quadrant has a tile.
-		bool has_a_tile = false;
-		RID &ci = debug_quadrant.canvas_item;
-		for (SelfList<CellData> *cell_data_list_element = debug_quadrant.cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+		// Update the quadrant's canvas item.
+		RID &ci = debug_quadrant->canvas_item;
+		if (ci.is_valid()) {
+			rs->canvas_item_clear(ci);
+		} else {
+			ci = rs->canvas_item_create();
+			if (needs_set_not_interpolated) {
+				rs->canvas_item_set_interpolated(ci, false);
+			}
+			rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
+			rs->canvas_item_set_parent(ci, get_canvas_item());
+		}
+		const Vector2 quadrant_pos = tile_set->map_to_local(debug_quadrant->quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
+		Transform2D xform(0, quadrant_pos);
+		rs->canvas_item_set_transform(ci, xform);
+
+		// Draw physics.
+		_physics_draw_quadrant_debug(ci, *debug_quadrant.ptr());
+
+		// Draw debug info.
+		for (SelfList<CellData> *cell_data_list_element = debug_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 			CellData &cell_data = *cell_data_list_element->self();
 			if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
-				has_a_tile = true;
-				break;
+				_rendering_draw_cell_debug(ci, quadrant_pos, cell_data);
+				_navigation_draw_cell_debug(ci, quadrant_pos, cell_data);
+				_scenes_draw_cell_debug(ci, quadrant_pos, cell_data);
+				debug_quadrant->drawn_to = true;
 			}
 		}
 
-		if (has_a_tile) {
-			// Update the quadrant.
-			if (ci.is_valid()) {
-				rs->canvas_item_clear(ci);
-			} else {
-				ci = rs->canvas_item_create();
-				if (needs_set_not_interpolated) {
-					rs->canvas_item_set_interpolated(ci, false);
-				}
-				rs->canvas_item_set_z_index(ci, RS::CANVAS_ITEM_Z_MAX - 1);
-				rs->canvas_item_set_parent(ci, get_canvas_item());
-			}
-
-			const Vector2 quadrant_pos = tile_set->map_to_local(debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
-			Transform2D xform(0, quadrant_pos);
-			rs->canvas_item_set_transform(ci, xform);
-
-			for (SelfList<CellData> *cell_data_list_element = debug_quadrant.cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
-				if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
-					_rendering_draw_cell_debug(ci, quadrant_pos, cell_data);
-					_physics_draw_cell_debug(ci, quadrant_pos, cell_data);
-					_navigation_draw_cell_debug(ci, quadrant_pos, cell_data);
-					_scenes_draw_cell_debug(ci, quadrant_pos, cell_data);
-				}
-			}
-		} else {
+		// Free the quadrants that were not drawn to.
+		if (!debug_quadrant->drawn_to) {
 			// Free the quadrant.
 			if (ci.is_valid()) {
 				rs->free(ci);
 			}
-			quadrant_list_element->remove_from_list();
-			debug_quadrant_map.erase(debug_quadrant.quadrant_coords);
+			debug_quadrant_map.erase(quadrant_coords);
 		}
-
-		quadrant_list_element = next_quadrant_list_element;
 	}
-
-	dirty_debug_quadrant_list.clear();
 
 	_debug_was_cleaned_up = false;
 }
 
-void TileMapLayer::_debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list) {
-	Vector2i quadrant_coords = _coords_to_debug_quadrant_coords(r_cell_data.coords);
-
-	if (!debug_quadrant_map.has(quadrant_coords)) {
-		// Create a new quadrant and add it to the quadrant map.
-		Ref<DebugQuadrant> new_quadrant;
-		new_quadrant.instantiate();
-		new_quadrant->quadrant_coords = quadrant_coords;
-		debug_quadrant_map[quadrant_coords] = new_quadrant;
-	}
-
-	// Add the cell to its quadrant, if it is not already in there.
-	Ref<DebugQuadrant> &debug_quadrant = debug_quadrant_map[quadrant_coords];
-	if (!r_cell_data.debug_quadrant_list_element.in_list()) {
-		debug_quadrant->cells.add(&r_cell_data.debug_quadrant_list_element);
-	}
-
-	// Mark the quadrant as dirty.
-	if (!debug_quadrant->dirty_quadrant_list_element.in_list()) {
-		r_dirty_debug_quadrant_list.add(&debug_quadrant->dirty_quadrant_list_element);
-	}
-}
 #endif // DEBUG_ENABLED
 
 /////////////////////////////// Rendering //////////////////////////////////////
@@ -499,9 +478,7 @@ void TileMapLayer::_rendering_quadrants_update_cell(CellData &r_cell_data, SelfL
 			const Vector2i &coords = r_cell_data.coords;
 
 			// Rounding down, instead of simply rounding towards zero (truncating).
-			quadrant_coords = Vector2i(
-					coords.x > 0 ? coords.x / rendering_quadrant_size : (coords.x - (rendering_quadrant_size - 1)) / rendering_quadrant_size,
-					coords.y > 0 ? coords.y / rendering_quadrant_size : (coords.y - (rendering_quadrant_size - 1)) / rendering_quadrant_size);
+			quadrant_coords = _coords_to_quadrant_coords(coords, rendering_quadrant_size);
 			canvas_items_position = tile_set->map_to_local(rendering_quadrant_size * quadrant_coords);
 		}
 
@@ -702,31 +679,295 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 /////////////////////////////// Physics //////////////////////////////////////
 
 void TileMapLayer::_physics_update(bool p_force_cleanup) {
+	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
+
 	// Check if we should cleanup everything.
 	bool forced_cleanup = p_force_cleanup || !enabled || !collision_enabled || !is_inside_tree() || tile_set.is_null();
-	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
-			_physics_clear_cell(kv.value);
+
+	// ----------- Quadrants processing -----------
+
+	// List all physics quadrants to update, creating new ones if needed.
+	SelfList<PhysicsQuadrant>::List dirty_physics_quadrant_list;
+
+	// Check if anything changed that might change the quadrant shape.
+	// If so, recreate everything.
+	bool quadrant_shape_changed = dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_QUADRANT_SIZE];
+
+	// Free all quadrants.
+	if (forced_cleanup || quadrant_shape_changed) {
+		for (const KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
+			// Clear bodies.
+			for (KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
+				if (kvbody.value.body.is_valid()) {
+					bodies_coords.erase(kvbody.value.body);
+					ps->free(kvbody.value.body);
+				}
+			}
+			kv.value->bodies.clear();
+			kv.value->cells.clear();
 		}
-	} else {
-		if (_physics_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE]) {
+		physics_quadrant_map.clear();
+		_physics_was_cleaned_up = true;
+	}
+
+	if (!forced_cleanup) {
+		RID space = get_world_2d()->get_space();
+		Transform2D gl_transform = get_global_transform();
+
+		// List all quadrants to update, recreating them if needed.
+		if (dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || _physics_was_cleaned_up) {
 			// Update all cells.
 			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
-				_physics_update_cell(kv.value);
+				CellData &cell_data = kv.value;
+				_physics_quadrants_update_cell(cell_data, dirty_physics_quadrant_list);
 			}
 		} else {
 			// Update dirty cells.
 			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 				CellData &cell_data = *cell_data_list_element->self();
-				_physics_update_cell(cell_data);
+				_physics_quadrants_update_cell(cell_data, dirty_physics_quadrant_list);
+			}
+		}
+
+		// Update all dirty quadrants.
+		for (SelfList<PhysicsQuadrant> *quadrant_list_element = dirty_physics_quadrant_list.first(); quadrant_list_element;) {
+			SelfList<PhysicsQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
+
+			const Ref<PhysicsQuadrant> &physics_quadrant = quadrant_list_element->self();
+
+			// Check if the quadrant has a tile.
+			bool has_a_tile = false;
+			for (SelfList<CellData> *cell_data_list_element = physics_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+				CellData &cell_data = *cell_data_list_element->self();
+				if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
+					has_a_tile = true;
+					break;
+				}
+			}
+
+			if (has_a_tile) {
+				// Process the quadrant.
+
+				// First, clear the quadrant bodies.
+				for (KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
+					RID &body = kvbody.value.body;
+					if (body.is_valid()) {
+						bodies_coords.erase(body);
+						ps->free(body);
+						body = RID();
+					}
+				}
+				physics_quadrant->bodies.clear();
+				physics_quadrant->shapes.clear();
+
+				// Quadrant origin
+				Vector2 quadrant_origin = tile_set->map_to_local(physics_quadrant->quadrant_coords);
+
+				// Recreate the quadrant bodies.
+				for (uint32_t tile_set_physics_layer = 0; tile_set_physics_layer < (uint32_t)tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
+					Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
+					uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
+					uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
+
+					// Merge polygons together for each quadrant.
+					for (SelfList<CellData> *cell_data_quadrant_list_element = physics_quadrant->cells.first(); cell_data_quadrant_list_element; cell_data_quadrant_list_element = cell_data_quadrant_list_element->next()) {
+						CellData &cell_data = *cell_data_quadrant_list_element->self();
+
+						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(cell_data.cell.source_id));
+
+						// Get the tile data.
+						const TileData *tile_data;
+						if (cell_data.runtime_tile_data_cache) {
+							tile_data = cell_data.runtime_tile_data_cache;
+						} else {
+							tile_data = atlas_source->get_tile_data(cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile);
+						}
+
+						// Transform flags.
+						bool flip_h = (cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H);
+						bool flip_v = (cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V);
+						bool transpose = (cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
+
+						Vector2 linear_velocity = tile_data->get_constant_linear_velocity(tile_set_physics_layer);
+						real_t angular_velocity = tile_data->get_constant_angular_velocity(tile_set_physics_layer);
+
+						// Setup polygons for merge.
+						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(tile_set_physics_layer); polygon_index++) {
+							// Iterate over the polygons.
+							int shapes_count = tile_data->get_collision_polygon_shapes_count(tile_set_physics_layer, polygon_index);
+
+							// Check if we need to create a new body.
+							PhysicsQuadrant::PhysicsBodyKey physics_body_key;
+							physics_body_key.physics_layer = tile_set_physics_layer;
+							physics_body_key.linear_velocity = linear_velocity;
+							physics_body_key.angular_velocity = angular_velocity;
+							physics_body_key.one_way_collision = tile_data->is_collision_polygon_one_way(tile_set_physics_layer, polygon_index);
+							physics_body_key.one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(tile_set_physics_layer, polygon_index);
+
+							if (!physics_quadrant->bodies.has(physics_body_key)) {
+								RID body = ps->body_create();
+								physics_quadrant->bodies[physics_body_key] = {};
+								physics_quadrant->bodies[physics_body_key].body = body;
+								bodies_coords[body] = physics_quadrant->quadrant_coords;
+
+								// Create or update the body.
+								ps->body_set_mode(body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
+								ps->body_set_space(body, space);
+
+								Transform2D xform;
+								xform.set_origin(quadrant_origin);
+								xform = gl_transform * xform;
+								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+
+								ps->body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id());
+								ps->body_set_collision_layer(body, physics_layer);
+								ps->body_set_collision_mask(body, physics_mask);
+								ps->body_set_pickable(body, false);
+								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+
+								if (!physics_material.is_valid()) {
+									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
+									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, 1);
+								} else {
+									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
+									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+								}
+							}
+
+							for (int shape_index = 0; shape_index < shapes_count; shape_index++) {
+								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(tile_set_physics_layer, polygon_index, shape_index, flip_h, flip_v, transpose);
+
+								// Translate the polygon.
+								Vector<Vector2> convex_polygon = shape->get_points();
+								for (int i = 0; i < convex_polygon.size(); i++) {
+									convex_polygon.set(i, convex_polygon[i] + tile_set->map_to_local(cell_data.coords) - quadrant_origin);
+								}
+
+								physics_quadrant->bodies[physics_body_key].polygons.push_back(convex_polygon);
+							}
+						}
+					}
+				}
+
+				// Iterate over the bodies
+				for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
+					// Actually merge the polygons.
+					Vector<Vector<Vector2>> out_polygons;
+					Vector<Vector<Vector2>> out_holes;
+					Geometry2D::merge_many_polygons(kvbody.value.polygons, out_polygons, out_holes);
+					// Create shapes for each polygon.
+					int body_shape_index = 0;
+					Vector<Vector<Vector2>> convex_polygons = Geometry2D::decompose_many_polygons_in_convex(out_polygons, out_holes);
+					for (Vector<Vector2> &convex_polygon : convex_polygons) {
+						Ref<ConvexPolygonShape2D> shape;
+						shape.instantiate();
+						shape->set_points(convex_polygon);
+						ps->body_add_shape(kvbody.value.body, shape->get_rid());
+						ps->body_set_shape_as_one_way_collision(kvbody.value.body, body_shape_index, kvbody.key.one_way_collision, kvbody.key.one_way_collision_margin);
+						physics_quadrant->shapes.push_back(shape);
+						body_shape_index++;
+					}
+				}
+			} else {
+				// Free the quadrant.
+				for (KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kv : physics_quadrant->bodies) {
+					RID &body = kv.value.body;
+					if (body.is_valid()) {
+						bodies_coords.erase(body);
+						ps->free(body);
+					}
+				}
+				physics_quadrant->bodies.clear();
+				physics_quadrant->cells.clear();
+				physics_quadrant_map.erase(physics_quadrant->quadrant_coords);
+			}
+
+			quadrant_list_element = next_quadrant_list_element;
+		}
+
+		dirty_physics_quadrant_list.clear();
+
+		// Updates on physics changes.
+		if (dirty.flags[DIRTY_FLAGS_LAYER_USE_KINEMATIC_BODIES]) {
+			for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
+				Ref<PhysicsQuadrant> &physics_quadrant = kv.value;
+				for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
+					ps->body_set_mode(kvbody.value.body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
+				}
 			}
 		}
 	}
 
 	// -----------
 	// Mark the physics state as up to date.
-	_physics_was_cleaned_up = forced_cleanup;
+	_physics_was_cleaned_up = forced_cleanup || !occlusion_enabled;
+}
+
+void TileMapLayer::_physics_quadrants_update_cell(CellData &r_cell_data, SelfList<PhysicsQuadrant>::List &r_dirty_physics_quadrant_list) {
+	// Check if the cell is valid and retrieve its y_sort_origin.
+	bool is_valid = false;
+	TileSetSource *source;
+	if (tile_set->has_source(r_cell_data.cell.source_id)) {
+		source = *tile_set->get_source(r_cell_data.cell.source_id);
+		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+		if (atlas_source && atlas_source->has_tile(r_cell_data.cell.get_atlas_coords()) && atlas_source->has_alternative_tile(r_cell_data.cell.get_atlas_coords(), r_cell_data.cell.alternative_tile)) {
+			is_valid = true;
+		}
+	}
+
+	if (is_valid) {
+		// Get the quadrant coords.
+		const Vector2i &coords = r_cell_data.coords;
+		Vector2i quadrant_coords = _coords_to_quadrant_coords(coords, physics_quadrant_size);
+
+		Ref<PhysicsQuadrant> physics_quadrant;
+		if (physics_quadrant_map.has(quadrant_coords)) {
+			// Reuse existing physics quadrant.
+			physics_quadrant = physics_quadrant_map[quadrant_coords];
+		} else {
+			// Create a new physics quadrant.
+			physics_quadrant.instantiate();
+			physics_quadrant->quadrant_coords = quadrant_coords;
+			physics_quadrant_map[quadrant_coords] = physics_quadrant;
+		}
+
+		// Mark the old quadrant as dirty (if it exists).
+		if (r_cell_data.physics_quadrant.is_valid()) {
+			if (!r_cell_data.physics_quadrant->dirty_quadrant_list_element.in_list()) {
+				r_dirty_physics_quadrant_list.add(&r_cell_data.physics_quadrant->dirty_quadrant_list_element);
+			}
+		}
+
+		// Remove the cell from that quadrant.
+		if (r_cell_data.physics_quadrant_list_element.in_list()) {
+			r_cell_data.physics_quadrant_list_element.remove_from_list();
+		}
+
+		// Add the cell to its new quadrant.
+		r_cell_data.physics_quadrant = physics_quadrant;
+		r_cell_data.physics_quadrant->cells.add(&r_cell_data.physics_quadrant_list_element);
+
+		// Add the new quadrant to the dirty quadrant list.
+		if (!physics_quadrant->dirty_quadrant_list_element.in_list()) {
+			r_dirty_physics_quadrant_list.add(&physics_quadrant->dirty_quadrant_list_element);
+		}
+	} else {
+		Ref<PhysicsQuadrant> physics_quadrant = r_cell_data.physics_quadrant;
+
+		// Remove the cell from its quadrant.
+		r_cell_data.physics_quadrant = Ref<PhysicsQuadrant>();
+		if (r_cell_data.physics_quadrant_list_element.in_list()) {
+			physics_quadrant->cells.remove(&r_cell_data.physics_quadrant_list_element);
+		}
+
+		if (physics_quadrant.is_valid()) {
+			// Add the quadrant to the dirty quadrant list.
+			if (!physics_quadrant->dirty_quadrant_list_element.in_list()) {
+				r_dirty_physics_quadrant_list.add(&physics_quadrant->dirty_quadrant_list_element);
+			}
+		}
+	}
 }
 
 void TileMapLayer::_physics_notification(int p_what) {
@@ -737,15 +978,12 @@ void TileMapLayer::_physics_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED:
 			// Move the collisison shapes along with the TileMap.
 			if (is_inside_tree() && tile_set.is_valid()) {
-				for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
-					const CellData &cell_data = kv.value;
-
-					for (RID body : cell_data.bodies) {
-						if (body.is_valid()) {
-							Transform2D xform(0, tile_set->map_to_local(kv.key));
-							xform = gl_transform * xform;
-							ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
-						}
+				for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
+					for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
+						const RID &body = kvbody.value.body;
+						Transform2D xform(0, tile_set->map_to_local(kv.key));
+						xform = gl_transform * xform;
+						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 					}
 				}
 			}
@@ -755,150 +993,18 @@ void TileMapLayer::_physics_notification(int p_what) {
 			if (is_inside_tree()) {
 				RID space = get_world_2d()->get_space();
 
-				for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
-					const CellData &cell_data = kv.value;
-
-					for (RID body : cell_data.bodies) {
-						if (body.is_valid()) {
-							ps->body_set_space(body, space);
-						}
-					}
-				}
-			}
-	}
-}
-
-void TileMapLayer::_physics_clear_cell(CellData &r_cell_data) {
-	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
-
-	// Clear bodies.
-	for (RID body : r_cell_data.bodies) {
-		if (body.is_valid()) {
-			bodies_coords.erase(body);
-			ps->free(body);
-		}
-	}
-	r_cell_data.bodies.clear();
-}
-
-void TileMapLayer::_physics_update_cell(CellData &r_cell_data) {
-	Transform2D gl_transform = get_global_transform();
-	RID space = get_world_2d()->get_space();
-	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
-
-	// Recreate bodies and shapes.
-	TileMapCell &c = r_cell_data.cell;
-
-	TileSetSource *source;
-	if (tile_set->has_source(c.source_id)) {
-		source = *tile_set->get_source(c.source_id);
-
-		if (source->has_tile(c.get_atlas_coords()) && source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
-			TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-			if (atlas_source) {
-				const TileData *tile_data;
-				if (r_cell_data.runtime_tile_data_cache) {
-					tile_data = r_cell_data.runtime_tile_data_cache;
-				} else {
-					tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
-				}
-
-				// Transform flags.
-				bool flip_h = (c.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_H);
-				bool flip_v = (c.alternative_tile & TileSetAtlasSource::TRANSFORM_FLIP_V);
-				bool transpose = (c.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
-
-				// Free unused bodies then resize the bodies array.
-				for (uint32_t i = tile_set->get_physics_layers_count(); i < r_cell_data.bodies.size(); i++) {
-					RID &body = r_cell_data.bodies[i];
-					if (body.is_valid()) {
-						bodies_coords.erase(body);
-						ps->free(body);
-						body = RID();
-					}
-				}
-				r_cell_data.bodies.resize(tile_set->get_physics_layers_count());
-
-				for (uint32_t tile_set_physics_layer = 0; tile_set_physics_layer < (uint32_t)tile_set->get_physics_layers_count(); tile_set_physics_layer++) {
-					Ref<PhysicsMaterial> physics_material = tile_set->get_physics_layer_physics_material(tile_set_physics_layer);
-					uint32_t physics_layer = tile_set->get_physics_layer_collision_layer(tile_set_physics_layer);
-					uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
-					real_t physics_priority = tile_set->get_physics_layer_collision_priority(tile_set_physics_layer);
-
-					RID body = r_cell_data.bodies[tile_set_physics_layer];
-					if (tile_data->get_collision_polygons_count(tile_set_physics_layer) == 0) {
-						// No body needed, free it if it exists.
-						if (body.is_valid()) {
-							bodies_coords.erase(body);
-							ps->free(body);
-						}
-						body = RID();
-					} else {
-						// Create or update the body.
-						if (!body.is_valid()) {
-							body = ps->body_create();
-						}
-						bodies_coords[body] = r_cell_data.coords;
-						ps->body_set_mode(body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
+				for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
+					for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : kv.value->bodies) {
+						const RID &body = kvbody.value.body;
 						ps->body_set_space(body, space);
-
-						Transform2D xform;
-						xform.set_origin(tile_set->map_to_local(r_cell_data.coords));
-						xform = gl_transform * xform;
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
-
-						ps->body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id());
-						ps->body_set_collision_layer(body, physics_layer);
-						ps->body_set_collision_mask(body, physics_mask);
-						ps->body_set_collision_priority(body, physics_priority);
-						ps->body_set_pickable(body, false);
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, tile_data->get_constant_linear_velocity(tile_set_physics_layer));
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, tile_data->get_constant_angular_velocity(tile_set_physics_layer));
-
-						if (physics_material.is_null()) {
-							ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
-							ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, 1);
-						} else {
-							ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
-							ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, physics_material->computed_friction());
-						}
-
-						// Clear body's shape if needed.
-						ps->body_clear_shapes(body);
-
-						// Add the shapes to the body.
-						int body_shape_index = 0;
-						for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(tile_set_physics_layer); polygon_index++) {
-							// Iterate over the polygons.
-							bool one_way_collision = tile_data->is_collision_polygon_one_way(tile_set_physics_layer, polygon_index);
-							float one_way_collision_margin = tile_data->get_collision_polygon_one_way_margin(tile_set_physics_layer, polygon_index);
-							int shapes_count = tile_data->get_collision_polygon_shapes_count(tile_set_physics_layer, polygon_index);
-							for (int shape_index = 0; shape_index < shapes_count; shape_index++) {
-								// Add decomposed convex shapes.
-								Ref<ConvexPolygonShape2D> shape = tile_data->get_collision_polygon_shape(tile_set_physics_layer, polygon_index, shape_index, flip_h, flip_v, transpose);
-								ps->body_add_shape(body, shape->get_rid());
-								ps->body_set_shape_as_one_way_collision(body, body_shape_index, one_way_collision, one_way_collision_margin);
-
-								body_shape_index++;
-							}
-						}
 					}
-
-					// Set the body again.
-					r_cell_data.bodies[tile_set_physics_layer] = body;
 				}
-
-				return;
 			}
-		}
 	}
-
-	// If we did not return earlier, clear the cell.
-	_physics_clear_cell(r_cell_data);
 }
 
 #ifdef DEBUG_ENABLED
-void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data) {
+void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQuadrant &r_debug_quadrant) {
 	// Draw the debug collision shapes.
 	ERR_FAIL_COND(tile_set.is_null());
 
@@ -929,25 +1035,97 @@ void TileMapLayer::_physics_draw_cell_debug(const RID &p_canvas_item, const Vect
 	Vector<Color> color;
 	color.push_back(debug_collision_color);
 
-	Transform2D quadrant_to_local(0, p_quadrant_pos);
-	Transform2D global_to_quadrant = (get_global_transform() * quadrant_to_local).affine_inverse();
+	RandomPCG rand;
+	rand.seed(hash_murmur3_one_real(r_debug_quadrant.quadrant_coords.y, hash_murmur3_one_real(r_debug_quadrant.quadrant_coords.x)));
 
-	for (RID body : r_cell_data.bodies) {
-		if (body.is_valid()) {
-			Transform2D body_to_quadrant = global_to_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
-			rs->canvas_item_add_set_transform(p_canvas_item, body_to_quadrant);
-			for (int shape_index = 0; shape_index < ps->body_get_shape_count(body); shape_index++) {
-				const RID &shape = ps->body_get_shape(body, shape_index);
-				const PhysicsServer2D::ShapeType &type = ps->shape_get_type(shape);
-				if (type == PhysicsServer2D::SHAPE_CONVEX_POLYGON) {
-					rs->canvas_item_add_polygon(p_canvas_item, ps->shape_get_data(shape), color);
-				} else {
-					WARN_PRINT("Wrong shape type for a tile, should be SHAPE_CONVEX_POLYGON.");
+	// Create a mesh.
+	if (!r_debug_quadrant.physics_mesh.is_valid()) {
+		r_debug_quadrant.physics_mesh = rs->mesh_create();
+	}
+	rs->mesh_clear(r_debug_quadrant.physics_mesh);
+
+	// Redraw all shapes from the physics quadrants
+	Rect2i covered_cell_area = Rect2i(r_debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE, Vector2i(TILE_MAP_DEBUG_QUADRANT_SIZE, TILE_MAP_DEBUG_QUADRANT_SIZE));
+	Vector2i first_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_position() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
+	Vector2i last_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_end() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
+
+	// Arrays to generate a mesh.
+	for (int x = first_physics_quadrant_coords.x; x < last_physics_quadrant_coords.x; x++) {
+		for (int y = first_physics_quadrant_coords.y; y < last_physics_quadrant_coords.y; y++) {
+			const Vector2i physics_quadrant_coords = Vector2i(x, y);
+			if (!physics_quadrant_map.has(physics_quadrant_coords)) {
+				continue;
+			}
+			r_debug_quadrant.drawn_to = true;
+			Ref<PhysicsQuadrant> physics_quadrant = physics_quadrant_map[physics_quadrant_coords];
+
+			const Vector2 debug_quadrant_pos = tile_set->map_to_local(r_debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE);
+			Transform2D global_to_debug_quadrant = (get_global_transform() * Transform2D(0, debug_quadrant_pos)).affine_inverse();
+
+			for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
+				const RID &body = kvbody.value.body;
+				Transform2D body_to_quadrant = global_to_debug_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
+
+				Color random_variation_color;
+				random_variation_color.set_hsv(
+						debug_collision_color.get_h() + rand.random(-1.0, 1.0) * 0.05,
+						debug_collision_color.get_s(),
+						debug_collision_color.get_v() + rand.random(-1.0, 1.0) * 0.1,
+						debug_collision_color.a);
+
+				int shape_count = ps->body_get_shape_count(body);
+				for (int shape_index = 0; shape_index < shape_count; shape_index++) {
+					const RID &shape = ps->body_get_shape(body, shape_index);
+					const Transform2D &shape_xform = ps->body_get_shape_transform(body, shape_index);
+					const PhysicsServer2D::ShapeType &type = ps->shape_get_type(shape);
+
+					if (type == PhysicsServer2D::SHAPE_CONVEX_POLYGON) {
+						PackedVector2Array outline = ps->shape_get_data(shape);
+
+						PackedVector2Array vertex_array;
+						vertex_array.resize(outline.size() + 1);
+
+						PackedColorArray face_color_array;
+						face_color_array.resize(outline.size() + 1);
+						PackedInt32Array face_index_array;
+						face_index_array.resize((outline.size() - 2) * 3);
+
+						PackedColorArray line_color_array;
+						line_color_array.resize(outline.size() + 1);
+
+						for (int i = 0; i < outline.size() + 1; i++) {
+							Vector2 vertex = (body_to_quadrant * shape_xform).xform(outline[i % outline.size()]);
+							vertex_array.write[i] = vertex;
+							face_color_array.write[i] = random_variation_color;
+							line_color_array.write[i] = random_variation_color.lightened(0.2);
+						}
+						for (int i = 0; i < outline.size() - 2; i++) {
+							face_index_array.write[i * 3] = 0;
+							face_index_array.write[i * 3 + 1] = i + 1;
+							face_index_array.write[i * 3 + 2] = i + 2;
+						}
+
+						Array face_mesh_array;
+						face_mesh_array.resize(Mesh::ARRAY_MAX);
+						face_mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
+						face_mesh_array[Mesh::ARRAY_INDEX] = face_index_array;
+						face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
+						rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_TRIANGLES, face_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+						Array line_mesh_array;
+						line_mesh_array.resize(Mesh::ARRAY_MAX);
+						line_mesh_array[Mesh::ARRAY_VERTEX] = vertex_array;
+						line_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
+
+						rs->mesh_add_surface_from_arrays(r_debug_quadrant.physics_mesh, RS::PRIMITIVE_LINE_STRIP, line_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+					} else {
+						WARN_PRINT("Wrong shape type for a tile, should be SHAPE_CONVEX_POLYGON.");
+					}
 				}
 			}
-			rs->canvas_item_add_set_transform(p_canvas_item, Transform2D());
 		}
 	}
+	rs->canvas_item_add_mesh(p_canvas_item, r_debug_quadrant.physics_mesh, Transform2D());
 }
 #endif // DEBUG_ENABLED
 
@@ -1870,6 +2048,8 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_kinematic_bodies"), &TileMapLayer::is_using_kinematic_bodies);
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "visibility_mode"), &TileMapLayer::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMapLayer::get_collision_visibility_mode);
+	ClassDB::bind_method(D_METHOD("set_physics_quadrant_size", "size"), &TileMapLayer::set_physics_quadrant_size);
+	ClassDB::bind_method(D_METHOD("get_physics_quadrant_size"), &TileMapLayer::get_physics_quadrant_size);
 
 	ClassDB::bind_method(D_METHOD("set_occlusion_enabled", "enabled"), &TileMapLayer::set_occlusion_enabled);
 	ClassDB::bind_method(D_METHOD("is_occlusion_enabled"), &TileMapLayer::is_occlusion_enabled);
@@ -1898,6 +2078,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_kinematic_bodies"), "set_use_kinematic_bodies", "is_using_kinematic_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_quadrant_size"), "set_physics_quadrant_size", "get_physics_quadrant_size");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled"), "set_navigation_enabled", "is_navigation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
@@ -3005,6 +3186,22 @@ void TileMapLayer::set_collision_visibility_mode(TileMapLayer::DebugVisibilityMo
 
 TileMapLayer::DebugVisibilityMode TileMapLayer::get_collision_visibility_mode() const {
 	return collision_visibility_mode;
+}
+
+void TileMapLayer::set_physics_quadrant_size(int p_size) {
+	if (physics_quadrant_size == p_size) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_size < 1, "Physics quandrant size cannot be smaller than 1.");
+	physics_quadrant_size = p_size;
+
+	dirty.flags[DIRTY_FLAGS_LAYER_PHYSICS_QUADRANT_SIZE] = true;
+	_queue_internal_update();
+	emit_signal(CoreStringName(changed));
+}
+
+int TileMapLayer::get_physics_quadrant_size() const {
+	return physics_quadrant_size;
 }
 
 void TileMapLayer::set_occlusion_enabled(bool p_enabled) {
