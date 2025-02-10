@@ -107,7 +107,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.4.0 (736ddb0b53d97fd5f65dd3d9bbf8a0993eaf387c, 2024)
+- Version: 1.5.2 (6901921c4be75126d1de60bfd24bd86a61319fd0, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -118,7 +118,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
-- `0002-llvm-disable-int1280-math.patch` (GH-95964)
+- `0002-llvm-disable-int128-math.patch` (GH-95964)
 
 
 ## cvtt
