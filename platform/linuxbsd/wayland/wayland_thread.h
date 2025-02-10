@@ -78,7 +78,7 @@
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/libdecor-so_wrap.h"
 #else
-#include <libdecor-0/libdecor.h>
+#include <libdecor.h>
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 

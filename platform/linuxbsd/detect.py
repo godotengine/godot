@@ -455,11 +455,14 @@ def configure(env: "SConsEnvironment"):
                 print_error("Wayland EGL library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+        else:
+            env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            if env["libdecor"]:
+                env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
-        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
