@@ -76,32 +76,37 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		// This will probably never be used, but added anyway
+		// Downmix to stereo. Apply -3dB to center, and sides, -6dB to rear.
+
+		// four channels - channel order: front left, front right, rear left, rear right
 		if constexpr (C == 4) {
-			float v0 = rb[(pos << 2) + 0];
-			float v1 = rb[(pos << 2) + 2];
-			float v0n = rb[(pos_next << 2) + 0];
-			float v1n = rb[(pos_next << 2) + 2];
+			float v0 = rb[(pos << 2) + 0] + rb[(pos << 2) + 2] / 2;
+			float v1 = rb[(pos << 2) + 1] + rb[(pos << 2) + 3] / 2;
+			float v0n = rb[(pos_next << 2) + 0] + rb[(pos_next << 2) + 2] / 2;
+			float v1n = rb[(pos_next << 2) + 1] + rb[(pos_next << 2) + 3] / 2;
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
+		// six channels - channel order: front left, center, front right, rear left, rear right, LFE
 		if constexpr (C == 6) {
-			float v0 = rb[(pos * 6) + 0];
-			float v1 = rb[(pos * 6) + 2];
-			float v0n = rb[(pos_next * 6) + 0];
-			float v1n = rb[(pos_next * 6) + 2];
-
+			float v0 = rb[(pos * 6) + 0] + rb[(pos * 6) + 1] / Math_SQRT2 + rb[(pos * 6) + 3] / 2;
+			float v1 = rb[(pos * 6) + 2] + rb[(pos * 6) + 1] / Math_SQRT2 + rb[(pos * 6) + 4] / 2;
+			float v0n = rb[(pos_next * 6) + 0] + rb[(pos_next * 6) + 1] / Math_SQRT2 + rb[(pos_next * 6) + 3] / 2;
+			float v1n = rb[(pos_next * 6) + 2] + rb[(pos_next * 6) + 1] / Math_SQRT2 + rb[(pos_next * 6) + 4] / 2;
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
+		// eight channels - channel order: front left, center, front right, side left, side right, rear left, rear
+		// right, LFE
 		if constexpr (C == 8) {
-			float v0 = rb[(pos << 3) + 0];
-			float v1 = rb[(pos << 3) + 2];
-			float v0n = rb[(pos_next << 3) + 0];
-			float v1n = rb[(pos_next << 3) + 2];
+			float v0 = rb[(pos << 3) + 0] + rb[(pos << 3) + 1] / Math_SQRT2 + rb[(pos << 3) + 3] / Math_SQRT2 + rb[(pos << 3) + 5] / 2;
+			float v1 = rb[(pos << 3) + 2] + rb[(pos << 3) + 1] / Math_SQRT2 + rb[(pos << 3) + 4] / Math_SQRT2 + rb[(pos << 3) + 6] / 2;
+			float v0n = rb[(pos_next << 3) + 0] + rb[(pos_next << 3) + 1] / Math_SQRT2 + rb[(pos_next << 3) + 3] / Math_SQRT2 + rb[(pos_next << 3) + 5] / 2;
+			float v1n = rb[(pos_next << 3) + 2] + rb[(pos_next << 3) + 1] / Math_SQRT2 + rb[(pos_next << 3) + 4] / Math_SQRT2 + rb[(pos_next << 3) + 6] / 2;
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
 			p_dest[i] = AudioFrame(v0, v1);
