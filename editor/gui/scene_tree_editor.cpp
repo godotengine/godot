@@ -1170,6 +1170,9 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 }
 
 void SceneTreeEditor::_reset() {
+	// Stop any waiting change to tooltip.
+	update_node_tooltip_delay->stop();
+
 	tree->clear();
 	node_cache.clear();
 }
