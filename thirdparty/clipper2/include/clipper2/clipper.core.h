@@ -1,26 +1,23 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
 * Date      :  12 May 2024                                                     *
-* Website   :  http://www.angusj.com                                           *
+* Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  Core Clipper Library structures and functions                   *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #ifndef CLIPPER_CORE_H
 #define CLIPPER_CORE_H
 
+#include "clipper2/clipper.version.h"
 #include <cstdint>
-#include <cstdlib>
-#include <cmath>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <climits>
 #include <numeric>
-#include <optional>
-#include "clipper2/clipper.version.h"
+#include <cmath>
 
 #define CLIPPER2_THROW(exception) std::abort()
 
@@ -33,7 +30,7 @@ namespace Clipper2Lib
   public:
     explicit Clipper2Exception(const char* description) :
       m_descr(description) {}
-    virtual const char* what() const throw() override { return m_descr.c_str(); }
+    virtual const char* what() const noexcept override { return m_descr.c_str(); }
   private:
     std::string m_descr;
   };
@@ -90,6 +87,9 @@ namespace Clipper2Lib
       CLIPPER2_THROW(Clipper2Exception(undefined_error));
     case range_error_i:
       CLIPPER2_THROW(Clipper2Exception(range_error));
+    // Should never happen, but adding this to stop a compiler warning
+    default:
+      CLIPPER2_THROW(Clipper2Exception("Unknown error"));
     }
 #else
     if(error_code) {}; // only to stop compiler 'parameter not used' warning
@@ -109,6 +109,10 @@ namespace Clipper2Lib
   //https://en.wikipedia.org/wiki/Nonzero-rule
   enum class FillRule { EvenOdd, NonZero, Positive, Negative };
 
+#ifdef USINGZ
+  using z_type = int64_t;
+#endif
+
   // Point ------------------------------------------------------------------------
 
   template <typename T>
@@ -116,10 +120,10 @@ namespace Clipper2Lib
     T x;
     T y;
 #ifdef USINGZ
-    int64_t z;
+     z_type z;
 
     template <typename T2>
-    inline void Init(const T2 x_ = 0, const T2 y_ = 0, const int64_t z_ = 0)
+    inline void Init(const T2 x_ = 0, const T2 y_ = 0, const z_type z_ = 0)
     {
       if constexpr (std::is_integral_v<T> &&
         is_round_invocable<T2>::value && !std::is_integral_v<T2>)
@@ -139,7 +143,7 @@ namespace Clipper2Lib
     explicit Point() : x(0), y(0), z(0) {};
 
     template <typename T2>
-    Point(const T2 x_, const T2 y_, const int64_t z_ = 0)
+    Point(const T2 x_, const T2 y_, const z_type z_ = 0)
     {
       Init(x_, y_);
       z = z_;
@@ -152,7 +156,7 @@ namespace Clipper2Lib
     }
 
     template <typename T2>
-    explicit Point(const Point<T2>& p, int64_t z_)
+    explicit Point(const Point<T2>& p, z_type z_)
     {
       Init(p.x, p.y, z_);
     }
@@ -162,7 +166,7 @@ namespace Clipper2Lib
       return Point(x * scale, y * scale, z);
     }
 
-    void SetZ(const int64_t z_value) { z = z_value; }
+    void SetZ(const z_type z_value) { z = z_value; }
 
     friend std::ostream& operator<<(std::ostream& os, const Point& point)
     {
@@ -326,10 +330,10 @@ namespace Clipper2Lib
     {
       Path<T> result;
       result.reserve(4);
-      result.push_back(Point<T>(left, top));
-      result.push_back(Point<T>(right, top));
-      result.push_back(Point<T>(right, bottom));
-      result.push_back(Point<T>(left, bottom));
+      result.emplace_back(left, top);
+      result.emplace_back(right, top);
+      result.emplace_back(right, bottom);
+      result.emplace_back(left, bottom);
       return result;
     }
 
@@ -362,6 +366,22 @@ namespace Clipper2Lib
     bool operator==(const Rect<T>& other) const {
       return left == other.left && right == other.right &&
         top == other.top && bottom == other.bottom;
+    }
+
+    Rect<T>& operator+=(const Rect<T>& other)
+    {
+      left = (std::min)(left, other.left);
+      top = (std::min)(top, other.top);
+      right = (std::max)(right, other.right);
+      bottom = (std::max)(bottom, other.bottom);
+      return *this;
+    }
+
+    Rect<T> operator+(const Rect<T>& other) const
+    {
+      Rect<T> result = *this;
+      result += other;
+      return result;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Rect<T>& rect) {
@@ -597,13 +617,13 @@ namespace Clipper2Lib
     result.reserve(path.size());
     typename Path<T>::const_iterator path_iter = path.cbegin();
     Point<T> first_pt = *path_iter++, last_pt = first_pt;
-    result.push_back(first_pt);
+    result.emplace_back(first_pt);
     for (; path_iter != path.cend(); ++path_iter)
     {
       if (!NearEqual(*path_iter, last_pt, max_dist_sqrd))
       {
         last_pt = *path_iter;
-        result.push_back(last_pt);
+        result.emplace_back(last_pt);
       }
     }
     if (!is_closed_path) return result;
@@ -621,7 +641,7 @@ namespace Clipper2Lib
     for (typename Paths<T>::const_iterator paths_citer = paths.cbegin();
       paths_citer != paths.cend(); ++paths_citer)
     {
-      result.push_back(StripNearEqual(*paths_citer, max_dist_sqrd, is_closed_path));
+      result.emplace_back(std::move(StripNearEqual(*paths_citer, max_dist_sqrd, is_closed_path)));
     }
     return result;
   }
@@ -697,11 +717,11 @@ namespace Clipper2Lib
   {
 // Work around LLVM issue: https://github.com/llvm/llvm-project/issues/16778
 // Details: https://github.com/godotengine/godot/pull/95964#issuecomment-2306581804
-//#if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
-//    const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
-//    const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
-//    return ab == cd;
-//#else
+// #if (defined(__clang__) || defined(__GNUC__)) && UINTPTR_MAX >= UINT64_MAX
+//     const auto ab = static_cast<__int128_t>(a) * static_cast<__int128_t>(b);
+//     const auto cd = static_cast<__int128_t>(c) * static_cast<__int128_t>(d);
+//     return ab == cd;
+// #else
     // nb: unsigned values needed for calculating overflow carry
     const auto abs_a = static_cast<uint64_t>(std::abs(a));
     const auto abs_b = static_cast<uint64_t>(std::abs(b));
@@ -768,7 +788,7 @@ namespace Clipper2Lib
     const Point<T>& line1, const Point<T>& line2)
   {
     //perpendicular distance of point (x³,y³) = (Ax³ + By³ + C)/Sqrt(A² + B²)
-    //see http://en.wikipedia.org/wiki/Perpendicular_distance
+    //see https://en.wikipedia.org/wiki/Perpendicular_distance
     double a = static_cast<double>(pt.x - line1.x);
     double b = static_cast<double>(pt.y - line1.y);
     double c = static_cast<double>(line2.x - line1.x);
