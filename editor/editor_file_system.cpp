@@ -1948,6 +1948,16 @@ EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int
 	return fs;
 }
 
+ResourceUID::ID EditorFileSystem::get_file_uid(const String &p_path) const {
+	int file_idx;
+	EditorFileSystemDirectory *directory = find_file(p_path, &file_idx);
+
+	if (!directory) {
+		return ResourceUID::INVALID_ID;
+	}
+	return directory->files[file_idx]->uid;
+}
+
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
 	if (!filesystem || scanning) {
 		return nullptr;

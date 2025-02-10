@@ -355,12 +355,17 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 				QuickOpenResultCandidate *candidates_write = loaded_candidates.ptrw();
 				int i = 0;
 				for (const String &path : paths) {
+					if (!ResourceLoader::exists(path)) {
+						continue;
+					}
+
 					filetypes.insert(path, type_name);
 					QuickOpenResultCandidate candidate;
 					_setup_candidate(candidate, path);
 					candidates_write[i] = candidate;
 					i++;
 				}
+				loaded_candidates.resize(i);
 				selected_history.insert(type, loaded_candidates);
 			}
 		}
@@ -412,7 +417,12 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 }
 
 void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath) {
-	p_candidate.file_path = p_filepath;
+	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
+	if (id == ResourceUID::INVALID_ID) {
+		p_candidate.file_path = p_filepath;
+	} else {
+		p_candidate.file_path = ResourceUID::get_singleton()->id_to_text(id);
+	}
 	p_candidate.result = nullptr;
 
 	StringName actual_type;
@@ -717,7 +727,7 @@ bool QuickOpenResultContainer::has_nothing_selected() const {
 
 String QuickOpenResultContainer::get_selected() const {
 	ERR_FAIL_COND_V_MSG(has_nothing_selected(), String(), "Tried to get selected file, but nothing was selected.");
-	return candidates[selection_index].file_path;
+	return ResourceUID::ensure_path(candidates[selection_index].file_path);
 }
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
@@ -971,8 +981,9 @@ QuickOpenResultListItem::QuickOpenResultListItem() {
 
 void QuickOpenResultListItem::set_content(const QuickOpenResultCandidate &p_candidate, bool p_highlight) {
 	thumbnail->set_texture(p_candidate.thumbnail);
-	name->set_text(p_candidate.file_path.get_file());
-	path->set_text(p_candidate.file_path.get_base_dir());
+	const String file_path = ResourceUID::ensure_path(p_candidate.file_path);
+	name->set_text(file_path.get_file());
+	path->set_text(file_path.get_base_dir());
 	name->reset_highlights();
 	path->reset_highlights();
 
@@ -1042,8 +1053,9 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 
 void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_candidate, bool p_highlight) {
 	thumbnail->set_texture(p_candidate.thumbnail);
-	name->set_text(p_candidate.file_path.get_file());
-	name->set_tooltip_text(p_candidate.file_path);
+	const String file_path = ResourceUID::ensure_path(p_candidate.file_path);
+	name->set_text(file_path.get_file());
+	name->set_tooltip_text(file_path);
 	name->reset_highlights();
 
 	if (p_highlight && p_candidate.result != nullptr) {
