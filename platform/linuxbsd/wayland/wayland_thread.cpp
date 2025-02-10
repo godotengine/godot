@@ -195,24 +195,27 @@ Vector<uint8_t> WaylandThread::_wp_primary_selection_offer_read(struct wl_displa
 bool WaylandThread::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
 	xkb_keysym_t shifted_sym = xkb_state_key_get_one_sym(p_ss.xkb_state, p_keycode);
 
+	xkb_keysym_t plain_sym = XKB_KEY_NoSymbol;
+	// NOTE: xkbcommon's API really encourages to apply the modifier state but we
+	// only want a "plain" symbol so that we can convert it into a godot keycode.
+	const xkb_keysym_t *syms = nullptr;
+	int num_sys = xkb_keymap_key_get_syms_by_level(p_ss.xkb_keymap, p_keycode, p_ss.current_layout_index, 0, &syms);
+	if (num_sys > 0 && syms) {
+		plain_sym = syms[0];
+	}
+
 	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
 	KeyLocation key_location = KeyMappingXKB::get_location(p_keycode);
 	uint32_t unicode = xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode);
 
 	Key keycode = Key::NONE;
 
-	if (KeyMappingXKB::is_sym_numpad(shifted_sym)) {
+	if (KeyMappingXKB::is_sym_numpad(shifted_sym) || KeyMappingXKB::is_sym_numpad(plain_sym)) {
 		keycode = KeyMappingXKB::get_keycode(shifted_sym);
 	}
 
 	if (keycode == Key::NONE) {
-		// NOTE: xkbcommon's API really encourages to apply the modifier state but we
-		// only want a "plain" symbol so that we can convert it into a godot keycode.
-		const xkb_keysym_t *syms = nullptr;
-		int num_sys = xkb_keymap_key_get_syms_by_level(p_ss.xkb_keymap, p_keycode, p_ss.current_layout_index, 0, &syms);
-		if (num_sys > 0 && syms) {
-			keycode = KeyMappingXKB::get_keycode(syms[0]);
-		}
+		keycode = KeyMappingXKB::get_keycode(plain_sym);
 	}
 
 	if (keycode == Key::NONE) {
