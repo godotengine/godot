@@ -517,28 +517,32 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 		ogg_packet op;
 
 		while (!audio_ready && !audio_done) {
+			// Send remaining frames
+			if (!send_audio()) {
+				audio_ready = true;
+				break;
+			}
+
 			float **pcm;
 			int ret = vorbis_synthesis_pcmout(&vd, &pcm);
 			if (ret > 0) {
-				const int AUXBUF_LEN = 4096;
-				int to_read = ret;
-				float aux_buffer[AUXBUF_LEN];
-				while (to_read) {
-					int m = MIN(AUXBUF_LEN / vi.channels, to_read);
+				int frames_read = 0;
+				while (frames_read < ret) {
+					int m = MIN(AUXBUF_LEN / vi.channels, ret - frames_read);
 					int count = 0;
 					for (int j = 0; j < m; j++) {
 						for (int i = 0; i < vi.channels; i++) {
-							aux_buffer[count++] = pcm[i][j];
+							audio_buffer[count++] = pcm[i][frames_read + j];
 						}
 					}
-					int mixed = mix_callback(mix_udata, aux_buffer, m);
-					to_read -= mixed;
-					if (mixed != m) { //could mix no more
+					frames_read += m;
+					audio_ptr_end = m;
+					if (!send_audio()) {
 						audio_ready = true;
 						break;
 					}
 				}
-				vorbis_synthesis_read(&vd, ret - to_read);
+				vorbis_synthesis_read(&vd, frames_read);
 			} else {
 				/* no pending audio; is there a pending packet to decode? */
 				if (ogg_stream_packetout(&vo, &op) > 0) {
@@ -662,6 +666,8 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 	audio_done = !has_audio;
 	theora_eos = false;
 	vorbis_eos = false;
+	audio_ptr_start = 0;
+	audio_ptr_end = 0;
 
 	ogg_stream_reset(&to);
 	if (has_audio) {

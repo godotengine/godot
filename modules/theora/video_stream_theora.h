@@ -52,6 +52,11 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Point2i size;
 	Rect2i region;
 
+	const static int AUXBUF_LEN = 4096;
+	float audio_buffer[AUXBUF_LEN];
+	int audio_ptr_start;
+	int audio_ptr_end;
+
 	int buffer_data();
 	int queue_page(ogg_page *page);
 	int read_page(ogg_page *page);
@@ -107,6 +112,20 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 protected:
 	void clear();
+
+	_FORCE_INLINE_ bool send_audio() {
+		if (audio_ptr_end > 0) {
+			int mixed = mix_callback(mix_udata, &audio_buffer[audio_ptr_start * vi.channels], audio_ptr_end - audio_ptr_start);
+			audio_ptr_start += mixed;
+			if (audio_ptr_start == audio_ptr_end) {
+				audio_ptr_start = 0;
+				audio_ptr_end = 0;
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
 
 public:
 	virtual void play() override;
