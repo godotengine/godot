@@ -300,14 +300,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
-	@CallSuper
-	override fun updateCommandLineParams(args: Array<String>) {
-		val args = if (BuildConfig.BUILD_TYPE == "dev") {
-			args + "--benchmark"
-		} else {
-			args
+	override fun getCommandLine(): MutableList<String> {
+		val params = super.getCommandLine()
+		if (BuildConfig.BUILD_TYPE == "dev" && !params.contains("--benchmark")) {
+			params.add("--benchmark")
 		}
-		super.updateCommandLineParams(args);
+		return params
 	}
 
 	protected fun retrieveEditorWindowInfo(args: Array<String>, gameEmbedMode: GameEmbedMode): EditorWindowInfo {
