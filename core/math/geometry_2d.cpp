@@ -38,17 +38,63 @@
 const int clipper_precision = 5; // Based on CMP_EPSILON.
 const double clipper_scale = Math::pow(10.0, clipper_precision);
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &polygon) {
+void Geometry2D::merge_many_polygons(const Vector<Vector<Vector2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes) {
+	using namespace Clipper2Lib;
+
+	PathsD subjects;
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		PathD path(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			const Vector2 &point = polygon[i];
+			path[i] = PointD(point.x, point.y);
+		}
+		subjects.push_back(path);
+	}
+
+	PathsD solution = Union(subjects, FillRule::NonZero);
+	solution = SimplifyPaths(solution, 0.01);
+
+	r_out_polygons.clear();
+	r_out_holes.clear();
+	for (PathsD::size_type i = 0; i < solution.size(); ++i) {
+		PathD &path = solution[i];
+
+		Vector<Point2> output_polygon;
+		output_polygon.resize(path.size());
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			output_polygon.set(j, Vector2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+		}
+		if (IsPositive(path)) {
+			r_out_polygons.push_back(output_polygon);
+		} else {
+			r_out_holes.push_back(output_polygon);
+		}
+	}
+}
+
+Vector<Vector<Vector2>> Geometry2D::decompose_many_polygons_in_convex(const Vector<Vector<Point2>> &p_polygons, const Vector<Vector<Point2>> &p_holes) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 
-	TPPLPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CCW);
+		in_poly.push_back(inp);
 	}
-	inp.SetOrientation(TPPL_ORIENTATION_CCW);
-	in_poly.push_back(inp);
+	for (const Vector<Vector2> &polygon : p_holes) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CW);
+		inp.SetHole(true);
+		in_poly.push_back(inp);
+	}
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
@@ -70,6 +116,10 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Poi
 	}
 
 	return decomp;
+}
+
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &p_polygon) {
+	return Geometry2D::decompose_many_polygons_in_convex({ p_polygon }, {});
 }
 
 struct _AtlasWorkRect {
