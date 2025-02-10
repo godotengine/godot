@@ -4298,6 +4298,16 @@ bool WaylandThread::get_reset_frame() {
 // Dispatches events until a frame event is received, a window is reported as
 // suspended or the timeout expires.
 bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
+	// This is a bit of a chicken and egg thing... Looks like the main event loop
+	// has to call its rightfully forever-blocking poll right in between
+	// `wl_display_prepare_read` and `wl_display_read`. This means, that it will
+	// basically be guaranteed to stay stuck in a "prepare read" state, where it
+	// will block any other attempt at reading the display fd, such as ours. The
+	// solution? Let's make sure the mutex is locked (it should) and unblock the
+	// main thread with a roundtrip!
+	MutexLock mutex_lock(mutex);
+	wl_display_roundtrip(wl_display);
+
 	if (main_window.suspended) {
 		// The window is suspended! The compositor is telling us _explicitly_ that we
 		// don't need to draw, without letting us guess through the frame event's
