@@ -3299,6 +3299,8 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	//canvas state
 
 	material_storage->material_free(default_canvas_group_material);
@@ -3346,7 +3348,9 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 		}
 	}
 
-	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
+	// Disable the callback, as we're tearing everything down
+	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
+	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
 
 	memdelete(shader.default_version_data);
