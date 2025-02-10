@@ -17,6 +17,8 @@ from misc.utility.color import print_error, print_info, print_warning
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 
+compiler_version_cache = None
+
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
 _scu_folders = set()
@@ -635,6 +637,11 @@ def get_compiler_version(env):
     - metadata1, metadata2: Extra information
     - date: Date of the build
     """
+
+    global compiler_version_cache
+    if compiler_version_cache is not None:
+        return compiler_version_cache
+
     import shlex
 
     ret = {
@@ -681,7 +688,7 @@ def get_compiler_version(env):
                     ret["metadata1"] = split[1]
         except (subprocess.CalledProcessError, OSError):
             print_warning("Couldn't find vswhere to determine compiler version.")
-        return ret
+        return update_compiler_version_cache(ret)
 
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
@@ -691,7 +698,7 @@ def get_compiler_version(env):
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
-        return ret
+        return update_compiler_version_cache(ret)
 
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
@@ -734,7 +741,13 @@ def get_compiler_version(env):
         "apple_patch3",
     ]:
         ret[key] = int(ret[key] or -1)
-    return ret
+    return update_compiler_version_cache(ret)
+
+
+def update_compiler_version_cache(value):
+    global compiler_version_cache
+    compiler_version_cache = value
+    return value
 
 
 def using_gcc(env):
