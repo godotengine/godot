@@ -35,16 +35,20 @@ class GodotPositionReportingProcessor extends AudioWorkletProcessor {
 		super(...args);
 		this.lastPostTime = currentTime;
 		this.position = 0;
+		this.ended = false;
 
 		this.port.onmessage = (event) => {
-			if (event?.data?.type === 'clear') {
-				this.lastPostTime = currentTime;
-				this.position = 0;
+			if (event?.data?.type === 'ended') {
+				this.ended = true;
 			}
 		};
 	}
 
 	process(inputs, _outputs, _parameters) {
+		if (this.ended) {
+			return false;
+		}
+
 		if (inputs.length > 0) {
 			const input = inputs[0];
 			if (input.length > 0) {
@@ -55,7 +59,7 @@ class GodotPositionReportingProcessor extends AudioWorkletProcessor {
 		// Posting messages is expensive. Let's limit the number of posts.
 		if (currentTime - this.lastPostTime > POST_THRESHOLD_S) {
 			this.lastPostTime = currentTime;
-			this.port.postMessage({ 'type': 'position', 'data': this.position });
+			this.port.postMessage({ type: 'position', data: this.position });
 		}
 
 		return true;
