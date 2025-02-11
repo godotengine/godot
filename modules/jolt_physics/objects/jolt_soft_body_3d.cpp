@@ -727,8 +727,3 @@ bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
 
 	return pinned_vertices.has(physics_index);
 }
-
-String JoltSoftBody3D::to_string() const {
-	Object *instance = get_instance();
-	return instance != nullptr ? instance->to_string() : "<unknown>";
-}
