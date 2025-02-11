@@ -214,14 +214,14 @@ int64_t VideoStreamPlaybackTheora::seek_streams(double p_time, int64_t &cur_vide
 		audio_catch = cur_audio_granulepos != -1;
 	}
 
-	if (cur_video_granulepos == -1) {
+	if (cur_video_granulepos < (1LL << ti.keyframe_granule_shift)) {
 		video_seek_pos = stream_data_offset;
 		cur_video_granulepos = 1LL << ti.keyframe_granule_shift;
 	}
 	if (has_audio) {
 		if (cur_audio_granulepos == -1) {
 			audio_seek_pos = stream_data_offset;
-			cur_audio_granulepos = 1LL << ti.keyframe_granule_shift;
+			cur_audio_granulepos = 0;
 		}
 		seek_pos = MIN(video_seek_pos, audio_seek_pos);
 	} else {
@@ -695,15 +695,13 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 
 	time = p_time;
 
-	// We need to reset video granulepos in case decoding has to start from the beginning.
-	int64_t granulepos = 0;
-	th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &granulepos, sizeof(granulepos));
-
 	double last_audio_time = 0;
 	double last_video_time = 0;
 	bool first_frame_decoded = false;
 	bool start_audio = false;
 	bool start_video = false;
+	bool keyframe_found = false;
+	uint64_t current_frame = 0;
 	// Read from the streams skipping pages until we reach the granules we want. We won't skip pages from both video and
 	// audio streams, only one of them, until decoding of both starts.
 	// video_granulepos and audio_granulepos are guaranteed to be found by checking the granulepos in the packets, no
@@ -735,15 +733,27 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 		}
 		while (last_video_time <= p_time && ogg_stream_packetout(&to, &op) > 0) {
 			if (!start_video && (op.granulepos >= video_granulepos || video_granulepos == (1LL << ti.keyframe_granule_shift))) {
+				if (op.granulepos > 0) {
+					current_frame = th_granule_frame(td, op.granulepos);
+				}
 				start_video = true;
-				th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
 			}
+			// Don't start decoding until a keyframe is found, but count frames.
 			if (start_video) {
-				int64_t videobuf_granulepos;
-				int ret = th_decode_packetin(td, &op, &videobuf_granulepos);
-				if (ret == 0 || ret == TH_DUPFRAME) {
-					last_video_time = th_granule_time(td, videobuf_granulepos);
-					first_frame_decoded = true;
+				if (!keyframe_found && th_packet_iskeyframe(&op)) {
+					keyframe_found = true;
+					int64_t cur_granulepos = (current_frame + 1) << ti.keyframe_granule_shift;
+					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &cur_granulepos, sizeof(cur_granulepos));
+				}
+				if (keyframe_found) {
+					int64_t videobuf_granulepos;
+					int ret = th_decode_packetin(td, &op, &videobuf_granulepos);
+					if (ret == 0 || ret == TH_DUPFRAME) {
+						last_video_time = th_granule_time(td, videobuf_granulepos);
+						first_frame_decoded = true;
+					}
+				} else {
+					current_frame++;
 				}
 			}
 		}
