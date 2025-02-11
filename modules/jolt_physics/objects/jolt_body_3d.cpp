@@ -143,7 +143,7 @@ void JoltBody3D::_add_to_space() {
 
 	jolt_settings->SetShape(jolt_shape);
 
-	const JPH::BodyID new_jolt_id = space->add_rigid_body(*this, *jolt_settings, sleep_initially);
+	const JPH::BodyID new_jolt_id = space->add_rigid_body(*jolt_settings, sleep_initially);
 	if (new_jolt_id.IsInvalid()) {
 		return;
 	}
@@ -241,7 +241,10 @@ JPH::EAllowedDOFs JoltBody3D::_calculate_allowed_dofs() const {
 		allowed_dofs &= ~JPH::EAllowedDOFs::RotationZ;
 	}
 
-	ERR_FAIL_COND_V_MSG(allowed_dofs == JPH::EAllowedDOFs::None, JPH::EAllowedDOFs::All, vformat("Invalid axis locks for '%s'. Locking all axes is not supported when using Jolt Physics. All axes will be unlocked. Considering freezing the body instead.", to_string()));
+	if (allowed_dofs == JPH::EAllowedDOFs::None) {
+		ERR_PRINT("Locking all axes of a body is not supported when using Jolt Physics. All axes will be unlocked. Consider freezing the body instead.");
+		return JPH::EAllowedDOFs::All;
+	}
 
 	return allowed_dofs;
 }
@@ -541,7 +544,7 @@ JoltBody3D::~JoltBody3D() {
 }
 
 void JoltBody3D::set_transform(Transform3D p_transform) {
-	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed to physics body '%s'.", to_string()));
+	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "An invalid transform was passed to a physics body.");
 
 	const Vector3 new_scale = p_transform.basis.get_scale();
 
@@ -749,7 +752,7 @@ void JoltBody3D::set_is_sleep_allowed(bool p_enabled) {
 }
 
 Basis JoltBody3D::get_principal_inertia_axes() const {
-	ERR_FAIL_NULL_V_MSG(space, Basis(), vformat("Failed to retrieve principal inertia axes of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Basis(), "Failed to retrieve principal inertia axes of physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(is_static() || is_kinematic())) {
 		return Basis();
@@ -762,7 +765,7 @@ Basis JoltBody3D::get_principal_inertia_axes() const {
 }
 
 Vector3 JoltBody3D::get_inverse_inertia() const {
-	ERR_FAIL_NULL_V_MSG(space, Vector3(), vformat("Failed to retrieve inverse inertia of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), "Failed to retrieve inverse inertia of physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(is_static() || is_kinematic())) {
 		return Vector3();
@@ -777,7 +780,7 @@ Vector3 JoltBody3D::get_inverse_inertia() const {
 }
 
 Basis JoltBody3D::get_inverse_inertia_tensor() const {
-	ERR_FAIL_NULL_V_MSG(space, Basis(), vformat("Failed to retrieve inverse inertia tensor of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Basis(), "Failed to retrieve inverse inertia tensor of physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(is_static() || is_kinematic())) {
 		return Basis();
@@ -963,7 +966,7 @@ void JoltBody3D::reset_mass_properties() {
 }
 
 void JoltBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply force to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -982,7 +985,7 @@ void JoltBody3D::apply_force(const Vector3 &p_force, const Vector3 &p_position) 
 }
 
 void JoltBody3D::apply_central_force(const Vector3 &p_force) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply central force to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -1001,7 +1004,7 @@ void JoltBody3D::apply_central_force(const Vector3 &p_force) {
 }
 
 void JoltBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply impulse to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -1020,7 +1023,7 @@ void JoltBody3D::apply_impulse(const Vector3 &p_impulse, const Vector3 &p_positi
 }
 
 void JoltBody3D::apply_central_impulse(const Vector3 &p_impulse) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply central impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply central impulse to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -1039,7 +1042,7 @@ void JoltBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 }
 
 void JoltBody3D::apply_torque(const Vector3 &p_torque) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply torque to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply torque to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -1058,7 +1061,7 @@ void JoltBody3D::apply_torque(const Vector3 &p_torque) {
 }
 
 void JoltBody3D::apply_torque_impulse(const Vector3 &p_impulse) {
-	ERR_FAIL_NULL_MSG(space, vformat("Failed to apply torque impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to apply torque impulse to physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	if (unlikely(!is_rigid())) {
 		return;
@@ -1196,7 +1199,7 @@ void JoltBody3D::call_queries() {
 		custom_integration_callback.callp(args, argc, ret, ce);
 
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_PRINT_ONCE(vformat("Failed to call force integration callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(custom_integration_callback, args, argc, ce)));
+			ERR_PRINT_ONCE(vformat("Failed to call force integration callback for physics body. It returned the following error: '%s'.", Variant::get_callable_error_text(custom_integration_callback, args, argc, ce)));
 		}
 	}
 
@@ -1209,7 +1212,7 @@ void JoltBody3D::call_queries() {
 		state_sync_callback.callp(args, 1, ret, ce);
 
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_PRINT_ONCE(vformat("Failed to call state synchronization callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(state_sync_callback, args, 1, ce)));
+			ERR_PRINT_ONCE(vformat("Failed to call state synchronization callback for physics body. It returned the following error: '%s'.", Variant::get_callable_error_text(state_sync_callback, args, 1, ce)));
 		}
 	}
 }

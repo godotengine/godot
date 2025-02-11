@@ -49,15 +49,15 @@ bool is_face_degenerate(const int p_face[3]) {
 }
 
 template <typename TJoltVertex>
-void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
+void pin_vertices(const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
 	const int mesh_vertex_count = p_mesh_to_physics.size();
 	const int physics_vertex_count = (int)r_physics_vertices.size();
 
 	for (int mesh_index : p_pinned_vertices) {
-		ERR_CONTINUE_MSG(mesh_index < 0 || mesh_index >= mesh_vertex_count, vformat("Index %d of pinned vertex in soft body '%s' is out of bounds. There are only %d vertices in the current mesh.", mesh_index, p_body.to_string(), mesh_vertex_count));
+		ERR_CONTINUE_MSG(mesh_index < 0 || mesh_index >= mesh_vertex_count, vformat("Index %d of pinned vertex in soft body is out of bounds. There are only %d vertices in the current mesh.", mesh_index, mesh_vertex_count));
 
 		const int physics_index = p_mesh_to_physics[mesh_index];
-		ERR_CONTINUE_MSG(physics_index < 0 || physics_index >= physics_vertex_count, vformat("Index %d of pinned vertex in soft body '%s' is out of bounds. There are only %d vertices in the current mesh. This should not happen. Please report this.", physics_index, p_body.to_string(), physics_vertex_count));
+		ERR_CONTINUE_MSG(physics_index < 0 || physics_index >= physics_vertex_count, vformat("Index %d of pinned vertex in soft body is out of bounds. There are only %d vertices in the current mesh. This should not happen. Please report this.", physics_index, physics_vertex_count));
 
 		r_physics_vertices[physics_index].mInvMass = 0.0f;
 	}
@@ -117,7 +117,7 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::get_max_linear_velocity();
 
-	const JPH::BodyID new_jolt_id = space->add_soft_body(*this, *jolt_settings);
+	const JPH::BodyID new_jolt_id = space->add_soft_body(*jolt_settings);
 	if (new_jolt_id.IsInvalid()) {
 		return;
 	}
@@ -185,7 +185,7 @@ bool JoltSoftBody3D::_ref_shared_data() {
 				mesh_to_physics[mesh_index] = iter_physics_index->value;
 			}
 
-			ERR_CONTINUE_MSG(is_face_degenerate(physics_face), vformat("Failed to append face to soft body '%s'. Face was found to be degenerate. Face consist of indices %d, %d and %d.", to_string(), mesh_face[0], mesh_face[1], mesh_face[2]));
+			ERR_CONTINUE_MSG(is_face_degenerate(physics_face), vformat("Failed to append face to soft body. Face was found to be degenerate. Face consist of indices %d, %d and %d.", mesh_face[0], mesh_face[1], mesh_face[2]));
 
 			// Jolt uses a different winding order, so we swap the indices to account for that.
 			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
@@ -194,7 +194,7 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
 		// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
 		// of the constraints a bit.
-		pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
+		pin_vertices(pinned_vertices, mesh_to_physics, physics_vertices);
 
 		// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
 		// edge constraints, we crudely map one to the other with an arbitrary constant.
@@ -250,7 +250,7 @@ void JoltSoftBody3D::_update_mass() {
 		vertex.mInvMass = inverse_vertex_mass;
 	}
 
-	pin_vertices(*this, pinned_vertices, shared->mesh_to_physics, physics_vertices);
+	pin_vertices(pinned_vertices, shared->mesh_to_physics, physics_vertices);
 }
 
 void JoltSoftBody3D::_update_pressure() {
@@ -569,7 +569,7 @@ Transform3D JoltSoftBody3D::get_transform() const {
 }
 
 void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
-	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to set transform for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to set transform for soft body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	JoltWritableBody3D body = space->write_body(jolt_id);
 	ERR_FAIL_COND(body.is_invalid());
@@ -591,7 +591,7 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 }
 
 AABB JoltSoftBody3D::get_bounds() const {
-	ERR_FAIL_COND_V_MSG(!in_space(), AABB(), vformat("Failed to retrieve world bounds of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), AABB(), "Failed to retrieve world bounds of soft body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	const JoltReadableBody3D body = space->read_body(jolt_id);
 	ERR_FAIL_COND_V(body.is_invalid(), AABB());
@@ -654,7 +654,7 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 }
 
 Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
-	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), vformat("Failed to retrieve point position for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), "Failed to retrieve point position of soft body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	ERR_FAIL_NULL_V(shared, Vector3());
 	ERR_FAIL_INDEX_V(p_index, (int)shared->mesh_to_physics.size(), Vector3());
@@ -671,7 +671,7 @@ Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 }
 
 void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position) {
-	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to set point position for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_MSG(!in_space(), "Failed to set point position for soft body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	ERR_FAIL_NULL(shared);
 	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
@@ -719,16 +719,11 @@ void JoltSoftBody3D::unpin_all_vertices() {
 }
 
 bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
-	ERR_FAIL_COND_V_MSG(!in_space(), false, vformat("Failed retrieve pin status of point for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), false, "Failed retrieve pin status of point of soft body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	ERR_FAIL_NULL_V(shared, false);
 	ERR_FAIL_INDEX_V(p_index, (int)shared->mesh_to_physics.size(), false);
 	const int physics_index = shared->mesh_to_physics[p_index];
 
 	return pinned_vertices.has(physics_index);
-}
-
-String JoltSoftBody3D::to_string() const {
-	Object *instance = get_instance();
-	return instance != nullptr ? instance->to_string() : "<unknown>";
 }

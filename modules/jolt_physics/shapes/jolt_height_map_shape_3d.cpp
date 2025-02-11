@@ -55,8 +55,8 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build() const {
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(height_count != width * depth, nullptr, vformat("Failed to build Jolt Physics height map shape with %s. Height count must be the product of width and depth. This shape belongs to %s.", to_string(), _owners_to_string()));
-	ERR_FAIL_COND_V_MSG(width < 2 || depth < 2, nullptr, vformat("Failed to build Jolt Physics height map shape with %s. The height map must be at least 2x2. This shape belongs to %s.", to_string(), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(height_count != width * depth, nullptr, vformat("Failed to build Jolt Physics height map shape with %s. Height count must be the product of width and depth.", to_string()));
+	ERR_FAIL_COND_V_MSG(width < 2 || depth < 2, nullptr, vformat("Failed to build Jolt Physics height map shape with %s. The height map must be at least 2x2.", to_string()));
 
 	if (width != depth) {
 		return JoltShape3D::with_double_sided(_build_mesh(), true);
@@ -109,7 +109,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::get_active_edge_threshold();
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape with %s. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
 
 	return with_scale(shape_result.Get(), Vector3(1, 1, -1));
 }
@@ -163,7 +163,7 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build_mesh() const {
 	shape_settings.mActiveEdgeCosThresholdAngle = JoltProjectSettings::get_active_edge_threshold();
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape (as polygon) with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics height map shape (as polygon) with %s. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
 
 	return shape_result.Get();
 }

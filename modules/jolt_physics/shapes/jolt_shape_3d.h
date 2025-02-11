@@ -48,8 +48,6 @@ protected:
 
 	virtual JPH::ShapeRefC _build() const = 0;
 
-	String _owners_to_string() const;
-
 public:
 	typedef PhysicsServer3D::ShapeType ShapeType;
 
@@ -91,46 +89,26 @@ public:
 	static JPH::ShapeRefC without_custom_shapes(const JPH::Shape *p_shape);
 
 	static Vector3 make_scale_valid(const JPH::Shape *p_shape, const Vector3 &p_scale);
-	static bool is_scale_valid(const Vector3 &p_scale, const Vector3 &p_valid_scale, real_t p_tolerance = 0.01f);
 };
 
 #ifdef DEBUG_ENABLED
 
-#define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)                                                         \
-	if (unlikely((m_transform).basis.determinant() == 0.0f)) {                                                 \
-		WARN_PRINT(vformat("%s "                                                                               \
-						   "The basis of the transform was singular, which is not supported by Jolt Physics. " \
-						   "This is likely caused by one or more axes having a scale of zero. "                \
-						   "The basis (and thus its scale) will be treated as identity.",                      \
-				m_msg));                                                                                       \
-                                                                                                               \
-		(m_transform).basis = Basis();                                                                         \
-	} else                                                                                                     \
-		((void)0)
-
-#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)                               \
-	if (unlikely(!JoltShape3D::is_scale_valid(m_scale, valid_scale))) {                          \
-		ERR_PRINT(vformat("%s "                                                                  \
-						  "A scale of %v is not supported by Jolt Physics for this shape/body. " \
-						  "The scale will instead be treated as %v.",                            \
-				m_msg, m_scale, valid_scale));                                                   \
-	} else                                                                                       \
+#define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)                                                        \
+	if (unlikely((m_transform).basis.determinant() == 0.0f)) {                                                \
+		ERR_PRINT(vformat("%s "                                                                               \
+						  "The basis of the transform was singular, which is not supported by Jolt Physics. " \
+						  "This is likely caused by one or more axes having a scale of zero. "                \
+						  "The basis (and thus its scale) will instead be treated as identity.",              \
+				m_msg));                                                                                      \
+                                                                                                              \
+		(m_transform).basis = Basis();                                                                        \
+	} else                                                                                                    \
 		((void)0)
 
 #else
 
 #define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)
 
-#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)
-
 #endif
-
-#define JOLT_ENSURE_SCALE_VALID(m_shape, m_scale, m_msg)                             \
-	if (true) {                                                                      \
-		const Vector3 valid_scale = JoltShape3D::make_scale_valid(m_shape, m_scale); \
-		ERR_PRINT_INVALID_SCALE_MSG(m_scale, valid_scale, m_msg);                    \
-		(m_scale) = valid_scale;                                                     \
-	} else                                                                           \
-		((void)0)
 
 #endif // JOLT_SHAPE_3D_H

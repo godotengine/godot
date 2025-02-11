@@ -128,7 +128,8 @@ RID JoltPhysicsServer3D::heightmap_shape_create() {
 }
 
 RID JoltPhysicsServer3D::custom_shape_create() {
-	ERR_FAIL_V_MSG(RID(), "Custom shapes are not supported.");
+	WARN_PRINT_ONCE("Custom shapes are not supported when using Jolt Physics.");
+	return RID();
 }
 
 void JoltPhysicsServer3D::shape_set_data(RID p_shape, const Variant &p_data) {
@@ -293,8 +294,7 @@ RID JoltPhysicsServer3D::area_get_space(RID p_area) const {
 	ERR_FAIL_NULL_V(area, RID());
 
 	const JoltSpace3D *space = area->get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return RID();
 	}
 
@@ -525,8 +525,7 @@ RID JoltPhysicsServer3D::body_get_space(RID p_body) const {
 	ERR_FAIL_NULL_V(body, RID());
 
 	const JoltSpace3D *space = body->get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return RID();
 	}
 
@@ -983,8 +982,7 @@ RID JoltPhysicsServer3D::soft_body_get_space(RID p_body) const {
 	ERR_FAIL_NULL_V(body, RID());
 
 	const JoltSpace3D *space = body->get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return RID();
 	}
 
@@ -1326,7 +1324,7 @@ void JoltPhysicsServer3D::joint_make_hinge(RID p_joint, RID p_body_a, const Tran
 }
 
 void JoltPhysicsServer3D::joint_make_hinge_simple(RID p_joint, RID p_body_a, const Vector3 &p_pivot_a, const Vector3 &p_axis_a, RID p_body_b, const Vector3 &p_pivot_b, const Vector3 &p_axis_b) {
-	ERR_FAIL_MSG("Simple hinge joints are not supported when using Jolt Physics.");
+	WARN_PRINT_ONCE("Simple hinge joints are not supported when using Jolt Physics.");
 }
 
 void JoltPhysicsServer3D::hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) {
@@ -1552,7 +1550,7 @@ void JoltPhysicsServer3D::free(RID p_rid) {
 	} else if (JoltSpace3D *space = space_owner.get_or_null(p_rid)) {
 		free_space(space);
 	} else {
-		ERR_FAIL_MSG("Failed to free RID: The specified RID has no owner.");
+		ERR_FAIL_MSG("Failed to free Jolt Physics RID. The provided RID has no owner.");
 	}
 }
 

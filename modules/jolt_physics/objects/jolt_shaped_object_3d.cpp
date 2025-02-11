@@ -67,8 +67,7 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_shape(bool p_optimize_compound) {
 	}
 
 	if (scale != Vector3(1, 1, 1)) {
-		Vector3 actual_scale = scale;
-		JOLT_ENSURE_SCALE_VALID(result, actual_scale, vformat("Failed to correctly scale body '%s'.", to_string()));
+		const Vector3 actual_scale = JoltShape3D::make_scale_valid(result, scale);
 		result = JoltShape3D::with_scale(result, actual_scale);
 	}
 
@@ -88,12 +87,11 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_single_shape() {
 		}
 
 		JPH::ShapeRefC jolt_sub_shape = sub_shape.get_jolt_ref();
-
 		Vector3 sub_shape_scale = sub_shape.get_scale();
 		const Transform3D sub_shape_transform = sub_shape.get_transform_unscaled();
 
 		if (sub_shape_scale != Vector3(1, 1, 1)) {
-			JOLT_ENSURE_SCALE_VALID(jolt_sub_shape, sub_shape_scale, vformat("Failed to correctly scale shape at index %d in body '%s'.", shape_index, to_string()));
+			sub_shape_scale = JoltShape3D::make_scale_valid(jolt_sub_shape, sub_shape_scale);
 			jolt_sub_shape = JoltShape3D::with_scale(jolt_sub_shape, sub_shape_scale);
 		}
 
@@ -127,7 +125,7 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_compound_shape(bool p_optimize) {
 		const Transform3D sub_shape_transform = sub_shape.get_transform_unscaled();
 
 		if (sub_shape_scale != Vector3(1, 1, 1)) {
-			JOLT_ENSURE_SCALE_VALID(jolt_sub_shape, sub_shape_scale, vformat("Failed to correctly scale shape at index %d for body '%s'.", shape_index, to_string()));
+			sub_shape_scale = JoltShape3D::make_scale_valid(jolt_sub_shape, sub_shape_scale);
 			jolt_sub_shape = JoltShape3D::with_scale(jolt_sub_shape, sub_shape_scale);
 		}
 
@@ -135,7 +133,7 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_compound_shape(bool p_optimize) {
 	}
 
 	const JPH::ShapeSettings::ShapeResult shape_result = p_optimize ? static_compound_shape_settings.Create(space->get_temp_allocator()) : mutable_compound_shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to create compound shape for body '%s'. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics compound shape. It returned the following error: '%s'.", to_godot(shape_result.GetError())));
 
 	return shape_result.Get();
 }
@@ -242,7 +240,7 @@ Vector3 JoltShapedObject3D::get_position() const {
 }
 
 Vector3 JoltShapedObject3D::get_center_of_mass() const {
-	ERR_FAIL_NULL_V_MSG(space, Vector3(), vformat("Failed to retrieve center-of-mass of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), "Failed to retrieve center-of-mass of physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	const JoltReadableBody3D body = space->read_body(jolt_id);
 	ERR_FAIL_COND_V(body.is_invalid(), Vector3());
@@ -255,7 +253,7 @@ Vector3 JoltShapedObject3D::get_center_of_mass_relative() const {
 }
 
 Vector3 JoltShapedObject3D::get_center_of_mass_local() const {
-	ERR_FAIL_NULL_V_MSG(space, Vector3(), vformat("Failed to retrieve local center-of-mass of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
+	ERR_FAIL_COND_V_MSG(!in_space(), Vector3(), "Failed to retrieve local center-of-mass of physics body. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.");
 
 	return get_transform_scaled().xform_inv(get_center_of_mass());
 }
@@ -345,7 +343,7 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 }
 
 void JoltShapedObject3D::add_shape(JoltShape3D *p_shape, Transform3D p_transform, bool p_disabled) {
-	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed when adding shape at index %d to physics body '%s'.", shapes.size(), to_string()));
+	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "An invalid transform was passed when adding shape to physics object.");
 
 	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform.orthonormalized(), p_transform.basis.get_scale(), p_disabled));
 
@@ -428,7 +426,7 @@ Transform3D JoltShapedObject3D::get_shape_transform_scaled(int p_index) const {
 
 void JoltShapedObject3D::set_shape_transform(int p_index, Transform3D p_transform) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
-	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "Failed to correctly set transform for shape at index %d in body '%s'.");
+	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "An invalid transform was passed when setting shape transform for physics object.");
 
 	Vector3 new_scale = p_transform.basis.get_scale();
 	p_transform.basis.orthonormalize();

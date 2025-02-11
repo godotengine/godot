@@ -100,17 +100,17 @@ void JoltPinJoint3D::set_param(PhysicsServer3D::PinJointParam p_param, double p_
 	switch (p_param) {
 		case PhysicsServer3D::PIN_JOINT_BIAS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
-				WARN_PRINT(vformat("Pin joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Pin joint bias is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::PIN_JOINT_DAMPING: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_DAMPING)) {
-				WARN_PRINT(vformat("Pin joint damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Pin joint damping is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_IMPULSE_CLAMP)) {
-				WARN_PRINT(vformat("Pin joint impulse clamp is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Pin joint impulse clamp is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		default: {
@@ -138,8 +138,7 @@ void JoltPinJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return;
 	}
 

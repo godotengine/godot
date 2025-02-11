@@ -44,8 +44,8 @@ JPH::ShapeRefC JoltConcavePolygonShape3D::_build() const {
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(vertex_count < 3, nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It must have a vertex count of at least 3. This shape belongs to %s.", to_string(), _owners_to_string()));
-	ERR_FAIL_COND_V_MSG(excess_vertex_count != 0, nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It must have a vertex count that is divisible by 3. This shape belongs to %s.", to_string(), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(vertex_count < 3, nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It must have a vertex count of at least 3.", to_string()));
+	ERR_FAIL_COND_V_MSG(excess_vertex_count != 0, nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It must have a vertex count that is divisible by 3.", to_string()));
 
 	JPH::TriangleList jolt_faces;
 	jolt_faces.reserve((size_t)face_count);
@@ -73,7 +73,7 @@ JPH::ShapeRefC JoltConcavePolygonShape3D::_build() const {
 	shape_settings.mPerTriangleUserData = JoltProjectSettings::enable_ray_cast_face_index();
 
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics concave polygon shape with %s. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
 
 	return JoltShape3D::with_double_sided(shape_result.Get(), back_face_collision);
 }

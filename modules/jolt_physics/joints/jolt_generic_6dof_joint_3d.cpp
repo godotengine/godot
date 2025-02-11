@@ -351,17 +351,17 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_LIMIT_SOFTNESS)) {
-				WARN_PRINT(vformat("6DOF joint linear limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint linear limit softness is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_RESTITUTION)) {
-				WARN_PRINT(vformat("6DOF joint linear restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint linear restitution is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_DAMPING: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_LINEAR_DAMPING)) {
-				WARN_PRINT(vformat("6DOF joint linear damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint linear damping is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: {
@@ -394,27 +394,27 @@ void JoltGeneric6DOFJoint3D::set_param(Axis p_axis, Param p_param, double p_valu
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_LIMIT_SOFTNESS)) {
-				WARN_PRINT(vformat("6DOF joint angular limit softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint angular limit softness is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_DAMPING: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_DAMPING)) {
-				WARN_PRINT(vformat("6DOF joint angular damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint angular damping is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_RESTITUTION: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_RESTITUTION)) {
-				WARN_PRINT(vformat("6DOF joint angular restitution is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint angular restitution is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_FORCE_LIMIT: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_FORCE_LIMIT)) {
-				WARN_PRINT(vformat("6DOF joint angular force limit is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint angular force limit is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_ERP: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_ANGULAR_ERP)) {
-				WARN_PRINT(vformat("6DOF joint angular ERP is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("6DOF joint angular ERP is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: {
@@ -652,7 +652,7 @@ void JoltGeneric6DOFJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return;
 	}
 

@@ -98,10 +98,6 @@ void JoltJoint3D::_iterations_changed() {
 	_wake_up_bodies();
 }
 
-String JoltJoint3D::_bodies_to_string() const {
-	return vformat("'%s' and '%s'", body_a != nullptr ? body_a->to_string() : "<unknown>", body_b != nullptr ? body_b->to_string() : "<World>");
-}
-
 JoltJoint3D::JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b) :
 		enabled(p_old_joint.enabled),
 		collision_disabled(p_old_joint.collision_disabled),
@@ -146,11 +142,9 @@ JoltSpace3D *JoltJoint3D::get_space() const {
 		JoltSpace3D *space_a = body_a->get_space();
 		JoltSpace3D *space_b = body_b->get_space();
 
-		if (space_a == nullptr || space_b == nullptr) {
+		if (space_a == nullptr || space_b == nullptr || space_a != space_b) {
 			return nullptr;
 		}
-
-		ERR_FAIL_COND_V_MSG(space_a != space_b, nullptr, vformat("Joint was found to connect bodies in different physics spaces. This joint will effectively be disabled. This joint connects %s.", _bodies_to_string()));
 
 		return space_a;
 	} else if (body_a != nullptr) {
@@ -178,7 +172,7 @@ int JoltJoint3D::get_solver_priority() const {
 
 void JoltJoint3D::set_solver_priority(int p_priority) {
 	if (p_priority != DEFAULT_SOLVER_PRIORITY) {
-		WARN_PRINT(vformat("Joint solver priority is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+		WARN_PRINT_ONCE("Joint solver priority is not supported when using Jolt Physics. Any such value will be ignored.");
 	}
 }
 

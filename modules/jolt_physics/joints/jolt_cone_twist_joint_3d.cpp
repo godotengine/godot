@@ -194,17 +194,17 @@ void JoltConeTwistJoint3D::set_param(PhysicsServer3D::ConeTwistJointParam p_para
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
-				WARN_PRINT(vformat("Cone twist joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Cone twist joint bias is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_SOFTNESS)) {
-				WARN_PRINT(vformat("Cone twist joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Cone twist joint softness is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_RELAXATION)) {
-				WARN_PRINT(vformat("Cone twist joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Cone twist joint relaxation is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		default: {
@@ -348,8 +348,7 @@ void JoltConeTwistJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return;
 	}
 

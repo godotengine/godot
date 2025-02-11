@@ -48,18 +48,6 @@ constexpr float DEFAULT_SOLVER_BIAS = 0.0;
 
 } // namespace
 
-String JoltShape3D::_owners_to_string() const {
-	const int owner_count = ref_counts_by_owner.size();
-
-	if (owner_count == 0) {
-		return "'<unknown>' and 0 other object(s)";
-	}
-
-	const JoltShapedObject3D &random_owner = *ref_counts_by_owner.begin()->key;
-
-	return vformat("'%s' and %d other object(s)", random_owner.to_string(), owner_count - 1);
-}
-
 JoltShape3D::~JoltShape3D() = default;
 
 void JoltShape3D::add_owner(JoltShapedObject3D *p_owner) {
@@ -88,7 +76,7 @@ float JoltShape3D::get_solver_bias() const {
 
 void JoltShape3D::set_solver_bias(float p_bias) {
 	if (!Math::is_equal_approx(p_bias, DEFAULT_SOLVER_BIAS)) {
-		WARN_PRINT(vformat("Custom solver bias for shapes is not supported when using Jolt Physics. Any such value will be ignored. This shape belongs to %s.", _owners_to_string()));
+		WARN_PRINT_ONCE("Custom solver bias for shapes is not supported when using Jolt Physics. Any such value will be ignored.");
 	}
 }
 
@@ -270,9 +258,17 @@ JPH::ShapeRefC JoltShape3D::without_custom_shapes(const JPH::Shape *p_shape) {
 }
 
 Vector3 JoltShape3D::make_scale_valid(const JPH::Shape *p_shape, const Vector3 &p_scale) {
-	return to_godot(p_shape->MakeScaleValid(to_jolt(p_scale)));
-}
+	const Vector3 valid_scale = to_godot(p_shape->MakeScaleValid(to_jolt(p_scale)));
 
-bool JoltShape3D::is_scale_valid(const Vector3 &p_scale, const Vector3 &p_valid_scale, real_t p_tolerance) {
-	return Math::is_equal_approx(p_scale.x, p_valid_scale.x, p_tolerance) && Math::is_equal_approx(p_scale.y, p_valid_scale.y, p_tolerance) && Math::is_equal_approx(p_scale.z, p_valid_scale.z, p_tolerance);
+#ifdef DEV_ENABLED
+	constexpr real_t tolerance = 0.01;
+	if (!Math::is_equal_approx(p_scale.x, valid_scale.x, tolerance) || !Math::is_equal_approx(p_scale.y, valid_scale.y, tolerance) || !Math::is_equal_approx(p_scale.z, valid_scale.z, tolerance)) {
+		WARN_PRINT_ONCE(vformat("Significant invalid scaling (%v) of Jolt Physics shape was found. "
+								"The nearest valid scale (%v) will be used instead. "
+								"Note that while Jolt Physics supports non-uniform scaling, the inherent primitive shape must be preserved.",
+				p_scale, valid_scale));
+	}
+#endif
+
+	return valid_scale;
 }

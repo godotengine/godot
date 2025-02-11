@@ -42,7 +42,7 @@ JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 		return nullptr;
 	}
 
-	ERR_FAIL_COND_V_MSG(vertex_count < 3, nullptr, vformat("Failed to build Jolt Physics convex polygon shape with %s. It must have a vertex count of at least 3. This shape belongs to %s.", to_string(), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(vertex_count < 3, nullptr, vformat("Failed to build Jolt Physics convex polygon shape with %s. It must have a vertex count of at least 3.", to_string()));
 
 	JPH::Array<JPH::Vec3> jolt_vertices;
 	jolt_vertices.reserve((size_t)vertex_count);
@@ -59,7 +59,7 @@ JPH::ShapeRefC JoltConvexPolygonShape3D::_build() const {
 
 	const JPH::ConvexHullShapeSettings shape_settings(jolt_vertices, actual_margin);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics convex polygon shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics convex polygon shape with %s. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
 
 	return shape_result.Get();
 }

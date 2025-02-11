@@ -149,8 +149,6 @@ public:
 	virtual bool reports_contacts() const = 0;
 
 	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) {}
-
-	String to_string() const;
 };
 
 #endif // JOLT_OBJECT_3D_H

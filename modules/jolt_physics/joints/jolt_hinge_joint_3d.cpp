@@ -205,7 +205,7 @@ void JoltHingeJoint3D::set_param(Parameter p_param, double p_value) {
 	switch (p_param) {
 		case PhysicsServer3D::HINGE_JOINT_BIAS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
-				WARN_PRINT(vformat("Hinge joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Hinge joint bias is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER: {
@@ -218,17 +218,17 @@ void JoltHingeJoint3D::set_param(Parameter p_param, double p_value) {
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_LIMIT_BIAS)) {
-				WARN_PRINT(vformat("Hinge joint bias limit is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Hinge joint bias limit is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_SOFTNESS)) {
-				WARN_PRINT(vformat("Hinge joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Hinge joint softness is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION: {
 			if (!Math::is_equal_approx(p_value, DEFAULT_RELAXATION)) {
-				WARN_PRINT(vformat("Hinge joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+				WARN_PRINT_ONCE("Hinge joint relaxation is not supported when using Jolt Physics. Any such value will be ignored.");
 			}
 		} break;
 		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
@@ -381,8 +381,7 @@ void JoltHingeJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
-	if (space == nullptr) {
+	if (unlikely(space == nullptr)) {
 		return;
 	}
 

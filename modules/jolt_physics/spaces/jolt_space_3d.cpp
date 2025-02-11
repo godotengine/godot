@@ -346,14 +346,14 @@ void JoltSpace3D::set_default_area(JoltArea3D *p_area) {
 	}
 }
 
-JPH::BodyID JoltSpace3D::add_rigid_body(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
+JPH::BodyID JoltSpace3D::add_rigid_body(const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
 	const JPH::BodyID body_id = get_body_iface().CreateAndAddBody(p_settings, p_sleeping ? JPH::EActivation::DontActivate : JPH::EActivation::Activate);
 
 	if (unlikely(body_id.IsInvalid())) {
-		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
+		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body. "
 							   "Consider increasing maximum number of bodies in project settings. "
 							   "Maximum number of bodies is currently set to %d.",
-				p_object.to_string(), JoltProjectSettings::get_max_bodies()));
+				JoltProjectSettings::get_max_bodies()));
 
 		return JPH::BodyID();
 	}
@@ -363,14 +363,14 @@ JPH::BodyID JoltSpace3D::add_rigid_body(const JoltObject3D &p_object, const JPH:
 	return body_id;
 }
 
-JPH::BodyID JoltSpace3D::add_soft_body(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping) {
+JPH::BodyID JoltSpace3D::add_soft_body(const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping) {
 	const JPH::BodyID body_id = get_body_iface().CreateAndAddSoftBody(p_settings, p_sleeping ? JPH::EActivation::DontActivate : JPH::EActivation::Activate);
 
 	if (unlikely(body_id.IsInvalid())) {
-		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
+		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics soft body. "
 							   "Consider increasing maximum number of bodies in project settings. "
 							   "Maximum number of bodies is currently set to %d.",
-				p_object.to_string(), JoltProjectSettings::get_max_bodies()));
+				JoltProjectSettings::get_max_bodies()));
 
 		return JPH::BodyID();
 	}

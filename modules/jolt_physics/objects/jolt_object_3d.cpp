@@ -135,8 +135,3 @@ bool JoltObject3D::can_interact_with(const JoltObject3D &p_other) const {
 		ERR_FAIL_V_MSG(false, vformat("Unhandled object type: '%d'. This should not happen. Please report this.", p_other.get_type()));
 	}
 }
-
-String JoltObject3D::to_string() const {
-	Object *instance = get_instance();
-	return instance != nullptr ? instance->to_string() : "<unknown>";
-}

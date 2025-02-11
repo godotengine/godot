@@ -68,8 +68,6 @@ protected:
 	void _enabled_changed();
 	void _iterations_changed();
 
-	String _bodies_to_string() const;
-
 public:
 	JoltJoint3D() = default;
 	JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);

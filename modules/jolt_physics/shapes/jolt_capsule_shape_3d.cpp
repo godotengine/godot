@@ -35,16 +35,16 @@
 #include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
 
 JPH::ShapeRefC JoltCapsuleShape3D::_build() const {
-	ERR_FAIL_COND_V_MSG(radius <= 0.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its radius must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
-	ERR_FAIL_COND_V_MSG(height <= 0.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its height must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
-	ERR_FAIL_COND_V_MSG(height < radius * 2.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its height must be at least double that of its radius. This shape belongs to %s.", to_string(), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(radius <= 0.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its radius must be greater than 0.", to_string()));
+	ERR_FAIL_COND_V_MSG(height <= 0.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its height must be greater than 0.", to_string()));
+	ERR_FAIL_COND_V_MSG(height < radius * 2.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its height must be at least double that of its radius.", to_string()));
 
 	const float half_height = height / 2.0f;
 	const float cylinder_height = half_height - radius;
 
 	const JPH::CapsuleShapeSettings shape_settings(cylinder_height, radius);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. It returned the following error: '%s'.", to_string(), to_godot(shape_result.GetError())));
 
 	return shape_result.Get();
 }

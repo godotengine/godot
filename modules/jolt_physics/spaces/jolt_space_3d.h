@@ -131,8 +131,8 @@ public:
 
 	float get_last_step() const { return last_step; }
 
-	JPH::BodyID add_rigid_body(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);
-	JPH::BodyID add_soft_body(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
+	JPH::BodyID add_rigid_body(const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);
+	JPH::BodyID add_soft_body(const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
 
 	void remove_body(const JPH::BodyID &p_body_id);
 
