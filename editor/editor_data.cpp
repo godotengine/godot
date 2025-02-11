@@ -1046,24 +1046,23 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 	_script_class_file_to_path[p_path] = p_class;
 }
 
-void EditorData::script_class_save_icon_paths() {
-	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
-
-	Dictionary d;
-	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
-		if (ScriptServer::is_global_class(E.key)) {
-			d[E.key] = E.value;
-		}
+void EditorData::script_class_save_global_classes() {
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+	Array array_classes;
+	for (const StringName &class_name : global_classes) {
+		Dictionary d;
+		String *icon = _script_class_icon_paths.getptr(class_name);
+		d["class"] = class_name;
+		d["language"] = ScriptServer::get_global_class_language(class_name);
+		d["path"] = ScriptServer::get_global_class_path(class_name);
+		d["base"] = ScriptServer::get_global_class_base(class_name);
+		d["icon"] = icon ? *icon : String();
+		d["is_abstract"] = ScriptServer::is_global_class_abstract(class_name);
+		d["is_tool"] = ScriptServer::is_global_class_tool(class_name);
+		array_classes.push_back(d);
 	}
-
-	for (int i = 0; i < script_classes.size(); i++) {
-		Dictionary d2 = script_classes[i];
-		if (!d2.has("class")) {
-			continue;
-		}
-		d2["icon"] = d.get(d2["class"], "");
-	}
-	ProjectSettings::get_singleton()->store_global_class_list(script_classes);
+	ProjectSettings::get_singleton()->store_global_class_list(array_classes);
 }
 
 void EditorData::script_class_load_icon_paths() {

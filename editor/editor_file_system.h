@@ -374,7 +374,7 @@ class EditorFileSystem : public Node {
 
 	void _update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info);
 	void _update_files_icon_path(EditorFileSystemDirectory *edp = nullptr);
-	void _remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names);
+	bool _remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names);
 	String _get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info);
 
 	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update);

@@ -649,17 +649,11 @@ void EditorNode::_notification(int p_what) {
 
 				OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
 
-				if (run_surface_upgrade_tool) {
-					run_surface_upgrade_tool = false;
-					SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
-					SurfaceUpgradeTool::get_singleton()->finish_upgrade();
-				} else if (run_uid_upgrade_tool) {
-					run_uid_upgrade_tool = false;
-					UIDUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
-					UIDUpgradeTool::get_singleton()->finish_upgrade();
-				} else {
-					EditorFileSystem::get_singleton()->scan();
+				if (run_surface_upgrade_tool || run_uid_upgrade_tool) {
+					EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
 				}
+
+				EditorFileSystem::get_singleton()->scan();
 			}
 		} break;
 
@@ -899,6 +893,20 @@ void EditorNode::_update_update_spinner() {
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
+}
+
+void EditorNode::_execute_upgrades() {
+	if (run_surface_upgrade_tool) {
+		run_surface_upgrade_tool = false;
+		// Execute another scan to reimport the modified files.
+		SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+		SurfaceUpgradeTool::get_singleton()->finish_upgrade();
+	} else if (run_uid_upgrade_tool) {
+		run_uid_upgrade_tool = false;
+		// Execute another scan to reimport the modified files.
+		UIDUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+		UIDUpgradeTool::get_singleton()->finish_upgrade();
+	}
 }
 
 void EditorNode::init_plugins() {

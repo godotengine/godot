@@ -319,7 +319,12 @@ void EditorFileSystem::_first_scan_filesystem() {
 	_first_scan_process_scripts(first_scan_root_dir, gdextension_extensions, existing_class_names, extensions);
 
 	// Removing invalid global class to prevent having invalid paths in ScriptServer.
-	_remove_invalid_global_class_names(existing_class_names);
+	bool save_scripts = _remove_invalid_global_class_names(existing_class_names);
+
+	// If a global class is found or removed, we sync global_script_class_cache.cfg with the ScriptServer
+	if (!existing_class_names.is_empty() || save_scripts) {
+		EditorNode::get_editor_data().script_class_save_global_classes();
+	}
 
 	// Processing extensions to add new extensions or remove invalid ones.
 	// Important to do it in the first scan so custom types, new class names, custom importers, etc...
@@ -1618,7 +1623,7 @@ void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	efs->scanning_changes_done.set();
 }
 
-void EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
+bool EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names) {
 	List<StringName> global_classes;
 	bool must_save = false;
 	ScriptServer::get_global_class_list(&global_classes);
@@ -1628,9 +1633,7 @@ void EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> 
 			must_save = true;
 		}
 	}
-	if (must_save) {
-		ScriptServer::save_global_classes();
-	}
+	return must_save;
 }
 
 String EditorFileSystem::_get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info) {
@@ -2043,6 +2046,7 @@ EditorFileSystem::ScriptClassInfo EditorFileSystem::_get_global_script_class(con
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		if (ScriptServer::get_language(i)->handles_global_class_type(p_type)) {
 			info.name = ScriptServer::get_language(i)->get_global_class_name(p_path, &info.extends, &info.icon_path, &info.is_abstract, &info.is_tool);
+			break;
 		}
 	}
 	return info;
@@ -2130,8 +2134,7 @@ void EditorFileSystem::_update_script_classes() {
 		update_script_paths.clear();
 	}
 
-	ScriptServer::save_global_classes();
-	EditorNode::get_editor_data().script_class_save_icon_paths();
+	EditorNode::get_editor_data().script_class_save_global_classes();
 
 	emit_signal("script_classes_updated");
 
