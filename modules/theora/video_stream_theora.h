@@ -52,8 +52,8 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	Point2i size;
 	Rect2i region;
 
-	const static int AUXBUF_LEN = 8192;
-	float audio_buffer[AUXBUF_LEN];
+	float *audio_buffer = nullptr;
+	int audio_buffer_size;
 	int audio_ptr_start;
 	int audio_ptr_end;
 
