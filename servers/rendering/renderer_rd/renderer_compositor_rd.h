@@ -135,7 +135,7 @@ public:
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
 	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
 
-	virtual bool is_xr_enabled() const override { return multiview_supported && RendererCompositor::is_xr_enabled(); }
+	virtual bool is_xr_enabled() const { return multiview_supported && RendererCompositor::is_xr_enabled(); }
 
 	static Error is_viable() {
 		return OK;
