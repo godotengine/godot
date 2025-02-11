@@ -47,6 +47,11 @@ String ShaderBakerExportPlugin::get_name() const {
 	return "ShaderBaker";
 }
 
+bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const {
+	// Shader baker should only work when a RendererRD driver is active, as the embedded shaders won't be found otherwise.
+	return RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
+}
+
 bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
 	shader_container_driver = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
 	if (shader_container_driver.is_empty()) {
@@ -83,9 +88,7 @@ bool ShaderBakerExportPlugin::_initialize_cache_directory() {
 }
 
 bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
-	RendererRD::MaterialStorage *singleton = RendererRD::MaterialStorage::get_singleton();
-	if (singleton == nullptr || !p_features.has("shader_baker")) {
-		// Shader baker should only work when a RendererRD driver is active, as the embedded shaders won't be found otherwise.
+	if (!_is_active(p_features)) {
 		return false;
 	}
 
@@ -107,10 +110,11 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 	ShaderRD::shaders_embedded_set_unlock();
 
 	// Include all shaders created by embedded materials.
-	singleton->shader_embedded_set_lock();
-	const HashSet<RID> &rid_set = singleton->shader_embedded_set_get();
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	material_storage->shader_embedded_set_lock();
+	const HashSet<RID> &rid_set = material_storage->shader_embedded_set_get();
 	for (RID rid : rid_set) {
-		RendererRD::MaterialStorage::ShaderData *shader_data = singleton->shader_get_data(rid);
+		RendererRD::MaterialStorage::ShaderData *shader_data = material_storage->shader_get_data(rid);
 		if (shader_data != nullptr) {
 			Pair<ShaderRD *, RID> shader_version_pair = shader_data->get_native_shader_and_version();
 			if (shader_version_pair.first != nullptr) {
@@ -119,13 +123,13 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		}
 	}
 
-	singleton->shader_embedded_set_unlock();
+	material_storage->shader_embedded_set_unlock();
 
 	return true;
 }
 
 bool ShaderBakerExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
-	return true;
+	return _is_active(p_features);
 }
 
 void ShaderBakerExportPlugin::_end_customize_resources() {

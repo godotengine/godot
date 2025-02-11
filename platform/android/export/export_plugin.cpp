@@ -1944,9 +1944,10 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 				return TTR("\"Use Gradle Build\" must be enabled to disable \"Show In App Library\".");
 			}
 		} else if (p_name == "shader_baker/export") {
-			String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
 			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-			if (current_renderer != export_renderer) {
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
+			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
 				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include the global shaders. Switch to \"%s\" renderer temporarily to fix this."), export_renderer);
 			}
 		}

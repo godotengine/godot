@@ -103,6 +103,12 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			}
 		}
 
+		if (p_name == "shader_baker/export") {
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
+			}
+		}
+
 		if (p_name == "codesign/certificate_file" || p_name == "codesign/certificate_password" || p_name == "codesign/identity") {
 			if (dist_type == 2) {
 				if (ad_hoc) {
@@ -471,6 +477,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/export"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 

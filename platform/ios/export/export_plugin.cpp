@@ -230,6 +230,13 @@ String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPres
 			if (access == 0) {
 				return TTR("At least one system boot time access reason should be selected.");
 			}
+		} else if (p_name == "shader_baker/export") {
+			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
+			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include the global shaders. Switch to \"%s\" renderer temporarily to fix this."), export_renderer);
+			}
 		}
 	}
 	return String();

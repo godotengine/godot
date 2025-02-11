@@ -74,6 +74,7 @@ protected:
 	uint64_t customization_configuration_hash = 0;
 
 	virtual String get_name() const override;
+	virtual bool _is_active(const Vector<String> &p_features) const;
 	virtual bool _initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features);
 	virtual void _cleanup_container_format();
 	virtual bool _initialize_cache_directory();

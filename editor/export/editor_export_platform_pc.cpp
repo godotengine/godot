@@ -65,6 +65,16 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/export"), false));
 }
 
+String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_name == "shader_baker/export") {
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
+		}
+	}
+
+	return String();
+}
+
 String EditorExportPlatformPC::get_name() const {
 	return name;
 }
