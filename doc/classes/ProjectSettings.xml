@@ -386,7 +386,9 @@
 			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
-			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
+			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
+			[b]Note:[/b] On iOS and macOS, mixing rate is determined by audio driver, this value is ignored.
+			[b]Note:[/b] Input and output mixing rates might be different. Use [method AudioServer.get_mix_rate] and [method AudioServer.get_input_mix_rate] to get actual values.
 		</member>
 		<member name="audio/driver/mix_rate.web" type="int" setter="" getter="" default="0">
 			Safer override for [member audio/driver/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
