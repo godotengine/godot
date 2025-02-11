@@ -62,6 +62,9 @@
 			<argument index="0" name="rect" type="Rect2" />
 			<argument index="1" name="epsilon" type="float" default="2.0" />
 			<description>
+				Generates polygon outlines from the opaque (non-transparent) areas of the [BitMap] using a Marching Squares algorithm.
+				Returns an [Array] of [PoolVector2Array], where each [PoolVector2Array] represents a polygon outline. These outlines can be directly assigned to the [code]polygon[/code] property of nodes like [CollisionPolygon2D] or [OccluderPolygon2D].
+				The [code]epsilon[/code] parameter controls polygon simplification. A lower value produces more accurate polygons, but at the cost of increased polygon size and potential performance impact. A higher value simplifies the polygons, reducing their size and improving performance, but with less accuracy.
 			</description>
 		</method>
 		<method name="resize">
