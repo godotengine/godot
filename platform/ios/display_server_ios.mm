@@ -114,16 +114,18 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 			rendering_context = nullptr;
 #if defined(METAL_ENABLED)
 			bool fallback_to_metal = GLOBAL_GET("rendering/rendering_device/fallback_to_metal");
-			if (failed && fallback_to_metal && rendering_driver != "metal" && @available(iOS 14.0, *)) {
-				memdelete(rendering_context);
-				layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
-				wpd.metal.layer = (CAMetalLayer *)layer;
-				rendering_context = memnew(RenderingContextDriverMetal);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your device seem not to support MoltenVK, switching to Metal.");
-					rendering_driver = "metal";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
+			if (failed && fallback_to_metal && rendering_driver != "metal") {
+				if (@available(iOS 14.0, *)) {
+					memdelete(rendering_context);
+					layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
+					wpd.metal.layer = (CAMetalLayer *)layer;
+					rendering_context = memnew(RenderingContextDriverMetal);
+					if (rendering_context->initialize() == OK) {
+						WARN_PRINT("Your device seem not to support MoltenVK, switching to Metal.");
+						rendering_driver = "metal";
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+						failed = false;
+					}
 				}
 			}
 #endif
