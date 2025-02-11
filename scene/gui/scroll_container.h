@@ -70,6 +70,9 @@ private:
 	int deadzone = 0;
 	bool follow_focus = false;
 
+	bool following = false;
+	Vector2 scroll_diff;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -82,6 +85,8 @@ private:
 
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;
+
+	Rect2 _get_local_visible_rect() const;
 
 protected:
 	Size2 get_minimum_size() const override;
