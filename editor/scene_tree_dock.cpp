@@ -2834,7 +2834,7 @@ void SceneTreeDock::_update_script_button() {
 			Ref<Script> cts;
 
 			if (n->has_meta(SceneStringName(_custom_type_script))) {
-				cts = n->get_meta(SceneStringName(_custom_type_script));
+				cts = PropertyUtils::get_custom_type_script(n);
 			}
 
 			if (selection.size() == 1) {
@@ -3114,7 +3114,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 
 		// If we're dealing with a custom node type, we need to create a default instance of the custom type instead of the native type for property comparison.
 		if (oldnode->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> cts = oldnode->get_meta(SceneStringName(_custom_type_script));
+			Ref<Script> cts = PropertyUtils::get_custom_type_script(oldnode);
 			default_oldnode = Object::cast_to<Node>(get_editor_data()->script_class_instance(cts->get_global_name()));
 			if (default_oldnode) {
 				default_oldnode->set_name(cts->get_global_name());
@@ -3618,7 +3618,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	} else {
 		// Check if dropped script is compatible.
 		if (n->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> ct_scr = n->get_meta(SceneStringName(_custom_type_script));
+			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(n);
 			if (!scr->inherits_script(ct_scr)) {
 				String custom_type_name = ct_scr->get_global_name();
 
