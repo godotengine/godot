@@ -279,6 +279,10 @@ void VideoStreamPlaybackTheora::clear() {
 	}
 
 	playing = false;
+	has_video = false;
+	has_audio = false;
+	theora_eos = false;
+	vorbis_eos = false;
 }
 
 void VideoStreamPlaybackTheora::find_streams(th_setup_info *&ts) {
@@ -375,9 +379,12 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	ERR_FAIL_COND(playing);
 	th_setup_info *ts = nullptr;
 
-	file_name = p_file;
+	clear();
+
 	file = FileAccess::open(p_file, FileAccess::READ);
 	ERR_FAIL_COND_MSG(file.is_null(), "Cannot open file '" + p_file + "'.");
+
+	file_name = p_file;
 
 	ogg_sync_init(&oy);
 
@@ -392,12 +399,6 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	/* Zero stream state structs so they can be checked later. */
 	memset(&to, 0, sizeof(to));
 	memset(&vo, 0, sizeof(vo));
-
-	has_video = false;
-	has_audio = false;
-	theora_eos = false;
-	vorbis_eos = false;
-	playing = false;
 
 	/* Ogg file open; parse the headers */
 	find_streams(ts);
