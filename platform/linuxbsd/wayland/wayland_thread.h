@@ -428,6 +428,8 @@ public:
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
 
+		HashMap<xkb_keycode_t, Key> pressed_keycodes;
+
 		xkb_layout_index_t current_layout_index = 0;
 
 		int32_t repeat_key_delay_msec = 0;
@@ -903,7 +905,8 @@ private:
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
-	static bool _seat_state_configure_key_event(WaylandThread::SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
 	static void _wayland_state_update_cursor();
 

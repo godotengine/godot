@@ -369,33 +369,6 @@ void KeyMappingXKB::initialize() {
 	location_map[0x86] = KeyLocation::RIGHT;
 }
 
-bool KeyMappingXKB::is_sym_numpad(xkb_keysym_t p_keysym) {
-	switch (p_keysym) {
-		case XKB_KEY_KP_Equal:
-		case XKB_KEY_KP_Add:
-		case XKB_KEY_KP_Subtract:
-		case XKB_KEY_KP_Multiply:
-		case XKB_KEY_KP_Divide:
-		case XKB_KEY_KP_Separator:
-		case XKB_KEY_KP_Decimal:
-		case XKB_KEY_KP_Delete:
-		case XKB_KEY_KP_0:
-		case XKB_KEY_KP_1:
-		case XKB_KEY_KP_2:
-		case XKB_KEY_KP_3:
-		case XKB_KEY_KP_4:
-		case XKB_KEY_KP_5:
-		case XKB_KEY_KP_6:
-		case XKB_KEY_KP_7:
-		case XKB_KEY_KP_8:
-		case XKB_KEY_KP_9: {
-			return true;
-		} break;
-	}
-
-	return false;
-}
-
 Key KeyMappingXKB::get_keycode(xkb_keycode_t p_keysym) {
 	if (p_keysym >= 0x20 && p_keysym < 0x7E) { // ASCII, maps 1-1
 		if (p_keysym > 0x60 && p_keysym < 0x7B) { // Lowercase ASCII.
