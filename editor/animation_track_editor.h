@@ -200,12 +200,14 @@ class AnimationTimelineEdit : public Range {
 	Range *h_scroll = nullptr;
 	float play_position_pos = 0.0f;
 
+	HBoxContainer *add_track_hb = nullptr;
 	HBoxContainer *len_hb = nullptr;
 	EditorSpinSlider *length = nullptr;
 	Button *loop = nullptr;
 	TextureRect *time_icon = nullptr;
 
 	MenuButton *add_track = nullptr;
+	LineEdit *filter_track = nullptr;
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	HScrollBar *hscroll = nullptr;
 
@@ -944,6 +946,7 @@ public:
 	bool is_snap_keys_enabled() const;
 	bool is_bezier_editor_active() const;
 	bool can_add_reset_key() const;
+	void _on_filter_updated(const String &p_filter);
 	float get_moving_selection_offset() const;
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
