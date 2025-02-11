@@ -1573,8 +1573,7 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		}
 	}
 
-	ScriptServer::save_global_classes();
-	EditorNode::get_editor_data().script_class_save_icon_paths();
+	EditorNode::get_editor_data().script_class_save_global_classes();
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 }
 
@@ -1708,8 +1707,7 @@ void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 	const Ref<Script> &scr = p_resource;
 	if (scr.is_valid()) {
 		ScriptServer::remove_global_class_by_path(scr->get_path());
-		ScriptServer::save_global_classes();
-		EditorNode::get_editor_data().script_class_save_icon_paths();
+		EditorNode::get_editor_data().script_class_save_global_classes();
 		EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 	}
 	emit_signal(SNAME("resource_removed"), p_resource);
