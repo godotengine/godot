@@ -401,6 +401,7 @@ public:
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
 	EditorFileSystemDirectory *find_file(const String &p_file, int *r_index) const;
+	ResourceUID::ID get_file_uid(const String &p_path) const;
 
 	void reimport_files(const Vector<String> &p_files);
 	Error reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters);
