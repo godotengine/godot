@@ -774,10 +774,8 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 			// Can't travel, then teleport.
 			if (p_state_machine->states.has(temp_travel_request)) {
 				path.clear();
-				if (current != temp_travel_request || reset_request_on_teleport) {
-					_set_current(p_state_machine, temp_travel_request);
-					reset_request = reset_request_on_teleport;
-					teleport_request = true;
+				if (current != temp_travel_request) {
+					path.push_back(temp_travel_request);
 				}
 			} else {
 				ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
@@ -789,18 +787,20 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 
 	if (teleport_request) {
 		teleport_request = false;
-		// Clear fadeing on teleport.
-		fading_from = StringName();
-		fadeing_from_nti = AnimationNode::NodeTimeInfo();
-		fading_pos = 0;
-		// Init current length.
-		pi.time = 0;
-		pi.seeked = true;
-		pi.is_external_seeking = false;
-		pi.weight = 0;
-		current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
-		// Don't process first node if not necessary, instead process next node.
-		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
+		// // Clear fadeing on teleport.
+		// fading_from = StringName();
+		// fadeing_from_nti = AnimationNode::NodeTimeInfo();
+		// fading_pos = 0;
+		// // Init current length.
+		// pi.time = 0;
+		// pi.seeked = true;
+		// pi.is_external_seeking = false;
+		// pi.weight = 0;
+		// current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
+		// // Don't process first node if not necessary, instead process next node.
+		// _transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
+
+		// path.push_back(travel_request);
 	}
 
 	// Check current node existence.
@@ -1058,8 +1058,17 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 				next.switch_mode = ref_transition->get_switch_mode();
 				next.is_reset = ref_transition->is_reset();
 				next.break_loop_at_end = ref_transition->is_loop_broken_at_end();
+				return next; // Once we have the information we need, we can actually just return that info
 			}
 		}
+		// There is no transition that ends at the next state in the state machine. We can use the default transition
+		next.node = path[0];
+		next.xfade = p_state_machine->default_transition->get_xfade_time();
+		next.curve = p_state_machine->default_transition->get_xfade_curve();
+		next.switch_mode = p_state_machine->default_transition->get_switch_mode();
+		next.is_reset = p_state_machine->default_transition->is_reset();
+		next.break_loop_at_end = p_state_machine->default_transition->is_loop_broken_at_end();
+		return next; // Once we have the information we need, we can actually just return that info
 	} else {
 		int auto_advance_to = -1;
 		float priority_best = 1e20;
@@ -1198,11 +1207,6 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 	set_local_to_scene(true); // Only one per instantiated scene.
-	default_transition.instantiate();
-	default_transition->set_xfade_time(0);
-	default_transition->set_reset(true);
-	default_transition->set_advance_mode(AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO);
-	default_transition->set_switch_mode(AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE);
 }
 
 ///////////////////////////////////////////////////////
@@ -1318,6 +1322,18 @@ void AnimationNodeStateMachine::set_reset_ends(bool p_enable) {
 
 bool AnimationNodeStateMachine::are_ends_reset() const {
 	return reset_ends;
+}
+
+void AnimationNodeStateMachine::set_default_transition(Ref<AnimationNodeStateMachineTransition> p_transition) {
+	default_transition.instantiate();
+	default_transition->set_xfade_time(0);
+	default_transition->set_reset(true);
+	default_transition->set_advance_mode(AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO);
+	default_transition->set_switch_mode(AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE);
+}
+
+Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachine::get_default_transition() {
+	return default_transition;
 }
 
 bool AnimationNodeStateMachine::can_edit_node(const StringName &p_name) const {
@@ -1789,6 +1805,9 @@ void AnimationNodeStateMachine::get_argument_options(const StringName &p_functio
 #endif
 
 void AnimationNodeStateMachine::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_transition", "transition"), &AnimationNodeStateMachine::set_default_transition);
+	ClassDB::bind_method(D_METHOD("get_default_transition"), &AnimationNodeStateMachine::get_default_transition);
+
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeStateMachine::add_node, DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("replace_node", "name", "node"), &AnimationNodeStateMachine::replace_node);
 	ClassDB::bind_method(D_METHOD("get_node", "name"), &AnimationNodeStateMachine::get_node);
@@ -1824,6 +1843,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_transition", PROPERTY_HINT_RESOURCE_TYPE, ""), "set_default_transition", "get_default_transition");
 
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);

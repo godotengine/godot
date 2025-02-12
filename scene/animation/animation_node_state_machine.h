@@ -136,6 +136,7 @@ private:
 		Ref<AnimationNodeStateMachineTransition> transition;
 	};
 
+	Ref<AnimationNodeStateMachineTransition> default_transition;
 	Vector<Transition> transitions;
 
 	StringName playback = "playback";
@@ -206,6 +207,9 @@ public:
 	void set_reset_ends(bool p_enable);
 	bool are_ends_reset() const;
 
+	void set_default_transition(Ref<AnimationNodeStateMachineTransition> p_transition);
+	Ref<AnimationNodeStateMachineTransition> get_default_transition();
+
 	bool can_edit_node(const StringName &p_name) const;
 
 	void set_graph_offset(const Vector2 &p_offset);
@@ -259,7 +263,6 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		bool is_reset = false;
 	};
 
-	Ref<AnimationNodeStateMachineTransition> default_transition;
 	String base_path;
 
 	AnimationNode::NodeTimeInfo current_nti;
