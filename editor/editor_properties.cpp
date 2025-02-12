@@ -321,6 +321,9 @@ void EditorPropertyTextEnum::update_property() {
 		}
 	} else {
 		option_button->select(default_option);
+		if (default_option < 0) {
+			option_button->set_text(current_value);
+		}
 	}
 }
 
@@ -699,6 +702,7 @@ void EditorPropertyEnum::update_property() {
 	Variant current = get_edited_property_value();
 	if (current.get_type() == Variant::NIL) {
 		options->select(-1);
+		options->set_text("<null>");
 		return;
 	}
 
@@ -709,6 +713,8 @@ void EditorPropertyEnum::update_property() {
 			return;
 		}
 	}
+	options->select(-1);
+	options->set_text(itos(which));
 }
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
