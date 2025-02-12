@@ -833,6 +833,8 @@ public:
 	bool voxel_gi_needs_update(RID p_probe) const;
 	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects);
 	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+
+	void enable_vrs_shader_group();
 };
 
 } // namespace RendererRD

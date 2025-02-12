@@ -783,7 +783,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "instances.data[instance_index_interp].instance_uniforms_ofs";
 
-		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
+		actions.check_multiview_samplers = true;
 
 		compiler.initialize(actions);
 	}
@@ -893,6 +893,10 @@ void SceneShaderForwardClustered::set_default_specialization(const ShaderSpecial
 	for (SelfList<ShaderData> *E = shader_list.first(); E; E = E->next()) {
 		E->self()->pipeline_hash_map.clear_pipelines();
 	}
+}
+
+void SceneShaderForwardClustered::enable_multiview_shader_group() {
+	shader.enable_group(SHADER_GROUP_MULTIVIEW);
 }
 
 void SceneShaderForwardClustered::enable_advanced_shader_group(bool p_needs_multiview) {

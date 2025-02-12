@@ -57,6 +57,11 @@ public:
 		SHADER_VERSION_MAX
 	};
 
+	enum ShaderGroup {
+		SHADER_GROUP_BASE, // Always compiled at the beginning.
+		SHADER_GROUP_MULTIVIEW,
+	};
+
 	struct ShaderSpecialization {
 		union {
 			uint32_t packed_0;
@@ -333,7 +338,8 @@ public:
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
 	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
-	bool is_multiview_enabled() const;
+	void enable_multiview_shader_group();
+	bool is_multiview_shader_group_enabled() const;
 };
 
 } // namespace RendererSceneRenderImplementation

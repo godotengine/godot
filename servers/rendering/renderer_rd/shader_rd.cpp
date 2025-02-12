@@ -780,12 +780,12 @@ ShaderRD::ShaderRD() {
 	base_compute_defines = base_compute_define_text.ascii();
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &r_immutable_samplers) {
-	immutable_samplers = r_immutable_samplers;
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
+	immutable_samplers = p_immutable_samplers;
 
 	// When initialized this way, there is just one group and its always enabled.
 	group_to_variant_map.insert(0, LocalVector<int>{});
@@ -858,11 +858,12 @@ void ShaderRD::_initialize_cache() {
 }
 
 // Same as above, but allows specifying shader compilation groups.
-void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines) {
+void ShaderRD::initialize(const Vector<VariantDefine> &p_variant_defines, const String &p_general_defines, const Vector<RD::PipelineImmutableSampler> &p_immutable_samplers) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.is_empty());
 
 	general_defines = p_general_defines.utf8();
+	immutable_samplers = p_immutable_samplers;
 
 	int max_group_id = 0;
 

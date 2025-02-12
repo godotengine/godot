@@ -4804,6 +4804,20 @@ uint32_t RenderForwardClustered::get_pipeline_compilations(RS::PipelineSource p_
 	return scene_shader.get_pipeline_compilations(p_source);
 }
 
+void RenderForwardClustered::enable_features(BitField<FeatureBits> p_feature_bits) {
+	if (p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT)) {
+		scene_shader.enable_multiview_shader_group();
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_ADVANCED_BIT)) {
+		scene_shader.enable_advanced_shader_group(p_feature_bits.has_flag(FEATURE_MULTIVIEW_BIT));
+	}
+
+	if (p_feature_bits.has_flag(FEATURE_VRS_BIT)) {
+		gi.enable_vrs_shader_group();
+	}
+}
+
 void RenderForwardClustered::GeometryInstanceForwardClustered::pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) {
 	if (p_voxel_gi_instance_count > 0) {
 		voxel_gi_instances[0] = p_voxel_gi_instances[0];

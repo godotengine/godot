@@ -50,8 +50,9 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
+#include "servers/rendering/rendering_shader_library.h"
 
-class RendererSceneRenderRD : public RendererSceneRender {
+class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
 

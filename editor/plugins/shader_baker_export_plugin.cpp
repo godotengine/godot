@@ -34,6 +34,7 @@
 #include "core/version.h"
 #include "scene/3d/label_3d.h"
 #include "scene/3d/sprite_3d.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 // Ensure that AlphaCut is the same between the two classes so we can share the code to detect transparency.
@@ -49,7 +50,7 @@ String ShaderBakerExportPlugin::get_name() const {
 
 bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const {
 	// Shader baker should only work when a RendererRD driver is active, as the embedded shaders won't be found otherwise.
-	return RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
+	return RendererSceneRenderRD::get_singleton() != nullptr && RendererRD::MaterialStorage::get_singleton() != nullptr && p_features.has("shader_baker");
 }
 
 bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
@@ -98,7 +99,19 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 
 	shader_cache_platform_name = p_platform->get_os_name();
 
-	// TODO: Renderer-specific groups (ADVANCED, MULTIVIEW, VRS) that are enabled at runtime should get enabled here.
+	BitField<RenderingShaderLibrary::FeatureBits> renderer_features;
+	bool xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_ADVANCED_BIT);
+	if (xr_enabled) {
+		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_MULTIVIEW_BIT);
+	}
+
+	int vrs_mode = GLOBAL_GET("rendering/vrs/mode");
+	if (vrs_mode != 0) {
+		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_VRS_BIT);
+	}
+
+	RendererSceneRenderRD::get_singleton()->enable_features(renderer_features);
 
 	// Included all shaders created by renderers and effects.
 	ShaderRD::shaders_embedded_set_lock();

@@ -4139,3 +4139,7 @@ void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_frameb
 
 	voxel_gi->debug(p_draw_list, p_framebuffer, p_camera_with_transform, p_lighting, p_emission, p_alpha);
 }
+
+void GI::enable_vrs_shader_group() {
+	shader.enable_group(GROUP_VRS);
+}
