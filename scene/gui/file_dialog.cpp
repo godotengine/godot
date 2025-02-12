@@ -664,9 +664,11 @@ void FileDialog::_tree_selected() {
 		} else {
 			set_ok_button_text(ETR("Open"));
 		}
-	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY || !dir_access->file_exists(file->get_text())) {
 		file->set_text("");
-		set_ok_button_text(ETR("Select This Folder"));
+		if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+			set_ok_button_text(ETR("Select This Folder"));
+		}
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -931,6 +933,7 @@ void FileDialog::update_file_list() {
 		// Select the first file from list if nothing is selected.
 		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
 			tree->get_root()->get_first_child()->select(0);
+			_tree_selected();
 		}
 	}
 }
@@ -949,6 +952,7 @@ void FileDialog::_filename_filter_changed() {
 void FileDialog::_tree_select_first() {
 	if (tree->get_root() && tree->get_root()->get_first_child()) {
 		tree->get_root()->get_first_child()->select(0);
+		_tree_selected();
 	}
 }
 

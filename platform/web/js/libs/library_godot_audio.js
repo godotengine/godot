@@ -621,28 +621,24 @@ class SampleNode {
 		if (this.isCanceled) {
 			return;
 		}
-		this.getPositionWorklet();
-		this._source.connect(this._positionWorklet);
+		this._source.connect(this.getPositionWorklet());
 		if (start) {
 			this.start();
 		}
 	}
 
 	/**
-	 * Get a AudioWorkletProcessor from the pool, or create one if no processor is available.
+	 * Get a AudioWorkletProcessor
+	 * @returns {AudioWorkletNode}
 	 */
 	getPositionWorklet() {
 		if (this._positionWorklet != null) {
-			return;
+			return this._positionWorklet;
 		}
-		if (GodotAudio.audioPositionWorkletPool.length == 0) {
-			this._positionWorklet = new AudioWorkletNode(
-				GodotAudio.ctx,
-				'godot-position-reporting-processor'
-			);
-		} else {
-			this._positionWorklet = GodotAudio.audioPositionWorkletPool.pop();
-		}
+		this._positionWorklet = new AudioWorkletNode(
+			GodotAudio.ctx,
+			'godot-position-reporting-processor'
+		);
 		this._positionWorklet.port.onmessage = (event) => {
 			switch (event.data['type']) {
 			case 'position':
@@ -652,6 +648,7 @@ class SampleNode {
 				// Do nothing.
 			}
 		};
+		return this._positionWorklet;
 	}
 
 	/**
@@ -681,8 +678,7 @@ class SampleNode {
 		if (this._positionWorklet) {
 			this._positionWorklet.disconnect();
 			this._positionWorklet.port.onmessage = null;
-			this._positionWorklet.port.postMessage({ type: 'clear' });
-			GodotAudio.audioPositionWorkletPool.push(this._positionWorklet);
+			this._positionWorklet.port.postMessage({ type: 'ended' });
 			this._positionWorklet = null;
 		}
 
@@ -1199,7 +1195,6 @@ const _GodotAudio = {
 
 		/** @type {Promise} */
 		audioPositionWorkletPromise: null,
-		audioPositionWorkletPool: [],
 
 		/**
 		 * Converts linear volume to Db.

@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "承認済みすべて"
+
 msgid "New Code Region"
 msgstr "新しいコード領域"
 
@@ -74,14 +77,14 @@ msgstr "開く"
 msgid "Select Current Folder"
 msgstr "現在のフォルダーを選択"
 
+msgid "Save"
+msgstr "保存"
+
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "このフォルダーの内容にアクセスする権限がありません。"
-
-msgid "All Recognized"
-msgstr "承認済みすべて"
 
 msgid "All Files"
 msgstr "すべてのファイル"
@@ -97,9 +100,6 @@ msgstr "ディレクトリを開く"
 
 msgid "Open a File or Directory"
 msgstr "ファイルまたはディレクトリを開く"
-
-msgid "Save"
-msgstr "保存"
 
 msgid "Save a File"
 msgstr "ファイルを保存"

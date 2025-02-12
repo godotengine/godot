@@ -70,6 +70,11 @@ ext.getExportTargetSdkVersion = { ->
     }
 }
 
+ext.getGodotRenderingMethod = { ->
+    String renderingMethod = project.hasProperty("godot_rendering_method") ? project.property("godot_rendering_method") : ""
+    return renderingMethod
+}
+
 ext.getGodotEditorVersion = { ->
     String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
     if (editorVersion == null || editorVersion.isEmpty()) {

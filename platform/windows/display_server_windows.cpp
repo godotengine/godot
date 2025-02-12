@@ -3004,7 +3004,7 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	return OK;
 }
 
-Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -3015,6 +3015,20 @@ Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 
 	// Send a close message to gracefully close the process.
 	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
+
+	return OK;
+}
+
+Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	request_close_embedded_process(p_pid);
 
 	// This is a workaround to ensure the parent window correctly regains focus after the
 	// embedded window is closed. When the embedded window is closed while it has focus,
@@ -5887,7 +5901,9 @@ void DisplayServerWindows::_process_key_events() {
 					Ref<InputEventKey> k;
 					k.instantiate();
 
-					Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK));
+					UINT vk = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK);
+					bool is_oem = (vk >= 0xB8) && (vk <= 0xE6);
+					Key keycode = KeyMappingWindows::get_keysym(vk);
 					Key key_label = keycode;
 					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
@@ -5900,7 +5916,7 @@ void DisplayServerWindows::_process_key_events() {
 						if (!keysym.is_empty()) {
 							char32_t unicode_value = keysym[0];
 							// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
-							if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+							if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
 								keycode = fix_keycode(unicode_value, (Key)unicode_value);
 							}
 							key_label = fix_key_label(unicode_value, keycode);
@@ -5943,6 +5959,7 @@ void DisplayServerWindows::_process_key_events() {
 				k->set_window_id(ke.window_id);
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
+				bool is_oem = (ke.wParam >= 0xB8) && (ke.wParam <= 0xE6);
 				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
@@ -5961,7 +5978,7 @@ void DisplayServerWindows::_process_key_events() {
 					if (!keysym.is_empty()) {
 						char32_t unicode_value = keysym[0];
 						// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
-						if (Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+						if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
 							keycode = fix_keycode(unicode_value, (Key)unicode_value);
 						}
 						key_label = fix_key_label(unicode_value, keycode);

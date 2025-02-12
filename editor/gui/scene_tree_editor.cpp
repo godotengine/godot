@@ -1170,6 +1170,9 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 }
 
 void SceneTreeEditor::_reset() {
+	// Stop any waiting change to tooltip.
+	update_node_tooltip_delay->stop();
+
 	tree->clear();
 	node_cache.clear();
 }
@@ -1571,7 +1574,6 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 		undo_redo->add_undo_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_undo_method(item, "set_text", 0, p_node->get_name());
 
-		p_node->set_name(new_name);
 		undo_redo->add_do_method(p_node, "set_name", new_name);
 		undo_redo->add_do_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_do_method(item, "set_text", 0, new_name);

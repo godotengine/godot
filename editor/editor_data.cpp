@@ -1023,7 +1023,7 @@ String EditorData::script_class_get_icon_path(const String &p_class, bool *r_val
 			return String();
 		}
 		HashMap<StringName, String>::ConstIterator E = _script_class_icon_paths.find(current);
-		if ((bool)E) {
+		if ((bool)E && !E->value.is_empty()) {
 			if (r_valid) {
 				*r_valid = true;
 			}

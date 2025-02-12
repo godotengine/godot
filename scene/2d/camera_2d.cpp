@@ -300,6 +300,7 @@ void Camera2D::_notification(int p_what) {
 			// Force the limits etc. to update.
 			_interpolation_data.xform_curr = get_camera_transform();
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			_update_process_callback();
 		} break;
 
 		case NOTIFICATION_SUSPENDED:

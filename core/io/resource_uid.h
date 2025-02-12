@@ -37,6 +37,8 @@
 
 class FileAccess;
 
+typedef void (*ResourceUIDScanForUIDOnStartup)();
+
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
 public:
@@ -63,6 +65,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	inline static ResourceUIDScanForUIDOnStartup scan_for_uid_on_startup = nullptr;
+
 	String id_to_text(ID p_id) const;
 	ID text_to_id(const String &p_text) const;
 
