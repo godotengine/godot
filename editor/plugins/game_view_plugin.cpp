@@ -243,20 +243,29 @@ void GameView::_show_update_window_wrapper() {
 	Size2i size = floating_window_rect.size;
 	int screen = floating_window_screen;
 
-	Size2 wrapped_margins_size = window_wrapper->get_margins_size();
-	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
-	offset_embedded_process.x += embedded_process->get_margin_size(SIDE_LEFT);
-	offset_embedded_process.y += embedded_process->get_margin_size(SIDE_TOP);
-
 	// Obtain the size around the embedded process control. Usually, the difference between the game view's get_size
 	// and the embedded control should work. However, when the control is hidden and has never been displayed,
 	// the size of the embedded control is not calculated.
 	Size2 old_min_size = embedded_process->get_custom_minimum_size();
 	embedded_process->set_custom_minimum_size(Size2i());
-	Size2 min_size = get_minimum_size();
+
+	Size2 embedded_process_min_size = get_minimum_size();
+	Size2 wrapped_margins_size = window_wrapper->get_margins_size();
+	Size2 wrapped_min_size = window_wrapper->get_minimum_size();
+	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
+
+	// On the first startup, the global position of the embedded process control is invalid because it was
+	// never displayed. We will calculated it manually using the minimum size of the window.
+	if (offset_embedded_process == Point2()) {
+		offset_embedded_process.y = wrapped_min_size.y;
+	}
+	offset_embedded_process.x += embedded_process->get_margin_size(SIDE_LEFT);
+	offset_embedded_process.y += embedded_process->get_margin_size(SIDE_TOP);
+	offset_embedded_process += window_wrapper->get_margins_top_left();
+
 	embedded_process->set_custom_minimum_size(old_min_size);
 
-	Point2 size_diff_embedded_process = Point2(0, min_size.y) + embedded_process->get_margins_size();
+	Point2 size_diff_embedded_process = Point2(0, embedded_process_min_size.y) + embedded_process->get_margins_size();
 
 	if (placement.position != Point2i(INT_MAX, INT_MAX)) {
 		position = placement.position - offset_embedded_process;
@@ -786,8 +795,21 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Be sure to have the correct window size in the embedded_process control.
 	_update_embed_window_size();
-
 	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
+
+	// When using the floating window, we need to force the position and size from the
+	// editor/project settings, because the get_screen_embedded_window_rect of the
+	// embedded_process will be updated only on the next frame.
+	if (p_idx == 0 && window_wrapper->get_window_enabled()) {
+		EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
+		if (placement.position != Point2i(INT_MAX, INT_MAX)) {
+			rect.position = placement.position;
+		}
+		if (placement.size != Size2i()) {
+			rect.size = placement.size;
+		}
+	}
+
 	N = r_arguments.insert_after(N, "--position");
 	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
 	N = r_arguments.insert_after(N, "--resolution");
