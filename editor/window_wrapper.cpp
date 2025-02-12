@@ -338,6 +338,14 @@ Size2 WindowWrapper::get_margins_size() {
 	return Size2(margins->get_margin_size(SIDE_LEFT) + margins->get_margin_size(SIDE_RIGHT), margins->get_margin_size(SIDE_TOP) + margins->get_margin_size(SIDE_RIGHT));
 }
 
+Size2 WindowWrapper::get_margins_top_left() {
+	if (!margins) {
+		return Size2();
+	}
+
+	return Size2(margins->get_margin_size(SIDE_LEFT), margins->get_margin_size(SIDE_TOP));
+}
+
 void WindowWrapper::grab_window_focus() {
 	if (get_window_enabled() && is_visible()) {
 		window->grab_focus();
