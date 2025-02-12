@@ -1585,8 +1585,12 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 			continue; //ignore
 		}
 		String path = item->get_text(1);
+		String uid_path = path;
 		if (!path.is_resource_file()) {
 			continue;
+		}
+		if (path.begins_with("uid://")) {
+			path = ResourceUID::uid_to_path(uid_path);
 		}
 
 		String id = item->get_metadata(0);
@@ -1596,14 +1600,28 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 				ERR_CONTINUE(!material_map.has(id));
 				MaterialData &md = material_map[id];
 
+				if (!uid_path.begins_with("uid://")) {
+					if (FileAccess::exists(path)) {
+						uid_path = ResourceUID::path_to_uid(path);
+					}
+					if (uid_path.is_empty()) {
+						ResourceUID::ID new_id = ResourceUID::get_singleton()->create_id();
+						ResourceUID::get_singleton()->add_id(new_id, path);
+						uid_path = ResourceUID::get_singleton()->id_to_text(new_id);
+					}
+				}
+
 				Error err = ResourceSaver::save(md.material, path);
 				if (err != OK) {
 					EditorNode::get_singleton()->add_io_error(TTR("Can't make material external to file, write error:") + "\n\t" + path);
 					continue;
 				}
+				// slow
+				ResourceSaver::set_uid(path, ResourceUID::get_singleton()->text_to_id(uid_path));
 
 				md.settings["use_external/enabled"] = true;
-				md.settings["use_external/path"] = path;
+				md.settings["use_external/path"] = uid_path;
+				md.settings["use_external/fallback_path"] = path;
 
 			} break;
 			case ACTION_CHOOSE_MESH_SAVE_PATHS: {
@@ -1611,14 +1629,16 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 				MeshData &md = mesh_map[id];
 
 				md.settings["save_to_file/enabled"] = true;
-				md.settings["save_to_file/path"] = path;
+				md.settings["save_to_file/path"] = uid_path;
+				md.settings["save_to_file/fallback_path"] = path;
 			} break;
 			case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
 				ERR_CONTINUE(!animation_map.has(id));
 				AnimationData &ad = animation_map[id];
 
 				ad.settings["save_to_file/enabled"] = true;
-				ad.settings["save_to_file/path"] = path;
+				ad.settings["save_to_file/path"] = uid_path;
+				ad.settings["save_to_file/fallback_path"] = path;
 
 			} break;
 		}

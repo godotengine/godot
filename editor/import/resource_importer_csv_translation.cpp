@@ -142,13 +142,16 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 		}
 
 		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
+		ResourceUID::ID save_id = hash64_murmur3_64(translations[i]->get_locale().hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
+		if (ResourceUID::get_singleton()->has_id(save_id)) {
+			save_path = ResourceUID::get_singleton()->get_id_path(save_id);
+		}
 
 		ResourceSaver::save(xlt, save_path);
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}
 
-		ResourceUID::ID save_id = hash64_murmur3_64(translations[i]->get_locale().hash64(), p_source_id);
 		ResourceSaver::set_uid(save_path, save_id);
 	}
 
