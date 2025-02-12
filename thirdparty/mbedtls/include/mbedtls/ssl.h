@@ -1817,6 +1817,8 @@ struct mbedtls_ssl_context {
 
     size_t MBEDTLS_PRIVATE(in_hslen);            /*!< current handshake message length,
                                                     including the handshake header   */
+    unsigned char *MBEDTLS_PRIVATE(in_hshdr);    /*!< original handshake header start  */
+    size_t MBEDTLS_PRIVATE(in_hsfraglen);        /*!< accumulated hs fragments length  */
     int MBEDTLS_PRIVATE(nb_zero);                /*!< # of 0-length encrypted messages */
 
     int MBEDTLS_PRIVATE(keep_current_message);   /*!< drop or reuse current message

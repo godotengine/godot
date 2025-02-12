@@ -627,6 +627,7 @@ File extracted from upstream release tarball:
 Patches:
 
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
+- `0002-backport-pr-9872-defragment-incoming-tls-handshake-messages.patch` (GH-102764)
 
 
 ## meshoptimizer

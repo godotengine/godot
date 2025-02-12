@@ -1,0 +1,305 @@
+diff --git a/thirdparty/mbedtls/include/mbedtls/ssl.h b/thirdparty/mbedtls/include/mbedtls/ssl.h
+index 42fffbf860..26ea791208 100644
+--- a/thirdparty/mbedtls/include/mbedtls/ssl.h
++++ b/thirdparty/mbedtls/include/mbedtls/ssl.h
+@@ -1817,6 +1817,8 @@ struct mbedtls_ssl_context {
+ 
+     size_t MBEDTLS_PRIVATE(in_hslen);            /*!< current handshake message length,
+                                                     including the handshake header   */
++    unsigned char *MBEDTLS_PRIVATE(in_hshdr);    /*!< original handshake header start  */
++    size_t MBEDTLS_PRIVATE(in_hsfraglen);        /*!< accumulated hs fragments length  */
+     int MBEDTLS_PRIVATE(nb_zero);                /*!< # of 0-length encrypted messages */
+ 
+     int MBEDTLS_PRIVATE(keep_current_message);   /*!< drop or reuse current message
+diff --git a/thirdparty/mbedtls/library/ssl_misc.h b/thirdparty/mbedtls/library/ssl_misc.h
+index 98668798a8..bfadac7be3 100644
+--- a/thirdparty/mbedtls/library/ssl_misc.h
++++ b/thirdparty/mbedtls/library/ssl_misc.h
+@@ -1829,10 +1829,11 @@ void mbedtls_ssl_set_timer(mbedtls_ssl_context *ssl, uint32_t millisecs);
+ MBEDTLS_CHECK_RETURN_CRITICAL
+ int mbedtls_ssl_check_timer(mbedtls_ssl_context *ssl);
+ 
+-void mbedtls_ssl_reset_in_out_pointers(mbedtls_ssl_context *ssl);
++void mbedtls_ssl_reset_in_pointers(mbedtls_ssl_context *ssl);
++void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
++void mbedtls_ssl_reset_out_pointers(mbedtls_ssl_context *ssl);
+ void mbedtls_ssl_update_out_pointers(mbedtls_ssl_context *ssl,
+                                      mbedtls_ssl_transform *transform);
+-void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
+ 
+ MBEDTLS_CHECK_RETURN_CRITICAL
+ int mbedtls_ssl_session_reset_int(mbedtls_ssl_context *ssl, int partial);
+diff --git a/thirdparty/mbedtls/library/ssl_msg.c b/thirdparty/mbedtls/library/ssl_msg.c
+index ef722d7bdc..0638861be3 100644
+--- a/thirdparty/mbedtls/library/ssl_msg.c
++++ b/thirdparty/mbedtls/library/ssl_msg.c
+@@ -3220,13 +3220,18 @@ static uint32_t ssl_get_hs_total_len(mbedtls_ssl_context const *ssl)
+ 
+ int mbedtls_ssl_prepare_handshake_record(mbedtls_ssl_context *ssl)
+ {
+-    if (ssl->in_msglen < mbedtls_ssl_hs_hdr_len(ssl)) {
++    /* First handshake fragment must at least include the header. */
++    if (ssl->in_msglen < mbedtls_ssl_hs_hdr_len(ssl) && ssl->in_hslen == 0) {
+         MBEDTLS_SSL_DEBUG_MSG(1, ("handshake message too short: %" MBEDTLS_PRINTF_SIZET,
+                                   ssl->in_msglen));
+         return MBEDTLS_ERR_SSL_INVALID_RECORD;
+     }
+ 
+-    ssl->in_hslen = mbedtls_ssl_hs_hdr_len(ssl) + ssl_get_hs_total_len(ssl);
++    if (ssl->in_hslen == 0) {
++        ssl->in_hslen = mbedtls_ssl_hs_hdr_len(ssl) + ssl_get_hs_total_len(ssl);
++        ssl->in_hsfraglen = 0;
++        ssl->in_hshdr = ssl->in_hdr;
++    }
+ 
+     MBEDTLS_SSL_DEBUG_MSG(3, ("handshake message: msglen ="
+                               " %" MBEDTLS_PRINTF_SIZET ", type = %u, hslen = %"
+@@ -3292,10 +3297,61 @@ int mbedtls_ssl_prepare_handshake_record(mbedtls_ssl_context *ssl)
+         }
+     } else
+ #endif /* MBEDTLS_SSL_PROTO_DTLS */
+-    /* With TLS we don't handle fragmentation (for now) */
+-    if (ssl->in_msglen < ssl->in_hslen) {
+-        MBEDTLS_SSL_DEBUG_MSG(1, ("TLS handshake fragmentation not supported"));
+-        return MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE;
++    {
++        if (ssl->in_hsfraglen > ssl->in_hslen) {
++            return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
++        }
++        int ret;
++        const size_t hs_remain = ssl->in_hslen - ssl->in_hsfraglen;
++        MBEDTLS_SSL_DEBUG_MSG(3,
++                              ("handshake fragment: %" MBEDTLS_PRINTF_SIZET " .. %"
++                               MBEDTLS_PRINTF_SIZET " of %"
++                               MBEDTLS_PRINTF_SIZET " msglen %" MBEDTLS_PRINTF_SIZET,
++                               ssl->in_hsfraglen,
++                               ssl->in_hsfraglen +
++                               (hs_remain <= ssl->in_msglen ? hs_remain : ssl->in_msglen),
++                               ssl->in_hslen, ssl->in_msglen));
++        if (ssl->in_msglen < hs_remain) {
++            ssl->in_hsfraglen += ssl->in_msglen;
++            ssl->in_hdr = ssl->in_msg + ssl->in_msglen;
++            ssl->in_msglen = 0;
++            mbedtls_ssl_update_in_pointers(ssl);
++            return MBEDTLS_ERR_SSL_CONTINUE_PROCESSING;
++        }
++        if (ssl->in_hshdr != ssl->in_hdr) {
++            /*
++             * At ssl->in_hshdr we have a sequence of records that cover the next handshake
++             * record, each with its own record header that we need to remove.
++             * Note that the reassembled record size may not equal the size of the message,
++             * there maybe bytes from the next message following it.
++             */
++            size_t merged_rec_len = 0;
++            unsigned char *p = ssl->in_hshdr, *q = NULL;
++            do {
++                mbedtls_record rec;
++                ret = ssl_parse_record_header(ssl, p, mbedtls_ssl_in_hdr_len(ssl), &rec);
++                if (ret != 0) {
++                    return ret;
++                }
++                merged_rec_len += rec.data_len;
++                p = rec.buf + rec.buf_len;
++                if (q != NULL) {
++                    memmove(q, rec.buf + rec.data_offset, rec.data_len);
++                    q += rec.data_len;
++                } else {
++                    q = p;
++                }
++            } while (merged_rec_len < ssl->in_hslen);
++            ssl->in_hdr = ssl->in_hshdr;
++            mbedtls_ssl_update_in_pointers(ssl);
++            ssl->in_msglen = merged_rec_len;
++            /* Adjust message length. */
++            MBEDTLS_PUT_UINT16_BE(merged_rec_len, ssl->in_len, 0);
++            ssl->in_hsfraglen = 0;
++            ssl->in_hshdr = NULL;
++            MBEDTLS_SSL_DEBUG_BUF(4, "reassembled record",
++                                  ssl->in_hdr, mbedtls_ssl_in_hdr_len(ssl) + merged_rec_len);
++        }
+     }
+ 
+     return 0;
+@@ -4640,6 +4696,16 @@ static int ssl_consume_current_message(mbedtls_ssl_context *ssl)
+             return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+         }
+ 
++        if (ssl->in_hsfraglen != 0) {
++            /* Not all handshake fragments have arrived, do not consume. */
++            MBEDTLS_SSL_DEBUG_MSG(3,
++                                  ("waiting for more fragments (%" MBEDTLS_PRINTF_SIZET " of %"
++                                   MBEDTLS_PRINTF_SIZET ", %" MBEDTLS_PRINTF_SIZET " left)",
++                                   ssl->in_hsfraglen, ssl->in_hslen,
++                                   ssl->in_hslen - ssl->in_hsfraglen));
++            return 0;
++        }
++
+         /*
+          * Get next Handshake message in the current record
+          */
+@@ -4665,6 +4731,7 @@ static int ssl_consume_current_message(mbedtls_ssl_context *ssl)
+             ssl->in_msglen -= ssl->in_hslen;
+             memmove(ssl->in_msg, ssl->in_msg + ssl->in_hslen,
+                     ssl->in_msglen);
++            MBEDTLS_PUT_UINT16_BE(ssl->in_msglen, ssl->in_len, 0);
+ 
+             MBEDTLS_SSL_DEBUG_BUF(4, "remaining content in record",
+                                   ssl->in_msg, ssl->in_msglen);
+@@ -5345,7 +5412,7 @@ void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl)
+     } else
+ #endif
+     {
+-        ssl->in_ctr = ssl->in_hdr - MBEDTLS_SSL_SEQUENCE_NUMBER_LEN;
++        ssl->in_ctr = ssl->in_buf;
+         ssl->in_len = ssl->in_hdr + 3;
+ #if defined(MBEDTLS_SSL_DTLS_CONNECTION_ID)
+         ssl->in_cid = ssl->in_len;
+@@ -5361,24 +5428,35 @@ void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl)
+  * Setup an SSL context
+  */
+ 
+-void mbedtls_ssl_reset_in_out_pointers(mbedtls_ssl_context *ssl)
++void mbedtls_ssl_reset_in_pointers(mbedtls_ssl_context *ssl)
++{
++#if defined(MBEDTLS_SSL_PROTO_DTLS)
++    if (ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
++        ssl->in_hdr = ssl->in_buf;
++    } else
++#endif  /* MBEDTLS_SSL_PROTO_DTLS */
++    {
++        ssl->in_hdr = ssl->in_buf + MBEDTLS_SSL_SEQUENCE_NUMBER_LEN;
++    }
++
++    /* Derive other internal pointers. */
++    mbedtls_ssl_update_in_pointers(ssl);
++}
++
++void mbedtls_ssl_reset_out_pointers(mbedtls_ssl_context *ssl)
+ {
+     /* Set the incoming and outgoing record pointers. */
+ #if defined(MBEDTLS_SSL_PROTO_DTLS)
+     if (ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
+         ssl->out_hdr = ssl->out_buf;
+-        ssl->in_hdr  = ssl->in_buf;
+     } else
+ #endif /* MBEDTLS_SSL_PROTO_DTLS */
+     {
+         ssl->out_ctr = ssl->out_buf;
+-        ssl->out_hdr = ssl->out_buf + 8;
+-        ssl->in_hdr  = ssl->in_buf  + 8;
++        ssl->out_hdr = ssl->out_buf + MBEDTLS_SSL_SEQUENCE_NUMBER_LEN;
+     }
+-
+     /* Derive other internal pointers. */
+     mbedtls_ssl_update_out_pointers(ssl, NULL /* no transform enabled */);
+-    mbedtls_ssl_update_in_pointers(ssl);
+ }
+ 
+ /*
+diff --git a/thirdparty/mbedtls/library/ssl_tls.c b/thirdparty/mbedtls/library/ssl_tls.c
+index c773365bf6..f7554d202d 100644
+--- a/thirdparty/mbedtls/library/ssl_tls.c
++++ b/thirdparty/mbedtls/library/ssl_tls.c
+@@ -344,12 +344,17 @@ static void handle_buffer_resizing(mbedtls_ssl_context *ssl, int downsizing,
+                                    size_t out_buf_new_len)
+ {
+     int modified = 0;
+-    size_t written_in = 0, iv_offset_in = 0, len_offset_in = 0;
++    size_t written_in = 0, iv_offset_in = 0, len_offset_in = 0, hdr_in = 0;
+     size_t written_out = 0, iv_offset_out = 0, len_offset_out = 0;
++    size_t hshdr_in = 0;
+     if (ssl->in_buf != NULL) {
+         written_in = ssl->in_msg - ssl->in_buf;
+         iv_offset_in = ssl->in_iv - ssl->in_buf;
+         len_offset_in = ssl->in_len - ssl->in_buf;
++        hdr_in = ssl->in_hdr - ssl->in_buf;
++        if (ssl->in_hshdr != NULL) {
++            hshdr_in = ssl->in_hshdr - ssl->in_buf;
++        }
+         if (downsizing ?
+             ssl->in_buf_len > in_buf_new_len && ssl->in_left < in_buf_new_len :
+             ssl->in_buf_len < in_buf_new_len) {
+@@ -381,7 +386,10 @@ static void handle_buffer_resizing(mbedtls_ssl_context *ssl, int downsizing,
+     }
+     if (modified) {
+         /* Update pointers here to avoid doing it twice. */
+-        mbedtls_ssl_reset_in_out_pointers(ssl);
++        ssl->in_hdr = ssl->in_buf + hdr_in;
++        mbedtls_ssl_update_in_pointers(ssl);
++        mbedtls_ssl_reset_out_pointers(ssl);
++
+         /* Fields below might not be properly updated with record
+          * splitting or with CID, so they are manually updated here. */
+         ssl->out_msg = ssl->out_buf + written_out;
+@@ -391,6 +399,9 @@ static void handle_buffer_resizing(mbedtls_ssl_context *ssl, int downsizing,
+         ssl->in_msg = ssl->in_buf + written_in;
+         ssl->in_len = ssl->in_buf + len_offset_in;
+         ssl->in_iv = ssl->in_buf + iv_offset_in;
++        if (ssl->in_hshdr != NULL) {
++            ssl->in_hshdr = ssl->in_buf + hshdr_in;
++        }
+     }
+ }
+ #endif /* MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH */
+@@ -1409,7 +1420,8 @@ int mbedtls_ssl_setup(mbedtls_ssl_context *ssl,
+         goto error;
+     }
+ 
+-    mbedtls_ssl_reset_in_out_pointers(ssl);
++    mbedtls_ssl_reset_in_pointers(ssl);
++    mbedtls_ssl_reset_out_pointers(ssl);
+ 
+ #if defined(MBEDTLS_SSL_DTLS_SRTP)
+     memset(&ssl->dtls_srtp_info, 0, sizeof(ssl->dtls_srtp_info));
+@@ -1474,7 +1486,8 @@ void mbedtls_ssl_session_reset_msg_layer(mbedtls_ssl_context *ssl,
+     /* Cancel any possibly running timer */
+     mbedtls_ssl_set_timer(ssl, 0);
+ 
+-    mbedtls_ssl_reset_in_out_pointers(ssl);
++    mbedtls_ssl_reset_in_pointers(ssl);
++    mbedtls_ssl_reset_out_pointers(ssl);
+ 
+     /* Reset incoming message parsing */
+     ssl->in_offt    = NULL;
+@@ -1484,6 +1497,8 @@ void mbedtls_ssl_session_reset_msg_layer(mbedtls_ssl_context *ssl,
+     ssl->in_hslen   = 0;
+     ssl->keep_current_message = 0;
+     ssl->transform_in  = NULL;
++    ssl->in_hshdr = NULL;
++    ssl->in_hsfraglen = 0;
+ 
+ #if defined(MBEDTLS_SSL_PROTO_DTLS)
+     ssl->next_record_offset = 0;
+diff --git a/thirdparty/mbedtls/library/ssl_tls12_server.c b/thirdparty/mbedtls/library/ssl_tls12_server.c
+index 03722ac33c..67df4284a4 100644
+--- a/thirdparty/mbedtls/library/ssl_tls12_server.c
++++ b/thirdparty/mbedtls/library/ssl_tls12_server.c
+@@ -1057,28 +1057,6 @@ read_record_header:
+         MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message"));
+         return MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;
+     }
+-    {
+-        size_t handshake_len = MBEDTLS_GET_UINT24_BE(buf, 1);
+-        MBEDTLS_SSL_DEBUG_MSG(3, ("client hello v3, handshake len.: %u",
+-                                  (unsigned) handshake_len));
+-
+-        /* The record layer has a record size limit of 2^14 - 1 and
+-         * fragmentation is not supported, so buf[1] should be zero. */
+-        if (buf[1] != 0) {
+-            MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message: %u != 0",
+-                                      (unsigned) buf[1]));
+-            return MBEDTLS_ERR_SSL_DECODE_ERROR;
+-        }
+-
+-        /* We don't support fragmentation of ClientHello (yet?) */
+-        if (msg_len != mbedtls_ssl_hs_hdr_len(ssl) + handshake_len) {
+-            MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message: %u != %u + %u",
+-                                      (unsigned) msg_len,
+-                                      (unsigned) mbedtls_ssl_hs_hdr_len(ssl),
+-                                      (unsigned) handshake_len));
+-            return MBEDTLS_ERR_SSL_DECODE_ERROR;
+-        }
+-    }
+ 
+ #if defined(MBEDTLS_SSL_PROTO_DTLS)
+     if (ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
