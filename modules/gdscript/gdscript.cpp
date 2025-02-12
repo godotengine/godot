@@ -3066,6 +3066,62 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 	}
 }
 
+void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<GDScript> scr = ResourceLoader::load(p_path);
+	if (scr.is_null()) {
+		return;
+	}
+
+	const String source = scr->get_source_code();
+	GDScriptTokenizerText tokenizer;
+	tokenizer.set_source_code(source);
+	GDScriptTokenizer::Token current = tokenizer.scan();
+	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
+		if (!current.is_identifier()) {
+			current = tokenizer.scan();
+			continue;
+		}
+
+		int insert_idx = 0;
+		for (int i = 0; i < current.start_line - 1; i++) {
+			insert_idx = source.find("\n", insert_idx) + 1;
+		}
+		// Insert the "cursor" character, needed for the lookup to work.
+		const String source_with_cursor = source.insert(insert_idx + current.start_column, String::chr(0xFFFF));
+
+		ScriptLanguage::LookupResult result;
+		if (scr->get_language()->lookup_code(source_with_cursor, current.get_identifier(), p_path, nullptr, result) == OK) {
+			if (!result.class_name.is_empty() && ClassDB::class_exists(result.class_name)) {
+				r_classes->insert(result.class_name);
+			}
+
+			if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY) {
+				PropertyInfo prop;
+				if (ClassDB::get_property_info(result.class_name, result.class_member, &prop)) {
+					if (!prop.class_name.is_empty() && ClassDB::class_exists(prop.class_name)) {
+						r_classes->insert(prop.class_name);
+					}
+					if (!prop.hint_string.is_empty() && ClassDB::class_exists(prop.hint_string)) {
+						r_classes->insert(prop.hint_string);
+					}
+				}
+			} else if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD) {
+				MethodInfo met;
+				if (ClassDB::get_method_info(result.class_name, result.class_member, &met)) {
+					if (!met.return_val.class_name.is_empty() && ClassDB::class_exists(met.return_val.class_name)) {
+						r_classes->insert(met.return_val.class_name);
+					}
+					if (!met.return_val.hint_string.is_empty() && ClassDB::class_exists(met.return_val.hint_string)) {
+						r_classes->insert(met.return_val.hint_string);
+					}
+				}
+			}
+		}
+
+		current = tokenizer.scan();
+	}
+}
+
 Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<GDScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
