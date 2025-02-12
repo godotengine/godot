@@ -198,6 +198,19 @@ static const DataCollectionInfo data_collect_purpose_info[] = {
 	{ "Other", "NSPrivacyCollectedDataTypePurposeOther" },
 };
 
+static const String export_method_string[] = {
+	"app-store",
+	"development",
+	"ad-hoc",
+	"enterprise"
+};
+static const String storyboard_image_scale_mode[] = {
+	"center",
+	"scaleAspectFit",
+	"scaleAspectFill",
+	"scaleToFill"
+};
+
 String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/app_store_team_id") {
@@ -402,19 +415,28 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
 }
 
+HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
+	HashMap<String, Variant> settings;
+
+	int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
+	String value;
+
+	switch (image_scale_mode) {
+		case 0: {
+			String logo_path = GLOBAL_GET("application/boot_splash/image");
+			bool is_on = GLOBAL_GET("application/boot_splash/fullsize");
+			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+			value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+		} break;
+		default: {
+			value = storyboard_image_scale_mode[image_scale_mode - 1];
+		}
+	}
+	settings["ios/launch_screen_image_mode"] = value;
+	return settings;
+}
+
 void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug) {
-	static const String export_method_string[] = {
-		"app-store",
-		"development",
-		"ad-hoc",
-		"enterprise"
-	};
-	static const String storyboard_image_scale_mode[] = {
-		"center",
-		"scaleAspectFit",
-		"scaleAspectFill",
-		"scaleToFill"
-	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
 	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
