@@ -6173,6 +6173,15 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		wd.parent_hwnd = p_parent_hwnd;
 
+		// Detach the input queue from the parent window.
+		// This prevents the embedded window from waiting on the main window's input queue,
+		// causing lags input lags when resizing or moving the main window.
+		if (p_parent_hwnd) {
+			DWORD mainThreadId = GetWindowThreadProcessId(owner_hwnd, nullptr);
+			DWORD embeddedThreadId = GetCurrentThreadId();
+			AttachThreadInput(embeddedThreadId, mainThreadId, FALSE);
+		}
+
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			wd.fullscreen = true;
 			if (p_mode == WINDOW_MODE_FULLSCREEN) {
