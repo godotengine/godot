@@ -2734,6 +2734,14 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 	}
 
 	const String searched_string = p_text.to_lower();
+	if (searched_string.begins_with("uid://")) {
+		ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(searched_string);
+		if (id != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(id)) {
+			navigate_to_path(ResourceUID::get_singleton()->get_id_path(id));
+			return;
+		}
+	}
+
 	searched_tokens = searched_string.split(" ", false);
 
 	if (p_from == tree_search_box) {
