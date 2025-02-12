@@ -4465,6 +4465,14 @@ void EditorInspector::_node_removed(Node *p_node) {
 	}
 }
 
+void EditorInspector::_gui_focus_changed(Control *p_control) {
+	if (!is_visible_in_tree() && !is_following_focus()) {
+		return;
+	}
+	// Don't follow focus when the inspector nor any of its children is focused. Prevents potential jumping when gaining focus.
+	set_follow_focus(has_focus() || child_has_focus());
+}
+
 void EditorInspector::_update_current_favorites() {
 	current_favorites.clear();
 	if (!can_favorite) {
@@ -4662,6 +4670,10 @@ void EditorInspector::_notification(int p_what) {
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
+
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_NULL(viewport);
+			viewport->connect("gui_focus_changed", callable_mp(this, &EditorInspector::_gui_focus_changed));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -4743,15 +4755,6 @@ void EditorInspector::_notification(int p_what) {
 			if (needs_update) {
 				update_tree();
 			}
-		} break;
-
-		case NOTIFICATION_FOCUS_ENTER: {
-			set_follow_focus(true);
-		} break;
-
-		case NOTIFICATION_FOCUS_EXIT: {
-			// Don't follow focus when the inspector is not focused. Prevents potential jumping when gaining focus.
-			set_follow_focus(false);
 		} break;
 	}
 }
