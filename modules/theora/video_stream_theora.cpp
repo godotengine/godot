@@ -61,29 +61,20 @@ int VideoStreamPlaybackTheora::queue_page(ogg_page *page) {
 }
 
 void VideoStreamPlaybackTheora::video_write(th_ycbcr_buffer yuv) {
-	int pitch = 4;
-	frame_data.resize(size.x * size.y * pitch);
-	{
-		uint8_t *w = frame_data.ptrw();
-		char *dst = (char *)w;
+	uint8_t *w = frame_data.ptrw();
+	char *dst = (char *)w;
+	uint32_t y_offset = region.position.y * yuv[0].stride + region.position.x;
+	uint32_t uv_offset = region.position.y * yuv[1].stride + region.position.x;
 
-		if (px_fmt == TH_PF_444) {
-			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
-
-		} else if (px_fmt == TH_PF_422) {
-			yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
-
-		} else if (px_fmt == TH_PF_420) {
-			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
-		}
-
-		format = Image::FORMAT_RGBA8;
+	if (px_fmt == TH_PF_444) {
+		yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+	} else if (px_fmt == TH_PF_422) {
+		yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
+	} else if (px_fmt == TH_PF_420) {
+		yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
 	}
 
-	Ref<Image> img = memnew(Image(size.x, size.y, false, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
-	if (region.size.x != size.x || region.size.y != size.y) {
-		img = img->get_region(region);
-	}
+	Ref<Image> img = memnew(Image(region.size.x, region.size.y, false, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
 	texture->update(img); //zero copy send to rendering server
 }
@@ -296,6 +287,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 		Ref<Image> img = Image::create_empty(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
 		texture->set_image(img);
+		frame_data.resize(region.size.x * region.size.y * 4);
 
 		frame_duration = (double)ti.fps_denominator / ti.fps_numerator;
 	} else {
