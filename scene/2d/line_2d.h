@@ -115,6 +115,16 @@ public:
 	void set_antialiased(bool p_antialiased);
 	bool get_antialiased() const;
 
+	/* --- New dashed/dotted line properties --- */
+	void set_dashed(bool p_dashed);
+	bool is_dashed() const;
+
+	void set_dash_length(float p_length);
+	float get_dash_length() const;
+
+	void set_gap_length(float p_gap);
+	float get_gap_length() const;
+
 protected:
 	void _notification(int p_what);
 	void _draw();
@@ -124,6 +134,9 @@ protected:
 private:
 	void _gradient_changed();
 	void _curve_changed();
+
+	/* Helper to compute dashed segments from the polyline */
+	Vector<Vector<Vector2>> _compute_dashed_segments(const Vector<Vector2> &points, bool closed, float dash_length, float gap_length) const;
 
 private:
 	Vector<Vector2> _points;
@@ -140,9 +153,13 @@ private:
 	float _sharp_limit = 2.f;
 	int _round_precision = 8;
 	bool _antialiased = false;
+
+	/* New dashed/dotted properties */
+	bool _dashed = false;
+	float _dash_length = 10.0;
+	float _gap_length = 5.0;
 };
 
-// Needed so we can bind functions
 VARIANT_ENUM_CAST(Line2D::LineJointMode)
 VARIANT_ENUM_CAST(Line2D::LineCapMode)
 VARIANT_ENUM_CAST(Line2D::LineTextureMode)
