@@ -1480,7 +1480,7 @@
 			The expansion ratio to use during pseudolocalization. A value of [code]0.3[/code] is sufficient for most practical purposes, and will increase the length of each string by 30%.
 		</member>
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
+			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew. See also [member internationalization/rendering/force_right_to_left_layout_direction].
 		</member>
 		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
 			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
@@ -1502,7 +1502,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
-			Force layout direction and text writing direction to RTL for all controls.
+			Force layout direction and text writing direction to RTL for all controls, even if the current locale is intended to use a left-to-right layout and text writing direction. This should be enabled for testing purposes only. See also [member internationalization/pseudolocalization/fake_bidi].
 		</member>
 		<member name="internationalization/rendering/root_node_auto_translate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], root node will use [constant Node.AUTO_TRANSLATE_MODE_ALWAYS], otherwise [constant Node.AUTO_TRANSLATE_MODE_DISABLED] will be used.
