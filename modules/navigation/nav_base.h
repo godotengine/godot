@@ -52,16 +52,16 @@ public:
 	virtual void set_use_edge_connections(bool p_enabled) {}
 	virtual bool get_use_edge_connections() const { return false; }
 
-	void set_navigation_layers(uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) {}
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-	void set_enter_cost(real_t p_enter_cost) { enter_cost = MAX(p_enter_cost, 0.0); }
+	virtual void set_enter_cost(real_t p_enter_cost) {}
 	real_t get_enter_cost() const { return enter_cost; }
 
-	void set_travel_cost(real_t p_travel_cost) { travel_cost = MAX(p_travel_cost, 0.0); }
+	virtual void set_travel_cost(real_t p_travel_cost) {}
 	real_t get_travel_cost() const { return travel_cost; }
 
-	void set_owner_id(ObjectID p_owner_id) { owner_id = p_owner_id; }
+	virtual void set_owner_id(ObjectID p_owner_id) {}
 	ObjectID get_owner_id() const { return owner_id; }
 
 	virtual ~NavBase() {}

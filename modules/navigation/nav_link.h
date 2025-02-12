@@ -86,6 +86,12 @@ public:
 		return end_position;
 	}
 
+	// NavBase properties.
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+	virtual void set_enter_cost(real_t p_enter_cost) override;
+	virtual void set_travel_cost(real_t p_travel_cost) override;
+	virtual void set_owner_id(ObjectID p_owner_id) override;
+
 	bool is_dirty() const;
 	void sync();
 	void request_sync();

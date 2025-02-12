@@ -141,10 +141,54 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 	return NavMeshQueries3D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
 }
 
+void NavRegion::set_navigation_layers(uint32_t p_navigation_layers) {
+	if (navigation_layers == p_navigation_layers) {
+		return;
+	}
+	navigation_layers = p_navigation_layers;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_enter_cost(real_t p_enter_cost) {
+	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
+	if (enter_cost == new_enter_cost) {
+		return;
+	}
+	enter_cost = new_enter_cost;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_travel_cost(real_t p_travel_cost) {
+	real_t new_travel_cost = MAX(p_travel_cost, 0.0);
+	if (travel_cost == new_travel_cost) {
+		return;
+	}
+	travel_cost = new_travel_cost;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_owner_id(ObjectID p_owner_id) {
+	if (owner_id == p_owner_id) {
+		return;
+	}
+	owner_id = p_owner_id;
+	region_dirty = true;
+
+	request_sync();
+}
+
 bool NavRegion::sync() {
 	RWLockWrite write_lock(region_rwlock);
 
-	bool something_changed = polygons_dirty /* || something_dirty? */;
+	bool something_changed = region_dirty || polygons_dirty;
+
+	region_dirty = false;
 
 	update_polygons();
 
