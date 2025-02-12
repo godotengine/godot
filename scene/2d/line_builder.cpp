@@ -112,6 +112,11 @@ void LineBuilder::build() {
 		}
 	}
 
+	if (Math::is_zero_approx(total_distance)) {
+		// Zero-length line, nothing to build.
+		return;
+	}
+
 	if (_interpolate_color) {
 		color0 = gradient->get_color(0);
 	} else {
