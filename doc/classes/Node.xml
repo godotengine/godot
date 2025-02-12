@@ -412,9 +412,9 @@
 		<method name="is_physics_interpolated_and_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if physics interpolation is enabled (see [member physics_interpolation_mode]) [b]and[/b] enabled in the [SceneTree].
+				Returns [code]true[/code] if physics interpolation is enabled (see [member physics_interpolation_mode]) on the Node [b]and[/b] enabled globally.
 				This is a convenience version of [method is_physics_interpolated] that also checks whether physics interpolation is enabled globally.
-				See [member SceneTree.physics_interpolation] and [member ProjectSettings.physics/common/physics_interpolation].
+				See [member ProjectSettings.physics/common/physics_interpolation].
 			</description>
 		</method>
 		<method name="is_physics_processing" qualifiers="const">
