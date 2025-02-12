@@ -41,6 +41,8 @@ public:
 
 	// Used by the shader baker to globally enable features on all the shaders that will be exported.
 	virtual void enable_features(BitField<FeatureBits> p_feature_bits) = 0;
+
+	virtual ~RenderingShaderLibrary() {}
 };
 
 #endif // RENDERING_SHADER_LIBRARY_H
