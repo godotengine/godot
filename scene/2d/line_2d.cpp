@@ -299,6 +299,9 @@ void Line2D::_draw() {
 	}
 
 	lb.build();
+	if (lb.indices.is_empty()) {
+		return;
+	}
 
 	RS::get_singleton()->canvas_item_add_triangle_array(
 			get_canvas_item(),
