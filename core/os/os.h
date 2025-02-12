@@ -320,6 +320,7 @@ public:
 	virtual String get_unique_id() const;
 
 	bool has_feature(const String &p_feature);
+	bool has_native_feature(const String &p_feature);
 
 	virtual bool is_sandboxed() const;
 

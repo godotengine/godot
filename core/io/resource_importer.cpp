@@ -66,6 +66,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	int lines = 0;
 	String error_text;
 	bool path_found = false; //first match must have priority
+	LocalVector<Pair<String, String>> format_paths;
+
 	while (true) {
 		assign = Variant();
 		next_tag.fields.clear();
@@ -80,13 +82,9 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		}
 
 		if (!assign.is_empty()) {
-			if (!path_found && assign.begins_with("path.") && r_path_and_type.path.is_empty()) {
+			if (!path_found && assign.begins_with("path.")) {
 				String feature = assign.get_slicec('.', 1);
-				if (OS::get_singleton()->has_feature(feature)) {
-					r_path_and_type.path = value;
-					path_found = true; //first match must have priority
-				}
-
+				format_paths.push_back(Pair<String, String>(feature, value));
 			} else if (!path_found && assign == "path") {
 				r_path_and_type.path = value;
 				path_found = true; //first match must have priority
@@ -108,6 +106,39 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 		} else if (next_tag.name != "remap") {
 			break;
+		}
+	}
+
+	if (!path_found && format_paths.size() > 0) {
+		// Check for natively supported features first.
+		for (uint32_t i = 0; i < format_paths.size(); i++) {
+			if (OS::get_singleton()->has_native_feature(format_paths[i].first)) {
+				r_path_and_type.path = format_paths[i].second;
+				path_found = true;
+				break;
+			}
+		}
+
+		if (!path_found) {
+			// If not found, check for custom features.
+			for (uint32_t i = 0; i < format_paths.size(); i++) {
+				if (ProjectSettings::get_singleton()->has_custom_feature(format_paths[i].first)) {
+					r_path_and_type.path = format_paths[i].second;
+					path_found = true;
+					break;
+				}
+			}
+		}
+
+		if (!path_found) {
+			// If not found, load the first existing one as a fallback.
+			for (uint32_t i = 0; i < format_paths.size(); i++) {
+				if (FileAccess::exists(format_paths[i].second)) {
+					r_path_and_type.path = format_paths[i].second;
+					path_found = true;
+					break;
+				}
+			}
 		}
 	}
 

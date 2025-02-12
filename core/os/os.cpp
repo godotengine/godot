@@ -420,6 +420,10 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 }
 
 bool OS::has_feature(const String &p_feature) {
+	return has_native_feature(p_feature) || ProjectSettings::get_singleton()->has_custom_feature(p_feature);
+}
+
+bool OS::has_native_feature(const String &p_feature) {
 	// Feature tags are always lowercase for consistency.
 	if (p_feature == get_identifier()) {
 		return true;
@@ -581,10 +585,6 @@ bool OS::has_feature(const String &p_feature) {
 	}
 
 	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
-		return true;
-	}
-
-	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature)) {
 		return true;
 	}
 
