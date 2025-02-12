@@ -226,6 +226,7 @@ private:
 	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
 	Variant _call_group_flags(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _call_group(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void _find_and_show_hidden_nodes(Node *p_node, LocalVector<Node *> &r_hidden_nodes) const;
 
 	void _flush_delete_queue();
 	//optimization
