@@ -41,9 +41,11 @@
 #include "core/variant_parser.h"
 #include "main/input_default.h"
 #include "node.h"
+#include "scene/2d/canvas_item.h"
 #include "scene/animation/scene_tree_tween.h"
 #include "scene/debugger/script_debugger_remote.h"
 #include "scene/gui/shortcut.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -525,6 +527,32 @@ void SceneTree::init() {
 	MainLoop::init();
 }
 
+void SceneTree::_find_and_show_hidden_nodes(Node *p_node, LocalVector<Node *> &r_hidden_nodes) const {
+#ifndef _3D_DISABLED
+	Spatial *spatial = Object::cast_to<Spatial>(p_node);
+	if (spatial && !spatial->is_visible()) {
+		r_hidden_nodes.push_back(p_node);
+		spatial->set_visible(true);
+	}
+#endif
+
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci && !ci->is_visible()) {
+		r_hidden_nodes.push_back(p_node);
+		ci->set_visible(true);
+	}
+
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+	if (cl && !cl->is_visible()) {
+		r_hidden_nodes.push_back(p_node);
+		cl->set_visible(true);
+	}
+
+	for (int n = 0; n < p_node->get_child_count(); n++) {
+		_find_and_show_hidden_nodes(p_node->get_child(n), r_hidden_nodes);
+	}
+}
+
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	// disallow interpolation in editor
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -539,8 +567,35 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	VisualServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
 
 	// Perform an auto reset on the root node for convenience for the user.
-	if (root) {
+	if (root && _physics_interpolation_enabled) {
+		// Special case - in order to ensure even hidden nodes are reset,
+		// we unhide them temporarily.
+		LocalVector<Node *> hidden_nodes;
+		_find_and_show_hidden_nodes(root, hidden_nodes);
+
 		root->reset_physics_interpolation();
+
+		// Rehide.
+		for (uint32_t n = 0; n < hidden_nodes.size(); n++) {
+			Node *node = hidden_nodes[n];
+
+#ifndef _3D_DISABLED
+			Spatial *spatial = Object::cast_to<Spatial>(node);
+			if (spatial) {
+				spatial->set_visible(false);
+			}
+#endif
+
+			CanvasItem *ci = Object::cast_to<CanvasItem>(node);
+			if (ci) {
+				ci->set_visible(false);
+			}
+
+			CanvasLayer *cl = Object::cast_to<CanvasLayer>(node);
+			if (cl) {
+				cl->set_visible(false);
+			}
+		}
 	}
 }
 
