@@ -5631,7 +5631,7 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 	}
 
 	for (int i = 0; i < col; i++) {
-		const int col_w = get_column_width(i) + theme_cache.h_separation;
+		const int col_w = get_column_width(i);
 		pos.x -= col_w;
 		x_limit -= col_w;
 	}
