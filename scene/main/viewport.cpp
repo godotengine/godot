@@ -1002,10 +1002,10 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated) {
+bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
-		Size2 scale = Size2(p_size) / Size2(p_size_2d_override);
+		Size2 scale = Size2(p_size) / p_size_2d_override;
 		stretch_transform_new.scale(scale);
 	}
 
@@ -1074,7 +1074,7 @@ Size2i Viewport::_get_size() const {
 	return size;
 }
 
-Size2i Viewport::_get_size_2d_override() const {
+Size2 Viewport::_get_size_2d_override() const {
 	return size_2d_override;
 }
 
@@ -1092,7 +1092,7 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_2d_override != Size2i()) {
+	if (size_2d_override != Size2()) {
 		r.size = size_2d_override;
 	}
 
@@ -5218,12 +5218,15 @@ Size2i SubViewport::get_size() const {
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
-	_set_size(_get_size(), p_size, true);
+	_set_size(_get_size(), Size2(p_size), true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
-	return _get_size_2d_override();
+	// This rounding of course will cause offset issues with the
+	// exact positioning and sizing of subwindows, but changing the type
+	// of size_2d_override will cause compatibility breakage.
+	return Size2i(_get_size_2d_override().round());
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {
