@@ -137,8 +137,10 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
-	resource_format_po.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_po);
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		resource_format_po.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_po);
+	}
 
 	resource_saver_binary.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
@@ -151,8 +153,10 @@ void register_core_types() {
 	resource_format_importer_saver.instantiate();
 	ResourceSaver::add_resource_format_saver(resource_format_importer_saver);
 
-	resource_format_image.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_image);
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		resource_format_image.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_image);
+	}
 
 	GDREGISTER_CLASS(Object);
 
@@ -219,16 +223,21 @@ void register_core_types() {
 	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
 	ClassDB::register_custom_instance_class<DTLSServer>();
 
-	resource_format_saver_crypto.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
-	resource_format_loader_crypto.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		resource_format_saver_crypto.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
 
-	resource_loader_json.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_json);
+		resource_format_loader_crypto.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+	}
 
-	resource_saver_json.instantiate();
-	ResourceSaver::add_resource_format_saver(resource_saver_json);
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		resource_saver_json.instantiate();
+		ResourceSaver::add_resource_format_saver(resource_saver_json);
+
+		resource_loader_json.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_json);
+	}
 
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -277,8 +286,10 @@ void register_core_types() {
 
 	gdextension_manager = memnew(GDExtensionManager);
 
-	resource_loader_gdextension.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		resource_loader_gdextension.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_gdextension);
+	}
 
 	ip = IP::create();
 
@@ -409,8 +420,10 @@ void unregister_core_types() {
 		memdelete(ip);
 	}
 
-	ResourceLoader::remove_resource_format_loader(resource_format_image);
-	resource_format_image.unref();
+	if (GD_IS_CLASS_ENABLED(Image)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_image);
+		resource_format_image.unref();
+	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_binary);
 	resource_saver_binary.unref();
@@ -424,22 +437,31 @@ void unregister_core_types() {
 	ResourceSaver::remove_resource_format_saver(resource_format_importer_saver);
 	resource_format_importer_saver.unref();
 
-	ResourceLoader::remove_resource_format_loader(resource_format_po);
-	resource_format_po.unref();
+	if (GD_IS_CLASS_ENABLED(Translation)) {
+		ResourceLoader::remove_resource_format_loader(resource_format_po);
+		resource_format_po.unref();
+	}
 
-	ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
-	resource_format_saver_crypto.unref();
-	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
-	resource_format_loader_crypto.unref();
+	if (GD_IS_CLASS_ENABLED(Crypto)) {
+		ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
+		resource_format_saver_crypto.unref();
 
-	ResourceSaver::remove_resource_format_saver(resource_saver_json);
-	resource_saver_json.unref();
+		ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
+		resource_format_loader_crypto.unref();
+	}
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_json);
-	resource_loader_json.unref();
+	if (GD_IS_CLASS_ENABLED(JSON)) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_json);
+		resource_saver_json.unref();
 
-	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
-	resource_loader_gdextension.unref();
+		ResourceLoader::remove_resource_format_loader(resource_loader_json);
+		resource_loader_json.unref();
+	}
+
+	if (GD_IS_CLASS_ENABLED(GDExtension)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
+		resource_loader_gdextension.unref();
+	}
 
 	ResourceLoader::finalize();
 
