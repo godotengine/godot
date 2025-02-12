@@ -136,7 +136,6 @@ RenderingDevice *RenderingDevice::get_singleton() {
 }
 
 RenderingDevice::ShaderCompileToSPIRVFunction RenderingDevice::compile_to_spirv_function = nullptr;
-RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
 
 /***************************/
 /**** ID INFRASTRUCTURE ****/
@@ -194,18 +193,7 @@ void RenderingDevice::shader_set_compile_to_spirv_function(ShaderCompileToSPIRVF
 	compile_to_spirv_function = p_function;
 }
 
-void RenderingDevice::shader_set_spirv_cache_function(ShaderCacheFunction p_function) {
-	cache_function = p_function;
-}
-
 Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
-	if (p_allow_cache && cache_function) {
-		Vector<uint8_t> cache = cache_function(p_stage, p_source_code, p_language);
-		if (cache.size()) {
-			return cache;
-		}
-	}
-
 	ERR_FAIL_NULL_V(compile_to_spirv_function, Vector<uint8_t>());
 
 	ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();

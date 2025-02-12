@@ -70,13 +70,11 @@ public:
 	typedef int64_t ComputeListID;
 
 	typedef Vector<uint8_t> (*ShaderCompileToSPIRVFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, ShaderLanguageVersion p_language_version, ShaderSpirvVersion p_spirv_version, String *r_error);
-	typedef Vector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
 
 	typedef void (*InvalidationCallback)(void *);
 
 private:
 	static ShaderCompileToSPIRVFunction compile_to_spirv_function;
-	static ShaderCacheFunction cache_function;
 
 	static RenderingDevice *singleton;
 
@@ -904,7 +902,6 @@ public:
 	Vector<uint8_t> shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = nullptr, bool p_allow_cache = true);
 
 	static void shader_set_compile_to_spirv_function(ShaderCompileToSPIRVFunction p_function);
-	static void shader_set_spirv_cache_function(ShaderCacheFunction p_function);
 
 	Vector<uint8_t> shader_compile_binary_from_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, const String &p_shader_name = "");
 
