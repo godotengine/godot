@@ -685,8 +685,14 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			if (success) {
 				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to serialize delegate\n");
+			} else {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					OS::get_singleton()->print("Failed to serialize delegate.\n");
+				}
+
+				// We failed to serialize the delegate but we still have to release it;
+				// otherwise, we won't be able to unload the assembly.
+				managed_callable->release_delegate_handle();
 			}
 		}
 	}
