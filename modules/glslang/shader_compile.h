@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  shader_compile.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#ifndef SHADER_COMPILE_H
+#define SHADER_COMPILE_H
 
-#include <glslang/Public/ShaderLang.h>
+#include "servers/rendering/rendering_device_commons.h"
 
-void initialize_glslang_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
-		return;
-	}
+Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_stage, const String &p_source_code, RenderingDeviceCommons::ShaderLanguageVersion p_language_version, RenderingDeviceCommons::ShaderSpirvVersion p_spirv_version, String *r_error);
 
-	// Initialize in case it's not initialized. This is done once per thread
-	// and it's safe to call multiple times.
-	glslang::InitializeProcess();
-}
-
-void uninitialize_glslang_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
-		return;
-	}
-
-	glslang::FinalizeProcess();
-}
+#endif // SHADER_COMPILE_H
