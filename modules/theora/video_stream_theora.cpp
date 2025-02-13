@@ -74,7 +74,8 @@ void VideoStreamPlaybackTheora::video_write(th_ycbcr_buffer yuv) {
 		yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data + y_offset, (uint8_t *)yuv[1].data + uv_offset, (uint8_t *)yuv[2].data + uv_offset, region.size.x, region.size.y, yuv[0].stride, yuv[1].stride, region.size.x << 2);
 	}
 
-	Ref<Image> img = memnew(Image(region.size.x, region.size.y, false, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
+	Ref<Image> img;
+	img.instantiate(region.size.x, region.size.y, false, Image::FORMAT_RGBA8, frame_data); //zero copy image creation
 
 	texture->update(img); //zero copy send to rendering server
 }
