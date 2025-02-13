@@ -924,12 +924,19 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		// If pinned state changed, update the currently pinned node.
 		if (AnimationPlayerEditor::get_singleton()->is_pinned() != node_cache.current_has_pin) {
 			node_cache.current_has_pin = AnimationPlayerEditor::get_singleton()->is_pinned();
-			node_cache.mark_dirty(pinned_node);
+			if (node_cache.has(pinned_node)) {
+				node_cache.mark_dirty(pinned_node);
+			}
 		}
 		// If the current pinned node changed update both the old and new node.
 		if (node_cache.current_pinned_node != pinned_node) {
-			node_cache.mark_dirty(pinned_node);
-			node_cache.mark_dirty(node_cache.current_pinned_node);
+			// get_editing_node() will return deleted nodes. If the nodes are not in cache don't try to mark them.
+			if (node_cache.has(pinned_node)) {
+				node_cache.mark_dirty(pinned_node);
+			}
+			if (node_cache.has(node_cache.current_pinned_node)) {
+				node_cache.mark_dirty(node_cache.current_pinned_node);
+			}
 			node_cache.current_pinned_node = pinned_node;
 		}
 
@@ -2373,6 +2380,10 @@ HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCach
 	return I;
 }
 
+bool SceneTreeEditor::NodeCache::has(Node *p_node) {
+	return get(p_node, false).operator bool();
+}
+
 void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 	if (!p_node) {
 		return;
@@ -2380,6 +2391,11 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 
 	if (p_node == editor->selected) {
 		editor->selected = nullptr;
+	}
+
+	if (p_node == current_pinned_node) {
+		current_pinned_node = nullptr;
+		current_has_pin = false;
 	}
 
 	editor->marked.erase(p_node);
@@ -2419,6 +2435,7 @@ void SceneTreeEditor::NodeCache::mark_dirty(Node *p_node, bool p_parents) {
 		if (!p_parents) {
 			break;
 		}
+
 		node = node->get_parent();
 	}
 }
@@ -2483,4 +2500,6 @@ void SceneTreeEditor::NodeCache::clear() {
 	}
 	cache.clear();
 	to_delete.clear();
+	current_pinned_node = nullptr;
+	current_has_pin = false;
 }
