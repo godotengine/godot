@@ -6234,6 +6234,8 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
 		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
 			return vrs_capabilities.ss_max_fragment_size;
+		case LIMIT_MAX_SHADER_VARYINGS:
+			return MIN(D3D12_VS_OUTPUT_REGISTER_COUNT, D3D12_PS_INPUT_REGISTER_COUNT);
 		default: {
 #ifdef DEV_ENABLED
 			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
