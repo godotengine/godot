@@ -328,6 +328,10 @@ void GameView::_stop_pressed() {
 	}
 
 	screen_index_before_start = -1;
+
+	if (reset_input_on_stop) {
+		_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
+	}
 }
 
 void GameView::_embedding_completed() {
@@ -425,6 +429,10 @@ void GameView::_embed_options_menu_menu_id_pressed(int p_id) {
 				EditorSettings::get_singleton()->set_project_metadata("game_view", "make_floating_on_play", make_floating_on_play);
 			}
 		} break;
+		case EMBED_RESET_INPUT_MODE_ON_STOP: {
+			reset_input_on_stop = !reset_input_on_stop;
+			EditorSettings::get_singleton()->set_project_metadata("game_view", "reset_input_on_stop", reset_input_on_stop);
+		} break;
 	}
 	_update_embed_menu_options();
 	_update_ui();
@@ -520,6 +528,7 @@ void GameView::_update_embed_menu_options() {
 	PopupMenu *menu = embed_options_menu->get_popup();
 	menu->set_item_checked(menu->get_item_index(EMBED_RUN_GAME_EMBEDDED), embed_on_play);
 	menu->set_item_checked(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), make_floating_on_play && is_multi_window);
+	menu->set_item_checked(menu->get_item_index(EMBED_RESET_INPUT_MODE_ON_STOP), reset_input_on_stop);
 
 	menu->set_item_disabled(menu->get_item_index(EMBED_MAKE_FLOATING_ON_PLAY), !embed_on_play || !is_multi_window);
 
@@ -642,6 +651,7 @@ void GameView::_notification(int p_what) {
 				}
 				embed_size_mode = (EmbedSizeMode)(int)EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_size_mode", SIZE_MODE_FIXED);
 				keep_aspect_button->set_pressed(EditorSettings::get_singleton()->get_project_metadata("game_view", "keep_aspect", true));
+				reset_input_on_stop = EditorSettings::get_singleton()->get_project_metadata("game_view", "reset_input_on_stop", false);
 				_update_embed_menu_options();
 
 				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
@@ -996,6 +1006,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_embed_options_menu_menu_id_pressed));
 	menu->add_check_item(TTR("Embed Game on Next Play"), EMBED_RUN_GAME_EMBEDDED);
 	menu->add_check_item(TTR("Make Game Workspace Floating on Next Play"), EMBED_MAKE_FLOATING_ON_PLAY);
+	menu->add_check_item(TTR("Reset Input Mode on Stop"), EMBED_RESET_INPUT_MODE_ON_STOP);
 
 	main_menu_hbox->add_spacer();
 
