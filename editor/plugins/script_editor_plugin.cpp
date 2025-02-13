@@ -2843,10 +2843,13 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		Ref<Resource> edited_res = se->get_edited_resource();
 
 		if (edited_res->is_built_in()) {
-			continue; //internal script, who cares
+			continue; // Internal script, who cares.
 		}
 
-		if (!p_refresh_only) {
+		if (p_refresh_only) {
+			// Make sure the modified time is correct.
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(edited_res->get_path());
+		} else {
 			uint64_t last_date = se->edited_file_data.last_modified_time;
 			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
 
