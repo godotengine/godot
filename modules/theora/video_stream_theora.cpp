@@ -248,7 +248,7 @@ void VideoStreamPlaybackTheora::video_write(th_ycbcr_buffer yuv) {
 	Ref<Image> img;
 	img.instantiate(region.size.x, region.size.y, false, Image::FORMAT_RGBA8, frame_data); //zero copy image creation
 
-	texture->update(img); //zero copy send to rendering server
+	texture->update(img); // Zero-copy send to rendering server.
 }
 
 void VideoStreamPlaybackTheora::clear() {
