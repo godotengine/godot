@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SphereMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class representing a spherical [PrimitiveMesh].
+	</brief_description>
+	<description>
+		Class representing a spherical [PrimitiveMesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			Full height of the sphere.
+		</member>
+		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" default="false">
+			If [code]true[/code], a hemisphere is created rather than a full sphere.
+			[b]Note:[/b] To get a regular hemisphere, the height and radius of the sphere must be equal.
+		</member>
+		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
+			Number of radial segments on the sphere.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			Radius of sphere.
+		</member>
+		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="32">
+			Number of segments along the height of the sphere.
+		</member>
+	</members>
+</class>

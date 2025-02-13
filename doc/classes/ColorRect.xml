@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorRect" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control that displays a solid color rectangle.
+	</brief_description>
+	<description>
+		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using a [Panel] instead.
+	</description>
+	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+	</tutorials>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			The fill color of the rectangle.
+		</member>
+	</members>
+</class>

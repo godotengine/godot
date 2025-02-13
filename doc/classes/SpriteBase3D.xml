@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpriteBase3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		2D sprite node in 3D environment.
+	</brief_description>
+	<description>
+		A node that displays 2D texture information in a 3D environment. See also [Sprite3D] where many other properties are defined.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh" />
+			<description>
+				Returns a [TriangleMesh] with the sprite's vertices following its current configuration (such as its [member axis] and [member pixel_size]).
+			</description>
+		</method>
+		<method name="get_draw_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<description>
+				Returns the value of the specified flag.
+			</description>
+		</method>
+		<method name="get_item_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns the rectangle representing this sprite.
+			</description>
+		</method>
+		<method name="set_draw_flag">
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], the specified flag will be enabled. See [enum SpriteBase3D.DrawFlags] for a list of flags.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge" default="0.0">
+			Threshold at which antialiasing will be applied on the alpha channel.
+		</member>
+		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing" default="0">
+			The type of alpha antialiasing to apply. See [enum BaseMaterial3D.AlphaAntiAliasing].
+		</member>
+		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" enum="SpriteBase3D.AlphaCutMode" default="0">
+			The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for possible values.
+		</member>
+		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale" default="1.0">
+			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
+		</member>
+		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" default="0.5">
+			Threshold at which the alpha scissor will discard values.
+		</member>
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis" default="2">
+			The direction in which the front of the texture faces.
+		</member>
+		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
+			The billboard mode to use for the sprite. See [enum BaseMaterial3D.BillboardMode] for possible values.
+			[b]Note:[/b] When billboarding is enabled and the material also casts shadows, billboards will face [b]the[/b] camera in the scene when rendering shadows. In scenes with multiple cameras, the intended shadow cannot be determined and this will result in undefined behavior. See [url=https://github.com/godotengine/godot/pull/72638]GitHub Pull Request #72638[/url] for details.
+		</member>
+		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
+			If [code]true[/code], texture will be centered.
+		</member>
+		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
+			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
+		</member>
+		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the label is rendered at the same size regardless of distance.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
+			A color value used to [i]multiply[/i] the texture's colors. Can be used for mood-coloring or to simulate the color of ambient light.
+			[b]Note:[/b] Unlike [member CanvasItem.modulate] for 2D, colors with values above [code]1.0[/code] (overbright) are not supported.
+			[b]Note:[/b] If a [member GeometryInstance3D.material_override] is defined on the [SpriteBase3D], the material override must be configured to take vertex colors into account for albedo. Otherwise, the color defined in [member modulate] will be ignored. For a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] must be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function.
+		</member>
+		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
+		</member>
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
+			The texture's drawing offset.
+		</member>
+		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
+			The size of one pixel's width on the sprite to scale it in 3D.
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
+			Sets the render priority for the sprite. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
+			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
+		</member>
+		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
+			If [code]true[/code], the [Light3D] in the [Environment] has effects on the sprite.
+		</member>
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
+			[b]Note:[/b] Linear filtering may cause artifacts around the edges, which are especially noticeable on opaque textures. To prevent this, use textures with transparent or identical colors around the edges.
+		</member>
+		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
+			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the sprite invisible.
+		</member>
+	</members>
+	<constants>
+		<constant name="FLAG_TRANSPARENT" value="0" enum="DrawFlags">
+			If set, the texture's transparency and the opacity are used to make those parts of the sprite invisible.
+		</constant>
+		<constant name="FLAG_SHADED" value="1" enum="DrawFlags">
+			If set, lights in the environment affect the sprite.
+		</constant>
+		<constant name="FLAG_DOUBLE_SIDED" value="2" enum="DrawFlags">
+			If set, texture can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
+		</constant>
+		<constant name="FLAG_DISABLE_DEPTH_TEST" value="3" enum="DrawFlags">
+			Disables the depth test, so this object is drawn on top of all others. However, objects drawn after it in the draw order may cover it.
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="4" enum="DrawFlags">
+			Label is scaled by depth so that it always appears the same size on screen.
+		</constant>
+		<constant name="FLAG_MAX" value="5" enum="DrawFlags">
+			Represents the size of the [enum DrawFlags] enum.
+		</constant>
+		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
+			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
+		</constant>
+		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
+			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa]). On the bright side, this mode doesn't suffer from transparency sorting issues when multiple transparent materials are overlapping. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
+		</constant>
+		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2" enum="AlphaCutMode">
+			This mode draws fully opaque pixels in the depth prepass. This is slower than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it allows displaying translucent areas and smooth edges while using proper sorting.
+		</constant>
+		<constant name="ALPHA_CUT_HASH" value="3" enum="AlphaCutMode">
+			This mode draws cuts off all values below a spatially-deterministic threshold, the rest will remain opaque.
+		</constant>
+	</constants>
+</class>

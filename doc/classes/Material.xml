@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Material" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Virtual base class for applying visual properties to an object, such as color and roughness.
+	</brief_description>
+	<description>
+		[Material] is a base resource used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a [Material]. A few flags and parameters are shared between all material types and are configured here.
+		Importantly, you can inherit from [Material] to create your own custom material type in script or in GDExtension.
+	</description>
+	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="_can_do_next_pass" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member next_pass] should be shown in the editor or not.
+			</description>
+		</method>
+		<method name="_can_use_render_priority" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member render_priority] should be shown in the editor or not.
+			</description>
+		</method>
+		<method name="_get_shader_mode" qualifiers="virtual const">
+			<return type="int" enum="Shader.Mode" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools.
+			</description>
+		</method>
+		<method name="_get_shader_rid" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools. Used to access the RID of the [Material]'s [Shader].
+			</description>
+		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMaterial]).
+			</description>
+		</method>
+		<method name="inspect_native_shader_code">
+			<return type="void" />
+			<description>
+				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Shader.inspect_native_shader_code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
+			Sets the [Material] to be used for the next pass. This renders the object again using a different material.
+			[b]Note:[/b] [member next_pass] materials are not necessarily drawn immediately after the source [Material]. Draw order is determined by material properties, [member render_priority], and distance to camera.
+			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
+			Sets the render priority for objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects. In other words, all objects with [member render_priority] [code]1[/code] will render before all objects with [member render_priority] [code]0[/code].
+			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
+			[b]Note:[/b] This will not impact how transparent objects are sorted relative to opaque objects or how dynamic meshes will be sorted relative to other opaque meshes. This is because all transparent objects are drawn after all opaque objects and all dynamic opaque meshes are drawn before other opaque meshes.
+		</member>
+	</members>
+	<constants>
+		<constant name="RENDER_PRIORITY_MAX" value="127">
+			Maximum value for the [member render_priority] parameter.
+		</constant>
+		<constant name="RENDER_PRIORITY_MIN" value="-128">
+			Minimum value for the [member render_priority] parameter.
+		</constant>
+	</constants>
+</class>

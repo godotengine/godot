@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFNode" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		glTF node class.
+	</brief_description>
+	<description>
+		Represents a glTF node. glTF nodes may have names, transforms, children (other glTF nodes), and more specialized properties (represented by their own classes).
+		glTF nodes generally exist inside of [GLTFState] which represents all data of a glTF file. Most of GLTFNode's properties are indices of other data in the glTF file. You can extend a glTF node with additional properties by using [method get_additional_data] and [method set_additional_data].
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="glTF scene and node spec">https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_004_ScenesNodes.md"</link>
+	</tutorials>
+	<methods>
+		<method name="append_child_index">
+			<return type="void" />
+			<param index="0" name="child_index" type="int" />
+			<description>
+				Appends the given child node index to the [member children] array.
+			</description>
+		</method>
+		<method name="get_additional_data">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+				Gets additional arbitrary data in this [GLTFNode] instance. This can be used to keep per-node state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the return value can be anything you set. If nothing was set, the return value is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_scene_node_path">
+			<return type="NodePath" />
+			<param index="0" name="gltf_state" type="GLTFState" />
+			<param index="1" name="handle_skeletons" type="bool" default="true" />
+			<description>
+				Returns the [NodePath] that this GLTF node will have in the Godot scene tree after being imported. This is useful when importing glTF object model pointers with [GLTFObjectModelProperty], for handling extensions such as [code]KHR_animation_pointer[/code] or [code]KHR_interactivity[/code].
+				If [param handle_skeletons] is [code]true[/code], paths to skeleton bone glTF nodes will be resolved properly. For example, a path that would be [code]^"A/B/C/Bone1/Bone2/Bone3"[/code] if [code]false[/code] will become [code]^"A/B/C/Skeleton3D:Bone3"[/code].
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+				Sets additional arbitrary data in this [GLTFNode] instance. This can be used to keep per-node state data in [GLTFDocumentExtension] classes, which is important because they are stateless.
+				The first argument should be the [GLTFDocumentExtension] name (does not have to match the extension name in the glTF file), and the second argument can be anything you want.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="camera" type="int" setter="set_camera" getter="get_camera" default="-1">
+			If this glTF node is a camera, the index of the [GLTFCamera] in the [GLTFState] that describes the camera's properties. If -1, this node is not a camera.
+		</member>
+		<member name="children" type="PackedInt32Array" setter="set_children" getter="get_children" default="PackedInt32Array()">
+			The indices of the child nodes in the [GLTFState]. If this glTF node has no children, this will be an empty array.
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
+			How deep into the node hierarchy this node is. A root node will have a height of 0, its children will have a height of 1, and so on. If -1, the height has not been calculated.
+		</member>
+		<member name="light" type="int" setter="set_light" getter="get_light" default="-1">
+			If this glTF node is a light, the index of the [GLTFLight] in the [GLTFState] that describes the light's properties. If -1, this node is not a light.
+		</member>
+		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
+			If this glTF node is a mesh, the index of the [GLTFMesh] in the [GLTFState] that describes the mesh's properties. If -1, this node is not a mesh.
+		</member>
+		<member name="original_name" type="String" setter="set_original_name" getter="get_original_name" default="&quot;&quot;">
+			The original name of the node.
+		</member>
+		<member name="parent" type="int" setter="set_parent" getter="get_parent" default="-1">
+			The index of the parent node in the [GLTFState]. If -1, this node is a root node.
+		</member>
+		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
+			The position of the glTF node relative to its parent.
+		</member>
+		<member name="rotation" type="Quaternion" setter="set_rotation" getter="get_rotation" default="Quaternion(0, 0, 0, 1)">
+			The rotation of the glTF node relative to its parent.
+		</member>
+		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
+			The scale of the glTF node relative to its parent.
+		</member>
+		<member name="skeleton" type="int" setter="set_skeleton" getter="get_skeleton" default="-1">
+			If this glTF node has a skeleton, the index of the [GLTFSkeleton] in the [GLTFState] that describes the skeleton's properties. If -1, this node does not have a skeleton.
+		</member>
+		<member name="skin" type="int" setter="set_skin" getter="get_skin" default="-1">
+			If this glTF node has a skin, the index of the [GLTFSkin] in the [GLTFState] that describes the skin's properties. If -1, this node does not have a skin.
+		</member>
+		<member name="xform" type="Transform3D" setter="set_xform" getter="get_xform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			The transform of the glTF node relative to its parent. This property is usually unused since the position, rotation, and scale properties are preferred.
+		</member>
+	</members>
+</class>

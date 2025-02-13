@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlayer2D" inherits="Node2D" keywords="sound, sfx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Plays positional sound in 2D space.
+	</brief_description>
+	<description>
+		Plays audio that is attenuated with distance to the listener.
+		By default, audio is heard from the screen center. This can be changed by adding an [AudioListener2D] node to the scene and enabling it by calling [method AudioListener2D.make_current] on it.
+		See also [AudioStreamPlayer] to play a sound non-positionally.
+		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
+	</description>
+	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_playback_position">
+			<return type="float" />
+			<description>
+				Returns the position in the [AudioStream].
+			</description>
+		</method>
+		<method name="get_stream_playback">
+			<return type="AudioStreamPlayback" />
+			<description>
+				Returns the [AudioStreamPlayback] object associated with this [AudioStreamPlayer2D].
+			</description>
+		</method>
+		<method name="has_stream_playback">
+			<return type="bool" />
+			<description>
+				Returns whether the [AudioStreamPlayer] can return the [AudioStreamPlayback] object or not.
+			</description>
+		</method>
+		<method name="play">
+			<return type="void" />
+			<param index="0" name="from_position" type="float" default="0.0" />
+			<description>
+				Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="to_position" type="float" />
+			<description>
+				Sets the position from which audio will be played, in seconds.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the audio.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="1">
+			Determines which [Area2D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
+		</member>
+		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" default="1.0">
+			The volume is attenuated over distance with this as an exponent.
+		</member>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
+			If [code]true[/code], audio plays when added to scene tree.
+		</member>
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
+			Bus on which this audio is playing.
+			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
+		</member>
+		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
+			Maximum distance from which audio is still hearable.
+		</member>
+		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
+			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+		</member>
+		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
+			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/general/2d_panning_strength] with this factor. Higher values will pan audio from left to right more dramatically than lower values.
+		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
+			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
+		</member>
+		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
+			The playback type of the stream player. If set other than to the default value, it will force that playback type.
+		</member>
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
+			If [code]true[/code], audio is playing or is queued to be played (see [method play]).
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] object to be played.
+		</member>
+		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
+			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
+			Base volume before attenuation, in decibels.
+		</member>
+		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
+			Base volume before attenuation, as a linear value.
+			[b]Note:[/b] This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.
+		</member>
+	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when the audio stops playing.
+			</description>
+		</signal>
+	</signals>
+</class>

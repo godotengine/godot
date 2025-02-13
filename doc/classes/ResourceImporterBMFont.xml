@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterBMFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports a bitmap font in the BMFont ([code].fnt[/code]) format.
+	</brief_description>
+	<description>
+		The BMFont format is a format created by the [url=https://www.angelcode.com/products/bmfont/]BMFont[/url] program. Many BMFont-compatible programs also exist, like [url=https://www.bmglyph.com/]BMGlyph[/url].
+		Compared to [ResourceImporterImageFont], [ResourceImporterBMFont] supports bitmap fonts with varying glyph widths/heights.
+		See also [ResourceImporterDynamicFont].
+	</description>
+	<tutorials>
+		<link title="Bitmap fonts - Using fonts">$DOCS_URL/tutorials/ui/gui_using_fonts.html#bitmap-fonts</link>
+	</tutorials>
+	<members>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], uses lossless compression for the resulting font.
+		</member>
+		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+			List of font fallbacks to use if a glyph isn't found in this bitmap font. Fonts at the beginning of the array are attempted first.
+		</member>
+		<member name="scaling_mode" type="int" setter="" getter="" default="2">
+			Font scaling mode.
+		</member>
+	</members>
+</class>

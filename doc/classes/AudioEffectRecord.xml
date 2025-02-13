@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectRecord" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Audio effect used for recording the sound from an audio bus.
+	</brief_description>
+	<description>
+		Allows the user to record the sound from an audio bus into an [AudioStreamWAV]. When used on the "Master" audio bus, this includes all audio output by Godot.
+		Unlike [AudioEffectCapture], this effect encodes the recording with the given format (8-bit, 16-bit, or compressed) instead of giving access to the raw audio samples.
+		Can be used (with an [AudioStreamMicrophone]) to record from a microphone.
+		[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+	</description>
+	<tutorials>
+		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
+	</tutorials>
+	<methods>
+		<method name="get_recording" qualifiers="const">
+			<return type="AudioStreamWAV" />
+			<description>
+				Returns the recorded sample.
+			</description>
+		</method>
+		<method name="is_recording_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the recording is active or not.
+			</description>
+		</method>
+		<method name="set_recording_active">
+			<return type="void" />
+			<param index="0" name="record" type="bool" />
+			<description>
+				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="1">
+			Specifies the format in which the sample will be recorded. See [enum AudioStreamWAV.Format] for available formats.
+		</member>
+	</members>
+</class>

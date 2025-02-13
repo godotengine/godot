@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SliderJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A physics joint that restricts the movement of a 3D physics body along an axis relative to another physics body.
+	</brief_description>
+	<description>
+		A physics joint that restricts the movement of a 3D physics body along an axis relative to another physics body. For example, Body A could be a [StaticBody3D] representing a piston base, while Body B could be a [RigidBody3D] representing the piston head, moving up and down.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
+			<description>
+				Returns the value of the given parameter (see [enum Param] constants).
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="SliderJoint3D.Param" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Assigns [param value] to the given parameter (see [enum Param] constants).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_limit/damping" type="float" setter="set_param" getter="get_param" default="0.0">
+			The amount of damping of the rotation when the limit is surpassed.
+			A lower damping value allows a rotation initiated by body A to travel to body B slower.
+		</member>
+		<member name="angular_limit/lower_angle" type="float" setter="set_param" getter="get_param" default="0.0">
+			The lower limit of rotation in the slider.
+		</member>
+		<member name="angular_limit/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution of the rotation when the limit is surpassed.
+			Does not affect damping.
+		</member>
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the all rotation once the limit is surpassed.
+			Makes all rotation slower when between 0 and 1.
+		</member>
+		<member name="angular_limit/upper_angle" type="float" setter="set_param" getter="get_param" default="0.0">
+			The upper limit of rotation in the slider.
+		</member>
+		<member name="angular_motion/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+			The amount of damping of the rotation in the limits.
+		</member>
+		<member name="angular_motion/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution of the rotation in the limits.
+		</member>
+		<member name="angular_motion/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the all rotation in the limits.
+		</member>
+		<member name="angular_ortho/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+			The amount of damping of the rotation across axes orthogonal to the slider.
+		</member>
+		<member name="angular_ortho/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution of the rotation across axes orthogonal to the slider.
+		</member>
+		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the all rotation across axes orthogonal to the slider.
+		</member>
+		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+			The amount of damping that happens once the limit defined by [member linear_limit/lower_distance] and [member linear_limit/upper_distance] is surpassed.
+		</member>
+		<member name="linear_limit/lower_distance" type="float" setter="set_param" getter="get_param" default="-1.0">
+			The minimum difference between the pivot points on their X axis before damping happens.
+		</member>
+		<member name="linear_limit/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
+		</member>
+		<member name="linear_limit/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
+		</member>
+		<member name="linear_limit/upper_distance" type="float" setter="set_param" getter="get_param" default="1.0">
+			The maximum difference between the pivot points on their X axis before damping happens.
+		</member>
+		<member name="linear_motion/damping" type="float" setter="set_param" getter="get_param" default="0.0">
+			The amount of damping inside the slider limits.
+		</member>
+		<member name="linear_motion/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution inside the slider limits.
+		</member>
+		<member name="linear_motion/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
+		</member>
+		<member name="linear_ortho/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+			The amount of damping when movement is across axes orthogonal to the slider.
+		</member>
+		<member name="linear_ortho/restitution" type="float" setter="set_param" getter="get_param" default="0.7">
+			The amount of restitution when movement is across axes orthogonal to the slider.
+		</member>
+		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param" default="1.0">
+			A factor applied to the movement across axes orthogonal to the slider.
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_LINEAR_LIMIT_UPPER" value="0" enum="Param">
+			Constant for accessing [member linear_limit/upper_distance]. The maximum difference between the pivot points on their X axis before damping happens.
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_LOWER" value="1" enum="Param">
+			Constant for accessing [member linear_limit/lower_distance]. The minimum difference between the pivot points on their X axis before damping happens.
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_SOFTNESS" value="2" enum="Param">
+			Constant for accessing [member linear_limit/softness]. A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_RESTITUTION" value="3" enum="Param">
+			Constant for accessing [member linear_limit/restitution]. The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
+		</constant>
+		<constant name="PARAM_LINEAR_LIMIT_DAMPING" value="4" enum="Param">
+			Constant for accessing [member linear_limit/damping]. The amount of damping once the slider limits are surpassed.
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_SOFTNESS" value="5" enum="Param">
+			Constant for accessing [member linear_motion/softness]. A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_RESTITUTION" value="6" enum="Param">
+			Constant for accessing [member linear_motion/restitution]. The amount of restitution inside the slider limits.
+		</constant>
+		<constant name="PARAM_LINEAR_MOTION_DAMPING" value="7" enum="Param">
+			Constant for accessing [member linear_motion/damping]. The amount of damping inside the slider limits.
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_SOFTNESS" value="8" enum="Param">
+			Constant for accessing [member linear_ortho/softness]. A factor applied to the movement across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_RESTITUTION" value="9" enum="Param">
+			Constant for accessing [member linear_motion/restitution]. The amount of restitution when movement is across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_LINEAR_ORTHOGONAL_DAMPING" value="10" enum="Param">
+			Constant for accessing [member linear_motion/damping]. The amount of damping when movement is across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_UPPER" value="11" enum="Param">
+			Constant for accessing [member angular_limit/upper_angle]. The upper limit of rotation in the slider.
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_LOWER" value="12" enum="Param">
+			Constant for accessing [member angular_limit/lower_angle]. The lower limit of rotation in the slider.
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="13" enum="Param">
+			Constant for accessing [member angular_limit/softness]. A factor applied to the all rotation once the limit is surpassed.
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_RESTITUTION" value="14" enum="Param">
+			Constant for accessing [member angular_limit/restitution]. The amount of restitution of the rotation when the limit is surpassed.
+		</constant>
+		<constant name="PARAM_ANGULAR_LIMIT_DAMPING" value="15" enum="Param">
+			Constant for accessing [member angular_limit/damping]. The amount of damping of the rotation when the limit is surpassed.
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_SOFTNESS" value="16" enum="Param">
+			Constant for accessing [member angular_motion/softness]. A factor applied to the all rotation in the limits.
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_RESTITUTION" value="17" enum="Param">
+			Constant for accessing [member angular_motion/restitution]. The amount of restitution of the rotation in the limits.
+		</constant>
+		<constant name="PARAM_ANGULAR_MOTION_DAMPING" value="18" enum="Param">
+			Constant for accessing [member angular_motion/damping]. The amount of damping of the rotation in the limits.
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_SOFTNESS" value="19" enum="Param">
+			Constant for accessing [member angular_ortho/softness]. A factor applied to the all rotation across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_RESTITUTION" value="20" enum="Param">
+			Constant for accessing [member angular_ortho/restitution]. The amount of restitution of the rotation across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_ANGULAR_ORTHOGONAL_DAMPING" value="21" enum="Param">
+			Constant for accessing [member angular_ortho/damping]. The amount of damping of the rotation across axes orthogonal to the slider.
+		</constant>
+		<constant name="PARAM_MAX" value="22" enum="Param">
+			Represents the size of the [enum Param] enum.
+		</constant>
+	</constants>
+</class>

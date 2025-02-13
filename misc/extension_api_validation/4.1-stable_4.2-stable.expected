@@ -1,0 +1,309 @@
+This file contains, when concatenated to the expected output since 4.2, the expected output of --validate-extension-api
+when run against the extension_api.json of the 4.1-stable tag (first part of the basename of this file).
+
+## Changes between 4.1-stable and 4.2-stable
+
+GH-79911
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_RASTER': value changed value in new API, from 1.0 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_ALL_BARRIERS': value changed value in new API, from 7.0 to 32767.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/BarrierMask/values/BARRIER_MASK_NO_BARRIER': value changed value in new API, from 8.0 to 32768.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_update/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments/9': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments/6': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments/2': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments/4': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments/3': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/compute_list_end/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/0': default_value changed value in new API, from "7" to "32767".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/barrier/arguments/1': default_value changed value in new API, from "7" to "32767".
+
+Raster barrier was split into vertex and fragment barriers for use in mobile renderer.
+
+
+GH-79308
+--------
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/get_zoom_hbox
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_using_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_scroll_ofs
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_snap
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_use_snap
+Validate extension JSON: API was removed: classes/GraphEdit/properties/snap_distance
+Validate extension JSON: API was removed: classes/GraphEdit/properties/use_snap
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_comment
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_comment
+Validate extension JSON: API was removed: classes/GraphNode/properties/comment
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': getter changed value in new API, from "get_scroll_ofs" to &"get_scroll_offset".
+Validate extension JSON: Error: Field 'classes/GraphEdit/properties/scroll_offset': setter changed value in new API, from "set_scroll_ofs" to &"set_scroll_offset".
+
+Intentional compatibility breakage during refactoring of API marked as experimental.
+
+FIXME: Still a WIP, review this list once the work is completed, especially if compatibility
+code is added.
+
+
+GH-73196
+--------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/get_text_for_symbol_lookup': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-78328
+--------
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_used_rect': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-79606
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_create_from_bytecode/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-78266
+--------
+Validate extension JSON: API was removed: classes/FontFile/properties/fallbacks
+Validate extension JSON: API was removed: classes/FontVariation/properties/fallbacks
+Validate extension JSON: API was removed: classes/SystemFont/properties/fallbacks
+
+The property was moved to their common base class Font.
+The setters and getters were already in Font, so this shouldn't affect compatibility.
+
+
+GH-36493
+--------
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_shortcut/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_shortcut/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument. Compatibility methods registered.
+
+
+GH-80954
+--------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 4 to 9.
+
+Added optional arguments. Compatibility method registered.
+
+
+GH-80852
+--------
+
+Validate extension JSON: API was removed: classes/GDScriptEditorTranslationParserPlugin
+Validate extension JSON: API was removed: classes/GDScriptNativeClass
+Validate extension JSON: API was removed: classes/GodotPhysicsServer2D
+Validate extension JSON: API was removed: classes/GodotPhysicsServer3D
+Validate extension JSON: API was removed: classes/IPUnix
+Validate extension JSON: API was removed: classes/MovieWriterMJPEG
+Validate extension JSON: API was removed: classes/MovieWriterPNGWAV
+Validate extension JSON: API was removed: classes/ResourceFormatImporterSaver
+Validate extension JSON: API was removed: classes/FramebufferCacheRD
+Validate extension JSON: API was removed: classes/UniformSetCacheRD
+Validate extension JSON: API was removed: classes/GLTFDocumentExtensionPhysics
+Validate extension JSON: API was removed: classes/GLTFDocumentExtensionTextureWebP
+
+Excluded unexposed classes from extension_api.json.
+
+
+GH-79311
+--------
+
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_color
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_count
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_height
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_position
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_slot
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_input_type
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_color
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_count
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_height
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_position
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_slot
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_connection_output_type
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_language
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_overlay
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_position_offset
+Validate extension JSON: API was removed: classes/GraphNode/methods/get_text_direction
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_close_button_visible
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_draggable
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_resizable
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_selectable
+Validate extension JSON: API was removed: classes/GraphNode/methods/is_selected
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_draggable
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_language
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_overlay
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_position_offset
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_resizable
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_selectable
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_selected
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_show_close_button
+Validate extension JSON: API was removed: classes/GraphNode/methods/set_text_direction
+Validate extension JSON: API was removed: classes/GraphNode/properties/draggable
+Validate extension JSON: API was removed: classes/GraphNode/properties/language
+Validate extension JSON: API was removed: classes/GraphNode/properties/overlay
+Validate extension JSON: API was removed: classes/GraphNode/properties/position_offset
+Validate extension JSON: API was removed: classes/GraphNode/properties/resizable
+Validate extension JSON: API was removed: classes/GraphNode/properties/selectable
+Validate extension JSON: API was removed: classes/GraphNode/properties/selected
+Validate extension JSON: API was removed: classes/GraphNode/properties/show_close
+Validate extension JSON: API was removed: classes/GraphNode/properties/text_direction
+Validate extension JSON: API was removed: classes/GraphNode/signals/close_request
+Validate extension JSON: API was removed: classes/GraphNode/signals/dragged
+Validate extension JSON: API was removed: classes/GraphNode/signals/node_deselected
+Validate extension JSON: API was removed: classes/GraphNode/signals/node_selected
+Validate extension JSON: API was removed: classes/GraphNode/signals/position_offset_changed
+Validate extension JSON: API was removed: classes/GraphNode/signals/raise_request
+Validate extension JSON: API was removed: classes/GraphNode/signals/resize_request
+
+Refactor GraphNode (splitup in GraphElement and GraphNode)
+
+
+GH-81070
+--------
+Validate extension JSON: API was removed: classes/TileMap/methods/get_quadrant_size
+Validate extension JSON: API was removed: classes/TileMap/methods/set_quadrant_size
+Validate extension JSON: API was removed: classes/TileMap/properties/cell_quadrant_size
+
+cell_quadrant_size/quadrant_size of the TileMap API was renamed to rendering_quadrant_size.
+
+
+GH-81298
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_vertex/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_normal/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+
+Intentional compatibility breakage to be consistent with the new non-virtual set_vertex/set_normal.
+
+
+GH-79965
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/PopupMenu/methods/clear': arguments
+
+
+GH-80410
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 6 to 10.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-82403
+--------
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionRayResult': format changed value in new API, from "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape" to "Vector3 position;Vector3 normal;RID rid;ObjectID collider_id;Object *collider;int shape;int face_index".
+
+Added/moved face_index field (introduced in GH-71233) to end of struct. Should still be compatible with 4.1.
+
+
+GH-80813
+--------
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/_post_process_key_value
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/add_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/advance
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/clear_caches
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/find_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/find_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_library_list
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_list
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/has_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/has_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/is_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/is_reset_on_save_enabled
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/remove_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/rename_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_reset_on_save_enabled
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/method_call_mode
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/playback_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/playback_process_mode
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/reset_on_save
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/root_node
+Validate extension JSON: API was removed: classes/AnimationTree/methods/_post_process_key_value
+Validate extension JSON: API was removed: classes/AnimationTree/methods/advance
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_position
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_position_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_rotation
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_rotation_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_scale
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_scale_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_track
+Validate extension JSON: API was removed: classes/AnimationTree/methods/is_active
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_active
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_root_motion_track
+Validate extension JSON: API was removed: classes/AnimationTree/properties/active
+Validate extension JSON: API was removed: classes/AnimationTree/properties/audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/properties/process_callback
+Validate extension JSON: API was removed: classes/AnimationTree/properties/root_motion_track
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_finished
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_libraries_updated
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_list_changed
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_started
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/caches_cleared
+Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_finished
+Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_started
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/seek/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AnimationTree/methods/get_tree_root/return_value': type changed value in new API, from "AnimationNode" to "AnimationRootNode".
+Validate extension JSON: Error: Field 'classes/AnimationTree/methods/set_tree_root/arguments/0': type changed value in new API, from "AnimationNode" to "AnimationRootNode".
+
+These definitions have been moved to those base classes, so the APIs are actually available.
+Some properties were renamed for integration, but the old setter/getters are kept.
+Also changed some methods name/argument/signature. Compatibility methods registered.
+
+
+GH-81582
+--------
+
+Validate extension JSON: API was removed: classes/GraphEdit/methods/is_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/methods/set_arrange_nodes_button_hidden
+Validate extension JSON: API was removed: classes/GraphEdit/properties/arrange_nodes_button_hidden
+
+Make GraphEdit toolbar more customizable
+
+
+GH-81138
+--------
+
+Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/add_surface/arguments/6': meta changed value in new API, from "uint32" to "uint64".
+Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/get_surface_format/return_value': meta changed value in new API, from "uint32" to "uint64".
+Validate extension JSON: Error: Field 'classes/MeshDataTool/methods/commit_to_surface/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/MeshDataTool/methods/get_format/return_value': meta changed value in new API, from "int32" to "uint64".
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/shader_get_vertex_input_attribute_mask/return_value': meta changed value in new API, from "uint32" to "uint64".
+Validate extension JSON: Error: Field 'classes/SurfaceTool/methods/commit/arguments/1': meta changed value in new API, from "uint32" to "uint64".
+
+Surface format was increased to 64 bits from 32 bits. Compatibility methods registered.
+
+GH-79527
+--------
+Validate extension JSON: Error: Field 'classes/ParticleProcessMaterial/properties/orbit_velocity_curve': type changed value in new API, from "CurveTexture" to "CurveTexture,CurveXYZTexture".
+
+Added accepted curve type from only CurveTexture to CurveXYZTexture.
+
+
+GH-84113
+--------
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_albedo': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_emission': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_normal': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_orm': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/LineEdit/properties/right_icon': type changed value in new API, from "Texture" to "Texture2D".
+Validate extension JSON: Error: Field 'classes/Sprite3D/properties/texture': type changed value in new API, from "Texture" to "Texture2D".
+
+Changed the hint types of some nodes' properties from Texture to Texture2D. No adjustments should be necessary.
+
+
+GH-84419
+--------
+Validate extension JSON: API was removed: classes/Node/constants/NOTIFICATION_NODE_RECACHE_REQUESTED
+
+Removed unused NOTIFICATION_NODE_RECACHE_REQUESTED notification. It also used to conflict with CanvasItem.NOTIFICATION_DRAW and Window.NOTIFICATION_VISIBILITY_CHANGED (which still need to be resolved).

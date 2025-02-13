@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="UPNPDevice" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Universal Plug and Play (UPnP) device.
+	</brief_description>
+	<description>
+		Universal Plug and Play (UPnP) device. See [UPNP] for UPnP discovery and utility functions. Provides low-level access to UPNP control commands. Allows to manage port mappings (port forwarding) and to query network information of the device (like local and external IP address and status). Note that methods on this class are synchronous and block the calling thread.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_port_mapping" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="port_internal" type="int" default="0" />
+			<param index="2" name="desc" type="String" default="&quot;&quot;" />
+			<param index="3" name="proto" type="String" default="&quot;UDP&quot;" />
+			<param index="4" name="duration" type="int" default="0" />
+			<description>
+				Adds a port mapping to forward the given external port on this [UPNPDevice] for the given protocol to the local machine. See [method UPNP.add_port_mapping].
+			</description>
+		</method>
+		<method name="delete_port_mapping" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="proto" type="String" default="&quot;UDP&quot;" />
+			<description>
+				Deletes the port mapping identified by the given port and protocol combination on this device. See [method UPNP.delete_port_mapping].
+			</description>
+		</method>
+		<method name="is_valid_gateway" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this is a valid IGD (InternetGatewayDevice) which potentially supports port forwarding.
+			</description>
+		</method>
+		<method name="query_external_address" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the external IP address of this [UPNPDevice] or an empty string.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="description_url" type="String" setter="set_description_url" getter="get_description_url" default="&quot;&quot;">
+			URL to the device description.
+		</member>
+		<member name="igd_control_url" type="String" setter="set_igd_control_url" getter="get_igd_control_url" default="&quot;&quot;">
+			IDG control URL.
+		</member>
+		<member name="igd_our_addr" type="String" setter="set_igd_our_addr" getter="get_igd_our_addr" default="&quot;&quot;">
+			Address of the local machine in the network connecting it to this [UPNPDevice].
+		</member>
+		<member name="igd_service_type" type="String" setter="set_igd_service_type" getter="get_igd_service_type" default="&quot;&quot;">
+			IGD service type.
+		</member>
+		<member name="igd_status" type="int" setter="set_igd_status" getter="get_igd_status" enum="UPNPDevice.IGDStatus" default="9">
+			IGD status. See [enum IGDStatus].
+		</member>
+		<member name="service_type" type="String" setter="set_service_type" getter="get_service_type" default="&quot;&quot;">
+			Service type.
+		</member>
+	</members>
+	<constants>
+		<constant name="IGD_STATUS_OK" value="0" enum="IGDStatus">
+			OK.
+		</constant>
+		<constant name="IGD_STATUS_HTTP_ERROR" value="1" enum="IGDStatus">
+			HTTP error.
+		</constant>
+		<constant name="IGD_STATUS_HTTP_EMPTY" value="2" enum="IGDStatus">
+			Empty HTTP response.
+		</constant>
+		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus" deprecated="This value is no longer used.">
+			Returned response contained no URLs.
+		</constant>
+		<constant name="IGD_STATUS_NO_IGD" value="4" enum="IGDStatus">
+			Not a valid IGD.
+		</constant>
+		<constant name="IGD_STATUS_DISCONNECTED" value="5" enum="IGDStatus">
+			Disconnected.
+		</constant>
+		<constant name="IGD_STATUS_UNKNOWN_DEVICE" value="6" enum="IGDStatus">
+			Unknown device.
+		</constant>
+		<constant name="IGD_STATUS_INVALID_CONTROL" value="7" enum="IGDStatus">
+			Invalid control.
+		</constant>
+		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus" deprecated="This value is no longer used.">
+			Memory allocation error.
+		</constant>
+		<constant name="IGD_STATUS_UNKNOWN_ERROR" value="9" enum="IGDStatus">
+			Unknown error.
+		</constant>
+	</constants>
+</class>

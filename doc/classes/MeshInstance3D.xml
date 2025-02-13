@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshInstance3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Node that instances meshes into a scenario.
+	</brief_description>
+	<description>
+		MeshInstance3D is a node that takes a [Mesh] resource and adds it to the current scenario by creating an instance of it. This is the class most often used render 3D geometry and can be used to instance a single [Mesh] in many places. This allows reusing geometry, which can save on resources. When a [Mesh] has to be instantiated more than thousands of times at close proximity, consider using a [MultiMesh] in a [MultiMeshInstance3D] instead.
+	</description>
+	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="bake_mesh_from_current_blend_shape_mix">
+			<return type="ArrayMesh" />
+			<param index="0" name="existing" type="ArrayMesh" default="null" />
+			<description>
+				Takes a snapshot from the current [ArrayMesh] with all blend shapes applied according to their current weights and bakes it to the provided [param existing] mesh. If no [param existing] mesh is provided a new [ArrayMesh] is created, baked and returned. Mesh surface materials are not copied.
+				[b]Performance:[/b] [Mesh] data needs to be received from the GPU, stalling the [RenderingServer] in the process.
+			</description>
+		</method>
+		<method name="bake_mesh_from_current_skeleton_pose">
+			<return type="ArrayMesh" />
+			<param index="0" name="existing" type="ArrayMesh" default="null" />
+			<description>
+				Takes a snapshot of the current animated skeleton pose of the skinned mesh and bakes it to the provided [param existing] mesh. If no [param existing] mesh is provided a new [ArrayMesh] is created, baked, and returned. Requires a skeleton with a registered skin to work. Blendshapes are ignored. Mesh surface materials are not copied.
+				[b]Performance:[/b] [Mesh] data needs to be retrieved from the GPU, stalling the [RenderingServer] in the process.
+			</description>
+		</method>
+		<method name="create_convex_collision">
+			<return type="void" />
+			<param index="0" name="clean" type="bool" default="true" />
+			<param index="1" name="simplify" type="bool" default="false" />
+			<description>
+				This helper creates a [StaticBody3D] child node with a [ConvexPolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
+				If [param clean] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
+				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
+			</description>
+		</method>
+		<method name="create_debug_tangents">
+			<return type="void" />
+			<description>
+				This helper creates a [MeshInstance3D] child node with gizmos at every vertex calculated from the mesh geometry. It's mainly used for testing.
+			</description>
+		</method>
+		<method name="create_multiple_convex_collisions">
+			<return type="void" />
+			<param index="0" name="settings" type="MeshConvexDecompositionSettings" default="null" />
+			<description>
+				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. The convex decomposition operation can be controlled with parameters from the optional [param settings].
+			</description>
+		</method>
+		<method name="create_trimesh_collision">
+			<return type="void" />
+			<description>
+				This helper creates a [StaticBody3D] child node with a [ConcavePolygonShape3D] collision shape calculated from the mesh geometry. It's mainly used for testing.
+			</description>
+		</method>
+		<method name="find_blend_shape_by_name">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the index of the blend shape with the given [param name]. Returns [code]-1[/code] if no blend shape with this name exists, including when [member mesh] is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_active_material" qualifiers="const">
+			<return type="Material" />
+			<param index="0" name="surface" type="int" />
+			<description>
+				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance3D.material_override], the surface override [Material] defined in this [MeshInstance3D], or the surface [Material] defined in the [member mesh]. For example, if [member GeometryInstance3D.material_override] is used, all surfaces will return the override material.
+				Returns [code]null[/code] if no material is active, including when [member mesh] is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of blend shapes available. Produces an error if [member mesh] is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_blend_shape_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="blend_shape_idx" type="int" />
+			<description>
+				Returns the value of the blend shape at the given [param blend_shape_idx]. Returns [code]0.0[/code] and produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
+			</description>
+		</method>
+		<method name="get_skin_reference" qualifiers="const">
+			<return type="SkinReference" />
+			<description>
+				Returns the internal [SkinReference] containing the skeleton's [RID] attached to this RID. See also [method Resource.get_rid], [method SkinReference.get_skeleton], and [method RenderingServer.instance_attach_skeleton].
+			</description>
+		</method>
+		<method name="get_surface_override_material" qualifiers="const">
+			<return type="Material" />
+			<param index="0" name="surface" type="int" />
+			<description>
+				Returns the override [Material] for the specified [param surface] of the [Mesh] resource. See also [method get_surface_override_material_count].
+				[b]Note:[/b] This returns the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, not the material within the [Mesh] resource. To get the material within the [Mesh] resource, use [method Mesh.surface_get_material] instead.
+			</description>
+		</method>
+		<method name="get_surface_override_material_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count]. See also [method get_surface_override_material].
+			</description>
+		</method>
+		<method name="set_blend_shape_value">
+			<return type="void" />
+			<param index="0" name="blend_shape_idx" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the value of the blend shape at [param blend_shape_idx] to [param value]. Produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
+			</description>
+		</method>
+		<method name="set_surface_override_material">
+			<return type="void" />
+			<param index="0" name="surface" type="int" />
+			<param index="1" name="material" type="Material" />
+			<description>
+				Sets the override [param material] for the specified [param surface] of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with [member mesh].
+				[b]Note:[/b] This assigns the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, not the material within the [Mesh] resource. To set the material within the [Mesh] resource, use [method Mesh.surface_set_material] instead.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The [Mesh] resource for the instance.
+		</member>
+		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
+			[NodePath] to the [Skeleton3D] associated with the instance.
+		</member>
+		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
+			The [Skin] to be used by this instance.
+		</member>
+	</members>
+</class>

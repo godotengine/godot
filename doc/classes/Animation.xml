@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Animation" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds data that can be used to animate anything in the engine.
+	</brief_description>
+	<description>
+		This resource holds data that can be used to animate anything in the engine. Animations are divided into tracks and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
+		[codeblocks]
+		[gdscript]
+		# This creates an animation that makes the node "Enemy" move to the right by
+		# 100 pixels in 2.0 seconds.
+		var animation = Animation.new()
+		var track_index = animation.add_track(Animation.TYPE_VALUE)
+		animation.track_set_path(track_index, "Enemy:position:x")
+		animation.track_insert_key(track_index, 0.0, 0)
+		animation.track_insert_key(track_index, 2.0, 100)
+		animation.length = 2.0
+		[/gdscript]
+		[csharp]
+		// This creates an animation that makes the node "Enemy" move to the right by
+		// 100 pixels in 2.0 seconds.
+		var animation = new Animation();
+		int trackIndex = animation.AddTrack(Animation.TrackType.Value);
+		animation.TrackSetPath(trackIndex, "Enemy:position:x");
+		animation.TrackInsertKey(trackIndex, 0.0f, 0);
+		animation.TrackInsertKey(trackIndex, 2.0f, 100);
+		animation.Length = 2.0f;
+		[/csharp]
+		[/codeblocks]
+		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
+		[b]Note:[/b] For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
+	</description>
+	<tutorials>
+		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_marker">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Adds a marker to this Animation.
+			</description>
+		</method>
+		<method name="add_track">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="Animation.TrackType" />
+			<param index="1" name="at_position" type="int" default="-1" />
+			<description>
+				Adds a track to the Animation.
+			</description>
+		</method>
+		<method name="animation_track_get_key_animation" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the animation name at the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="animation" type="StringName" />
+			<description>
+				Inserts a key with value [param animation] at the given [param time] (in seconds). The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_set_key_animation">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="animation" type="StringName" />
+			<description>
+				Sets the key identified by [param key_idx] to value [param animation]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="audio_track_get_key_end_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the end offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
+				End offset is the number of seconds cut off at the ending of the audio stream.
+			</description>
+		</method>
+		<method name="audio_track_get_key_start_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
+				Start offset is the number of seconds cut off at the beginning of the audio stream.
+			</description>
+		</method>
+		<method name="audio_track_get_key_stream" qualifiers="const">
+			<return type="Resource" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the audio stream of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="stream" type="Resource" />
+			<param index="3" name="start_offset" type="float" default="0" />
+			<param index="4" name="end_offset" type="float" default="0" />
+			<description>
+				Inserts an Audio Track key at the given [param time] in seconds. The [param track_idx] must be the index of an Audio Track.
+				[param stream] is the [AudioStream] resource to play. [param start_offset] is the number of seconds cut off at the beginning of the audio stream, while [param end_offset] is at the ending.
+			</description>
+		</method>
+		<method name="audio_track_is_use_blend" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [param track_idx] will be blended with other animations.
+			</description>
+		</method>
+		<method name="audio_track_set_key_end_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the end offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_set_key_start_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_set_key_stream">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="stream" type="Resource" />
+			<description>
+				Sets the stream of the key identified by [param key_idx] to value [param stream]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_set_use_blend">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the track will be blended with other animations. If [code]true[/code], the audio playback volume changes depending on the blend value.
+			</description>
+		</method>
+		<method name="bezier_track_get_key_in_handle" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the in handle of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_get_key_out_handle" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the out handle of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_get_key_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the value of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="value" type="float" />
+			<param index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
+			<param index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Inserts a Bezier Track key at the given [param time] in seconds. The [param track_idx] must be the index of a Bezier Track.
+				[param in_handle] is the left-side weight of the added Bezier curve point, [param out_handle] is the right-side one, while [param value] is the actual value at this point.
+			</description>
+		</method>
+		<method name="bezier_track_interpolate" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Returns the interpolated value at the given [param time] (in seconds). The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_set_key_in_handle">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="in_handle" type="Vector2" />
+			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<description>
+				Sets the in handle of the key identified by [param key_idx] to value [param in_handle]. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_set_key_out_handle">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="out_handle" type="Vector2" />
+			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
+			<description>
+				Sets the out handle of the key identified by [param key_idx] to value [param out_handle]. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="bezier_track_set_key_value">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="value" type="float" />
+			<description>
+				Sets the value of the key identified by [param key_idx] to the given value. The [param track_idx] must be the index of a Bezier Track.
+			</description>
+		</method>
+		<method name="blend_shape_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="amount" type="float" />
+			<description>
+				Inserts a key in a given blend shape track. Returns the key index.
+			</description>
+		</method>
+		<method name="blend_shape_track_interpolate" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
+			<description>
+				Returns the interpolated blend shape value at the given time (in seconds). The [param track_idx] must be the index of a blend shape track.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clear the animation (clear all tracks and reset all).
+			</description>
+		</method>
+		<method name="compress">
+			<return type="void" />
+			<param index="0" name="page_size" type="int" default="8192" />
+			<param index="1" name="fps" type="int" default="120" />
+			<param index="2" name="split_tolerance" type="float" default="4.0" />
+			<description>
+				Compress the animation and all its tracks in-place. This will make [method track_is_compressed] return [code]true[/code] once called on this [Animation]. Compressed tracks require less memory to be played, and are designed to be used for complex 3D animations (such as cutscenes) imported from external 3D software. Compression is lossy, but the difference is usually not noticeable in real world conditions.
+				[b]Note:[/b] Compressed tracks have various limitations (such as not being editable from the editor), so only use compressed animations if you actually need them.
+			</description>
+		</method>
+		<method name="copy_track">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="to_animation" type="Animation" />
+			<description>
+				Adds a new track to [param to_animation] that is a copy of the given track from this animation.
+			</description>
+		</method>
+		<method name="find_track" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="path" type="NodePath" />
+			<param index="1" name="type" type="int" enum="Animation.TrackType" />
+			<description>
+				Returns the index of the specified track. If the track is not found, return -1.
+			</description>
+		</method>
+		<method name="get_marker_at_time" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the name of the marker located at the given time.
+			</description>
+		</method>
+		<method name="get_marker_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the given marker's color.
+			</description>
+		</method>
+		<method name="get_marker_names" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns every marker in this Animation, sorted ascending by time.
+			</description>
+		</method>
+		<method name="get_marker_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the given marker's time.
+			</description>
+		</method>
+		<method name="get_next_marker" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the closest marker that comes after the given time. If no such marker exists, an empty string is returned.
+			</description>
+		</method>
+		<method name="get_prev_marker" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Returns the closest marker that comes before the given time. If no such marker exists, an empty string is returned.
+			</description>
+		</method>
+		<method name="get_track_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the amount of tracks in the animation.
+			</description>
+		</method>
+		<method name="has_marker" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if this Animation contains a marker with the given name.
+			</description>
+		</method>
+		<method name="method_track_get_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the method name of a method track.
+			</description>
+		</method>
+		<method name="method_track_get_params" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the arguments values to be called on a method track for a given key in a given track.
+			</description>
+		</method>
+		<method name="optimize">
+			<return type="void" />
+			<param index="0" name="allowed_velocity_err" type="float" default="0.01" />
+			<param index="1" name="allowed_angular_err" type="float" default="0.01" />
+			<param index="2" name="precision" type="int" default="3" />
+			<description>
+				Optimize the animation and all its tracks in-place. This will preserve only as many keys as are necessary to keep the animation within the specified bounds.
+			</description>
+		</method>
+		<method name="position_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="position" type="Vector3" />
+			<description>
+				Inserts a key in a given 3D position track. Returns the key index.
+			</description>
+		</method>
+		<method name="position_track_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
+			<description>
+				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
+			</description>
+		</method>
+		<method name="remove_marker">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes the marker with the given name from this Animation.
+			</description>
+		</method>
+		<method name="remove_track">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Removes a track by specifying the track index.
+			</description>
+		</method>
+		<method name="rotation_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="rotation" type="Quaternion" />
+			<description>
+				Inserts a key in a given 3D rotation track. Returns the key index.
+			</description>
+		</method>
+		<method name="rotation_track_interpolate" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
+			<description>
+				Returns the interpolated rotation value at the given time (in seconds). The [param track_idx] must be the index of a 3D rotation track.
+			</description>
+		</method>
+		<method name="scale_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="scale" type="Vector3" />
+			<description>
+				Inserts a key in a given 3D scale track. Returns the key index.
+			</description>
+		</method>
+		<method name="scale_track_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
+			<description>
+				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
+			</description>
+		</method>
+		<method name="set_marker_color">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the given marker's color.
+			</description>
+		</method>
+		<method name="track_find_key" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="find_mode" type="int" enum="Animation.FindMode" default="0" />
+			<param index="3" name="limit" type="bool" default="false" />
+			<param index="4" name="backward" type="bool" default="false" />
+			<description>
+				Finds the key index by time in a given track. Optionally, only find it if the approx/exact time is given.
+				If [param limit] is [code]true[/code], it does not return keys outside the animation range.
+				If [param backward] is [code]true[/code], the direction is reversed in methods that rely on one directional processing.
+				For example, in case [param find_mode] is [constant FIND_MODE_NEAREST], if there is no key in the current position just after seeked, the first key found is retrieved by searching before the position, but if [param backward] is [code]true[/code], the first key found is retrieved after the position.
+			</description>
+		</method>
+		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [param track_idx] wraps the interpolation loop. New tracks wrap the interpolation loop by default.
+			</description>
+		</method>
+		<method name="track_get_interpolation_type" qualifiers="const">
+			<return type="int" enum="Animation.InterpolationType" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns the interpolation type of a given track.
+			</description>
+		</method>
+		<method name="track_get_key_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns the number of keys in a given track.
+			</description>
+		</method>
+		<method name="track_get_key_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the time at which the key is located.
+			</description>
+		</method>
+		<method name="track_get_key_transition" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
+			</description>
+		</method>
+		<method name="track_get_key_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the value of a given key in a given track.
+			</description>
+		</method>
+		<method name="track_get_path" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Gets the path of a track. For more information on the path format, see [method track_set_path].
+			</description>
+		</method>
+		<method name="track_get_type" qualifiers="const">
+			<return type="int" enum="Animation.TrackType" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Gets the type of a track.
+			</description>
+		</method>
+		<method name="track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="key" type="Variant" />
+			<param index="3" name="transition" type="float" default="1" />
+			<description>
+				Inserts a generic key in a given track. Returns the key index.
+			</description>
+		</method>
+		<method name="track_is_compressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track is compressed, [code]false[/code] otherwise. See also [method compress].
+			</description>
+		</method>
+		<method name="track_is_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at index [param track_idx] is enabled.
+			</description>
+		</method>
+		<method name="track_is_imported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the given track is imported. Else, return [code]false[/code].
+			</description>
+		</method>
+		<method name="track_move_down">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Moves a track down.
+			</description>
+		</method>
+		<method name="track_move_to">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="to_idx" type="int" />
+			<description>
+				Changes the index position of track [param track_idx] to the one defined in [param to_idx].
+			</description>
+		</method>
+		<method name="track_move_up">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Moves a track up.
+			</description>
+		</method>
+		<method name="track_remove_key">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Removes a key by index in a given track.
+			</description>
+		</method>
+		<method name="track_remove_key_at_time">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Removes a key at [param time] in a given track.
+			</description>
+		</method>
+		<method name="track_set_enabled">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Enables/disables the given track. Tracks are enabled by default.
+			</description>
+		</method>
+		<method name="track_set_imported">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="imported" type="bool" />
+			<description>
+				Sets the given track as imported or not.
+			</description>
+		</method>
+		<method name="track_set_interpolation_loop_wrap">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="interpolation" type="bool" />
+			<description>
+				If [code]true[/code], the track at [param track_idx] wraps the interpolation loop.
+			</description>
+		</method>
+		<method name="track_set_interpolation_type">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="interpolation" type="int" enum="Animation.InterpolationType" />
+			<description>
+				Sets the interpolation type of a given track.
+			</description>
+		</method>
+		<method name="track_set_key_time">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="time" type="float" />
+			<description>
+				Sets the time of an existing key.
+			</description>
+		</method>
+		<method name="track_set_key_transition">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="transition" type="float" />
+			<description>
+				Sets the transition curve (easing) for a specific key (see the built-in math function [method @GlobalScope.ease]).
+			</description>
+		</method>
+		<method name="track_set_key_value">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key" type="int" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets the value of an existing key.
+			</description>
+		</method>
+		<method name="track_set_path">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="path" type="NodePath" />
+			<description>
+				Sets the path of a track. Paths must be valid scene-tree paths to a node and must be specified starting from the [member AnimationMixer.root_node] that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by [code]":"[/code].
+				For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
+			</description>
+		</method>
+		<method name="track_swap">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="with_idx" type="int" />
+			<description>
+				Swaps the track [param track_idx]'s index position with the track [param with_idx].
+			</description>
+		</method>
+		<method name="value_track_get_update_mode" qualifiers="const">
+			<return type="int" enum="Animation.UpdateMode" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns the update mode of a value track.
+			</description>
+		</method>
+		<method name="value_track_interpolate" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<param index="2" name="backward" type="bool" default="false" />
+			<description>
+				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
+				A [param backward] mainly affects the direction of key retrieval of the track with [constant UPDATE_DISCRETE] converted by [constant AnimationMixer.ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to match the result with [method track_find_key].
+			</description>
+		</method>
+		<method name="value_track_set_update_mode">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Animation.UpdateMode" />
+			<description>
+				Sets the update mode (see [enum UpdateMode]) of a value track.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="capture_included" type="bool" setter="" getter="is_capture_included" default="false">
+			Returns [code]true[/code] if the capture track is included. This is a cached readonly value for performance.
+		</member>
+		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
+			The total length of the animation (in seconds).
+			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
+		</member>
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
+			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+		</member>
+		<member name="step" type="float" setter="set_step" getter="get_step" default="0.0333333">
+			The animation step value.
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_VALUE" value="0" enum="TrackType">
+			Value tracks set values in node properties, but only those which can be interpolated. For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
+		</constant>
+		<constant name="TYPE_POSITION_3D" value="1" enum="TrackType">
+			3D position track (values are stored in [Vector3]s).
+		</constant>
+		<constant name="TYPE_ROTATION_3D" value="2" enum="TrackType">
+			3D rotation track (values are stored in [Quaternion]s).
+		</constant>
+		<constant name="TYPE_SCALE_3D" value="3" enum="TrackType">
+			3D scale track (values are stored in [Vector3]s).
+		</constant>
+		<constant name="TYPE_BLEND_SHAPE" value="4" enum="TrackType">
+			Blend shape track.
+		</constant>
+		<constant name="TYPE_METHOD" value="5" enum="TrackType">
+			Method tracks call functions with given arguments per key.
+		</constant>
+		<constant name="TYPE_BEZIER" value="6" enum="TrackType">
+			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
+		</constant>
+		<constant name="TYPE_AUDIO" value="7" enum="TrackType">
+			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
+		</constant>
+		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
+			Animation tracks play animations in other [AnimationPlayer] nodes.
+		</constant>
+		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
+			No interpolation (nearest value).
+		</constant>
+		<constant name="INTERPOLATION_LINEAR" value="1" enum="InterpolationType">
+			Linear interpolation.
+		</constant>
+		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
+			Cubic interpolation. This looks smoother than linear interpolation, but is more expensive to interpolate. Stick to [constant INTERPOLATION_LINEAR] for complex 3D animations imported from external software, even if it requires using a higher animation framerate in return.
+		</constant>
+		<constant name="INTERPOLATION_LINEAR_ANGLE" value="3" enum="InterpolationType">
+			Linear interpolation with shortest path rotation.
+			[b]Note:[/b] The result value is always normalized and may not match the key value.
+		</constant>
+		<constant name="INTERPOLATION_CUBIC_ANGLE" value="4" enum="InterpolationType">
+			Cubic interpolation with shortest path rotation.
+			[b]Note:[/b] The result value is always normalized and may not match the key value.
+		</constant>
+		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
+			Update between keyframes and hold the value.
+		</constant>
+		<constant name="UPDATE_DISCRETE" value="1" enum="UpdateMode">
+			Update at the keyframes.
+		</constant>
+		<constant name="UPDATE_CAPTURE" value="2" enum="UpdateMode">
+			Same as [constant UPDATE_CONTINUOUS] but works as a flag to capture the value of the current object and perform interpolation in some methods. See also [method AnimationMixer.capture], [member AnimationPlayer.playback_auto_capture], and [method AnimationPlayer.play_with_capture].
+		</constant>
+		<constant name="LOOP_NONE" value="0" enum="LoopMode">
+			At both ends of the animation, the animation will stop playing.
+		</constant>
+		<constant name="LOOP_LINEAR" value="1" enum="LoopMode">
+			At both ends of the animation, the animation will be repeated without changing the playback direction.
+		</constant>
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
+			Repeats playback and reverse playback at both ends of the animation.
+		</constant>
+		<constant name="LOOPED_FLAG_NONE" value="0" enum="LoopedFlag">
+			This flag indicates that the animation proceeds without any looping.
+		</constant>
+		<constant name="LOOPED_FLAG_END" value="1" enum="LoopedFlag">
+			This flag indicates that the animation has reached the end of the animation and just after loop processed.
+		</constant>
+		<constant name="LOOPED_FLAG_START" value="2" enum="LoopedFlag">
+			This flag indicates that the animation has reached the start of the animation and just after loop processed.
+		</constant>
+		<constant name="FIND_MODE_NEAREST" value="0" enum="FindMode">
+			Finds the nearest time key.
+		</constant>
+		<constant name="FIND_MODE_APPROX" value="1" enum="FindMode">
+			Finds only the key with approximating the time.
+		</constant>
+		<constant name="FIND_MODE_EXACT" value="2" enum="FindMode">
+			Finds only the key with matching the time.
+		</constant>
+	</constants>
+</class>

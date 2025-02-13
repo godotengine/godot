@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeStateMachinePlayback" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides playback control for an [AnimationNodeStateMachine].
+	</brief_description>
+	<description>
+		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
+		[codeblocks]
+		[gdscript]
+		var state_machine = $AnimationTree.get("parameters/playback")
+		state_machine.travel("some_state")
+		[/gdscript]
+		[csharp]
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback").As&lt;AnimationNodeStateMachinePlayback&gt;();
+		stateMachine.Travel("some_state");
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_current_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current state length.
+				[b]Note:[/b] It is possible that any [AnimationRootNode] can be nodes as well as animations. This means that there can be multiple animations within a single state. Which animation length has priority depends on the nodes connected inside it. Also, if a transition does not reset, the remaining length at that point will be returned.
+			</description>
+		</method>
+		<method name="get_current_node" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the currently playing animation state.
+				[b]Note:[/b] When using a cross-fade, the current state changes to the next state immediately after the cross-fade begins.
+			</description>
+		</method>
+		<method name="get_current_play_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position within the current animation state.
+			</description>
+		</method>
+		<method name="get_fading_from_node" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the starting state of currently fading animation.
+			</description>
+		</method>
+		<method name="get_travel_path" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
+				Returns the current travel path as computed internally by the A* algorithm.
+			</description>
+		</method>
+		<method name="is_playing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an animation is playing.
+			</description>
+		</method>
+		<method name="next">
+			<return type="void" />
+			<description>
+				If there is a next path by travel or auto advance, immediately transitions from the current state to the next state.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="node" type="StringName" />
+			<param index="1" name="reset" type="bool" default="true" />
+			<description>
+				Starts playing the given animation.
+				If [param reset] is [code]true[/code], the animation is played from the beginning.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the currently playing animation.
+			</description>
+		</method>
+		<method name="travel">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<param index="1" name="reset_on_teleport" type="bool" default="true" />
+			<description>
+				Transitions from the current state to another one, following the shortest path.
+				If the path does not connect from the current state, the animation will play after the state teleports.
+				If [param reset_on_teleport] is [code]true[/code], the animation is played from the beginning when the travel cause a teleportation.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
+	</members>
+</class>

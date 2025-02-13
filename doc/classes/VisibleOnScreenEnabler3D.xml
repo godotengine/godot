@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisibleOnScreenEnabler3D" inherits="VisibleOnScreenNotifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A box-shaped region of 3D space that, when visible on screen, enables a target node.
+	</brief_description>
+	<description>
+		[VisibleOnScreenEnabler3D] contains a box-shaped region of 3D space and a target node. The target node will be automatically enabled (via its [member Node.process_mode] property) when any part of this region becomes visible on the screen, and automatically disabled otherwise. This can for example be used to activate enemies only when the player approaches them.
+		See [VisibleOnScreenNotifier3D] if you only want to be notified when the region is visible on screen.
+		[b]Note:[/b] [VisibleOnScreenEnabler3D] uses an approximate heuristic that doesn't take walls and other occlusion into account, unless occlusion culling is used. It also won't function unless [member Node3D.visible] is set to [code]true[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_mode" type="int" setter="set_enable_mode" getter="get_enable_mode" enum="VisibleOnScreenEnabler3D.EnableMode" default="0">
+			Determines how the target node is enabled. Corresponds to [enum Node.ProcessMode]. When the node is disabled, it always uses [constant Node.PROCESS_MODE_DISABLED].
+		</member>
+		<member name="enable_node_path" type="NodePath" setter="set_enable_node_path" getter="get_enable_node_path" default="NodePath(&quot;..&quot;)">
+			The path to the target node, relative to the [VisibleOnScreenEnabler3D]. The target node is cached; it's only assigned when setting this property (if the [VisibleOnScreenEnabler3D] is inside the scene tree) and every time the [VisibleOnScreenEnabler3D] enters the scene tree. If the path is empty, no node will be affected. If the path is invalid, an error is also generated.
+		</member>
+	</members>
+	<constants>
+		<constant name="ENABLE_MODE_INHERIT" value="0" enum="EnableMode">
+			Corresponds to [constant Node.PROCESS_MODE_INHERIT].
+		</constant>
+		<constant name="ENABLE_MODE_ALWAYS" value="1" enum="EnableMode">
+			Corresponds to [constant Node.PROCESS_MODE_ALWAYS].
+		</constant>
+		<constant name="ENABLE_MODE_WHEN_PAUSED" value="2" enum="EnableMode">
+			Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED].
+		</constant>
+	</constants>
+</class>

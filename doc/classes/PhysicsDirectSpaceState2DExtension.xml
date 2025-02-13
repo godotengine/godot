@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsDirectSpaceState2DExtension" inherits="PhysicsDirectSpaceState2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsDirectSpaceState2D] implementations.
+	</brief_description>
+	<description>
+		This class extends [PhysicsDirectSpaceState2D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsDirectSpaceState2D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_cast_motion" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<param index="2" name="motion" type="Vector2" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="closest_safe" type="float*" />
+			<param index="8" name="closest_unsafe" type="float*" />
+			<description>
+			</description>
+		</method>
+		<method name="_collide_shape" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<param index="2" name="motion" type="Vector2" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="results" type="void*" />
+			<param index="8" name="max_results" type="int" />
+			<param index="9" name="result_count" type="int32_t*" />
+			<description>
+			</description>
+		</method>
+		<method name="_intersect_point" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="canvas_instance_id" type="int" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="results" type="PhysicsServer2DExtensionShapeResult*" />
+			<param index="6" name="max_results" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_intersect_ray" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="collision_mask" type="int" />
+			<param index="3" name="collide_with_bodies" type="bool" />
+			<param index="4" name="collide_with_areas" type="bool" />
+			<param index="5" name="hit_from_inside" type="bool" />
+			<param index="6" name="result" type="PhysicsServer2DExtensionRayResult*" />
+			<description>
+			</description>
+		</method>
+		<method name="_intersect_shape" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<param index="2" name="motion" type="Vector2" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="result" type="PhysicsServer2DExtensionShapeResult*" />
+			<param index="8" name="max_results" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_rest_info" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shape_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<param index="2" name="motion" type="Vector2" />
+			<param index="3" name="margin" type="float" />
+			<param index="4" name="collision_mask" type="int" />
+			<param index="5" name="collide_with_bodies" type="bool" />
+			<param index="6" name="collide_with_areas" type="bool" />
+			<param index="7" name="rest_info" type="PhysicsServer2DExtensionShapeRestInfo*" />
+			<description>
+			</description>
+		</method>
+		<method name="is_body_excluded_from_query" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

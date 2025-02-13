@@ -1,0 +1,751 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformIOS" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for iOS.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Exporting for iOS">$DOCS_URL/tutorials/export/exporting_for_ios.html</link>
+		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
+	</tutorials>
+	<members>
+		<member name="application/additional_plist_content" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/information_property_list]Info.plist[/url] file. The value should be an XML section with pairs of key-value elements, e.g.:
+			[codeblock lang=text]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
+		</member>
+		<member name="application/app_store_team_id" type="String" setter="" getter="">
+			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
+		</member>
+		<member name="application/bundle_identifier" type="String" setter="" getter="">
+			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+		</member>
+		<member name="application/code_sign_identity_debug" type="String" setter="" getter="">
+			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used for debug export.
+		</member>
+		<member name="application/code_sign_identity_release" type="String" setter="" getter="">
+			The "Full Name", "Common Name" or SHA-1 hash of the signing identity used for release export.
+		</member>
+		<member name="application/delete_old_export_files_unconditionally" type="bool" setter="" getter="">
+			If [code]true[/code], existing "project name" and "project name.xcodeproj" in the export destination directory will be unconditionally deleted during export.
+		</member>
+		<member name="application/export_method_debug" type="int" setter="" getter="">
+			Application distribution target (debug export).
+		</member>
+		<member name="application/export_method_release" type="int" setter="" getter="">
+			Application distribution target (release export).
+		</member>
+		<member name="application/export_project_only" type="bool" setter="" getter="">
+			If [code]true[/code], exports iOS project files without building an XCArchive or [code].ipa[/code] file. If [code]false[/code], exports iOS project files and builds an XCArchive and [code].ipa[/code] file at the same time. When combining Godot with Fastlane or other build pipelines, you may want to set this to [code]true[/code].
+		</member>
+		<member name="application/icon_interpolation" type="int" setter="" getter="">
+			Interpolation method used to resize application icon.
+		</member>
+		<member name="application/min_ios_version" type="String" setter="" getter="">
+			Minimum version of iOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		</member>
+		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
+			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_DEBUG[/code].
+		</member>
+		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
+			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROFILE_SPECIFIER_RELEASE[/code].
+		</member>
+		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
+			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
+		</member>
+		<member name="application/provisioning_profile_uuid_release" type="String" setter="" getter="">
+			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
+		</member>
+		<member name="application/short_version" type="String" setter="" getter="">
+			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
+		</member>
+		<member name="application/signature" type="String" setter="" getter="">
+			A four-character creator code that is specific to the bundle. Optional.
+		</member>
+		<member name="application/targeted_device_family" type="int" setter="" getter="">
+			Supported device family.
+		</member>
+		<member name="application/version" type="String" setter="" getter="">
+			Machine-readable application version, in the [code]major.minor.patch[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). This must be incremented on every new release pushed to the App Store.
+		</member>
+		<member name="architectures/arm64" type="bool" setter="" getter="">
+			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
+		</member>
+		<member name="capabilities/access_wifi" type="bool" setter="" getter="">
+			If [code]true[/code], networking features related to Wi-Fi access are enabled. See [url=https://developer.apple.com/support/required-device-capabilities/]Required Device Capabilities[/url].
+		</member>
+		<member name="capabilities/additional" type="PackedStringArray" setter="" getter="">
+			Additional data added to the [code]UIRequiredDeviceCapabilities[/code] array of the [code]Info.plist[/code] file.
+		</member>
+		<member name="capabilities/performance_a12" type="bool" setter="" getter="">
+			Requires the graphics performance and features of the A12 Bionic and later chips (devices supporting all Vulkan renderer features).
+			Enabling this option limits supported devices to: iPhone XS, iPhone XR, iPad Mini (5th gen.), iPad Air (3rd gen.), iPad (8th gen) and newer.
+		</member>
+		<member name="capabilities/performance_gaming_tier" type="bool" setter="" getter="">
+			Requires the graphics performance and features of the A17 Pro and later chips.
+			Enabling this option limits supported devices to: iPhone 15 Pro and newer.
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="entitlements/additional" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/entitlements].entitlements[/url] file. The value should be an XML section with pairs of key-value elements, for example:
+			[codeblock lang=text]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
+		</member>
+		<member name="entitlements/game_center" type="bool" setter="" getter="">
+			Enable to allow access to Game Center features. [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_game-center]com.apple.developer.game-center[/url].
+		</member>
+		<member name="entitlements/increased_memory_limit" type="bool" setter="" getter="">
+			Enable if app may perform better with a higher memory limit. [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_kernel_increased-memory-limit]com.apple.developer.kernel.increased-memory-limit[/url].
+		</member>
+		<member name="entitlements/push_notifications" type="String" setter="" getter="">
+			Environment for Apple Push Notification service. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment]aps-environment[/url].
+		</member>
+		<member name="icons/app_store_1024x1024" type="String" setter="" getter="">
+			App Store application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/app_store_1024x1024_dark" type="String" setter="" getter="">
+			App Store application icon file, dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/app_store_1024x1024_tinted" type="String" setter="" getter="">
+			App Store application icon file, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/icon_1024x1024" type="String" setter="" getter="">
+			Base application icon used to generate other icons. If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/icon_1024x1024_dark" type="String" setter="" getter="">
+			Base application icon used to generate other icons, dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/icon_1024x1024_tinted" type="String" setter="" getter="">
+			Base application icon used to generate other icons, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_128x128" type="String" setter="" getter="">
+			iOS application 64x64 icon file (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_128x128_dark" type="String" setter="" getter="">
+			iOS application 64x64 icon file (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_128x128_tinted" type="String" setter="" getter="">
+			iOS application 64x64 icon file (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_136x136" type="String" setter="" getter="">
+			iOS application 68x68 icon file (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_136x136_dark" type="String" setter="" getter="">
+			iOS application 68x68 icon file (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_136x136_tinted" type="String" setter="" getter="">
+			iOS application 68x68 icon file (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_192x192" type="String" setter="" getter="">
+			iOS application 64x64 icon file (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_192x192_dark" type="String" setter="" getter="">
+			iOS application 64x64 icon file (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ios_192x192_tinted" type="String" setter="" getter="">
+			iOS application 64x64 icon file (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_152x152" type="String" setter="" getter="">
+			Home screen application icon file on iPad (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_152x152_dark" type="String" setter="" getter="">
+			Home screen application icon file on iPad (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_152x152_tinted" type="String" setter="" getter="">
+			Home screen application icon file on iPad (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_167x167" type="String" setter="" getter="">
+			Home screen application icon file on iPad (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_167x167_dark" type="String" setter="" getter="">
+			Home screen application icon file on iPad (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/ipad_167x167_tinted" type="String" setter="" getter="">
+			Home screen application icon file on iPad (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_120x120" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_120x120_dark" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_120x120_tinted" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_180x180" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_180x180_dark" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/iphone_180x180_tinted" type="String" setter="" getter="">
+			Home screen application icon file on iPhone (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_40x40" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_40x40_dark" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_40x40_tinted" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_60x60" type="String" setter="" getter="">
+			Notification icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_60x60_dark" type="String" setter="" getter="">
+			Notification icon file on iPhone (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_60x60_tinted" type="String" setter="" getter="">
+			Notification icon file on iPhone (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_76x76" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_76x76_dark" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_76x76_tinted" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_114x114" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_114x114_dark" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/notification_114x114_tinted" type="String" setter="" getter="">
+			Notification icon file on iPad and iPhone (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_58x58" type="String" setter="" getter="">
+			Application settings icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_58x58_dark" type="String" setter="" getter="">
+			Application settings icon file on iPad and iPhone (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_58x58_tinted" type="String" setter="" getter="">
+			Application settings icon file on iPad and iPhone (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_87x87" type="String" setter="" getter="">
+			Application settings icon file on iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_87x87_dark" type="String" setter="" getter="">
+			Application settings icon file on iPhone (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/settings_87x87_tinted" type="String" setter="" getter="">
+			Application settings icon file on iPhone (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_80x80" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_80x80_dark" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (2x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_80x80_tinted" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (2x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_120x120" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_120x120_dark" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (3x DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="icons/spotlight_120x120_tinted" type="String" setter="" getter="">
+			Spotlight icon file on iPad and iPhone (3x DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="privacy/active_keyboard_access_reasons" type="int" setter="" getter="">
+			The reasons your app use active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="privacy/camera_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the device's camera (in English).
+		</member>
+		<member name="privacy/camera_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the device's camera (localized).
+		</member>
+		<member name="privacy/collected_data/advertising_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects advertising data.
+		</member>
+		<member name="privacy/collected_data/advertising_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects advertising data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/advertising_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links advertising data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/advertising_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses advertising data for tracking.
+		</member>
+		<member name="privacy/collected_data/audio_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects audio data.
+		</member>
+		<member name="privacy/collected_data/audio_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects audio data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/audio_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links audio data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/audio_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses audio data for tracking.
+		</member>
+		<member name="privacy/collected_data/browsing_history/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects browsing history.
+		</member>
+		<member name="privacy/collected_data/browsing_history/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects browsing history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/browsing_history/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links browsing history to the user's identity.
+		</member>
+		<member name="privacy/collected_data/browsing_history/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses browsing history for tracking.
+		</member>
+		<member name="privacy/collected_data/coarse_location/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects coarse location data.
+		</member>
+		<member name="privacy/collected_data/coarse_location/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects coarse location data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/coarse_location/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links coarse location data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/coarse_location/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses coarse location data for tracking.
+		</member>
+		<member name="privacy/collected_data/contacts/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects contacts.
+		</member>
+		<member name="privacy/collected_data/contacts/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects contacts. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/contacts/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links contacts to the user's identity.
+		</member>
+		<member name="privacy/collected_data/contacts/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses contacts for tracking.
+		</member>
+		<member name="privacy/collected_data/crash_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects crash data.
+		</member>
+		<member name="privacy/collected_data/crash_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects crash data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/crash_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links crash data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/crash_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses crash data for tracking.
+		</member>
+		<member name="privacy/collected_data/credit_info/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects credit information.
+		</member>
+		<member name="privacy/collected_data/credit_info/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects credit information. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/credit_info/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links credit information to the user's identity.
+		</member>
+		<member name="privacy/collected_data/credit_info/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses credit information for tracking.
+		</member>
+		<member name="privacy/collected_data/customer_support/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects customer support data.
+		</member>
+		<member name="privacy/collected_data/customer_support/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects customer support data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/customer_support/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links customer support data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/customer_support/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses customer support data for tracking.
+		</member>
+		<member name="privacy/collected_data/device_id/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects device IDs.
+		</member>
+		<member name="privacy/collected_data/device_id/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects device IDs. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/device_id/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links device IDs to the user's identity.
+		</member>
+		<member name="privacy/collected_data/device_id/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses device IDs for tracking.
+		</member>
+		<member name="privacy/collected_data/email_address/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects email address.
+		</member>
+		<member name="privacy/collected_data/email_address/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects email address. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/email_address/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links email address to the user's identity.
+		</member>
+		<member name="privacy/collected_data/email_address/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses email address for tracking.
+		</member>
+		<member name="privacy/collected_data/emails_or_text_messages/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects emails or text messages.
+		</member>
+		<member name="privacy/collected_data/emails_or_text_messages/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects emails or text messages. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/emails_or_text_messages/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links emails or text messages to the user's identity.
+		</member>
+		<member name="privacy/collected_data/emails_or_text_messages/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses emails or text messages for tracking.
+		</member>
+		<member name="privacy/collected_data/environment_scanning/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects environment scanning data.
+		</member>
+		<member name="privacy/collected_data/environment_scanning/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects environment scanning data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/environment_scanning/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links environment scanning data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/environment_scanning/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses environment scanning data for tracking.
+		</member>
+		<member name="privacy/collected_data/fitness/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects fitness and exercise data.
+		</member>
+		<member name="privacy/collected_data/fitness/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects fitness and exercise data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/fitness/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links fitness and exercise data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/fitness/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses fitness and exercise data for tracking.
+		</member>
+		<member name="privacy/collected_data/gameplay_content/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects gameplay content.
+		</member>
+		<member name="privacy/collected_data/gameplay_content/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects gameplay content. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/gameplay_content/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links gameplay content to the user's identity.
+		</member>
+		<member name="privacy/collected_data/gameplay_content/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses gameplay content for tracking.
+		</member>
+		<member name="privacy/collected_data/hands/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects user's hand structure and hand movements.
+		</member>
+		<member name="privacy/collected_data/hands/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects user's hand structure and hand movements. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/hands/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links user's hand structure and hand movements to the user's identity.
+		</member>
+		<member name="privacy/collected_data/hands/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses user's hand structure and hand movements for tracking.
+		</member>
+		<member name="privacy/collected_data/head/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects user's head movement.
+		</member>
+		<member name="privacy/collected_data/head/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects user's head movement. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/head/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links user's head movement to the user's identity.
+		</member>
+		<member name="privacy/collected_data/head/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses user's head movement for tracking.
+		</member>
+		<member name="privacy/collected_data/health/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects health and medical data.
+		</member>
+		<member name="privacy/collected_data/health/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects health and medical data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/health/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links health and medical data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/health/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses health and medical data for tracking.
+		</member>
+		<member name="privacy/collected_data/name/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects user's name.
+		</member>
+		<member name="privacy/collected_data/name/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects user's name. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/name/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links user's name to the user's identity.
+		</member>
+		<member name="privacy/collected_data/name/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses user's name for tracking.
+		</member>
+		<member name="privacy/collected_data/other_contact_info/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other contact information.
+		</member>
+		<member name="privacy/collected_data/other_contact_info/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other contact information. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_contact_info/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other contact information to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_contact_info/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other contact information for tracking.
+		</member>
+		<member name="privacy/collected_data/other_data_types/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other data.
+		</member>
+		<member name="privacy/collected_data/other_data_types/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_data_types/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_data_types/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other data for tracking.
+		</member>
+		<member name="privacy/collected_data/other_diagnostic_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other diagnostic data.
+		</member>
+		<member name="privacy/collected_data/other_diagnostic_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other diagnostic data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_diagnostic_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other diagnostic data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_diagnostic_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other diagnostic data for tracking.
+		</member>
+		<member name="privacy/collected_data/other_financial_info/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other financial information.
+		</member>
+		<member name="privacy/collected_data/other_financial_info/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other financial information. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_financial_info/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other financial information to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_financial_info/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other financial information for tracking.
+		</member>
+		<member name="privacy/collected_data/other_usage_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other usage data.
+		</member>
+		<member name="privacy/collected_data/other_usage_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other usage data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_usage_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other usage data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_usage_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other usage data for tracking.
+		</member>
+		<member name="privacy/collected_data/other_user_content/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects any other user generated content.
+		</member>
+		<member name="privacy/collected_data/other_user_content/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects any other user generated content. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/other_user_content/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links any other user generated content to the user's identity.
+		</member>
+		<member name="privacy/collected_data/other_user_content/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses any other user generated content for tracking.
+		</member>
+		<member name="privacy/collected_data/payment_info/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects payment information.
+		</member>
+		<member name="privacy/collected_data/payment_info/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects payment information. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/payment_info/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links payment information to the user's identity.
+		</member>
+		<member name="privacy/collected_data/payment_info/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses payment information for tracking.
+		</member>
+		<member name="privacy/collected_data/performance_data/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects performance data.
+		</member>
+		<member name="privacy/collected_data/performance_data/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects performance data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/performance_data/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links performance data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/performance_data/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses performance data for tracking.
+		</member>
+		<member name="privacy/collected_data/phone_number/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects phone number.
+		</member>
+		<member name="privacy/collected_data/phone_number/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects phone number. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/phone_number/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links phone number to the user's identity.
+		</member>
+		<member name="privacy/collected_data/phone_number/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses phone number for tracking.
+		</member>
+		<member name="privacy/collected_data/photos_or_videos/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects photos or videos.
+		</member>
+		<member name="privacy/collected_data/photos_or_videos/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects photos or videos. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/photos_or_videos/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links photos or videos to the user's identity.
+		</member>
+		<member name="privacy/collected_data/photos_or_videos/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses photos or videos for tracking.
+		</member>
+		<member name="privacy/collected_data/physical_address/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects physical address.
+		</member>
+		<member name="privacy/collected_data/physical_address/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects physical address. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/physical_address/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links physical address to the user's identity.
+		</member>
+		<member name="privacy/collected_data/physical_address/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses physical address for tracking.
+		</member>
+		<member name="privacy/collected_data/precise_location/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects precise location data.
+		</member>
+		<member name="privacy/collected_data/precise_location/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects precise location data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/precise_location/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links precise location data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/precise_location/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses precise location data for tracking.
+		</member>
+		<member name="privacy/collected_data/product_interaction/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects product interaction data.
+		</member>
+		<member name="privacy/collected_data/product_interaction/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects product interaction data. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/product_interaction/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links product interaction data to the user's identity.
+		</member>
+		<member name="privacy/collected_data/product_interaction/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses product interaction data for tracking.
+		</member>
+		<member name="privacy/collected_data/purchase_history/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects purchase history.
+		</member>
+		<member name="privacy/collected_data/purchase_history/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects purchase history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/purchase_history/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links purchase history to the user's identity.
+		</member>
+		<member name="privacy/collected_data/purchase_history/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses purchase history for tracking.
+		</member>
+		<member name="privacy/collected_data/search_hhistory/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects search history.
+		</member>
+		<member name="privacy/collected_data/search_hhistory/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects search history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/search_hhistory/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links search history to the user's identity.
+		</member>
+		<member name="privacy/collected_data/search_hhistory/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses search history for tracking.
+		</member>
+		<member name="privacy/collected_data/sensitive_info/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects sensitive user information.
+		</member>
+		<member name="privacy/collected_data/sensitive_info/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects sensitive user information. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/sensitive_info/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links sensitive user information to the user's identity.
+		</member>
+		<member name="privacy/collected_data/sensitive_info/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses sensitive user information for tracking.
+		</member>
+		<member name="privacy/collected_data/user_id/collected" type="bool" setter="" getter="">
+			Indicates whether your app collects user IDs.
+		</member>
+		<member name="privacy/collected_data/user_id/collection_purposes" type="int" setter="" getter="">
+			The reasons your app collects user IDs. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+		</member>
+		<member name="privacy/collected_data/user_id/linked_to_user" type="bool" setter="" getter="">
+			Indicates whether your app links user IDs to the user's identity.
+		</member>
+		<member name="privacy/collected_data/user_id/used_for_tracking" type="bool" setter="" getter="">
+			Indicates whether your app uses user IDs for tracking.
+		</member>
+		<member name="privacy/disk_space_access_reasons" type="int" setter="" getter="">
+			The reasons your app use free disk space API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="privacy/file_timestamp_access_reasons" type="int" setter="" getter="">
+			The reasons your app use file timestamp/metadata API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="privacy/microphone_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the device's microphone (in English).
+		</member>
+		<member name="privacy/microphone_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the device's microphone (localized).
+		</member>
+		<member name="privacy/photolibrary_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to the user's photo library (in English).
+		</member>
+		<member name="privacy/photolibrary_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to the user's photo library (localized).
+		</member>
+		<member name="privacy/system_boot_time_access_reasons" type="int" setter="" getter="">
+			The reasons your app use system boot time / absolute time API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="privacy/tracking_domains" type="PackedStringArray" setter="" getter="">
+			The list of internet domains your app connects to that engage in tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
+		</member>
+		<member name="privacy/tracking_enabled" type="bool" setter="" getter="">
+			Indicates whether your app uses data for tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
+		</member>
+		<member name="privacy/user_defaults_access_reasons" type="int" setter="" getter="">
+			The reasons your app use user defaults API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="storyboard/custom_bg_color" type="Color" setter="" getter="">
+			A custom background color of the storyboard launch screen.
+		</member>
+		<member name="storyboard/custom_image@2x" type="String" setter="" getter="">
+			Application launch screen image file (2x DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
+		</member>
+		<member name="storyboard/custom_image@3x" type="String" setter="" getter="">
+			Application launch screen image file (3x DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
+		</member>
+		<member name="storyboard/image_scale_mode" type="int" setter="" getter="">
+			Launch screen image scaling mode.
+		</member>
+		<member name="storyboard/use_custom_bg_color" type="bool" setter="" getter="">
+			If [code]true[/code], [member storyboard/custom_bg_color] is used as a launch screen background color, otherwise [code]application/boot_splash/bg_color[/code] project setting is used.
+		</member>
+		<member name="user_data/accessible_from_files_app" type="bool" setter="" getter="">
+			If [code]true[/code], the app "Documents" folder can be accessed via "Files" app. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/lssupportsopeningdocumentsinplace]LSSupportsOpeningDocumentsInPlace[/url].
+		</member>
+		<member name="user_data/accessible_from_itunes_sharing" type="bool" setter="" getter="">
+			If [code]true[/code], the app "Documents" folder can be accessed via iTunes file sharing. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/uifilesharingenabled]UIFileSharingEnabled[/url].
+		</member>
+	</members>
+</class>

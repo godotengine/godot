@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Resource" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for serializable objects.
+	</brief_description>
+	<description>
+		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [RefCounted], resources are reference-counted and freed when no longer in use. They can also be nested within other resources, and saved on disk. [PackedScene], one of the most common [Object]s in a Godot project, is also a resource, uniquely capable of storing and instantiating the [Node]s it contains as many times as desired.
+		In GDScript, resources can loaded from disk by their [member resource_path] using [method @GDScript.load] or [method @GDScript.preload].
+		The engine keeps a global cache of all loaded resources, referenced by paths (see [method ResourceLoader.has_cached]). A resource will be cached when loaded for the first time and removed from cache once all references are released. When a resource is cached, subsequent loads using its path will return the cached reference.
+		[b]Note:[/b] In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will remain in memory for a while before being removed.
+	</description>
+	<tutorials>
+		<link title="Resources">$DOCS_URL/tutorials/scripting/resources.html</link>
+		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
+	</tutorials>
+	<methods>
+		<method name="_get_rid" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Override this method to return a custom [RID] when [method get_rid] is called.
+			</description>
+		</method>
+		<method name="_reset_state" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], this method should be implemented to correctly clear the resource's state.
+			</description>
+		</method>
+		<method name="_set_path_cache" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the resource's path to [param path] without involving the resource cache.
+			</description>
+		</method>
+		<method name="_setup_local_to_scene" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this method to customize the newly duplicated resource created from [method PackedScene.instantiate], if the original's [member resource_local_to_scene] is set to [code]true[/code].
+				[b]Example:[/b] Set a random [code]damage[/code] value to every local resource from an instantiated scene:
+				[codeblock]
+				extends Resource
+
+				var damage = 0
+
+				func _setup_local_to_scene():
+				    damage = randi_range(10, 40)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Resource" />
+			<param index="0" name="subresources" type="bool" default="false" />
+			<description>
+				Duplicates this resource, returning a new resource with its [code]export[/code]ed or [constant PROPERTY_USAGE_STORAGE] properties copied from the original.
+				If [param subresources] is [code]false[/code], a shallow copy is returned; nested resources within subresources are not duplicated and are shared with the original resource (with one exception; see below). If [param subresources] is [code]true[/code], a deep copy is returned; nested subresources will be duplicated and are not shared (with two exceptions; see below).
+				[param subresources] is usually respected, with the following exceptions:
+				- Subresource properties with the [constant PROPERTY_USAGE_ALWAYS_DUPLICATE] flag are always duplicated.
+				- Subresource properties with the [constant PROPERTY_USAGE_NEVER_DUPLICATE] flag are never duplicated.
+				- Subresources inside [Array] and [Dictionary] properties are never duplicated.
+				[b]Note:[/b] For custom resources, this method will fail if [method Object._init] has been defined with required parameters.
+			</description>
+		</method>
+		<method name="emit_changed">
+			<return type="void" />
+			<description>
+				Emits the [signal changed] signal. This method is called automatically for some built-in resources.
+				[b]Note:[/b] For custom resources, it's recommended to call this method whenever a meaningful change occurs, such as a modified property. This ensures that custom [Object]s depending on the resource are properly updated.
+				[codeblock]
+				var damage:
+				    set(new_value):
+				        if damage != new_value:
+				            damage = new_value
+				            emit_changed()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="generate_scene_unique_id" qualifiers="static">
+			<return type="String" />
+			<description>
+				Generates a unique identifier for a resource to be contained inside a [PackedScene], based on the current date, time, and a random value. The returned string is only composed of letters ([code]a[/code] to [code]y[/code]) and numbers ([code]0[/code] to [code]8[/code]). See also [member resource_scene_unique_id].
+			</description>
+		</method>
+		<method name="get_id_for_path" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the unique identifier for the resource with the given [param path] from the resource cache. If the resource is not loaded and cached, an empty string is returned.
+				[b]Note:[/b] This method is only implemented when running in an editor context. At runtime, it returns an empty string.
+			</description>
+		</method>
+		<method name="get_local_scene" qualifiers="const">
+			<return type="Node" />
+			<description>
+				If [member resource_local_to_scene] is set to [code]true[/code] and the resource has been loaded from a [PackedScene] instantiation, returns the root [Node] of the scene where this resource is used. Otherwise, returns [code]null[/code].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
+			</description>
+		</method>
+		<method name="is_built_in" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the resource is built-in (from the engine) or [code]false[/code] if it is user-defined.
+			</description>
+		</method>
+		<method name="reset_state">
+			<return type="void" />
+			<description>
+				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], override [method _reset_state] to correctly clear the resource's state.
+			</description>
+		</method>
+		<method name="set_id_for_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="id" type="String" />
+			<description>
+				Sets the unique identifier to [param id] for the resource with the given [param path] in the resource cache. If the unique identifier is empty, the cache entry using [param path] is removed if it exists.
+				[b]Note:[/b] This method is only implemented when running in an editor context.
+			</description>
+		</method>
+		<method name="set_path_cache">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the resource's path to [param path] without involving the resource cache.
+			</description>
+		</method>
+		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
+			<return type="void" />
+			<description>
+				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
+			</description>
+		</method>
+		<method name="take_over_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the [member resource_path] to [param path], potentially overriding an existing cache entry for this path. Further attempts to load an overridden resource by path will instead return this resource.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" default="false">
+			If [code]true[/code], the resource is duplicated for each instance of all scenes using it. At run-time, the resource can be modified in one scene without affecting other instances (see [method PackedScene.instantiate]).
+			[b]Note:[/b] Changing this property at run-time has no effect on already created duplicate resources.
+		</member>
+		<member name="resource_name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
+			An optional name for this resource. When defined, its value is displayed to represent the resource in the Inspector dock. For built-in scripts, the name is displayed as part of the tab name in the script editor.
+			[b]Note:[/b] Some resource formats do not support resource names. You can still set the name in the editor or via code, but it will be lost when the resource is reloaded. For example, only built-in scripts can have a resource name, while scripts stored in separate files cannot.
+		</member>
+		<member name="resource_path" type="String" setter="set_path" getter="get_path" default="&quot;&quot;">
+			The unique path to this resource. If it has been saved to disk, the value will be its filepath. If the resource is exclusively contained within a scene, the value will be the [PackedScene]'s filepath, followed by a unique identifier.
+			[b]Note:[/b] Setting this property manually may fail if a resource with the same path has already been previously loaded. If necessary, use [method take_over_path].
+		</member>
+		<member name="resource_scene_unique_id" type="String" setter="set_scene_unique_id" getter="get_scene_unique_id">
+			An unique identifier relative to the this resource's scene. If left empty, the ID is automatically generated when this resource is saved inside a [PackedScene]. If the resource is not inside a scene, this property is empty by default.
+			[b]Note:[/b] When the [PackedScene] is saved, if multiple resources in the same scene use the same ID, only the earliest resource in the scene hierarchy keeps the original ID. The other resources are assigned new IDs from [method generate_scene_unique_id].
+			[b]Note:[/b] Setting this property does not emit the [signal changed] signal.
+			[b]Warning:[/b] When setting, the ID must only consist of letters, numbers, and underscores. Otherwise, it will fail and default to a randomly generated ID.
+		</member>
+	</members>
+	<signals>
+		<signal name="changed">
+			<description>
+				Emitted when the resource changes, usually when one of its properties is modified. See also [method emit_changed].
+				[b]Note:[/b] This signal is not emitted automatically for properties of custom resources. If necessary, a setter needs to be created to emit the signal.
+			</description>
+		</signal>
+		<signal name="setup_local_to_scene_requested" deprecated="This signal is only emitted when the resource is created. Override [method _setup_local_to_scene] instead.">
+			<description>
+				Emitted by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code].
+			</description>
+		</signal>
+	</signals>
+</class>

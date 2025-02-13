@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamWAV" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores audio data loaded from WAV files.
+	</brief_description>
+	<description>
+		AudioStreamWAV stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
+		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
+	</description>
+	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+	</tutorials>
+	<methods>
+		<method name="load_from_buffer" qualifiers="static">
+			<return type="AudioStreamWAV" />
+			<param index="0" name="stream_data" type="PackedByteArray" />
+			<param index="1" name="options" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [AudioStreamWAV] instance from the given buffer. The buffer must contain WAV data.
+				The keys and values of [param options] match the properties of [ResourceImporterWAV]. The usage of [param options] is identical to [method AudioStreamWAV.load_from_file].
+			</description>
+		</method>
+		<method name="load_from_file" qualifiers="static">
+			<return type="AudioStreamWAV" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="options" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [AudioStreamWAV] instance from the given file path. The file must be in WAV format.
+				The keys and values of [param options] match the properties of [ResourceImporterWAV].
+				[b]Example:[/b] Load the first file dropped as a WAV and play it:
+				[codeblock]
+				@onready var audio_player = $AudioStreamPlayer
+
+				func _ready():
+				    get_window().files_dropped.connect(_on_files_dropped)
+
+				func _on_files_dropped(files):
+				    if files[0].get_extension() == "wav":
+				        audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
+				                "force/max_rate": true,
+				                "force/max_rate_hz": 11025
+				            })
+				        audio_player.play()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="save_to_wav">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves the AudioStreamWAV as a WAV file to [param path]. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
+				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
+			Contains the audio data in bytes.
+			[b]Note:[/b] If [member format] is set to [constant FORMAT_8_BITS], this property expects signed 8-bit PCM data. To convert from unsigned 8-bit PCM, subtract 128 from each byte.
+			[b]Note:[/b] If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.
+		</member>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
+			Audio format. See [enum Format] constants for values.
+		</member>
+		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
+			The loop start point (in number of samples, relative to the beginning of the stream).
+		</member>
+		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
+			The loop end point (in number of samples, relative to the beginning of the stream).
+		</member>
+		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
+			The loop mode. See [enum LoopMode] constants for values.
+		</member>
+		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
+			The sample rate for mixing this audio. Higher values require more storage space, but result in better quality.
+			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are using lower-pitched sounds such as voices, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with no loss in quality.
+		</member>
+		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
+			If [code]true[/code], audio is stereo.
+		</member>
+	</members>
+	<constants>
+		<constant name="FORMAT_8_BITS" value="0" enum="Format">
+			8-bit PCM audio codec.
+		</constant>
+		<constant name="FORMAT_16_BITS" value="1" enum="Format">
+			16-bit PCM audio codec.
+		</constant>
+		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
+			Audio is lossily compressed as IMA ADPCM.
+		</constant>
+		<constant name="FORMAT_QOA" value="3" enum="Format">
+			Audio is lossily compressed as [url=https://qoaformat.org/]Quite OK Audio[/url].
+		</constant>
+		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
+			Audio does not loop.
+		</constant>
+		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
+			Audio loops the data between [member loop_begin] and [member loop_end], playing forward only.
+		</constant>
+		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
+			Audio loops the data between [member loop_begin] and [member loop_end], playing back and forth.
+		</constant>
+		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">
+			Audio loops the data between [member loop_begin] and [member loop_end], playing backward only.
+		</constant>
+	</constants>
+</class>

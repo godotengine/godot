@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DampedSpringJoint2D" inherits="Joint2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A physics joint that connects two 2D physics bodies with a spring-like force.
+	</brief_description>
+	<description>
+		A physics joint that connects two 2D physics bodies with a spring-like force. This resembles a spring that always wants to stretch to a given length.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="1.0">
+			The spring joint's damping ratio. A value between [code]0[/code] and [code]1[/code]. When the two bodies move into different directions the system tries to align them to the spring axis again. A high [member damping] value forces the attached bodies to align faster.
+		</member>
+		<member name="length" type="float" setter="set_length" getter="get_length" default="50.0">
+			The spring joint's maximum length. The two attached bodies cannot stretch it past this value.
+		</member>
+		<member name="rest_length" type="float" setter="set_rest_length" getter="get_rest_length" default="0.0">
+			When the bodies attached to the spring joint move they stretch or squash it. The joint always tries to resize towards this length.
+		</member>
+		<member name="stiffness" type="float" setter="set_stiffness" getter="get_stiffness" default="20.0">
+			The higher the value, the less the bodies attached to the joint will deform it. The joint applies an opposing force to the bodies, the product of the stiffness multiplied by the size difference from its resting length.
+		</member>
+	</members>
+</class>

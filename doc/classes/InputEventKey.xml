@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventKey" inherits="InputEventWithModifiers" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a key on a keyboard being pressed or released.
+	</brief_description>
+	<description>
+		An input event for keys on a keyboard. Supports key presses, key releases and [member echo] events. It can also be received in [method Node._unhandled_key_input].
+		[b]Note:[/b] Events received from the keyboard usually have all properties set. Event mappings should have only one of the [member keycode], [member physical_keycode] or [member unicode] set.
+		When events are compared, properties are checked in the following priority - [member keycode], [member physical_keycode] and [member unicode]. Events with the first matching value will be considered equal.
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<methods>
+		<method name="as_text_key_label" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event's [member key_label] and modifiers.
+			</description>
+		</method>
+		<method name="as_text_keycode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event's [member keycode] and modifiers.
+			</description>
+		</method>
+		<method name="as_text_location" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event's [member location]. This will be a blank string if the event is not specific to a location.
+			</description>
+		</method>
+		<method name="as_text_physical_keycode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a [String] representation of the event's [member physical_keycode] and modifiers.
+			</description>
+		</method>
+		<method name="get_key_label_with_modifiers" qualifiers="const">
+			<return type="int" enum="Key" />
+			<description>
+				Returns the localized key label combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
+				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_key_label_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
+			</description>
+		</method>
+		<method name="get_keycode_with_modifiers" qualifiers="const">
+			<return type="int" enum="Key" />
+			<description>
+				Returns the Latin keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
+				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
+			</description>
+		</method>
+		<method name="get_physical_keycode_with_modifiers" qualifiers="const">
+			<return type="int" enum="Key" />
+			<description>
+				Returns the physical keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
+				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_physical_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="echo" type="bool" setter="set_echo" getter="is_echo" default="false" keywords="repeat">
+			If [code]true[/code], the key was already pressed before this event. An echo event is a repeated key event sent when the user is holding down the key.
+			[b]Note:[/b] The rate at which echo events are sent is typically around 20 events per second (after holding down the key for roughly half a second). However, the key repeat delay/speed can be changed by the user or disabled entirely in the operating system settings. To ensure your project works correctly on all configurations, do not assume the user has a specific key repeat configuration in your project's behavior.
+		</member>
+		<member name="key_label" type="int" setter="set_key_label" getter="get_key_label" enum="Key" default="0">
+			Represents the localized label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants or any valid Unicode character.
+			For keyboard layouts with a single label on the key, it is equivalent to [member keycode].
+			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.key_label)[/code] where [code]event[/code] is the [InputEventKey].
+			[codeblock lang=text]
+			    +-----+ +-----+
+			    | Q   | | Q   | - "Q" - keycode
+			    |   Й | |  ض | - "Й" and "ض" - key_label
+			    +-----+ +-----+
+			[/codeblock]
+		</member>
+		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" enum="Key" default="0">
+			Latin label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants.
+			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
+			[codeblock lang=text]
+			    +-----+ +-----+
+			    | Q   | | Q   | - "Q" - keycode
+			    |   Й | |  ض | - "Й" and "ض" - key_label
+			    +-----+ +-----+
+			[/codeblock]
+		</member>
+		<member name="location" type="int" setter="set_location" getter="get_location" enum="KeyLocation" default="0">
+			Represents the location of a key which has both left and right versions, such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd].
+		</member>
+		<member name="physical_keycode" type="int" setter="set_physical_keycode" getter="get_physical_keycode" enum="Key" default="0">
+			Represents the physical location of a key on the 101/102-key US QWERTY keyboard, which corresponds to one of the [enum Key] constants.
+			To get a human-readable representation of the [InputEventKey], use [method OS.get_keycode_string] in combination with [method DisplayServer.keyboard_get_keycode_from_physical]:
+			[codeblocks]
+			[gdscript]
+			func _input(event):
+			    if event is InputEventKey:
+			        var keycode = DisplayServer.keyboard_get_keycode_from_physical(event.physical_keycode)
+			        print(OS.get_keycode_string(keycode))
+			[/gdscript]
+			[csharp]
+			public override void _Input(InputEvent @event)
+			{
+			    if (@event is InputEventKey inputEventKey)
+			    {
+			        var keycode = DisplayServer.KeyboardGetKeycodeFromPhysical(inputEventKey.PhysicalKeycode);
+			        GD.Print(OS.GetKeycodeString(keycode));
+			    }
+			}
+			[/csharp]
+			[/codeblocks]
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
+			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
+		</member>
+		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode" default="0">
+			The key Unicode character code (when relevant), shifted by modifier keys. Unicode character codes for composite characters and complex scripts may not be available unless IME input mode is active. See [method Window.set_ime_active] for more information.
+		</member>
+	</members>
+</class>

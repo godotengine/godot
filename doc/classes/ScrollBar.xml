@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScrollBar" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for scrollbars.
+	</brief_description>
+	<description>
+		Abstract base class for scrollbars, typically used to navigate through content that extends beyond the visible area of a control. Scrollbars are [Range]-based controls.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="custom_step" type="float" setter="set_custom_step" getter="get_custom_step" default="-1.0">
+			Overrides the step used when clicking increment and decrement buttons or when using arrow keys when the [ScrollBar] is focused.
+		</member>
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="0.0" />
+	</members>
+	<signals>
+		<signal name="scrolling">
+			<description>
+				Emitted when the scrollbar is being scrolled.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="decrement" data_type="icon" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] left/up. Supports custom step using the [member ScrollBar.custom_step] property.
+		</theme_item>
+		<theme_item name="decrement_highlight" data_type="icon" type="Texture2D">
+			Displayed when the mouse cursor hovers over the decrement button.
+		</theme_item>
+		<theme_item name="decrement_pressed" data_type="icon" type="Texture2D">
+			Displayed when the decrement button is being pressed.
+		</theme_item>
+		<theme_item name="increment" data_type="icon" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] right/down. Supports custom step using the [member ScrollBar.custom_step] property.
+		</theme_item>
+		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
+			Displayed when the mouse cursor hovers over the increment button.
+		</theme_item>
+		<theme_item name="increment_pressed" data_type="icon" type="Texture2D">
+			Displayed when the increment button is being pressed.
+		</theme_item>
+		<theme_item name="grabber" data_type="style" type="StyleBox">
+			Used as texture for the grabber, the draggable element representing current scroll.
+		</theme_item>
+		<theme_item name="grabber_highlight" data_type="style" type="StyleBox">
+			Used when the mouse hovers over the grabber.
+		</theme_item>
+		<theme_item name="grabber_pressed" data_type="style" type="StyleBox">
+			Used when the grabber is being dragged.
+		</theme_item>
+		<theme_item name="scroll" data_type="style" type="StyleBox">
+			Used as background of this [ScrollBar].
+		</theme_item>
+		<theme_item name="scroll_focus" data_type="style" type="StyleBox">
+			Used as background when the [ScrollBar] has the GUI focus.
+		</theme_item>
+	</theme_items>
+</class>

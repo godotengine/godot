@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from glob import glob
+from pathlib import Path
+
+import methods
+
+Import("env")
+
+env.platform_sources = []
+
+
+# Generate export icons
+def export_icon_builder(target, source, env):
+    src_path = Path(str(source[0]))
+    src_name = src_path.stem
+    platform = src_path.parent.parent.stem
+    with open(str(source[0]), "r") as file:
+        svg = file.read()
+    with methods.generated_wrapper(target, prefix=platform) as file:
+        file.write(
+            f"""\
+static const char *_{platform}_{src_name}_svg = {methods.to_raw_cstring(svg)};
+"""
+        )
+
+
+for platform in env.platform_exporters:
+    for path in glob(f"{platform}/export/*.svg"):
+        env.CommandNoCache(path.replace(".svg", "_svg.gen.h"), path, env.Run(export_icon_builder))
+
+
+# Register platform-exclusive APIs
+def register_platform_apis_builder(target, source, env):
+    platforms = source[0].read()
+    api_inc = "\n".join([f'#include "{p}/api/api.h"' for p in platforms])
+    api_reg = "\n".join([f"\tregister_{p}_api();" for p in platforms])
+    api_unreg = "\n".join([f"\tunregister_{p}_api();" for p in platforms])
+    with methods.generated_wrapper(target) as file:
+        file.write(
+            f"""\
+#include "register_platform_apis.h"
+
+{api_inc}
+
+void register_platform_apis() {{
+{api_reg}
+}}
+
+void unregister_platform_apis() {{
+{api_unreg}
+}}
+"""
+        )
+
+
+register_platform_apis = env.CommandNoCache(
+    "register_platform_apis.gen.cpp", env.Value(env.platform_apis), env.Run(register_platform_apis_builder)
+)
+env.add_source_files(env.platform_sources, register_platform_apis)
+for platform in env.platform_apis:
+    env.add_source_files(env.platform_sources, f"{platform}/api/*.cpp")
+
+lib = env.add_library("platform", env.platform_sources)
+env.Prepend(LIBS=[lib])

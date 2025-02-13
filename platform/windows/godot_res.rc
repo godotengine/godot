@@ -1,0 +1,34 @@
+#include "core/version.h"
+
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+
+GODOT_ICON ICON platform/windows/godot.ico
+1 RT_MANIFEST "godot.manifest"
+
+1 VERSIONINFO
+FILEVERSION     VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
+PRODUCTVERSION  VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
+FILEOS          4
+FILETYPE        1
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",            "Godot Engine"
+            VALUE "FileDescription",        VERSION_NAME
+            VALUE "FileVersion",            VERSION_NUMBER
+            VALUE "ProductName",            VERSION_NAME
+            VALUE "Licence",                "MIT"
+            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
+            VALUE "Info",                   "https://godotengine.org"
+            VALUE "ProductVersion",         VERSION_FULL_BUILD
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

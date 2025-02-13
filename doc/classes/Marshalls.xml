@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Marshalls" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Data transformation (marshaling) and encoding helpers.
+	</brief_description>
+	<description>
+		Provides data transformation and encoding utility functions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="base64_to_raw">
+			<return type="PackedByteArray" />
+			<param index="0" name="base64_str" type="String" />
+			<description>
+				Returns a decoded [PackedByteArray] corresponding to the Base64-encoded string [param base64_str].
+			</description>
+		</method>
+		<method name="base64_to_utf8">
+			<return type="String" />
+			<param index="0" name="base64_str" type="String" />
+			<description>
+				Returns a decoded string corresponding to the Base64-encoded string [param base64_str].
+			</description>
+		</method>
+		<method name="base64_to_variant">
+			<return type="Variant" />
+			<param index="0" name="base64_str" type="String" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
+			<description>
+				Returns a decoded [Variant] corresponding to the Base64-encoded string [param base64_str]. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
+			</description>
+		</method>
+		<method name="raw_to_base64">
+			<return type="String" />
+			<param index="0" name="array" type="PackedByteArray" />
+			<description>
+				Returns a Base64-encoded string of a given [PackedByteArray].
+			</description>
+		</method>
+		<method name="utf8_to_base64">
+			<return type="String" />
+			<param index="0" name="utf8_str" type="String" />
+			<description>
+				Returns a Base64-encoded string of the UTF-8 string [param utf8_str].
+			</description>
+		</method>
+		<method name="variant_to_base64">
+			<return type="String" />
+			<param index="0" name="variant" type="Variant" />
+			<param index="1" name="full_objects" type="bool" default="false" />
+			<description>
+				Returns a Base64-encoded string of the [Variant] [param variant]. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
+			</description>
+		</method>
+	</methods>
+</class>

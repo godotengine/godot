@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebRTCDataChannel" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes this data channel, notifying the other peer.
+			</description>
+		</method>
+		<method name="get_buffered_amount" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of bytes currently queued to be sent over this channel.
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID assigned to this channel during creation (or auto-assigned during negotiation).
+				If the channel is not negotiated out-of-band the ID will only be available after the connection is established (will return [code]65535[/code] until then).
+			</description>
+		</method>
+		<method name="get_label" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the label assigned to this channel during creation.
+			</description>
+		</method>
+		<method name="get_max_packet_life_time" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [code]maxPacketLifeTime[/code] value assigned to this channel during creation.
+				Will be [code]65535[/code] if not specified.
+			</description>
+		</method>
+		<method name="get_max_retransmits" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [code]maxRetransmits[/code] value assigned to this channel during creation.
+				Will be [code]65535[/code] if not specified.
+			</description>
+		</method>
+		<method name="get_protocol" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the sub-protocol assigned to this channel during creation. An empty string if not specified.
+			</description>
+		</method>
+		<method name="get_ready_state" qualifiers="const">
+			<return type="int" enum="WebRTCDataChannel.ChannelState" />
+			<description>
+				Returns the current state of this channel, see [enum ChannelState].
+			</description>
+		</method>
+		<method name="is_negotiated" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this channel was created with out-of-band configuration.
+			</description>
+		</method>
+		<method name="is_ordered" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this channel was created with ordering enabled (default).
+			</description>
+		</method>
+		<method name="poll">
+			<return type="int" enum="Error" />
+			<description>
+				Reserved, but not used for now.
+			</description>
+		</method>
+		<method name="was_string_packet" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the last received packet was transferred as text. See [member write_mode].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="write_mode" type="int" setter="set_write_mode" getter="get_write_mode" enum="WebRTCDataChannel.WriteMode" default="1">
+			The transfer mode to use when sending outgoing packet. Either text or binary.
+		</member>
+	</members>
+	<constants>
+		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
+			Tells the channel to send data over this channel as text. An external peer (non-Godot) would receive this as a string.
+		</constant>
+		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
+			Tells the channel to send data over this channel as binary. An external peer (non-Godot) would receive this as array buffer or blob.
+		</constant>
+		<constant name="STATE_CONNECTING" value="0" enum="ChannelState">
+			The channel was created, but it's still trying to connect.
+		</constant>
+		<constant name="STATE_OPEN" value="1" enum="ChannelState">
+			The channel is currently open, and data can flow over it.
+		</constant>
+		<constant name="STATE_CLOSING" value="2" enum="ChannelState">
+			The channel is being closed, no new messages will be accepted, but those already in queue will be flushed.
+		</constant>
+		<constant name="STATE_CLOSED" value="3" enum="ChannelState">
+			The channel was closed, or connection failed.
+		</constant>
+	</constants>
+</class>

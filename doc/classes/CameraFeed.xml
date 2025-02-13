@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraFeed" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A camera feed gives you access to a single physical camera attached to your device.
+	</brief_description>
+	<description>
+		A camera feed gives you access to a single physical camera attached to your device. When enabled, Godot will start capturing frames from the camera which can then be used. See also [CameraServer].
+		[b]Note:[/b] Many cameras will return YCbCr images which are split into two textures and need to be combined in a shader. Godot does this automatically for you if you set the environment to show the camera image in the background.
+		[b]Note:[/b] This class is currently only implemented on Linux, macOS, and iOS. On other platforms no [CameraFeed]s will be available. To get a [CameraFeed] on iOS, the camera plugin from [url=https://github.com/godotengine/godot-ios-plugins]godot-ios-plugins[/url] is required.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_activate_feed" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Called when the camera feed is activated.
+			</description>
+		</method>
+		<method name="_deactivate_feed" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the camera feed is deactivated.
+			</description>
+		</method>
+		<method name="get_datatype" qualifiers="const">
+			<return type="int" enum="CameraFeed.FeedDataType" />
+			<description>
+				Returns feed image data type.
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique ID for this feed.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the camera's name.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="int" enum="CameraFeed.FeedPosition" />
+			<description>
+				Returns the position of camera on the device.
+			</description>
+		</method>
+		<method name="get_texture_tex_id">
+			<return type="int" />
+			<param index="0" name="feed_image_type" type="int" enum="CameraServer.FeedImage" />
+			<description>
+				Returns the texture backend ID (usable by some external libraries that need a handle to a texture to write data).
+			</description>
+		</method>
+		<method name="set_external">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<description>
+				Sets the feed as external feed provided by another library.
+			</description>
+		</method>
+		<method name="set_format">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Sets the feed format parameters for the given index in the [member formats] array. Returns [code]true[/code] on success. By default YUYV encoded stream is transformed to FEED_RGB. YUYV encoded stream output format can be changed with [param parameters].output value:
+				[code]separate[/code] will result in FEED_YCBCR_SEP
+				[code]grayscale[/code] will result in desaturated FEED_RGB
+				[code]copy[/code] will result in FEED_YCBCR
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Sets the camera's name.
+			</description>
+		</method>
+		<method name="set_position">
+			<return type="void" />
+			<param index="0" name="position" type="int" enum="CameraFeed.FeedPosition" />
+			<description>
+				Sets the position of this camera.
+			</description>
+		</method>
+		<method name="set_rgb_image">
+			<return type="void" />
+			<param index="0" name="rgb_image" type="Image" />
+			<description>
+				Sets RGB image for this feed.
+			</description>
+		</method>
+		<method name="set_ycbcr_image">
+			<return type="void" />
+			<param index="0" name="ycbcr_image" type="Image" />
+			<description>
+				Sets YCbCr image for this feed.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
+			If [code]true[/code], the feed is active.
+		</member>
+		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, -1, 0, 1)">
+			The transform applied to the camera's image.
+		</member>
+		<member name="formats" type="Array" setter="" getter="get_formats" default="[]">
+			Formats supported by the feed. Each entry is a [Dictionary] describing format parameters.
+		</member>
+	</members>
+	<signals>
+		<signal name="format_changed">
+			<description>
+				Emitted when the format has changed.
+			</description>
+		</signal>
+		<signal name="frame_changed">
+			<description>
+				Emitted when a new frame is available.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FEED_NOIMAGE" value="0" enum="FeedDataType">
+			No image set for the feed.
+		</constant>
+		<constant name="FEED_RGB" value="1" enum="FeedDataType">
+			Feed supplies RGB images.
+		</constant>
+		<constant name="FEED_YCBCR" value="2" enum="FeedDataType">
+			Feed supplies YCbCr images that need to be converted to RGB.
+		</constant>
+		<constant name="FEED_YCBCR_SEP" value="3" enum="FeedDataType">
+			Feed supplies separate Y and CbCr images that need to be combined and converted to RGB.
+		</constant>
+		<constant name="FEED_EXTERNAL" value="4" enum="FeedDataType">
+			Feed supplies external image.
+		</constant>
+		<constant name="FEED_UNSPECIFIED" value="0" enum="FeedPosition">
+			Unspecified position.
+		</constant>
+		<constant name="FEED_FRONT" value="1" enum="FeedPosition">
+			Camera is mounted at the front of the device.
+		</constant>
+		<constant name="FEED_BACK" value="2" enum="FeedPosition">
+			Camera is mounted at the back of the device.
+		</constant>
+	</constants>
+</class>

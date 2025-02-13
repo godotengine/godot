@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Light3D" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides a base class for different kinds of light nodes.
+	</brief_description>
+	<description>
+		Light3D is the [i]abstract[/i] base class for light nodes. As it can't be instantiated, it shouldn't be used directly. Other types of light nodes inherit from it. Light3D contains the common variables and parameters used for lighting.
+	</description>
+	<tutorials>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="get_correlated_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the [Color] of an idealized blackbody at the given [member light_temperature]. This value is calculated internally based on the [member light_temperature]. This [Color] is multiplied by [member light_color] before being sent to the [RenderingServer].
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="Light3D.Param" />
+			<description>
+				Returns the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="Light3D.Param" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0" keywords="lod_begin">
+			The distance from the camera at which the light begins to fade away (in 3D units).
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false" keywords="lod_enabled">
+			If [code]true[/code], the light will smoothly fade away when far from the active [Camera3D] starting at [member distance_fade_begin]. This acts as a form of level of detail (LOD). The light will fade out over [member distance_fade_begin] + [member distance_fade_length], after which it will be culled and not sent to the shader at all. Use this to reduce the number of active lights in a scene and thus improve performance.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="10.0" keywords="lod_length">
+			Distance over which the light and its shadow fades. The light's energy and shadow's opacity is progressively reduced over this distance and is completely invisible at the end.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D].
+		</member>
+		<member name="distance_fade_shadow" type="float" setter="set_distance_fade_shadow" getter="get_distance_fade_shadow" default="50.0" keywords="lod_shadow">
+			The distance from the camera at which the light's shadow cuts off (in 3D units). Set this to a value lower than [member distance_fade_begin] + [member distance_fade_length] to further improve performance, as shadow rendering is often more expensive than light rendering itself.
+			[b]Note:[/b] Only effective for [OmniLight3D] and [SpotLight3D], and only when [member shadow_enabled] is [code]true[/code].
+		</member>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
+			If [code]true[/code], the light only appears in the editor and will not be visible at runtime. If [code]true[/code], the light will never be baked in [LightmapGI] regardless of its [member light_bake_mode].
+		</member>
+		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
+			The light's angular size in degrees. Increasing this will make shadows softer at greater distances (also called percentage-closer soft shadows, or PCSS). Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code]. Increasing this value above [code]0.0[/code] for lights with shadows enabled will have a noticeable performance cost due to PCSS.
+			[b]Note:[/b] [member light_angular_distance] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
+			[b]Note:[/b] PCSS for directional lights is only supported in the Forward+ rendering method, not Mobile or Compatibility.
+		</member>
+		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="2" keywords="global_illumination_mode, gi_mode">
+			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering. See [enum BakeMode].
+			[b]Note:[/b] Meshes' global illumination mode will also affect the global illumination rendering. See [member GeometryInstance3D.gi_mode].
+		</member>
+		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+			The light's color. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
+		</member>
+		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
+			The light will affect objects in the selected layers.
+		</member>
+		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
+		</member>
+		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
+			[b]Note:[/b] This property is ignored if [member light_energy] is equal to [code]0.0[/code], as the light won't be present at all in the GI shader.
+		</member>
+		<member name="light_intensity_lumens" type="float" setter="set_param" getter="get_param">
+			Used by positional lights ([OmniLight3D] and [SpotLight3D]) when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code]. Sets the intensity of the light source measured in Lumens. Lumens are a measure of luminous flux, which is the total amount of visible light emitted by a light source per unit of time.
+			For [SpotLight3D]s, we assume that the area outside the visible cone is surrounded by a perfect light absorbing material. Accordingly, the apparent brightness of the cone area does not change as the cone increases and decreases in size.
+			A typical household lightbulb can range from around 600 lumens to 1,200 lumens, a candle is about 13 lumens, while a streetlight can be approximately 60,000 lumens.
+		</member>
+		<member name="light_intensity_lux" type="float" setter="set_param" getter="get_param">
+			Used by [DirectionalLight3D]s when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code]. Sets the intensity of the light source measured in Lux. Lux is a measure of luminous flux per unit area, it is equal to one lumen per square meter. Lux is the measure of how much light hits a surface at a given time.
+			On a clear sunny day a surface in direct sunlight may be approximately 100,000 lux, a typical room in a home may be approximately 50 lux, while the moonlit ground may be approximately 0.1 lux.
+		</member>
+		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
+			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
+		</member>
+		<member name="light_projector" type="Texture2D" setter="set_projector" getter="get_projector" keywords="cookie, gobo">
+			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained-glass.
+			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for light projector textures is set globally with [member ProjectSettings.rendering/textures/light_projectors/filter].
+			[b]Note:[/b] Light projector textures are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+		</member>
+		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
+			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier (also called percentage-closer soft shadows, or PCSS). This can be used to simulate area lights to an extent. Increasing this value above [code]0.0[/code] for lights with shadows enabled will have a noticeable performance cost due to PCSS.
+			[b]Note:[/b] [member light_size] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
+			[b]Note:[/b] PCSS for positional lights is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+		</member>
+		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="1.0">
+			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
+		</member>
+		<member name="light_temperature" type="float" setter="set_temperature" getter="get_temperature">
+			Sets the color temperature of the light source, measured in Kelvin. This is used to calculate a correlated color temperature which tints the [member light_color].
+			The sun on a cloudy day is approximately 6500 Kelvin, on a clear day it is between 5500 to 6000 Kelvin, and on a clear day at sunrise or sunset it ranges to around 1850 Kelvin.
+		</member>
+		<member name="light_volumetric_fog_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			Secondary multiplier multiplied with [member light_energy] then used with the [Environment]'s volumetric fog (if enabled). If set to [code]0.0[/code], computing volumetric fog will be skipped for this light, which can improve performance for large amounts of lights when volumetric fog is enabled.
+			[b]Note:[/b] To prevent short-lived dynamic light effects from poorly interacting with volumetric fog, lights used in those effects should have [member light_volumetric_fog_energy] set to [code]0.0[/code] unless [member Environment.volumetric_fog_temporal_reprojection_enabled] is disabled (or unless the reprojection amount is significantly lowered).
+		</member>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.1">
+			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
+		</member>
+		<member name="shadow_blur" type="float" setter="set_param" getter="get_param" default="1.0">
+			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low-resolution shadow maps. A high value can impact performance, make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
+		</member>
+		<member name="shadow_caster_mask" type="int" setter="set_shadow_caster_mask" getter="get_shadow_caster_mask" default="4294967295">
+			The light will only cast shadows using objects in the selected layers.
+		</member>
+		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
+			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
+		</member>
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="2.0">
+			Offsets the lookup into the shadow map by the object's normal. This can be used to reduce self-shadowing artifacts without using [member shadow_bias]. In practice, this value should be tweaked along with [member shadow_bias] to reduce artifacts as much as possible.
+		</member>
+		<member name="shadow_opacity" type="float" setter="set_param" getter="get_param" default="1.0">
+			The opacity to use when rendering the light's shadow map. Values lower than [code]1.0[/code] make the light appear through shadows. This can be used to fake global illumination at a low performance cost.
+		</member>
+		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face" default="false">
+			If [code]true[/code], reverses the backface culling of the mesh. This can be useful when you have a flat mesh that has a light behind it. If you need to cast a shadow on both sides of the mesh, set the mesh to use double-sided shadows with [constant GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED].
+		</member>
+		<member name="shadow_transmittance_bias" type="float" setter="set_param" getter="get_param" default="0.05">
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_ENERGY" value="0" enum="Param">
+			Constant for accessing [member light_energy].
+		</constant>
+		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
+			Constant for accessing [member light_indirect_energy].
+		</constant>
+		<constant name="PARAM_VOLUMETRIC_FOG_ENERGY" value="2" enum="Param">
+			Constant for accessing [member light_volumetric_fog_energy].
+		</constant>
+		<constant name="PARAM_SPECULAR" value="3" enum="Param">
+			Constant for accessing [member light_specular].
+		</constant>
+		<constant name="PARAM_RANGE" value="4" enum="Param">
+			Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
+		</constant>
+		<constant name="PARAM_SIZE" value="5" enum="Param">
+			Constant for accessing [member light_size].
+		</constant>
+		<constant name="PARAM_ATTENUATION" value="6" enum="Param">
+			Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
+		</constant>
+		<constant name="PARAM_SPOT_ANGLE" value="7" enum="Param">
+			Constant for accessing [member SpotLight3D.spot_angle].
+		</constant>
+		<constant name="PARAM_SPOT_ATTENUATION" value="8" enum="Param">
+			Constant for accessing [member SpotLight3D.spot_angle_attenuation].
+		</constant>
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_max_distance].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_1].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_2].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_3].
+		</constant>
+		<constant name="PARAM_SHADOW_FADE_START" value="13" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_fade_start].
+		</constant>
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="14" enum="Param">
+			Constant for accessing [member shadow_normal_bias].
+		</constant>
+		<constant name="PARAM_SHADOW_BIAS" value="15" enum="Param">
+			Constant for accessing [member shadow_bias].
+		</constant>
+		<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="16" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_pancake_size].
+		</constant>
+		<constant name="PARAM_SHADOW_OPACITY" value="17" enum="Param">
+			Constant for accessing [member shadow_opacity].
+		</constant>
+		<constant name="PARAM_SHADOW_BLUR" value="18" enum="Param">
+			Constant for accessing [member shadow_blur].
+		</constant>
+		<constant name="PARAM_TRANSMITTANCE_BIAS" value="19" enum="Param">
+			Constant for accessing [member shadow_transmittance_bias].
+		</constant>
+		<constant name="PARAM_INTENSITY" value="20" enum="Param">
+			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
+		</constant>
+		<constant name="PARAM_MAX" value="21" enum="Param">
+			Represents the size of the [enum Param] enum.
+		</constant>
+		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
+			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
+			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
+		</constant>
+		<constant name="BAKE_STATIC" value="1" enum="BakeMode">
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
+			[b]Note:[/b] The light is not baked in [LightmapGI] if [member editor_only] is [code]true[/code].
+		</constant>
+		<constant name="BAKE_DYNAMIC" value="2" enum="BakeMode">
+			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+		</constant>
+	</constants>
+</class>

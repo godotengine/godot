@@ -1,0 +1,24 @@
+{
+  "name": "godot",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Development and linting setup for Godot's Web platform code",
+  "author": "Godot Engine contributors",
+  "license": "MIT",
+  "scripts": {
+    "docs": "jsdoc --template js/jsdoc2rst/ js/engine/engine.js js/engine/config.js js/engine/features.js --destination ''",
+    "lint": "cd ../.. && eslint --no-config-lookup --config ./platform/web/eslint.config.cjs ./platform/web/js ./modules ./misc/dist/html",
+    "format": "npm run lint -- --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.12.0",
+    "@html-eslint/eslint-plugin": "^0.27.0",
+    "@html-eslint/parser": "^0.27.0",
+    "@stylistic/eslint-plugin": "^2.9.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-html": "^8.1.1",
+    "espree": "^10.0.1",
+    "globals": "^15.9.0",
+    "jsdoc": "^4.0.3"
+  }
+}

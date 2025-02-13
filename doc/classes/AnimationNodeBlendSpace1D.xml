@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A set of [AnimationRootNode]s placed on a virtual axis, crossfading between the two adjacent ones. Used by [AnimationTree].
+	</brief_description>
+	<description>
+		A resource used by [AnimationNodeBlendTree].
+		[AnimationNodeBlendSpace1D] represents a virtual axis on which any type of [AnimationRootNode]s can be added using [method add_blend_point]. Outputs the linear blend of the two [AnimationRootNode]s adjacent to the current value.
+		You can set the extents of the axis with [member min_space] and [member max_space].
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_blend_point">
+			<return type="void" />
+			<param index="0" name="node" type="AnimationRootNode" />
+			<param index="1" name="pos" type="float" />
+			<param index="2" name="at_index" type="int" default="-1" />
+			<description>
+				Adds a new point that represents a [param node] on the virtual axis at a given position set by [param pos]. You can insert it at a specific index using the [param at_index] argument. If you use the default value for [param at_index], the point is inserted at the end of the blend points array.
+			</description>
+		</method>
+		<method name="get_blend_point_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of points on the blend axis.
+			</description>
+		</method>
+		<method name="get_blend_point_node" qualifiers="const">
+			<return type="AnimationRootNode" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the [AnimationNode] referenced by the point at index [param point].
+			</description>
+		</method>
+		<method name="get_blend_point_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Returns the position of the point at index [param point].
+			</description>
+		</method>
+		<method name="remove_blend_point">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<description>
+				Removes the point at index [param point] from the blend axis.
+			</description>
+		</method>
+		<method name="set_blend_point_node">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="node" type="AnimationRootNode" />
+			<description>
+				Changes the [AnimationNode] referenced by the point at index [param point].
+			</description>
+		</method>
+		<method name="set_blend_point_position">
+			<return type="void" />
+			<param index="0" name="point" type="int" />
+			<param index="1" name="pos" type="float" />
+			<description>
+				Updates the position of the point at index [param point] on the blend axis.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace1D.BlendMode" default="0">
+			Controls the interpolation between animations. See [enum BlendMode] constants.
+		</member>
+		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space" default="1.0">
+			The blend space's axis's upper limit for the points' position. See [method add_blend_point].
+		</member>
+		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space" default="-1.0">
+			The blend space's axis's lower limit for the points' position. See [method add_blend_point].
+		</member>
+		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.1">
+			Position increment to snap to when moving a point on the axis.
+		</member>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
+			If [code]false[/code], the blended animations' frame are stopped when the blend value is [code]0[/code].
+			If [code]true[/code], forcing the blended animations to advance frame.
+		</member>
+		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label" default="&quot;value&quot;">
+			Label of the virtual axis of the blend space.
+		</member>
+	</members>
+	<constants>
+		<constant name="BLEND_MODE_INTERPOLATED" value="0" enum="BlendMode">
+			The interpolation between animations is linear.
+		</constant>
+		<constant name="BLEND_MODE_DISCRETE" value="1" enum="BlendMode">
+			The blend space plays the animation of the animation node which blending position is closest to. Useful for frame-by-frame 2D animations.
+		</constant>
+		<constant name="BLEND_MODE_DISCRETE_CARRY" value="2" enum="BlendMode">
+			Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.
+		</constant>
+	</constants>
+</class>

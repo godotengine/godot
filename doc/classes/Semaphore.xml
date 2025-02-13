@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Semaphore" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A synchronization mechanism used to control access to a shared resource by [Thread]s.
+	</brief_description>
+	<description>
+		A synchronization semaphore that can be used to synchronize multiple [Thread]s. Initialized to zero on creation. For a binary version, see [Mutex].
+		[b]Warning:[/b] Semaphores must be used carefully to avoid deadlocks.
+		[b]Warning:[/b] To guarantee that the operating system is able to perform proper cleanup (no crashes, no deadlocks), these conditions must be met:
+		- When a [Semaphore]'s reference count reaches zero and it is therefore destroyed, no threads must be waiting on it.
+		- When a [Thread]'s reference count reaches zero and it is therefore destroyed, it must not be waiting on any semaphore.
+	</description>
+	<tutorials>
+		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
+	</tutorials>
+	<methods>
+		<method name="post">
+			<return type="void" />
+			<param index="0" name="count" type="int" default="1" />
+			<description>
+				Lowers the [Semaphore], allowing one thread in, or more if [param count] is specified.
+			</description>
+		</method>
+		<method name="try_wait">
+			<return type="bool" />
+			<description>
+				Like [method wait], but won't block, so if the value is zero, fails immediately and returns [code]false[/code]. If non-zero, it returns [code]true[/code] to report success.
+			</description>
+		</method>
+		<method name="wait">
+			<return type="void" />
+			<description>
+				Waits for the [Semaphore], if its value is zero, blocks until non-zero.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GridMap" inherits="Node3D" keywords="tilemap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Node for 3D tile-based maps.
+	</brief_description>
+	<description>
+		GridMap lets you place meshes on a grid interactively. It works both from the editor and from scripts, which can help you create in-game level editors.
+		GridMaps use a [MeshLibrary] which contains a list of tiles. Each tile is a mesh with materials plus optional collision and navigation shapes.
+		A GridMap contains a collection of cells. Each grid cell refers to a tile in the [MeshLibrary]. All cells in the map have the same dimensions.
+		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
+		[b]Note:[/b] GridMap doesn't extend [VisualInstance3D] and therefore can't be hidden or cull masked based on [member VisualInstance3D.layers]. If you make a light not affect the first layer, the whole GridMap won't be lit by the light in question.
+	</description>
+	<tutorials>
+		<link title="Using gridmaps">$DOCS_URL/tutorials/3d/using_gridmaps.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clear all cells.
+			</description>
+		</method>
+		<method name="clear_baked_meshes">
+			<return type="void" />
+			<description>
+				Clears all baked meshes. See [method make_baked_meshes].
+			</description>
+		</method>
+		<method name="get_bake_mesh_instance">
+			<return type="RID" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [RID] of a baked mesh with the given [param idx].
+			</description>
+		</method>
+		<method name="get_bake_meshes">
+			<return type="Array" />
+			<description>
+				Returns an array of [ArrayMesh]es and [Transform3D] references of all bake meshes that exist within the current GridMap.
+			</description>
+		</method>
+		<method name="get_basis_with_orthogonal_index" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns one of 24 possible rotations that lie along the vectors (x,y,z) with each component being either -1, 0, or 1. For further details, refer to the Godot source code.
+			</description>
+		</method>
+		<method name="get_cell_item" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="position" type="Vector3i" />
+			<description>
+				The [MeshLibrary] item index located at the given grid coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
+			</description>
+		</method>
+		<method name="get_cell_item_basis" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="position" type="Vector3i" />
+			<description>
+				Returns the basis that gives the specified cell its orientation.
+			</description>
+		</method>
+		<method name="get_cell_item_orientation" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="position" type="Vector3i" />
+			<description>
+				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
+			</description>
+		</method>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_meshes" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map this GridMap node uses for its cell baked navigation meshes.
+				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
+			</description>
+		</method>
+		<method name="get_orthogonal_index_from_basis" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="basis" type="Basis" />
+			<description>
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index (in the range from 0 to 23) of the point best representing the orientation of the object. For further details, refer to the Godot source code.
+			</description>
+		</method>
+		<method name="get_used_cells" qualifiers="const">
+			<return type="Vector3i[]" />
+			<description>
+				Returns an array of [Vector3] with the non-empty cell coordinates in the grid map.
+			</description>
+		</method>
+		<method name="get_used_cells_by_item" qualifiers="const">
+			<return type="Vector3i[]" />
+			<param index="0" name="item" type="int" />
+			<description>
+				Returns an array of all cells with the given item index specified in [param item].
+			</description>
+		</method>
+		<method name="local_to_map" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="local_position" type="Vector3" />
+			<description>
+				Returns the map coordinates of the cell containing the given [param local_position]. If [param local_position] is in global coordinates, consider using [method Node3D.to_local] before passing it to this method. See also [method map_to_local].
+			</description>
+		</method>
+		<method name="make_baked_meshes">
+			<return type="void" />
+			<param index="0" name="gen_lightmap_uv" type="bool" default="false" />
+			<param index="1" name="lightmap_uv_texel_size" type="float" default="0.1" />
+			<description>
+				Bakes lightmap data for all meshes in the assigned [MeshLibrary].
+			</description>
+		</method>
+		<method name="map_to_local" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="map_position" type="Vector3i" />
+			<description>
+				Returns the position of a grid cell in the GridMap's local coordinate space. To convert the returned value into global coordinates, use [method Node3D.to_global]. See also [method local_to_map].
+			</description>
+		</method>
+		<method name="resource_changed" deprecated="Use [signal Resource.changed] instead.">
+			<return type="void" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				This method does nothing.
+			</description>
+		</method>
+		<method name="set_cell_item">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3i" />
+			<param index="1" name="item" type="int" />
+			<param index="2" name="orientation" type="int" default="0" />
+			<description>
+				Sets the mesh index for the cell referenced by its grid coordinates.
+				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
+				Optionally, the item's orientation can be passed. For valid orientation values, see [method get_orthogonal_index_from_basis].
+			</description>
+		</method>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this GridMap node should use for its cell baked navigation meshes.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
+			If [code]true[/code], this GridMap creates a navigation region for each cell that uses a [member mesh_library] item with a navigation mesh. The created navigation region will use the navigation layers bitmask assigned to the [MeshLibrary]'s item.
+		</member>
+		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
+			If [code]true[/code], grid items are centered on the X axis.
+		</member>
+		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y" default="true">
+			If [code]true[/code], grid items are centered on the Y axis.
+		</member>
+		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z" default="true">
+			If [code]true[/code], grid items are centered on the Z axis.
+		</member>
+		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size" default="8">
+			The size of each octant measured in number of cells. This applies to all three axis.
+		</member>
+		<member name="cell_scale" type="float" setter="set_cell_scale" getter="get_cell_scale" default="1.0">
+			The scale of the cell items.
+			This does not affect the size of the grid cells themselves, only the items in them. This can be used to make cell items overlap their neighbors.
+		</member>
+		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
+			The dimensions of the grid's cells.
+			This does not affect the size of the meshes. See [member cell_scale].
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this GridMap is in.
+			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this GridMap detects collisions in. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
+		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
+			The assigned [MeshLibrary].
+		</member>
+		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
+			Overrides the default friction and bounce physics properties for the whole [GridMap].
+		</member>
+	</members>
+	<signals>
+		<signal name="cell_size_changed">
+			<param index="0" name="cell_size" type="Vector3" />
+			<description>
+				Emitted when [member cell_size] changes.
+			</description>
+		</signal>
+		<signal name="changed">
+			<description>
+				Emitted when the [MeshLibrary] of this GridMap changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="INVALID_CELL_ITEM" value="-1">
+			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
+		</constant>
+	</constants>
+</class>

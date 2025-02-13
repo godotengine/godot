@@ -1,0 +1,39 @@
+/****************************************************************************
+ *
+ * afblue.c
+ *
+ *   Auto-fitter data for blue strings (body).
+ *
+ * Copyright (C) 2013-2023 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
+
+
+#include "aftypes.h"
+
+
+  FT_LOCAL_ARRAY_DEF( char )
+  af_blue_strings[] =
+  {
+    /* */
+@AF_BLUE_STRINGS_ARRAY@
+  };
+
+
+  /* stringsets are specific to styles */
+  FT_LOCAL_ARRAY_DEF( AF_Blue_StringRec )
+  af_blue_stringsets[] =
+  {
+    /* */
+@AF_BLUE_STRINGSETS_ARRAY@
+  };
+
+
+/* END */

@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CPUParticles3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A CPU-based 3D particle emitter.
+	</brief_description>
+	<description>
+		CPU-based 3D particle node used to create a variety of particle systems and effects.
+		See also [GPUParticles3D], which provides the same functionality with hardware acceleration, but may not run on older devices.
+	</description>
+	<tutorials>
+		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="capture_aabb" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
+			</description>
+		</method>
+		<method name="convert_from_particles">
+			<return type="void" />
+			<param index="0" name="particles" type="Node" />
+			<description>
+				Sets this node's properties to match a given [GPUParticles3D] node with an assigned [ParticleProcessMaterial].
+			</description>
+		</method>
+		<method name="get_param_curve" qualifiers="const">
+			<return type="Curve" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<description>
+				Returns the [Curve] of the parameter specified by [enum Parameter].
+			</description>
+		</method>
+		<method name="get_param_max" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<description>
+				Returns the maximum value range for the given parameter.
+			</description>
+		</method>
+		<method name="get_param_min" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<description>
+				Returns the minimum value range for the given parameter.
+			</description>
+		</method>
+		<method name="get_particle_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
+			<description>
+				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
+			</description>
+		</method>
+		<method name="request_particles_process">
+			<return type="void" />
+			<param index="0" name="process_time" type="float" />
+			<description>
+				Requests the particles to process for extra process time during a single frame.
+				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
+			</description>
+		</method>
+		<method name="restart">
+			<return type="void" />
+			<param index="0" name="keep_seed" type="bool" default="false" />
+			<description>
+				Restarts the particle emitter.
+				If [param keep_seed] is [code]true[/code], the current random seed will be preserved. Useful for seeking and playback.
+			</description>
+		</method>
+		<method name="set_param_curve">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="curve" type="Curve" />
+			<description>
+				Sets the [Curve] of the parameter specified by [enum Parameter]. Should be a unit [Curve].
+			</description>
+		</method>
+		<method name="set_param_max">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the maximum value for the given parameter.
+			</description>
+		</method>
+		<method name="set_param_min">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the minimum value for the given parameter.
+			</description>
+		</method>
+		<method name="set_particle_flag">
+			<return type="void" />
+			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Enables or disables the given particle flag (see [enum ParticleFlags] for options).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
+			Number of particles emitted in one emission cycle.
+		</member>
+		<member name="angle_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's rotation will be animated along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="angle_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum angle.
+		</member>
+		<member name="angle_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum angle.
+		</member>
+		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's angular velocity (rotation speed) will vary along this [Curve] over its lifetime. Should be a unit [Curve].
+		</member>
+		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+		</member>
+		<member name="angular_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
+		</member>
+		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's animation offset will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="anim_offset_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum animation offset.
+		</member>
+		<member name="anim_offset_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum animation offset.
+		</member>
+		<member name="anim_speed_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's animation speed will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="anim_speed_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum particle animation speed.
+		</member>
+		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum particle animation speed.
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			Each particle's initial color.
+			[b]Note:[/b] [member color] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color] will have no visible effect.
+		</member>
+		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
+			Each particle's initial color will vary along this [Gradient] (multiplied with [member color]).
+			[b]Note:[/b] [member color_initial_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_initial_ramp] will have no visible effect.
+		</member>
+		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+			Each particle's color will vary along this [Gradient] over its lifetime (multiplied with [member color]).
+			[b]Note:[/b] [member color_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_ramp] will have no visible effect.
+		</member>
+		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Damping will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="damping_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum damping.
+		</member>
+		<member name="damping_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum damping.
+		</member>
+		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3(1, 0, 0)">
+			Unit vector specifying the particles' emission direction.
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles3D.DrawOrder" default="0">
+			Particle draw order. Uses [enum DrawOrder] values.
+		</member>
+		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
+			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
+		</member>
+		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors" default="PackedColorArray()">
+			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
+			[b]Note:[/b] [member emission_colors] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member emission_colors] will have no visible effect.
+		</member>
+		<member name="emission_normals" type="PackedVector3Array" setter="set_emission_normals" getter="get_emission_normals">
+			Sets the direction the particles will be emitted in when using [constant EMISSION_SHAPE_DIRECTED_POINTS].
+		</member>
+		<member name="emission_points" type="PackedVector3Array" setter="set_emission_points" getter="get_emission_points">
+			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
+		</member>
+		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
+			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_cone_angle" type="float" setter="set_emission_ring_cone_angle" getter="get_emission_ring_cone_angle">
+			The angle of the cone when using the emitter [constant EMISSION_SHAPE_RING]. The default angle of 90 degrees results in a ring, while an angle of 0 degrees results in a cone. Intermediate values will result in a ring where one end is larger than the other.
+			[b]Note:[/b] Depending on [member emission_ring_height], the angle may be clamped if the ring's end is reached to form a perfect cone.
+		</member>
+		<member name="emission_ring_height" type="float" setter="set_emission_ring_height" getter="get_emission_ring_height">
+			The height of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_inner_radius" type="float" setter="set_emission_ring_inner_radius" getter="get_emission_ring_inner_radius">
+			The inner radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_radius" type="float" setter="set_emission_ring_radius" getter="get_emission_ring_radius">
+			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles3D.EmissionShape" default="0">
+			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
+		</member>
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
+			The sphere's radius if [enum EmissionShape] is set to [constant EMISSION_SHAPE_SPHERE].
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
+			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle until after all active particles finish processing. You can use the [signal finished] signal to be notified once all active particles finish processing.
+		</member>
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
+			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
+		</member>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
+			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
+		</member>
+		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
+			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane.
+		</member>
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
+		</member>
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3(0, -9.8, 0)">
+			Gravity applied to every particle.
+		</member>
+		<member name="hue_variation_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's hue will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="hue_variation_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum hue variation.
+		</member>
+		<member name="hue_variation_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum hue variation.
+		</member>
+		<member name="initial_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum value of the initial velocity.
+		</member>
+		<member name="initial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum value of the initial velocity.
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
+			Amount of time each particle will exist.
+		</member>
+		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
+			Particle lifetime randomness ratio.
+		</member>
+		<member name="linear_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's linear acceleration will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="linear_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum linear acceleration.
+		</member>
+		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum linear acceleration.
+		</member>
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [CPUParticles3D] node (and its parents) when it is moved or rotated.
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The [Mesh] used for each particle. If [code]null[/code], particles will be spheres.
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
+			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end.
+		</member>
+		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's orbital velocity will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="orbit_velocity_max" type="float" setter="set_param_max" getter="get_param_max">
+			Maximum orbit velocity.
+		</member>
+		<member name="orbit_velocity_min" type="float" setter="set_param_min" getter="get_param_min">
+			Minimum orbit velocity.
+		</member>
+		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			Align Y axis of particle with the direction of its velocity.
+		</member>
+		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles will not move on the Z axis.
+		</member>
+		<member name="particle_flag_rotate_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles rotate around Y axis by [member angle_min].
+		</member>
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
+			Particle system starts as if it had already run for this many seconds.
+		</member>
+		<member name="radial_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's radial acceleration will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="radial_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum radial acceleration.
+		</member>
+		<member name="radial_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum radial acceleration.
+		</member>
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
+			Emission lifetime randomness ratio.
+		</member>
+		<member name="scale_amount_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's scale will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="scale_amount_max" type="float" setter="set_param_max" getter="get_param_max" default="1.0">
+			Maximum scale.
+		</member>
+		<member name="scale_amount_min" type="float" setter="set_param_min" getter="get_param_min" default="1.0">
+			Minimum scale.
+		</member>
+		<member name="scale_curve_x" type="Curve" setter="set_scale_curve_x" getter="get_scale_curve_x">
+			Curve for the scale over life, along the x axis.
+		</member>
+		<member name="scale_curve_y" type="Curve" setter="set_scale_curve_y" getter="get_scale_curve_y">
+			Curve for the scale over life, along the y axis.
+		</member>
+		<member name="scale_curve_z" type="Curve" setter="set_scale_curve_z" getter="get_scale_curve_z">
+			Curve for the scale over life, along the z axis.
+		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Sets the random seed used by the particle system. Only effective if [member use_fixed_seed] is [code]true[/code].
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
+		</member>
+		<member name="split_scale" type="bool" setter="set_split_scale" getter="get_split_scale" default="false">
+			If set to [code]true[/code], three different scale curves can be specified, one per scale axis.
+		</member>
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
+		</member>
+		<member name="tangential_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+			Each particle's tangential acceleration will vary along this [Curve]. Should be a unit [Curve].
+		</member>
+		<member name="tangential_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
+			Maximum tangent acceleration.
+		</member>
+		<member name="tangential_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
+			Minimum tangent acceleration.
+		</member>
+		<member name="use_fixed_seed" type="bool" setter="set_use_fixed_seed" getter="get_use_fixed_seed" default="false">
+			If [code]true[/code], particles will use the same seed for every simulation using the seed defined in [member seed]. This is useful for situations where the visual outcome should be consistent across replays, for example when using Movie Maker mode.
+		</member>
+		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			The [AABB] that determines the node's region which needs to be visible on screen for the particle system to be active.
+			Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The [AABB] can be grown via code or with the [b]Particles → Generate AABB[/b] editor tool.
+		</member>
+	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when all active particles have finished processing. When [member one_shot] is disabled, particles will process continuously, so this is never emitted.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
+			Particles are drawn in the order emitted.
+		</constant>
+		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
+		</constant>
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
+			Particles are drawn in order of depth.
+		</constant>
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.
+		</constant>
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angular velocity properties.
+		</constant>
+		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set orbital velocity properties.
+		</constant>
+		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set linear acceleration properties.
+		</constant>
+		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set radial acceleration properties.
+		</constant>
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set tangential acceleration properties.
+		</constant>
+		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set damping properties.
+		</constant>
+		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angle properties.
+		</constant>
+		<constant name="PARAM_SCALE" value="8" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set scale properties.
+		</constant>
+		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set hue variation properties.
+		</constant>
+		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation speed properties.
+		</constant>
+		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
+			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation offset properties.
+		</constant>
+		<constant name="PARAM_MAX" value="12" enum="Parameter">
+			Represents the size of the [enum Parameter] enum.
+		</constant>
+		<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_align_y].
+		</constant>
+		<constant name="PARTICLE_FLAG_ROTATE_Y" value="1" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
+		</constant>
+		<constant name="PARTICLE_FLAG_DISABLE_Z" value="2" enum="ParticleFlags">
+			Use with [method set_particle_flag] to set [member particle_flag_disable_z].
+		</constant>
+		<constant name="PARTICLE_FLAG_MAX" value="3" enum="ParticleFlags">
+			Represents the size of the [enum ParticleFlags] enum.
+		</constant>
+		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
+			All particles will be emitted from a single point.
+		</constant>
+		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
+			Particles will be emitted in the volume of a sphere.
+		</constant>
+		<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2" enum="EmissionShape">
+			Particles will be emitted on the surface of a sphere.
+		</constant>
+		<constant name="EMISSION_SHAPE_BOX" value="3" enum="EmissionShape">
+			Particles will be emitted in the volume of a box.
+		</constant>
+		<constant name="EMISSION_SHAPE_POINTS" value="4" enum="EmissionShape">
+			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
+		</constant>
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
+			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
+		</constant>
+		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
+			Particles will be emitted in a ring or cylinder.
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
+			Represents the size of the [enum EmissionShape] enum.
+		</constant>
+	</constants>
+</class>

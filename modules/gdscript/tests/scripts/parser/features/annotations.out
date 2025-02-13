@@ -1,0 +1,25 @@
+GDTEST_OK
+var test_1: int = null
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_2: int = null
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_3: int = null
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_4: int = null
+  hint=ENUM hint_string="A,B,C" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_5: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_6: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_7: int = 42
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_8: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_9: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_10: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_11: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var test_12: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeFloatOp" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A floating-point scalar operator to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		Applies [member operator] to two floating-point inputs: [code]a[/code] and [code]b[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeFloatOp.Operator" default="0">
+			An operator to be applied to the inputs. See [enum Operator] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_ADD" value="0" enum="Operator">
+			Sums two numbers using [code]a + b[/code].
+		</constant>
+		<constant name="OP_SUB" value="1" enum="Operator">
+			Subtracts two numbers using [code]a - b[/code].
+		</constant>
+		<constant name="OP_MUL" value="2" enum="Operator">
+			Multiplies two numbers using [code]a * b[/code].
+		</constant>
+		<constant name="OP_DIV" value="3" enum="Operator">
+			Divides two numbers using [code]a / b[/code].
+		</constant>
+		<constant name="OP_MOD" value="4" enum="Operator">
+			Calculates the remainder of two numbers. Translates to [code]mod(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_POW" value="5" enum="Operator">
+			Raises the [code]a[/code] to the power of [code]b[/code]. Translates to [code]pow(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_MAX" value="6" enum="Operator">
+			Returns the greater of two numbers. Translates to [code]max(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_MIN" value="7" enum="Operator">
+			Returns the lesser of two numbers. Translates to [code]min(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_ATAN2" value="8" enum="Operator">
+			Returns the arc-tangent of the parameters. Translates to [code]atan(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_STEP" value="9" enum="Operator">
+			Generates a step function by comparing [code]b[/code](x) to [code]a[/code](edge). Returns 0.0 if [code]x[/code] is smaller than [code]edge[/code] and otherwise 1.0. Translates to [code]step(a, b)[/code] in the Godot Shader Language.
+		</constant>
+		<constant name="OP_ENUM_SIZE" value="10" enum="Operator">
+			Represents the size of the [enum Operator] enum.
+		</constant>
+	</constants>
+</class>

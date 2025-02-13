@@ -1,0 +1,68 @@
+# This file contains a list of Git commit hashes that should be hidden from the
+# regular Git history. Typically, this includes commits involving mass auto-formatting
+# or other normalizations. Commit hashes *must* use the full 40-character notation.
+# To apply the ignore list in your local Git client, you must run:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# This file is automatically used by GitHub.com's blame view.
+
+# A Whole New World (clang-format edition)
+5dbf1809c6e3e905b94b8764e99491e608122261
+
+# Style: clang-format: Disable KeepEmptyLinesAtTheStartOfBlocks
+0be6d925dc3c6413bce7a3ccb49631b8e4a6e67a
+
+# Style: clang-format: Disable AllowShortIfStatementsOnASingleLine
+e956e80c1fa1cc8aefcb1533e5acf5cf3c8ffdd9
+
+# One Copyright Update to rule them all
+d95794ec8a7c362b06a9cf080e2554ef77adb667
+
+# Update copyright statements to 2022
+fe52458154c64fb1b741df4f7bd10106395f7cbd
+
+# Update copyright statements to 2021
+b5334d14f7a471f94bcbd64d5bae2ad853d0b7f1
+
+# Update copyright statements to 2020
+a7f49ac9a107820a62677ee3fb49d38982a25165
+
+# Update copyright statements to 2019
+b16c309f82c77d606472c3c721a1857e323a09e7
+
+# Update copyright statements to 2018
+b50a9114b105dafafdda8248a38653bca314a6f3
+
+# Welcome in 2017, dear changelog reader!
+c7bc44d5ad9aae4902280012f7654e2318cd910e
+
+# Update copyright to 2016 in headers
+5be9ff7b6715a661e85f99b108f96340de7ef435
+
+# Updated copyright year in all headers
+fdaa2920eb21fff3320a17e9239e04dfadecdb00
+
+# Add missing copyright headers and fix formatting
+e4213e66b2dd8f5a87d8cf5015ac83ba3143279d
+
+# Use HTTPS URL for Godot's website in the headers
+bd282ff43f23fe845f29a3e25c8efc01bd65ffb0
+
+# Add "Godot Engine contributors" copyright line
+df61dc4b2bd54a5a40c515493c76f5a458e5b541
+
+# Enforce template syntax `typename` over `class`
+9903e6779b70fc03aae70a37b9cf053f4f355b91
+
+# Style: Apply new `clang-format` fixes
+b37fc1014abf7adda70dc30b0822d775b3a4433f
+
+# Set clang-format `RemoveSemicolon` rule to `true`
+0d350e71086fffce0553811739aae9f6ad66136c
+
+# Style: Apply clang-tidy fixes (superficial)
+bb5f390fb9b466be35a5df7651323d7e66afca31
+
+# Style: Enforce `AllowShortFunctionsOnASingleLine`
+e06d83860d798b6766b23d6eae48557387a7db85

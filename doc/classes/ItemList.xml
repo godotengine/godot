@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ItemList" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A vertical list of selectable items with one or multiple columns.
+	</brief_description>
+	<description>
+		This control provides a vertical list of selectable items that may be in a single or in multiple columns, with each item having options for text and an icon. Tooltips are supported and may be different for every item in the list.
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing [kbd]Enter[/kbd].
+		Item text only supports single-line strings. Newline characters (e.g. [code]\n[/code]) in the string won't produce a newline. Text wrapping is enabled in [constant ICON_MODE_TOP] mode, but the column's width is adjusted to fully fit its content by default. You need to set [member fixed_column_width] greater than zero to wrap the text.
+		All [code]set_*[/code] methods allow negative item indices, i.e. [code]-1[/code] to access the last item, [code]-2[/code] to select the second-to-last item, and so on.
+		[b]Incremental search:[/b] Like [PopupMenu] and [Tree], [ItemList] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_icon_item">
+			<return type="int" />
+			<param index="0" name="icon" type="Texture2D" />
+			<param index="1" name="selectable" type="bool" default="true" />
+			<description>
+				Adds an item to the item list with no text, only an icon. Returns the index of an added item.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="int" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="icon" type="Texture2D" default="null" />
+			<param index="2" name="selectable" type="bool" default="true" />
+			<description>
+				Adds an item to the item list with specified text. Returns the index of an added item.
+				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
+				If [param selectable] is [code]true[/code], the list item will be selectable.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all items from the list.
+			</description>
+		</method>
+		<method name="deselect">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Ensures the item associated with the specified index is not selected.
+			</description>
+		</method>
+		<method name="deselect_all">
+			<return type="void" />
+			<description>
+				Ensures there are no items selected.
+			</description>
+		</method>
+		<method name="ensure_current_is_visible">
+			<return type="void" />
+			<description>
+				Ensure current selection is visible, adjusting the scroll position as necessary.
+			</description>
+		</method>
+		<method name="force_update_list_size">
+			<return type="void" />
+			<description>
+				Forces an update to the list size based on its items. This happens automatically whenever size of the items, or other relevant settings like [member auto_height], change. The method can be used to trigger the update ahead of next drawing pass.
+			</description>
+		</method>
+		<method name="get_h_scroll_bar">
+			<return type="HScrollBar" />
+			<description>
+				Returns the horizontal scrollbar.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_item_at_position" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="exact" type="bool" default="false" />
+			<description>
+				Returns the item index at the given [param position].
+				When there is no item at that point, -1 will be returned if [param exact] is [code]true[/code], and the closest item index will be returned otherwise.
+				[b]Note:[/b] The returned value is unreliable if called right after modifying the [ItemList], before it redraws in the next frame.
+			</description>
+		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns item's auto translate mode.
+			</description>
+		</method>
+		<method name="get_item_custom_bg_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the custom background color of the item specified by [param idx] index.
+			</description>
+		</method>
+		<method name="get_item_custom_fg_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the custom foreground color of the item specified by [param idx] index.
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the icon associated with the specified index.
+			</description>
+		</method>
+		<method name="get_item_icon_modulate" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns a [Color] modulating item's icon at the specified index.
+			</description>
+		</method>
+		<method name="get_item_icon_region" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the region of item's icon used. The whole icon will be used if the region has no area.
+			</description>
+		</method>
+		<method name="get_item_language" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns item's text language code.
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the metadata value of the specified index.
+			</description>
+		</method>
+		<method name="get_item_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="expand" type="bool" default="true" />
+			<description>
+				Returns the position and size of the item with the specified index, in the coordinate system of the [ItemList] node. If [param expand] is [code]true[/code] the last column expands to fill the rest of the row.
+				[b]Note:[/b] The returned value is unreliable if called right after modifying the [ItemList], before it redraws in the next frame.
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the text associated with the specified index.
+			</description>
+		</method>
+		<method name="get_item_text_direction" qualifiers="const">
+			<return type="int" enum="Control.TextDirection" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns item's text base writing direction.
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the tooltip hint associated with the specified index.
+			</description>
+		</method>
+		<method name="get_selected_items">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns an array with the indexes of the selected items.
+			</description>
+		</method>
+		<method name="get_v_scroll_bar">
+			<return type="VScrollBar" />
+			<description>
+				Returns the vertical scrollbar.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="is_anything_selected">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if one or more items are selected.
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the specified index is disabled.
+			</description>
+		</method>
+		<method name="is_item_icon_transposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item icon will be drawn transposed, i.e. the X and Y axes are swapped.
+			</description>
+		</method>
+		<method name="is_item_selectable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the specified index is selectable.
+			</description>
+		</method>
+		<method name="is_item_tooltip_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the tooltip is enabled for specified item index.
+			</description>
+		</method>
+		<method name="is_selected" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at the specified index is currently selected.
+			</description>
+		</method>
+		<method name="move_item">
+			<return type="void" />
+			<param index="0" name="from_idx" type="int" />
+			<param index="1" name="to_idx" type="int" />
+			<description>
+				Moves item from index [param from_idx] to [param to_idx].
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Removes the item specified by [param idx] index from the list.
+			</description>
+		</method>
+		<method name="select">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="single" type="bool" default="true" />
+			<description>
+				Select the item at the specified index.
+				[b]Note:[/b] This method does not trigger the item selection signal.
+			</description>
+		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item associated with the specified index.
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [ItemList] itself.
+			</description>
+		</method>
+		<method name="set_item_custom_bg_color">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="custom_bg_color" type="Color" />
+			<description>
+				Sets the background color of the item specified by [param idx] index to the specified [Color].
+			</description>
+		</method>
+		<method name="set_item_custom_fg_color">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="custom_fg_color" type="Color" />
+			<description>
+				Sets the foreground color of the item specified by [param idx] index to the specified [Color].
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				Disables (or enables) the item at the specified index.
+				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing [kbd]Enter[/kbd]).
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="icon" type="Texture2D" />
+			<description>
+				Sets (or replaces) the icon's [Texture2D] associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_icon_modulate">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="modulate" type="Color" />
+			<description>
+				Sets a modulating [Color] of the item associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_icon_region">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="rect" type="Rect2" />
+			<description>
+				Sets the region of item's icon used. The whole icon will be used if the region has no area.
+			</description>
+		</method>
+		<method name="set_item_icon_transposed">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="transposed" type="bool" />
+			<description>
+				Sets whether the item icon will be drawn transposed.
+			</description>
+		</method>
+		<method name="set_item_language">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="language" type="String" />
+			<description>
+				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets a value (of any type) to be stored with the item associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_selectable">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="selectable" type="bool" />
+			<description>
+				Allows or disallows selection of the item associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Sets text of the item associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_text_direction">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="direction" type="int" enum="Control.TextDirection" />
+			<description>
+				Sets item's text base writing direction.
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the tooltip hint for the item associated with the specified index.
+			</description>
+		</method>
+		<method name="set_item_tooltip_enabled">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the tooltip hint is enabled for specified item index.
+			</description>
+		</method>
+		<method name="sort_items_by_text">
+			<return type="void" />
+			<description>
+				Sorts items in the list by their text.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
+			If [code]true[/code], the currently selected item can be selected again.
+		</member>
+		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
+			If [code]true[/code], right mouse button click can select items.
+		</member>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
+			If [code]true[/code], allows navigating the [ItemList] with letter keys through incremental search.
+		</member>
+		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
+			If [code]true[/code], the control will automatically resize the height to fit its content.
+		</member>
+		<member name="auto_width" type="bool" setter="set_auto_width" getter="has_auto_width" default="false">
+			If [code]true[/code], the control will automatically resize the width to fit its content.
+		</member>
+		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
+		<member name="fixed_column_width" type="int" setter="set_fixed_column_width" getter="get_fixed_column_width" default="0">
+			The width all columns will be adjusted to.
+			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
+		</member>
+		<member name="fixed_icon_size" type="Vector2i" setter="set_fixed_icon_size" getter="get_fixed_icon_size" default="Vector2i(0, 0)">
+			The size all icons will be adjusted to.
+			If either X or Y component is not greater than zero, icon size won't be affected.
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="icon_mode" type="int" setter="set_icon_mode" getter="get_icon_mode" enum="ItemList.IconMode" default="1">
+			The icon position, whether above or to the left of the text. See the [enum IconMode] constants.
+		</member>
+		<member name="icon_scale" type="float" setter="set_icon_scale" getter="get_icon_scale" default="1.0">
+			The scale of icon applied after [member fixed_icon_size] and transposing takes effect.
+		</member>
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items currently in the list.
+		</member>
+		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
+			Maximum columns the list will have.
+			If greater than zero, the content will be split among the specified columns.
+			A value of zero means unlimited columns, i.e. all items will be put in the same row.
+		</member>
+		<member name="max_text_lines" type="int" setter="set_max_text_lines" getter="get_max_text_lines" default="1">
+			Maximum lines of text allowed in each item. Space will be reserved even when there is not enough lines of text to display.
+			[b]Note:[/b] This property takes effect only when [member icon_mode] is [constant ICON_MODE_TOP]. To make the text wrap, [member fixed_column_width] should be greater than zero.
+		</member>
+		<member name="same_column_width" type="bool" setter="set_same_column_width" getter="is_same_column_width" default="false">
+			Whether all columns will have the same width.
+			If [code]true[/code], the width is equal to the largest column width of all columns.
+		</member>
+		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="ItemList.SelectMode" default="0">
+			Allows single or multiple item selection. See the [enum SelectMode] constants.
+		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="3">
+			Sets the clipping behavior when the text exceeds an item's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
+		<member name="wraparound_items" type="bool" setter="set_wraparound_items" getter="has_wraparound_items" default="true">
+			If [code]true[/code], the control will automatically move items into a new row to fit its content. See also [HFlowContainer] for this behavior.
+			If [code]false[/code], the control will add a horizontal scrollbar to make all items visible.
+		</member>
+	</members>
+	<signals>
+		<signal name="empty_clicked">
+			<param index="0" name="at_position" type="Vector2" />
+			<param index="1" name="mouse_button_index" type="int" />
+			<description>
+				Emitted when any mouse click is issued within the rect of the list but on empty space.
+				[param at_position] is the click position in this control's local coordinate system.
+			</description>
+		</signal>
+		<signal name="item_activated">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
+			</description>
+		</signal>
+		<signal name="item_clicked">
+			<param index="0" name="index" type="int" />
+			<param index="1" name="at_position" type="Vector2" />
+			<param index="2" name="mouse_button_index" type="int" />
+			<description>
+				Emitted when specified list item has been clicked with any mouse button.
+				[param at_position] is the click position in this control's local coordinate system.
+			</description>
+		</signal>
+		<signal name="item_selected">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when specified item has been selected. Only applicable in single selection mode.
+				[member allow_reselect] must be enabled to reselect an item.
+			</description>
+		</signal>
+		<signal name="multi_selected">
+			<param index="0" name="index" type="int" />
+			<param index="1" name="selected" type="bool" />
+			<description>
+				Emitted when a multiple selection is altered on a list allowing multiple selection.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
+			Icon is drawn above the text.
+		</constant>
+		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
+			Icon is drawn to the left of the text.
+		</constant>
+		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
+			Only allow selecting a single item.
+		</constant>
+		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
+			Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
+		</constant>
+		<constant name="SELECT_TOGGLE" value="2" enum="SelectMode">
+			Allows selecting multiple items by toggling them on and off.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.65, 0.65, 0.65, 1)">
+			Default text [Color] of the item.
+		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Text [Color] used when the item is hovered and not selected yet.
+		</theme_item>
+		<theme_item name="font_hovered_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the item is hovered and selected.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The tint of text outline of the item.
+		</theme_item>
+		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the item is selected, but not hovered.
+		</theme_item>
+		<theme_item name="guide_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 0.25)">
+			[Color] of the guideline. The guideline is a line drawn between each row of items.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal spacing between items.
+		</theme_item>
+		<theme_item name="icon_margin" data_type="constant" type="int" default="4">
+			The spacing between item's icon and text.
+		</theme_item>
+		<theme_item name="line_separation" data_type="constant" type="int" default="2">
+			The vertical spacing between each line of text.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the item text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
+			The vertical spacing between items.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the item's text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the item's text.
+		</theme_item>
+		<theme_item name="cursor" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
+			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The focused style for the [ItemList], drawn on top of the background, but below everything else.
+		</theme_item>
+		<theme_item name="hovered" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered, but not selected items.
+		</theme_item>
+		<theme_item name="hovered_selected" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [ItemList] is not being focused.
+		</theme_item>
+		<theme_item name="hovered_selected_focus" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [ItemList] is being focused.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The background style for the [ItemList].
+		</theme_item>
+		<theme_item name="selected" data_type="style" type="StyleBox">
+			[StyleBox] for the selected items, used when the [ItemList] is not being focused.
+		</theme_item>
+		<theme_item name="selected_focus" data_type="style" type="StyleBox">
+			[StyleBox] for the selected items, used when the [ItemList] is being focused.
+		</theme_item>
+	</theme_items>
+</class>

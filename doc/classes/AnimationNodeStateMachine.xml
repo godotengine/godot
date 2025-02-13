@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeStateMachine" inherits="AnimationRootNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A state machine with multiple [AnimationRootNode]s, used by [AnimationTree].
+	</brief_description>
+	<description>
+		Contains multiple [AnimationRootNode]s representing animation states, connected in a graph. State transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
+		[codeblocks]
+		[gdscript]
+		var state_machine = $AnimationTree.get("parameters/playback")
+		state_machine.travel("some_state")
+		[/gdscript]
+		[csharp]
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		stateMachine.Travel("some_state");
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_node">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
+			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
+			<description>
+				Adds a new animation node to the graph. The [param position] is used for display in the editor.
+			</description>
+		</method>
+		<method name="add_transition">
+			<return type="void" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
+			<param index="2" name="transition" type="AnimationNodeStateMachineTransition" />
+			<description>
+				Adds a transition between the given animation nodes.
+			</description>
+		</method>
+		<method name="get_graph_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the draw offset of the graph. Used for display in the editor.
+			</description>
+		</method>
+		<method name="get_node" qualifiers="const">
+			<return type="AnimationNode" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the animation node with the given name.
+			</description>
+		</method>
+		<method name="get_node_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="node" type="AnimationNode" />
+			<description>
+				Returns the given animation node's name.
+			</description>
+		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the given animation node's coordinates. Used for display in the editor.
+			</description>
+		</method>
+		<method name="get_transition" qualifiers="const">
+			<return type="AnimationNodeStateMachineTransition" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the given transition.
+			</description>
+		</method>
+		<method name="get_transition_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of connections in the graph.
+			</description>
+		</method>
+		<method name="get_transition_from" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the given transition's start node.
+			</description>
+		</method>
+		<method name="get_transition_to" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the given transition's end node.
+			</description>
+		</method>
+		<method name="has_node" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the graph contains the given animation node.
+			</description>
+		</method>
+		<method name="has_transition" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a transition between the given animation nodes.
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Deletes the given animation node from the graph.
+			</description>
+		</method>
+		<method name="remove_transition">
+			<return type="void" />
+			<param index="0" name="from" type="StringName" />
+			<param index="1" name="to" type="StringName" />
+			<description>
+				Deletes the transition between the two specified animation nodes.
+			</description>
+		</method>
+		<method name="remove_transition_by_index">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Deletes the given transition by index.
+			</description>
+		</method>
+		<method name="rename_node">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
+			<description>
+				Renames the given animation node.
+			</description>
+		</method>
+		<method name="replace_node">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="node" type="AnimationNode" />
+			<description>
+				Replaces the given animation node with a new animation node.
+			</description>
+		</method>
+		<method name="set_graph_offset">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Sets the draw offset of the graph. Used for display in the editor.
+			</description>
+		</method>
+		<method name="set_node_position">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="position" type="Vector2" />
+			<description>
+				Sets the animation node's coordinates. Used for display in the editor.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_transition_to_self" type="bool" setter="set_allow_transition_to_self" getter="is_allow_transition_to_self" default="false">
+			If [code]true[/code], allows teleport to the self state with [method AnimationNodeStateMachinePlayback.travel]. When the reset option is enabled in [method AnimationNodeStateMachinePlayback.travel], the animation is restarted. If [code]false[/code], nothing happens on the teleportation to the self state.
+		</member>
+		<member name="reset_ends" type="bool" setter="set_reset_ends" getter="are_ends_reset" default="false">
+			If [code]true[/code], treat the cross-fade to the start and end nodes as a blend with the RESET animation.
+			In most cases, when additional cross-fades are performed in the parent [AnimationNode] of the state machine, setting this property to [code]false[/code] and matching the cross-fade time of the parent [AnimationNode] and the state machine's start node and end node gives good results.
+		</member>
+		<member name="state_machine_type" type="int" setter="set_state_machine_type" getter="get_state_machine_type" enum="AnimationNodeStateMachine.StateMachineType" default="0">
+			This property can define the process of transitions for different use cases. See also [enum AnimationNodeStateMachine.StateMachineType].
+		</member>
+	</members>
+	<constants>
+		<constant name="STATE_MACHINE_TYPE_ROOT" value="0" enum="StateMachineType">
+			Seeking to the beginning is treated as playing from the start state. Transition to the end state is treated as exiting the state machine.
+		</constant>
+		<constant name="STATE_MACHINE_TYPE_NESTED" value="1" enum="StateMachineType">
+			Seeking to the beginning is treated as seeking to the beginning of the animation in the current state. Transition to the end state, or the absence of transitions in each state, is treated as exiting the state machine.
+		</constant>
+		<constant name="STATE_MACHINE_TYPE_GROUPED" value="2" enum="StateMachineType">
+			This is a grouped state machine that can be controlled from a parent state machine. It does not work independently. There must be a state machine with [member state_machine_type] of [constant STATE_MACHINE_TYPE_ROOT] or [constant STATE_MACHINE_TYPE_NESTED] in the parent or ancestor.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JNISingleton" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Singleton that connects the engine with Android plugins to interface with native Android code.
+	</brief_description>
+	<description>
+		The JNISingleton is implemented only in the Android export. It's used to call methods and connect signals from an Android plugin written in Java or Kotlin. Methods and signals can be called and connected to the JNISingleton as if it is a Node. See [url=https://en.wikipedia.org/wiki/Java_Native_Interface]Java Native Interface - Wikipedia[/url] for more information.
+	</description>
+	<tutorials>
+		<link title="Creating Android plugins">$DOCS_URL/tutorials/platform/android/android_plugin.html#doc-android-plugin</link>
+	</tutorials>
+</class>

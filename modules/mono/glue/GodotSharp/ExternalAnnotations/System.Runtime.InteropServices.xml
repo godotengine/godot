@@ -1,0 +1,5 @@
+<assembly name="System.Runtime.InteropServices">
+  <member name="T:System.Runtime.InteropServices.UnmanagedCallersOnlyAttribute">
+    <attribute ctor="M:JetBrains.Annotations.MeansImplicitUseAttribute.#ctor" />
+  </member>
+</assembly>

@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetAtlasSource" inherits="TileSetSource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes a 2D atlas texture as a set of tiles for a [TileSet] resource.
+	</brief_description>
+	<description>
+		An atlas is a grid of tiles laid out on a texture. Each tile in the grid must be exposed using [method create_tile]. Those tiles are then indexed using their coordinates in the grid.
+		Each tile can also have a size in the grid coordinates, making it more or less cells in the atlas.
+		Alternatives version of a tile can be created using [method create_alternative_tile], which are then indexed using an alternative ID. The main tile (the one in the grid), is accessed with an alternative ID equal to 0.
+		Each tile alternate has a set of properties that is defined by the source's [TileSet] layers. Those properties are stored in a TileData object that can be accessed and modified using [method get_tile_data].
+		As TileData properties are stored directly in the TileSetAtlasSource resource, their properties might also be set using [code]TileSetAtlasSource.set("&lt;coords_x&gt;:&lt;coords_y&gt;/&lt;alternative_id&gt;/&lt;tile_data_property&gt;")[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_tiles_outside_texture">
+			<return type="void" />
+			<description>
+				Removes all tiles that don't fit the available texture area. This method iterates over all the source's tiles, so it's advised to use [method has_tiles_outside_texture] beforehand.
+			</description>
+		</method>
+		<method name="create_alternative_tile">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_id_override" type="int" default="-1" />
+			<description>
+				Creates an alternative tile for the tile at coordinates [param atlas_coords]. If [param alternative_id_override] is -1, give it an automatically generated unique ID, or assigns it the given ID otherwise.
+				Returns the new alternative identifier, or -1 if the alternative could not be created with a provided [param alternative_id_override].
+			</description>
+		</method>
+		<method name="create_tile">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="size" type="Vector2i" default="Vector2i(1, 1)" />
+			<description>
+				Creates a new tile at coordinates [param atlas_coords] with the given [param size].
+			</description>
+		</method>
+		<method name="get_atlas_grid_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the atlas grid size, which depends on how many tiles can fit in the texture. It thus depends on the [member texture]'s size, the atlas [member margins], and the tiles' [member texture_region_size].
+			</description>
+		</method>
+		<method name="get_next_alternative_tile_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the alternative ID a following call to [method create_alternative_tile] would return.
+			</description>
+		</method>
+		<method name="get_runtime_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns and internal [ImageTexture] created that includes the padding.
+			</description>
+		</method>
+		<method name="get_runtime_tile_texture_region" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frame" type="int" />
+			<description>
+				Returns the region of the tile at coordinates [param atlas_coords] for the given [param frame] inside the texture returned by [method get_runtime_texture].
+				[b]Note:[/b] If [member use_texture_padding] is [code]false[/code], returns the same as [method get_tile_texture_region].
+			</description>
+		</method>
+		<method name="get_tile_animation_columns" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns how many columns the tile at [param atlas_coords] has in its animation layout.
+			</description>
+		</method>
+		<method name="get_tile_animation_frame_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frame_index" type="int" />
+			<description>
+				Returns the animation frame duration of frame [param frame_index] for the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_frames_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns how many animation frames has the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_mode" qualifiers="const">
+			<return type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the tile animation mode of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
+			</description>
+		</method>
+		<method name="get_tile_animation_separation" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the separation (as in the atlas grid) between each frame of an animated tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_speed" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the animation speed of the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_total_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the sum of the sum of the frame durations of the tile at coordinates [param atlas_coords]. This value needs to be divided by the animation speed to get the actual animation loop duration.
+			</description>
+		</method>
+		<method name="get_tile_at_coords" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				If there is a tile covering the [param atlas_coords] coordinates, returns the top-left coordinates of the tile (thus its coordinate ID). Returns [code]Vector2i(-1, -1)[/code] otherwise.
+			</description>
+		</method>
+		<method name="get_tile_data" qualifiers="const">
+			<return type="TileData" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_tile" type="int" />
+			<description>
+				Returns the [TileData] object for the given atlas coordinates and alternative ID.
+			</description>
+		</method>
+		<method name="get_tile_size_in_atlas" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the size of the tile (in the grid coordinates system) at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_texture_region" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frame" type="int" default="0" />
+			<description>
+				Returns a tile's texture region in the atlas texture. For animated tiles, a [param frame] argument might be provided for the different frames of the animation.
+			</description>
+		</method>
+		<method name="get_tiles_to_be_removed_on_change">
+			<return type="PackedVector2Array" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="margins" type="Vector2i" />
+			<param index="2" name="separation" type="Vector2i" />
+			<param index="3" name="texture_region_size" type="Vector2i" />
+			<description>
+				Returns an array of tiles coordinates ID that will be automatically removed when modifying one or several of those properties: [param texture], [param margins], [param separation] or [param texture_region_size]. This can be used to undo changes that would have caused tiles data loss.
+			</description>
+		</method>
+		<method name="has_room_for_tile" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="animation_columns" type="int" />
+			<param index="3" name="animation_separation" type="Vector2i" />
+			<param index="4" name="frames_count" type="int" />
+			<param index="5" name="ignored_tile" type="Vector2i" default="Vector2i(-1, -1)" />
+			<description>
+				Returns whether there is enough room in an atlas to create/modify a tile with the given properties. If [param ignored_tile] is provided, act as is the given tile was not present in the atlas. This may be used when you want to modify a tile's properties.
+			</description>
+		</method>
+		<method name="has_tiles_outside_texture" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Checks if the source has any tiles that don't fit the texture area (either partially or completely).
+			</description>
+		</method>
+		<method name="move_tile_in_atlas">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<param index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)" />
+			<description>
+				Move the tile and its alternatives at the [param atlas_coords] coordinates to the [param new_atlas_coords] coordinates with the [param new_size] size. This functions will fail if a tile is already present in the given area.
+				If [param new_atlas_coords] is [code]Vector2i(-1, -1)[/code], keeps the tile's coordinates. If [param new_size] is [code]Vector2i(-1, -1)[/code], keeps the tile's size.
+				To avoid an error, first check if a move is possible using [method has_room_for_tile].
+			</description>
+		</method>
+		<method name="remove_alternative_tile">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_tile" type="int" />
+			<description>
+				Remove a tile's alternative with alternative ID [param alternative_tile].
+				Calling this function with [param alternative_tile] equals to 0 will fail, as the base tile alternative cannot be removed.
+			</description>
+		</method>
+		<method name="remove_tile">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Remove a tile and its alternative at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="set_alternative_tile_id">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="alternative_tile" type="int" />
+			<param index="2" name="new_id" type="int" />
+			<description>
+				Change a tile's alternative ID from [param alternative_tile] to [param new_id].
+				Calling this function with [param new_id] of 0 will fail, as the base tile alternative cannot be moved.
+			</description>
+		</method>
+		<method name="set_tile_animation_columns">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frame_columns" type="int" />
+			<description>
+				Sets the number of columns in the animation layout of the tile at coordinates [param atlas_coords]. If set to 0, then the different frames of the animation are laid out as a single horizontal line in the atlas.
+			</description>
+		</method>
+		<method name="set_tile_animation_frame_duration">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frame_index" type="int" />
+			<param index="2" name="duration" type="float" />
+			<description>
+				Sets the animation frame [param duration] of frame [param frame_index] for the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="set_tile_animation_frames_count">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="frames_count" type="int" />
+			<description>
+				Sets how many animation frames the tile at coordinates [param atlas_coords] has.
+			</description>
+		</method>
+		<method name="set_tile_animation_mode">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="mode" type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<description>
+				Sets the tile animation mode of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
+			</description>
+		</method>
+		<method name="set_tile_animation_separation">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="separation" type="Vector2i" />
+			<description>
+				Sets the margin (in grid tiles) between each tile in the animation layout of the tile at coordinates [param atlas_coords] has.
+			</description>
+		</method>
+		<method name="set_tile_animation_speed">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="speed" type="float" />
+			<description>
+				Sets the animation speed of the tile at coordinates [param atlas_coords] has.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="margins" type="Vector2i" setter="set_margins" getter="get_margins" default="Vector2i(0, 0)">
+			Margins, in pixels, to offset the origin of the grid in the texture.
+		</member>
+		<member name="separation" type="Vector2i" setter="set_separation" getter="get_separation" default="Vector2i(0, 0)">
+			Separation, in pixels, between each tile texture region of the grid.
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The atlas texture.
+		</member>
+		<member name="texture_region_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
+			The base tile size in the texture (in pixel). This size must be bigger than or equal to the TileSet's [code]tile_size[/code] value.
+		</member>
+		<member name="use_texture_padding" type="bool" setter="set_use_texture_padding" getter="get_use_texture_padding" default="true">
+			If [code]true[/code], generates an internal texture with an additional one pixel padding around each tile. Texture padding avoids a common artifact where lines appear between tiles.
+			Disabling this setting might lead a small performance improvement, as generating the internal texture requires both memory and processing time when the TileSetAtlasSource resource is modified.
+		</member>
+	</members>
+	<constants>
+		<constant name="TILE_ANIMATION_MODE_DEFAULT" value="0" enum="TileAnimationMode">
+			Tile animations start at same time, looking identical.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_RANDOM_START_TIMES" value="1" enum="TileAnimationMode">
+			Tile animations start at random times, looking varied.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_MAX" value="2" enum="TileAnimationMode">
+			Represents the size of the [enum TileAnimationMode] enum.
+		</constant>
+		<constant name="TRANSFORM_FLIP_H" value="4096">
+			Represents cell's horizontal flip flag. Should be used directly with [TileMap] to flip placed tiles by altering their alternative IDs.
+			[codeblock]
+			var alternate_id = $TileMap.get_cell_alternative_tile(0, Vector2i(2, 2))
+			if not alternate_id &amp; TileSetAtlasSource.TRANSFORM_FLIP_H:
+			    # If tile is not already flipped, flip it.
+			    $TileMap.set_cell(0, Vector2i(2, 2), source_id, atlas_coords, alternate_id | TileSetAtlasSource.TRANSFORM_FLIP_H)
+			[/codeblock]
+			[b]Note:[/b] These transformations can be combined to do the equivalent of 0, 90, 180, and 270 degree rotations, as shown below:
+			[codeblock]
+			enum TileTransform {
+			    ROTATE_0 = 0,
+			    ROTATE_90 = TileSetAtlasSource.TRANSFORM_TRANSPOSE | TileSetAtlasSource.TRANSFORM_FLIP_H,
+			    ROTATE_180 = TileSetAtlasSource.TRANSFORM_FLIP_H | TileSetAtlasSource.TRANSFORM_FLIP_V,
+			    ROTATE_270 = TileSetAtlasSource.TRANSFORM_TRANSPOSE | TileSetAtlasSource.TRANSFORM_FLIP_V,
+			}
+			[/codeblock]
+		</constant>
+		<constant name="TRANSFORM_FLIP_V" value="8192">
+			Represents cell's vertical flip flag. See [constant TRANSFORM_FLIP_H] for usage.
+		</constant>
+		<constant name="TRANSFORM_TRANSPOSE" value="16384">
+			Represents cell's transposed flag. See [constant TRANSFORM_FLIP_H] for usage.
+		</constant>
+	</constants>
+</class>

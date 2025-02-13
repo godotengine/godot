@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonProfileHumanoid" inherits="SkeletonProfile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A humanoid [SkeletonProfile] preset.
+	</brief_description>
+	<description>
+		A [SkeletonProfile] as a preset that is optimized for the human form. This exists for standardization, so all parameters are read-only.
+		A humanoid skeleton profile contains 54 bones divided in 4 groups: [code]"Body"[/code], [code]"Face"[/code], [code]"LeftHand"[/code], and [code]"RightHand"[/code]. It is structured as follows:
+		[codeblock lang=text]
+		Root
+		└─ Hips
+		    ├─ LeftUpperLeg
+		    │  └─ LeftLowerLeg
+		    │     └─ LeftFoot
+		    │        └─ LeftToes
+		    ├─ RightUpperLeg
+		    │  └─ RightLowerLeg
+		    │     └─ RightFoot
+		    │        └─ RightToes
+		    └─ Spine
+		        └─ Chest
+		            └─ UpperChest
+		                ├─ Neck
+		                │   └─ Head
+		                │       ├─ Jaw
+		                │       ├─ LeftEye
+		                │       └─ RightEye
+		                ├─ LeftShoulder
+		                │  └─ LeftUpperArm
+		                │     └─ LeftLowerArm
+		                │        └─ LeftHand
+		                │           ├─ LeftThumbMetacarpal
+		                │           │  └─ LeftThumbProximal
+		                │           │    └─ LeftThumbDistal
+		                │           ├─ LeftIndexProximal
+		                │           │  └─ LeftIndexIntermediate
+		                │           │    └─ LeftIndexDistal
+		                │           ├─ LeftMiddleProximal
+		                │           │  └─ LeftMiddleIntermediate
+		                │           │    └─ LeftMiddleDistal
+		                │           ├─ LeftRingProximal
+		                │           │  └─ LeftRingIntermediate
+		                │           │    └─ LeftRingDistal
+		                │           └─ LeftLittleProximal
+		                │              └─ LeftLittleIntermediate
+		                │                └─ LeftLittleDistal
+		                └─ RightShoulder
+		                   └─ RightUpperArm
+		                      └─ RightLowerArm
+		                         └─ RightHand
+		                            ├─ RightThumbMetacarpal
+		                            │  └─ RightThumbProximal
+		                            │     └─ RightThumbDistal
+		                            ├─ RightIndexProximal
+		                            │  └─ RightIndexIntermediate
+		                            │     └─ RightIndexDistal
+		                            ├─ RightMiddleProximal
+		                            │  └─ RightMiddleIntermediate
+		                            │     └─ RightMiddleDistal
+		                            ├─ RightRingProximal
+		                            │  └─ RightRingIntermediate
+		                            │     └─ RightRingDistal
+		                            └─ RightLittleProximal
+		                               └─ RightLittleIntermediate
+		                                 └─ RightLittleDistal
+		[/codeblock]
+	</description>
+	<tutorials>
+		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
+	</tutorials>
+	<members>
+		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" overrides="SkeletonProfile" default="56" />
+		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" overrides="SkeletonProfile" default="4" />
+		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" overrides="SkeletonProfile" default="&amp;&quot;Root&quot;" />
+		<member name="scale_base_bone" type="StringName" setter="set_scale_base_bone" getter="get_scale_base_bone" overrides="SkeletonProfile" default="&amp;&quot;Hips&quot;" />
+	</members>
+</class>

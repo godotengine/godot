@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FileDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A dialog for selecting files or directories in the filesystem.
+	</brief_description>
+	<description>
+		[FileDialog] is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. [FileDialog] automatically sets its window title according to the [member file_mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_filter">
+			<return type="void" />
+			<param index="0" name="filter" type="String" />
+			<param index="1" name="description" type="String" default="&quot;&quot;" />
+			<description>
+				Adds a comma-delimited file name [param filter] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
+				A [param filter] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
+				For example, a [param filter] of [code]"*.png, *.jpg"[/code] and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
+			</description>
+		</method>
+		<method name="add_option">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="values" type="PackedStringArray" />
+			<param index="2" name="default_value_index" type="int" />
+			<description>
+				Adds an additional [OptionButton] to the file dialog. If [param values] is empty, a [CheckBox] is added instead.
+				[param default_value_index] should be an index of the value in the [param values]. If [param values] is empty it should be either [code]1[/code] (checked), or [code]0[/code] (unchecked).
+			</description>
+		</method>
+		<method name="clear_filename_filter">
+			<return type="void" />
+			<description>
+				Clear the filter for file names.
+			</description>
+		</method>
+		<method name="clear_filters">
+			<return type="void" />
+			<description>
+				Clear all the added filters in the dialog.
+			</description>
+		</method>
+		<method name="deselect_all">
+			<return type="void" />
+			<description>
+				Clear all currently selected items in the dialog.
+			</description>
+		</method>
+		<method name="get_line_edit">
+			<return type="LineEdit" />
+			<description>
+				Returns the LineEdit for the selected file.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_option_default" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Returns the default value index of the [OptionButton] or [CheckBox] with index [param option].
+			</description>
+		</method>
+		<method name="get_option_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Returns the name of the [OptionButton] or [CheckBox] with index [param option].
+			</description>
+		</method>
+		<method name="get_option_values" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="option" type="int" />
+			<description>
+				Returns an array of values of the [OptionButton] with index [param option].
+			</description>
+		</method>
+		<method name="get_selected_options" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with the selected values of the additional [OptionButton]s and/or [CheckBox]es. [Dictionary] keys are names and values are selected value indices.
+			</description>
+		</method>
+		<method name="get_vbox">
+			<return type="VBoxContainer" />
+			<description>
+				Returns the vertical box container of the dialog, custom controls can be added to it.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+				[b]Note:[/b] Changes to this node are ignored by native file dialogs, use [method add_option] to add custom elements to the dialog instead.
+			</description>
+		</method>
+		<method name="invalidate">
+			<return type="void" />
+			<description>
+				Invalidate and update the current dialog content list.
+				[b]Note:[/b] This method does nothing on native file dialogs.
+			</description>
+		</method>
+		<method name="set_option_default">
+			<return type="void" />
+			<param index="0" name="option" type="int" />
+			<param index="1" name="default_value_index" type="int" />
+			<description>
+				Sets the default value index of the [OptionButton] or [CheckBox] with index [param option].
+			</description>
+		</method>
+		<method name="set_option_name">
+			<return type="void" />
+			<param index="0" name="option" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the [OptionButton] or [CheckBox] with index [param option].
+			</description>
+		</method>
+		<method name="set_option_values">
+			<return type="void" />
+			<param index="0" name="option" type="int" />
+			<param index="1" name="values" type="PackedStringArray" />
+			<description>
+				Sets the option values of the [OptionButton] with index [param option].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
+			The file system access scope. See [enum Access] constants.
+			[b]Warning:[/b] In Web builds, FileDialog cannot access the host file system. In sandboxed Linux and macOS environments, [member use_native_dialog] is automatically used to allow limited access to host file system.
+		</member>
+		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
+			The current working directory of the file dialog.
+			[b]Note:[/b] For native file dialogs, this property is only treated as a hint and may not be respected by specific OS implementations.
+		</member>
+		<member name="current_file" type="String" setter="set_current_file" getter="get_current_file">
+			The currently selected file of the file dialog.
+		</member>
+		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
+			The currently selected file path of the file dialog.
+		</member>
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
+			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
+		</member>
+		<member name="filename_filter" type="String" setter="set_filename_filter" getter="get_filename_filter" default="&quot;&quot;">
+			The filter for file names (case-insensitive). When set to a non-empty string, only files that contains the substring will be shown. [member filename_filter] can be edited by the user with the filter button at the top of the file dialog.
+			See also [member filters], which should be used to restrict the file types that can be selected instead of [member filename_filter] which is meant to be set by the user.
+		</member>
+		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
+			The available file type filters. Each filter string in the array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. Both file extensions and MIME type should be always set.
+			[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+		</member>
+		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
+			If [code]true[/code], changing the [member file_mode] property will set the window title accordingly (e.g. setting [member file_mode] to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
+		</member>
+		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Save&quot;" />
+		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
+			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
+		</member>
+		<member name="root_subfolder" type="String" setter="set_root_subfolder" getter="get_root_subfolder" default="&quot;&quot;">
+			If non-empty, the given sub-folder will be "root" of this [FileDialog], i.e. user won't be able to go to its parent directory.
+			[b]Note:[/b] This property is ignored by native file dialogs.
+		</member>
+		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files" default="false">
+			If [code]true[/code], the dialog will show hidden files.
+			[b]Note:[/b] This property is ignored by native file dialogs on Android and Linux.
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(640, 360)" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
+		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
+			If [code]true[/code], and if supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
+			[b]Note:[/b] On Android, it is only supported when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
+			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
+			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
+		</member>
+	</members>
+	<signals>
+		<signal name="dir_selected">
+			<param index="0" name="dir" type="String" />
+			<description>
+				Emitted when the user selects a directory.
+			</description>
+		</signal>
+		<signal name="file_selected">
+			<param index="0" name="path" type="String" />
+			<description>
+				Emitted when the user selects a file by double-clicking it or pressing the [b]OK[/b] button.
+			</description>
+		</signal>
+		<signal name="filename_filter_changed">
+			<param index="0" name="filter" type="String" />
+			<description>
+				Emitted when the filter for file names changes.
+			</description>
+		</signal>
+		<signal name="files_selected">
+			<param index="0" name="paths" type="PackedStringArray" />
+			<description>
+				Emitted when the user selects multiple files.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FILE_MODE_OPEN_FILE" value="0" enum="FileMode">
+			The dialog allows selecting one, and only one file.
+		</constant>
+		<constant name="FILE_MODE_OPEN_FILES" value="1" enum="FileMode">
+			The dialog allows selecting multiple files.
+		</constant>
+		<constant name="FILE_MODE_OPEN_DIR" value="2" enum="FileMode">
+			The dialog only allows selecting a directory, disallowing the selection of any file.
+		</constant>
+		<constant name="FILE_MODE_OPEN_ANY" value="3" enum="FileMode">
+			The dialog allows selecting one file or directory.
+		</constant>
+		<constant name="FILE_MODE_SAVE_FILE" value="4" enum="FileMode">
+			The dialog will warn when a file exists.
+		</constant>
+		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
+			The dialog only allows accessing files under the [Resource] path ([code]res://[/code]).
+		</constant>
+		<constant name="ACCESS_USERDATA" value="1" enum="Access">
+			The dialog only allows accessing files under user data path ([code]user://[/code]).
+		</constant>
+		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
+			The dialog allows accessing files on the whole file system.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="file_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.25)">
+			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
+		</theme_item>
+		<theme_item name="file_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			The color modulation applied to the file icon.
+		</theme_item>
+		<theme_item name="folder_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			The color modulation applied to the folder icon.
+		</theme_item>
+		<theme_item name="back_folder" data_type="icon" type="Texture2D">
+			Custom icon for the back arrow.
+		</theme_item>
+		<theme_item name="create_folder" data_type="icon" type="Texture2D">
+			Custom icon for the create folder button.
+		</theme_item>
+		<theme_item name="file" data_type="icon" type="Texture2D">
+			Custom icon for files.
+		</theme_item>
+		<theme_item name="folder" data_type="icon" type="Texture2D">
+			Custom icon for folders.
+		</theme_item>
+		<theme_item name="forward_folder" data_type="icon" type="Texture2D">
+			Custom icon for the forward arrow.
+		</theme_item>
+		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
+			Custom icon for the parent folder arrow.
+		</theme_item>
+		<theme_item name="reload" data_type="icon" type="Texture2D">
+			Custom icon for the reload button.
+		</theme_item>
+		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
+			Custom icon for the toggle button for the filter for file names.
+		</theme_item>
+		<theme_item name="toggle_hidden" data_type="icon" type="Texture2D">
+			Custom icon for the toggle hidden button.
+		</theme_item>
+	</theme_items>
+</class>

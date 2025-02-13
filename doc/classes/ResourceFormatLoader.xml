@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatLoader" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Loads a specific resource type from a file.
+	</brief_description>
+	<description>
+		Godot loads resources in the editor or in exported games using ResourceFormatLoaders. They are queried automatically via the [ResourceLoader] singleton, or when a resource with internal dependencies is loaded. Each file type may load as a different resource type, so multiple ResourceFormatLoaders are registered in the engine.
+		Extending this class allows you to define your own loader. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatLoaders, it will be called automatically when loading resources of its handled type(s). You may also implement a [ResourceFormatSaver].
+		[b]Note:[/b] You can also extend [EditorImportPlugin] if the resource type you need exists but Godot is unable to load its format. Choosing one way over another depends on if the format is suitable or not for the final exported game. For example, it's better to import [code].png[/code] textures as [code].ctex[/code] ([CompressedTexture2D]) first, so they can be loaded with better efficiency on the graphics card.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_exists" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_classes_used" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_dependencies" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="add_types" type="bool" />
+			<description>
+				If implemented, gets the dependencies of a given resource. If [param add_types] is [code]true[/code], paths should be appended [code]::TypeName[/code], where [code]TypeName[/code] is the class name of the dependency.
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				Gets the list of extensions for files this loader is able to read.
+			</description>
+		</method>
+		<method name="_get_resource_script_class" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the script class name associated with the [Resource] under the given [param path]. If the resource has no script or the script isn't a named class, it should return [code]""[/code].
+			</description>
+		</method>
+		<method name="_get_resource_type" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Gets the class name of the resource associated with the given path. If the loader cannot handle it, it should return [code]""[/code].
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just return [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="_get_resource_uid" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Should return the unique ID for the resource associated with the given path. If this method is not overridden, a [code].uid[/code] file is generated along with the resource file, containing the unique ID.
+			</description>
+		</method>
+		<method name="_handles_type" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="type" type="StringName" />
+			<description>
+				Tells which resource class this loader can load.
+				[b]Note:[/b] Custom resource types defined by scripts aren't known by the [ClassDB], so you might just handle [code]"Resource"[/code] for them.
+			</description>
+		</method>
+		<method name="_load" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="original_path" type="String" />
+			<param index="2" name="use_sub_threads" type="bool" />
+			<param index="3" name="cache_mode" type="int" />
+			<description>
+				Loads a resource when the engine finds this loader to be compatible. If the loaded resource is the result of an import, [param original_path] will target the source file. Returns a [Resource] object on success, or an [enum Error] constant in case of failure.
+				The [param cache_mode] property defines whether and how the cache should be used or updated when loading the resource. See [enum CacheMode] for details.
+			</description>
+		</method>
+		<method name="_recognize_path" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="type" type="StringName" />
+			<description>
+				Tells whether or not this loader should load a resource from its resource path for a given type.
+				If it is not implemented, the default behavior returns whether the path's extension is within the ones provided by [method _get_recognized_extensions], and if the type is within the ones provided by [method _get_resource_type].
+			</description>
+		</method>
+		<method name="_rename_dependencies" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="renames" type="Dictionary" />
+			<description>
+				If implemented, renames dependencies within the given resource and saves it. [param renames] is a dictionary [code]{ String =&gt; String }[/code] mapping old dependency paths to new paths.
+				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="CACHE_MODE_IGNORE" value="0" enum="CacheMode">
+			Neither the main resource (the one requested to be loaded) nor any of its subresources are retrieved from cache nor stored into it. Dependencies (external resources) are loaded with [constant CACHE_MODE_REUSE].
+		</constant>
+		<constant name="CACHE_MODE_REUSE" value="1" enum="CacheMode">
+			The main resource (the one requested to be loaded), its subresources, and its dependencies (external resources) are retrieved from cache if present, instead of loaded. Those not cached are loaded and then stored into the cache. The same rules are propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE" value="2" enum="CacheMode">
+			Like [constant CACHE_MODE_REUSE], but the cache is checked for the main resource (the one requested to be loaded) as well as for each of its subresources. Those already in the cache, as long as the loaded and cached types match, have their data refreshed from storage into the already existing instances. Otherwise, they are recreated as completely new objects.
+		</constant>
+		<constant name="CACHE_MODE_IGNORE_DEEP" value="3" enum="CacheMode">
+			Like [constant CACHE_MODE_IGNORE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+		<constant name="CACHE_MODE_REPLACE_DEEP" value="4" enum="CacheMode">
+			Like [constant CACHE_MODE_REPLACE], but propagated recursively down the tree of dependencies (external resources).
+		</constant>
+	</constants>
+</class>

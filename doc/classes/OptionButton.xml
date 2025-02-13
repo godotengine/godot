@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OptionButton" inherits="Button" keywords="select" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A button that brings up a dropdown with selectable options when pressed.
+	</brief_description>
+	<description>
+		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
+		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_icon_item">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="id" type="int" default="-1" />
+			<description>
+				Adds an item, with a [param texture] icon, text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="void" />
+			<param index="0" name="label" type="String" />
+			<param index="1" name="id" type="int" default="-1" />
+			<description>
+				Adds an item, with text [param label] and (optionally) [param id]. If no [param id] is passed, the item index will be used as the item's ID. New items are appended at the end.
+			</description>
+		</method>
+		<method name="add_separator">
+			<return type="void" />
+			<param index="0" name="text" type="String" default="&quot;&quot;" />
+			<description>
+				Adds a separator to the list of items. Separators help to group items, and can optionally be given a [param text] header. A separator also gets an index assigned, and is appended at the end of the item list.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears all the items in the [OptionButton].
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the icon of the item at index [param idx].
+			</description>
+		</method>
+		<method name="get_item_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the ID of the item at index [param idx].
+			</description>
+		</method>
+		<method name="get_item_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the index of the item with the given [param id].
+			</description>
+		</method>
+		<method name="get_item_metadata" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Retrieves the metadata of an item. Metadata may be any type and can be used to store extra information about an item, such as an external string ID.
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the text of the item at index [param idx].
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the tooltip of the item at index [param idx].
+			</description>
+		</method>
+		<method name="get_popup" qualifiers="const">
+			<return type="PopupMenu" />
+			<description>
+				Returns the [PopupMenu] contained in this button.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+			</description>
+		</method>
+		<method name="get_selectable_item" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="from_last" type="bool" default="false" />
+			<description>
+				Returns the index of the first item which is not disabled, or marked as a separator. If [param from_last] is [code]true[/code], the items will be searched in reverse order.
+				Returns [code]-1[/code] if no item is found.
+			</description>
+		</method>
+		<method name="get_selected_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the selected item, or [code]-1[/code] if no item is selected.
+			</description>
+		</method>
+		<method name="get_selected_metadata" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Gets the metadata of the selected item. Metadata for items can be set using [method set_item_metadata].
+			</description>
+		</method>
+		<method name="has_selectable_items" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this button contains at least one item which is not disabled, or marked as a separator.
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is disabled.
+			</description>
+		</method>
+		<method name="is_item_separator" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is marked as a separator.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Removes the item at index [param idx].
+			</description>
+		</method>
+		<method name="select">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Selects an item by index and makes it the current item. This will work even if the item is disabled.
+				Passing [code]-1[/code] as the index deselects any currently selected item.
+			</description>
+		</method>
+		<method name="set_disable_shortcuts">
+			<return type="void" />
+			<param index="0" name="disabled" type="bool" />
+			<description>
+				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="disabled" type="bool" />
+			<description>
+				Sets whether the item at index [param idx] is disabled.
+				Disabled items are drawn differently in the dropdown and are not selectable by the user. If the current selected item is set as disabled, it will remain selected.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Sets the icon of the item at index [param idx].
+			</description>
+		</method>
+		<method name="set_item_id">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Sets the ID of the item at index [param idx].
+			</description>
+		</method>
+		<method name="set_item_metadata">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="metadata" type="Variant" />
+			<description>
+				Sets the metadata of an item. Metadata may be of any type and can be used to store extra information about an item, such as an external string ID.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Sets the text of the item at index [param idx].
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="tooltip" type="String" />
+			<description>
+				Sets the tooltip of the item at index [param idx].
+			</description>
+		</method>
+		<method name="show_popup">
+			<return type="void" />
+			<description>
+				Adjusts popup position and sizing for the [OptionButton], then shows the [PopupMenu]. Prefer this over using [code]get_popup().popup()[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" overrides="BaseButton" enum="BaseButton.ActionMode" default="0" />
+		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
+		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect" default="false">
+			If [code]true[/code], the currently selected item can be selected again.
+		</member>
+		<member name="fit_to_longest_item" type="bool" setter="set_fit_to_longest_item" getter="is_fit_to_longest_item" default="true">
+			If [code]true[/code], minimum size will be determined by the longest item's text, instead of the currently selected one's.
+			[b]Note:[/b] For performance reasons, the minimum size doesn't update immediately when adding, removing or modifying items.
+		</member>
+		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
+			The number of items to select from.
+		</member>
+		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
+			The index of the currently selected item, or [code]-1[/code] if no item is selected.
+		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
+	</members>
+	<signals>
+		<signal name="item_focused">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when the user navigates to an item using the [member ProjectSettings.input/ui_up] or [member ProjectSettings.input/ui_down] input actions. The index of the item selected is passed as argument.
+			</description>
+		</signal>
+		<signal name="item_selected">
+			<param index="0" name="index" type="int" />
+			<description>
+				Emitted when the current item has been changed by the user. The index of the item selected is passed as argument.
+				[member allow_reselect] must be enabled to reselect an item.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="arrow_margin" data_type="constant" type="int" default="4">
+			The horizontal space between the arrow icon and the right edge of the button.
+		</theme_item>
+		<theme_item name="modulate_arrow" data_type="constant" type="int" default="0">
+			If different than [code]0[/code], the arrow icon will be modulated to the font color.
+		</theme_item>
+		<theme_item name="arrow" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button.
+		</theme_item>
+	</theme_items>
+</class>

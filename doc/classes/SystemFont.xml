@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SystemFont" inherits="Font" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A font loaded from a system font. Falls back to a default theme font if not implemented on the host OS.
+	</brief_description>
+	<description>
+		[SystemFont] loads a font from a system font with the first matching name from [member font_names].
+		It will attempt to match font style, but it's not guaranteed.
+		The returned font might be part of a font collection or be a variable font with OpenType "weight", "width" and/or "italic" features set.
+		You can create [FontVariation] of the system font for precise control over its features.
+		[b]Note:[/b] This class is implemented on iOS, Linux, macOS and Windows, on other platforms it will fallback to default theme font.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="allow_system_fallback" type="bool" setter="set_allow_system_fallback" getter="is_allow_system_fallback" default="true">
+			If set to [code]true[/code], system fonts can be automatically used as fallbacks.
+		</member>
+		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
+			Font anti-aliasing mode.
+		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
+		<member name="font_italic" type="bool" setter="set_font_italic" getter="get_font_italic" default="false">
+			If set to [code]true[/code], italic or oblique font is preferred.
+		</member>
+		<member name="font_names" type="PackedStringArray" setter="set_font_names" getter="get_font_names" default="PackedStringArray()">
+			Array of font family names to search, first matching font found is used.
+		</member>
+		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
+			Preferred font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+		</member>
+		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
+			Preferred weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
+		</member>
+		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
+			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting.
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="get_generate_mipmaps" default="false">
+			If set to [code]true[/code], generate mipmaps for the font textures.
+		</member>
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
+			Font hinting mode.
+		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="set_keep_rounding_remainders" getter="get_keep_rounding_remainders" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+		</member>
+		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
+			The width of the range around the shape between the minimum and maximum representable signed distance. If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline. The default [member msdf_pixel_range] value of [code]16[/code] allows outline sizes up to [code]8[/code] to look correct.
+		</member>
+		<member name="msdf_size" type="int" setter="set_msdf_size" getter="get_msdf_size" default="48">
+			Source font size used to generate MSDF textures. Higher values allow for more precision, but are slower to render and require more memory. Only increase this value if you notice a visible lack of precision in glyph rendering.
+		</member>
+		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
+			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data.
+		</member>
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
+			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead.
+		</member>
+		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
+			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of memory usage and font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
+		</member>
+	</members>
+</class>

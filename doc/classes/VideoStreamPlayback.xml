@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VideoStreamPlayback" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Internal class used by [VideoStream] to manage playback state when played from a [VideoStreamPlayer].
+	</brief_description>
+	<description>
+		This class is intended to be overridden by video decoder extensions with custom implementations of [VideoStream].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_channels" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Returns the number of audio channels.
+			</description>
+		</method>
+		<method name="_get_length" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Returns the video duration in seconds, if known, or 0 if unknown.
+			</description>
+		</method>
+		<method name="_get_mix_rate" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Returns the audio sample rate used for mixing.
+			</description>
+		</method>
+		<method name="_get_playback_position" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Return the current playback timestamp. Called in response to the [member VideoStreamPlayer.stream_position] getter.
+			</description>
+		</method>
+		<method name="_get_texture" qualifiers="virtual const">
+			<return type="Texture2D" />
+			<description>
+				Allocates a [Texture2D] in which decoded video frames will be drawn.
+			</description>
+		</method>
+		<method name="_is_paused" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns the paused status, as set by [method _set_paused].
+			</description>
+		</method>
+		<method name="_is_playing" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns the playback state, as determined by calls to [method _play] and [method _stop].
+			</description>
+		</method>
+		<method name="_play" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called in response to [member VideoStreamPlayer.autoplay] or [method VideoStreamPlayer.play]. Note that manual playback may also invoke [method _stop] multiple times before this method is called. [method _is_playing] should return [code]true[/code] once playing.
+			</description>
+		</method>
+		<method name="_seek" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="time" type="float" />
+			<description>
+				Seeks to [param time] seconds. Called in response to the [member VideoStreamPlayer.stream_position] setter.
+			</description>
+		</method>
+		<method name="_set_audio_track" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Select the audio track [param idx]. Called when playback starts, and in response to the [member VideoStreamPlayer.audio_track] setter.
+			</description>
+		</method>
+		<method name="_set_paused" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="paused" type="bool" />
+			<description>
+				Set the paused status of video playback. [method _is_paused] must return [param paused]. Called in response to the [member VideoStreamPlayer.paused] setter.
+			</description>
+		</method>
+		<method name="_stop" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Stops playback. May be called multiple times before [method _play], or in response to [method VideoStreamPlayer.stop]. [method _is_playing] should return [code]false[/code] once stopped.
+			</description>
+		</method>
+		<method name="_update" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Ticks video playback for [param delta] seconds. Called every frame as long as both [method _is_paused] and [method _is_playing] return [code]true[/code].
+			</description>
+		</method>
+		<method name="mix_audio">
+			<return type="int" />
+			<param index="0" name="num_frames" type="int" />
+			<param index="1" name="buffer" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="2" name="offset" type="int" default="0" />
+			<description>
+				Render [param num_frames] audio frames (of [method _get_channels] floats each) from [param buffer], starting from index [param offset] in the array. Returns the number of audio frames rendered, or -1 on error.
+			</description>
+		</method>
+	</methods>
+</class>

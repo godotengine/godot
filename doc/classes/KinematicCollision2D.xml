@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KinematicCollision2D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Holds collision data from the movement of a [PhysicsBody2D].
+	</brief_description>
+	<description>
+		Holds collision data from the movement of a [PhysicsBody2D], usually from [method PhysicsBody2D.move_and_collide]. When a [PhysicsBody2D] is moved, it stops if it detects a collision with another body. If a collision is detected, a [KinematicCollision2D] object is returned.
+		The collision data includes the colliding object, the remaining motion, and the collision position. This data can be used to determine a custom response to the collision.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_angle" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
+			<description>
+				Returns the collision angle according to [param up_direction], which is [constant Vector2.UP] by default. This value is always positive.
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the colliding body's attached [Object].
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the unique instance ID of the colliding body's attached [Object]. See [method Object.get_instance_id].
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the colliding body's [RID] used by the [PhysicsServer2D].
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the colliding body's shape.
+			</description>
+		</method>
+		<method name="get_collider_shape_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the colliding body's shape index. See [CollisionObject2D].
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the colliding body's velocity.
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the colliding body's length of overlap along the collision normal.
+			</description>
+		</method>
+		<method name="get_local_shape" qualifiers="const">
+			<return type="Object" />
+			<description>
+				Returns the moving object's colliding shape.
+			</description>
+		</method>
+		<method name="get_normal" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the colliding body's shape's normal at the point of collision.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the point of collision in global coordinates.
+			</description>
+		</method>
+		<method name="get_remainder" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the moving object's remaining movement vector.
+			</description>
+		</method>
+		<method name="get_travel" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the moving object's travel before collision.
+			</description>
+		</method>
+	</methods>
+</class>

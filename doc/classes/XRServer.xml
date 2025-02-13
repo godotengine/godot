@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Server for AR and VR features.
+	</brief_description>
+	<description>
+		The AR/VR server is the heart of our Advanced and Virtual Reality solution and handles all the processing.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="XRInterface" />
+			<description>
+				Registers an [XRInterface] object.
+			</description>
+		</method>
+		<method name="add_tracker">
+			<return type="void" />
+			<param index="0" name="tracker" type="XRTracker" />
+			<description>
+				Registers a new [XRTracker] that tracks a physical object.
+			</description>
+		</method>
+		<method name="center_on_hmd">
+			<return type="void" />
+			<param index="0" name="rotation_mode" type="int" enum="XRServer.RotationMode" />
+			<param index="1" name="keep_height" type="bool" />
+			<description>
+				This is an important function to understand correctly. AR and VR platforms all handle positioning slightly differently.
+				For platforms that do not offer spatial tracking, our origin point (0, 0, 0) is the location of our HMD, but you have little control over the direction the player is facing in the real world.
+				For platforms that do offer spatial tracking, our origin point depends very much on the system. For OpenVR, our origin point is usually the center of the tracking space, on the ground. For other platforms, it's often the location of the tracking camera.
+				This method allows you to center your tracker on the location of the HMD. It will take the current location of the HMD and use that to adjust all your tracking data; in essence, realigning the real world to your player's current position in the game world.
+				For this method to produce usable results, tracking information must be available. This often takes a few frames after starting your game.
+				You should call this method after a few seconds have passed. For example, when the user requests a realignment of the display holding a designated button on a controller for a short period of time, or when implementing a teleport mechanism.
+			</description>
+		</method>
+		<method name="clear_reference_frame">
+			<return type="void" />
+			<description>
+				Clears the reference frame that was set by previous calls to [method center_on_hmd].
+			</description>
+		</method>
+		<method name="find_interface" qualifiers="const">
+			<return type="XRInterface" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Finds an interface by its [param name]. For example, if your project uses capabilities of an AR/VR platform, you can find the interface for that platform by name and initialize it.
+			</description>
+		</method>
+		<method name="get_hmd_transform">
+			<return type="Transform3D" />
+			<description>
+				Returns the primary interface's transformation.
+			</description>
+		</method>
+		<method name="get_interface" qualifiers="const">
+			<return type="XRInterface" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the interface registered at the given [param idx] index in the list of interfaces.
+			</description>
+		</method>
+		<method name="get_interface_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of interfaces currently registered with the AR/VR server. If your project supports multiple AR/VR platforms, you can look through the available interface, and either present the user with a selection or simply try to initialize each interface and use the first one that returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_interfaces" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns a list of available interfaces the ID and name of each interface.
+			</description>
+		</method>
+		<method name="get_reference_frame" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns the reference frame transform. Mostly used internally and exposed for GDExtension build interfaces.
+			</description>
+		</method>
+		<method name="get_tracker" qualifiers="const">
+			<return type="XRTracker" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns the positional tracker with the given [param tracker_name].
+			</description>
+		</method>
+		<method name="get_trackers">
+			<return type="Dictionary" />
+			<param index="0" name="tracker_types" type="int" />
+			<description>
+				Returns a dictionary of trackers for [param tracker_types].
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="XRInterface" />
+			<description>
+				Removes this [param interface].
+			</description>
+		</method>
+		<method name="remove_tracker">
+			<return type="void" />
+			<param index="0" name="tracker" type="XRTracker" />
+			<description>
+				Removes this [param tracker].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="camera_locked_to_origin" type="bool" setter="set_camera_locked_to_origin" getter="is_camera_locked_to_origin" default="false">
+			If set to [code]true[/code], the scene will be rendered as if the camera is locked to the [XROrigin3D].
+			[b]Note:[/b] This doesn't provide a very comfortable experience for users. This setting exists for doing benchmarking or automated testing, where you want to control what is rendered via code.
+		</member>
+		<member name="primary_interface" type="XRInterface" setter="set_primary_interface" getter="get_primary_interface">
+			The primary [XRInterface] currently bound to the [XRServer].
+		</member>
+		<member name="world_origin" type="Transform3D" setter="set_world_origin" getter="get_world_origin" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			The current origin of our tracking space in the virtual world. This is used by the renderer to properly position the camera with new tracking data.
+			[b]Note:[/b] This property is managed by the current [XROrigin3D] node. It is exposed for access from GDExtensions.
+		</member>
+		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
+			The scale of the game world compared to the real world. By default, most AR/VR platforms assume that 1 game unit corresponds to 1 real world meter.
+		</member>
+	</members>
+	<signals>
+		<signal name="interface_added">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when a new interface has been added.
+			</description>
+		</signal>
+		<signal name="interface_removed">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when an interface is removed.
+			</description>
+		</signal>
+		<signal name="reference_frame_changed">
+			<description>
+				Emitted when the reference frame transform changes.
+			</description>
+		</signal>
+		<signal name="tracker_added">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Emitted when a new tracker has been added. If you don't use a fixed number of controllers or if you're using [XRAnchor3D]s for an AR solution, it is important to react to this signal to add the appropriate [XRController3D] or [XRAnchor3D] nodes related to this new tracker.
+			</description>
+		</signal>
+		<signal name="tracker_removed">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Emitted when a tracker is removed. You should remove any [XRController3D] or [XRAnchor3D] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
+			</description>
+		</signal>
+		<signal name="tracker_updated">
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Emitted when an existing tracker has been updated. This can happen if the user switches controllers.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TRACKER_HEAD" value="1" enum="TrackerType">
+			The tracker tracks the location of the players head. This is usually a location centered between the players eyes. Note that for handheld AR devices this can be the current location of the device.
+		</constant>
+		<constant name="TRACKER_CONTROLLER" value="2" enum="TrackerType">
+			The tracker tracks the location of a controller.
+		</constant>
+		<constant name="TRACKER_BASESTATION" value="4" enum="TrackerType">
+			The tracker tracks the location of a base station.
+		</constant>
+		<constant name="TRACKER_ANCHOR" value="8" enum="TrackerType">
+			The tracker tracks the location and size of an AR anchor.
+		</constant>
+		<constant name="TRACKER_HAND" value="16" enum="TrackerType">
+			The tracker tracks the location and joints of a hand.
+		</constant>
+		<constant name="TRACKER_BODY" value="32" enum="TrackerType">
+			The tracker tracks the location and joints of a body.
+		</constant>
+		<constant name="TRACKER_FACE" value="64" enum="TrackerType">
+			The tracker tracks the expressions of a face.
+		</constant>
+		<constant name="TRACKER_ANY_KNOWN" value="127" enum="TrackerType">
+			Used internally to filter trackers of any known type.
+		</constant>
+		<constant name="TRACKER_UNKNOWN" value="128" enum="TrackerType">
+			Used internally if we haven't set the tracker type yet.
+		</constant>
+		<constant name="TRACKER_ANY" value="255" enum="TrackerType">
+			Used internally to select all trackers.
+		</constant>
+		<constant name="RESET_FULL_ROTATION" value="0" enum="RotationMode">
+			Fully reset the orientation of the HMD. Regardless of what direction the user is looking to in the real world. The user will look dead ahead in the virtual world.
+		</constant>
+		<constant name="RESET_BUT_KEEP_TILT" value="1" enum="RotationMode">
+			Resets the orientation but keeps the tilt of the device. So if we're looking down, we keep looking down but heading will be reset.
+		</constant>
+		<constant name="DONT_RESET_ROTATION" value="2" enum="RotationMode">
+			Does not reset the orientation of the HMD, only the position of the player gets centered.
+		</constant>
+	</constants>
+</class>

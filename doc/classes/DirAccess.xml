@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DirAccess" inherits="RefCounted" keywords="directory, path, folder" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides methods for managing directories and their content.
+	</brief_description>
+	<description>
+		This class is used to manage directories and their content, even outside of the project folder.
+		[DirAccess] can't be instantiated directly. Instead it is created with a static method that takes a path for which it will be opened.
+		Most of the methods have a static alternative that can be used without creating a [DirAccess]. Static methods only support absolute paths (including [code]res://[/code] and [code]user://[/code]).
+		[codeblock]
+		# Standard
+		var dir = DirAccess.open("user://levels")
+		dir.make_dir("world1")
+		# Static
+		DirAccess.make_dir_absolute("user://levels/world1")
+		[/codeblock]
+		[b]Note:[/b] Accessing project ("res://") directories once exported may behave unexpectedly as some files are converted to engine-specific formats and their original source files may not be present in the expected PCK package. Because of this, to access resources in an exported project, it is recommended to use [ResourceLoader] instead of [FileAccess].
+		Here is an example on how to iterate through the files of a directory:
+		[codeblocks]
+		[gdscript]
+		func dir_contents(path):
+		    var dir = DirAccess.open(path)
+		    if dir:
+		        dir.list_dir_begin()
+		        var file_name = dir.get_next()
+		        while file_name != "":
+		            if dir.current_is_dir():
+		                print("Found directory: " + file_name)
+		            else:
+		                print("Found file: " + file_name)
+		            file_name = dir.get_next()
+		    else:
+		        print("An error occurred when trying to access the path.")
+		[/gdscript]
+		[csharp]
+		public void DirContents(string path)
+		{
+		    using var dir = DirAccess.Open(path);
+		    if (dir != null)
+		    {
+		        dir.ListDirBegin();
+		        string fileName = dir.GetNext();
+		        while (fileName != "")
+		        {
+		            if (dir.CurrentIsDir())
+		            {
+		                GD.Print($"Found directory: {fileName}");
+		            }
+		            else
+		            {
+		                GD.Print($"Found file: {fileName}");
+		            }
+		            fileName = dir.GetNext();
+		        }
+		    }
+		    else
+		    {
+		        GD.Print("An error occurred when trying to access the path.");
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+		Keep in mind that file names may change or be remapped after export. If you want to see the actual resource file list as it appears in the editor, use [method ResourceLoader.list_directory] instead.
+	</description>
+	<tutorials>
+		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
+	</tutorials>
+	<methods>
+		<method name="change_dir">
+			<return type="int" enum="Error" />
+			<param index="0" name="to_dir" type="String" />
+			<description>
+				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+				[b]Note:[/b] The new directory must be within the same scope, e.g. when you had opened a directory inside [code]res://[/code], you can't change it to [code]user://[/code] directory. If you need to open a directory in another access scope, use [method open] to create a new instance instead.
+			</description>
+		</method>
+		<method name="copy">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<param index="2" name="chmod_flags" type="int" default="-1" />
+			<description>
+				Copies the [param from] file to the [param to] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				If [param chmod_flags] is different than [code]-1[/code], the Unix permissions for the destination path will be set to the provided value, if available on the current operating system.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="copy_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<param index="2" name="chmod_flags" type="int" default="-1" />
+			<description>
+				Static version of [method copy]. Supports only absolute paths.
+			</description>
+		</method>
+		<method name="create_link">
+			<return type="int" enum="Error" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="target" type="String" />
+			<description>
+				Creates symbolic link between files or folders.
+				[b]Note:[/b] On Windows, this method works only if the application is running with elevated privileges or Developer Mode is enabled.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
+			</description>
+		</method>
+		<method name="create_temp" qualifiers="static">
+			<return type="DirAccess" />
+			<param index="0" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="1" name="keep" type="bool" default="false" />
+			<description>
+				Creates a temporary directory. This directory will be freed when the returned [DirAccess] is freed.
+				If [param prefix] is not empty, it will be prefixed to the directory name, separated by a [code]-[/code].
+				If [param keep] is [code]true[/code], the directory is not deleted when the returned [DirAccess] is freed.
+				Returns [code]null[/code] if opening the directory failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="current_is_dir" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the current item processed with the last [method get_next] call is a directory ([code].[/code] and [code]..[/code] are considered directories).
+			</description>
+		</method>
+		<method name="dir_exists">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
+				[b]Note:[/b] The returned [bool] in the editor and after exporting when used on a path in the [code]res://[/code] directory may be different. Some files are converted to engine-specific formats when exported, potentially changing the directory structure.
+			</description>
+		</method>
+		<method name="dir_exists_absolute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method dir_exists]. Supports only absolute paths.
+				[b]Note:[/b] The returned [bool] in the editor and after exporting when used on a path in the [code]res://[/code] directory may be different. Some files are converted to engine-specific formats when exported, potentially changing the directory structure.
+			</description>
+		</method>
+		<method name="file_exists">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
+				For a static equivalent, use [method FileAccess.file_exists].
+				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. See [method ResourceLoader.exists] for an alternative approach that takes resource remapping into account.
+			</description>
+		</method>
+		<method name="get_current_dir" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="include_drive" type="bool" default="true" />
+			<description>
+				Returns the absolute path to the currently opened directory (e.g. [code]res://folder[/code] or [code]C:\tmp\folder[/code]).
+			</description>
+		</method>
+		<method name="get_current_drive">
+			<return type="int" />
+			<description>
+				Returns the currently opened directory's drive index. See [method get_drive_name] to convert returned index to the name of the drive.
+			</description>
+		</method>
+		<method name="get_directories">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files. The array is sorted alphabetically.
+				Affected by [member include_hidden] and [member include_navigational].
+				[b]Note:[/b] The returned directories in the editor and after exporting in the [code]res://[/code] directory may differ as some files are converted to engine-specific formats when exported.
+			</description>
+		</method>
+		<method name="get_directories_at" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files, at the given [param path]. The array is sorted alphabetically.
+				Use [method get_directories] if you want more control of what gets included.
+				[b]Note:[/b] The returned directories in the editor and after exporting in the [code]res://[/code] directory may differ as some files are converted to engine-specific formats when exported.
+			</description>
+		</method>
+		<method name="get_drive_count" qualifiers="static">
+			<return type="int" />
+			<description>
+				On Windows, returns the number of drives (partitions) mounted on the current filesystem.
+				On macOS, returns the number of mounted volumes.
+				On Linux, returns the number of mounted volumes and GTK 3 bookmarks.
+				On other platforms, the method returns 0.
+			</description>
+		</method>
+		<method name="get_drive_name" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]).
+				On macOS, returns the path to the mounted volume passed as an argument.
+				On Linux, returns the path to the mounted volume or GTK 3 bookmark passed as an argument.
+				On other platforms, or if the requested drive does not exist, the method returns an empty String.
+			</description>
+		</method>
+		<method name="get_files">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
+				Affected by [member include_hidden].
+				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files actually included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code]*.gd[/code] and [code]*.import[/code] files are returned (plus a few files such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on whether [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_files_at" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories, at the given [param path]. The array is sorted alphabetically.
+				Use [method get_files] if you want more control of what gets included.
+				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code].gd[/code] and [code].import[/code] files are returned (plus a few other files, such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on [member ProjectSettings.editor/export/convert_text_resources_to_binary].
+			</description>
+		</method>
+		<method name="get_next">
+			<return type="String" />
+			<description>
+				Returns the next element (file or directory) in the current directory.
+				The name of the file or directory is returned (and not its full path). Once the stream has been fully processed, the method returns an empty [String] and closes the stream automatically (i.e. [method list_dir_end] would not be mandatory in such a case).
+			</description>
+		</method>
+		<method name="get_open_error" qualifiers="static">
+			<return type="int" enum="Error" />
+			<description>
+				Returns the result of the last [method open] call in the current thread.
+			</description>
+		</method>
+		<method name="get_space_left">
+			<return type="int" />
+			<description>
+				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
+			</description>
+		</method>
+		<method name="is_bundle" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the directory is a macOS bundle.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="is_case_sensitive" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the file system or directory use case sensitive file names.
+				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
+			</description>
+		</method>
+		<method name="is_link">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if the file or directory is a symbolic link, directory junction, or other reparse point.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
+			</description>
+		</method>
+		<method name="list_dir_begin">
+			<return type="int" enum="Error" />
+			<description>
+				Initializes the stream used to list all files and directories using the [method get_next] function, closing the currently opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+				Affected by [member include_hidden] and [member include_navigational].
+				[b]Note:[/b] The order of files and directories returned by this method is not deterministic, and can vary between operating systems. If you want a list of all files or folders sorted alphabetically, use [method get_files] or [method get_directories].
+			</description>
+		</method>
+		<method name="list_dir_end">
+			<return type="void" />
+			<description>
+				Closes the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] does not matter).
+			</description>
+		</method>
+		<method name="make_dir">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="make_dir_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method make_dir]. Supports only absolute paths.
+			</description>
+		</method>
+		<method name="make_dir_recursive">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="make_dir_recursive_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method make_dir_recursive]. Supports only absolute paths.
+			</description>
+		</method>
+		<method name="open" qualifiers="static">
+			<return type="DirAccess" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Creates a new [DirAccess] object and opens an existing directory of the filesystem. The [param path] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
+				Returns [code]null[/code] if opening the directory failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
+		<method name="read_link">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns target of the symbolic link.
+				[b]Note:[/b] This method is implemented on macOS, Linux, and Windows.
+			</description>
+		</method>
+		<method name="remove">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Permanently deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+				If you don't want to delete the file/directory permanently, use [method OS.move_to_trash] instead.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="remove_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method remove]. Supports only absolute paths.
+			</description>
+		</method>
+		<method name="rename">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+				Renames (move) the [param from] file or directory to the [param to] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
+				Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="rename_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+				Static version of [method rename]. Supports only absolute paths.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="include_hidden" type="bool" setter="set_include_hidden" getter="get_include_hidden">
+			If [code]true[/code], hidden files are included when navigating the directory.
+			Affects [method list_dir_begin], [method get_directories] and [method get_files].
+		</member>
+		<member name="include_navigational" type="bool" setter="set_include_navigational" getter="get_include_navigational">
+			If [code]true[/code], [code].[/code] and [code]..[/code] are included when navigating the directory.
+			Affects [method list_dir_begin] and [method get_directories].
+		</member>
+	</members>
+</class>

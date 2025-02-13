@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Server keeping track of different cameras accessible in Godot.
+	</brief_description>
+	<description>
+		The [CameraServer] keeps track of different cameras accessible in Godot. These are external cameras such as webcams or the cameras on your phone.
+		It is notably used to provide AR modules with a video feed from the camera.
+		[b]Note:[/b] This class is currently only implemented on Linux, macOS, and iOS. On other platforms no [CameraFeed]s will be available. To get a [CameraFeed] on iOS, the camera plugin from [url=https://github.com/godotengine/godot-ios-plugins]godot-ios-plugins[/url] is required.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_feed">
+			<return type="void" />
+			<param index="0" name="feed" type="CameraFeed" />
+			<description>
+				Adds the camera [param feed] to the camera server.
+			</description>
+		</method>
+		<method name="feeds">
+			<return type="CameraFeed[]" />
+			<description>
+				Returns an array of [CameraFeed]s.
+			</description>
+		</method>
+		<method name="get_feed">
+			<return type="CameraFeed" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [CameraFeed] corresponding to the camera with the given [param index].
+			</description>
+		</method>
+		<method name="get_feed_count">
+			<return type="int" />
+			<description>
+				Returns the number of [CameraFeed]s registered.
+			</description>
+		</method>
+		<method name="remove_feed">
+			<return type="void" />
+			<param index="0" name="feed" type="CameraFeed" />
+			<description>
+				Removes the specified camera [param feed].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="camera_feed_added">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when a [CameraFeed] is added (e.g. a webcam is plugged in).
+			</description>
+		</signal>
+		<signal name="camera_feed_removed">
+			<param index="0" name="id" type="int" />
+			<description>
+				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FEED_RGBA_IMAGE" value="0" enum="FeedImage">
+			The RGBA camera image.
+		</constant>
+		<constant name="FEED_YCBCR_IMAGE" value="0" enum="FeedImage">
+			The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image.
+		</constant>
+		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
+			The Y component camera image.
+		</constant>
+		<constant name="FEED_CBCR_IMAGE" value="1" enum="FeedImage">
+			The CbCr component camera image.
+		</constant>
+	</constants>
+</class>

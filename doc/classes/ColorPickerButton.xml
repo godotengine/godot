@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorPickerButton" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A button that brings up a [ColorPicker] when pressed.
+	</brief_description>
+	<description>
+		Encapsulates a [ColorPicker], making it accessible by pressing a button. Pressing the button will toggle the [ColorPicker]'s visibility.
+		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] By default, the button may not be wide enough for the color preview swatch to be visible. Make sure to set [member Control.custom_minimum_size] to a big enough value to give the button enough space.
+	</description>
+	<tutorials>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/2767</link>
+	</tutorials>
+	<methods>
+		<method name="get_picker">
+			<return type="ColorPicker" />
+			<description>
+				Returns the [ColorPicker] that this node toggles.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_popup">
+			<return type="PopupPanel" />
+			<description>
+				Returns the control's [PopupPanel] which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)" keywords="colour">
+			The currently selected color.
+		</member>
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
+			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
+		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
+	</members>
+	<signals>
+		<signal name="color_changed">
+			<param index="0" name="color" type="Color" />
+			<description>
+				Emitted when the color changes.
+			</description>
+		</signal>
+		<signal name="picker_created">
+			<description>
+				Emitted when the [ColorPicker] is created (the button is pressed for the first time).
+			</description>
+		</signal>
+		<signal name="popup_closed">
+			<description>
+				Emitted when the [ColorPicker] is closed.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="bg" data_type="icon" type="Texture2D">
+			The background of the color preview rect on the button.
+		</theme_item>
+	</theme_items>
+</class>

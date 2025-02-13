@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OggPacketSequence" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A sequence of Ogg packets.
+	</brief_description>
+	<description>
+		A sequence of Ogg packets.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				The length of this stream, in seconds.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="granule_positions" type="PackedInt64Array" setter="set_packet_granule_positions" getter="get_packet_granule_positions" default="PackedInt64Array()">
+			Contains the granule positions for each page in this packet sequence.
+		</member>
+		<member name="packet_data" type="Array[]" setter="set_packet_data" getter="get_packet_data" default="[]">
+			Contains the raw packets that make up this OggPacketSequence.
+		</member>
+		<member name="sampling_rate" type="float" setter="set_sampling_rate" getter="get_sampling_rate" default="0.0">
+			Holds sample rate information about this sequence. Must be set by another class that actually understands the codec.
+		</member>
+	</members>
+</class>

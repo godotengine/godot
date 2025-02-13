@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDShaderSPIRV" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		SPIR-V intermediate representation as part of a [RDShaderFile] (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		[RDShaderSPIRV] represents a [RDShaderFile]'s [url=https://www.khronos.org/spir/]SPIR-V[/url] code for various shader stages, as well as possible compilation error messages. SPIR-V is a low-level intermediate shader representation. This intermediate representation is not used directly by GPUs for rendering, but it can be compiled into binary shaders that GPUs can understand. Unlike compiled shaders, SPIR-V is portable across GPU models and driver versions.
+		This object is used by [RenderingDevice].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_stage_bytecode" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<description>
+				Equivalent to getting one of [member bytecode_compute], [member bytecode_fragment], [member bytecode_tesselation_control], [member bytecode_tesselation_evaluation], [member bytecode_vertex].
+			</description>
+		</method>
+		<method name="get_stage_compile_error" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<description>
+				Returns the compilation error message for the given shader [param stage]. Equivalent to getting one of [member compile_error_compute], [member compile_error_fragment], [member compile_error_tesselation_control], [member compile_error_tesselation_evaluation], [member compile_error_vertex].
+			</description>
+		</method>
+		<method name="set_stage_bytecode">
+			<return type="void" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<param index="1" name="bytecode" type="PackedByteArray" />
+			<description>
+				Sets the SPIR-V [param bytecode] for the given shader [param stage]. Equivalent to setting one of [member bytecode_compute], [member bytecode_fragment], [member bytecode_tesselation_control], [member bytecode_tesselation_evaluation], [member bytecode_vertex].
+			</description>
+		</method>
+		<method name="set_stage_compile_error">
+			<return type="void" />
+			<param index="0" name="stage" type="int" enum="RenderingDevice.ShaderStage" />
+			<param index="1" name="compile_error" type="String" />
+			<description>
+				Sets the compilation error message for the given shader [param stage] to [param compile_error]. Equivalent to setting one of [member compile_error_compute], [member compile_error_fragment], [member compile_error_tesselation_control], [member compile_error_tesselation_evaluation], [member compile_error_vertex].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bytecode_compute" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the compute shader stage.
+		</member>
+		<member name="bytecode_fragment" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the fragment shader stage.
+		</member>
+		<member name="bytecode_tesselation_control" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the tessellation control shader stage.
+		</member>
+		<member name="bytecode_tesselation_evaluation" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the tessellation evaluation shader stage.
+		</member>
+		<member name="bytecode_vertex" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
+			The SPIR-V bytecode for the vertex shader stage.
+		</member>
+		<member name="compile_error_compute" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the compute shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_fragment" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the fragment shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_tesselation_control" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the tessellation control shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_tesselation_evaluation" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the tessellation evaluation shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+		<member name="compile_error_vertex" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
+			The compilation error message for the vertex shader stage (set by the SPIR-V compiler and Godot). If empty, shader compilation was successful.
+		</member>
+	</members>
+</class>

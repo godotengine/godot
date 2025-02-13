@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSelection" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages the SceneTree selection in the editor.
+	</brief_description>
+	<description>
+		This object manages the SceneTree selection in the editor.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_selection].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_node">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Adds a node to the selection.
+				[b]Note:[/b] The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clear the selection.
+			</description>
+		</method>
+		<method name="get_selected_nodes">
+			<return type="Node[]" />
+			<description>
+				Returns the list of selected nodes.
+			</description>
+		</method>
+		<method name="get_transformable_selected_nodes">
+			<return type="Node[]" />
+			<description>
+				Returns the list of selected nodes, optimized for transform operations (i.e. moving them, rotating, etc.). This list can be used to avoid situations where a node is selected and is also a child/grandchild.
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Removes a node from the selection.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="selection_changed">
+			<description>
+				Emitted when the selection changes.
+			</description>
+		</signal>
+	</signals>
+</class>

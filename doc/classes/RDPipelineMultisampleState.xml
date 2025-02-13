@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineMultisampleState" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline multisample state (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		[RDPipelineMultisampleState] is used to control how multisample or supersample antialiasing is being performed when rendering using [RenderingDevice].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_alpha_to_coverage" type="bool" setter="set_enable_alpha_to_coverage" getter="get_enable_alpha_to_coverage" default="false">
+			If [code]true[/code], alpha to coverage is enabled. This generates a temporary coverage value based on the alpha component of the fragment's first color output. This allows alpha transparency to make use of multisample antialiasing.
+		</member>
+		<member name="enable_alpha_to_one" type="bool" setter="set_enable_alpha_to_one" getter="get_enable_alpha_to_one" default="false">
+			If [code]true[/code], alpha is forced to either [code]0.0[/code] or [code]1.0[/code]. This allows hardening the edges of antialiased alpha transparencies. Only relevant if [member enable_alpha_to_coverage] is [code]true[/code].
+		</member>
+		<member name="enable_sample_shading" type="bool" setter="set_enable_sample_shading" getter="get_enable_sample_shading" default="false">
+			If [code]true[/code], enables per-sample shading which replaces MSAA by SSAA. This provides higher quality antialiasing that works with transparent (alpha scissor) edges. This has a very high performance cost. See also [member min_sample_shading]. See the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#primsrast-sampleshading]per-sample shading Vulkan documentation[/url] for more details.
+		</member>
+		<member name="min_sample_shading" type="float" setter="set_min_sample_shading" getter="get_min_sample_shading" default="0.0">
+			The multiplier of [member sample_count] that determines how many samples are performed for each fragment. Must be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Only effective if [member enable_sample_shading] is [code]true[/code]. If [member min_sample_shading] is [code]1.0[/code], fragment invocation must only read from the coverage index sample. Tile image access must not be used if [member enable_sample_shading] is [i]not[/i] [code]1.0[/code].
+		</member>
+		<member name="sample_count" type="int" setter="set_sample_count" getter="get_sample_count" enum="RenderingDevice.TextureSamples" default="0">
+			The number of MSAA samples (or SSAA samples if [member enable_sample_shading] is [code]true[/code]) to perform. Higher values result in better antialiasing, at the cost of performance.
+		</member>
+		<member name="sample_masks" type="int[]" setter="set_sample_masks" getter="get_sample_masks" default="[]">
+			The sample mask array. See the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#fragops-samplemask]sample mask Vulkan documentation[/url] for more details.
+		</member>
+	</members>
+</class>

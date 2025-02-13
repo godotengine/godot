@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Script" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A class stored as a resource.
+	</brief_description>
+	<description>
+		A class stored as a resource. A script extends the functionality of all objects that instantiate it.
+		This is the base class for all scripts and should not be used directly. Trying to create a new script with this class will result in an error.
+		The [code]new[/code] method of a script subclass creates a new instance. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
+	</description>
+	<tutorials>
+		<link title="Scripting documentation index">$DOCS_URL/tutorials/scripting/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="can_instantiate" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script can be instantiated.
+			</description>
+		</method>
+		<method name="get_base_script" qualifiers="const">
+			<return type="Script" />
+			<description>
+				Returns the script directly inherited by this script.
+			</description>
+		</method>
+		<method name="get_global_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the class name associated with the script, if there is one. Returns an empty string otherwise.
+				To give the script a global name, you can use the [code]class_name[/code] keyword in GDScript and the [code][GlobalClass][/code] attribute in C#.
+				[codeblocks]
+				[gdscript]
+				class_name MyNode
+				extends Node
+				[/gdscript]
+				[csharp]
+				using Godot;
+
+				[GlobalClass]
+				public partial class MyNode : Node
+				{
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_instance_base_type" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the script's base type.
+			</description>
+		</method>
+		<method name="get_property_default_value">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Returns the default value of the specified property.
+			</description>
+		</method>
+		<method name="get_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined by this script.
+			</description>
+		</method>
+		<method name="get_script_constant_map">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary containing constant names and their values.
+			</description>
+		</method>
+		<method name="get_script_method_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the list of methods in this [Script].
+			</description>
+		</method>
+		<method name="get_script_property_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the list of properties in this [Script].
+			</description>
+		</method>
+		<method name="get_script_signal_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the list of user signals defined in this [Script].
+			</description>
+		</method>
+		<method name="has_script_signal" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the script, or a base class, defines a signal with the given name.
+			</description>
+		</method>
+		<method name="has_source_code" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script contains non-empty source code.
+				[b]Note:[/b] If a script does not have source code, this does not mean that it is invalid or unusable. For example, a [GDScript] that was exported with binary tokenization has no source code, but still behaves as expected and could be instantiated. This can be checked with [method can_instantiate].
+			</description>
+		</method>
+		<method name="instance_has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="base_object" type="Object" />
+			<description>
+				Returns [code]true[/code] if [param base_object] is an instance of this script.
+			</description>
+		</method>
+		<method name="is_abstract" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
+			</description>
+		</method>
+		<method name="is_tool" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the script is a tool script. A tool script can run in the editor.
+			</description>
+		</method>
+		<method name="reload">
+			<return type="int" enum="Error" />
+			<param index="0" name="keep_state" type="bool" default="false" />
+			<description>
+				Reloads the script's class implementation. Returns an error code.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="source_code" type="String" setter="set_source_code" getter="get_source_code">
+			The script source code or an empty string if source code is not available. When set, does not reload the class implementation automatically.
+		</member>
+	</members>
+</class>

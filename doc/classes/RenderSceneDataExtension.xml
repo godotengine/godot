@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RenderSceneDataExtension" inherits="RenderSceneData" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		This class allows for a RenderSceneData implementation to be made in GDExtension.
+	</brief_description>
+	<description>
+		This class allows for a RenderSceneData implementation to be made in GDExtension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_cam_projection" qualifiers="virtual const">
+			<return type="Projection" />
+			<description>
+				Implement this in GDExtension to return the camera [Projection].
+			</description>
+		</method>
+		<method name="_get_cam_transform" qualifiers="virtual const">
+			<return type="Transform3D" />
+			<description>
+				Implement this in GDExtension to return the camera [Transform3D].
+			</description>
+		</method>
+		<method name="_get_uniform_buffer" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the [RID] of the uniform buffer containing the scene data as a UBO.
+			</description>
+		</method>
+		<method name="_get_view_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Implement this in GDExtension to return the view count.
+			</description>
+		</method>
+		<method name="_get_view_eye_offset" qualifiers="virtual const">
+			<return type="Vector3" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Implement this in GDExtension to return the eye offset for the given [param view].
+			</description>
+		</method>
+		<method name="_get_view_projection" qualifiers="virtual const">
+			<return type="Projection" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Implement this in GDExtension to return the view [Projection] for the given [param view].
+			</description>
+		</method>
+	</methods>
+</class>

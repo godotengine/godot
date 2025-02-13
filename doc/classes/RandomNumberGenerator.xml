@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RandomNumberGenerator" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides methods for generating pseudo-random numbers.
+	</brief_description>
+	<description>
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=https://www.pcg-random.org/]PCG32[/url].
+		[b]Note:[/b] The underlying algorithm is an implementation detail and should not be depended upon.
+		To generate a random float number (within a given range) based on a time-dependent seed:
+		[codeblock]
+		var rng = RandomNumberGenerator.new()
+		func _ready():
+		    var my_random_number = rng.randf_range(-10.0, 10.0)
+		[/codeblock]
+	</description>
+	<tutorials>
+		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
+	</tutorials>
+	<methods>
+		<method name="rand_weighted">
+			<return type="int" />
+			<param index="0" name="weights" type="PackedFloat32Array" />
+			<description>
+				Returns a random index with non-uniform weights. Prints an error and returns [code]-1[/code] if the array is empty.
+				[codeblocks]
+				[gdscript]
+				var rng = RandomNumberGenerator.new()
+
+				var my_array = ["one", "two", "three", "four"]
+				var weights = PackedFloat32Array([0.5, 1, 1, 2])
+
+				# Prints one of the four elements in `my_array`.
+				# It is more likely to print "four", and less likely to print "one".
+				print(my_array[rng.rand_weighted(weights)])
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="randf">
+			<return type="float" />
+			<description>
+				Returns a pseudo-random float between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+			</description>
+		</method>
+		<method name="randf_range">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<description>
+				Returns a pseudo-random float between [param from] and [param to] (inclusive).
+			</description>
+		</method>
+		<method name="randfn">
+			<return type="float" />
+			<param index="0" name="mean" type="float" default="0.0" />
+			<param index="1" name="deviation" type="float" default="1.0" />
+			<description>
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point number from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
+				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int" />
+			<description>
+				Returns a pseudo-random 32-bit unsigned integer between [code]0[/code] and [code]4294967295[/code] (inclusive).
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
+			<description>
+				Returns a pseudo-random 32-bit signed integer between [param from] and [param to] (inclusive).
+			</description>
+		</method>
+		<method name="randomize">
+			<return type="void" />
+			<description>
+				Sets up a time-based seed for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Initializes the random number generator state based on the given seed value. A given seed will give a reproducible sequence of pseudo-random numbers.
+			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
+			[b]Note:[/b] Setting this property produces a side effect of changing the internal [member state], so make sure to initialize the seed [i]before[/i] modifying the [member state]:
+			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+			[codeblock]
+			var rng = RandomNumberGenerator.new()
+			rng.seed = hash("Godot")
+			rng.state = 100 # Restore to some previously saved state.
+			[/codeblock]
+		</member>
+		<member name="state" type="int" setter="set_state" getter="get_state" default="0">
+			The current state of the random number generator. Save and restore this property to restore the generator to a previous state:
+			[codeblock]
+			var rng = RandomNumberGenerator.new()
+			print(rng.randf())
+			var saved_state = rng.state # Store current state.
+			print(rng.randf()) # Advance internal state.
+			rng.state = saved_state # Restore the state.
+			print(rng.randf()) # Prints the same value as previously.
+			[/codeblock]
+			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [member seed] instead.
+			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+		</member>
+	</members>
+</class>

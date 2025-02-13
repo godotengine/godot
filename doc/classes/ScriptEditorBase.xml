@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptEditorBase" inherits="VBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base editor for editing scripts in the [ScriptEditor].
+	</brief_description>
+	<description>
+		Base editor for editing scripts in the [ScriptEditor]. This does not include documentation items.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_syntax_highlighter">
+			<return type="void" />
+			<param index="0" name="highlighter" type="EditorSyntaxHighlighter" />
+			<description>
+				Adds a [EditorSyntaxHighlighter] to the open script.
+			</description>
+		</method>
+		<method name="get_base_editor" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the underlying [Control] used for editing scripts. For text scripts, this is a [CodeEdit].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="edited_script_changed">
+			<description>
+				Emitted after script validation.
+			</description>
+		</signal>
+		<signal name="go_to_help">
+			<param index="0" name="what" type="String" />
+			<description>
+				Emitted when the user requests a specific documentation page.
+			</description>
+		</signal>
+		<signal name="go_to_method">
+			<param index="0" name="script" type="Object" />
+			<param index="1" name="method" type="String" />
+			<description>
+				Emitted when the user requests to view a specific method of a script, similar to [signal request_open_script_at_line].
+			</description>
+		</signal>
+		<signal name="name_changed">
+			<description>
+				Emitted after script validation or when the edited resource has changed.
+			</description>
+		</signal>
+		<signal name="replace_in_files_requested">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted when the user request to find and replace text in the file system.
+			</description>
+		</signal>
+		<signal name="request_help">
+			<param index="0" name="topic" type="String" />
+			<description>
+				Emitted when the user requests contextual help.
+			</description>
+		</signal>
+		<signal name="request_open_script_at_line">
+			<param index="0" name="script" type="Object" />
+			<param index="1" name="line" type="int" />
+			<description>
+				Emitted when the user requests to view a specific line of a script, similar to [signal go_to_method].
+			</description>
+		</signal>
+		<signal name="request_save_history">
+			<description>
+				Emitted when the user contextual goto and the item is in the same script.
+			</description>
+		</signal>
+		<signal name="request_save_previous_state">
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
+			</description>
+		</signal>
+		<signal name="search_in_files_requested">
+			<param index="0" name="text" type="String" />
+			<description>
+				Emitted when the user request to search text in the file system.
+			</description>
+		</signal>
+	</signals>
+</class>

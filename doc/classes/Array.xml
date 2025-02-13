@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A built-in data structure that holds a sequence of elements.
+	</brief_description>
+	<description>
+		An array data structure that can contain a sequence of elements of any [Variant] type. Elements are accessed by a numerical index starting at [code]0[/code]. Negative indices are used to count from the back ([code]-1[/code] is the last element, [code]-2[/code] is the second to last, etc.).
+		[codeblocks]
+		[gdscript]
+		var array = ["First", 2, 3, "Last"]
+		print(array[0])  # Prints "First"
+		print(array[2])  # Prints 3
+		print(array[-1]) # Prints "Last"
+
+		array[1] = "Second"
+		print(array[1])  # Prints "Second"
+		print(array[-3]) # Prints "Second"
+		[/gdscript]
+		[csharp]
+		Godot.Collections.Array array = ["First", 2, 3, "Last"];
+		GD.Print(array[0]); // Prints "First"
+		GD.Print(array[2]); // Prints 3
+		GD.Print(array[^1]); // Prints "Last"
+
+		array[1] = "Second";
+		GD.Print(array[1]); // Prints "Second"
+		GD.Print(array[^3]); // Prints "Second"
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] Arrays are always passed by [b]reference[/b]. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
+		[b]Differences between packed arrays, typed arrays, and untyped arrays:[/b] Packed arrays are generally faster to iterate on and modify compared to a typed array of the same type (e.g. [PackedInt64Array] versus [code]Array[int][/code]). Also, packed arrays consume less memory. As a downside, packed arrays are less flexible as they don't offer as many convenience methods such as [method Array.map]. Typed arrays are in turn faster to iterate on and modify than untyped arrays.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="Array">
+			<return type="Array" />
+			<description>
+				Constructs an empty [Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="base" type="Array" />
+			<param index="1" name="type" type="int" />
+			<param index="2" name="class_name" type="StringName" />
+			<param index="3" name="script" type="Variant" />
+			<description>
+				Creates a typed array from the [param base] array. A typed array can only contain elements of the given type, or that inherit from the given class, as described by this constructor's parameters:
+				- [param type] is the built-in [Variant] type, as one the [enum Variant.Type] constants.
+				- [param class_name] is the built-in class name (see [method Object.get_class]).
+				- [param script] is the associated script. It must be a [Script] instance or [code]null[/code].
+				If [param type] is not [constant TYPE_OBJECT], [param class_name] must be an empty [StringName] and [param script] must be [code]null[/code].
+				[codeblock]
+				class_name Sword
+				extends Node
+
+				class Stats:
+				    pass
+
+				func _ready():
+				    var a = Array([], TYPE_INT, "", null)               # Array[int]
+				    var b = Array([], TYPE_OBJECT, "Node", null)        # Array[Node]
+				    var c = Array([], TYPE_OBJECT, "Node", Sword)       # Array[Sword]
+				    var d = Array([], TYPE_OBJECT, "RefCounted", Stats) # Array[Stats]
+				[/codeblock]
+				The [param base] array's elements are converted when necessary. If this is not possible or [param base] is already typed, this constructor fails and returns an empty [Array].
+				In GDScript, this constructor is usually not necessary, as it is possible to create a typed array through static typing:
+				[codeblock]
+				var numbers: Array[float] = []
+				var children: Array[Node] = [$Node, $Sprite2D, $RigidBody3D]
+
+				var integers: Array[int] = [0.2, 4.5, -2.0]
+				print(integers) # Prints [0, 4, -2]
+				[/codeblock]
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="Array" />
+			<description>
+				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedByteArray" />
+			<description>
+				Constructs an array from a [PackedByteArray].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedColorArray" />
+			<description>
+				Constructs an array from a [PackedColorArray].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedFloat32Array" />
+			<description>
+				Constructs an array from a [PackedFloat32Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedFloat64Array" />
+			<description>
+				Constructs an array from a [PackedFloat64Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedInt32Array" />
+			<description>
+				Constructs an array from a [PackedInt32Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedInt64Array" />
+			<description>
+				Constructs an array from a [PackedInt64Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedStringArray" />
+			<description>
+				Constructs an array from a [PackedStringArray].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedVector2Array" />
+			<description>
+				Constructs an array from a [PackedVector2Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedVector3Array" />
+			<description>
+				Constructs an array from a [PackedVector3Array].
+			</description>
+		</constructor>
+		<constructor name="Array">
+			<return type="Array" />
+			<param index="0" name="from" type="PackedVector4Array" />
+			<description>
+				Constructs an array from a [PackedVector4Array].
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="all" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method" type="Callable" />
+			<description>
+				Calls the given [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]all[/i] elements in the array. If the [Callable] returns [code]false[/code] for one array element or more, this method returns [code]false[/code].
+				The [param method] should take one [Variant] parameter (the current array element) and return a [bool].
+				[codeblocks]
+				[gdscript]
+				func greater_than_5(number):
+				    return number &gt; 5
+
+				func _ready():
+				    print([6, 10, 6].all(greater_than_5)) # Prints true (3/3 elements evaluate to true).
+				    print([4, 10, 4].all(greater_than_5)) # Prints false (1/3 elements evaluate to true).
+				    print([4, 4, 4].all(greater_than_5))  # Prints false (0/3 elements evaluate to true).
+				    print([].all(greater_than_5))         # Prints true (0/0 elements evaluate to true).
+
+				    # Same as the first line above, but using a lambda function.
+				    print([6, 10, 6].all(func(element): return element &gt; 5)) # Prints true
+				[/gdscript]
+				[csharp]
+				private static bool GreaterThan5(int number)
+				{
+				    return number &gt; 5;
+				}
+
+				public override void _Ready()
+				{
+				    // Prints True (3/3 elements evaluate to true).
+				    GD.Print(new Godot.Collections.Array&gt;int&lt; { 6, 10, 6 }.All(GreaterThan5));
+				    // Prints False (1/3 elements evaluate to true).
+				    GD.Print(new Godot.Collections.Array&gt;int&lt; { 4, 10, 4 }.All(GreaterThan5));
+				    // Prints False (0/3 elements evaluate to true).
+				    GD.Print(new Godot.Collections.Array&gt;int&lt; { 4, 4, 4 }.All(GreaterThan5));
+				    // Prints True (0/0 elements evaluate to true).
+				    GD.Print(new Godot.Collections.Array&gt;int&lt; { }.All(GreaterThan5));
+
+				    // Same as the first line above, but using a lambda function.
+				    GD.Print(new Godot.Collections.Array&gt;int&lt; { 6, 10, 6 }.All(element =&gt; element &gt; 5)); // Prints True
+				}
+				[/csharp]
+				[/codeblocks]
+				See also [method any], [method filter], [method map] and [method reduce].
+				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
+				[b]Note:[/b] For an empty array, this method [url=https://en.wikipedia.org/wiki/Vacuous_truth]always[/url] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="any" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="method" type="Callable" />
+			<description>
+				Calls the given [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]one or more[/i] elements in the array. If the [Callable] returns [code]false[/code] for all elements in the array, this method returns [code]false[/code].
+				The [param method] should take one [Variant] parameter (the current array element) and return a [bool].
+				[codeblock]
+				func greater_than_5(number):
+				    return number &gt; 5
+
+				func _ready():
+				    print([6, 10, 6].any(greater_than_5)) # Prints true (3 elements evaluate to true).
+				    print([4, 10, 4].any(greater_than_5)) # Prints true (1 elements evaluate to true).
+				    print([4, 4, 4].any(greater_than_5))  # Prints false (0 elements evaluate to true).
+				    print([].any(greater_than_5))         # Prints false (0 elements evaluate to true).
+
+				    # Same as the first line above, but using a lambda function.
+				    print([6, 10, 6].any(func(number): return number &gt; 5)) # Prints true
+				[/codeblock]
+				See also [method all], [method filter], [method map] and [method reduce].
+				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
+				[b]Note:[/b] For an empty array, this method always returns [code]false[/code].
+			</description>
+		</method>
+		<method name="append">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Appends [param value] at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Appends another [param array] at the end of this array.
+				[codeblock]
+				var numbers = [1, 2, 3]
+				var extra = [4, 5, 6]
+				numbers.append_array(extra)
+				print(numbers) # Prints [1, 2, 3, 4, 5, 6]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="assign">
+			<return type="void" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Assigns elements of another [param array] into the array. Resizes the array to match [param array]. Performs type conversions if the array is typed.
+			</description>
+		</method>
+		<method name="back" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the last element of the array. If the array is empty, fails and returns [code]null[/code]. See also [method front].
+				[b]Note:[/b] Unlike with the [code][][/code] operator ([code]array[-1][/code]), an error is generated without stopping project execution.
+			</description>
+		</method>
+		<method name="bsearch" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="before" type="bool" default="true" />
+			<description>
+				Returns the index of [param value] in the sorted array. If it cannot be found, returns where [param value] should be inserted to keep the array sorted. The algorithm used is [url=https://en.wikipedia.org/wiki/Binary_search_algorithm]binary search[/url].
+				If [param before] is [code]true[/code] (as by default), the returned index comes before all existing elements equal to [param value] in the array.
+				[codeblock]
+				var numbers = [2, 4, 8, 10]
+				var idx = numbers.bsearch(7)
+
+				numbers.insert(idx, 7)
+				print(numbers) # Prints [2, 4, 7, 8, 10]
+
+				var fruits = ["Apple", "Lemon", "Lemon", "Orange"]
+				print(fruits.bsearch("Lemon", true))  # Prints 1, points at the first "Lemon".
+				print(fruits.bsearch("Lemon", false)) # Prints 3, points at "Orange".
+				[/codeblock]
+				[b]Note:[/b] Calling [method bsearch] on an [i]unsorted[/i] array will result in unexpected behavior. Use [method sort] before calling this method.
+			</description>
+		</method>
+		<method name="bsearch_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="func" type="Callable" />
+			<param index="2" name="before" type="bool" default="true" />
+			<description>
+				Returns the index of [param value] in the sorted array. If it cannot be found, returns where [param value] should be inserted to keep the array sorted (using [param func] for the comparisons). The algorithm used is [url=https://en.wikipedia.org/wiki/Binary_search_algorithm]binary search[/url].
+				Similar to [method sort_custom], [param func] is called as many times as necessary, receiving one array element and [param value] as arguments. The function should return [code]true[/code] if the array element should be [i]behind[/i] [param value], otherwise it should return [code]false[/code].
+				If [param before] is [code]true[/code] (as by default), the returned index comes before all existing elements equal to [param value] in the array.
+				[codeblock]
+				func sort_by_amount(a, b):
+				    if a[1] &lt; b[1]:
+				        return true
+				    return false
+
+				func _ready():
+				    var my_items = [["Tomato", 2], ["Kiwi", 5], ["Rice", 9]]
+
+				    var apple = ["Apple", 5]
+				    # "Apple" is inserted before "Kiwi".
+				    my_items.insert(my_items.bsearch_custom(apple, sort_by_amount, true), apple)
+
+				    var banana = ["Banana", 5]
+				    # "Banana" is inserted after "Kiwi".
+				    my_items.insert(my_items.bsearch_custom(banana, sort_by_amount, false), banana)
+
+				    # Prints [["Tomato", 2], ["Apple", 5], ["Kiwi", 5], ["Banana", 5], ["Rice", 9]]
+				    print(my_items)
+				[/codeblock]
+				[b]Note:[/b] Calling [method bsearch_custom] on an [i]unsorted[/i] array will result in unexpected behavior. Use [method sort_custom] with [param func] before calling this method.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all elements from the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns the number of times an element is in the array.
+				To count how many elements in an array satisfy a condition, see [method reduce].
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="deep" type="bool" default="false" />
+			<description>
+				Returns a new copy of the array.
+				By default, a [b]shallow[/b] copy is returned: all nested [Array] and [Dictionary] elements are shared with the original array. Modifying them in one array will also affect them in the other.[br]If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively).
+			</description>
+		</method>
+		<method name="erase">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Finds and removes the first occurrence of [param value] from the array. If [param value] does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
+				[b]Note:[/b] This method shifts every element's index after the removed [param value] back, which may have a noticeable performance cost, especially on larger arrays.
+				[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Assigns the given [param value] to all elements in the array.
+				This method can often be combined with [method resize] to create an array with a given size and initialized elements:
+				[codeblocks]
+				[gdscript]
+				var array = []
+				array.resize(5)
+				array.fill(2)
+				print(array) # Prints [2, 2, 2, 2, 2]
+				[/gdscript]
+				[csharp]
+				Godot.Collections.Array array = [];
+				array.Resize(5);
+				array.Fill(2);
+				GD.Print(array); // Prints [2, 2, 2, 2, 2]
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If [param value] is a [Variant] passed by reference ([Object]-derived, [Array], [Dictionary], etc.), the array will be filled with references to the same [param value], which are not duplicates.
+			</description>
+		</method>
+		<method name="filter" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="method" type="Callable" />
+			<description>
+				Calls the given [Callable] on each element in the array and returns a new, filtered [Array].
+				The [param method] receives one of the array elements as an argument, and should return [code]true[/code] to add the element to the filtered array, or [code]false[/code] to exclude it.
+				[codeblock]
+				func is_even(number):
+				    return number % 2 == 0
+
+				func _ready():
+				    print([1, 4, 5, 8].filter(is_even)) # Prints [4, 8]
+
+				    # Same as above, but using a lambda function.
+				    print([1, 4, 5, 8].filter(func(number): return number % 2 == 0))
+				[/codeblock]
+				See also [method any], [method all], [method map] and [method reduce].
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="Variant" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Returns the index of the [b]first[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
+				[b]Note:[/b] If you just want to know whether the array contains [param what], use [method has] ([code]Contains[/code] in C#). In GDScript, you may also use the [code]in[/code] operator.
+				[b]Note:[/b] For performance reasons, the search is affected by [param what]'s [enum Variant.Type]. For example, [code]7[/code] ([int]) and [code]7.0[/code] ([float]) are not considered equal for this method.
+			</description>
+		</method>
+		<method name="find_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Returns the index of the [b]first[/b] element in the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
+				[param method] is a callable that takes an element of the array, and returns a [bool].
+				[b]Note:[/b] If you just want to know whether the array contains [i]anything[/i] that satisfies [param method], use [method any].
+				[codeblocks]
+				[gdscript]
+				func is_even(number):
+				    return number % 2 == 0
+
+				func _ready():
+				    print([1, 3, 4, 7].find_custom(is_even.bind())) # Prints 2
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="front" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the first element of the array. If the array is empty, fails and returns [code]null[/code]. See also [method back].
+				[b]Note:[/b] Unlike with the [code][][/code] operator ([code]array[0][/code]), an error is generated without stopping project execution.
+			</description>
+		</method>
+		<method name="get" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the element at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
+		<method name="get_typed_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the built-in [Variant] type of the typed array as a [enum Variant.Type] constant. If the array is not typed, returns [constant TYPE_NIL]. See also [method is_typed].
+			</description>
+		</method>
+		<method name="get_typed_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the [b]built-in[/b] class name of the typed array, if the built-in [Variant] type [constant TYPE_OBJECT]. Otherwise, returns an empty [StringName]. See also [method is_typed] and [method Object.get_class].
+			</description>
+		</method>
+		<method name="get_typed_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the [Script] instance associated with this typed array, or [code]null[/code] if it does not exist. See also [method is_typed].
+			</description>
+		</method>
+		<method name="has" qualifiers="const" keywords="includes, contains">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns [code]true[/code] if the array contains the given [param value].
+				[codeblocks]
+				[gdscript]
+				print(["inside", 7].has("inside"))  # Prints true
+				print(["inside", 7].has("outside")) # Prints false
+				print(["inside", 7].has(7))         # Prints true
+				print(["inside", 7].has("7"))       # Prints false
+				[/gdscript]
+				[csharp]
+				Godot.Collections.Array arr = ["inside", 7];
+				// By C# convention, this method is renamed to `Contains`.
+				GD.Print(arr.Contains("inside"));  // Prints True
+				GD.Print(arr.Contains("outside")); // Prints False
+				GD.Print(arr.Contains(7));         // Prints True
+				GD.Print(arr.Contains("7"));       // Prints False
+				[/csharp]
+				[/codeblocks]
+				In GDScript, this is equivalent to the [code]in[/code] operator:
+				[codeblock]
+				if 4 in [2, 4, 6, 8]:
+				    print("4 is here!") # Will be printed.
+				[/codeblock]
+				[b]Note:[/b] For performance reasons, the search is affected by the [param value]'s [enum Variant.Type]. For example, [code]7[/code] ([int]) and [code]7.0[/code] ([float]) are not considered equal for this method.
+			</description>
+		</method>
+		<method name="hash" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns a hashed 32-bit integer value representing the array and its contents.
+				[b]Note:[/b] Arrays with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, arrays with different hash values are guaranteed to be different.
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int" />
+			<param index="0" name="position" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Inserts a new element ([param value]) at a given index ([param position]) in the array. [param position] should be between [code]0[/code] and the array's [method size].
+				Returns [constant OK] on success, or one of the other [enum Error] constants if this method fails.
+				[b]Note:[/b] Every element's index after [param position] needs to be shifted forward, which may have a noticeable performance cost, especially on larger arrays.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is empty ([code][][/code]). See also [method size].
+			</description>
+		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is read-only. See [method make_read_only].
+				In GDScript, arrays are automatically read-only if declared with the [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Returns [code]true[/code] if this array is typed the same as the given [param array]. See also [method is_typed].
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is typed. Typed arrays can only contain elements of a specific type, as defined by the typed array constructor. The methods of a typed array are still expected to return a generic [Variant].
+				In GDScript, it is possible to define a typed array with static typing:
+				[codeblock]
+				var numbers: Array[float] = [0.2, 4.2, -2.0]
+				print(numbers.is_typed()) # Prints true
+				[/codeblock]
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the array read-only. The array's elements cannot be overridden with different values, and their order cannot change. Does not apply to nested elements, such as dictionaries.
+				In GDScript, arrays are automatically read-only if declared with the [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="map" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="method" type="Callable" />
+			<description>
+				Calls the given [Callable] for each element in the array and returns a new array filled with values returned by the [param method].
+				The [param method] should take one [Variant] parameter (the current array element) and can return any [Variant].
+				[codeblock]
+				func double(number):
+				    return number * 2
+
+				func _ready():
+				    print([1, 2, 3].map(double)) # Prints [2, 4, 6]
+
+				    # Same as above, but using a lambda function.
+				    print([1, 2, 3].map(func(element): return element * 2))
+				[/codeblock]
+				See also [method filter], [method reduce], [method any] and [method all].
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the maximum value contained in the array, if all elements can be compared. Otherwise, returns [code]null[/code]. See also [method min].
+				To find the maximum value using a custom comparator, you can use [method reduce].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the minimum value contained in the array, if all elements can be compared. Otherwise, returns [code]null[/code]. See also [method max].
+			</description>
+		</method>
+		<method name="pick_random" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a random element from the array. Generates an error and returns [code]null[/code] if the array is empty.
+				[codeblocks]
+				[gdscript]
+				# May print 1, 2, 3.25, or "Hi".
+				print([1, 2, 3.25, "Hi"].pick_random())
+				[/gdscript]
+				[csharp]
+				Godot.Collections.Array array = [1, 2, 3.25f, "Hi"];
+				GD.Print(array.PickRandom()); // May print 1, 2, 3.25, or "Hi".
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] Like many similar functions in the engine (such as [method @GlobalScope.randi] or [method shuffle]), this method uses a common, global random seed. To get a predictable outcome from this method, see [method @GlobalScope.seed].
+			</description>
+		</method>
+		<method name="pop_at">
+			<return type="Variant" />
+			<param index="0" name="position" type="int" />
+			<description>
+				Removes and returns the element of the array at index [param position]. If negative, [param position] is considered relative to the end of the array. Returns [code]null[/code] if the array is empty. If [param position] is out of bounds, an error message is also generated.
+				[b]Note:[/b] This method shifts every element's index after [param position] back, which may have a noticeable performance cost, especially on larger arrays.
+			</description>
+		</method>
+		<method name="pop_back">
+			<return type="Variant" />
+			<description>
+				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty, without generating an error. See also [method pop_front].
+			</description>
+		</method>
+		<method name="pop_front">
+			<return type="Variant" />
+			<description>
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without generating an error. See also [method pop_back].
+				[b]Note:[/b] This method shifts every other element's index back, which may have a noticeable performance cost, especially on larger arrays.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Appends an element at the end of the array. See also [method push_front].
+			</description>
+		</method>
+		<method name="push_front">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Adds an element at the beginning of the array. See also [method push_back].
+				[b]Note:[/b] This method shifts every other element's index forward, which may have a noticeable performance cost, especially on larger arrays.
+			</description>
+		</method>
+		<method name="reduce" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="accum" type="Variant" default="null" />
+			<description>
+				Calls the given [Callable] for each element in array, accumulates the result in [param accum], then returns it.
+				The [param method] takes two arguments: the current value of [param accum] and the current array element. If [param accum] is [code]null[/code] (as by default), the iteration will start from the second element, with the first one used as initial value of [param accum].
+				[codeblock]
+				func sum(accum, number):
+				    return accum + number
+
+				func _ready():
+				    print([1, 2, 3].reduce(sum, 0))  # Prints 6
+				    print([1, 2, 3].reduce(sum, 10)) # Prints 16
+
+				    # Same as above, but using a lambda function.
+				    print([1, 2, 3].reduce(func(accum, number): return accum + number, 10))
+				[/codeblock]
+				If [method max] is not desirable, this method may also be used to implement a custom comparator:
+				[codeblock]
+				func _ready():
+				    var arr = [Vector2i(5, 0), Vector2i(3, 4), Vector2i(1, 2)]
+
+				    var longest_vec = arr.reduce(func(max, vec): return vec if is_length_greater(vec, max) else max)
+				    print(longest_vec) # Prints (3, 4)
+
+				func is_length_greater(a, b):
+				    return a.length() &gt; b.length()
+				[/codeblock]
+				This method can also be used to count how many elements in an array satisfy a certain condition, similar to [method count]:
+				[codeblock]
+				func is_even(number):
+				    return number % 2 == 0
+
+				func _ready():
+				    var arr = [1, 2, 3, 4, 5]
+				    # If the current element is even, increment count, otherwise leave count the same.
+				    var even_count = arr.reduce(func(count, next): return count + 1 if is_even(next) else count, 0)
+				    print(even_count) # Prints 2
+				[/codeblock]
+				See also [method map], [method filter], [method any], and [method all].
+			</description>
+		</method>
+		<method name="remove_at">
+			<return type="void" />
+			<param index="0" name="position" type="int" />
+			<description>
+				Removes the element from the array at the given index ([param position]). If the index is out of bounds, this method fails.
+				If you need to return the removed element, use [method pop_at]. To remove an element by value, use [method erase] instead.
+				[b]Note:[/b] This method shifts every element's index after [param position] back, which may have a noticeable performance cost, especially on larger arrays.
+				[b]Note:[/b] The [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array, use [code]arr.resize(arr.size() - 1)[/code].
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Sets the array's number of elements to [param size]. If [param size] is smaller than the array's current size, the elements at the end are removed. If [param size] is greater, new default elements (usually [code]null[/code]) are added, depending on the array's type.
+				Returns [constant OK] on success, or one of the other [enum Error] constants if this method fails.
+				[b]Note:[/b] Calling this method once and assigning the new values is faster than calling [method append] for every new element.
+			</description>
+		</method>
+		<method name="reverse">
+			<return type="void" />
+			<description>
+				Reverses the order of all elements in the array.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="what" type="Variant" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Returns the index of the [b]last[/b] occurrence of [param what] in this array, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find].
+			</description>
+		</method>
+		<method name="rfind_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Returns the index of the [b]last[/b] element of the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find_custom].
+			</description>
+		</method>
+		<method name="set">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [param index] to the given [param value]. This will not change the size of the array, it only changes the value at an index already in the array. This is the same as using the [code][][/code] operator ([code]array[index] = value[/code]).
+			</description>
+		</method>
+		<method name="shuffle">
+			<return type="void" />
+			<description>
+				Shuffles all elements of the array in a random order.
+				[b]Note:[/b] Like many similar functions in the engine (such as [method @GlobalScope.randi] or [method pick_random]), this method uses a common, global random seed. To get a predictable outcome from this method, see [method @GlobalScope.seed].
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of elements in the array. Empty arrays ([code][][/code]) always return [code]0[/code]. See also [method is_empty].
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<param index="2" name="step" type="int" default="1" />
+			<param index="3" name="deep" type="bool" default="false" />
+			<description>
+				Returns a new [Array] containing this array's elements, from index [param begin] (inclusive) to [param end] (exclusive), every [param step] elements.
+				If either [param begin] or [param end] are negative, their value is relative to the end of the array.
+				If [param step] is negative, this method iterates through the array in reverse, returning a slice ordered backwards. For this to work, [param begin] must be greater than [param end].
+				If [param deep] is [code]true[/code], all nested [Array] and [Dictionary] elements in the slice are duplicated from the original, recursively. See also [method duplicate]).
+				[codeblock]
+				var letters = ["A", "B", "C", "D", "E", "F"]
+
+				print(letters.slice(0, 2))  # Prints ["A", "B"]
+				print(letters.slice(2, -2)) # Prints ["C", "D"]
+				print(letters.slice(-2, 6)) # Prints ["E", "F"]
+
+				print(letters.slice(0, 6, 2))  # Prints ["A", "C", "E"]
+				print(letters.slice(4, 1, -1)) # Prints ["E", "D", "C"]
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void" />
+			<description>
+				Sorts the array in ascending order. The final order is dependent on the "less than" ([code]&lt;[/code]) comparison between elements.
+				[codeblocks]
+				[gdscript]
+				var numbers = [10, 5, 2.5, 8]
+				numbers.sort()
+				print(numbers) # Prints [2.5, 5, 8, 10]
+				[/gdscript]
+				[csharp]
+				Godot.Collections.Array numbers = [10, 5, 2.5, 8];
+				numbers.Sort();
+				GD.Print(numbers); // Prints [2.5, 5, 8, 10]
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that equivalent elements (such as [code]2[/code] and [code]2.0[/code]) may have their order changed when calling [method sort].
+			</description>
+		</method>
+		<method name="sort_custom">
+			<return type="void" />
+			<param index="0" name="func" type="Callable" />
+			<description>
+				Sorts the array using a custom [Callable].
+				[param func] is called as many times as necessary, receiving two array elements as arguments. The function should return [code]true[/code] if the first element should be moved [i]before[/i] the second one, otherwise it should return [code]false[/code].
+				[codeblock]
+				func sort_ascending(a, b):
+				    if a[1] &lt; b[1]:
+				        return true
+				    return false
+
+				func _ready():
+				    var my_items = [["Tomato", 5], ["Apple", 9], ["Rice", 4]]
+				    my_items.sort_custom(sort_ascending)
+				    print(my_items) # Prints [["Rice", 4], ["Tomato", 5], ["Apple", 9]]
+
+				    # Sort descending, using a lambda function.
+				    my_items.sort_custom(func(a, b): return a[1] &gt; b[1])
+				    print(my_items) # Prints [["Apple", 9], ["Tomato", 5], ["Rice", 4]]
+				[/codeblock]
+				It may also be necessary to use this method to sort strings by natural order, with [method String.naturalnocasecmp_to], as in the following example:
+				[codeblock]
+				var files = ["newfile1", "newfile2", "newfile10", "newfile11"]
+				files.sort_custom(func(a, b): return a.naturalnocasecmp_to(b) &lt; 0)
+				print(files) # Prints ["newfile1", "newfile2", "newfile10", "newfile11"]
+				[/codeblock]
+				[b]Note:[/b] In C#, this method is not supported.
+				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when calling this method.
+				[b]Note:[/b] You should not randomize the return value of [param func], as the heapsort algorithm expects a consistent result. Randomizing the return value will result in unexpected behavior.
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Returns [code]true[/code] if the array's size or its elements are different than [param right]'s.
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Array" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Appends the [param right] array to the left operand, creating a new [Array]. This is also known as an array concatenation.
+				[codeblocks]
+				[gdscript]
+				var array1 = ["One", 2]
+				var array2 = [3, "Four"]
+				print(array1 + array2) # Prints ["One", 2, 3, "Four"]
+				[/gdscript]
+				[csharp]
+				// Note that concatenation is not possible with C#'s native Array type.
+				Godot.Collections.Array array1 = ["One", 2];
+				Godot.Collections.Array array2 = [3, "Four"];
+				GD.Print(array1 + array2); // Prints ["One", 2, 3, "Four"]
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] For existing arrays, [method append_array] is much more efficient than concatenation and assignment with the [code]+=[/code] operator.
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Compares the elements of both arrays in order, starting from index [code]0[/code] and ending on the last index in common between both arrays. For each pair of elements, returns [code]true[/code] if this array's element is less than [param right]'s, [code]false[/code] if this element is greater. Otherwise, continues to the next pair.
+				If all searched elements are equal, returns [code]true[/code] if this array's size is less than [param right]'s, otherwise returns [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Compares the elements of both arrays in order, starting from index [code]0[/code] and ending on the last index in common between both arrays. For each pair of elements, returns [code]true[/code] if this array's element is less than [param right]'s, [code]false[/code] if this element is greater. Otherwise, continues to the next pair.
+				If all searched elements are equal, returns [code]true[/code] if this array's size is less or equal to [param right]'s, otherwise returns [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Compares the left operand [Array] against the [param right] [Array]. Returns [code]true[/code] if the sizes and contents of the arrays are equal, [code]false[/code] otherwise.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Compares the elements of both arrays in order, starting from index [code]0[/code] and ending on the last index in common between both arrays. For each pair of elements, returns [code]true[/code] if this array's element is greater than [param right]'s, [code]false[/code] if this element is less. Otherwise, continues to the next pair.
+				If all searched elements are equal, returns [code]true[/code] if this array's size is greater than [param right]'s, otherwise returns [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Array" />
+			<description>
+				Compares the elements of both arrays in order, starting from index [code]0[/code] and ending on the last index in common between both arrays. For each pair of elements, returns [code]true[/code] if this array's element is greater than [param right]'s, [code]false[/code] if this element is less. Otherwise, continues to the next pair.
+				If all searched elements are equal, returns [code]true[/code] if this array's size is greater or equal to [param right]'s, otherwise returns [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [Variant] element at the specified [param index]. Arrays start at index 0. If [param index] is greater or equal to [code]0[/code], the element is fetched starting from the beginning of the array. If [param index] is a negative value, the element is fetched starting from the end. Accessing an array out-of-bounds will cause a run-time error, pausing the project execution if run from the editor.
+			</description>
+		</operator>
+	</operators>
+</class>

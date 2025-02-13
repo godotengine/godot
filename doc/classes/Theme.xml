@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Theme" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource used for styling/skinning [Control]s and [Window]s.
+	</brief_description>
+	<description>
+		A resource used for styling/skinning [Control] and [Window] nodes. While individual controls can be styled using their local theme overrides (see [method Control.add_theme_color_override]), theme resources allow you to store and apply the same settings across all controls sharing the same type (e.g. style all [Button]s the same). One theme resource can be used for the entire project, but you can also set a separate theme resource to a branch of control nodes. A theme resource assigned to a control applies to the control itself, as well as all of its direct and indirect children (as long as a chain of controls is uninterrupted).
+		Use [member ProjectSettings.gui/theme/custom] to set up a project-scope theme that will be available to every control in your project.
+		Use [member Control.theme] of any control node to set up a theme that will be available to that control and all of its direct and indirect children.
+	</description>
+	<tutorials>
+		<link title="GUI skinning">$DOCS_URL/tutorials/ui/gui_skinning.html</link>
+		<link title="Using the theme editor">$DOCS_URL/tutorials/ui/gui_using_theme_editor.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_type">
+			<return type="void" />
+			<param index="0" name="theme_type" type="StringName" />
+			<description>
+				Adds an empty theme type for every valid data type.
+				[b]Note:[/b] Empty types are not saved with the theme. This method only exists to perform in-memory changes to the resource. Use available [code]set_*[/code] methods to add theme items.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all the theme properties defined on the theme resource.
+			</description>
+		</method>
+		<method name="clear_color">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the [Color] property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_color] to check for existence.
+			</description>
+		</method>
+		<method name="clear_constant">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the constant property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_constant] to check for existence.
+			</description>
+		</method>
+		<method name="clear_font">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the [Font] property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_font] to check for existence.
+			</description>
+		</method>
+		<method name="clear_font_size">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the font size property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_font_size] to check for existence.
+			</description>
+		</method>
+		<method name="clear_icon">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the icon property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_icon] to check for existence.
+			</description>
+		</method>
+		<method name="clear_stylebox">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Removes the [StyleBox] property defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_stylebox] to check for existence.
+			</description>
+		</method>
+		<method name="clear_theme_item">
+			<return type="void" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Removes the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
+				Fails if it doesn't exist. Use [method has_theme_item] to check for existence.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="clear_type_variation">
+			<return type="void" />
+			<param index="0" name="theme_type" type="StringName" />
+			<description>
+				Unmarks [param theme_type] as being a variation of another theme type. See [method set_type_variation].
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the [Color] property defined by [param name] and [param theme_type], if it exists.
+				Returns the default color value if the property doesn't exist. Use [method has_color] to check for existence.
+			</description>
+		</method>
+		<method name="get_color_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for [Color] properties defined with [param theme_type]. Use [method get_color_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_color_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for [Color] properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_constant" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the constant property defined by [param name] and [param theme_type], if it exists.
+				Returns [code]0[/code] if the property doesn't exist. Use [method has_constant] to check for existence.
+			</description>
+		</method>
+		<method name="get_constant_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for constant properties defined with [param theme_type]. Use [method get_constant_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_constant_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for constant properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_font" qualifiers="const">
+			<return type="Font" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the [Font] property defined by [param name] and [param theme_type], if it exists.
+				Returns the default theme font if the property doesn't exist and the default theme font is set up (see [member default_font]). Use [method has_font] to check for existence of the property and [method has_default_font] to check for existence of the default theme font.
+				Returns the engine fallback font value, if neither exist (see [member ThemeDB.fallback_font]).
+			</description>
+		</method>
+		<method name="get_font_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for [Font] properties defined with [param theme_type]. Use [method get_font_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_font_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the font size property defined by [param name] and [param theme_type], if it exists.
+				Returns the default theme font size if the property doesn't exist and the default theme font size is set up (see [member default_font_size]). Use [method has_font_size] to check for existence of the property and [method has_default_font_size] to check for existence of the default theme font.
+				Returns the engine fallback font size value, if neither exist (see [member ThemeDB.fallback_font_size]).
+			</description>
+		</method>
+		<method name="get_font_size_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for font size properties defined with [param theme_type]. Use [method get_font_size_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_font_size_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for font size properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_font_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for [Font] properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the icon property defined by [param name] and [param theme_type], if it exists.
+				Returns the engine fallback icon value if the property doesn't exist (see [member ThemeDB.fallback_icon]). Use [method has_icon] to check for existence.
+			</description>
+		</method>
+		<method name="get_icon_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for icon properties defined with [param theme_type]. Use [method get_icon_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_icon_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for icon properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_stylebox" qualifiers="const">
+			<return type="StyleBox" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns the [StyleBox] property defined by [param name] and [param theme_type], if it exists.
+				Returns the engine fallback stylebox value if the property doesn't exist (see [member ThemeDB.fallback_stylebox]). Use [method has_stylebox] to check for existence.
+			</description>
+		</method>
+		<method name="get_stylebox_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for [StyleBox] properties defined with [param theme_type]. Use [method get_stylebox_type_list] to get a list of possible theme type names.
+			</description>
+		</method>
+		<method name="get_stylebox_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names for [StyleBox] properties. Use [method get_type_list] to get a list of all unique theme types.
+			</description>
+		</method>
+		<method name="get_theme_item" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Returns the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
+				Returns the engine fallback value if the property doesn't exist (see [ThemeDB]). Use [method has_theme_item] to check for existence.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="get_theme_item_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="theme_type" type="String" />
+			<description>
+				Returns a list of names for properties of [param data_type] defined with [param theme_type]. Use [method get_theme_item_type_list] to get a list of possible theme type names.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="get_theme_item_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<description>
+				Returns a list of all unique theme type names for [param data_type] properties. Use [method get_type_list] to get a list of all unique theme types.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="get_type_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of all unique theme type names. Use the appropriate [code]get_*_type_list[/code] method to get a list of unique theme types for a single data type.
+			</description>
+		</method>
+		<method name="get_type_variation_base" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="theme_type" type="StringName" />
+			<description>
+				Returns the name of the base theme type if [param theme_type] is a valid variation type. Returns an empty string otherwise.
+			</description>
+		</method>
+		<method name="get_type_variation_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="base_type" type="StringName" />
+			<description>
+				Returns a list of all type variations for the given [param base_type].
+			</description>
+		</method>
+		<method name="has_color" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [Color] property defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_color] to define it.
+			</description>
+		</method>
+		<method name="has_constant" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the constant property defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_constant] to define it.
+			</description>
+		</method>
+		<method name="has_default_base_scale" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member default_base_scale] has a valid value.
+				Returns [code]false[/code] if it doesn't. The value must be greater than [code]0.0[/code] to be considered valid.
+			</description>
+		</method>
+		<method name="has_default_font" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member default_font] has a valid value.
+				Returns [code]false[/code] if it doesn't.
+			</description>
+		</method>
+		<method name="has_default_font_size" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member default_font_size] has a valid value.
+				Returns [code]false[/code] if it doesn't. The value must be greater than [code]0[/code] to be considered valid.
+			</description>
+		</method>
+		<method name="has_font" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [Font] property defined by [param name] and [param theme_type] exists, or if the default theme font is set up (see [method has_default_font]).
+				Returns [code]false[/code] if neither exist. Use [method set_font] to define the property.
+			</description>
+		</method>
+		<method name="has_font_size" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the font size property defined by [param name] and [param theme_type] exists, or if the default theme font size is set up (see [method has_default_font_size]).
+				Returns [code]false[/code] if neither exist. Use [method set_font_size] to define the property.
+			</description>
+		</method>
+		<method name="has_icon" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the icon property defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_icon] to define it.
+			</description>
+		</method>
+		<method name="has_stylebox" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [StyleBox] property defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_stylebox] to define it.
+			</description>
+		</method>
+		<method name="has_theme_item" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the theme property of [param data_type] defined by [param name] and [param theme_type] exists.
+				Returns [code]false[/code] if it doesn't exist. Use [method set_theme_item] to define it.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="is_type_variation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="theme_type" type="StringName" />
+			<param index="1" name="base_type" type="StringName" />
+			<description>
+				Returns [code]true[/code] if [param theme_type] is marked as a variation of [param base_type].
+			</description>
+		</method>
+		<method name="merge_with">
+			<return type="void" />
+			<param index="0" name="other" type="Theme" />
+			<description>
+				Adds missing and overrides existing definitions with values from the [param other] theme resource.
+				[b]Note:[/b] This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.
+			</description>
+		</method>
+		<method name="remove_type">
+			<return type="void" />
+			<param index="0" name="theme_type" type="StringName" />
+			<description>
+				Removes the theme type, gracefully discarding defined theme items. If the type is a variation, this information is also erased. If the type is a base for type variations, those variations lose their base.
+			</description>
+		</method>
+		<method name="rename_color">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the [Color] property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_color] to check for existence, and [method clear_color] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_constant">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the constant property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_constant] to check for existence, and [method clear_constant] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_font">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the [Font] property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font] to check for existence, and [method clear_font] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_font_size">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the font size property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_font_size] to check for existence, and [method clear_font_size] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_icon">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the icon property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_icon] to check for existence, and [method clear_icon] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_stylebox">
+			<return type="void" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<description>
+				Renames the [StyleBox] property defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_stylebox] to check for existence, and [method clear_stylebox] to remove the existing property.
+			</description>
+		</method>
+		<method name="rename_theme_item">
+			<return type="void" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="old_name" type="StringName" />
+			<param index="2" name="name" type="StringName" />
+			<param index="3" name="theme_type" type="StringName" />
+			<description>
+				Renames the theme property of [param data_type] defined by [param old_name] and [param theme_type] to [param name], if it exists.
+				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_theme_item] to check for existence, and [method clear_theme_item] to remove the existing property.
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="set_color">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Creates or changes the value of the [Color] property defined by [param name] and [param theme_type]. Use [method clear_color] to remove the property.
+			</description>
+		</method>
+		<method name="set_constant">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="constant" type="int" />
+			<description>
+				Creates or changes the value of the constant property defined by [param name] and [param theme_type]. Use [method clear_constant] to remove the property.
+			</description>
+		</method>
+		<method name="set_font">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="font" type="Font" />
+			<description>
+				Creates or changes the value of the [Font] property defined by [param name] and [param theme_type]. Use [method clear_font] to remove the property.
+			</description>
+		</method>
+		<method name="set_font_size">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="font_size" type="int" />
+			<description>
+				Creates or changes the value of the font size property defined by [param name] and [param theme_type]. Use [method clear_font_size] to remove the property.
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="texture" type="Texture2D" />
+			<description>
+				Creates or changes the value of the icon property defined by [param name] and [param theme_type]. Use [method clear_icon] to remove the property.
+			</description>
+		</method>
+		<method name="set_stylebox">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<param index="2" name="texture" type="StyleBox" />
+			<description>
+				Creates or changes the value of the [StyleBox] property defined by [param name] and [param theme_type]. Use [method clear_stylebox] to remove the property.
+			</description>
+		</method>
+		<method name="set_theme_item">
+			<return type="void" />
+			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="theme_type" type="StringName" />
+			<param index="3" name="value" type="Variant" />
+			<description>
+				Creates or changes the value of the theme property of [param data_type] defined by [param name] and [param theme_type]. Use [method clear_theme_item] to remove the property.
+				Fails if the [param value] type is not accepted by [param data_type].
+				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="set_type_variation">
+			<return type="void" />
+			<param index="0" name="theme_type" type="StringName" />
+			<param index="1" name="base_type" type="StringName" />
+			<description>
+				Marks [param theme_type] as a variation of [param base_type].
+				This adds [param theme_type] as a suggested option for [member Control.theme_type_variation] on a [Control] that is of the [param base_type] class.
+				Variations can also be nested, i.e. [param base_type] can be another variation. If a chain of variations ends with a [param base_type] matching the class of the [Control], the whole chain is going to be suggested as options.
+				[b]Note:[/b] Suggestions only show up if this theme resource is set as the project default theme. See [member ProjectSettings.gui/theme/custom].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="default_base_scale" type="float" setter="set_default_base_scale" getter="get_default_base_scale" default="0.0">
+			The default base scale factor of this theme resource. Used by some controls to scale their visual properties based on the global scale factor. If this value is set to [code]0.0[/code], the global scale factor is used (see [member ThemeDB.fallback_base_scale]).
+			Use [method has_default_base_scale] to check if this value is valid.
+		</member>
+		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
+			The default font of this theme resource. Used as the default value when trying to fetch a font resource that doesn't exist in this theme or is in invalid state. If the default font is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font]).
+			Use [method has_default_font] to check if this value is valid.
+		</member>
+		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
+			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font_size]).
+			Values below [code]1[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
+		</member>
+	</members>
+	<constants>
+		<constant name="DATA_TYPE_COLOR" value="0" enum="DataType">
+			Theme's [Color] item type.
+		</constant>
+		<constant name="DATA_TYPE_CONSTANT" value="1" enum="DataType">
+			Theme's constant item type.
+		</constant>
+		<constant name="DATA_TYPE_FONT" value="2" enum="DataType">
+			Theme's [Font] item type.
+		</constant>
+		<constant name="DATA_TYPE_FONT_SIZE" value="3" enum="DataType">
+			Theme's font size item type.
+		</constant>
+		<constant name="DATA_TYPE_ICON" value="4" enum="DataType">
+			Theme's icon [Texture2D] item type.
+		</constant>
+		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
+			Theme's [StyleBox] item type.
+		</constant>
+		<constant name="DATA_TYPE_MAX" value="6" enum="DataType">
+			Maximum value for the DataType enum.
+		</constant>
+	</constants>
+</class>

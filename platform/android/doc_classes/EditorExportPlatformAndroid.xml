@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformAndroid" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for Android.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Exporting for Android">$DOCS_URL/tutorials/export/exporting_for_android.html</link>
+		<link title="Gradle builds for Android">$DOCS_URL/tutorials/export/android_gradle_build.html</link>
+		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
+	</tutorials>
+	<members>
+		<member name="apk_expansion/SALT" type="String" setter="" getter="">
+			Array of random bytes that the licensing Policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
+		</member>
+		<member name="apk_expansion/enable" type="bool" setter="" getter="">
+			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
+			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
+		</member>
+		<member name="apk_expansion/public_key" type="String" setter="" getter="">
+			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
+		</member>
+		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
+			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
+		</member>
+		<member name="architectures/armeabi-v7a" type="bool" setter="" getter="">
+			If [code]true[/code], [code]arm32[/code] binaries are included into exported project.
+		</member>
+		<member name="architectures/x86" type="bool" setter="" getter="">
+			If [code]true[/code], [code]x86_32[/code] binaries are included into exported project.
+		</member>
+		<member name="architectures/x86_64" type="bool" setter="" getter="">
+			If [code]true[/code], [code]x86_64[/code] binaries are included into exported project.
+		</member>
+		<member name="command_line/extra_args" type="String" setter="" getter="">
+			A list of additional command line arguments, separated by space, which the exported project will receive when started.
+		</member>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to an APK file to use as a custom export template for debug exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to an APK file to use as a custom export template for release exports. If left empty, default template is used.
+			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
+		</member>
+		<member name="gesture/swipe_to_dismiss" type="bool" setter="" getter="">
+			If [code]true[/code], [url=https://developer.android.com/design/ui/wear/guides/components/swipe-to-dismiss]Swipe to dismiss[/url] will be enabled.
+			This functionality is intended for smartwatches and is generally ignored on standard Android devices. However, some devices may not ignore it. Therefore, it is recommended to keep this feature disabled for standard Android apps to avoid unexpected behavior.
+			[b]Note:[/b] This is [code]false[/code] by default. To enable this behavior, [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is required.
+		</member>
+		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
+			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
+		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
+		</member>
+		<member name="gradle_build/export_format" type="int" setter="" getter="">
+			Application export format (*.apk or *.aab).
+		</member>
+		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
+			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
+		</member>
+		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
+			Minimum Android API level required for the application to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:minSdkVersion[/url].
+		</member>
+		<member name="gradle_build/target_sdk" type="String" setter="" getter="">
+			The Android API level on which the application is designed to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:targetSdkVersion[/url].
+		</member>
+		<member name="gradle_build/use_gradle_build" type="bool" setter="" getter="">
+			If [code]true[/code], Gradle build is used instead of pre-built APK.
+		</member>
+		<member name="graphics/opengl_debug" type="bool" setter="" getter="">
+			If [code]true[/code], OpenGL ES debug context will be created (additional runtime checking, validation, and logging).
+		</member>
+		<member name="keystore/debug" type="String" setter="" getter="">
+			Path of the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PATH[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore[/code] if empty.
+		</member>
+		<member name="keystore/debug_password" type="String" setter="" getter="">
+			Password for the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore_pass[/code] if both it and [member keystore/debug] are empty.
+		</member>
+		<member name="keystore/debug_user" type="String" setter="" getter="">
+			User name for the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_USER[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore_user[/code] if both it and [member keystore/debug] are empty.
+		</member>
+		<member name="keystore/release" type="String" setter="" getter="">
+			Path of the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_PATH[/code].
+		</member>
+		<member name="keystore/release_password" type="String" setter="" getter="">
+			Password for the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD[/code].
+		</member>
+		<member name="keystore/release_user" type="String" setter="" getter="">
+			User name for the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_USER[/code].
+		</member>
+		<member name="launcher_icons/adaptive_background_432x432" type="String" setter="" getter="">
+			Background layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
+		<member name="launcher_icons/adaptive_foreground_432x432" type="String" setter="" getter="">
+			Foreground layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
+		<member name="launcher_icons/adaptive_monochrome_432x432" type="String" setter="" getter="">
+			Monochrome layer of the application adaptive icon file. See [url=https://developer.android.com/develop/ui/views/launch/icon_design_adaptive#design-adaptive-icons]Design adaptive icons[/url].
+		</member>
+		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
+		</member>
+		<member name="package/app_category" type="int" setter="" getter="">
+			Application category for the Google Play Store. Only define this if your application fits one of the categories well. See [url=https://developer.android.com/guide/topics/manifest/application-element#appCategory]android:appCategory[/url].
+		</member>
+		<member name="package/exclude_from_recents" type="bool" setter="" getter="">
+			If [code]true[/code], task initiated by main activity will be excluded from the list of recently used applications. See [url=https://developer.android.com/guide/topics/manifest/activity-element#exclude]android:excludeFromRecents[/url].
+		</member>
+		<member name="package/name" type="String" setter="" getter="">
+			Name of the application.
+		</member>
+		<member name="package/retain_data_on_uninstall" type="bool" setter="" getter="">
+			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown. See [url=https://developer.android.com/guide/topics/manifest/application-element#fragileuserdata]android:hasFragileUserData[/url].
+		</member>
+		<member name="package/show_as_launcher_app" type="bool" setter="" getter="">
+			If [code]true[/code], the user will be able to set this app as the system launcher in Android preferences.
+		</member>
+		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in Android TV launcher UI.
+		</member>
+		<member name="package/show_in_app_library" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in the device's app library.
+			[b]Note:[/b] This is [code]true[/code] by default.
+		</member>
+		<member name="package/signed" type="bool" setter="" getter="">
+			If [code]true[/code], package signing is enabled.
+		</member>
+		<member name="package/unique_name" type="String" setter="" getter="">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]noname[/code].
+			[b]Note:[/b] Changing the package name will cause the package to be considered as a new package, with its own installation and data paths. The new package won't be usable to update existing installations.
+			[b]Note:[/b] When publishing to Google Play, the package name must be [i]globally[/i] unique. This means no other apps published on Google Play must be using the same package name as yours. Otherwise, you'll be prevented from publishing your app on Google Play.
+		</member>
+		<member name="permissions/access_checkin_properties" type="bool" setter="" getter="">
+			Allows read/write access to the "properties" table in the checkin database. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_CHECKIN_PROPERTIES]ACCESS_CHECKIN_PROPERTIES[/url].
+		</member>
+		<member name="permissions/access_coarse_location" type="bool" setter="" getter="">
+			Allows access to the approximate location information. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_COARSE_LOCATION]ACCESS_COARSE_LOCATION[/url].
+		</member>
+		<member name="permissions/access_fine_location" type="bool" setter="" getter="">
+			Allows access to the precise location information. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_FINE_LOCATION]ACCESS_FINE_LOCATION[/url].
+		</member>
+		<member name="permissions/access_location_extra_commands" type="bool" setter="" getter="">
+			Allows access to the extra location provider commands. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_LOCATION_EXTRA_COMMANDS]ACCESS_LOCATION_EXTRA_COMMANDS[/url].
+		</member>
+		<member name="permissions/access_media_location" type="bool" setter="" getter="">
+			Allows an application to access any geographic locations persisted in the user's shared collection. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_MEDIA_LOCATION]ACCESS_MEDIA_LOCATION[/url].
+		</member>
+		<member name="permissions/access_mock_location" type="bool" setter="" getter="">
+			Allows an application to create mock location providers for testing.
+		</member>
+		<member name="permissions/access_network_state" type="bool" setter="" getter="">
+			Allows access to the information about networks. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_NETWORK_STATE]ACCESS_NETWORK_STATE[/url].
+		</member>
+		<member name="permissions/access_surface_flinger" type="bool" setter="" getter="">
+			Allows an application to use SurfaceFlinger's low level features.
+		</member>
+		<member name="permissions/access_wifi_state" type="bool" setter="" getter="">
+			Allows access to the information about Wi-Fi networks. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCESS_WIFI_STATE]ACCESS_WIFI_STATE[/url].
+		</member>
+		<member name="permissions/account_manager" type="bool" setter="" getter="">
+			Allows applications to call into AccountAuthenticators. See [url=https://developer.android.com/reference/android/Manifest.permission#ACCOUNT_MANAGER]ACCOUNT_MANAGER[/url].
+		</member>
+		<member name="permissions/add_voicemail" type="bool" setter="" getter="">
+			Allows an application to add voicemails into the system. See [url=https://developer.android.com/reference/android/Manifest.permission#ADD_VOICEMAIL]ADD_VOICEMAIL[/url].
+		</member>
+		<member name="permissions/authenticate_accounts" type="bool" setter="" getter="">
+			Allows an application to act as an AccountAuthenticator for the AccountManager.
+		</member>
+		<member name="permissions/battery_stats" type="bool" setter="" getter="">
+			Allows an application to collect battery statistics. See [url=https://developer.android.com/reference/android/Manifest.permission#BATTERY_STATS]BATTERY_STATS[/url].
+		</member>
+		<member name="permissions/bind_accessibility_service" type="bool" setter="" getter="">
+			Must be required by an AccessibilityService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_ACCESSIBILITY_SERVICE]BIND_ACCESSIBILITY_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_appwidget" type="bool" setter="" getter="">
+			Allows an application to tell the AppWidget service which application can access AppWidget's data. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_APPWIDGET]BIND_APPWIDGET[/url].
+		</member>
+		<member name="permissions/bind_device_admin" type="bool" setter="" getter="">
+			Must be required by device administration receiver, to ensure that only the system can interact with it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_DEVICE_ADMIN]BIND_DEVICE_ADMIN[/url].
+		</member>
+		<member name="permissions/bind_input_method" type="bool" setter="" getter="">
+			Must be required by an InputMethodService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_INPUT_METHOD]BIND_INPUT_METHOD[/url].
+		</member>
+		<member name="permissions/bind_nfc_service" type="bool" setter="" getter="">
+			Must be required by a HostApduService or OffHostApduService to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_NFC_SERVICE]BIND_NFC_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_notification_listener_service" type="bool" setter="" getter="">
+			Must be required by a NotificationListenerService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_NOTIFICATION_LISTENER_SERVICE]BIND_NOTIFICATION_LISTENER_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_print_service" type="bool" setter="" getter="">
+			Must be required by a PrintService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_PRINT_SERVICE]BIND_PRINT_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_remoteviews" type="bool" setter="" getter="">
+			Must be required by a RemoteViewsService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_REMOTEVIEWS]BIND_REMOTEVIEWS[/url].
+		</member>
+		<member name="permissions/bind_text_service" type="bool" setter="" getter="">
+			Must be required by a TextService (e.g. SpellCheckerService) to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_TEXT_SERVICE]BIND_TEXT_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_vpn_service" type="bool" setter="" getter="">
+			Must be required by a VpnService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_VPN_SERVICE]BIND_VPN_SERVICE[/url].
+		</member>
+		<member name="permissions/bind_wallpaper" type="bool" setter="" getter="">
+			Must be required by a WallpaperService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_WALLPAPER]BIND_WALLPAPER[/url].
+		</member>
+		<member name="permissions/bluetooth" type="bool" setter="" getter="">
+			Allows applications to connect to paired bluetooth devices. See [url=https://developer.android.com/reference/android/Manifest.permission#BLUETOOTH]BLUETOOTH[/url].
+		</member>
+		<member name="permissions/bluetooth_admin" type="bool" setter="" getter="">
+			Allows applications to discover and pair bluetooth devices. See [url=https://developer.android.com/reference/android/Manifest.permission#BLUETOOTH_ADMIN]BLUETOOTH_ADMIN[/url].
+		</member>
+		<member name="permissions/bluetooth_privileged" type="bool" setter="" getter="">
+			Allows applications to pair bluetooth devices without user interaction, and to allow or disallow phonebook access or message access. See [url=https://developer.android.com/reference/android/Manifest.permission#BLUETOOTH_PRIVILEGED]BLUETOOTH_PRIVILEGED[/url].
+		</member>
+		<member name="permissions/brick" type="bool" setter="" getter="">
+			Required to be able to disable the device (very dangerous!).
+		</member>
+		<member name="permissions/broadcast_package_removed" type="bool" setter="" getter="">
+			Allows an application to broadcast a notification that an application package has been removed. See [url=https://developer.android.com/reference/android/Manifest.permission#BROADCAST_PACKAGE_REMOVED]BROADCAST_PACKAGE_REMOVED[/url].
+		</member>
+		<member name="permissions/broadcast_sms" type="bool" setter="" getter="">
+			Allows an application to broadcast an SMS receipt notification. See [url=https://developer.android.com/reference/android/Manifest.permission#BROADCAST_SMS]BROADCAST_SMS[/url].
+		</member>
+		<member name="permissions/broadcast_sticky" type="bool" setter="" getter="">
+			Allows an application to broadcast sticky intents. See [url=https://developer.android.com/reference/android/Manifest.permission#BROADCAST_STICKY]BROADCAST_STICKY[/url].
+		</member>
+		<member name="permissions/broadcast_wap_push" type="bool" setter="" getter="">
+			Allows an application to broadcast a WAP PUSH receipt notification. See [url=https://developer.android.com/reference/android/Manifest.permission#BROADCAST_WAP_PUSH]BROADCAST_WAP_PUSH[/url].
+		</member>
+		<member name="permissions/call_phone" type="bool" setter="" getter="">
+			Allows an application to initiate a phone call without going through the Dialer user interface. See [url=https://developer.android.com/reference/android/Manifest.permission#CALL_PHONE]CALL_PHONE[/url].
+		</member>
+		<member name="permissions/call_privileged" type="bool" setter="" getter="">
+			Allows an application to call any phone number, including emergency numbers, without going through the Dialer user interface. See [url=https://developer.android.com/reference/android/Manifest.permission#CALL_PRIVILEGED]CALL_PRIVILEGED[/url].
+		</member>
+		<member name="permissions/camera" type="bool" setter="" getter="">
+			Required to be able to access the camera device. See [url=https://developer.android.com/reference/android/Manifest.permission#CAMERA]CAMERA[/url].
+		</member>
+		<member name="permissions/capture_audio_output" type="bool" setter="" getter="">
+			Allows an application to capture audio output. See [url=https://developer.android.com/reference/android/Manifest.permission#CAPTURE_AUDIO_OUTPUT]CAPTURE_AUDIO_OUTPUT[/url].
+		</member>
+		<member name="permissions/capture_secure_video_output" type="bool" setter="" getter="">
+			Allows an application to capture secure video output.
+		</member>
+		<member name="permissions/capture_video_output" type="bool" setter="" getter="">
+			Allows an application to capture video output.
+		</member>
+		<member name="permissions/change_component_enabled_state" type="bool" setter="" getter="">
+			Allows an application to change whether an application component (other than its own) is enabled or not. See [url=https://developer.android.com/reference/android/Manifest.permission#CHANGE_COMPONENT_ENABLED_STATE]CHANGE_COMPONENT_ENABLED_STATE[/url].
+		</member>
+		<member name="permissions/change_configuration" type="bool" setter="" getter="">
+			Allows an application to modify the current configuration, such as locale. See [url=https://developer.android.com/reference/android/Manifest.permission#CHANGE_CONFIGURATION]CHANGE_CONFIGURATION[/url].
+		</member>
+		<member name="permissions/change_network_state" type="bool" setter="" getter="">
+			Allows applications to change network connectivity state. See [url=https://developer.android.com/reference/android/Manifest.permission#CHANGE_NETWORK_STATE]CHANGE_NETWORK_STATE[/url].
+		</member>
+		<member name="permissions/change_wifi_multicast_state" type="bool" setter="" getter="">
+			Allows applications to enter Wi-Fi Multicast mode. See [url=https://developer.android.com/reference/android/Manifest.permission#CHANGE_WIFI_MULTICAST_STATE]CHANGE_WIFI_MULTICAST_STATE[/url].
+		</member>
+		<member name="permissions/change_wifi_state" type="bool" setter="" getter="">
+			Allows applications to change Wi-Fi connectivity state. See [url=https://developer.android.com/reference/android/Manifest.permission#CHANGE_WIFI_STATE]CHANGE_WIFI_STATE[/url].
+		</member>
+		<member name="permissions/clear_app_cache" type="bool" setter="" getter="">
+			Allows an application to clear the caches of all installed applications on the device. See [url=https://developer.android.com/reference/android/Manifest.permission#CLEAR_APP_CACHE]CLEAR_APP_CACHE[/url].
+		</member>
+		<member name="permissions/clear_app_user_data" type="bool" setter="" getter="">
+			Allows an application to clear user data.
+		</member>
+		<member name="permissions/control_location_updates" type="bool" setter="" getter="">
+			Allows enabling/disabling location update notifications from the radio. See [url=https://developer.android.com/reference/android/Manifest.permission#CONTROL_LOCATION_UPDATES]CONTROL_LOCATION_UPDATES[/url].
+		</member>
+		<member name="permissions/custom_permissions" type="PackedStringArray" setter="" getter="">
+			Array of custom permission strings.
+		</member>
+		<member name="permissions/delete_cache_files" type="bool" setter="" getter="" deprecated="">
+		</member>
+		<member name="permissions/delete_packages" type="bool" setter="" getter="">
+			Allows an application to delete packages. See [url=https://developer.android.com/reference/android/Manifest.permission#DELETE_PACKAGES]DELETE_PACKAGES[/url].
+		</member>
+		<member name="permissions/device_power" type="bool" setter="" getter="">
+			Allows low-level access to power management.
+		</member>
+		<member name="permissions/diagnostic" type="bool" setter="" getter="">
+			Allows applications to RW to diagnostic resources. See [url=https://developer.android.com/reference/android/Manifest.permission#DIAGNOSTIC]DIAGNOSTIC[/url].
+		</member>
+		<member name="permissions/disable_keyguard" type="bool" setter="" getter="">
+			Allows applications to disable the keyguard if it is not secure. See [url=https://developer.android.com/reference/android/Manifest.permission#DISABLE_KEYGUARD]DISABLE_KEYGUARD[/url].
+		</member>
+		<member name="permissions/dump" type="bool" setter="" getter="">
+			Allows an application to retrieve state dump information from system services. See [url=https://developer.android.com/reference/android/Manifest.permission#DUMP]DUMP[/url].
+		</member>
+		<member name="permissions/expand_status_bar" type="bool" setter="" getter="">
+			Allows an application to expand or collapse the status bar. See [url=https://developer.android.com/reference/android/Manifest.permission#EXPAND_STATUS_BAR]EXPAND_STATUS_BAR[/url].
+		</member>
+		<member name="permissions/factory_test" type="bool" setter="" getter="">
+			Run as a manufacturer test application, running as the root user. See [url=https://developer.android.com/reference/android/Manifest.permission#FACTORY_TEST]FACTORY_TEST[/url].
+		</member>
+		<member name="permissions/flashlight" type="bool" setter="" getter="">
+			Allows access to the flashlight.
+		</member>
+		<member name="permissions/force_back" type="bool" setter="" getter="">
+			Allows an application to force a BACK operation on whatever is the top activity.
+		</member>
+		<member name="permissions/get_accounts" type="bool" setter="" getter="">
+			Allows access to the list of accounts in the Accounts Service. See [url=https://developer.android.com/reference/android/Manifest.permission#GET_ACCOUNTS]GET_ACCOUNTS[/url].
+		</member>
+		<member name="permissions/get_package_size" type="bool" setter="" getter="">
+			Allows an application to find out the space used by any package. See [url=https://developer.android.com/reference/android/Manifest.permission#GET_PACKAGE_SIZE]GET_PACKAGE_SIZE[/url].
+		</member>
+		<member name="permissions/get_tasks" type="bool" setter="" getter="" deprecated="Deprecated in API level 21.">
+		</member>
+		<member name="permissions/get_top_activity_info" type="bool" setter="" getter="">
+			Allows an application to retrieve private information about the current top activity.
+		</member>
+		<member name="permissions/global_search" type="bool" setter="" getter="">
+			Used on content providers to allow the global search system to access their data. See [url=https://developer.android.com/reference/android/Manifest.permission#GLOBAL_SEARCH]GLOBAL_SEARCH[/url].
+		</member>
+		<member name="permissions/hardware_test" type="bool" setter="" getter="">
+			Allows access to hardware peripherals.
+		</member>
+		<member name="permissions/inject_events" type="bool" setter="" getter="">
+			Allows an application to inject user events (keys, touch, trackball) into the event stream and deliver them to ANY window.
+		</member>
+		<member name="permissions/install_location_provider" type="bool" setter="" getter="">
+			Allows an application to install a location provider into the Location Manager. See [url=https://developer.android.com/reference/android/Manifest.permission#INSTALL_LOCATION_PROVIDER]INSTALL_LOCATION_PROVIDER[/url].
+		</member>
+		<member name="permissions/install_packages" type="bool" setter="" getter="">
+			Allows an application to install packages. See [url=https://developer.android.com/reference/android/Manifest.permission#INSTALL_PACKAGES]INSTALL_PACKAGES[/url].
+		</member>
+		<member name="permissions/install_shortcut" type="bool" setter="" getter="">
+			Allows an application to install a shortcut in Launcher. See [url=https://developer.android.com/reference/android/Manifest.permission#INSTALL_SHORTCUT]INSTALL_SHORTCUT[/url].
+		</member>
+		<member name="permissions/internal_system_window" type="bool" setter="" getter="">
+			Allows an application to open windows that are for use by parts of the system user interface.
+		</member>
+		<member name="permissions/internet" type="bool" setter="" getter="">
+			Allows applications to open network sockets. See [url=https://developer.android.com/reference/android/Manifest.permission#INTERNET]INTERNET[/url].
+		</member>
+		<member name="permissions/kill_background_processes" type="bool" setter="" getter="">
+			Allows an application to call ActivityManager.killBackgroundProcesses(String). See [url=https://developer.android.com/reference/android/Manifest.permission#KILL_BACKGROUND_PROCESSES]KILL_BACKGROUND_PROCESSES[/url].
+		</member>
+		<member name="permissions/location_hardware" type="bool" setter="" getter="">
+			Allows an application to use location features in hardware, such as the geofencing api. See [url=https://developer.android.com/reference/android/Manifest.permission#LOCATION_HARDWARE]LOCATION_HARDWARE[/url].
+		</member>
+		<member name="permissions/manage_accounts" type="bool" setter="" getter="">
+			Allows an application to manage the list of accounts in the AccountManager.
+		</member>
+		<member name="permissions/manage_app_tokens" type="bool" setter="" getter="">
+			Allows an application to manage (create, destroy, Z-order) application tokens in the window manager.
+		</member>
+		<member name="permissions/manage_documents" type="bool" setter="" getter="">
+			Allows an application to manage access to documents, usually as part of a document picker. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_DOCUMENTS]MANAGE_DOCUMENTS[/url].
+		</member>
+		<member name="permissions/manage_external_storage" type="bool" setter="" getter="">
+			Allows an application a broad access to external storage in scoped storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE]MANAGE_EXTERNAL_STORAGE[/url].
+		</member>
+		<member name="permissions/master_clear" type="bool" setter="" getter="">
+			See [url=https://developer.android.com/reference/android/Manifest.permission#MASTER_CLEAR]MASTER_CLEAR[/url].
+		</member>
+		<member name="permissions/media_content_control" type="bool" setter="" getter="">
+			Allows an application to know what content is playing and control its playback. See [url=https://developer.android.com/reference/android/Manifest.permission#MEDIA_CONTENT_CONTROL]MEDIA_CONTENT_CONTROL[/url].
+		</member>
+		<member name="permissions/modify_audio_settings" type="bool" setter="" getter="">
+			Allows an application to modify global audio settings. See [url=https://developer.android.com/reference/android/Manifest.permission#MODIFY_AUDIO_SETTINGS]MODIFY_AUDIO_SETTINGS[/url].
+		</member>
+		<member name="permissions/modify_phone_state" type="bool" setter="" getter="">
+			Allows modification of the telephony state - power on, mmi, etc. Does not include placing calls. See [url=https://developer.android.com/reference/android/Manifest.permission#MODIFY_PHONE_STATE]MODIFY_PHONE_STATE[/url].
+		</member>
+		<member name="permissions/mount_format_filesystems" type="bool" setter="" getter="">
+			Allows formatting file systems for removable storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MOUNT_FORMAT_FILESYSTEMS]MOUNT_FORMAT_FILESYSTEMS[/url].
+		</member>
+		<member name="permissions/mount_unmount_filesystems" type="bool" setter="" getter="">
+			Allows mounting and unmounting file systems for removable storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MOUNT_UNMOUNT_FILESYSTEMS]MOUNT_UNMOUNT_FILESYSTEMS[/url].
+		</member>
+		<member name="permissions/nfc" type="bool" setter="" getter="">
+			Allows applications to perform I/O operations over NFC. See [url=https://developer.android.com/reference/android/Manifest.permission#NFC]NFC[/url].
+		</member>
+		<member name="permissions/persistent_activity" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
+			Allows an application to make its activities persistent.
+		</member>
+		<member name="permissions/post_notifications" type="bool" setter="" getter="">
+			Allows an application to post notifications. Added in API level 33. See [url=https://developer.android.com/develop/ui/views/notifications/notification-permission]Notification runtime permission[/url].
+		</member>
+		<member name="permissions/process_outgoing_calls" type="bool" setter="" getter="" deprecated="Deprecated in API level 29.">
+			Allows an application to see the number being dialed during an outgoing call with the option to redirect the call to a different number or abort the call altogether. See [url=https://developer.android.com/reference/android/Manifest.permission#PROCESS_OUTGOING_CALLS]PROCESS_OUTGOING_CALLS[/url].
+		</member>
+		<member name="permissions/read_calendar" type="bool" setter="" getter="">
+			Allows an application to read the user's calendar data. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_CALENDAR]READ_CALENDAR[/url].
+		</member>
+		<member name="permissions/read_call_log" type="bool" setter="" getter="">
+			Allows an application to read the user's call log. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_CALL_LOG]READ_CALL_LOG[/url].
+		</member>
+		<member name="permissions/read_contacts" type="bool" setter="" getter="">
+			Allows an application to read the user's contacts data. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_CONTACTS]READ_CONTACTS[/url].
+		</member>
+		<member name="permissions/read_external_storage" type="bool" setter="" getter="" deprecated="Deprecated in API level 33.">
+			Allows an application to read from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_EXTERNAL_STORAGE]READ_EXTERNAL_STORAGE[/url].
+		</member>
+		<member name="permissions/read_frame_buffer" type="bool" setter="" getter="">
+			Allows an application to take screen shots and more generally get access to the frame buffer data.
+		</member>
+		<member name="permissions/read_history_bookmarks" type="bool" setter="" getter="">
+			Allows an application to read (but not write) the user's browsing history and bookmarks.
+		</member>
+		<member name="permissions/read_input_state" type="bool" setter="" getter="" deprecated="Deprecated in API level 16.">
+		</member>
+		<member name="permissions/read_logs" type="bool" setter="" getter="">
+			Allows an application to read the low-level system log files. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_LOGS]READ_LOGS[/url].
+		</member>
+		<member name="permissions/read_media_audio" type="bool" setter="" getter="">
+			Allows an application to read audio files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_AUDIO]READ_MEDIA_AUDIO[/url].
+		</member>
+		<member name="permissions/read_media_images" type="bool" setter="" getter="">
+			Allows an application to read image files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_IMAGES]READ_MEDIA_IMAGES[/url].
+		</member>
+		<member name="permissions/read_media_video" type="bool" setter="" getter="">
+			Allows an application to read video files from external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VIDEO]READ_MEDIA_VIDEO[/url].
+		</member>
+		<member name="permissions/read_media_visual_user_selected" type="bool" setter="" getter="">
+			Allows an application to read image or video files from external storage that a user has selected via the permission prompt photo picker. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_MEDIA_VISUAL_USER_SELECTED]READ_MEDIA_VISUAL_USER_SELECTED[/url].
+		</member>
+		<member name="permissions/read_phone_state" type="bool" setter="" getter="">
+			Allows read only access to phone state. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_PHONE_STATE]READ_PHONE_STATE[/url].
+		</member>
+		<member name="permissions/read_profile" type="bool" setter="" getter="">
+			Allows an application to read the user's personal profile data.
+		</member>
+		<member name="permissions/read_sms" type="bool" setter="" getter="">
+			Allows an application to read SMS messages. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_SMS]READ_SMS[/url].
+		</member>
+		<member name="permissions/read_social_stream" type="bool" setter="" getter="">
+			Allows an application to read from the user's social stream.
+		</member>
+		<member name="permissions/read_sync_settings" type="bool" setter="" getter="">
+			Allows applications to read the sync settings. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_SYNC_SETTINGS]READ_SYNC_SETTINGS[/url].
+		</member>
+		<member name="permissions/read_sync_stats" type="bool" setter="" getter="">
+			Allows applications to read the sync stats. See [url=https://developer.android.com/reference/android/Manifest.permission#READ_SYNC_STATS]READ_SYNC_STATS[/url].
+		</member>
+		<member name="permissions/read_user_dictionary" type="bool" setter="" getter="">
+			Allows an application to read the user dictionary.
+		</member>
+		<member name="permissions/reboot" type="bool" setter="" getter="">
+			Required to be able to reboot the device. See [url=https://developer.android.com/reference/android/Manifest.permission#REBOOT]REBOOT[/url].
+		</member>
+		<member name="permissions/receive_boot_completed" type="bool" setter="" getter="">
+			Allows an application to receive the Intent.ACTION_BOOT_COMPLETED that is broadcast after the system finishes booting. See [url=https://developer.android.com/reference/android/Manifest.permission#RECEIVE_BOOT_COMPLETED]RECEIVE_BOOT_COMPLETED[/url].
+		</member>
+		<member name="permissions/receive_mms" type="bool" setter="" getter="">
+			Allows an application to monitor incoming MMS messages. See [url=https://developer.android.com/reference/android/Manifest.permission#RECEIVE_MMS]RECEIVE_MMS[/url].
+		</member>
+		<member name="permissions/receive_sms" type="bool" setter="" getter="">
+			Allows an application to receive SMS messages. See [url=https://developer.android.com/reference/android/Manifest.permission#RECEIVE_SMS]RECEIVE_SMS[/url].
+		</member>
+		<member name="permissions/receive_wap_push" type="bool" setter="" getter="">
+			Allows an application to receive WAP push messages. See [url=https://developer.android.com/reference/android/Manifest.permission#RECEIVE_WAP_PUSH]RECEIVE_WAP_PUSH[/url].
+		</member>
+		<member name="permissions/record_audio" type="bool" setter="" getter="">
+			Allows an application to record audio. See [url=https://developer.android.com/reference/android/Manifest.permission#RECORD_AUDIO]RECORD_AUDIO[/url].
+		</member>
+		<member name="permissions/reorder_tasks" type="bool" setter="" getter="">
+			Allows an application to change the Z-order of tasks. See [url=https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
+		</member>
+		<member name="permissions/restart_packages" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
+		</member>
+		<member name="permissions/send_respond_via_message" type="bool" setter="" getter="">
+			Allows an application (Phone) to send a request to other applications to handle the respond-via-message action during incoming calls. See [url=https://developer.android.com/reference/android/Manifest.permission#SEND_RESPOND_VIA_MESSAGE]SEND_RESPOND_VIA_MESSAGE[/url].
+		</member>
+		<member name="permissions/send_sms" type="bool" setter="" getter="">
+			Allows an application to send SMS messages. See [url=https://developer.android.com/reference/android/Manifest.permission#SEND_SMS]SEND_SMS[/url].
+		</member>
+		<member name="permissions/set_activity_watcher" type="bool" setter="" getter="">
+			Allows an application to watch and control how activities are started globally in the system.
+		</member>
+		<member name="permissions/set_alarm" type="bool" setter="" getter="">
+			Allows an application to broadcast an Intent to set an alarm for the user. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_ALARM]SET_ALARM[/url].
+		</member>
+		<member name="permissions/set_always_finish" type="bool" setter="" getter="">
+			Allows an application to control whether activities are immediately finished when put in the background. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_ALWAYS_FINISH]SET_ALWAYS_FINISH[/url].
+		</member>
+		<member name="permissions/set_animation_scale" type="bool" setter="" getter="">
+			Allows to modify the global animation scaling factor. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_ANIMATION_SCALE]SET_ANIMATION_SCALE[/url].
+		</member>
+		<member name="permissions/set_debug_app" type="bool" setter="" getter="">
+			Configure an application for debugging. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_DEBUG_APP]SET_DEBUG_APP[/url].
+		</member>
+		<member name="permissions/set_orientation" type="bool" setter="" getter="">
+			Allows low-level access to setting the orientation (actually rotation) of the screen.
+		</member>
+		<member name="permissions/set_pointer_speed" type="bool" setter="" getter="">
+			Allows low-level access to setting the pointer speed.
+		</member>
+		<member name="permissions/set_preferred_applications" type="bool" setter="" getter="" deprecated="Deprecated in API level 15.">
+		</member>
+		<member name="permissions/set_process_limit" type="bool" setter="" getter="">
+			Allows an application to set the maximum number of (not needed) application processes that can be running. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_PROCESS_LIMIT]SET_PROCESS_LIMIT[/url].
+		</member>
+		<member name="permissions/set_time" type="bool" setter="" getter="">
+			Allows applications to set the system time directly. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_TIME]SET_TIME[/url].
+		</member>
+		<member name="permissions/set_time_zone" type="bool" setter="" getter="">
+			Allows applications to set the system time zone directly. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_TIME_ZONE]SET_TIME_ZONE[/url].
+		</member>
+		<member name="permissions/set_wallpaper" type="bool" setter="" getter="">
+			Allows applications to set the wallpaper. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_WALLPAPER]SET_WALLPAPER[/url].
+		</member>
+		<member name="permissions/set_wallpaper_hints" type="bool" setter="" getter="">
+			Allows applications to set the wallpaper hints. See [url=https://developer.android.com/reference/android/Manifest.permission#SET_WALLPAPER_HINTS]SET_WALLPAPER_HINTS[/url].
+		</member>
+		<member name="permissions/signal_persistent_processes" type="bool" setter="" getter="">
+			Allow an application to request that a signal be sent to all persistent processes. See [url=https://developer.android.com/reference/android/Manifest.permission#SIGNAL_PERSISTENT_PROCESSES]SIGNAL_PERSISTENT_PROCESSES[/url].
+		</member>
+		<member name="permissions/status_bar" type="bool" setter="" getter="">
+			Allows an application to open, close, or disable the status bar and its icons. See [url=https://developer.android.com/reference/android/Manifest.permission#STATUS_BAR]STATUS_BAR[/url].
+		</member>
+		<member name="permissions/subscribed_feeds_read" type="bool" setter="" getter="">
+			Allows an application to allow access the subscribed feeds ContentProvider.
+		</member>
+		<member name="permissions/subscribed_feeds_write" type="bool" setter="" getter="" deprecated="">
+		</member>
+		<member name="permissions/system_alert_window" type="bool" setter="" getter="">
+			Allows an app to create windows using the type WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, shown on top of all other apps. See [url=https://developer.android.com/reference/android/Manifest.permission#SYSTEM_ALERT_WINDOW]SYSTEM_ALERT_WINDOW[/url].
+		</member>
+		<member name="permissions/transmit_ir" type="bool" setter="" getter="">
+			Allows using the device's IR transmitter, if available. See [url=https://developer.android.com/reference/android/Manifest.permission#TRANSMIT_IR]TRANSMIT_IR[/url].
+		</member>
+		<member name="permissions/uninstall_shortcut" type="bool" setter="" getter="" deprecated="">
+		</member>
+		<member name="permissions/update_device_stats" type="bool" setter="" getter="">
+			Allows an application to update device statistics. See [url=https://developer.android.com/reference/android/Manifest.permission#UPDATE_DEVICE_STATS]UPDATE_DEVICE_STATS[/url].
+		</member>
+		<member name="permissions/use_credentials" type="bool" setter="" getter="">
+			Allows an application to request authtokens from the AccountManager.
+		</member>
+		<member name="permissions/use_sip" type="bool" setter="" getter="">
+			Allows an application to use SIP service. See [url=https://developer.android.com/reference/android/Manifest.permission#USE_SIP]USE_SIP[/url].
+		</member>
+		<member name="permissions/vibrate" type="bool" setter="" getter="">
+			Allows access to the vibrator. See [url=https://developer.android.com/reference/android/Manifest.permission#VIBRATE]VIBRATE[/url].
+		</member>
+		<member name="permissions/wake_lock" type="bool" setter="" getter="">
+			Allows using PowerManager WakeLocks to keep processor from sleeping or screen from dimming. See [url=https://developer.android.com/reference/android/Manifest.permission#WAKE_LOCK]WAKE_LOCK[/url].
+		</member>
+		<member name="permissions/write_apn_settings" type="bool" setter="" getter="">
+			Allows applications to write the apn settings and read sensitive fields of an existing apn settings like user and password. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_APN_SETTINGS]WRITE_APN_SETTINGS[/url].
+		</member>
+		<member name="permissions/write_calendar" type="bool" setter="" getter="">
+			Allows an application to write the user's calendar data. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_CALENDAR]WRITE_CALENDAR[/url].
+		</member>
+		<member name="permissions/write_call_log" type="bool" setter="" getter="">
+			Allows an application to write (but not read) the user's call log data. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_CALL_LOG]WRITE_CALL_LOG[/url].
+		</member>
+		<member name="permissions/write_contacts" type="bool" setter="" getter="">
+			Allows an application to write the user's contacts data. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_CONTACTS]WRITE_CONTACTS[/url].
+		</member>
+		<member name="permissions/write_external_storage" type="bool" setter="" getter="">
+			Allows an application to write to external storage. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_EXTERNAL_STORAGE]WRITE_EXTERNAL_STORAGE[/url].
+		</member>
+		<member name="permissions/write_gservices" type="bool" setter="" getter="">
+			Allows an application to modify the Google service map. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_GSERVICES]WRITE_GSERVICES[/url].
+		</member>
+		<member name="permissions/write_history_bookmarks" type="bool" setter="" getter="">
+			Allows an application to write (but not read) the user's browsing history and bookmarks.
+		</member>
+		<member name="permissions/write_profile" type="bool" setter="" getter="">
+			Allows an application to write (but not read) the user's personal profile data.
+		</member>
+		<member name="permissions/write_secure_settings" type="bool" setter="" getter="">
+			Allows an application to read or write the secure system settings. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_SECURE_SETTINGS]WRITE_SECURE_SETTINGS[/url].
+		</member>
+		<member name="permissions/write_settings" type="bool" setter="" getter="">
+			Allows an application to read or write the system settings. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_SETTINGS]WRITE_SETTINGS[/url].
+		</member>
+		<member name="permissions/write_sms" type="bool" setter="" getter="">
+			Allows an application to write SMS messages.
+		</member>
+		<member name="permissions/write_social_stream" type="bool" setter="" getter="">
+			Allows an application to write (but not read) the user's social stream data.
+		</member>
+		<member name="permissions/write_sync_settings" type="bool" setter="" getter="">
+			Allows applications to write the sync settings. See [url=https://developer.android.com/reference/android/Manifest.permission#WRITE_SYNC_SETTINGS]WRITE_SYNC_SETTINGS[/url].
+		</member>
+		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
+			Allows an application to write to the user dictionary.
+		</member>
+		<member name="screen/immersive_mode" type="bool" setter="" getter="">
+			If [code]true[/code], hides navigation and status bar. See [method DisplayServer.window_set_mode] to toggle it at runtime.
+		</member>
+		<member name="screen/support_large" type="bool" setter="" getter="">
+			Indicates whether the application supports larger screen form-factors.
+		</member>
+		<member name="screen/support_normal" type="bool" setter="" getter="">
+			Indicates whether an application supports the "normal" screen form-factors.
+		</member>
+		<member name="screen/support_small" type="bool" setter="" getter="">
+			Indicates whether the application supports smaller screen form-factors.
+		</member>
+		<member name="screen/support_xlarge" type="bool" setter="" getter="">
+			Indicates whether the application supports extra large screen form-factors.
+		</member>
+		<member name="user_data_backup/allow" type="bool" setter="" getter="">
+			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
+		</member>
+		<member name="version/code" type="int" setter="" getter="">
+			Machine-readable application version. This must be incremented for every new release pushed to the Play Store.
+		</member>
+		<member name="version/name" type="String" setter="" getter="">
+			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty.
+		</member>
+		<member name="xr_features/xr_mode" type="int" setter="" getter="">
+			The extended reality (XR) mode for this application.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedDataContainer" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Efficiently packs and serializes [Array] or [Dictionary].
+	</brief_description>
+	<description>
+		[PackedDataContainer] can be used to efficiently store data from untyped containers. The data is packed into raw bytes and can be saved to file. Only [Array] and [Dictionary] can be stored this way.
+		You can retrieve the data by iterating on the container, which will work as if iterating on the packed data itself. If the packed container is a [Dictionary], the data can be retrieved by key names ([String]/[StringName] only).
+		[codeblock]
+		var data = { "key": "value", "another_key": 123, "lock": Vector2() }
+		var packed = PackedDataContainer.new()
+		packed.pack(data)
+		ResourceSaver.save(packed, "packed_data.res")
+		[/codeblock]
+		[codeblock]
+		var container = load("packed_data.res")
+		for key in container:
+		    prints(key, container[key])
+		[/codeblock]
+		Prints:
+		[codeblock lang=text]
+		key value
+		lock (0, 0)
+		another_key 123
+		[/codeblock]
+		Nested containers will be packed recursively. While iterating, they will be returned as [PackedDataContainerRef].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="pack">
+			<return type="int" enum="Error" />
+			<returns_error number="0"/>
+			<returns_error number="30"/>
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Packs the given container into a binary representation. The [param value] must be either [Array] or [Dictionary], any other type will result in invalid data error.
+				[b]Note:[/b] Subsequent calls to this method will overwrite the existing data.
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the size of the packed container (see [method Array.size] and [method Dictionary.size]).
+			</description>
+		</method>
+	</methods>
+</class>

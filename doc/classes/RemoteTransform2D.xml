@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RemoteTransform2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		RemoteTransform2D pushes its own [Transform2D] to another [Node2D] derived node in the scene.
+	</brief_description>
+	<description>
+		RemoteTransform2D pushes its own [Transform2D] to another [Node2D] derived node (called the remote node) in the scene.
+		It can be set to update another node's position, rotation and/or scale. It can use either global or local coordinates.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="force_update_cache">
+			<return type="void" />
+			<description>
+				[RemoteTransform2D] caches the remote node. It may not notice if the remote node disappears; [method force_update_cache] forces it to update the cache again.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node" default="NodePath(&quot;&quot;)">
+			The [NodePath] to the remote node, relative to the RemoteTransform2D's position in the scene.
+		</member>
+		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position" default="true">
+			If [code]true[/code], the remote node's position is updated.
+		</member>
+		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation" default="true">
+			If [code]true[/code], the remote node's rotation is updated.
+		</member>
+		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale" default="true">
+			If [code]true[/code], the remote node's scale is updated.
+		</member>
+		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates" default="true">
+			If [code]true[/code], global coordinates are used. If [code]false[/code], local coordinates are used.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventMouseButton" inherits="InputEventMouse" keywords="click, press" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a mouse button being pressed or released.
+	</brief_description>
+	<description>
+		Stores information about mouse click events. See [method Node._input].
+		[b]Note:[/b] On Wear OS devices, rotary input is mapped to [constant MOUSE_BUTTON_WHEEL_UP] and [constant MOUSE_BUTTON_WHEEL_DOWN]. This can be changed to [constant MOUSE_BUTTON_WHEEL_LEFT] and [constant MOUSE_BUTTON_WHEEL_RIGHT] with the [member ProjectSettings.input_devices/pointing/android/rotary_input_scroll_axis] setting.
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Mouse and input coordinates">$DOCS_URL/tutorials/inputs/mouse_and_input_coordinates.html</link>
+	</tutorials>
+	<members>
+		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" enum="MouseButton" default="0">
+			The mouse button identifier, one of the [enum MouseButton] button or button wheel constants.
+		</member>
+		<member name="canceled" type="bool" setter="set_canceled" getter="is_canceled" default="false">
+			If [code]true[/code], the mouse button event has been canceled.
+		</member>
+		<member name="double_click" type="bool" setter="set_double_click" getter="is_double_click" default="false">
+			If [code]true[/code], the mouse button's state is a double-click.
+		</member>
+		<member name="factor" type="float" setter="set_factor" getter="get_factor" default="1.0">
+			The amount (or delta) of the event. When used for high-precision scroll events, this indicates the scroll amount (vertical or horizontal). This is only supported on some platforms; the reported sensitivity varies depending on the platform. May be [code]0[/code] if not supported.
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
+			If [code]true[/code], the mouse button's state is pressed. If [code]false[/code], the mouse button's state is released.
+		</member>
+	</members>
+</class>

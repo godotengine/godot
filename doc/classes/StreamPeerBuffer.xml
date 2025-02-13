@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerBuffer" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A stream peer used to handle binary data streams.
+	</brief_description>
+	<description>
+		A data buffer stream peer that uses a byte array as the stream. This object can be used to handle binary data from network sessions. To handle binary data stored in files, [FileAccess] can be used directly.
+		A [StreamPeerBuffer] object keeps an internal cursor which is the offset in bytes to the start of the buffer. Get and put operations are performed at the cursor position and will move the cursor accordingly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the [member data_array] and resets the cursor.
+			</description>
+		</method>
+		<method name="duplicate" qualifiers="const">
+			<return type="StreamPeerBuffer" />
+			<description>
+				Returns a new [StreamPeerBuffer] with the same [member data_array] content.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current cursor position.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the size of [member data_array].
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Resizes the [member data_array]. This [i]doesn't[/i] update the cursor.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="position" type="int" />
+			<description>
+				Moves the cursor to the specified position. [param position] must be a valid index of [member data_array].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray()">
+			The underlying data buffer. Setting this value resets the cursor.
+		</member>
+	</members>
+</class>

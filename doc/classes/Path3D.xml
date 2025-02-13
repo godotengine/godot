@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Path3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Contains a [Curve3D] path for [PathFollow3D] nodes to follow.
+	</brief_description>
+	<description>
+		Can have [PathFollow3D] child nodes moving along the [Curve3D]. See [PathFollow3D] for more information on the usage.
+		Note that the path is considered as relative to the moved nodes (children of [PathFollow3D]). As such, the curve should usually start with a zero vector [code](0, 0, 0)[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
+			A [Curve3D] describing the path.
+		</member>
+	</members>
+	<signals>
+		<signal name="curve_changed">
+			<description>
+				Emitted when the [member curve] changes.
+			</description>
+		</signal>
+	</signals>
+</class>

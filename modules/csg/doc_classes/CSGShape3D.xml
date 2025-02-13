@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGShape3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The CSG base class.
+	</brief_description>
+	<description>
+		This is the CSG base class that provides CSG operation support to the various CSG nodes in Godot.
+		[b]Performance:[/b] CSG nodes are only intended for prototyping as they have a significant CPU performance cost.
+		Consider baking final CSG operation results into static geometry that replaces the CSG nodes.
+		Individual CSG root node results can be baked to nodes with static resources with the editor menu that appears when a CSG root node is selected.
+		Individual CSG root nodes can also be baked to static resources with scripts by calling [method bake_static_mesh] for the visual mesh or [method bake_collision_shape] for the physics collision.
+		Entire scenes of CSG nodes can be baked to static geometry and exported with the editor gltf scene exporter.
+	</description>
+	<tutorials>
+		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
+	</tutorials>
+	<methods>
+		<method name="bake_collision_shape">
+			<return type="ConcavePolygonShape3D" />
+			<description>
+				Returns a baked physics [ConcavePolygonShape3D] of this node's CSG operation result. Returns an empty shape if the node is not a CSG root node or has no valid geometry.
+				[b]Performance:[/b] If the CSG operation results in a very detailed geometry with many faces physics performance will be very slow. Concave shapes should in general only be used for static level geometry and not with dynamic objects that are moving.
+			</description>
+		</method>
+		<method name="bake_static_mesh">
+			<return type="ArrayMesh" />
+			<description>
+				Returns a baked static [ArrayMesh] of this node's CSG operation result. Materials from involved CSG nodes are added as extra mesh surfaces. Returns an empty mesh if the node is not a CSG root node or has no valid geometry.
+			</description>
+		</method>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_meshes" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] with two elements, the first is the [Transform3D] of this node and the second is the root [Mesh] of this node. Only works when this node is the root shape.
+			</description>
+		</method>
+		<method name="is_root_shape" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
+			</description>
+		</method>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="calculate_tangents" type="bool" setter="set_calculate_tangents" getter="is_calculating_tangents" default="true">
+			Calculate tangents for the CSG shape which allows the use of normal maps. This is only applied on the root shape, this setting is ignored on any child.
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this area is in.
+			Collidable objects can exist in any of 32 different layers. These layers work like a tagging system, and are not visual. A collidable can use these layers to select with which objects it can collide, using the collision_mask property.
+			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this CSG shape scans for collisions. Only effective if [member use_collision] is [code]true[/code]. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. Only effective if [member use_collision] is [code]true[/code]. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
+		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape3D.Operation" default="0">
+			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
+		</member>
+		<member name="snap" type="float" setter="set_snap" getter="get_snap" deprecated="The CSG library no longer uses snapping.">
+			This property does nothing.
+		</member>
+		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
+			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden. See also [member collision_mask] and [member collision_priority].
+		</member>
+	</members>
+	<constants>
+		<constant name="OPERATION_UNION" value="0" enum="Operation">
+			Geometry of both primitives is merged, intersecting geometry is removed.
+		</constant>
+		<constant name="OPERATION_INTERSECTION" value="1" enum="Operation">
+			Only intersecting geometry remains, the rest is removed.
+		</constant>
+		<constant name="OPERATION_SUBTRACTION" value="2" enum="Operation">
+			The second shape is subtracted from the first, leaving a dent with its shape.
+		</constant>
+	</constants>
+</class>

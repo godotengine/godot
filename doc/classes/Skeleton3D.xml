@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Skeleton3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node containing a bone hierarchy, used to create a 3D skeletal animation.
+	</brief_description>
+	<description>
+		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
+		The overall transform of a bone with respect to the skeleton is determined by bone pose. Bone rest defines the initial transform of the bone pose.
+		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it is not the actual global/world transform of the bone.
+	</description>
+	<tutorials>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="add_bone">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Adds a new bone with the given name. Returns the new bone's index, or [code]-1[/code] if this method fails.
+				[b]Note:[/b] Bone names should be unique, non empty, and cannot include the [code]:[/code] and [code]/[/code] characters.
+			</description>
+		</method>
+		<method name="clear_bones">
+			<return type="void" />
+			<description>
+				Clear all the bones in this skeleton.
+			</description>
+		</method>
+		<method name="clear_bones_global_pose_override" deprecated="">
+			<return type="void" />
+			<description>
+				Removes the global pose override on all bones in the skeleton.
+			</description>
+		</method>
+		<method name="create_skin_from_rest_transforms">
+			<return type="Skin" />
+			<description>
+			</description>
+		</method>
+		<method name="find_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the bone index that matches [param name] as its name. Returns [code]-1[/code] if no bone with this name exists.
+			</description>
+		</method>
+		<method name="force_update_all_bone_transforms" deprecated="This method should only be called internally.">
+			<return type="void" />
+			<description>
+				Force updates the bone transforms/poses for all bones in the skeleton.
+			</description>
+		</method>
+		<method name="force_update_bone_child_transform">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Force updates the bone transform for the bone at [param bone_idx] and all of its children.
+			</description>
+		</method>
+		<method name="get_bone_children" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns an array containing the bone indexes of all the child node of the passed in bone, [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of bones in the skeleton.
+			</description>
+		</method>
+		<method name="get_bone_global_pose" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+				[b]Note:[/b] This is the global pose you set to the skeleton in the process, the final global pose can get overridden by modifiers in the deferred process, if you want to access the final global pose, use [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</method>
+		<method name="get_bone_global_pose_no_override" qualifiers="const" deprecated="">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the overall transform of the specified bone, with respect to the skeleton, but without any global pose overrides. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+			</description>
+		</method>
+		<method name="get_bone_global_pose_override" qualifiers="const" deprecated="">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the global pose override transform for [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_global_rest" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the global rest transform for [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_meta" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<description>
+				Returns bone metadata for [param bone_idx] with [param key].
+			</description>
+		</method>
+		<method name="get_bone_meta_list" qualifiers="const">
+			<return type="StringName[]" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns a list of all metadata keys for [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the name of the bone at index [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_parent" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the bone index which is the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
+				[b]Note:[/b] The parent bone returned will always be less than [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_pose" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose transform of the specified bone.
+				[b]Note:[/b] This is the pose you set to the skeleton in the process, the final pose can get overridden by modifiers in the deferred process, if you want to access the final pose, use [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</method>
+		<method name="get_bone_pose_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose position of the bone at [param bone_idx]. The returned [Vector3] is in the local coordinate space of the [Skeleton3D] node.
+			</description>
+		</method>
+		<method name="get_bone_pose_rotation" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose rotation of the bone at [param bone_idx]. The returned [Quaternion] is local to the bone with respect to the rotation of any parent bones.
+			</description>
+		</method>
+		<method name="get_bone_pose_scale" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the pose scale of the bone at [param bone_idx].
+			</description>
+		</method>
+		<method name="get_bone_rest" qualifiers="const">
+			<return type="Transform3D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the rest transform for a bone [param bone_idx].
+			</description>
+		</method>
+		<method name="get_concatenated_bone_names" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns all bone names concatenated with commas ([code],[/code]) as a single [StringName].
+				It is useful to set it as a hint for the enum property.
+			</description>
+		</method>
+		<method name="get_parentless_bones" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns an array with all of the bones that are parentless. Another way to look at this is that it returns the indexes of all the bones that are not dependent or modified by other bones in the Skeleton.
+			</description>
+		</method>
+		<method name="get_version" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of times the bone hierarchy has changed within this skeleton, including renames.
+				The Skeleton version is not serialized: only use within a single instance of Skeleton3D.
+				Use for invalidating caches in IK solvers and other nodes which process bones.
+			</description>
+		</method>
+		<method name="has_bone_meta" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<description>
+				Returns whether there exists any bone metadata for [param bone_idx] with key [param key].
+			</description>
+		</method>
+		<method name="is_bone_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns whether the bone pose for the bone at [param bone_idx] is enabled.
+			</description>
+		</method>
+		<method name="localize_rests">
+			<return type="void" />
+			<description>
+				Returns all bones in the skeleton to their rest poses.
+			</description>
+		</method>
+		<method name="physical_bones_add_collision_exception" deprecated="">
+			<return type="void" />
+			<param index="0" name="exception" type="RID" />
+			<description>
+				Adds a collision exception to the physical bone.
+				Works just like the [RigidBody3D] node.
+			</description>
+		</method>
+		<method name="physical_bones_remove_collision_exception" deprecated="">
+			<return type="void" />
+			<param index="0" name="exception" type="RID" />
+			<description>
+				Removes a collision exception to the physical bone.
+				Works just like the [RigidBody3D] node.
+			</description>
+		</method>
+		<method name="physical_bones_start_simulation" deprecated="">
+			<return type="void" />
+			<param index="0" name="bones" type="StringName[]" default="[]" />
+			<description>
+				Tells the [PhysicalBone3D] nodes in the Skeleton to start simulating and reacting to the physics world.
+				Optionally, a list of bone names can be passed-in, allowing only the passed-in bones to be simulated.
+			</description>
+		</method>
+		<method name="physical_bones_stop_simulation" deprecated="">
+			<return type="void" />
+			<description>
+				Tells the [PhysicalBone3D] nodes in the Skeleton to stop simulating.
+			</description>
+		</method>
+		<method name="register_skin">
+			<return type="SkinReference" />
+			<param index="0" name="skin" type="Skin" />
+			<description>
+				Binds the given Skin to the Skeleton.
+			</description>
+		</method>
+		<method name="reset_bone_pose">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Sets the bone pose to rest for [param bone_idx].
+			</description>
+		</method>
+		<method name="reset_bone_poses">
+			<return type="void" />
+			<description>
+				Sets all bone poses to rests.
+			</description>
+		</method>
+		<method name="set_bone_enabled">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="enabled" type="bool" default="true" />
+			<description>
+				Disables the pose for the bone at [param bone_idx] if [code]false[/code], enables the bone pose if [code]true[/code].
+			</description>
+		</method>
+		<method name="set_bone_global_pose">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="pose" type="Transform3D" />
+			<description>
+				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
+				[b]Note:[/b] If other bone poses have been changed, this method executes a dirty poses recalculation and will cause performance to deteriorate. If you know that multiple global poses will be applied, consider using [method set_bone_pose] with precalculation.
+			</description>
+		</method>
+		<method name="set_bone_global_pose_override" deprecated="">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="pose" type="Transform3D" />
+			<param index="2" name="amount" type="float" />
+			<param index="3" name="persistent" type="bool" default="false" />
+			<description>
+				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
+				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
+				[b]Note:[/b] The pose transform needs to be a global pose! To convert a world transform from a [Node3D] to a global bone pose, multiply the [method Transform3D.affine_inverse] of the node's [member Node3D.global_transform] by the desired world transform.
+			</description>
+		</method>
+		<method name="set_bone_meta">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="key" type="StringName" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets bone metadata for [param bone_idx], will set the [param key] meta to [param value].
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the bone name, [param name], for the bone at [param bone_idx].
+			</description>
+		</method>
+		<method name="set_bone_parent">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="parent_idx" type="int" />
+			<description>
+				Sets the bone index [param parent_idx] as the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
+				[b]Note:[/b] [param parent_idx] must be less than [param bone_idx].
+			</description>
+		</method>
+		<method name="set_bone_pose">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="pose" type="Transform3D" />
+			<description>
+				Sets the pose transform, [param pose], for the bone at [param bone_idx].
+			</description>
+		</method>
+		<method name="set_bone_pose_position">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Sets the pose position of the bone at [param bone_idx] to [param position]. [param position] is a [Vector3] describing a position local to the [Skeleton3D] node.
+			</description>
+		</method>
+		<method name="set_bone_pose_rotation">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="rotation" type="Quaternion" />
+			<description>
+				Sets the pose rotation of the bone at [param bone_idx] to [param rotation]. [param rotation] is a [Quaternion] describing a rotation in the bone's local coordinate space with respect to the rotation of any parent bones.
+			</description>
+		</method>
+		<method name="set_bone_pose_scale">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="scale" type="Vector3" />
+			<description>
+				Sets the pose scale of the bone at [param bone_idx] to [param scale].
+			</description>
+		</method>
+		<method name="set_bone_rest">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="rest" type="Transform3D" />
+			<description>
+				Sets the rest transform for bone [param bone_idx].
+			</description>
+		</method>
+		<method name="unparent_bone_and_rest">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Unparents the bone at [param bone_idx] and sets its rest position to that of its parent prior to being reset.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true" deprecated="">
+			If you follow the recommended workflow and explicitly have [PhysicalBoneSimulator3D] as a child of [Skeleton3D], you can control whether it is affected by raycasting without running [method physical_bones_start_simulation], by its [member SkeletonModifier3D.active].
+			However, for old (deprecated) configurations, [Skeleton3D] has an internal virtual [PhysicalBoneSimulator3D] for compatibility. This property controls the internal virtual [PhysicalBoneSimulator3D]'s [member SkeletonModifier3D.active].
+		</member>
+		<member name="modifier_callback_mode_process" type="int" setter="set_modifier_callback_mode_process" getter="get_modifier_callback_mode_process" enum="Skeleton3D.ModifierCallbackModeProcess" default="1">
+			Sets the processing timing for the Modifier.
+		</member>
+		<member name="motion_scale" type="float" setter="set_motion_scale" getter="get_motion_scale" default="1.0">
+			Multiplies the 3D position track animation.
+			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
+		</member>
+		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">
+			If [code]true[/code], forces the bones in their default rest pose, regardless of their values. In the editor, this also prevents the bones from being edited.
+		</member>
+	</members>
+	<signals>
+		<signal name="bone_enabled_changed">
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Emitted when the bone at [param bone_idx] is toggled with [method set_bone_enabled]. Use [method is_bone_enabled] to check the new value.
+			</description>
+		</signal>
+		<signal name="bone_list_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="pose_updated">
+			<description>
+				Emitted when the pose is updated.
+				[b]Note:[/b] During the update process, this signal is not fired, so modification by [SkeletonModifier3D] is not detected.
+			</description>
+		</signal>
+		<signal name="rest_updated">
+			<description>
+				Emitted when the rest is updated.
+			</description>
+		</signal>
+		<signal name="show_rest_only_changed">
+			<description>
+				Emitted when the value of [member show_rest_only] changes.
+			</description>
+		</signal>
+		<signal name="skeleton_updated">
+			<description>
+				Emitted when the final pose has been calculated will be applied to the skin in the update process.
+				This means that all [SkeletonModifier3D] processing is complete. In order to detect the completion of the processing of each [SkeletonModifier3D], use [signal SkeletonModifier3D.modification_processed].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
+			Notification received when this skeleton's pose needs to be updated. In that case, this is called only once per frame in a deferred process.
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS" value="0" enum="ModifierCallbackModeProcess">
+			Set a flag to process modification during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1" enum="ModifierCallbackModeProcess">
+			Set a flag to process modification during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+	</constants>
+</class>

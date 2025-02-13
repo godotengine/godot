@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorVCSInterface" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Version Control System (VCS) interface, which reads and writes to the local VCS in use.
+	</brief_description>
+	<description>
+		Defines the API that the editor uses to extract information from the underlying VCS. The implementation of this API is included in VCS plugins, which are GDExtension plugins that inherit [EditorVCSInterface] and are attached (on demand) to the singleton instance of [EditorVCSInterface]. Instead of performing the task themselves, all the virtual functions listed below are calling the internally overridden functions in the VCS plugins to provide a plug-n-play experience. A custom VCS plugin is supposed to inherit from [EditorVCSInterface] and override each of these virtual functions.
+	</description>
+	<tutorials>
+		<link title="Version control systems">$DOCS_URL/tutorials/best_practices/version_control_systems.html</link>
+	</tutorials>
+	<methods>
+		<method name="_checkout_branch" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="branch_name" type="String" />
+			<description>
+				Checks out a [param branch_name] in the VCS.
+			</description>
+		</method>
+		<method name="_commit" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="msg" type="String" />
+			<description>
+				Commits the currently staged changes and applies the commit [param msg] to the resulting commit.
+			</description>
+		</method>
+		<method name="_create_branch" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="branch_name" type="String" />
+			<description>
+				Creates a new branch named [param branch_name] in the VCS.
+			</description>
+		</method>
+		<method name="_create_remote" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="remote_name" type="String" />
+			<param index="1" name="remote_url" type="String" />
+			<description>
+				Creates a new remote destination with name [param remote_name] and points it to [param remote_url]. This can be an HTTPS remote or an SSH remote.
+			</description>
+		</method>
+		<method name="_discard_file" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="file_path" type="String" />
+			<description>
+				Discards the changes made in a file present at [param file_path].
+			</description>
+		</method>
+		<method name="_fetch" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="remote" type="String" />
+			<description>
+				Fetches new changes from the [param remote], but doesn't write changes to the current working directory. Equivalent to [code]git fetch[/code].
+			</description>
+		</method>
+		<method name="_get_branch_list" qualifiers="virtual">
+			<return type="String[]" />
+			<description>
+				Gets an instance of an [Array] of [String]s containing available branch names in the VCS.
+			</description>
+		</method>
+		<method name="_get_current_branch_name" qualifiers="virtual">
+			<return type="String" />
+			<description>
+				Gets the current branch name defined in the VCS.
+			</description>
+		</method>
+		<method name="_get_diff" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<param index="0" name="identifier" type="String" />
+			<param index="1" name="area" type="int" />
+			<description>
+				Returns an array of [Dictionary] items (see [method create_diff_file], [method create_diff_hunk], [method create_diff_line], [method add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), each containing information about a diff. If [param identifier] is a file path, returns a file diff, and if it is a commit identifier, then returns a commit diff.
+			</description>
+		</method>
+		<method name="_get_line_diff" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<param index="0" name="file_path" type="String" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Returns an [Array] of [Dictionary] items (see [method create_diff_hunk]), each containing a line diff between a file at [param file_path] and the [param text] which is passed in.
+			</description>
+		</method>
+		<method name="_get_modified_files_data" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an [Array] of [Dictionary] items (see [method create_status_file]), each containing the status data of every modified file in the project folder.
+			</description>
+		</method>
+		<method name="_get_previous_commits" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<param index="0" name="max_commits" type="int" />
+			<description>
+				Returns an [Array] of [Dictionary] items (see [method create_commit]), each containing the data for a past commit.
+			</description>
+		</method>
+		<method name="_get_remotes" qualifiers="virtual">
+			<return type="String[]" />
+			<description>
+				Returns an [Array] of [String]s, each containing the name of a remote configured in the VCS.
+			</description>
+		</method>
+		<method name="_get_vcs_name" qualifiers="virtual">
+			<return type="String" />
+			<description>
+				Returns the name of the underlying VCS provider.
+			</description>
+		</method>
+		<method name="_initialize" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="project_path" type="String" />
+			<description>
+				Initializes the VCS plugin when called from the editor. Returns whether or not the plugin was successfully initialized. A VCS project is initialized at [param project_path].
+			</description>
+		</method>
+		<method name="_pull" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="remote" type="String" />
+			<description>
+				Pulls changes from the remote. This can give rise to merge conflicts.
+			</description>
+		</method>
+		<method name="_push" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="remote" type="String" />
+			<param index="1" name="force" type="bool" />
+			<description>
+				Pushes changes to the [param remote]. If [param force] is [code]true[/code], a force push will override the change history already present on the remote.
+			</description>
+		</method>
+		<method name="_remove_branch" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="branch_name" type="String" />
+			<description>
+				Remove a branch from the local VCS.
+			</description>
+		</method>
+		<method name="_remove_remote" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="remote_name" type="String" />
+			<description>
+				Remove a remote from the local VCS.
+			</description>
+		</method>
+		<method name="_set_credentials" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="username" type="String" />
+			<param index="1" name="password" type="String" />
+			<param index="2" name="ssh_public_key_path" type="String" />
+			<param index="3" name="ssh_private_key_path" type="String" />
+			<param index="4" name="ssh_passphrase" type="String" />
+			<description>
+				Set user credentials in the underlying VCS. [param username] and [param password] are used only during HTTPS authentication unless not already mentioned in the remote URL. [param ssh_public_key_path], [param ssh_private_key_path], and [param ssh_passphrase] are only used during SSH authentication.
+			</description>
+		</method>
+		<method name="_shut_down" qualifiers="virtual">
+			<return type="bool" />
+			<description>
+				Shuts down VCS plugin instance. Called when the user either closes the editor or shuts down the VCS plugin through the editor UI.
+			</description>
+		</method>
+		<method name="_stage_file" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="file_path" type="String" />
+			<description>
+				Stages the file present at [param file_path] to the staged area.
+			</description>
+		</method>
+		<method name="_unstage_file" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="file_path" type="String" />
+			<description>
+				Unstages the file present at [param file_path] from the staged area to the unstaged area.
+			</description>
+		</method>
+		<method name="add_diff_hunks_into_diff_file">
+			<return type="Dictionary" />
+			<param index="0" name="diff_file" type="Dictionary" />
+			<param index="1" name="diff_hunks" type="Dictionary[]" />
+			<description>
+				Helper function to add an array of [param diff_hunks] into a [param diff_file].
+			</description>
+		</method>
+		<method name="add_line_diffs_into_diff_hunk">
+			<return type="Dictionary" />
+			<param index="0" name="diff_hunk" type="Dictionary" />
+			<param index="1" name="line_diffs" type="Dictionary[]" />
+			<description>
+				Helper function to add an array of [param line_diffs] into a [param diff_hunk].
+			</description>
+		</method>
+		<method name="create_commit">
+			<return type="Dictionary" />
+			<param index="0" name="msg" type="String" />
+			<param index="1" name="author" type="String" />
+			<param index="2" name="id" type="String" />
+			<param index="3" name="unix_timestamp" type="int" />
+			<param index="4" name="offset_minutes" type="int" />
+			<description>
+				Helper function to create a commit [Dictionary] item. [param msg] is the commit message of the commit. [param author] is a single human-readable string containing all the author's details, e.g. the email and name configured in the VCS. [param id] is the identifier of the commit, in whichever format your VCS may provide an identifier to commits. [param unix_timestamp] is the UTC Unix timestamp of when the commit was created. [param offset_minutes] is the timezone offset in minutes, recorded from the system timezone where the commit was created.
+			</description>
+		</method>
+		<method name="create_diff_file">
+			<return type="Dictionary" />
+			<param index="0" name="new_file" type="String" />
+			<param index="1" name="old_file" type="String" />
+			<description>
+				Helper function to create a [Dictionary] for storing old and new diff file paths.
+			</description>
+		</method>
+		<method name="create_diff_hunk">
+			<return type="Dictionary" />
+			<param index="0" name="old_start" type="int" />
+			<param index="1" name="new_start" type="int" />
+			<param index="2" name="old_lines" type="int" />
+			<param index="3" name="new_lines" type="int" />
+			<description>
+				Helper function to create a [Dictionary] for storing diff hunk data. [param old_start] is the starting line number in old file. [param new_start] is the starting line number in new file. [param old_lines] is the number of lines in the old file. [param new_lines] is the number of lines in the new file.
+			</description>
+		</method>
+		<method name="create_diff_line">
+			<return type="Dictionary" />
+			<param index="0" name="new_line_no" type="int" />
+			<param index="1" name="old_line_no" type="int" />
+			<param index="2" name="content" type="String" />
+			<param index="3" name="status" type="String" />
+			<description>
+				Helper function to create a [Dictionary] for storing a line diff. [param new_line_no] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [param old_line_no] is the line number in the old file (can be [code]-1[/code] if the line is added). [param content] is the diff text. [param status] is a single character string which stores the line origin.
+			</description>
+		</method>
+		<method name="create_status_file">
+			<return type="Dictionary" />
+			<param index="0" name="file_path" type="String" />
+			<param index="1" name="change_type" type="int" enum="EditorVCSInterface.ChangeType" />
+			<param index="2" name="area" type="int" enum="EditorVCSInterface.TreeArea" />
+			<description>
+				Helper function to create a [Dictionary] used by editor to read the status of a file.
+			</description>
+		</method>
+		<method name="popup_error">
+			<return type="void" />
+			<param index="0" name="msg" type="String" />
+			<description>
+				Pops up an error message in the editor which is shown as coming from the underlying VCS. Use this to show VCS specific error messages.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="CHANGE_TYPE_NEW" value="0" enum="ChangeType">
+			A new file has been added.
+		</constant>
+		<constant name="CHANGE_TYPE_MODIFIED" value="1" enum="ChangeType">
+			An earlier added file has been modified.
+		</constant>
+		<constant name="CHANGE_TYPE_RENAMED" value="2" enum="ChangeType">
+			An earlier added file has been renamed.
+		</constant>
+		<constant name="CHANGE_TYPE_DELETED" value="3" enum="ChangeType">
+			An earlier added file has been deleted.
+		</constant>
+		<constant name="CHANGE_TYPE_TYPECHANGE" value="4" enum="ChangeType">
+			An earlier added file has been typechanged.
+		</constant>
+		<constant name="CHANGE_TYPE_UNMERGED" value="5" enum="ChangeType">
+			A file is left unmerged.
+		</constant>
+		<constant name="TREE_AREA_COMMIT" value="0" enum="TreeArea">
+			A commit is encountered from the commit area.
+		</constant>
+		<constant name="TREE_AREA_STAGED" value="1" enum="TreeArea">
+			A file is encountered from the staged area.
+		</constant>
+		<constant name="TREE_AREA_UNSTAGED" value="2" enum="TreeArea">
+			A file is encountered from the unstaged area.
+		</constant>
+	</constants>
+</class>

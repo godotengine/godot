@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebSocketPeer" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A WebSocket connection.
+	</brief_description>
+	<description>
+		This class represents WebSocket connection, and can be used as a WebSocket client (RFC 6455-compliant) or as a remote peer of a WebSocket server.
+		You can send WebSocket binary frames using [method PacketPeer.put_packet], and WebSocket text frames using [method send] (prefer text frames when interacting with text-based API). You can check the frame type of the last packet via [method was_string_packet].
+		To start a WebSocket client, first call [method connect_to_url], then regularly call [method poll] (e.g. during [Node] process). You can query the socket state via [method get_ready_state], get the number of pending packets using [method PacketPeer.get_available_packet_count], and retrieve them via [method PacketPeer.get_packet].
+		[codeblocks]
+		[gdscript]
+		extends Node
+
+		var socket = WebSocketPeer.new()
+
+		func _ready():
+		    socket.connect_to_url("wss://example.com")
+
+		func _process(delta):
+		    socket.poll()
+		    var state = socket.get_ready_state()
+		    if state == WebSocketPeer.STATE_OPEN:
+		        while socket.get_available_packet_count():
+		            print("Packet: ", socket.get_packet())
+		    elif state == WebSocketPeer.STATE_CLOSING:
+		        # Keep polling to achieve proper close.
+		        pass
+		    elif state == WebSocketPeer.STATE_CLOSED:
+		        var code = socket.get_close_code()
+		        var reason = socket.get_close_reason()
+		        print("WebSocket closed with code: %d, reason %s. Clean: %s" % [code, reason, code != -1])
+		        set_process(false) # Stop processing.
+		[/gdscript]
+		[/codeblocks]
+		To use the peer as part of a WebSocket server refer to [method accept_stream] and the online tutorial.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="accept_stream">
+			<return type="int" enum="Error" />
+			<param index="0" name="stream" type="StreamPeer" />
+			<description>
+				Accepts a peer connection performing the HTTP handshake as a WebSocket server. The [param stream] must be a valid TCP stream retrieved via [method TCPServer.take_connection], or a TLS stream accepted via [method StreamPeerTLS.accept_stream].
+				[b]Note:[/b] Not supported in Web exports due to browsers' restrictions.
+			</description>
+		</method>
+		<method name="close">
+			<return type="void" />
+			<param index="0" name="code" type="int" default="1000" />
+			<param index="1" name="reason" type="String" default="&quot;&quot;" />
+			<description>
+				Closes this WebSocket connection. [param code] is the status code for the closure (see RFC 6455 section 7.4 for a list of valid status codes). [param reason] is the human readable reason for closing the connection (can be any UTF-8 string that's smaller than 123 bytes). If [param code] is negative, the connection will be closed immediately without notifying the remote peer.
+				[b]Note:[/b] To achieve a clean close, you will need to keep polling until [constant STATE_CLOSED] is reached.
+				[b]Note:[/b] The Web export might not support all status codes. Please refer to browser-specific documentation for more details.
+			</description>
+		</method>
+		<method name="connect_to_url">
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="tls_client_options" type="TLSOptions" default="null" />
+			<description>
+				Connects to the given URL. TLS certificates will be verified against the hostname when connecting using the [code]wss://[/code] protocol. You can pass the optional [param tls_client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+				[b]Note:[/b] This method is non-blocking, and will return [constant OK] before the connection is established as long as the provided parameters are valid and the peer is not in an invalid state (e.g. already connected). Regularly call [method poll] (e.g. during [Node] process) and check the result of [method get_ready_state] to know whether the connection succeeds or fails.
+				[b]Note:[/b] To avoid mixed content warnings or errors in Web, you may have to use a [param url] that starts with [code]wss://[/code] (secure) instead of [code]ws://[/code]. When doing so, make sure to use the fully qualified domain name that matches the one defined in the server's TLS certificate. Do not connect directly via the IP address for [code]wss://[/code] connections, as it won't match with the TLS certificate.
+			</description>
+		</method>
+		<method name="get_close_code" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the received WebSocket close frame status code, or [code]-1[/code] when the connection was not cleanly closed. Only call this method when [method get_ready_state] returns [constant STATE_CLOSED].
+			</description>
+		</method>
+		<method name="get_close_reason" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the received WebSocket close frame status reason string. Only call this method when [method get_ready_state] returns [constant STATE_CLOSED].
+			</description>
+		</method>
+		<method name="get_connected_host" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the IP address of the connected peer.
+				[b]Note:[/b] Not available in the Web export.
+			</description>
+		</method>
+		<method name="get_connected_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the remote port of the connected peer.
+				[b]Note:[/b] Not available in the Web export.
+			</description>
+		</method>
+		<method name="get_current_outbound_buffered_amount" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current amount of data in the outbound websocket buffer. [b]Note:[/b] Web exports use WebSocket.bufferedAmount, while other platforms use an internal buffer.
+			</description>
+		</method>
+		<method name="get_ready_state" qualifiers="const">
+			<return type="int" enum="WebSocketPeer.State" />
+			<description>
+				Returns the ready state of the connection. See [enum State].
+			</description>
+		</method>
+		<method name="get_requested_url" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the URL requested by this peer. The URL is derived from the [code]url[/code] passed to [method connect_to_url] or from the HTTP headers when acting as server (i.e. when using [method accept_stream]).
+			</description>
+		</method>
+		<method name="get_selected_protocol" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the selected WebSocket sub-protocol for this connection or an empty string if the sub-protocol has not been selected yet.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void" />
+			<description>
+				Updates the connection state and receive incoming packets. Call this function regularly to keep it in a clean state.
+			</description>
+		</method>
+		<method name="send">
+			<return type="int" enum="Error" />
+			<param index="0" name="message" type="PackedByteArray" />
+			<param index="1" name="write_mode" type="int" enum="WebSocketPeer.WriteMode" default="1" />
+			<description>
+				Sends the given [param message] using the desired [param write_mode]. When sending a [String], prefer using [method send_text].
+			</description>
+		</method>
+		<method name="send_text">
+			<return type="int" enum="Error" />
+			<param index="0" name="message" type="String" />
+			<description>
+				Sends the given [param message] using WebSocket text mode. Prefer this method over [method PacketPeer.put_packet] when interacting with third-party text-based API (e.g. when using [JSON] formatted messages).
+			</description>
+		</method>
+		<method name="set_no_delay">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Disable Nagle's algorithm on the underlying TCP socket (default). See [method StreamPeerTCP.set_no_delay] for more information.
+				[b]Note:[/b] Not available in the Web export.
+			</description>
+		</method>
+		<method name="was_string_packet" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the last received packet was sent as a text payload. See [enum WriteMode].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="handshake_headers" type="PackedStringArray" setter="set_handshake_headers" getter="get_handshake_headers" default="PackedStringArray()">
+			The extra HTTP headers to be sent during the WebSocket handshake.
+			[b]Note:[/b] Not supported in Web exports due to browsers' restrictions.
+		</member>
+		<member name="heartbeat_interval" type="float" setter="set_heartbeat_interval" getter="get_heartbeat_interval" default="0.0">
+			The interval (in seconds) at which the peer will automatically send WebSocket "ping" control frames. When set to [code]0[/code], no "ping" control frames will be sent.
+			[b]Note:[/b] Has no effect in Web exports due to browser restrictions.
+		</member>
+		<member name="inbound_buffer_size" type="int" setter="set_inbound_buffer_size" getter="get_inbound_buffer_size" default="65535">
+			The size of the input buffer in bytes (roughly the maximum amount of memory that will be allocated for the inbound packets).
+		</member>
+		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="4096">
+			The maximum amount of packets that will be allowed in the queues (both inbound and outbound).
+		</member>
+		<member name="outbound_buffer_size" type="int" setter="set_outbound_buffer_size" getter="get_outbound_buffer_size" default="65535">
+			The size of the input buffer in bytes (roughly the maximum amount of memory that will be allocated for the outbound packets).
+		</member>
+		<member name="supported_protocols" type="PackedStringArray" setter="set_supported_protocols" getter="get_supported_protocols" default="PackedStringArray()">
+			The WebSocket sub-protocols allowed during the WebSocket handshake.
+		</member>
+	</members>
+	<constants>
+		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
+			Specifies that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
+		</constant>
+		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
+			Specifies that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
+		</constant>
+		<constant name="STATE_CONNECTING" value="0" enum="State">
+			Socket has been created. The connection is not yet open.
+		</constant>
+		<constant name="STATE_OPEN" value="1" enum="State">
+			The connection is open and ready to communicate.
+		</constant>
+		<constant name="STATE_CLOSING" value="2" enum="State">
+			The connection is in the process of closing. This means a close request has been sent to the remote peer but confirmation has not been received.
+		</constant>
+		<constant name="STATE_CLOSED" value="3" enum="State">
+			The connection is closed or couldn't be opened.
+		</constant>
+	</constants>
+</class>

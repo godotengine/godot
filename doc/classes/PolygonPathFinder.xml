@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PolygonPathFinder" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="find_path">
+			<return type="PackedVector2Array" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intersections" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="get_point_penalty" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="is_point_inside" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if [param point] falls inside the polygon area.
+				[codeblocks]
+				[gdscript]
+				var polygon_path_finder = PolygonPathFinder.new()
+				var points = [Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.0, 1.0)]
+				var connections = [0, 1, 1, 2, 2, 0]
+				polygon_path_finder.setup(points, connections)
+				print(polygon_path_finder.is_point_inside(Vector2(0.2, 0.2))) # Prints true
+				print(polygon_path_finder.is_point_inside(Vector2(1.0, 1.0))) # Prints false
+				[/gdscript]
+				[csharp]
+				var polygonPathFinder = new PolygonPathFinder();
+				Vector2[] points =
+				[
+				    new Vector2(0.0f, 0.0f),
+				    new Vector2(1.0f, 0.0f),
+				    new Vector2(0.0f, 1.0f)
+				];
+				int[] connections = [0, 1, 1, 2, 2, 0];
+				polygonPathFinder.Setup(points, connections);
+				GD.Print(polygonPathFinder.IsPointInside(new Vector2(0.2f, 0.2f))); // Prints True
+				GD.Print(polygonPathFinder.IsPointInside(new Vector2(1.0f, 1.0f))); // Prints False
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="set_point_penalty">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="penalty" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="setup">
+			<return type="void" />
+			<param index="0" name="points" type="PackedVector2Array" />
+			<param index="1" name="connections" type="PackedInt32Array" />
+			<description>
+				Sets up [PolygonPathFinder] with an array of points that define the vertices of the polygon, and an array of indices that determine the edges of the polygon.
+				The length of [param connections] must be even, returns an error if odd.
+				[codeblocks]
+				[gdscript]
+				var polygon_path_finder = PolygonPathFinder.new()
+				var points = [Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.0, 1.0)]
+				var connections = [0, 1, 1, 2, 2, 0]
+				polygon_path_finder.setup(points, connections)
+				[/gdscript]
+				[csharp]
+				var polygonPathFinder = new PolygonPathFinder();
+				Vector2[] points =
+				[
+				    new Vector2(0.0f, 0.0f),
+				    new Vector2(1.0f, 0.0f),
+				    new Vector2(0.0f, 1.0f)
+				];
+				int[] connections = [0, 1, 1, 2, 2, 0];
+				polygonPathFinder.Setup(points, connections);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+	</methods>
+</class>

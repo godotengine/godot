@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="class">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element type="xs:string" name="brief_description" />
+				<xs:element type="xs:string" name="description" />
+				<xs:element name="tutorials">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="link" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute type="xs:string" name="title" use="optional" />
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="constructors" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="constructor" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="return" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="index" />
+												<xs:attribute type="xs:string" name="name" />
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+												<xs:attribute type="xs:string" name="default" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="methods" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="method" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="return" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="returns_error" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="number" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="index" />
+												<xs:attribute type="xs:string" name="name" />
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+												<xs:attribute type="xs:string" name="default" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
+									<!-- deprecated -->
+									<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+									<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+									<!-- /deprecated -->
+									<xs:attribute type="xs:string" name="deprecated" use="optional" />
+									<xs:attribute type="xs:string" name="experimental" use="optional" />
+									<xs:attribute type="xs:string" name="keywords" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="members" minOccurs="0">
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded" minOccurs="0">
+							<xs:element name="member">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute type="xs:string" name="name" />
+											<xs:attribute type="xs:string" name="type" />
+											<xs:attribute type="xs:string" name="setter" />
+											<xs:attribute type="xs:string" name="getter" />
+											<xs:attribute type="xs:string" name="overrides" use="optional" />
+											<xs:attribute type="xs:string" name="enum" use="optional" />
+											<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											<xs:attribute type="xs:string" name="default" use="optional" />
+											<!-- deprecated -->
+											<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+											<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+											<!-- /deprecated -->
+											<xs:attribute type="xs:string" name="deprecated" use="optional" />
+											<xs:attribute type="xs:string" name="experimental" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="signals" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="signal" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="index" />
+												<xs:attribute type="xs:string" name="name" />
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="keywords" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+									<!-- deprecated -->
+									<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+									<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+									<!-- /deprecated -->
+									<xs:attribute type="xs:string" name="deprecated" use="optional" />
+									<xs:attribute type="xs:string" name="experimental" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="constants" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="constant" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute type="xs:string" name="name" />
+											<xs:attribute type="xs:string" name="value" />
+											<xs:attribute type="xs:string" name="enum" use="optional" />
+											<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											<!-- deprecated -->
+											<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+											<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+											<!-- /deprecated -->
+											<xs:attribute type="xs:string" name="deprecated" use="optional" />
+											<xs:attribute type="xs:string" name="experimental" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="annotations" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="annotation" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="return" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="index" />
+												<xs:attribute type="xs:string" name="name" />
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+												<xs:attribute type="xs:string" name="default" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
+									<xs:attribute type="xs:string" name="keywords" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="theme_items" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="theme_item" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute type="xs:string" name="name" />
+											<xs:attribute type="xs:string" name="data_type" />
+											<xs:attribute type="xs:string" name="type" />
+											<xs:attribute type="xs:string" name="default" use="optional" />
+											<xs:attribute type="xs:string" name="deprecated" use="optional" />
+											<xs:attribute type="xs:string" name="experimental" use="optional" />
+											<xs:attribute type="xs:string" name="keywords" use="optional" />
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="operators" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="operator" maxOccurs="unbounded" minOccurs="0">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="return" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="param" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:sequence />
+												</xs:sequence>
+												<xs:attribute type="xs:byte" name="index" />
+												<xs:attribute type="xs:string" name="name" />
+												<xs:attribute type="xs:string" name="type" />
+												<xs:attribute type="xs:string" name="enum" use="optional" />
+												<xs:attribute type="xs:boolean" name="is_bitfield" use="optional" />
+												<xs:attribute type="xs:string" name="default" use="optional" />
+											</xs:complexType>
+										</xs:element>
+										<xs:element type="xs:string" name="description" />
+									</xs:sequence>
+									<xs:attribute type="xs:string" name="name" use="optional" />
+									<xs:attribute type="xs:string" name="qualifiers" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute type="xs:string" name="name" />
+			<xs:attribute type="xs:string" name="inherits" />
+			<!-- deprecated -->
+			<xs:attribute type="xs:float" name="version" use="optional" />
+			<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />
+			<xs:attribute type="xs:boolean" name="is_experimental" use="optional" />
+			<!-- /deprecated -->
+			<xs:attribute type="xs:string" name="deprecated" use="optional" />
+			<xs:attribute type="xs:string" name="experimental" use="optional" />
+			<xs:attribute type="xs:string" name="keywords" use="optional" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

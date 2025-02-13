@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: Assigned value for constant "TEST" isn't a constant expression.

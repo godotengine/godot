@@ -1,0 +1,18 @@
+// This is the root directory of the Godot Android gradle build.
+pluginManagement {
+    apply from: 'config.gradle'
+
+    plugins {
+        id 'com.android.application' version versions.androidGradlePlugin
+        id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
+    }
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+    }
+}
+
+include ':assetPacks:installTime'

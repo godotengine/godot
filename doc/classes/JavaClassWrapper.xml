@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JavaClassWrapper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides access to the Java Native Interface.
+	</brief_description>
+	<description>
+		The JavaClassWrapper singleton provides a way for the Godot application to send and receive data through the [url=https://developer.android.com/training/articles/perf-jni]Java Native Interface[/url] (JNI).
+		[b]Note:[/b] This singleton is only available in Android builds.
+		[codeblock]
+		var LocalDateTime = JavaClassWrapper.wrap("java.time.LocalDateTime")
+		var DateTimeFormatter = JavaClassWrapper.wrap("java.time.format.DateTimeFormatter")
+
+		var datetime = LocalDateTime.now()
+		var formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+
+		print(datetime.format(formatter))
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="wrap">
+			<return type="JavaClass" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Wraps a class defined in Java, and returns it as a [JavaClass] [Object] type that Godot can interact with.
+				[b]Note:[/b] This method only works on Android. On every other platform, this method does nothing and returns an empty [JavaClass].
+			</description>
+		</method>
+	</methods>
+</class>

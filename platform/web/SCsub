@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from methods import print_error
+
+Import("env")
+
+# The HTTP server "targets". Run with "scons p=web serve", or "scons p=web run"
+if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
+    import os
+
+    from serve import serve
+
+    port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
+    try:
+        port = int(port)
+    except Exception:
+        print_error("GODOT_WEB_TEST_PORT must be a valid integer")
+        sys.exit(255)
+    serve(env.Dir(env.GetTemplateZipPath()).abspath, port, "run" in COMMAND_LINE_TARGETS)
+    sys.exit(0)
+
+web_files = [
+    "audio_driver_web.cpp",
+    "webmidi_driver.cpp",
+    "display_server_web.cpp",
+    "http_client_web.cpp",
+    "javascript_bridge_singleton.cpp",
+    "web_main.cpp",
+    "ip_web.cpp",
+    "net_socket_web.cpp",
+    "os_web.cpp",
+]
+
+if env["target"] == "editor":
+    env.add_source_files(web_files, "editor/*.cpp")
+
+sys_env = env.Clone()
+sys_env.AddJSLibraries(
+    [
+        "js/libs/library_godot_audio.js",
+        "js/libs/library_godot_display.js",
+        "js/libs/library_godot_fetch.js",
+        "js/libs/library_godot_webmidi.js",
+        "js/libs/library_godot_os.js",
+        "js/libs/library_godot_runtime.js",
+        "js/libs/library_godot_input.js",
+        "js/libs/library_godot_webgl2.js",
+    ]
+)
+sys_env.AddJSExterns(
+    [
+        "js/libs/library_godot_webgl2.externs.js",
+    ]
+)
+
+if env["javascript_eval"]:
+    sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
+
+for lib in sys_env["JS_LIBS"]:
+    sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
+for js in sys_env["JS_PRE"]:
+    sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
+for ext in sys_env["JS_EXTERNS"]:
+    sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
+
+build = []
+build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+if env["dlink_enabled"]:
+    # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
+    sys_env["LIBS"] = []
+    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
+    sys_env.Append(LIBS=["idbfs.js"])
+    # Configure it as a main module (dynamic linking support).
+    sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
+    sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
+    sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
+    sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
+    sys_env["CCFLAGS"].remove("-fvisibility=hidden")
+    sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
+
+    # The main emscripten runtime, with exported standard libraries.
+    sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
+
+    # The side library, containing all Godot code.
+    wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
+    build = sys + [wasm[0]]
+else:
+    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
+    sys_env.Append(LIBS=["idbfs.js"])
+    build = sys_env.Program(build_targets, web_files + ["web_runtime.cpp"])
+
+sys_env.Depends(build[0], sys_env["JS_LIBS"])
+sys_env.Depends(build[0], sys_env["JS_PRE"])
+sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
+
+engine = [
+    "js/engine/features.js",
+    "js/engine/preloader.js",
+    "js/engine/config.js",
+    "js/engine/engine.js",
+]
+externs = [env.File("#platform/web/js/engine/engine.externs.js")]
+js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])
+env.Depends(js_engine, externs)
+
+wrap_list = [
+    build[0],
+    js_engine,
+]
+js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+
+# 0 - unwrapped js file (use wrapped one instead)
+# 1 - wasm file
+# 2 - wasm side (when dlink is enabled).
+env.CreateTemplateZip(js_wrapped, build[1], build[2] if len(build) > 2 else None)

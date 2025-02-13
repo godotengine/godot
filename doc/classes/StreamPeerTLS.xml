@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StreamPeerTLS" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A stream peer that handles TLS connections.
+	</brief_description>
+	<description>
+		A stream peer that handles TLS connections. This object can be used to connect to a TLS server or accept a single TLS client connection.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>
+	</tutorials>
+	<methods>
+		<method name="accept_stream">
+			<return type="int" enum="Error" />
+			<param index="0" name="stream" type="StreamPeer" />
+			<param index="1" name="server_options" type="TLSOptions" />
+			<description>
+				Accepts a peer connection as a server using the given [param server_options]. See [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="connect_to_stream">
+			<return type="int" enum="Error" />
+			<param index="0" name="stream" type="StreamPeer" />
+			<param index="1" name="common_name" type="String" />
+			<param index="2" name="client_options" type="TLSOptions" default="null" />
+			<description>
+				Connects to a peer using an underlying [StreamPeer] [param stream] and verifying the remote certificate is correctly signed for the given [param common_name]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+			</description>
+		</method>
+		<method name="disconnect_from_stream">
+			<return type="void" />
+			<description>
+				Disconnects from host.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="StreamPeerTLS.Status" />
+			<description>
+				Returns the status of the connection. See [enum Status] for values.
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="StreamPeer" />
+			<description>
+				Returns the underlying [StreamPeer] connection, used in [method accept_stream] or [method connect_to_stream].
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void" />
+			<description>
+				Poll the connection to check for incoming bytes. Call this right before [method StreamPeer.get_available_bytes] for it to work properly.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
+			A status representing a [StreamPeerTLS] that is disconnected.
+		</constant>
+		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
+			A status representing a [StreamPeerTLS] during handshaking.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [StreamPeerTLS] that is connected to a host.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [StreamPeerTLS] in error state.
+		</constant>
+		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
+			An error status that shows a mismatch in the TLS certificate domain presented by the host and the domain requested for validation.
+		</constant>
+	</constants>
+</class>

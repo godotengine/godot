@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedInt64Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A packed array of 64-bit integers.
+	</brief_description>
+	<description>
+		An array specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] This type stores signed 64-bit integers, which means it can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around. If you only need to pack 32-bit integers tightly, see [PackedInt32Array] for a more memory-friendly alternative.
+		[b]Differences between packed arrays, typed arrays, and untyped arrays:[/b] Packed arrays are generally faster to iterate on and modify compared to a typed array of the same type (e.g. [PackedInt64Array] versus [code]Array[int][/code]). Also, packed arrays consume less memory. As a downside, packed arrays are less flexible as they don't offer as many convenience methods such as [method Array.map]. Typed arrays are in turn faster to iterate on and modify than untyped arrays.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="PackedInt64Array">
+			<return type="PackedInt64Array" />
+			<description>
+				Constructs an empty [PackedInt64Array].
+			</description>
+		</constructor>
+		<constructor name="PackedInt64Array">
+			<return type="PackedInt64Array" />
+			<param index="0" name="from" type="PackedInt64Array" />
+			<description>
+				Constructs a [PackedInt64Array] as a copy of the given [PackedInt64Array].
+			</description>
+		</constructor>
+		<constructor name="PackedInt64Array">
+			<return type="PackedInt64Array" />
+			<param index="0" name="from" type="Array" />
+			<description>
+				Constructs a new [PackedInt64Array]. Optionally, you can pass in a generic [Array] that will be converted.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="append">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void" />
+			<param index="0" name="array" type="PackedInt64Array" />
+			<description>
+				Appends a [PackedInt64Array] at the end of this array.
+			</description>
+		</method>
+		<method name="bsearch">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="before" type="bool" default="true" />
+			<description>
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="PackedInt64Array" />
+			<description>
+				Creates a copy of the array, and returns it.
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
+		<method name="get" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the 64-bit integer at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Returns [code]true[/code] if the array contains [param value].
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int" />
+			<param index="0" name="at_index" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Inserts a new integer at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Appends a value to the array.
+			</description>
+		</method>
+		<method name="remove_at">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" />
+			<param index="0" name="new_size" type="int" />
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+			</description>
+		</method>
+		<method name="reverse">
+			<return type="void" />
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Changes the integer at the given index.
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [PackedInt64Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [PackedInt64Array].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void" />
+			<description>
+				Sorts the elements of the array in ascending order.
+			</description>
+		</method>
+		<method name="to_byte_array" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns a copy of the data converted to a [PackedByteArray], where each element has been encoded as 8 bytes.
+				The size of the new array will be [code]int64_array.size() * 8[/code].
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedInt64Array" />
+			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedInt64Array" />
+			<param index="0" name="right" type="PackedInt64Array" />
+			<description>
+				Returns a new [PackedInt64Array] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedInt64Array" />
+			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal ints at the corresponding indices.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [int] at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
+			</description>
+		</operator>
+	</operators>
+</class>

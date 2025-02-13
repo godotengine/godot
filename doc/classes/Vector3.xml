@@ -1,0 +1,644 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D vector using floating-point coordinates.
+	</brief_description>
+	<description>
+		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
+		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
+		See [Vector3i] for its integer counterpart.
+		[b]Note:[/b] In a boolean context, a Vector3 will evaluate to [code]false[/code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 will always evaluate to [code]true[/code].
+	</description>
+	<tutorials>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
+		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Vector3">
+			<return type="Vector3" />
+			<description>
+				Constructs a default-initialized [Vector3] with all components set to [code]0[/code].
+			</description>
+		</constructor>
+		<constructor name="Vector3">
+			<return type="Vector3" />
+			<param index="0" name="from" type="Vector3" />
+			<description>
+				Constructs a [Vector3] as a copy of the given [Vector3].
+			</description>
+		</constructor>
+		<constructor name="Vector3">
+			<return type="Vector3" />
+			<param index="0" name="from" type="Vector3i" />
+			<description>
+				Constructs a new [Vector3] from [Vector3i].
+			</description>
+		</constructor>
+		<constructor name="Vector3">
+			<return type="Vector3" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<param index="2" name="z" type="float" />
+			<description>
+				Returns a [Vector3] with the given components.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="angle_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3" />
+			<description>
+				Returns the unsigned minimum angle to the given vector, in radians.
+			</description>
+		</method>
+		<method name="bezier_derivative" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="control_1" type="Vector3" />
+			<param index="1" name="control_2" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="t" type="float" />
+			<description>
+				Returns the derivative at the given [param t] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by this vector and the given [param control_1], [param control_2], and [param end] points.
+			</description>
+		</method>
+		<method name="bezier_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="control_1" type="Vector3" />
+			<param index="1" name="control_2" type="Vector3" />
+			<param index="2" name="end" type="Vector3" />
+			<param index="3" name="t" type="float" />
+			<description>
+				Returns the point at the given [param t] on the [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bézier curve[/url] defined by this vector and the given [param control_1], [param control_2], and [param end] points.
+			</description>
+		</method>
+		<method name="bounce" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="n" type="Vector3" />
+			<description>
+				Returns the vector "bounced off" from a plane defined by the given normal [param n].
+				[b]Note:[/b] [method bounce] performs the operation that most engines and frameworks call [code skip-lint]reflect()[/code].
+			</description>
+		</method>
+		<method name="ceil" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a new vector with all components rounded up (towards positive infinity).
+			</description>
+		</method>
+		<method name="clamp" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="min" type="Vector3" />
+			<param index="1" name="max" type="Vector3" />
+			<description>
+				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="cross" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the cross product of this vector and [param with].
+				This returns a vector perpendicular to both this and [param with], which would be the normal vector of the plane defined by the two vectors. As there are two such vectors, in opposite directions, this method returns the vector defined by a right-handed coordinate system. If the two vectors are parallel this returns an empty vector, making it useful for testing if two vectors are parallel.
+			</description>
+		</method>
+		<method name="cubic_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="b" type="Vector3" />
+			<param index="1" name="pre_a" type="Vector3" />
+			<param index="2" name="post_b" type="Vector3" />
+			<param index="3" name="weight" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="cubic_interpolate_in_time" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="b" type="Vector3" />
+			<param index="1" name="pre_a" type="Vector3" />
+			<param index="2" name="post_b" type="Vector3" />
+			<param index="3" name="weight" type="float" />
+			<param index="4" name="b_t" type="float" />
+			<param index="5" name="pre_a_t" type="float" />
+			<param index="6" name="post_b_t" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
+			</description>
+		</method>
+		<method name="direction_to" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="to" type="Vector3" />
+			<description>
+				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="dot" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
+				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
+			</description>
+		</method>
+		<method name="floor" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a new vector with all components rounded down (towards negative infinity).
+			</description>
+		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the inverse of the vector. This is the same as [code]Vector3(1.0 / v.x, 1.0 / v.y, 1.0 / v.z)[/code].
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="to" type="Vector3" />
+			<description>
+				Returns [code]true[/code] if this vector and [param to] are approximately equal, by running [method @GlobalScope.is_equal_approx] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this vector is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
+		<method name="is_normalized" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the vector is normalized, i.e. its length is approximately equal to 1.
+			</description>
+		</method>
+		<method name="is_zero_approx" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this vector's values are approximately zero, by running [method @GlobalScope.is_zero_approx] on each component.
+				This method is faster than using [method is_equal_approx] with one value as a zero vector.
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
+			<return type="float" />
+			<description>
+				Returns the length (magnitude) of this vector.
+			</description>
+		</method>
+		<method name="length_squared" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="lerp" qualifiers="const" keywords="interpolate">
+			<return type="Vector3" />
+			<param index="0" name="to" type="Vector3" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="limit_length" qualifiers="const" keywords="truncate">
+			<return type="Vector3" />
+			<param index="0" name="length" type="float" default="1.0" />
+			<description>
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with.x), maxf(y, with.y), maxf(z, with.z))[/code].
+			</description>
+		</method>
+		<method name="max_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
+			</description>
+		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3(maxf(x, with), maxf(y, with), maxf(z, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with.x), minf(y, with.y), minf(z, with.z))[/code].
+			</description>
+		</method>
+		<method name="min_axis_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3(minf(x, with), minf(y, with), minf(z, with))[/code].
+			</description>
+		</method>
+		<method name="move_toward" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="to" type="Vector3" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Returns a new vector moved toward [param to] by the fixed [param delta] amount. Will not go past the final value.
+			</description>
+		</method>
+		<method name="normalized" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
+				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
+			</description>
+		</method>
+		<method name="octahedron_decode" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="uv" type="Vector2" />
+			<description>
+				Returns the [Vector3] from an octahedral-compressed form created using [method octahedron_encode] (stored as a [Vector2]).
+			</description>
+		</method>
+		<method name="octahedron_encode" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the octahedral-encoded (oct32) form of this [Vector3] as a [Vector2]. Since a [Vector2] occupies 1/3 less memory compared to [Vector3], this form of compression can be used to pass greater amounts of [method normalized] [Vector3]s without increasing storage or memory requirements. See also [method octahedron_decode].
+				[b]Note:[/b] [method octahedron_encode] can only be used for [method normalized] vectors. [method octahedron_encode] does [i]not[/i] check whether this [Vector3] is normalized, and will return a value that does not decompress to the original value if the [Vector3] is not normalized.
+				[b]Note:[/b] Octahedral compression is [i]lossy[/i], although visual differences are rarely perceptible in real world scenarios.
+			</description>
+		</method>
+		<method name="outer" qualifiers="const">
+			<return type="Basis" />
+			<param index="0" name="with" type="Vector3" />
+			<description>
+				Returns the outer product with [param with].
+			</description>
+		</method>
+		<method name="posmod" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="mod" type="float" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
+			</description>
+		</method>
+		<method name="posmodv" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="modv" type="Vector3" />
+			<description>
+				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
+			</description>
+		</method>
+		<method name="project" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="b" type="Vector3" />
+			<description>
+				Returns a new vector resulting from projecting this vector onto the given vector [param b]. The resulting new vector is parallel to [param b]. See also [method slide].
+				[b]Note:[/b] If the vector [param b] is a zero vector, the components of the resulting new vector will be [constant @GDScript.NAN].
+			</description>
+		</method>
+		<method name="reflect" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="n" type="Vector3" />
+			<description>
+				Returns the result of reflecting the vector through a plane defined by the given normal vector [param n].
+				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] returns the result of the vector reflected by the given plane. The reflection thus passes through the given normal. While in Godot the reflection passes through the plane and can be thought of as bouncing off the normal. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
+			</description>
+		</method>
+		<method name="rotated" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Returns the result of rotating this vector around a given axis by [param angle] (in radians). The axis must be a normalized vector. See also [method @GlobalScope.deg_to_rad].
+			</description>
+		</method>
+		<method name="round" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a new vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+			</description>
+		</method>
+		<method name="sign" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="signed_angle_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3" />
+			<param index="1" name="axis" type="Vector3" />
+			<description>
+				Returns the signed angle to the given vector, in radians. The sign of the angle is positive in a counter-clockwise direction and negative in a clockwise direction when viewed from the side specified by the [param axis].
+			</description>
+		</method>
+		<method name="slerp" qualifiers="const" keywords="interpolate">
+			<return type="Vector3" />
+			<param index="0" name="to" type="Vector3" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Returns the result of spherical linear interpolation between this vector and [param to], by amount [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				This method also handles interpolating the lengths if the input vectors have different lengths. For the special case of one or both input vectors having zero length, this method behaves like [method lerp].
+			</description>
+		</method>
+		<method name="slide" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="n" type="Vector3" />
+			<description>
+				Returns a new vector resulting from sliding this vector along a plane with normal [param n]. The resulting new vector is perpendicular to [param n], and is equivalent to this vector minus its projection on [param n]. See also [method project].
+				[b]Note:[/b] The vector [param n] must be normalized. See also [method normalized].
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="step" type="Vector3" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="float" setter="" getter="" default="0.0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
+		</member>
+		<member name="y" type="float" setter="" getter="" default="0.0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
+		</member>
+		<member name="z" type="float" setter="" getter="" default="0.0">
+			The vector's Z component. Also accessible by using the index position [code][2][/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0" enum="Axis">
+			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_Y" value="1" enum="Axis">
+			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="AXIS_Z" value="2" enum="Axis">
+			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
+		</constant>
+		<constant name="ZERO" value="Vector3(0, 0, 0)">
+			Zero vector, a vector with all components set to [code]0[/code].
+		</constant>
+		<constant name="ONE" value="Vector3(1, 1, 1)">
+			One vector, a vector with all components set to [code]1[/code].
+		</constant>
+		<constant name="INF" value="Vector3(inf, inf, inf)">
+			Infinity vector, a vector with all components set to [constant @GDScript.INF].
+		</constant>
+		<constant name="LEFT" value="Vector3(-1, 0, 0)">
+			Left unit vector. Represents the local direction of left, and the global direction of west.
+		</constant>
+		<constant name="RIGHT" value="Vector3(1, 0, 0)">
+			Right unit vector. Represents the local direction of right, and the global direction of east.
+		</constant>
+		<constant name="UP" value="Vector3(0, 1, 0)">
+			Up unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector3(0, -1, 0)">
+			Down unit vector.
+		</constant>
+		<constant name="FORWARD" value="Vector3(0, 0, -1)">
+			Forward unit vector. Represents the local direction of forward, and the global direction of north. Keep in mind that the forward direction for lights, cameras, etc is different from 3D assets like characters, which face towards the camera by convention. Use [constant Vector3.MODEL_FRONT] and similar constants when working in 3D asset space.
+		</constant>
+		<constant name="BACK" value="Vector3(0, 0, 1)">
+			Back unit vector. Represents the local direction of back, and the global direction of south.
+		</constant>
+		<constant name="MODEL_LEFT" value="Vector3(1, 0, 0)">
+			Unit vector pointing towards the left side of imported 3D assets.
+		</constant>
+		<constant name="MODEL_RIGHT" value="Vector3(-1, 0, 0)">
+			Unit vector pointing towards the right side of imported 3D assets.
+		</constant>
+		<constant name="MODEL_TOP" value="Vector3(0, 1, 0)">
+			Unit vector pointing towards the top side (up) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_BOTTOM" value="Vector3(0, -1, 0)">
+			Unit vector pointing towards the bottom side (down) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_FRONT" value="Vector3(0, 0, 1)">
+			Unit vector pointing towards the front side (facing forward) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_REAR" value="Vector3(0, 0, -1)">
+			Unit vector pointing towards the rear side (back) of imported 3D assets.
+		</constant>
+	</constants>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Returns [code]true[/code] if the vectors are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Basis" />
+			<description>
+				Inversely transforms (multiplies) the [Vector3] by the given [Basis] matrix, under the assumption that the basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * basis[/code] is equivalent to [code]basis.transposed() * vector[/code]. See [method Basis.transposed].
+				For transforming by inverse of a non-orthonormal basis (e.g. with scaling) [code]basis.inverse() * vector[/code] can be used instead. See [method Basis.inverse].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Quaternion" />
+			<description>
+				Inversely transforms (multiplies) the [Vector3] by the given [Quaternion].
+				[code]vector * quaternion[/code] is equivalent to [code]quaternion.inverse() * vector[/code]. See [method Quaternion.inverse].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Transform3D" />
+			<description>
+				Inversely transforms (multiplies) the [Vector3] by the given [Transform3D] transformation matrix, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not).
+				[code]vector * transform[/code] is equivalent to [code]transform.inverse() * vector[/code]. See [method Transform3D.inverse].
+				For transforming by inverse of an affine transformation (e.g. with scaling) [code]transform.affine_inverse() * vector[/code] can be used instead. See [method Transform3D.affine_inverse].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Multiplies each component of the [Vector3] by the components of the given [Vector3].
+				[codeblock]
+				print(Vector3(10, 20, 30) * Vector3(3, 4, 5)) # Prints (30.0, 80.0, 150.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Multiplies each component of the [Vector3] by the given [float].
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector3" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Multiplies each component of the [Vector3] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Adds each component of the [Vector3] by the components of the given [Vector3].
+				[codeblock]
+				print(Vector3(10, 20, 30) + Vector3(3, 4, 5)) # Prints (13.0, 24.0, 35.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator -">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Subtracts each component of the [Vector3] by the components of the given [Vector3].
+				[codeblock]
+				print(Vector3(10, 20, 30) - Vector3(3, 4, 5)) # Prints (7.0, 16.0, 25.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Divides each component of the [Vector3] by the components of the given [Vector3].
+				[codeblock]
+				print(Vector3(10, 20, 30) / Vector3(2, 5, 3)) # Prints (5.0, 4.0, 10.0)
+				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides each component of the [Vector3] by the given [float].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector3" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides each component of the [Vector3] by the given [int].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &lt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Returns [code]true[/code] if the vectors are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator &gt;=">
+			<return type="bool" />
+			<param index="0" name="right" type="Vector3" />
+			<description>
+				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Access vector components using their [param index]. [code]v[0][/code] is equivalent to [code]v.x[/code], [code]v[1][/code] is equivalent to [code]v.y[/code], and [code]v[2][/code] is equivalent to [code]v.z[/code].
+			</description>
+		</operator>
+		<operator name="operator unary+">
+			<return type="Vector3" />
+			<description>
+				Returns the same value as if the [code]+[/code] was not there. Unary [code]+[/code] does nothing, but sometimes it can make your code more readable.
+			</description>
+		</operator>
+		<operator name="operator unary-">
+			<return type="Vector3" />
+			<description>
+				Returns the negative value of the [Vector3]. This is the same as writing [code]Vector3(-v.x, -v.y, -v.z)[/code]. This operation flips the direction of the vector while keeping the same magnitude. With floats, the number zero can be either positive or negative.
+			</description>
+		</operator>
+	</operators>
+</class>

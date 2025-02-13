@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ParallaxLayer" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A parallax scrolling layer to be used with [ParallaxBackground].
+	</brief_description>
+	<description>
+		A ParallaxLayer must be the child of a [ParallaxBackground] node. Each ParallaxLayer can be set to move at different speeds relative to the camera movement or the [member ParallaxBackground.scroll_offset] value.
+		This node's children will be affected by its scroll offset.
+		[b]Note:[/b] Any changes to this node's position and scale made after it enters the scene will be ignored.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring" default="Vector2(0, 0)">
+			The interval, in pixels, at which the [ParallaxLayer] is drawn repeatedly. Useful for creating an infinitely scrolling background. If an axis is set to [code]0[/code], the [ParallaxLayer] will be drawn only once along that direction.
+			[b]Note:[/b] If you want the repetition to pixel-perfect match a [Texture2D] displayed by a child node, you should account for any scale applied to the texture when defining this interval. For example, if you use a child [Sprite2D] scaled to [code]0.5[/code] to display a 600x600 texture, and want this sprite to be repeated continuously horizontally, you should set the mirroring to [code]Vector2(300, 0)[/code].
+			[b]Note:[/b] If the length of the viewport axis is bigger than twice the repeated axis size, it will not repeat infinitely, as the parallax layer only draws 2 instances of the layer at any given time. The visibility window is calculated from the parent [ParallaxBackground]'s position, not the layer's own position. So, if you use mirroring, [b]do not[/b] change the [ParallaxLayer] position relative to its parent. Instead, if you need to adjust the background's position, set the [member CanvasLayer.offset] property in the parent [ParallaxBackground].
+			[b]Note:[/b] Despite the name, the layer will not be mirrored, it will only be repeated.
+		</member>
+		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset" default="Vector2(0, 0)">
+			The ParallaxLayer's offset relative to the parent ParallaxBackground's [member ParallaxBackground.scroll_offset].
+		</member>
+		<member name="motion_scale" type="Vector2" setter="set_motion_scale" getter="get_motion_scale" default="Vector2(1, 1)">
+			Multiplies the ParallaxLayer's motion. If an axis is set to [code]0[/code], it will not scroll.
+		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
+	</members>
+</class>

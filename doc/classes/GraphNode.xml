@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphNode" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container with connection ports, representing a node in a [GraphEdit].
+	</brief_description>
+	<description>
+		[GraphNode] allows to create nodes for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer]. Children, in turn, provide [GraphNode] with so-called slots, each of which can have a connection port on either side.
+		Each [GraphNode] slot is defined by its index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
+		Slots can be configured in the Inspector dock once you add at least one child [Control]. The properties are grouped by each slot's index in the "Slot" section.
+		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that [GraphEdit] uses the port's index and not the slot's index. You can use [method get_input_port_slot] and [method get_output_port_slot] to get the slot index from the port index.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_draw_port" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="position" type="Vector2i" />
+			<param index="2" name="left" type="bool" />
+			<param index="3" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="clear_all_slots">
+			<return type="void" />
+			<description>
+				Disables all slots of the GraphNode. This will remove all input/output ports from the GraphNode.
+			</description>
+		</method>
+		<method name="clear_slot">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Disables the slot with the given [param slot_index]. This will remove the corresponding input and output port from the GraphNode.
+			</description>
+		</method>
+		<method name="get_input_port_color">
+			<return type="Color" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the [Color] of the input port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_input_port_count">
+			<return type="int" />
+			<description>
+				Returns the number of slots with an enabled input port.
+			</description>
+		</method>
+		<method name="get_input_port_position">
+			<return type="Vector2" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the position of the input port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_input_port_slot">
+			<return type="int" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the corresponding slot index of the input port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_input_port_type">
+			<return type="int" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the type of the input port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_output_port_color">
+			<return type="Color" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the [Color] of the output port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_output_port_count">
+			<return type="int" />
+			<description>
+				Returns the number of slots with an enabled output port.
+			</description>
+		</method>
+		<method name="get_output_port_position">
+			<return type="Vector2" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the position of the output port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_output_port_slot">
+			<return type="int" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the corresponding slot index of the output port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_output_port_type">
+			<return type="int" />
+			<param index="0" name="port_idx" type="int" />
+			<description>
+				Returns the type of the output port with the given [param port_idx].
+			</description>
+		</method>
+		<method name="get_slot_color_left" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) [Color] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_color_right" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) [Color] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_custom_icon_left" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_custom_icon_right" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_type_left" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) type of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_type_right" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) type of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_titlebar_hbox">
+			<return type="HBoxContainer" />
+			<description>
+				Returns the [HBoxContainer] used for the title bar, only containing a [Label] for displaying the title by default. This can be used to add custom controls to the title bar such as option or close buttons.
+			</description>
+		</method>
+		<method name="is_slot_draw_stylebox" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns [code]true[/code] if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
+			</description>
+		</method>
+		<method name="is_slot_enabled_left" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns [code]true[/code] if left (input) side of the slot with the given [param slot_index] is enabled.
+			</description>
+		</method>
+		<method name="is_slot_enabled_right" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns [code]true[/code] if right (output) side of the slot with the given [param slot_index] is enabled.
+			</description>
+		</method>
+		<method name="set_slot">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enable_left_port" type="bool" />
+			<param index="2" name="type_left" type="int" />
+			<param index="3" name="color_left" type="Color" />
+			<param index="4" name="enable_right_port" type="bool" />
+			<param index="5" name="type_right" type="int" />
+			<param index="6" name="color_right" type="Color" />
+			<param index="7" name="custom_icon_left" type="Texture2D" default="null" />
+			<param index="8" name="custom_icon_right" type="Texture2D" default="null" />
+			<param index="9" name="draw_stylebox" type="bool" default="true" />
+			<description>
+				Sets properties of the slot with the given [param slot_index].
+				If [param enable_left_port]/[param enable_right_port] is [code]true[/code], a port will appear and the slot will be able to be connected from this side.
+				With [param type_left]/[param type_right] an arbitrary type can be assigned to each port. Two ports can be connected if they share the same type, or if the connection between their types is allowed in the parent [GraphEdit] (see [method GraphEdit.add_valid_connection_type]). Keep in mind that the [GraphEdit] has the final say in accepting the connection. Type compatibility simply allows the [signal GraphEdit.connection_request] signal to be emitted.
+				Ports can be further customized using [param color_left]/[param color_right] and [param custom_icon_left]/[param custom_icon_right]. The color parameter adds a tint to the icon. The custom icon can be used to override the default port dot.
+				Additionally, [param draw_stylebox] can be used to enable or disable drawing of the background stylebox for each slot. See [theme_item slot].
+				Individual properties can also be set using one of the [code]set_slot_*[/code] methods.
+				[b]Note:[/b] This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the GraphNode.
+			</description>
+		</method>
+		<method name="set_slot_color_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the [Color] of the left (input) side of the slot with the given [param slot_index] to [param color].
+			</description>
+		</method>
+		<method name="set_slot_color_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the [Color] of the right (output) side of the slot with the given [param slot_index] to [param color].
+			</description>
+		</method>
+		<method name="set_slot_custom_icon_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the left (input) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
+		<method name="set_slot_custom_icon_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the right (output) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
+		<method name="set_slot_draw_stylebox">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Toggles the background [StyleBox] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="set_slot_enabled_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Toggles the left (input) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
+			</description>
+		</method>
+		<method name="set_slot_enabled_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Toggles the right (output) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+			</description>
+		</method>
+		<method name="set_slot_type_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Sets the left (input) type of the slot with the given [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
+			</description>
+		</method>
+		<method name="set_slot_type_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="type" type="int" />
+			<description>
+				Sets the right (output) type of the slot with the given [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ignore_invalid_connection_type" type="bool" setter="set_ignore_invalid_connection_type" getter="is_ignoring_valid_connection_type" default="false">
+			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The text displayed in the GraphNode's title bar.
+		</member>
+	</members>
+	<signals>
+		<signal name="slot_updated">
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Emitted when any GraphNode's slot is updated.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			The color modulation applied to the resizer icon.
+		</theme_item>
+		<theme_item name="port_h_offset" data_type="constant" type="int" default="0">
+			Horizontal offset for the ports.
+		</theme_item>
+		<theme_item name="separation" data_type="constant" type="int" default="2">
+			The vertical distance between ports.
+		</theme_item>
+		<theme_item name="port" data_type="icon" type="Texture2D">
+			The icon used for representing ports.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The default background for the slot area of the [GraphNode].
+		</theme_item>
+		<theme_item name="panel_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the slot area when selected.
+		</theme_item>
+		<theme_item name="slot" data_type="style" type="StyleBox">
+			The [StyleBox] used for each slot of the [GraphNode].
+		</theme_item>
+		<theme_item name="titlebar" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphNode].
+		</theme_item>
+		<theme_item name="titlebar_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphNode] when it is selected.
+		</theme_item>
+	</theme_items>
+</class>

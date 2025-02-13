@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorPicker" inherits="VBoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A widget that provides an interface for selecting or modifying a color.
+	</brief_description>
+	<description>
+		A widget that provides an interface for selecting or modifying a color. It can optionally provide functionalities like a color sampler (eyedropper), color modes, and presets.
+		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
+	</description>
+	<tutorials>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
+	</tutorials>
+	<methods>
+		<method name="add_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them.
+				[b]Note:[/b] The presets list is only for [i]this[/i] color picker.
+			</description>
+		</method>
+		<method name="add_recent_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Adds the given color to a list of color recent presets so that it can be picked later. Recent presets are the colors that were picked recently, a new preset is automatically created and added to recent presets when you pick a new color.
+				[b]Note:[/b] The recent presets list is only for [i]this[/i] color picker.
+			</description>
+		</method>
+		<method name="erase_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Removes the given color from the list of color presets of this color picker.
+			</description>
+		</method>
+		<method name="erase_recent_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Removes the given color from the list of color recent presets of this color picker.
+			</description>
+		</method>
+		<method name="get_presets" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+				Returns the list of colors in the presets of the color picker.
+			</description>
+		</method>
+		<method name="get_recent_presets" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+				Returns the list of colors in the recent presets of the color picker.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
+			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
+		</member>
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)" keywords="colour">
+			The currently selected color.
+		</member>
+		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
+			The currently selected color mode. See [enum ColorModeType].
+		</member>
+		<member name="color_modes_visible" type="bool" setter="set_modes_visible" getter="are_modes_visible" default="true">
+			If [code]true[/code], the color mode buttons are visible.
+		</member>
+		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode" default="false">
+			If [code]true[/code], the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
+		</member>
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
+			If [code]true[/code], shows an alpha channel slider (opacity).
+		</member>
+		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
+			If [code]true[/code], the hex color code input field is visible.
+		</member>
+		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
+			The shape of the color space view. See [enum PickerShapeType].
+		</member>
+		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
+			If [code]true[/code], the Swatches and Recent Colors presets are visible.
+		</member>
+		<member name="sampler_visible" type="bool" setter="set_sampler_visible" getter="is_sampler_visible" default="true">
+			If [code]true[/code], the color sampler and color preview are visible.
+		</member>
+		<member name="sliders_visible" type="bool" setter="set_sliders_visible" getter="are_sliders_visible" default="true">
+			If [code]true[/code], the color sliders are visible.
+		</member>
+	</members>
+	<signals>
+		<signal name="color_changed">
+			<param index="0" name="color" type="Color" />
+			<description>
+				Emitted when the color is changed.
+			</description>
+		</signal>
+		<signal name="preset_added">
+			<param index="0" name="color" type="Color" />
+			<description>
+				Emitted when a preset is added.
+			</description>
+		</signal>
+		<signal name="preset_removed">
+			<param index="0" name="color" type="Color" />
+			<description>
+				Emitted when a preset is removed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MODE_RGB" value="0" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue sliders.
+		</constant>
+		<constant name="MODE_HSV" value="1" enum="ColorModeType">
+			Allows editing the color with Hue/Saturation/Value sliders.
+		</constant>
+		<constant name="MODE_RAW" value="2" enum="ColorModeType">
+			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		</constant>
+		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
+			Allows editing the color with Hue/Saturation/Lightness sliders.
+			OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma and hue.
+			[url=https://bottosson.github.io/posts/colorpicker/]Okhsv and Okhsl color spaces[/url]
+		</constant>
+		<constant name="SHAPE_HSV_RECTANGLE" value="0" enum="PickerShapeType">
+			HSV Color Model rectangle color space.
+		</constant>
+		<constant name="SHAPE_HSV_WHEEL" value="1" enum="PickerShapeType">
+			HSV Color Model rectangle color space with a wheel.
+		</constant>
+		<constant name="SHAPE_VHS_CIRCLE" value="2" enum="PickerShapeType">
+			HSV Color Model circle color space. Use Saturation as a radius.
+		</constant>
+		<constant name="SHAPE_OKHSL_CIRCLE" value="3" enum="PickerShapeType">
+			HSL OK Color Model circle color space.
+		</constant>
+		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
+			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="center_slider_grabbers" data_type="constant" type="int" default="1">
+			Overrides the [theme_item Slider.center_grabber] theme property of the sliders.
+		</theme_item>
+		<theme_item name="h_width" data_type="constant" type="int" default="30">
+			The width of the hue selection slider.
+		</theme_item>
+		<theme_item name="label_width" data_type="constant" type="int" default="10">
+			The minimum width of the color labels next to sliders.
+		</theme_item>
+		<theme_item name="margin" data_type="constant" type="int" default="4">
+			The margin around the [ColorPicker].
+		</theme_item>
+		<theme_item name="sv_height" data_type="constant" type="int" default="256">
+			The height of the saturation-value selection box.
+		</theme_item>
+		<theme_item name="sv_width" data_type="constant" type="int" default="256">
+			The width of the saturation-value selection box.
+		</theme_item>
+		<theme_item name="add_preset" data_type="icon" type="Texture2D">
+			The icon for the "Add Preset" button.
+		</theme_item>
+		<theme_item name="bar_arrow" data_type="icon" type="Texture2D">
+			The texture for the arrow grabber.
+		</theme_item>
+		<theme_item name="color_hue" data_type="icon" type="Texture2D">
+			Custom texture for the hue selection slider on the right.
+		</theme_item>
+		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
+			The icon for color preset drop down menu when expanded.
+		</theme_item>
+		<theme_item name="folded_arrow" data_type="icon" type="Texture2D">
+			The icon for color preset drop down menu when folded.
+		</theme_item>
+		<theme_item name="menu_option" data_type="icon" type="Texture2D">
+			The icon for color preset option menu.
+		</theme_item>
+		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
+			The indicator used to signalize that the color value is outside the 0-1 range.
+		</theme_item>
+		<theme_item name="picker_cursor" data_type="icon" type="Texture2D">
+			The image displayed over the color box/circle (depending on the [member picker_shape]), marking the currently selected color.
+		</theme_item>
+		<theme_item name="picker_cursor_bg" data_type="icon" type="Texture2D">
+			The fill image displayed behind the picker cursor.
+		</theme_item>
+		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
+			Background panel for the color preview box (visible when the color is translucent).
+		</theme_item>
+		<theme_item name="sample_revert" data_type="icon" type="Texture2D">
+			The icon for the revert button (visible on the middle of the "old" color when it differs from the currently selected color). This icon is modulated with a dark color if the "old" color is bright enough, so the icon should be bright to ensure visibility in both scenarios.
+		</theme_item>
+		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
+			The icon for the screen color picker button.
+		</theme_item>
+		<theme_item name="shape_circle" data_type="icon" type="Texture2D">
+			The icon for circular picker shapes.
+		</theme_item>
+		<theme_item name="shape_rect" data_type="icon" type="Texture2D">
+			The icon for rectangular picker shapes.
+		</theme_item>
+		<theme_item name="shape_rect_wheel" data_type="icon" type="Texture2D">
+			The icon for rectangular wheel picker shapes.
+		</theme_item>
+	</theme_items>
+</class>

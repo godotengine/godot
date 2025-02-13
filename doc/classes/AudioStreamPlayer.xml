@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlayer" inherits="Node" keywords="sound, music, song" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for audio playback.
+	</brief_description>
+	<description>
+		The [AudioStreamPlayer] node plays an audio stream non-positionally. It is ideal for user interfaces, menus, or background music.
+		To use this node, [member stream] needs to be set to a valid [AudioStream] resource. Playing more than one sound at the same time is also supported, see [member max_polyphony].
+		If you need to play audio at a specific position, use [AudioStreamPlayer2D] or [AudioStreamPlayer3D] instead.
+	</description>
+	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/2758</link>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
+	</tutorials>
+	<methods>
+		<method name="get_playback_position">
+			<return type="float" />
+			<description>
+				Returns the position in the [AudioStream] of the latest sound, in seconds. Returns [code]0.0[/code] if no sounds are playing.
+				[b]Note:[/b] The position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned position.
+				[b]Note:[/b] This method always returns [code]0.0[/code] if the [member stream] is an [AudioStreamInteractive], since it can have multiple clips playing at once.
+			</description>
+		</method>
+		<method name="get_stream_playback">
+			<return type="AudioStreamPlayback" />
+			<description>
+				Returns the latest [AudioStreamPlayback] of this node, usually the most recently created by [method play]. If no sounds are playing, this method fails and returns an empty playback.
+			</description>
+		</method>
+		<method name="has_stream_playback">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if any sound is active, even if [member stream_paused] is set to [code]true[/code]. See also [member playing] and [method get_stream_playback].
+			</description>
+		</method>
+		<method name="play">
+			<return type="void" />
+			<param index="0" name="from_position" type="float" default="0.0" />
+			<description>
+				Plays a sound from the beginning, or the given [param from_position] in seconds.
+			</description>
+		</method>
+		<method name="seek">
+			<return type="void" />
+			<param index="0" name="to_position" type="float" />
+			<description>
+				Restarts all sounds to be played from the given [param to_position], in seconds. Does nothing if no sounds are playing.
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops all sounds from this node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
+			If [code]true[/code], this node calls [method play] when entering the tree.
+		</member>
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
+			The target bus name. All sounds from this node will be playing on this bus.
+			[b]Note:[/b] At runtime, if no bus with the given name exists, all sounds will fall back on [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
+		</member>
+		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
+			The maximum number of sounds this node can play at the same time. Calling [method play] after this value is reached will cut off the oldest sounds.
+		</member>
+		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
+			The mix target channels, as one of the [enum MixTarget] constants. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
+		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
+			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.
+		</member>
+		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
+			The playback type of the stream player. If set other than to the default value, it will force that playback type.
+		</member>
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
+			If [code]true[/code], this node is playing sounds. Setting this property has the same effect as [method play] and [method stop].
+		</member>
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
+			The [AudioStream] resource to be played. Setting this property stops all currently playing sounds. If left empty, the [AudioStreamPlayer] does not work.
+		</member>
+		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
+			If [code]true[/code], the sounds are paused. Setting [member stream_paused] to [code]false[/code] resumes all sounds.
+			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or this node is paused (see [member Node.process_mode]).
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
+			Volume of sound, in decibels. This is an offset of the [member stream]'s volume.
+			[b]Note:[/b] To convert between decibel and linear energy (like most volume sliders do), use [member volume_linear], or [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].
+		</member>
+		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
+			Volume of sound, as a linear value.
+			[b]Note:[/b] This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.
+		</member>
+	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when a sound finishes playing without interruptions. This signal is [i]not[/i] emitted when calling [method stop], or when exiting the tree while sounds are playing.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="MIX_TARGET_STEREO" value="0" enum="MixTarget">
+			The audio will be played only on the first channel. This is the default.
+		</constant>
+		<constant name="MIX_TARGET_SURROUND" value="1" enum="MixTarget">
+			The audio will be played on all surround channels.
+		</constant>
+		<constant name="MIX_TARGET_CENTER" value="2" enum="MixTarget">
+			The audio will be played on the second channel, which is usually the center.
+		</constant>
+	</constants>
+</class>

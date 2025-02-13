@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GridContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that arranges its child controls in a grid layout.
+	</brief_description>
+	<description>
+		[GridContainer] arranges its child controls in a grid layout. The number of columns is specified by the [member columns] property, whereas the number of rows depends on how many are needed for the child controls. The number of rows and columns is preserved for every size of the container.
+		[b]Note:[/b] [GridContainer] only works with child nodes inheriting from [Control]. It won't rearrange child nodes inheriting from [Node2D].
+	</description>
+	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
+	</tutorials>
+	<members>
+		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
+			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its Control-derived children to accommodate the new layout.
+		</member>
+	</members>
+	<theme_items>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal separation of child nodes.
+		</theme_item>
+		<theme_item name="v_separation" data_type="constant" type="int" default="4">
+			The vertical separation of child nodes.
+		</theme_item>
+	</theme_items>
+</class>

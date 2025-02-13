@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import subprocess
+import sys
+
+from methods import print_warning
+
+Import("env")
+
+android_files = [
+    "os_android.cpp",
+    "android_input_handler.cpp",
+    "file_access_android.cpp",
+    "file_access_filesystem_jandroid.cpp",
+    "audio_driver_opensl.cpp",
+    "dir_access_jandroid.cpp",
+    "tts_android.cpp",
+    "thread_jandroid.cpp",
+    "net_socket_android.cpp",
+    "java_godot_lib_jni.cpp",
+    "java_class_wrapper.cpp",
+    "java_godot_wrapper.cpp",
+    "java_godot_view_wrapper.cpp",
+    "java_godot_io_wrapper.cpp",
+    "jni_utils.cpp",
+    "android_keys_utils.cpp",
+    "display_server_android.cpp",
+    "plugin/godot_plugin_jni.cpp",
+    "rendering_context_driver_vulkan_android.cpp",
+    "variant/callable_jni.cpp",
+    "dialog_utils_jni.cpp",
+    "game_menu_utils_jni.cpp",
+]
+
+env_android = env.Clone()
+
+android_objects = []
+for x in android_files:
+    android_objects.append(env_android.SharedObject(x))
+
+env_thirdparty = env_android.Clone()
+env_thirdparty.disable_warnings()
+thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
+android_objects.append(thirdparty_obj)
+
+lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
+
+# Needed to force rebuilding the platform files when the thirdparty code is updated.
+env.Depends(lib, thirdparty_obj)
+
+lib_arch_dir = ""
+if env["arch"] == "arm32":
+    lib_arch_dir = "armeabi-v7a"
+elif env["arch"] == "arm64":
+    lib_arch_dir = "arm64-v8a"
+elif env["arch"] == "x86_32":
+    lib_arch_dir = "x86"
+elif env["arch"] == "x86_64":
+    lib_arch_dir = "x86_64"
+else:
+    print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
+
+if lib_arch_dir != "":
+    if env.dev_build:
+        lib_type_dir = "dev"
+    elif env.debug_features:
+        if env.editor_build and env["store_release"]:
+            lib_type_dir = "release"
+        else:
+            lib_type_dir = "debug"
+    else:  # Release
+        lib_type_dir = "release"
+
+    if env.editor_build:
+        lib_tools_dir = "tools/"
+    else:
+        lib_tools_dir = ""
+
+    out_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/" + lib_arch_dir
+    env_android.Command(
+        out_dir + "/libgodot_android.so", "#bin/libgodot" + env["SHLIBSUFFIX"], Move("$TARGET", "$SOURCE")
+    )
+
+    stl_lib_path = (
+        str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
+    )
+    env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    def generate_apk(target, source, env):
+        gradle_process = []
+
+        if sys.platform.startswith("win"):
+            gradle_process = [
+                "cmd",
+                "/c",
+                "gradlew.bat",
+            ]
+        else:
+            gradle_process = ["./gradlew"]
+
+        gradle_process += [
+            "generateGodotEditor" if env["target"] == "editor" else "generateGodotTemplates",
+            "--quiet",
+        ]
+
+        if env["debug_symbols"]:
+            gradle_process += ["-PdoNotStrip=true"]
+
+        subprocess.run(
+            gradle_process,
+            cwd="platform/android/java",
+        )
+
+    if env["generate_apk"]:
+        generate_apk_command = env_android.Command("generate_apk", [], generate_apk)
+        command = env_android.AlwaysBuild(generate_apk_command)
+        env_android.Depends(command, [lib])

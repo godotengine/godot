@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTransformFunc" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Computes a [Transform3D] function within the visual shader graph.
+	</brief_description>
+	<description>
+		Computes an inverse or transpose function on the provided [Transform3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeTransformFunc.Function" default="0">
+			The function to be computed. See [enum Function] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_INVERSE" value="0" enum="Function">
+			Perform the inverse operation on the [Transform3D] matrix.
+		</constant>
+		<constant name="FUNC_TRANSPOSE" value="1" enum="Function">
+			Perform the transpose operation on the [Transform3D] matrix.
+		</constant>
+		<constant name="FUNC_MAX" value="2" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Mesh" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [Resource] that contains vertex array-based geometry.
+	</brief_description>
+	<description>
+		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials. The maximum number of surfaces per mesh is [constant RenderingServer.MAX_MESH_SURFACES].
+	</description>
+	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="_get_aabb" qualifiers="virtual const">
+			<return type="AABB" />
+			<description>
+				Virtual method to override the [AABB] for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_get_blend_shape_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Virtual method to override the number of blend shapes for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_get_blend_shape_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the retrieval of blend shape names for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_get_surface_count" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Virtual method to override the surface count for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_set_blend_shape_name" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Virtual method to override the names of blend shapes for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_array_index_len" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface array index length for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_array_len" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface array length for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_arrays" qualifiers="virtual const">
+			<return type="Array" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface arrays for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
+			<return type="Array[]" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the blend shape arrays for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_format" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface format for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_lods" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface LODs for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_material" qualifiers="virtual const">
+			<return type="Material" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface material for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_get_primitive_type" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Virtual method to override the surface primitive type for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="_surface_set_material" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="material" type="Material" />
+			<description>
+				Virtual method to override the setting of a [param material] at the given [param index] for a custom class extending [Mesh].
+			</description>
+		</method>
+		<method name="create_convex_shape" qualifiers="const">
+			<return type="ConvexPolygonShape3D" />
+			<param index="0" name="clean" type="bool" default="true" />
+			<param index="1" name="simplify" type="bool" default="false" />
+			<description>
+				Calculate a [ConvexPolygonShape3D] from the mesh.
+				If [param clean] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
+				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
+			</description>
+		</method>
+		<method name="create_outline" qualifiers="const">
+			<return type="Mesh" />
+			<param index="0" name="margin" type="float" />
+			<description>
+				Calculate an outline mesh at a defined offset (margin) from the original mesh.
+				[b]Note:[/b] This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).
+			</description>
+		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMesh]).
+			</description>
+		</method>
+		<method name="create_trimesh_shape" qualifiers="const">
+			<return type="ConcavePolygonShape3D" />
+			<description>
+				Calculate a [ConcavePolygonShape3D] from the mesh.
+			</description>
+		</method>
+		<method name="generate_triangle_mesh" qualifiers="const">
+			<return type="TriangleMesh" />
+			<description>
+				Generate a [TriangleMesh] from the mesh. Considers only surfaces using one of these primitive types: [constant PRIMITIVE_TRIANGLES], [constant PRIMITIVE_TRIANGLE_STRIP].
+			</description>
+		</method>
+		<method name="get_aabb" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code].
+				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
+			</description>
+		</method>
+		<method name="get_faces" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.
+			</description>
+		</method>
+		<method name="get_surface_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of surfaces that the [Mesh] holds. This is equivalent to [method MeshInstance3D.get_surface_override_material_count].
+			</description>
+		</method>
+		<method name="surface_get_arrays" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the arrays for the vertices, normals, UVs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
+			</description>
+		</method>
+		<method name="surface_get_blend_shape_arrays" qualifiers="const">
+			<return type="Array[]" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns the blend shape arrays for the requested surface.
+			</description>
+		</method>
+		<method name="surface_get_material" qualifiers="const">
+			<return type="Material" />
+			<param index="0" name="surf_idx" type="int" />
+			<description>
+				Returns a [Material] in a given surface. Surface is rendered using this material.
+				[b]Note:[/b] This returns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To get the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.get_surface_override_material] instead.
+			</description>
+		</method>
+		<method name="surface_set_material">
+			<return type="void" />
+			<param index="0" name="surf_idx" type="int" />
+			<param index="1" name="material" type="Material" />
+			<description>
+				Sets a [Material] for a given surface. Surface will be rendered using this material.
+				[b]Note:[/b] This assigns the material within the [Mesh] resource, not the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties. To set the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, use [method MeshInstance3D.set_surface_override_material] instead.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="lightmap_size_hint" type="Vector2i" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2i(0, 0)">
+			Sets a hint to be used for lightmap resolution.
+		</member>
+	</members>
+	<constants>
+		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
+			Render array as points (one vertex equals one point).
+		</constant>
+		<constant name="PRIMITIVE_LINES" value="1" enum="PrimitiveType">
+			Render array as lines (every two vertices a line is created).
+		</constant>
+		<constant name="PRIMITIVE_LINE_STRIP" value="2" enum="PrimitiveType">
+			Render array as line strip.
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLES" value="3" enum="PrimitiveType">
+			Render array as triangles (every three vertices a triangle is created).
+		</constant>
+		<constant name="PRIMITIVE_TRIANGLE_STRIP" value="4" enum="PrimitiveType">
+			Render array as triangle strips.
+		</constant>
+		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
+			[PackedVector3Array], [PackedVector2Array], or [Array] of vertex positions.
+		</constant>
+		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
+			[PackedVector3Array] of vertex normals.
+			[b]Note:[/b] The array has to consist of normal vectors, otherwise they will be normalized by the engine, potentially causing visual discrepancies.
+		</constant>
+		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
+			[PackedFloat32Array] of vertex tangents. Each element in groups of 4 floats, first 3 floats determine the tangent, and the last the binormal direction as -1 or 1.
+		</constant>
+		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
+			[PackedColorArray] of vertex colors.
+		</constant>
+		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
+			[PackedVector2Array] for UV coordinates.
+		</constant>
+		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
+			[PackedVector2Array] for second UV coordinates.
+		</constant>
+		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
+			Contains custom color channel 0. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+		</constant>
+		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
+			Contains custom color channel 1. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+		</constant>
+		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
+			Contains custom color channel 2. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM2_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+		</constant>
+		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
+			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; Mesh.ARRAY_FORMAT_CUSTOM3_SHIFT) &amp; Mesh.ARRAY_FORMAT_CUSTOM_MASK[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_SNORM], [constant ARRAY_CUSTOM_RG_HALF], or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
+		</constant>
+		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
+			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.
+		</constant>
+		<constant name="ARRAY_WEIGHTS" value="11" enum="ArrayType">
+			[PackedFloat32Array] or [PackedFloat64Array] of bone weights in the range [code]0.0[/code] to [code]1.0[/code] (inclusive). Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.
+		</constant>
+		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
+			[PackedInt32Array] of integers used as indices referencing vertices, colors, normals, tangents, and textures. All of those arrays must have the same number of elements as the vertex array. No index can be beyond the vertex array size. When this index array is present, it puts the function into "index mode," where the index selects the [i]i[/i]'th vertex, normal, tangent, color, UV, etc. This means if you want to have different normals or colors along an edge, you have to duplicate the vertices.
+			For triangles, the index array is interpreted as triples, referring to the vertices of each triangle. For lines, the index array is in pairs indicating the start and end of each line.
+		</constant>
+		<constant name="ARRAY_MAX" value="13" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
+		</constant>
+		<constant name="ARRAY_CUSTOM_RGBA8_UNORM" value="0" enum="ArrayCustomFormat">
+			Indicates this custom channel contains unsigned normalized byte colors from 0 to 1, encoded as [PackedByteArray].
+		</constant>
+		<constant name="ARRAY_CUSTOM_RGBA8_SNORM" value="1" enum="ArrayCustomFormat">
+			Indicates this custom channel contains signed normalized byte colors from -1 to 1, encoded as [PackedByteArray].
+		</constant>
+		<constant name="ARRAY_CUSTOM_RG_HALF" value="2" enum="ArrayCustomFormat">
+			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray]. Only red and green channels are used.
+		</constant>
+		<constant name="ARRAY_CUSTOM_RGBA_HALF" value="3" enum="ArrayCustomFormat">
+			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray].
+		</constant>
+		<constant name="ARRAY_CUSTOM_R_FLOAT" value="4" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red channel is used.
+		</constant>
+		<constant name="ARRAY_CUSTOM_RG_FLOAT" value="5" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red and green channels are used.
+		</constant>
+		<constant name="ARRAY_CUSTOM_RGB_FLOAT" value="6" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red, green and blue channels are used.
+		</constant>
+		<constant name="ARRAY_CUSTOM_RGBA_FLOAT" value="7" enum="ArrayCustomFormat">
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array].
+		</constant>
+		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
+			Represents the size of the [enum ArrayCustomFormat] enum.
+		</constant>
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains vertices. All meshes require a vertex array so this should always be present.
+		</constant>
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains normals.
+		</constant>
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains tangents.
+		</constant>
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains colors.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains UVs.
+		</constant>
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains second UV.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains custom channel index 0.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains custom channel index 1.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains custom channel index 2.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains custom channel index 3.
+		</constant>
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains bones.
+		</constant>
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat" is_bitfield="true">
+			Mesh array contains bone weights.
+		</constant>
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat" is_bitfield="true">
+			Mesh array uses indices.
+		</constant>
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
+			Mask of mesh channels permitted in blend shapes.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat" is_bitfield="true">
+			Shift of first custom channel.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat" is_bitfield="true">
+			Number of format bits per custom channel. See [enum ArrayCustomFormat].
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat" is_bitfield="true">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 0.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat" is_bitfield="true">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 1.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat" is_bitfield="true">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 2.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat" is_bitfield="true">
+			Amount to shift [enum ArrayCustomFormat] for custom channel index 3.
+		</constant>
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
+			Mask of custom format bits per custom channel. Must be shifted by one of the SHIFT constants. See [enum ArrayCustomFormat].
+		</constant>
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat" is_bitfield="true">
+			Shift of first compress flag. Compress flags should be passed to [method ArrayMesh.add_surface_from_arrays] and [method SurfaceTool.commit].
+		</constant>
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the array contains 2D vertices.
+		</constant>
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
+			Flag indices that the mesh data will use [code]GL_DYNAMIC_DRAW[/code] on GLES. Unused on Vulkan.
+		</constant>
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the mesh contains up to 8 bone influences per vertex. This flag indicates that [constant ARRAY_BONES] and [constant ARRAY_WEIGHTS] elements will have double length.
+		</constant>
+		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the mesh intentionally contains no vertex array.
+		</constant>
+		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
+			Blend shapes are normalized.
+		</constant>
+		<constant name="BLEND_SHAPE_MODE_RELATIVE" value="1" enum="BlendShapeMode">
+			Blend shapes are relative to base weight.
+		</constant>
+	</constants>
+</class>

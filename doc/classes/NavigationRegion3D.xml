@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationRegion3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A traversable 3D region that [NavigationAgent3D]s can use for pathfinding.
+	</brief_description>
+	<description>
+		A traversable 3D region based on a [NavigationMesh] that [NavigationAgent3D]s can use for pathfinding.
+		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer3D.map_set_edge_connection_margin].
+		[b]Note:[/b] Overlapping two regions' navigation meshes is not enough for connecting two regions. They must share a similar edge.
+		The cost of entering this region from another region can be controlled with the [member enter_cost] value.
+		[b]Note:[/b] This value is not added to the path cost when the start position is already inside this region.
+		The cost of traveling distances inside this region can be controlled with the [member travel_cost] multiplier.
+		[b]Note:[/b] This node caches changes to its properties, so if you make changes to the underlying region [RID] in [NavigationServer3D], they will not be reflected in this node's properties.
+	</description>
+	<tutorials>
+		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
+	</tutorials>
+	<methods>
+		<method name="bake_navigation_mesh">
+			<return type="void" />
+			<param index="0" name="on_thread" type="bool" default="true" />
+			<description>
+				Bakes the [NavigationMesh]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization. Also, please note that baking on a separate thread is automatically disabled on operating systems that cannot use threads (such as Web with threads disabled).
+			</description>
+		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the axis-aligned bounding box for the region's transformed navigation mesh.
+			</description>
+		</method>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the current navigation map [RID] used by this region.
+			</description>
+		</method>
+		<method name="get_region_rid" qualifiers="const" deprecated="Use [method get_rid] instead.">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer3D].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer3D]. Combined with [method NavigationServer3D.map_get_closest_point_owner] can be used to identify the [NavigationRegion3D] closest to a point on the merged navigation map.
+			</description>
+		</method>
+		<method name="is_baking" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the [NavigationMesh] is being baked on a background thread.
+			</description>
+		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this region should use. By default the region will automatically join the [World3D] default navigation map so this function is only required to override the default map.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			Determines if the [NavigationRegion3D] is enabled or disabled.
+		</member>
+		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
+			When pathfinding enters this region's navigation mesh from another regions navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining all navigation layers the region belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
+		</member>
+		<member name="navigation_mesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
+			The [NavigationMesh] resource to use.
+		</member>
+		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
+			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [member travel_cost] for determining the shortest path.
+		</member>
+		<member name="use_edge_connections" type="bool" setter="set_use_edge_connections" getter="get_use_edge_connections" default="true">
+			If enabled the navigation region will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+		</member>
+	</members>
+	<signals>
+		<signal name="bake_finished">
+			<description>
+				Notifies when the navigation mesh bake operation is completed.
+			</description>
+		</signal>
+		<signal name="navigation_mesh_changed">
+			<description>
+				Notifies when the [NavigationMesh] has changed.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SplitContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that splits two child controls horizontally or vertically and provides a grabber for adjusting the split ratio.
+	</brief_description>
+	<description>
+		A container that accepts only two child controls, then arranges them horizontally or vertically and creates a divisor between them. The divisor can be dragged around to change the size relation between the child controls.
+	</description>
+	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<methods>
+		<method name="clamp_split_offset">
+			<return type="void" />
+			<description>
+				Clamps the [member split_offset] value to not go outside the currently possible minimal and maximum values.
+			</description>
+		</method>
+		<method name="get_drag_area_control">
+			<return type="Control" />
+			<description>
+				Returns the drag area [Control]. For example, you can move a pre-configured button into the drag area [Control] so that it rides along with the split bar. Try setting the [Button] anchors to [code]center[/code] prior to the [code]reparent()[/code] call.
+				[codeblock]
+				$BarnacleButton.reparent($SplitContainer.get_drag_area_control())
+				[/codeblock]
+				[b]Note:[/b] The drag area [Control] is drawn over the [SplitContainer]'s children, so [CanvasItem] draw objects called from the [Control] and children added to the [Control] will also appear over the [SplitContainer]'s children. Try setting [member Control.mouse_filter] of custom children to [constant Control.MOUSE_FILTER_IGNORE] to prevent blocking the mouse from dragging if desired.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
+			If [code]true[/code], the dragger will be disabled and the children will be sized as if the [member split_offset] was [code]0[/code].
+		</member>
+		<member name="drag_area_highlight_in_editor" type="bool" setter="set_drag_area_highlight_in_editor" getter="is_drag_area_highlight_in_editor_enabled" default="false">
+			Highlights the drag area [Rect2] so you can see where it is during development. The drag area is gold if [member dragging_enabled] is [code]true[/code], and red if [code]false[/code].
+		</member>
+		<member name="drag_area_margin_begin" type="int" setter="set_drag_area_margin_begin" getter="get_drag_area_margin_begin" default="0">
+			Reduces the size of the drag area and split bar [theme_item split_bar_background] at the beginning of the container.
+		</member>
+		<member name="drag_area_margin_end" type="int" setter="set_drag_area_margin_end" getter="get_drag_area_margin_end" default="0">
+			Reduces the size of the drag area and split bar [theme_item split_bar_background] at the end of the container.
+		</member>
+		<member name="drag_area_offset" type="int" setter="set_drag_area_offset" getter="get_drag_area_offset" default="0">
+			Shifts the drag area in the axis of the container to prevent the drag area from overlapping the [ScrollBar] or other selectable [Control] of a child node.
+		</member>
+		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
+			Determines the dragger's visibility. See [enum DraggerVisibility] for details. This property does not determine whether dragging is enabled or not. Use [member dragging_enabled] for that.
+		</member>
+		<member name="dragging_enabled" type="bool" setter="set_dragging_enabled" getter="is_dragging_enabled" default="true">
+			Enables or disables split dragging.
+		</member>
+		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
+			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
+		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
+			If [code]true[/code], the [SplitContainer] will arrange its children vertically, rather than horizontally.
+			Can't be changed when using [HSplitContainer] and [VSplitContainer].
+		</member>
+	</members>
+	<signals>
+		<signal name="drag_ended">
+			<description>
+				Emitted when the user ends dragging.
+			</description>
+		</signal>
+		<signal name="drag_started">
+			<description>
+				Emitted when the user starts dragging.
+			</description>
+		</signal>
+		<signal name="dragged">
+			<param index="0" name="offset" type="int" />
+			<description>
+				Emitted when the dragger is dragged by user.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DRAGGER_VISIBLE" value="0" enum="DraggerVisibility">
+			The split dragger icon is always visible when [theme_item autohide] is [code]false[/code], otherwise visible only when the cursor hovers it.
+			The size of the grabber icon determines the minimum [theme_item separation].
+			The dragger icon is automatically hidden if the length of the grabber icon is longer than the split bar.
+		</constant>
+		<constant name="DRAGGER_HIDDEN" value="1" enum="DraggerVisibility">
+			The split dragger icon is never visible regardless of the value of [theme_item autohide].
+			The size of the grabber icon determines the minimum [theme_item separation].
+		</constant>
+		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2" enum="DraggerVisibility">
+			The split dragger icon is not visible, and the split bar is collapsed to zero thickness.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="autohide" data_type="constant" type="int" default="1">
+			Boolean value. If [code]1[/code] ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If [code]0[/code] ([code]false[/code]), it's always visible. The [member dragger_visibility] must be [constant DRAGGER_VISIBLE].
+		</theme_item>
+		<theme_item name="minimum_grab_thickness" data_type="constant" type="int" default="6">
+			The minimum thickness of the area users can click on to grab the split bar. This ensures that the split bar can still be dragged if [theme_item separation] or [theme_item h_grabber] / [theme_item v_grabber]'s size is too narrow to easily select.
+		</theme_item>
+		<theme_item name="separation" data_type="constant" type="int" default="12">
+			The split bar thickness, i.e., the gap between the two children of the container. This is overridden by the size of the grabber icon if [member dragger_visibility] is set to [constant DRAGGER_VISIBLE], or [constant DRAGGER_HIDDEN], and [theme_item separation] is smaller than the size of the grabber icon in the same axis.
+			[b]Note:[/b] To obtain [theme_item separation] values less than the size of the grabber icon, for example a [code]1 px[/code] hairline, set [theme_item h_grabber] or [theme_item v_grabber] to a new [ImageTexture], which effectively sets the grabber icon size to [code]0 px[/code].
+		</theme_item>
+		<theme_item name="grabber" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area.
+		</theme_item>
+		<theme_item name="h_grabber" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area when [member vertical] is [code]false[/code].
+		</theme_item>
+		<theme_item name="v_grabber" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area when [member vertical] is [code]true[/code].
+		</theme_item>
+		<theme_item name="split_bar_background" data_type="style" type="StyleBox">
+			Determines the background of the split bar if its thickness is greater than zero.
+		</theme_item>
+	</theme_items>
+</class>

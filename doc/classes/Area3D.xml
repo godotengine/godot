@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Area3D" inherits="CollisionObject3D" keywords="trigger" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A region of 3D space that detects other [CollisionObject3D]s entering or exiting it.
+	</brief_description>
+	<description>
+		[Area3D] is a region of 3D space defined by one or multiple [CollisionShape3D] or [CollisionPolygon3D] child nodes. It detects when other [CollisionObject3D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
+		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
+		[b]Note:[/b] Areas and bodies created with [PhysicsServer3D] might not interact as expected with [Area3D]s, and might not emit signals or track objects correctly.
+		[b]Warning:[/b] Using a [ConcavePolygonShape3D] inside a [CollisionShape3D] child of this node (created e.g. by using the [b]Create Trimesh Collision Sibling[/b] option in the [b]Mesh[/b] menu that appears when selecting a [MeshInstance3D] node) may give unexpected results, since this collision shape is hollow. If this is not desired, it has to be split into multiple [ConvexPolygonShape3D]s or primitive shapes like [BoxShape3D], or in some cases it may be replaceable by a [CollisionPolygon3D].
+	</description>
+	<tutorials>
+		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+	</tutorials>
+	<methods>
+		<method name="get_overlapping_areas" qualifiers="const">
+			<return type="Area3D[]" />
+			<description>
+				Returns a list of intersecting [Area3D]s. The overlapping area's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="get_overlapping_bodies" qualifiers="const">
+			<return type="Node3D[]" />
+			<description>
+				Returns a list of intersecting [PhysicsBody3D]s and [GridMap]s. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="has_overlapping_areas" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if intersecting any [Area3D]s, otherwise returns [code]false[/code]. The overlapping area's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) the list of overlapping areas is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="has_overlapping_bodies" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if intersecting any [PhysicsBody3D]s or [GridMap]s, otherwise returns [code]false[/code]. The overlapping body's [member CollisionObject3D.collision_layer] must be part of this area's [member CollisionObject3D.collision_mask] in order to be detected.
+				For performance reasons (collisions are all processed at the same time) the list of overlapping bodies is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_area" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="Node" />
+			<description>
+				Returns [code]true[/code] if the given [Area3D] intersects or overlaps this [Area3D], [code]false[/code] otherwise.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="overlaps_body" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="Node" />
+			<description>
+				Returns [code]true[/code] if the given physics body intersects or overlaps this [Area3D], [code]false[/code] otherwise.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				The [param body] argument can either be a [PhysicsBody3D] or a [GridMap] instance. While GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.1">
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
+			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
+		</member>
+		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for angular damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
+			The name of the area's audio bus.
+		</member>
+		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
+			If [code]true[/code], the area's audio bus overrides the default audio bus.
+		</member>
+		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="9.8">
+			The area's gravity intensity (in meters per second squared). This value multiplies the gravity direction. This is useful to alter the force of gravity without altering its direction.
+		</member>
+		<member name="gravity_direction" type="Vector3" setter="set_gravity_direction" getter="get_gravity_direction" default="Vector3(0, -1, 0)">
+			The area's gravity vector (not normalized).
+		</member>
+		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_point_center]). See also [member gravity_space_override].
+		</member>
+		<member name="gravity_point_center" type="Vector3" setter="set_gravity_point_center" getter="get_gravity_point_center" default="Vector3(0, -1, 0)">
+			If gravity is a point (see [member gravity_point]), this will be the point of attraction.
+		</member>
+		<member name="gravity_point_unit_distance" type="float" setter="set_gravity_point_unit_distance" getter="get_gravity_point_unit_distance" default="0.0">
+			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4x the gravity), and so on.
+			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
+		</member>
+		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
+			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
+		</member>
+		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+			Override mode for linear damping calculations within this area. See [enum SpaceOverride] for possible values.
+		</member>
+		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
+			If [code]true[/code], other monitoring areas can detect this area.
+		</member>
+		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring" default="true">
+			If [code]true[/code], the area detects bodies or areas entering and exiting it.
+		</member>
+		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="0">
+			The area's priority. Higher priority areas are processed first. The [World3D]'s physics is always processed last, after all areas.
+		</member>
+		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" default="0.0">
+			The degree to which this area applies reverb to its associated audio. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
+		</member>
+		<member name="reverb_bus_enabled" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
+			If [code]true[/code], the area applies reverb to its associated audio.
+		</member>
+		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus_name" getter="get_reverb_bus_name" default="&amp;&quot;Master&quot;">
+			The name of the reverb bus to use for this area's associated audio.
+		</member>
+		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">
+			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
+		</member>
+		<member name="wind_attenuation_factor" type="float" setter="set_wind_attenuation_factor" getter="get_wind_attenuation_factor" default="0.0">
+			The exponential rate at which wind force decreases with distance from its origin.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
+		</member>
+		<member name="wind_force_magnitude" type="float" setter="set_wind_force_magnitude" getter="get_wind_force_magnitude" default="0.0">
+			The magnitude of area-specific wind force.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
+		</member>
+		<member name="wind_source_path" type="NodePath" setter="set_wind_source_path" getter="get_wind_source_path" default="NodePath(&quot;&quot;)">
+			The [Node3D] which is used to specify the direction and origin of an area-specific wind force. The direction is opposite to the z-axis of the [Node3D]'s local transform, and its origin is the origin of the [Node3D]'s local transform.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
+		</member>
+	</members>
+	<signals>
+		<signal name="area_entered">
+			<param index="0" name="area" type="Area3D" />
+			<description>
+				Emitted when the received [param area] enters this area. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="area_exited">
+			<param index="0" name="area" type="Area3D" />
+			<description>
+				Emitted when the received [param area] exits this area. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="area_shape_entered">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area3D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer3D].
+				[b]Example:[/b] Get the [CollisionShape3D] node from the shape index:
+				[codeblocks]
+				[gdscript]
+				var other_shape_owner = area.shape_find_owner(area_shape_index)
+				var other_shape_node = area.shape_owner_get_owner(other_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</signal>
+		<signal name="area_shape_exited">
+			<param index="0" name="area_rid" type="RID" />
+			<param index="1" name="area" type="Area3D" />
+			<param index="2" name="area_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of the received [param area] exits a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal area_shape_entered].
+			</description>
+		</signal>
+		<signal name="body_entered">
+			<param index="0" name="body" type="Node3D" />
+			<description>
+				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="body_exited">
+			<param index="0" name="body" type="Node3D" />
+			<description>
+				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+			</description>
+		</signal>
+		<signal name="body_shape_entered">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node3D" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer3D].
+				[b]Example:[/b] Get the [CollisionShape3D] node from the shape index:
+				[codeblocks]
+				[gdscript]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</signal>
+		<signal name="body_shape_exited">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node3D" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when a [Shape3D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal body_shape_entered].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride">
+			This area does not affect gravity/damping.
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order).
+		</constant>
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order), ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
+			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
+		</constant>
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
+			This area replaces any gravity/damping calculated so far (in [member priority] order), but keeps calculating the rest of the areas.
+		</constant>
+	</constants>
+</class>

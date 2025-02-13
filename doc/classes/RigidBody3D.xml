@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RigidBody3D" inherits="PhysicsBody3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D physics body that is moved by a physics simulation.
+	</brief_description>
+	<description>
+		[RigidBody3D] implements full 3D physics. It cannot be controlled directly, instead, you must apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, rotation, react to collisions, and affect other physics bodies in its path.
+		The body's behavior can be adjusted via [member lock_rotation], [member freeze], and [member freeze_mode]. By changing various properties of the object, such as [member mass], you can control how the physics simulation acts on it.
+		A rigid body will always maintain its shape and size, even when forces are applied to it. It is useful for objects that can be interacted with in an environment, such as a tree that can be knocked over or a stack of crates that can be pushed around.
+		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
+		[b]Note:[/b] Changing the 3D transform or [member linear_velocity] of a [RigidBody3D] very often may lead to some unpredictable behaviors. If you need to directly affect the body, prefer [method _integrate_forces] as it allows you to directly access the physics state.
+	</description>
+	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+	</tutorials>
+	<methods>
+		<method name="_integrate_forces" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="state" type="PhysicsDirectBodyState3D" />
+			<description>
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it is called before the standard force integration, but the [member custom_integrator] property allows you to disable the standard force integration and do fully custom force integration for a body.
+			</description>
+		</method>
+		<method name="add_constant_central_force">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<description>
+				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
+				This is equivalent to using [method add_constant_force] at the body's center of mass.
+			</description>
+		</method>
+		<method name="add_constant_force">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<description>
+				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector3(0, 0, 0)[/code].
+				[param position] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="add_constant_torque">
+			<return type="void" />
+			<param index="0" name="torque" type="Vector3" />
+			<description>
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = Vector3(0, 0, 0)[/code].
+			</description>
+		</method>
+		<method name="apply_central_force">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<description>
+				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				This is equivalent to using [method apply_force] at the body's center of mass.
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector3" />
+			<description>
+				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				This is equivalent to using [method apply_impulse] at the body's center of mass.
+			</description>
+		</method>
+		<method name="apply_force">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<description>
+				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				[param position] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="apply_impulse">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector3" />
+			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
+			<description>
+				Applies a positioned impulse to the body.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[param position] is the offset from the body origin in global coordinates.
+			</description>
+		</method>
+		<method name="apply_torque">
+			<return type="void" />
+			<param index="0" name="torque" type="Vector3" />
+			<description>
+				Applies a rotational force without affecting position. A force is time dependent and meant to be applied every physics update.
+				[b]Note:[/b] [member inertia] is required for this to work. To have [member inertia], an active [CollisionShape3D] must be a child of the node, or you can manually set [member inertia].
+			</description>
+		</method>
+		<method name="apply_torque_impulse">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector3" />
+			<description>
+				Applies a rotational impulse to the body without affecting the position.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+				[b]Note:[/b] [member inertia] is required for this to work. To have [member inertia], an active [CollisionShape3D] must be a child of the node, or you can manually set [member inertia].
+			</description>
+		</method>
+		<method name="get_colliding_bodies" qualifiers="const">
+			<return type="Node3D[]" />
+			<description>
+				Returns a list of the bodies colliding with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions.
+				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+			</description>
+		</method>
+		<method name="get_contact_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of contacts this body has with other bodies. By default, this returns 0 unless bodies are configured to monitor contacts (see [member contact_monitor]).
+				[b]Note:[/b] To retrieve the colliding bodies, use [method get_colliding_bodies].
+			</description>
+		</method>
+		<method name="get_inverse_inertia_tensor" qualifiers="const">
+			<return type="Basis" />
+			<description>
+				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the [RigidBody3D].
+			</description>
+		</method>
+		<method name="set_axis_velocity">
+			<return type="void" />
+			<param index="0" name="axis_velocity" type="Vector3" />
+			<description>
+				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
+			Damps the body's rotation. By default, the body will use the [member ProjectSettings.physics/3d/default_angular_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
+			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
+		</member>
+		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidBody3D.DampMode" default="0">
+			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
+		</member>
+		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
+			The RigidBody3D's rotational velocity in [i]radians[/i] per second.
+		</member>
+		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
+			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
+		</member>
+		<member name="center_of_mass" type="Vector3" setter="set_center_of_mass" getter="get_center_of_mass" default="Vector3(0, 0, 0)">
+			The body's custom center of mass, relative to the body's origin position, when [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_CUSTOM]. This is the balanced point of the body, where applied forces only cause linear acceleration. Applying forces outside of the center of mass causes angular acceleration.
+			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically computed.
+		</member>
+		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidBody3D.CenterOfMassMode" default="0">
+			Defines the way the body's center of mass is set. See [enum CenterOfMassMode] for possible values.
+		</member>
+		<member name="constant_force" type="Vector3" setter="set_constant_force" getter="get_constant_force" default="Vector3(0, 0, 0)">
+			The body's total constant positional forces applied during each physics update.
+			See [method add_constant_force] and [method add_constant_central_force].
+		</member>
+		<member name="constant_torque" type="Vector3" setter="set_constant_torque" getter="get_constant_torque" default="Vector3(0, 0, 0)">
+			The body's total constant rotational forces applied during each physics update.
+			See [method add_constant_torque].
+		</member>
+		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
+			If [code]true[/code], the RigidBody3D will emit signals when it collides with another body.
+			[b]Note:[/b] By default the maximum contacts reported is set to 0, meaning nothing will be recorded, see [member max_contacts_reported].
+		</member>
+		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
+			If [code]true[/code], continuous collision detection is used.
+			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses fewer impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
+		</member>
+		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
+			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
+			Setting this property will call the method [method PhysicsServer3D.body_set_omit_force_integration] internally.
+		</member>
+		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
+			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
+			See [member freeze_mode] to set the body's behavior when frozen.
+			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
+		</member>
+		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody3D.FreezeMode" default="0">
+			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled. See [enum FreezeMode] for possible values.
+			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
+		</member>
+		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
+			This is multiplied by [member ProjectSettings.physics/3d/default_gravity] to produce this body's gravity. For example, a value of [code]1.0[/code] will apply normal gravity, [code]2.0[/code] will apply double the gravity, and [code]0.5[/code] will apply half the gravity to this body.
+		</member>
+		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
+			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
+			If set to [constant Vector3.ZERO], inertia is automatically computed (default value).
+			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
+			[codeblocks]
+			[gdscript]
+			@onready var ball = $Ball
+
+			func get_ball_inertia():
+			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
+			[/gdscript]
+			[csharp]
+			private RigidBody3D _ball;
+
+			public override void _Ready()
+			{
+			    _ball = GetNode&lt;RigidBody3D&gt;("Ball");
+			}
+
+			private Vector3 GetBallInertia()
+			{
+			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
+			}
+			[/csharp]
+			[/codeblocks]
+		</member>
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
+			Damps the body's movement. By default, the body will use the [member ProjectSettings.physics/3d/default_linear_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
+			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
+		</member>
+		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidBody3D.DampMode" default="0">
+			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
+		</member>
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
+			The body's linear velocity in units per second. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+		</member>
+		<member name="lock_rotation" type="bool" setter="set_lock_rotation_enabled" getter="is_lock_rotation_enabled" default="false">
+			If [code]true[/code], the body cannot rotate. Gravity and forces only apply linear movement.
+		</member>
+		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">
+			The body's mass.
+		</member>
+		<member name="max_contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
+			The maximum number of contacts that will be recorded. Requires a value greater than 0 and [member contact_monitor] to be set to [code]true[/code] to start to register contacts. Use [method get_contact_count] to retrieve the count or [method get_colliding_bodies] to retrieve bodies that have been collided with.
+			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
+		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
+		</member>
+		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
+			If [code]true[/code], the body will not move and will not calculate forces until woken up by another body through, for example, a collision, or by using the [method apply_impulse] or [method apply_force] methods.
+		</member>
+	</members>
+	<signals>
+		<signal name="body_entered">
+			<param index="0" name="body" type="Node" />
+			<description>
+				Emitted when a collision with another [PhysicsBody3D] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+			</description>
+		</signal>
+		<signal name="body_exited">
+			<param index="0" name="body" type="Node" />
+			<description>
+				Emitted when the collision with another [PhysicsBody3D] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+			</description>
+		</signal>
+		<signal name="body_shape_entered">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when one of this RigidBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+			</description>
+		</signal>
+		<signal name="body_shape_exited">
+			<param index="0" name="body_rid" type="RID" />
+			<param index="1" name="body" type="Node" />
+			<param index="2" name="body_shape_index" type="int" />
+			<param index="3" name="local_shape_index" type="int" />
+			<description>
+				Emitted when the collision between one of this RigidBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+			</description>
+		</signal>
+		<signal name="sleeping_state_changed">
+			<description>
+				Emitted when the physics engine changes the body's sleeping state.
+				[b]Note:[/b] Changing the value [member sleeping] will not trigger this signal. It is only emitted if the sleeping state is changed by the physics engine or [code]emit_signal("sleeping_state_changed")[/code] is used.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="FREEZE_MODE_STATIC" value="0" enum="FreezeMode">
+			Static body freeze mode (default). The body is not affected by gravity and forces. It can be only moved by user code and doesn't collide with other bodies along its path.
+		</constant>
+		<constant name="FREEZE_MODE_KINEMATIC" value="1" enum="FreezeMode">
+			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
+		</constant>
+		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
+			In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
+		</constant>
+		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
+			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.
+		</constant>
+		<constant name="DAMP_MODE_COMBINE" value="0" enum="DampMode">
+			In this mode, the body's damping value is added to any value set in areas or the default value.
+		</constant>
+		<constant name="DAMP_MODE_REPLACE" value="1" enum="DampMode">
+			In this mode, the body's damping value replaces any value set in areas or the default value.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,194 @@
+// Gradle build config for Godot Engine's Android port.
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'base'
+}
+
+ext {
+    // Retrieve the build number from the environment variable; default to 0 if none is specified.
+    // The build number is added as a suffix to the version code for upload to the Google Play store.
+    getEditorBuildNumber = { ->
+        int buildNumber = 0
+        String versionStatus = System.getenv("GODOT_VERSION_STATUS")
+        if (versionStatus != null && !versionStatus.isEmpty()) {
+            try {
+                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""))
+            } catch (NumberFormatException ignored) {
+                buildNumber = 0
+            }
+        }
+
+        return buildNumber
+    }
+    // Value by which the Godot version code should be offset by to make room for the build number
+    editorBuildNumberOffset = 100
+
+    // Return the keystore file used for signing the release build.
+    getGodotKeystoreFile = { ->
+        def keyStore = System.getenv("GODOT_ANDROID_SIGN_KEYSTORE")
+        if (keyStore == null || keyStore.isEmpty()) {
+            return null
+        }
+        return file(keyStore)
+    }
+
+    // Return the key alias used for signing the release build.
+    getGodotKeyAlias = { ->
+        def kAlias = System.getenv("GODOT_ANDROID_KEYSTORE_ALIAS")
+        return kAlias
+    }
+
+    // Return the password for the key used for signing the release build.
+    getGodotSigningPassword = { ->
+        def signingPassword = System.getenv("GODOT_ANDROID_SIGN_PASSWORD")
+        return signingPassword
+    }
+
+    // Returns true if the environment variables contains the configuration for signing the release
+    // build.
+    hasReleaseSigningConfigs = { ->
+        def keystoreFile = getGodotKeystoreFile()
+        def keyAlias = getGodotKeyAlias()
+        def signingPassword = getGodotSigningPassword()
+
+        return keystoreFile != null && keystoreFile.isFile()
+            && keyAlias != null && !keyAlias.isEmpty()
+            && signingPassword != null && !signingPassword.isEmpty()
+    }
+}
+
+def generateVersionCode() {
+    int libraryVersionCode = getGodotLibraryVersionCode()
+    return (libraryVersionCode * editorBuildNumberOffset) + getEditorBuildNumber()
+}
+
+def generateVersionName() {
+    String libraryVersionName = getGodotLibraryVersionName()
+    int buildNumber = getEditorBuildNumber()
+    return buildNumber == 0 ? libraryVersionName : libraryVersionName + ".$buildNumber"
+}
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+    ndkVersion versions.ndkVersion
+
+    namespace = "org.godotengine.editor"
+
+    defaultConfig {
+        // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
+        applicationId "org.godotengine.editor.v4"
+        versionCode generateVersionCode()
+        versionName generateVersionName()
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+
+        missingDimensionStrategy 'products', 'editor'
+        manifestPlaceholders += [
+            editorAppName: "Godot Engine 4",
+            editorBuildSuffix: ""
+        ]
+    }
+
+    base {
+        archivesName = "android_editor"
+    }
+
+    compileOptions {
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = versions.javaVersion
+    }
+
+    signingConfigs {
+        release {
+            storeFile getGodotKeystoreFile()
+            storePassword getGodotSigningPassword()
+            keyAlias getGodotKeyAlias()
+            keyPassword getGodotSigningPassword()
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        dev {
+            initWith debug
+            applicationIdSuffix ".dev"
+            manifestPlaceholders += [editorBuildSuffix: " (dev)"]
+        }
+
+        debug {
+            initWith release
+            applicationIdSuffix ".debug"
+            manifestPlaceholders += [editorBuildSuffix: " (debug)"]
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            if (hasReleaseSigningConfigs()) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    packagingOptions {
+        // 'doNotStrip' is enabled for development within Android Studio
+        if (shouldNotStrip()) {
+            doNotStrip '**/*.so'
+        }
+    }
+
+    flavorDimensions = ["android_distribution"]
+    productFlavors {
+        android {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+        }
+        horizonos {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".meta"
+            versionNameSuffix "-meta"
+            minSdkVersion 23
+            targetSdkVersion 32
+        }
+        picoos {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".pico"
+            versionNameSuffix "-pico"
+            minSdkVersion 29
+            targetSdkVersion 32
+        }
+    }
+}
+
+dependencies {
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation project(":lib")
+
+    implementation "androidx.window:window:1.3.0"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
+
+    // Meta dependencies
+    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
+    // Pico dependencies
+    picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
+}

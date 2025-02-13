@@ -1,0 +1,10638 @@
+# Tamil translation of the Godot Engine editor properties.
+# Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+#
+# தமிழ்நேரம் <anishprabu.t@gmail.com>, 2024, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine editor properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2025-01-02 22:49+0000\n"
+"Last-Translator: தமிழ்நேரம் <anishprabu.t@gmail.com>\n"
+"Language-Team: Tamil <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/ta/>\n"
+"Language: ta\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.10-dev\n"
+
+msgid "Application"
+msgstr "பயன்பாடு"
+
+msgid "Config"
+msgstr "கட்டமைப்பு"
+
+msgid "Name"
+msgstr "பெயர்"
+
+msgid "Name Localized"
+msgstr "பெயர் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Description"
+msgstr "விவரம்"
+
+msgid "Version"
+msgstr "பதிப்பு"
+
+msgid "Run"
+msgstr "ஓடு"
+
+msgid "Main Scene"
+msgstr "முக்கிய காட்சி"
+
+msgid "Disable stdout"
+msgstr "Stdout ஐ முடக்கு"
+
+msgid "Disable stderr"
+msgstr "Stderr ஐ முடக்கு"
+
+msgid "Print Header"
+msgstr "தலைப்பு தலைப்பு"
+
+msgid "Enable Alt Space Menu"
+msgstr "மாற்று விண்வெளி மெனுவை இயக்கவும்"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "மறைக்கப்பட்ட திட்ட தரவு கோப்பகத்தைப் பயன்படுத்தவும்"
+
+msgid "Use Custom User Dir"
+msgstr "தனிப்பயன் பயனர் அடைவு ஐப் பயன்படுத்தவும்"
+
+msgid "Custom User Dir Name"
+msgstr "தனிப்பயன் பயனர் டிர் பெயர்"
+
+msgid "Project Settings Override"
+msgstr "திட்ட அமைப்புகள் மேலெழுதும்"
+
+msgid "Main Loop Type"
+msgstr "முதன்மை வளைய வகை"
+
+msgid "Auto Accept Quit"
+msgstr "தானாக ஏற்றுக்கொள்ளுங்கள்"
+
+msgid "Quit on Go Back"
+msgstr "திரும்பிச் செல்லுங்கள்"
+
+msgid "Display"
+msgstr "காட்சி"
+
+msgid "Window"
+msgstr "சாளரம்"
+
+msgid "Size"
+msgstr "அளவு"
+
+msgid "Viewport Width"
+msgstr "வியூபோர்ட் அகலம்"
+
+msgid "Viewport Height"
+msgstr "வியூபோர்ட் உயரம்"
+
+msgid "Mode"
+msgstr "பயன்முறை"
+
+msgid "Initial Position Type"
+msgstr "தொடக்க நிலை வகை"
+
+msgid "Initial Position"
+msgstr "தொடக்க நிலை"
+
+msgid "Initial Screen"
+msgstr "தொடக்கத் திரை"
+
+msgid "Resizable"
+msgstr "மறுபரிசீலனை செய்யக்கூடியது"
+
+msgid "Borderless"
+msgstr "எல்லையற்ற"
+
+msgid "Always on Top"
+msgstr "எப்போதும் மேலே"
+
+msgid "Transparent"
+msgstr "வெளிப்படையானது"
+
+msgid "Extend to Title"
+msgstr "தலைப்புக்கு நீட்டிக்கவும்"
+
+msgid "No Focus"
+msgstr "கவனம் இல்லை"
+
+msgid "Window Width Override"
+msgstr "சாளர அகலம் மேலெழுகிறது"
+
+msgid "Window Height Override"
+msgstr "சாளர உயரம் மேலெழுதும்"
+
+msgid "Energy Saving"
+msgstr "ஆற்றல் சேமிப்பு"
+
+msgid "Keep Screen On"
+msgstr "திரையை தொடர்ந்து வைத்திருங்கள்"
+
+msgid "Animation"
+msgstr "அனிமேசன்"
+
+msgid "Warnings"
+msgstr "எச்சரிக்கைகள்"
+
+msgid "Check Invalid Track Paths"
+msgstr "தவறான தட பாதைகளை சரிபார்க்கவும்"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "கோண இடைக்கணிப்பு வகை முரண்பாடாக சரிபார்க்கவும்"
+
+msgid "Audio"
+msgstr "ஆடியோ"
+
+msgid "Buses"
+msgstr "பேருந்துகள்"
+
+msgid "Default Bus Layout"
+msgstr "இயல்புநிலை பச் தளவமைப்பு"
+
+msgid "General"
+msgstr "பொது"
+
+msgid "Default Playback Type"
+msgstr "இயல்புநிலை பின்னணி வகை"
+
+msgid "Text to Speech"
+msgstr "பேச்சுக்கு உரை"
+
+msgid "2D Panning Strength"
+msgstr "2 டி பானிங் வலிமை"
+
+msgid "3D Panning Strength"
+msgstr "3D பானிங் வலிமை"
+
+msgid "iOS"
+msgstr "ஐஇமு"
+
+msgid "Session Category"
+msgstr "அமர்வு வகை"
+
+msgid "Mix With Others"
+msgstr "மற்றவர்களுடன் கலக்கவும்"
+
+msgid "Subwindows"
+msgstr "துணைப்பிரிவுகள்"
+
+msgid "Embed Subwindows"
+msgstr "உட்பொதிக்கப்பட்ட துணை சிந்தனைகள்"
+
+msgid "Android"
+msgstr "ஆண்ட்ராய்டு"
+
+msgid "Physics"
+msgstr "இயற்பியல்"
+
+msgid "2D"
+msgstr "மே"
+
+msgid "Run on Separate Thread"
+msgstr "தனி நூலில் இயக்கவும்"
+
+msgid "3D"
+msgstr "ZD"
+
+msgid "Stretch"
+msgstr "நீட்டிக்க"
+
+msgid "Aspect"
+msgstr "நற்பொருத்தம்"
+
+msgid "Scale"
+msgstr "அளவு"
+
+msgid "Scale Mode"
+msgstr "அளவிலான பயன்முறை"
+
+msgid "Debug"
+msgstr "பிழைத்திருத்தம்"
+
+msgid "Settings"
+msgstr "அமைப்புகள்"
+
+msgid "Profiler"
+msgstr "விவரக்குறிப்பு"
+
+msgid "Max Functions"
+msgstr "அதிகபட்ச செயல்பாடுகள்"
+
+msgid "Max Timestamp Query Elements"
+msgstr "அதிகபட்ச நேர முத்திரை வினவல் கூறுகள்"
+
+msgid "Compression"
+msgstr "சுருக்க"
+
+msgid "Formats"
+msgstr "வடிவங்கள்"
+
+msgid "Zstd"
+msgstr "ZSTD"
+
+msgid "Long Distance Matching"
+msgstr "நீண்ட தூர பொருத்தம்"
+
+msgid "Compression Level"
+msgstr "சுருக்க நிலை"
+
+msgid "Window Log Size"
+msgstr "சாளர பதிவு அளவு"
+
+msgid "Zlib"
+msgstr "ச்லிப்"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "செயலிழப்பு கையாளுபவர்"
+
+msgid "Message"
+msgstr "செய்தி"
+
+msgid "Rendering"
+msgstr "வழங்குதல்"
+
+msgid "Occlusion Culling"
+msgstr "மறைவு குறைத்தல்"
+
+msgid "BVH Build Quality"
+msgstr "பி.வி.எச் உருவாக்க தகுதி"
+
+msgid "Jitter Projection"
+msgstr "நடிகர் திட்டம்"
+
+msgid "Internationalization"
+msgstr "பன்னாட்டுமயமாக்கல்"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "வலதுபுறம் இடது தளவமைப்பு திசையை கட்டாயப்படுத்தவும்"
+
+msgid "Root Node Layout Direction"
+msgstr "ரூட் முனை தளவமைப்பு திசை"
+
+msgid "Root Node Auto Translate"
+msgstr "ரூட் முனை ஆட்டோ மொழிபெயர்ப்பு"
+
+msgid "GUI"
+msgstr "குய்"
+
+msgid "Timers"
+msgstr "டைமர்கள்"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "அதிகரிக்கும் தேடல் அதிகபட்ச இடைவெளி MSEC"
+
+msgid "Tooltip Delay (sec)"
+msgstr "உதவிக்குறிப்பு நேரந்தவறுகை (நொடி)"
+
+msgid "Common"
+msgstr "பொது"
+
+msgid "Snap Controls to Pixels"
+msgstr "பிக்சல்களுக்கு ச்னாப் கட்டுப்பாடுகள்"
+
+msgid "Fonts"
+msgstr "எழுத்துருக்கள்"
+
+msgid "Dynamic Fonts"
+msgstr "மாறும் எழுத்துருக்கள்"
+
+msgid "Use Oversampling"
+msgstr "ஓவர்ச்காம்ப்ளிங்கைப் பயன்படுத்துங்கள்"
+
+msgid "Rendering Device"
+msgstr "வழங்குதல் சாதனம்"
+
+msgid "V-Sync"
+msgstr "வி-ஒத்திசைவு"
+
+msgid "Frame Queue Size"
+msgstr "பிரேம் வரிசை அளவு"
+
+msgid "Swapchain Image Count"
+msgstr "ச்வாப்செயின் பட எண்ணிக்கை"
+
+msgid "Staging Buffer"
+msgstr "ச்டேசிங் பஃபர்"
+
+msgid "Block Size (KB)"
+msgstr "தொகுதி அளவு (கேபி)"
+
+msgid "Max Size (MB)"
+msgstr "அதிகபட்ச அளவு (எம்பி)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "அமைப்பு பதிவேற்றும் பிராந்திய அளவு px"
+
+msgid "Pipeline Cache"
+msgstr "பைப்லைன் கேச்"
+
+msgid "Enable"
+msgstr "இயக்கு"
+
+msgid "Save Chunk Size (MB)"
+msgstr "துண்டின் அளவை (எம்பி) சேமிக்கவும்"
+
+msgid "Vulkan"
+msgstr "வல்கன்"
+
+msgid "Max Descriptors per Pool"
+msgstr "ஒரு குளத்திற்கு அதிகபட்ச விளக்கங்கள்"
+
+msgid "D3D12"
+msgstr "தாத் 12"
+
+msgid "Max Resource Descriptors per Frame"
+msgstr "ஒரு சட்டத்திற்கு அதிகபட்ச வள விளக்கங்கள்"
+
+msgid "Max Sampler Descriptors per Frame"
+msgstr "ஒரு சட்டத்திற்கு அதிகபட்ச மாதிரி விளக்கங்கள்"
+
+msgid "Max Misc Descriptors per Frame"
+msgstr "ஒரு சட்டத்திற்கு அதிகபட்சம் விளக்கங்கள்"
+
+msgid "Agility SDK Version"
+msgstr "சுறுசுறுப்பு SDK பதிப்பு"
+
+msgid "Textures"
+msgstr "கட்டமைப்புகள்"
+
+msgid "Canvas Textures"
+msgstr "கேன்வாச் அமைப்புகள்"
+
+msgid "Default Texture Filter"
+msgstr "இயல்புநிலை அமைப்பு வடிகட்டி"
+
+msgid "Default Texture Repeat"
+msgstr "இயல்புநிலை அமைப்பு மீண்டும்"
+
+msgid "Collada"
+msgstr "கோலா"
+
+msgid "Use Ambient"
+msgstr "சுற்றுப்புறத்தைப் பயன்படுத்துங்கள்"
+
+msgid "Input Devices"
+msgstr "உள்ளீட்டு சாதனங்கள்"
+
+msgid "Pointing"
+msgstr "சுட்டிக்காட்டி"
+
+msgid "Enable Long Press as Right Click"
+msgstr "வலது சொடுக்கு என நீண்ட அழுத்தத்தை இயக்கவும்"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "பான் மற்றும் அளவிலான சைகைகளை இயக்கவும்"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "ரோட்டரி உள்ளீட்டு உருள் அச்சு"
+
+msgid "Low Processor Usage Mode"
+msgstr "குறைந்த செயலி பயன்பாட்டு முறை"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "குறைந்த செயலி பயன்பாட்டு முறை தூக்கம் (µSEC)"
+
+msgid "Delta Smoothing"
+msgstr "டெல்டா மென்மையானது"
+
+msgid "Print Error Messages"
+msgstr "பிழை செய்திகளை அச்சிடுக"
+
+msgid "Physics Ticks per Second"
+msgstr "இயற்பியல் ஒரு நொடிக்கு உண்ணி"
+
+msgid "Max Physics Steps per Frame"
+msgstr "ஒரு சட்டத்திற்கு அதிகபட்ச இயற்பியல் படிகள்"
+
+msgid "Max FPS"
+msgstr "அதிகபட்ச எஃப்.பி.எச்"
+
+msgid "Time Scale"
+msgstr "நேர அளவு"
+
+msgid "Physics Jitter Fix"
+msgstr "இயற்பியல் நடுக்கம்"
+
+msgid "Mouse Mode"
+msgstr "சுட்டி பயன்முறை"
+
+msgid "Use Accumulated Input"
+msgstr "திரட்டப்பட்ட உள்ளீட்டைப் பயன்படுத்தவும்"
+
+msgid "Emulate Mouse From Touch"
+msgstr "தொடுதலில் இருந்து சுட்டியைப் பின்பற்றுங்கள்"
+
+msgid "Emulate Touch From Mouse"
+msgstr "சுட்டியில் இருந்து தொடுதலைப் பின்பற்றுங்கள்"
+
+msgid "Compatibility"
+msgstr "பொருந்தக்கூடிய தன்மை"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "மரபு இப்போது நடத்தை அழுத்தியது"
+
+msgid "Device"
+msgstr "சாதனம்"
+
+msgid "Window ID"
+msgstr "சாளரம் ஐடி"
+
+msgid "Command or Control Autoremap"
+msgstr "ஆட்டோமேப்பை கட்டளை அல்லது கட்டுப்படுத்தவும்"
+
+msgid "Alt Pressed"
+msgstr "மாற்று அழுத்தியது"
+
+msgid "Shift Pressed"
+msgstr "சிப்ட் அழுத்தியது"
+
+msgid "Ctrl Pressed"
+msgstr "சி.டி.ஆர்.எல் அழுத்தியது"
+
+msgid "Meta Pressed"
+msgstr "மேவு அழுத்தியது"
+
+msgid "Pressed"
+msgstr "அழுத்தியது"
+
+msgid "Keycode"
+msgstr "விசை குறியீடு"
+
+msgid "Physical Keycode"
+msgstr "இயற்பியல் விசை குறியீடு"
+
+msgid "Key Label"
+msgstr "முக்கிய சிட்டை"
+
+msgid "Unicode"
+msgstr "ஒருங்குறி"
+
+msgid "Location"
+msgstr "இடம்"
+
+msgid "Echo"
+msgstr "எதிரொலி"
+
+msgid "Button Mask"
+msgstr "பொத்தான் முகமூடி"
+
+msgid "Position"
+msgstr "நிலை"
+
+msgid "Global Position"
+msgstr "உலகளாவிய நிலை"
+
+msgid "Factor"
+msgstr "காரணி"
+
+msgid "Button Index"
+msgstr "பொத்தான் அட்டவணை"
+
+msgid "Canceled"
+msgstr "ரத்து செய்யப்பட்டது"
+
+msgid "Double Click"
+msgstr "இரட்டை சொடுக்கு"
+
+msgid "Tilt"
+msgstr "சாய்"
+
+msgid "Pressure"
+msgstr "அழுத்தம்"
+
+msgid "Pen Inverted"
+msgstr "பேனா தலைகீழ்"
+
+msgid "Relative"
+msgstr "உறவினர்"
+
+msgid "Screen Relative"
+msgstr "திரை உறவினர்"
+
+msgid "Velocity"
+msgstr "திசை வேகம்"
+
+msgid "Screen Velocity"
+msgstr "திரை விரைவு"
+
+msgid "Axis"
+msgstr "அச்சு"
+
+msgid "Axis Value"
+msgstr "அச்சு மதிப்பு"
+
+msgid "Index"
+msgstr "குறியெண்"
+
+msgid "Double Tap"
+msgstr "இரட்டை குழாய்"
+
+msgid "Action"
+msgstr "செயல்"
+
+msgid "Strength"
+msgstr "வலிமை"
+
+msgid "Event Index"
+msgstr "நிகழ்வு அட்டவணை"
+
+msgid "Delta"
+msgstr "டெல்டா"
+
+msgid "Channel"
+msgstr "வாய்க்கால்"
+
+msgid "Pitch"
+msgstr "குனிவு"
+
+msgid "Instrument"
+msgstr "கருவி"
+
+msgid "Controller Number"
+msgstr "கட்டுப்படுத்தி எண்"
+
+msgid "Controller Value"
+msgstr "கட்டுப்படுத்தி மதிப்பு"
+
+msgid "Shortcut"
+msgstr "குறுக்குவழி"
+
+msgid "Events"
+msgstr "நிகழ்வுகள்"
+
+msgid "Include Navigational"
+msgstr "ஊடுருவல் சேர்க்கவும்"
+
+msgid "Include Hidden"
+msgstr "மறைக்கப்பட்டவை"
+
+msgid "Big Endian"
+msgstr "பெரிய எண்டியன்"
+
+msgid "Blocking Mode Enabled"
+msgstr "தடுப்பு பயன்முறை இயக்கப்பட்டது"
+
+msgid "Read Chunk Size"
+msgstr "துண்டின் அளவைப் படியுங்கள்"
+
+msgid "Data"
+msgstr "தகவல்கள்"
+
+msgid "Object ID"
+msgstr "பொருள் ஐடி"
+
+msgid "Encode Buffer Max Size"
+msgstr "இடையக அதிகபட்ச அளவு குறியாக்கம்"
+
+msgid "Input Buffer Max Size"
+msgstr "உள்ளீட்டு இடையக அதிகபட்ச அளவு"
+
+msgid "Output Buffer Max Size"
+msgstr "வெளியீட்டு இடையக அதிகபட்ச அளவு"
+
+msgid "Resource"
+msgstr "வள"
+
+msgid "Local to Scene"
+msgstr "உள்ளக காட்சிக்கு"
+
+msgid "Path"
+msgstr "பாதை"
+
+msgid "Data Array"
+msgstr "தரவு வரிசை"
+
+msgid "Max Pending Connections"
+msgstr "அதிகபட்ச நிலுவையில் உள்ள இணைப்புகள்"
+
+msgid "Region"
+msgstr "பகுதி"
+
+msgid "Offset"
+msgstr "ஈடுசெய்யும்"
+
+msgid "Cell Size"
+msgstr "செல் அளவு"
+
+msgid "Cell Shape"
+msgstr "செல் வடிவம்"
+
+msgid "Jumping Enabled"
+msgstr "சம்பிங் இயக்கப்பட்டது"
+
+msgid "Default Compute Heuristic"
+msgstr "இயல்புநிலை கணக்கீட்டு ஊரிச்டிக்"
+
+msgid "Default Estimate Heuristic"
+msgstr "இயல்புநிலை மதிப்பீடு இயூரிச்டிக்"
+
+msgid "Diagonal Mode"
+msgstr "மூலைவிட்ட முறை"
+
+msgid "Seed"
+msgstr "விதை"
+
+msgid "State"
+msgstr "மாநிலம்"
+
+msgid "Memory"
+msgstr "நினைவகம்"
+
+msgid "Limits"
+msgstr "வரம்புகள்"
+
+msgid "Message Queue"
+msgstr "செய்தி வரிசை"
+
+msgid "Max Steps"
+msgstr "அதிகபட்ச படிகள்"
+
+msgid "Network"
+msgstr "பிணையம்"
+
+msgid "TCP"
+msgstr "டி.சி.பி."
+
+msgid "Connect Timeout Seconds"
+msgstr "கால அவகாசங்களை இணைக்கவும்"
+
+msgid "Packet Peer Stream"
+msgstr "பாக்கெட் பியர் ச்ட்ரீம்"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "அதிகபட்ச இடையக (2 இன் சக்தி)"
+
+msgid "TLS"
+msgstr "டி.எல்.எச்"
+
+msgid "Certificate Bundle Override"
+msgstr "சான்றிதழ் மூட்டை மேலெழுதும்"
+
+msgid "Threading"
+msgstr "த்ரெட்டிங்"
+
+msgid "Worker Pool"
+msgstr "தொழிலாளி பூல்"
+
+msgid "Max Threads"
+msgstr "அதிகபட்ச நூல்கள்"
+
+msgid "Low Priority Thread Ratio"
+msgstr "குறைந்த முன்னுரிமை நூல் விகிதம்"
+
+msgid "Locale"
+msgstr "மொழி"
+
+msgid "Test"
+msgstr "தேர்வு"
+
+msgid "Fallback"
+msgstr "தவறா"
+
+msgid "Pseudolocalization"
+msgstr "சூடோலோகலைசேசன்"
+
+msgid "Use Pseudolocalization"
+msgstr "சூடோலோகலைசேசன் பயன்படுத்தவும்"
+
+msgid "Replace With Accents"
+msgstr "உச்சரிப்புகளுடன் மாற்றவும்"
+
+msgid "Double Vowels"
+msgstr "இரட்டை உயிரெழுத்துக்கள்"
+
+msgid "Fake BiDi"
+msgstr "போலி பிடி"
+
+msgid "Override"
+msgstr "மேலெழுதவும்"
+
+msgid "Expansion Ratio"
+msgstr "விரிவாக்க விகிதம்"
+
+msgid "Prefix"
+msgstr "முன்னொட்டு"
+
+msgid "Suffix"
+msgstr "பின்னொட்டு"
+
+msgid "Skip Placeholders"
+msgstr "பிளேச்ஓல்டர்களைத் தவிர்க்கவும்"
+
+msgid "Rotation"
+msgstr "சுழற்சி"
+
+msgid "Value"
+msgstr "மதிப்பு"
+
+msgid "Arg Count"
+msgstr "ஆர்க் எண்ணிக்கை"
+
+msgid "Args"
+msgstr "ஆர்க்ச்"
+
+msgid "Type"
+msgstr "வகை"
+
+msgid "In Handle"
+msgstr "கைப்பிடியில்"
+
+msgid "Out Handle"
+msgstr "வெளியே கைப்பிடி"
+
+msgid "Handle Mode"
+msgstr "கைப்பிடி பயன்முறை"
+
+msgid "Stream"
+msgstr "ச்ட்ரீம்"
+
+msgid "Start Offset"
+msgstr "ஆஃப்செட் தொடங்கவும்"
+
+msgid "End Offset"
+msgstr "ஆஃப்செட் முடிவு"
+
+msgid "Easing"
+msgstr "எளிதாக்குதல்"
+
+msgid "Debug Adapter"
+msgstr "பிழைத்திருத்த அடாப்டர்"
+
+msgid "Remote Port"
+msgstr "தொலை துறைமுகம்"
+
+msgid "Request Timeout"
+msgstr "நேரம் முடிந்தது"
+
+msgid "Sync Breakpoints"
+msgstr "பிரேக் பாயிண்ட்சை ஒத்திசைக்கவும்"
+
+msgid "Default Feature Profile"
+msgstr "இயல்புநிலை அம்ச சுயவிவரம்"
+
+msgid "Label"
+msgstr "சிட்டை"
+
+msgid "Read Only"
+msgstr "படிக்கவும்"
+
+msgid "Checkable"
+msgstr "சரிபார்க்கக்கூடியது"
+
+msgid "Checked"
+msgstr "சரிபார்க்கப்பட்டது"
+
+msgid "Draw Warning"
+msgstr "எச்சரிக்கையை வரையவும்"
+
+msgid "Keying"
+msgstr "இணைத்தல்"
+
+msgid "Deletable"
+msgstr "நீக்கக்கூடிய"
+
+msgid "Selectable"
+msgstr "தேர்ந்தெடுக்கக்கூடியது"
+
+msgid "Distraction Free Mode"
+msgstr "கவனச்சிதறல் இல்லாத பயன்முறை"
+
+msgid "Movie Maker Enabled"
+msgstr "திரைப்பட தயாரிப்பாளர் இயக்கப்பட்டார்"
+
+msgid "Base Type"
+msgstr "தள வகை"
+
+msgid "Editable"
+msgstr "திருத்தக்கூடிய"
+
+msgid "Toggle Mode"
+msgstr "முறை மாற்றவும்"
+
+msgid "Interface"
+msgstr "இடைமுகம்"
+
+msgid "Editor"
+msgstr "திருத்தி"
+
+msgid "Editor Language"
+msgstr "ஆசிரியர் மொழி"
+
+msgid "Asset Library"
+msgstr "சொத்து நூலகம்"
+
+msgid "Use Threads"
+msgstr "நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Localize Settings"
+msgstr "அமைப்புகளை உள்ளூர்மயமாக்கவும்"
+
+msgid "UI Layout Direction"
+msgstr "இடைமுகம் தளவமைப்பு திசை"
+
+msgid "Display Scale"
+msgstr "காட்சி அளவு"
+
+msgid "Custom Display Scale"
+msgstr "தனிப்பயன் காட்சி அளவு"
+
+msgid "Editor Screen"
+msgstr "ஆசிரியர் திரை"
+
+msgid "Project Manager Screen"
+msgstr "திட்ட மேலாளர் திரை"
+
+msgid "Use Embedded Menu"
+msgstr "உட்பொதிக்கப்பட்ட மெனுவைப் பயன்படுத்தவும்"
+
+msgid "Use Native File Dialogs"
+msgstr "சொந்த கோப்பு உரையாடல்களைப் பயன்படுத்தவும்"
+
+msgid "Expand to Title"
+msgstr "தலைப்புக்கு விரிவாக்குங்கள்"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "குறியீடு எழுத்துரு சூழல் தசைநார்"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "குறியீடு எழுத்துரு தனிப்பயன் ஓபன்டைப் நற்பொருத்தங்கள்"
+
+msgid "Code Font Custom Variations"
+msgstr "குறியீடு எழுத்துரு தனிப்பயன் மாறுபாடுகள்"
+
+msgid "Font Subpixel Positioning"
+msgstr "எழுத்துரு சப் படப்புள்ளி பொருத்துதல்"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "எழுத்துரு உட்பொதிக்கப்பட்ட பிட்மாப்களை முடக்கு"
+
+msgid "Main Font"
+msgstr "முதன்மையான எழுத்துரு"
+
+msgid "Main Font Bold"
+msgstr "முதன்மையான எழுத்துரு தைரியமான"
+
+msgid "Code Font"
+msgstr "குறியீடு எழுத்துரு"
+
+msgid "Separate Distraction Mode"
+msgstr "கவனச்சிதறல் பயன்முறையை பிரிக்கவும்"
+
+msgid "Automatically Open Screenshots"
+msgstr "தானாகத் திறந்த திரை சாட்கள்"
+
+msgid "Single Window Mode"
+msgstr "ஒற்றை சாளர முறை"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "சுட்டி கூடுதல் பொத்தான்கள் வரலாற்றில் செல்லவும்"
+
+msgid "Save Each Scene on Quit"
+msgstr "ஒவ்வொரு காட்சியையும் வெளியேறும்போது சேமிக்கவும்"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "உரையாடலை ஏற்றுக்கொள் சரி பொத்தான்களை ரத்து செய்யுங்கள்"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "சிற்றுண்டி அறிவிப்புகளில் உள் பிழைகளைக் காட்டுங்கள்"
+
+msgid "Show Update Spinner"
+msgstr "புதுப்பிப்பு ச்பின்னரைக் காட்டு"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "குறைந்த செயலி பயன்முறை தூக்கம் (µSEC)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "கவனம் செலுத்தப்படாத குறைந்த செயலி பயன்முறை தூக்கம் (µSEC)"
+
+msgid "Update Continuously"
+msgstr "தொடர்ந்து புதுப்பிக்கவும்"
+
+msgid "Editors"
+msgstr "ஆசிரியர்கள்"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "காட்சி மர வேர் தேர்வைக் காட்டு"
+
+msgid "Derive Script Globals by Name"
+msgstr "ச்கிரிப்ட் குளோபல்களை பெயரால் பெறவும்"
+
+msgid "Docks"
+msgstr "கப்பல்துறைகள்"
+
+msgid "Scene Tree"
+msgstr "காட்சி மரம்"
+
+msgid "Inspector"
+msgstr "இன்ச்பெக்டர்"
+
+msgid "Show Low Level OpenType Features"
+msgstr "குறைந்த அளவிலான ஓபன்டைப் அம்சங்களைக் காட்டு"
+
+msgid "Delimitate All Container and Resources"
+msgstr "அனைத்து கொள்கலன் மற்றும் வளங்களையும் வரையறுக்கவும்"
+
+msgid "Default Property Name Style"
+msgstr "இயல்புநிலை சொத்து பெயர் பாணி"
+
+msgid "Default Float Step"
+msgstr "இயல்புநிலை மிதவை படி"
+
+msgid "Disable Folding"
+msgstr "மடிப்பு முடக்கு"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "தானாக வெளிநாட்டு காட்சிகள்"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "கிடைமட்ட திசையன் 2 திருத்துதல்"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "கிடைமட்ட திசையன் வகைகள் திருத்துதல்"
+
+msgid "Open Resources in Current Inspector"
+msgstr "தற்போதைய இன்ச்பெக்டரில் திறந்த வளங்கள்"
+
+msgid "Resources to Open in New Inspector"
+msgstr "புதிய இன்ச்பெக்டரில் திறக்க வளங்கள்"
+
+msgid "Theme"
+msgstr "கருப்பொருள்"
+
+msgid "Icon and Font Color"
+msgstr "படவுரு மற்றும் எழுத்துரு நிறம்"
+
+msgid "Draw Extra Borders"
+msgstr "கூடுதல் எல்லைகளை வரையவும்"
+
+msgid "Icon Saturation"
+msgstr "படவுரு செறிவு"
+
+msgid "Relationship Line Opacity"
+msgstr "உறவு வரி ஒளிபுகாநிலை"
+
+msgid "Border Size"
+msgstr "எல்லை அளவு"
+
+msgid "Corner Radius"
+msgstr "மூலையில் ஆரம்"
+
+msgid "Base Spacing"
+msgstr "அடிப்படை இடைவெளி"
+
+msgid "Additional Spacing"
+msgstr "கூடுதல் இடைவெளி"
+
+msgid "Custom Theme"
+msgstr "தனிப்பயன் கருப்பொருள்"
+
+msgid "Touchscreen"
+msgstr "தொடுதிரை"
+
+msgid "Scale Gizmo Handles"
+msgstr "அளவிலான கிச்மோ கைப்பிடிகள்"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "சுருள் தொடு பகுதியை அதிகரிக்கவும்"
+
+msgid "Scene Tabs"
+msgstr "காட்சி தாவல்கள்"
+
+msgid "Display Close Button"
+msgstr "மூடு பொத்தானைக் காண்பி"
+
+msgid "Show Thumbnail on Hover"
+msgstr "மிதவலைக் காட்டு"
+
+msgid "Maximum Width"
+msgstr "அதிகபட்ச அகலம்"
+
+msgid "Show Script Button"
+msgstr "ச்கிரிப்ட் பொத்தானைக் காட்டு"
+
+msgid "Restore Scenes on Load"
+msgstr "சுமைகளில் காட்சிகளை மீட்டெடுக்கவும்"
+
+msgid "FileSystem"
+msgstr "கோப்பு முறைமை"
+
+msgid "External Programs"
+msgstr "வெளிப்புற நிரல்கள்"
+
+msgid "Terminal Emulator Flags"
+msgstr "முனைய முன்மாதிரி கொடிகள்"
+
+msgid "Directories"
+msgstr "கோப்பகங்கள்"
+
+msgid "Autoscan Project Path"
+msgstr "ஆட்டோச்கான் திட்ட பாதை"
+
+msgid "On Save"
+msgstr "சேமிக்க"
+
+msgid "Compress Binary Resources"
+msgstr "பைனரி வளங்களை சுருக்கவும்"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "காப்புப்பிரதியில் பாதுகாப்பாக சேமிக்கவும், பின்னர் மறுபெயரிடுங்கள்"
+
+msgid "File Server"
+msgstr "கோப்பு சேவையகம்"
+
+msgid "Port"
+msgstr "துறைமுகம்"
+
+msgid "Password"
+msgstr "கடவுச்சொல்"
+
+msgid "File Dialog"
+msgstr "கோப்பு உரையாடல்"
+
+msgid "Show Hidden Files"
+msgstr "மறைக்கப்பட்ட கோப்புகளைக் காட்டு"
+
+msgid "Display Mode"
+msgstr "காட்சி முறை"
+
+msgid "Thumbnail Size"
+msgstr "சிறு அளவு"
+
+msgid "Max Results"
+msgstr "அதிகபட்ச முடிவுகள்"
+
+msgid "Import"
+msgstr "இறக்குமதி"
+
+msgid "Blender"
+msgstr "கலப்பு"
+
+msgid "Blender Path"
+msgstr "பிளெண்டர் பாதை"
+
+msgid "RPC Port"
+msgstr "ஆர்.பி.சி துறைமுகம்"
+
+msgid "RPC Server Uptime"
+msgstr "RPC சேவையக இயக்க நேரம்"
+
+msgid "FBX"
+msgstr "Fbx"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2GLTF பாதை"
+
+msgid "Tools"
+msgstr "கருவிகள்"
+
+msgid "OIDN"
+msgstr "Oidn"
+
+msgid "OIDN Denoise Path"
+msgstr "Oidn denoise பாதை"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "தொடர்புடைய அனிமேசன் தடங்களை நீக்குவதற்கு முன் கேளுங்கள்"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "முழுமையாக விரிவாக்கப்பட்ட உரையாடலை உருவாக்கத் தொடங்குங்கள்"
+
+msgid "Auto Expand to Selected"
+msgstr "தேர்ந்தெடுக்கப்பட்ட வரை தானாக விரிவாக்குங்கள்"
+
+msgid "Center Node on Reparent"
+msgstr "மறுசீரமைப்பில் மைய முனை"
+
+msgid "Always Show Folders"
+msgstr "எப்போதும் கோப்புறைகளைக் காட்டு"
+
+msgid "TextFile Extensions"
+msgstr "உரை கோப்பு நீட்டிப்புகள்"
+
+msgid "Property Editor"
+msgstr "சொத்து ஆசிரியர்"
+
+msgid "Auto Refresh Interval"
+msgstr "ஆட்டோ புதுப்பிப்பு இடைவெளி"
+
+msgid "Subresource Hue Tint"
+msgstr "சப்ரெசோர்ச் இயூ டின்ட்"
+
+msgid "Text Editor"
+msgstr "உரை ஆசிரியர்"
+
+msgid "Line Spacing"
+msgstr "வரி இடைவெளி"
+
+msgid "Appearance"
+msgstr "தோற்றம்"
+
+msgid "Caret"
+msgstr "கேரட்"
+
+msgid "Caret Blink"
+msgstr "கேரட் சிமிட்டும்"
+
+msgid "Caret Blink Interval"
+msgstr "கேரட் ஒளிரும் இடைவெளி"
+
+msgid "Highlight Current Line"
+msgstr "தற்போதைய வரியை முன்னிலைப்படுத்தவும்"
+
+msgid "Highlight All Occurrences"
+msgstr "அனைத்து நிகழ்வுகளையும் முன்னிலைப்படுத்தவும்"
+
+msgid "Guidelines"
+msgstr "வழிகாட்டுதல்கள்"
+
+msgid "Show Line Length Guidelines"
+msgstr "வரி நீள வழிகாட்டுதல்களைக் காட்டு"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "வரி நீள வழிகாட்டுதல் மென்மையான நெடுவரிசை"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "வரி நீள வழிகாட்டுதல் கடின நெடுவரிசை"
+
+msgid "Gutters"
+msgstr "குழிகள்"
+
+msgid "Show Line Numbers"
+msgstr "வரி எண்களைக் காட்டு"
+
+msgid "Line Numbers Zero Padded"
+msgstr "வரி எண்கள் சுழிய துடுப்பு"
+
+msgid "Highlight Type Safe Lines"
+msgstr "வகை பாதுகாப்பான கோடுகளை முன்னிலைப்படுத்தவும்"
+
+msgid "Show Info Gutter"
+msgstr "செய்தி குழியைக் காட்டு"
+
+msgid "Minimap"
+msgstr "மினிமாப்"
+
+msgid "Show Minimap"
+msgstr "மினிமாப்பைக் காட்டு"
+
+msgid "Minimap Width"
+msgstr "மினிமாப் அகலம்"
+
+msgid "Lines"
+msgstr "வரிகள்"
+
+msgid "Code Folding"
+msgstr "குறியீடு மடிப்பு"
+
+msgid "Autowrap Mode"
+msgstr "ஆட்டோமிராப் பயன்முறை"
+
+msgid "Whitespace"
+msgstr "வைட்ச்பேச்"
+
+msgid "Draw Tabs"
+msgstr "தாவல்களை வரையவும்"
+
+msgid "Draw Spaces"
+msgstr "இடைவெளிகளை வரையவும்"
+
+msgid "Behavior"
+msgstr "நடத்தை"
+
+msgid "Navigation"
+msgstr "வானோடல்"
+
+msgid "Move Caret on Right Click"
+msgstr "வலது கிளிக்கில் கேரட்டை நகர்த்தவும்"
+
+msgid "Scroll Past End of File"
+msgstr "கோப்பின் கடந்த முடிவை உருட்டவும்"
+
+msgid "Smooth Scrolling"
+msgstr "மென்மையான ச்க்ரோலிங்"
+
+msgid "V Scroll Speed"
+msgstr "வி உருள் விரைவு"
+
+msgid "Drag and Drop Selection"
+msgstr "தேர்வை இழுத்து விடுங்கள்"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "தேர்ந்தெடுக்கப்பட்ட முனையில் ச்கிரிப்ட் எடிட்டரில் இருங்கள்"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "இருக்கும் முறைக்கு சமிக்ஞையை இணைக்கும்போது ச்கிரிப்டைத் திறக்கவும்"
+
+msgid "Use Default Word Separators"
+msgstr "இயல்புநிலை சொல் பிரிப்பான்களைப் பயன்படுத்தவும்"
+
+msgid "Use Custom Word Separators"
+msgstr "தனிப்பயன் சொல் பிரிப்பான்களைப் பயன்படுத்தவும்"
+
+msgid "Custom Word Separators"
+msgstr "தனிப்பயன் சொல் பிரிப்பான்கள்"
+
+msgid "Indent"
+msgstr "இன்டென்ட்"
+
+msgid "Auto Indent"
+msgstr "தானாக உள்தள்ளல்"
+
+msgid "Indent Wrapped Lines"
+msgstr "மூடப்பட்ட கோடுகள்"
+
+msgid "Files"
+msgstr "கோப்புகள்"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "சேமிப்பதில் பின்தங்கிய இடைவெளியை டிரிம் செய்யுங்கள்"
+
+msgid "Trim Final Newlines on Save"
+msgstr "சேமிப்பதில் இறுதி புதிய லைன்களை ஒழுங்கமைக்கவும்"
+
+msgid "Autosave Interval Secs"
+msgstr "ஆட்டோசேவ் இடைவெளி நொடி"
+
+msgid "Restore Scripts on Load"
+msgstr "சுமை மீது ச்கிரிப்ட்களை மீட்டெடுக்கவும்"
+
+msgid "Convert Indent on Save"
+msgstr "சேமிப்பதில் உள்தள்ளலை மாற்றவும்"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "வெளிப்புற மாற்றத்தில் ச்கிரிப்ட்களை தானாக மீண்டும் ஏற்றவும்"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "சேமிப்பதில் ஆட்டோ மறுஏற்றம் மற்றும் ச்கிரிப்ட்களை பாகுபடுத்துங்கள்"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "காட்சி மாற்றத்தில் ஆதிக்கம் செலுத்தும் ச்கிரிப்ட்"
+
+msgid "Script List"
+msgstr "ச்கிரிப்ட் பட்டியல்"
+
+msgid "Show Members Overview"
+msgstr "உறுப்பினர்களின் கண்ணோட்டத்தைக் காட்டு"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "உறுப்பினர்களை வரிசைப்படுத்தவும் அகர வரிசைப்படி"
+
+msgid "Script Temperature Enabled"
+msgstr "ச்கிரிப்ட் வெப்பநிலை இயக்கப்பட்டது"
+
+msgid "Script Temperature History Size"
+msgstr "ச்கிரிப்ட் வெப்பநிலை வரலாறு அளவு"
+
+msgid "Group Help Pages"
+msgstr "குழு உதவி பக்கங்கள்"
+
+msgid "Sort Scripts By"
+msgstr "ச்கிரிப்ட்களை வரிசைப்படுத்துங்கள்"
+
+msgid "List Script Names As"
+msgstr "ச்கிரிப்ட் பெயர்களை பட்டியலிடுங்கள்"
+
+msgid "External"
+msgstr "வெளிப்புறம்"
+
+msgid "Exec Path"
+msgstr "நிர்வாக பாதை"
+
+msgid "Exec Flags"
+msgstr "EXEC கொடிகள்"
+
+msgid "Completion"
+msgstr "நிறைவு"
+
+msgid "Idle Parse Delay"
+msgstr "செயலற்ற பாகுபடுத்தல் நேரந்தவறுகை"
+
+msgid "Auto Brace Complete"
+msgstr "ஆட்டோ அடைப்புக்குறி முடிந்தது"
+
+msgid "Code Complete Enabled"
+msgstr "குறியீடு முழுமையான இயக்கப்பட்டது"
+
+msgid "Code Complete Delay"
+msgstr "குறியீடு முழுமையான நேரந்தவறுகை"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "தற்போதைய வரிக்கு கீழே CallHint உதவிக்குறிப்பை வைக்கவும்"
+
+msgid "Complete File Paths"
+msgstr "முழுமையான கோப்பு பாதைகள்"
+
+msgid "Add Type Hints"
+msgstr "வகை குறிப்புகளைச் சேர்க்கவும்"
+
+msgid "Add String Name Literals"
+msgstr "சரம் பெயர் எழுத்தாளர்களைச் சேர்க்கவும்"
+
+msgid "Add Node Path Literals"
+msgstr "முனை பாதை எழுத்தாளர்களைச் சேர்க்கவும்"
+
+msgid "Use Single Quotes"
+msgstr "ஒற்றை மேற்கோள்களைப் பயன்படுத்தவும்"
+
+msgid "Colorize Suggestions"
+msgstr "பரிந்துரைகளை வண்ணமயமாக்குங்கள்"
+
+msgid "Use External Editor"
+msgstr "வெளிப்புற எடிட்டரைப் பயன்படுத்தவும்"
+
+msgid "Help"
+msgstr "உதவி"
+
+msgid "Show Help Index"
+msgstr "உதவி குறியீட்டைக் காட்டு"
+
+msgid "Sort Functions Alphabetically"
+msgstr "அகர வரிசைப்படி செயல்பாடுகளை வரிசைப்படுத்துங்கள்"
+
+msgid "Grid Map"
+msgstr "கட்ட வரைபடம்"
+
+msgid "Pick Distance"
+msgstr "தூரத்தைத் தேர்ந்தெடுங்கள்"
+
+msgid "Palette Min Width"
+msgstr "தட்டு குறைந்தபட்ச அகலம்"
+
+msgid "Selection Box Color"
+msgstr "தேர்வு பெட்டி நிறம்"
+
+msgid "3D Gizmos"
+msgstr "3 டி கிச்மோச்"
+
+msgid "Gizmo Colors"
+msgstr "கிச்மோ வண்ணங்கள்"
+
+msgid "Instantiated"
+msgstr "உடனடி"
+
+msgid "Joint"
+msgstr "மூட்டு"
+
+msgid "AABB"
+msgstr "Aabb"
+
+msgid "Stream Player 3D"
+msgstr "ச்ட்ரீம் பிளேயர் 3D"
+
+msgid "Camera"
+msgstr "கேமரா"
+
+msgid "Decal"
+msgstr "டெக்கால்"
+
+msgid "Fog Volume"
+msgstr "மூடுபனி தொகுதி"
+
+msgid "Particles"
+msgstr "துகள்கள்"
+
+msgid "Particle Attractor"
+msgstr "துகள் ஈர்ப்பவர்"
+
+msgid "Particle Collision"
+msgstr "துகள் மோதல்"
+
+msgid "Joint Body A"
+msgstr "கூட்டு உடல் a"
+
+msgid "Joint Body B"
+msgstr "கூட்டு உடல் ஆ"
+
+msgid "Lightmap Lines"
+msgstr "லைட்மேப் கோடுகள்"
+
+msgid "Lightprobe Lines"
+msgstr "லேசான கோடுகள்"
+
+msgid "Occluder"
+msgstr "மறைமுகம்"
+
+msgid "Reflection Probe"
+msgstr "பிரதிபலிப்பு ஆய்வு"
+
+msgid "Visibility Notifier"
+msgstr "தெரிவுநிலை அறிவிப்பாளர்"
+
+msgid "Voxel GI"
+msgstr "வோக்சல் ஐயா"
+
+msgid "Path Tilt"
+msgstr "பாதை சாய்வு"
+
+msgid "Skeleton"
+msgstr "எலும்புக் கூடு"
+
+msgid "Selected Bone"
+msgstr "தேர்ந்தெடுக்கப்பட்ட எலும்பு"
+
+msgid "CSG"
+msgstr "சி.எச்.சி."
+
+msgid "Gizmo Settings"
+msgstr "கிச்மோ அமைப்புகள்"
+
+msgid "Bone Axis Length"
+msgstr "எலும்பு அச்சு நீளம்"
+
+msgid "Bone Shape"
+msgstr "எலும்பு வடிவம்"
+
+msgid "Path 3D Tilt Disk Size"
+msgstr "பாதை 3D டில்ட் வட்டு அளவு"
+
+msgid "Grid Division Level Max"
+msgstr "கட்டம் பிரிவு நிலை அதிகபட்சம்"
+
+msgid "Grid Division Level Min"
+msgstr "கட்டம் பிரிவு நிலை மணித்துளி"
+
+msgid "Grid Division Level Bias"
+msgstr "கட்டம் பிரிவு நிலை சார்பு"
+
+msgid "Grid XZ Plane"
+msgstr "கட்டம் XZ வானூர்தி"
+
+msgid "Grid XY Plane"
+msgstr "கிரிட் XY வானூர்தி"
+
+msgid "Grid YZ Plane"
+msgstr "கட்டம் YZ வானூர்தி"
+
+msgid "Invert X Axis"
+msgstr "ஃச் அச்சு தலைகீழ்"
+
+msgid "Invert Y Axis"
+msgstr "ஒய் அச்சு தலைகீழ்"
+
+msgid "Emulate Numpad"
+msgstr "நம்புலேட் நம்ப்"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "3 பொத்தான் சுட்டியைப் பின்பற்றுங்கள்"
+
+msgid "Warped Mouse Panning"
+msgstr "திசைதிருப்பப்பட்ட சுட்டி பனிங்"
+
+msgid "Navigation Feel"
+msgstr "வழிசெலுத்தல் உணர்வு"
+
+msgid "Orbit Sensitivity"
+msgstr "சுற்றுப்பாதை உணர்திறன்"
+
+msgid "Orbit Inertia"
+msgstr "சுற்றுப்பாதை மந்த"
+
+msgid "Translation Inertia"
+msgstr "மொழிபெயர்ப்பு செயலற்ற தன்மை"
+
+msgid "Zoom Inertia"
+msgstr "பெரிதாக்க மந்தநிலை"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "வியூபோர்ட் சுழற்சி கிச்மோவைக் காட்டு"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "வியூபோர்ட் வழிசெலுத்தல் கிச்மோவைக் காட்டு"
+
+msgid "Freelook"
+msgstr "ஃப்ரீலூக்"
+
+msgid "Freelook Sensitivity"
+msgstr "ஃப்ரீலூக் உணர்திறன்"
+
+msgid "Freelook Inertia"
+msgstr "ஃப்ரீலூக் மந்தநிலை"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "ஃப்ரீலூக் வேக சூம் இணைப்பு"
+
+msgid "Manipulator Gizmo Size"
+msgstr "கையாளுபவர் கிச்மோ அளவு"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "கையாளுபவர் கிச்மோ ஒளிபுகாநிலை"
+
+msgid "Grid Color"
+msgstr "கட்டம் நிறம்"
+
+msgid "Guides Color"
+msgstr "வழிகாட்டிகள் நிறம்"
+
+msgid "Smart Snapping Line Color"
+msgstr "அறிவுள்ள ச்னாப்பிங் லைன் நிறம்"
+
+msgid "Bone Width"
+msgstr "எலும்பு அகலம்"
+
+msgid "Bone Color 1"
+msgstr "எலும்பு நிறம் 1"
+
+msgid "Bone Color 2"
+msgstr "எலும்பு நிறம் 2"
+
+msgid "Bone Selected Color"
+msgstr "எலும்பு தேர்ந்தெடுக்கப்பட்ட நிறம்"
+
+msgid "Bone IK Color"
+msgstr "எலும்பு I நிறம்"
+
+msgid "Bone Outline Color"
+msgstr "எலும்பு அவுட்லைன் நிறம்"
+
+msgid "Bone Outline Size"
+msgstr "எலும்பு அவுட்லைன் அளவு"
+
+msgid "Viewport Border Color"
+msgstr "வியூபோர்ட் எல்லை நிறம்"
+
+msgid "Use Integer Zoom by Default"
+msgstr "இயல்பாக முழு எண் சூம் பயன்படுத்தவும்"
+
+msgid "Bone Mapper"
+msgstr "எலும்பு மேப்பர்"
+
+msgid "Handle Colors"
+msgstr "வண்ணங்களைக் கையாளவும்"
+
+msgid "Unset"
+msgstr "அமைக்கப்படாதது"
+
+msgid "Set"
+msgstr "கணம்"
+
+msgid "Missing"
+msgstr "இல்லை"
+
+msgid "Error"
+msgstr "பிழை"
+
+msgid "Panning"
+msgstr "Paning"
+
+msgid "Simple Panning"
+msgstr "எளிய பானிங்"
+
+msgid "2D Editor Pan Speed"
+msgstr "2 டி எடிட்டர் பான் விரைவு"
+
+msgid "Tiles Editor"
+msgstr "ஓடுகள் ஆசிரியர்"
+
+msgid "Display Grid"
+msgstr "காட்சி கட்டம்"
+
+msgid "Highlight Selected Layer"
+msgstr "தேர்ந்தெடுக்கப்பட்ட அடுக்கை முன்னிலைப்படுத்தவும்"
+
+msgid "Polygon Editor"
+msgstr "பலகோண ஆசிரியர்"
+
+msgid "Point Grab Radius"
+msgstr "புள்ளி கிராப் ஆரம்"
+
+msgid "Show Previous Outline"
+msgstr "முந்தைய அவுட்லைன் காட்டு"
+
+msgid "Auto Bake Delay"
+msgstr "ஆட்டோ சுட்டுக்கொள்ள நேரந்தவறுகை"
+
+msgid "Autorename Animation Tracks"
+msgstr "தன்னியக்க பெயர் அனிமேசன் தடங்கள்"
+
+msgid "Confirm Insert Track"
+msgstr "செருகும் தடத்தை உறுதிப்படுத்தவும்"
+
+msgid "Default Create Bezier Tracks"
+msgstr "இயல்புநிலை பெசியர் தடங்களை உருவாக்கு"
+
+msgid "Default Create Reset Tracks"
+msgstr "இயல்புநிலை மீட்டமை தடங்களை உருவாக்கு"
+
+msgid "Onion Layers Past Color"
+msgstr "வெங்காய அடுக்குகள் கடந்த வண்ணம்"
+
+msgid "Onion Layers Future Color"
+msgstr "வெங்காய அடுக்குகள் எதிர்கால நிறம்"
+
+msgid "Shader Editor"
+msgstr "சேடர் ஆசிரியர்"
+
+msgid "Restore Shaders on Load"
+msgstr "சுமைகளில் சேடர்களை மீட்டமைக்கவும்"
+
+msgid "Visual Editors"
+msgstr "காட்சி ஆசிரியர்கள்"
+
+msgid "Color Theme"
+msgstr "வண்ண கருப்பொருள்"
+
+msgid "Minimap Opacity"
+msgstr "மினிமேப் ஒளிபுகாநிலை"
+
+msgid "Lines Curvature"
+msgstr "கோடுகள் வளைவு"
+
+msgid "Grid Pattern"
+msgstr "கட்டம் முறை"
+
+msgid "Visual Shader"
+msgstr "காட்சி சேடர்"
+
+msgid "Port Preview Size"
+msgstr "துறைமுகம் முன்னோட்ட அளவு"
+
+msgid "Export"
+msgstr "ஏற்றுமதி"
+
+msgid "SSH"
+msgstr "பாஓடு"
+
+msgid "SCP"
+msgstr "எச்.சி.பி."
+
+msgid "Window Placement"
+msgstr "சாளர வேலை வாய்ப்பு"
+
+msgid "Rect Custom Position"
+msgstr "செவ்வக தனிப்பயன் நிலை"
+
+msgid "Auto Save"
+msgstr "தானியங்கு சேமிப்பு"
+
+msgid "Save Before Running"
+msgstr "ஓடுவதற்கு முன் சேமிக்கவும்"
+
+msgid "Output"
+msgstr "வெளியீடு"
+
+msgid "Always Clear Output on Play"
+msgstr "விளையாட்டில் எப்போதும் வெளியீட்டை அழிக்கவும்"
+
+msgid "Max Lines"
+msgstr "அதிகபட்ச கோடுகள்"
+
+msgid "Platforms"
+msgstr "தளங்கள்"
+
+msgid "Prefer Wayland"
+msgstr "வேலண்ட்சை விரும்புங்கள்"
+
+msgid "HTTP Proxy"
+msgstr "HTTP பதிலாள்"
+
+msgid "Host"
+msgstr "விருந்தோம்பி"
+
+msgid "Editor TLS Certificates"
+msgstr "ஆசிரியர் டி.எல்.எச் சான்றிதழ்கள்"
+
+msgid "Remote Host"
+msgstr "தொலை புரவலன்"
+
+msgid "Debugger"
+msgstr "பிழைத்திருத்தம்"
+
+msgid "Profiler Frame History Size"
+msgstr "சுயவிவர பிரேம் வரலாற்று அளவு"
+
+msgid "Profiler Frame Max Functions"
+msgstr "சுயவிவர பிரேம் அதிகபட்ச செயல்பாடுகள்"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "தொலை காட்சி மரம் புதுப்பிப்பு இடைவெளி"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "தொலைநிலை ஆய்வு புதுப்பிப்பு இடைவெளி"
+
+msgid "Version Control"
+msgstr "பதிப்பு கட்டுப்பாடு"
+
+msgid "Username"
+msgstr "பயனர்பெயர்"
+
+msgid "SSH Public Key Path"
+msgstr "பாஓடு பொது முக்கிய பாதை"
+
+msgid "SSH Private Key Path"
+msgstr "பாஓடு தனியார் விசை பாதை"
+
+msgid "Input"
+msgstr "உள்ளீடு"
+
+msgid "Buffering"
+msgstr "இடையக"
+
+msgid "Agile Event Flushing"
+msgstr "சுறுசுறுப்பான நிகழ்வு பறிப்பு"
+
+msgid "Project Manager"
+msgstr "திட்ட மேலாளர்"
+
+msgid "Sorting Order"
+msgstr "வரிசைப்படுத்துதல் ஒழுங்கு"
+
+msgid "Highlighting"
+msgstr "சிறப்பம்சமாக"
+
+msgid "Symbol Color"
+msgstr "அடையாளம் நிறம்"
+
+msgid "Keyword Color"
+msgstr "முக்கிய நிறம்"
+
+msgid "Control Flow Keyword Color"
+msgstr "ஓட்டம் முக்கிய வண்ணத்தை கட்டுப்படுத்தவும்"
+
+msgid "Base Type Color"
+msgstr "அடிப்படை வகை நிறம்"
+
+msgid "Engine Type Color"
+msgstr "இயந்திர வகை நிறம்"
+
+msgid "User Type Color"
+msgstr "பயனர் வகை நிறம்"
+
+msgid "Comment Color"
+msgstr "கருத்து நிறம்"
+
+msgid "Doc Comment Color"
+msgstr "டாக் கருத்து நிறம்"
+
+msgid "String Color"
+msgstr "சரம் நிறம்"
+
+msgid "Background Color"
+msgstr "பின்னணி நிறம்"
+
+msgid "Completion Background Color"
+msgstr "நிறைவு பின்னணி நிறம்"
+
+msgid "Completion Selected Color"
+msgstr "தேர்ந்தெடுக்கப்பட்ட வண்ணம் நிறைவு"
+
+msgid "Completion Existing Color"
+msgstr "இருக்கும் வண்ணம் நிறைவு"
+
+msgid "Completion Scroll Color"
+msgstr "நிறைவு உருள் நிறம்"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "நிறைவு சுருள் வண்ணம்"
+
+msgid "Completion Font Color"
+msgstr "நிறைவு எழுத்துரு நிறம்"
+
+msgid "Text Color"
+msgstr "உரை நிறம்"
+
+msgid "Line Number Color"
+msgstr "வரி எண் நிறம்"
+
+msgid "Safe Line Number Color"
+msgstr "பாதுகாப்பான வரி எண் நிறம்"
+
+msgid "Caret Color"
+msgstr "கேரட் நிறம்"
+
+msgid "Caret Background Color"
+msgstr "கவனிப்பு பின்னணி நிறம்"
+
+msgid "Text Selected Color"
+msgstr "உரை தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
+
+msgid "Selection Color"
+msgstr "தேர்வு நிறம்"
+
+msgid "Brace Mismatch Color"
+msgstr "அடைப்புக்குறி பொருந்தாத நிறம்"
+
+msgid "Current Line Color"
+msgstr "தற்போதைய வரி நிறம்"
+
+msgid "Line Length Guideline Color"
+msgstr "வரி நீள வழிகாட்டுதல் நிறம்"
+
+msgid "Word Highlighted Color"
+msgstr "சொல் சிறப்பம்சமாக வண்ணம்"
+
+msgid "Number Color"
+msgstr "எண் நிறம்"
+
+msgid "Function Color"
+msgstr "செயல்பாட்டு நிறம்"
+
+msgid "Member Variable Color"
+msgstr "உறுப்பினர் மாறி நிறம்"
+
+msgid "Mark Color"
+msgstr "குறி நிறம்"
+
+msgid "Bookmark Color"
+msgstr "புக்மார்க்கு நிறம்"
+
+msgid "Breakpoint Color"
+msgstr "பிரேக் பாயிண்ட் நிறம்"
+
+msgid "Executing Line Color"
+msgstr "வரி வண்ணத்தை செயல்படுத்துகிறது"
+
+msgid "Code Folding Color"
+msgstr "குறியீடு மடிப்பு நிறம்"
+
+msgid "Folded Code Region Color"
+msgstr "மடிந்த குறியீடு பகுதி நிறம்"
+
+msgid "Search Result Color"
+msgstr "முடிவு வண்ணத்தைத் தேடுங்கள்"
+
+msgid "Search Result Border Color"
+msgstr "முடிவு எல்லை வண்ணத்தைத் தேடுங்கள்"
+
+msgid "Connection Colors"
+msgstr "இணைப்பு வண்ணங்கள்"
+
+msgid "Scalar Color"
+msgstr "அளவிடுதல் நிறம்"
+
+msgid "Vector2 Color"
+msgstr "திசையன் 2 நிறம்"
+
+msgid "Vector 3 Color"
+msgstr "திசையன் 3 நிறம்"
+
+msgid "Vector 4 Color"
+msgstr "திசையன் 4 நிறம்"
+
+msgid "Boolean Color"
+msgstr "பூலியன் நிறம்"
+
+msgid "Transform Color"
+msgstr "வண்ணத்தை மாற்றவும்"
+
+msgid "Sampler Color"
+msgstr "மாதிரி நிறம்"
+
+msgid "Category Colors"
+msgstr "வகை வண்ணங்கள்"
+
+msgid "Output Color"
+msgstr "வெளியீட்டு நிறம்"
+
+msgid "Color Color"
+msgstr "வண்ண நிறம்"
+
+msgid "Conditional Color"
+msgstr "நிபந்தனை நிறம்"
+
+msgid "Input Color"
+msgstr "உள்ளீட்டு நிறம்"
+
+msgid "Textures Color"
+msgstr "அமைப்பு வண்ணம்"
+
+msgid "Utility Color"
+msgstr "பயன்பாட்டு நிறம்"
+
+msgid "Vector Color"
+msgstr "திசையன் நிறம்"
+
+msgid "Special Color"
+msgstr "சிறப்பு நிறம்"
+
+msgid "Particle Color"
+msgstr "துகள் நிறம்"
+
+msgid "Custom Template"
+msgstr "தனிப்பயன் வார்ப்புரு"
+
+msgid "Release"
+msgstr "வெளியீடு"
+
+msgid "Export Console Wrapper"
+msgstr "ஏற்றுமதி கன்சோல் ரேப்பர்"
+
+msgid "Binary Format"
+msgstr "பைனரி வடிவம்"
+
+msgid "Embed PCK"
+msgstr "பி.சி.கே."
+
+msgid "Texture Format"
+msgstr "அமைப்பு வடிவம்"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "முதலியன ASTC"
+
+msgid "Export Path"
+msgstr "ஏற்றுமதி பாதை"
+
+msgid "Access"
+msgstr "அணுகல்"
+
+msgid "File Mode"
+msgstr "கோப்பு முறை"
+
+msgid "Filters"
+msgstr "வடிப்பான்கள்"
+
+msgid "Options"
+msgstr "விருப்பங்கள்"
+
+msgid "Disable Overwrite Warning"
+msgstr "மேலெழுதும் எச்சரிக்கையை முடக்கு"
+
+msgid "Flat"
+msgstr "கிடைவளைவு"
+
+msgid "Hide Slider"
+msgstr "ச்லைடரை மறைக்கவும்"
+
+msgid "Zoom"
+msgstr "பெரிதாக்கு"
+
+msgid "Retarget"
+msgstr "பின்னடைவு"
+
+msgid "Bone Renamer"
+msgstr "எலும்பு ரிவர்"
+
+msgid "Rename Bones"
+msgstr "எலும்புகள் மறுபெயரிடுங்கள்"
+
+msgid "Unique Node"
+msgstr "தனித்துவமான முனை"
+
+msgid "Make Unique"
+msgstr "தனித்துவமானது"
+
+msgid "Skeleton Name"
+msgstr "எலும்புக்கூடு பெயர்"
+
+msgid "Rest Fixer"
+msgstr "ரெச்ட் ஃபிக்சர்"
+
+msgid "Apply Node Transforms"
+msgstr "முனை உருமாற்றங்களைப் பயன்படுத்துங்கள்"
+
+msgid "Normalize Position Tracks"
+msgstr "நிலை தடங்களை இயல்பாக்குங்கள்"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "இறக்குமதிக்குப் பிறகு அனைத்து எலும்பு போச்களையும் மீட்டமைக்கவும்"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "எஞ்சியவற்றில் உலகளாவிய ஓய்வு வைத்திருங்கள்"
+
+msgid "Fix Silhouette"
+msgstr "நிழல் சரிசெய்யவும்"
+
+msgid "Filter"
+msgstr "வடிப்பி"
+
+msgid "Threshold"
+msgstr "வாசல்"
+
+msgid "Base Height Adjustment"
+msgstr "அடிப்படை உயர சரிசெய்தல்"
+
+msgid "Remove Tracks"
+msgstr "தடங்களை அகற்று"
+
+msgid "Except Bone Transform"
+msgstr "எலும்பு உருமாற்றத்தைத் தவிர"
+
+msgid "Unimportant Positions"
+msgstr "முக்கியமற்ற நிலைகள்"
+
+msgid "Unmapped Bones"
+msgstr "தடையற்ற எலும்புகள்"
+
+msgid "Generate Tangents"
+msgstr "தொடுகோடுகளை உருவாக்குங்கள்"
+
+msgid "Generate LODs"
+msgstr "லாட்சை உருவாக்குங்கள்"
+
+msgid "Scale Mesh"
+msgstr "அளவிலான மெச்"
+
+msgid "Offset Mesh"
+msgstr "ஆஃப்செட் மெச்"
+
+msgid "Force Disable Mesh Compression"
+msgstr "படை கண்ணி சுருக்கத்தை முடக்கவும்"
+
+msgid "Skip Import"
+msgstr "இறக்குமதியைத் தவிர்க்கவும்"
+
+msgid "Generate"
+msgstr "உருவாக்கு"
+
+msgid "NavMesh"
+msgstr "நவமேச்"
+
+msgid "Body Type"
+msgstr "உடல் வகை"
+
+msgid "Shape Type"
+msgstr "வடிவ வகை"
+
+msgid "Physics Material Override"
+msgstr "இயற்பியல் பொருள் மேலெழுதும்"
+
+msgid "Layer"
+msgstr "அடுக்கு"
+
+msgid "Mask"
+msgstr "மறைப்பு"
+
+msgid "Mesh Instance"
+msgstr "கண்ணி நிகழ்வு"
+
+msgid "Layers"
+msgstr "அடுக்குகள்"
+
+msgid "Visibility Range Begin"
+msgstr "தெரிவுநிலை வரம்பு தொடங்குகிறது"
+
+msgid "Visibility Range Begin Margin"
+msgstr "தெரிவுநிலை வரம்பு விளிம்பு தொடங்குகிறது"
+
+msgid "Visibility Range End"
+msgstr "தெரிவுநிலை வரம்பு முடிவு"
+
+msgid "Visibility Range End Margin"
+msgstr "தெரிவுநிலை வரம்பு இறுதி விளிம்பு"
+
+msgid "Visibility Range Fade Mode"
+msgstr "தெரிவுநிலை வரம்பு மங்கலான பயன்முறை"
+
+msgid "Cast Shadow"
+msgstr "நிழல் வார்ப்பு"
+
+msgid "Decomposition"
+msgstr "சிதைவு"
+
+msgid "Advanced"
+msgstr "மேம்பட்ட"
+
+msgid "Precision"
+msgstr "துல்லியம்"
+
+msgid "Max Concavity"
+msgstr "அதிகபட்ச ஒத்திசைவு"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "சமச்சீர் விமானங்கள் கிளிப்பிங் சார்பு"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "புரட்சி அச்சுகள் கிளிப்பிங் சார்பு"
+
+msgid "Min Volume per Convex Hull"
+msgstr "குவிந்த அல் ஒன்றுக்கு குறைந்தபட்ச அளவு"
+
+msgid "Resolution"
+msgstr "பகுத்தல்"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "குவிந்த அல் ஒன்றுக்கு அதிகபட்ச எண் செங்குத்துகள்"
+
+msgid "Plane Downsampling"
+msgstr "வானூர்தி வீழ்ச்சி"
+
+msgid "Convexhull Downsampling"
+msgstr "குவிவ்அல் வீழ்ச்சி"
+
+msgid "Normalize Mesh"
+msgstr "கண்ணி இயல்பாக்குங்கள்"
+
+msgid "Convexhull Approximation"
+msgstr "குவியல் அல் தோராயமானது"
+
+msgid "Max Convex Hulls"
+msgstr "அதிகபட்ச குவிந்த அல்ச்"
+
+msgid "Project Hull Vertices"
+msgstr "திட்ட அல் செங்குத்துகள்"
+
+msgid "Primitive"
+msgstr "தொடக்கநிலை"
+
+msgid "Height"
+msgstr "உயரம்"
+
+msgid "Radius"
+msgstr "ஆரம்"
+
+msgid "Simplification Distance"
+msgstr "எளிமைப்படுத்தும் தூரம்"
+
+msgid "Save to File"
+msgstr "கோப்பில் சேமிக்கவும்"
+
+msgid "Enabled"
+msgstr "இயக்கப்பட்டது"
+
+msgid "Shadow Meshes"
+msgstr "நிழல் மெச்கள்"
+
+msgid "Lightmap UV"
+msgstr "லைட்மேப் புற ஊதா"
+
+msgid "LODs"
+msgstr "பைலட்"
+
+msgid "Normal Merge Angle"
+msgstr "சாதாரண ஒன்றிணைப்பு கோணம்"
+
+msgid "Use External"
+msgstr "வெளிப்புறத்தைப் பயன்படுத்தவும்"
+
+msgid "Loop Mode"
+msgstr "லூப் பயன்முறை"
+
+msgid "Keep Custom Tracks"
+msgstr "தனிப்பயன் தடங்களை வைத்திருங்கள்"
+
+msgid "Slices"
+msgstr "துண்டுகள்"
+
+msgid "Amount"
+msgstr "தொகை"
+
+msgid "Optimizer"
+msgstr "உகப்பாக்கி"
+
+msgid "Max Velocity Error"
+msgstr "அதிகபட்ச விரைவு பிழை"
+
+msgid "Max Angular Error"
+msgstr "அதிகபட்ச கோண பிழை"
+
+msgid "Max Precision Error"
+msgstr "அதிகபட்ச துல்லிய பிழை"
+
+msgid "Page Size"
+msgstr "பக்க அளவு"
+
+msgid "Import Tracks"
+msgstr "தடங்களை இறக்குமதி செய்யுங்கள்"
+
+msgid "Rest Pose"
+msgstr "ஓய்வு போச்"
+
+msgid "Load Pose"
+msgstr "சுமை போச்"
+
+msgid "External Animation Library"
+msgstr "வெளிப்புற அனிமேசன் நூலகம்"
+
+msgid "Selected Animation"
+msgstr "தேர்ந்தெடுக்கப்பட்ட அனிமேசன்"
+
+msgid "Selected Timestamp"
+msgstr "தேர்ந்தெடுக்கப்பட்ட நேர முத்திரை"
+
+msgid "Bone Map"
+msgstr "எலும்பு வரைபடம்"
+
+msgid "Nodes"
+msgstr "முனைகள்"
+
+msgid "Root Type"
+msgstr "ரூட் வகை"
+
+msgid "Root Name"
+msgstr "ரூட் பெயர்"
+
+msgid "Apply Root Scale"
+msgstr "ரூட் அளவைப் பயன்படுத்துங்கள்"
+
+msgid "Root Scale"
+msgstr "ரூட் அளவு"
+
+msgid "Import as Skeleton Bones"
+msgstr "எலும்புக்கூடு எலும்புகளாக இறக்குமதி செய்யுங்கள்"
+
+msgid "Meshes"
+msgstr "மெச்கள்"
+
+msgid "Ensure Tangents"
+msgstr "தொடுகோடுகளை உறுதி செய்யுங்கள்"
+
+msgid "Create Shadow Meshes"
+msgstr "நிழல் மெச்களை உருவாக்கவும்"
+
+msgid "Light Baking"
+msgstr "ஒளி பேக்கிங்"
+
+msgid "Lightmap Texel Size"
+msgstr "லைட்மேப் டெக்செல் அளவு"
+
+msgid "Force Disable Compression"
+msgstr "படை சுருக்கத்தை முடக்குகிறது"
+
+msgid "Skins"
+msgstr "தோல்கள்"
+
+msgid "Use Named Skins"
+msgstr "பெயரிடப்பட்ட தோல்களைப் பயன்படுத்தவும்"
+
+msgid "FPS"
+msgstr "Fps"
+
+msgid "Trimming"
+msgstr "வெட்டுதல்"
+
+msgid "Remove Immutable Tracks"
+msgstr "மாறாத தடங்களை அகற்று"
+
+msgid "Import Rest as Reset"
+msgstr "மீட்டமைப்பாக ஓய்வு இறக்குமதி செய்யுங்கள்"
+
+msgid "Import Script"
+msgstr "ச்கிரிப்டை இறக்குமதி செய்யுங்கள்"
+
+msgid "Antialiasing"
+msgstr "ஆன்டிலிசிங்"
+
+msgid "Generate Mipmaps"
+msgstr "MIPMAPS ஐ உருவாக்குங்கள்"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "உட்பொதிக்கப்பட்ட பிட்மாப்களை முடக்கு"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "மல்டிசனல் கையொப்பமிடப்பட்ட தொலைதூர புலம்"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF படப்புள்ளி வரம்பு"
+
+msgid "MSDF Size"
+msgstr "MSDF அளவு"
+
+msgid "Allow System Fallback"
+msgstr "கணினி குறைவடையும் அனுமதிக்கவும்"
+
+msgid "Force Autohinter"
+msgstr "ஆட்டோஇண்டரை கட்டாயப்படுத்துங்கள்"
+
+msgid "Hinting"
+msgstr "குறிப்பு"
+
+msgid "Subpixel Positioning"
+msgstr "சப் படப்புள்ளி பொருத்துதல்"
+
+msgid "Oversampling"
+msgstr "மிகைப்படுத்தல்"
+
+msgid "Metadata Overrides"
+msgstr "மேனிலை தரவு மேலெழுதும்"
+
+msgid "Language Support"
+msgstr "மொழி உதவி"
+
+msgid "Script Support"
+msgstr "ச்கிரிப்ட் உதவி"
+
+msgid "OpenType Features"
+msgstr "Opentype நற்பொருத்தங்கள்"
+
+msgid "Fallbacks"
+msgstr "குறைவடைகள்"
+
+msgid "Compress"
+msgstr "சுருக்க"
+
+msgid "Language"
+msgstr "மொழி"
+
+msgid "Outline Size"
+msgstr "அவுட்லைன் அளவு"
+
+msgid "Variation"
+msgstr "மாறுபாடு"
+
+msgid "OpenType"
+msgstr "Opentype"
+
+msgid "Embolden"
+msgstr "துணிவு"
+
+msgid "Face Index"
+msgstr "முகம் அட்டவணை"
+
+msgid "Transform"
+msgstr "உருமாற்று, உருமாற்றம்"
+
+msgid "Create From"
+msgstr "இருந்து உருவாக்கவும்"
+
+msgid "Scaling Mode"
+msgstr "அளவிடுதல் முறை"
+
+msgid "Delimiter"
+msgstr "பிரிப்பான்"
+
+msgid "Character Ranges"
+msgstr "எழுத்து வரம்புகள்"
+
+msgid "Kerning Pairs"
+msgstr "கெர்னிங் சோடிகள்"
+
+msgid "Columns"
+msgstr "நெடுவரிசைகள்"
+
+msgid "Rows"
+msgstr "வரிசைகள்"
+
+msgid "Image Margin"
+msgstr "பட விளிம்பு"
+
+msgid "Character Margin"
+msgstr "எழுத்து விளிம்பு"
+
+msgid "Ascent"
+msgstr "ஏற்றம்"
+
+msgid "Descent"
+msgstr "இறக்கம்"
+
+msgid "High Quality"
+msgstr "உயர் தகுதி"
+
+msgid "Lossy Quality"
+msgstr "இழப்பு தகுதி"
+
+msgid "HDR Compression"
+msgstr "எச்.டி.ஆர் சுருக்க"
+
+msgid "Channel Pack"
+msgstr "சேனல் பேக்"
+
+msgid "Mipmaps"
+msgstr "மிப்மாப்ச்"
+
+msgid "Limit"
+msgstr "வரம்பு"
+
+msgid "Horizontal"
+msgstr "கிடைமட்டமாக"
+
+msgid "Vertical"
+msgstr "செங்குத்து"
+
+msgid "Arrangement"
+msgstr "ஏற்பாடு"
+
+msgid "Layout"
+msgstr "மனையமைவு"
+
+msgid "Normal Map"
+msgstr "சாதாரண வரைபடம்"
+
+msgid "Roughness"
+msgstr "கடினத்தன்மை"
+
+msgid "Src Normal"
+msgstr "எச்.ஆர்.சி இயல்பானது"
+
+msgid "Process"
+msgstr "செயல்முறை"
+
+msgid "Fix Alpha Border"
+msgstr "ஆல்பா எல்லையை சரிசெய்யவும்"
+
+msgid "Premult Alpha"
+msgstr "ப்ரீல் ஆல்பா"
+
+msgid "Normal Map Invert Y"
+msgstr "சாதாரண வரைபடம் தலைகீழ் ஒய்"
+
+msgid "HDR as sRGB"
+msgstr "HDR ஆக SRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "எச்.டி.ஆர் கிளாம்ப் வெளிப்பாடு"
+
+msgid "Size Limit"
+msgstr "அளவு வரம்பு"
+
+msgid "Detect 3D"
+msgstr "3D ஐக் கண்டறியவும்"
+
+msgid "Compress To"
+msgstr "சுருக்க"
+
+msgid "SVG"
+msgstr "எச்.வி.சி."
+
+msgid "Scale With Editor Scale"
+msgstr "எடிட்டர் அளவோடு அளவுகோல்"
+
+msgid "Convert Colors With Editor Theme"
+msgstr "எடிட்டர் கருப்பொருளுடன் வண்ணங்களை மாற்றவும்"
+
+msgid "Atlas File"
+msgstr "அட்லச் கோப்பு"
+
+msgid "Import Mode"
+msgstr "இறக்குமதி முறை"
+
+msgid "Crop to Region"
+msgstr "பிராந்தியத்திற்கு பயிர்"
+
+msgid "Trim Alpha Border From Region"
+msgstr "பிராந்தியத்திலிருந்து ஆல்பா எல்லையை ஒழுங்கமைக்கவும்"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "ஆற்றல்"
+
+msgid "8 Bit"
+msgstr "8 பிட்"
+
+msgid "Mono"
+msgstr "மோனோ"
+
+msgid "Max Rate"
+msgstr "அதிகபட்ச வீதம்"
+
+msgid "Max Rate Hz"
+msgstr "அதிகபட்ச வீதம் HZ"
+
+msgid "Edit"
+msgstr "தொகு"
+
+msgid "Trim"
+msgstr "ஒழுங்கமைக்கவும்"
+
+msgid "Normalize"
+msgstr "இயல்பாக்குங்கள்"
+
+msgid "Loop Begin"
+msgstr "நடைபயிற்சி"
+
+msgid "Loop End"
+msgstr "லூப் எண்ட்"
+
+msgid "Available URLs"
+msgstr "கிடைக்கும் முகவரி கள்"
+
+msgid "Current Group Idx"
+msgstr "தற்போதைய குழு IDX"
+
+msgid "Current Bone Idx"
+msgstr "தற்போதைய எலும்பு ஐடிஎக்ச்"
+
+msgid "ID"
+msgstr "ஐடி"
+
+msgid "Texture"
+msgstr "அமைப்பு"
+
+msgid "Margins"
+msgstr "விளிம்புகள்"
+
+msgid "Separation"
+msgstr "பிரித்தல்"
+
+msgid "Texture Region Size"
+msgstr "அமைப்பு பிராந்திய அளவு"
+
+msgid "Use Texture Padding"
+msgstr "அமைப்பு திணிப்பைப் பயன்படுத்தவும்"
+
+msgid "Atlas Coords"
+msgstr "அட்லச் கோல்ட்ச்"
+
+msgid "Size in Atlas"
+msgstr "அட்லசில் அளவு"
+
+msgid "Alternative ID"
+msgstr "மாற்று ஐடி"
+
+msgid "Speed"
+msgstr "வேகம்"
+
+msgid "Frames Count"
+msgstr "பிரேம்கள் எண்ணப்படுகின்றன"
+
+msgid "Duration"
+msgstr "காலம்"
+
+msgid "Main Run Args"
+msgstr "மெயின் ரன் ஆர்க்ச்"
+
+msgid "Script"
+msgstr "ச்கிரிப்ட்"
+
+msgid "Templates Search Path"
+msgstr "வார்ப்புருக்கள் தேடல் பாதை"
+
+msgid "Naming"
+msgstr "நமி"
+
+msgid "Default Signal Callback Name"
+msgstr "இயல்புநிலை சமிக்ஞை அழைப்பு பெயர்"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "தன்வய பெயருக்கு இயல்புநிலை சமிக்ஞை அழைப்பு"
+
+msgid "Scene Name Casing"
+msgstr "காட்சி பெயர் உறை"
+
+msgid "Script Name Casing"
+msgstr "ச்கிரிப்ட் பெயர் உறை"
+
+msgid "Reimport Missing Imported Files"
+msgstr "இறக்குமதி செய்யப்பட்ட கோப்புகளைக் காணவில்லை"
+
+msgid "Use Multiple Threads"
+msgstr "பல நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Atlas Max Width"
+msgstr "அட்லச் மேக்ச் அகலம்"
+
+msgid "Convert Text Resources to Binary"
+msgstr "உரை வளங்களை பைனரியாக மாற்றவும்"
+
+msgid "Plugin Name"
+msgstr "சொருகி பெயர்"
+
+msgid "Autoload on Startup"
+msgstr "தொடக்கத்தில் ஆட்டோலோட்"
+
+msgid "Use Favorites Root Selection"
+msgstr "பிடித்தவை ரூட் தேர்வைப் பயன்படுத்தவும்"
+
+msgid "Flush stdout on Print"
+msgstr "அச்சில் stdout ஐ பறிக்கவும்"
+
+msgid "Low Processor Mode"
+msgstr "குறைந்த செயலி பயன்முறை"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "FPS ஐ அச்சிடுக"
+
+msgid "Print GPU Profile"
+msgstr "GPU சுயவிவரத்தை அச்சிடுக"
+
+msgid "Verbose stdout"
+msgstr "VERBOSE STDOUT"
+
+msgid "Physics Interpolation"
+msgstr "இயற்பியல் இடைக்கணிப்பு"
+
+msgid "Max Chars per Second"
+msgstr "ஒரு நொடிக்கு அதிகபட்ச எழுத்துக்கள்"
+
+msgid "Max Queued Messages"
+msgstr "அதிகபட்சம் வரிசைப்படுத்தப்பட்ட செய்திகள்"
+
+msgid "Max Errors per Second"
+msgstr "நொடிக்கு அதிகபட்ச பிழைகள்"
+
+msgid "Max Warnings per Second"
+msgstr "ஒரு நொடிக்கு அதிகபட்ச எச்சரிக்கைகள்"
+
+msgid "File Logging"
+msgstr "கோப்பு பதிவு"
+
+msgid "Enable File Logging"
+msgstr "கோப்பு பதிவுகளை இயக்கவும்"
+
+msgid "Log Path"
+msgstr "பதிவு பாதை"
+
+msgid "Max Log Files"
+msgstr "அதிகபட்ச பதிவு கோப்புகள்"
+
+msgid "Driver"
+msgstr "இயக்கி"
+
+msgid "Fallback to Vulkan"
+msgstr "வல்கனுக்கு குறைவானது"
+
+msgid "Fallback to D3D12"
+msgstr "D3D12 க்கு குறைவானது"
+
+msgid "GL Compatibility"
+msgstr "GL பொருந்தக்கூடிய தன்மை"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "என்விடியா திரிக்கப்பட்ட தேர்வுமுறையை முடக்கு"
+
+msgid "Fallback to Angle"
+msgstr "கோணத்திற்கு குறைவானது"
+
+msgid "Fallback to Native"
+msgstr "பூர்வீகத்திற்கு குறைவு"
+
+msgid "Force Angle on Devices"
+msgstr "சாதனங்களில் கோணம்"
+
+msgid "Renderer"
+msgstr "ரெண்டரர்"
+
+msgid "Rendering Method"
+msgstr "வழங்குதல் முறை"
+
+msgid "Include Text Server Data"
+msgstr "உரை சேவையக தரவைச் சேர்க்கவும்"
+
+msgid "DPI"
+msgstr "டிபிஐ"
+
+msgid "Allow hiDPI"
+msgstr "HIDPI ஐ அனுமதிக்கவும்"
+
+msgid "Per Pixel Transparency"
+msgstr "படப்புள்ளி வெளிப்படைத்தன்மைக்கு"
+
+msgid "Allowed"
+msgstr "அனுமதிக்கப்படுகிறது"
+
+msgid "Threads"
+msgstr "நூல்கள்"
+
+msgid "Thread Model"
+msgstr "நூல் மாதிரி"
+
+msgid "Display Server"
+msgstr "காட்சி சேவையகம்"
+
+msgid "Handheld"
+msgstr "கையடக்க"
+
+msgid "Orientation"
+msgstr "நோக்குநிலை"
+
+msgid "V-Sync Mode"
+msgstr "வி-ஒத்திசைவு பயன்முறை"
+
+msgid "Output Latency"
+msgstr "வெளியீட்டு நேரந்தவறுகை"
+
+msgid "Frame Delay Msec"
+msgstr "பிரேம் நேரந்தவறுகை msec"
+
+msgid "Allow High Refresh Rate"
+msgstr "அதிக புதுப்பிப்பு வீதத்தை அனுமதிக்கவும்"
+
+msgid "Hide Home Indicator"
+msgstr "வீட்டு காட்டி மறைக்க"
+
+msgid "Hide Status Bar"
+msgstr "நிலை பட்டியை மறைக்கவும்"
+
+msgid "Suppress UI Gesture"
+msgstr "இடைமுகம் சைகை அடக்கவும்"
+
+msgid "XR"
+msgstr "எக்ச்ஆர்"
+
+msgid "OpenXR"
+msgstr "Openxr"
+
+msgid "Default Action Map"
+msgstr "இயல்புநிலை செயல் வரைபடம்"
+
+msgid "Form Factor"
+msgstr "உருவம் காரணி"
+
+msgid "View Configuration"
+msgstr "உள்ளமைவைக் காண்க"
+
+msgid "Reference Space"
+msgstr "குறிப்பு இடம்"
+
+msgid "Environment Blend Mode"
+msgstr "சுற்றுச்சூழல் கலவை முறை"
+
+msgid "Foveation Level"
+msgstr "Foveation நிலை"
+
+msgid "Foveation Dynamic"
+msgstr "Foveation மாறும்"
+
+msgid "Submit Depth Buffer"
+msgstr "ஆழ இடையகத்தை சமர்ப்பிக்கவும்"
+
+msgid "Startup Alert"
+msgstr "தொடக்க எச்சரிக்கை"
+
+msgid "Extensions"
+msgstr "நீட்டிப்புகள்"
+
+msgid "Hand Tracking"
+msgstr "கை கண்காணிப்பு"
+
+msgid "Hand Interaction Profile"
+msgstr "கை தொடர்பு சுயவிவரம்"
+
+msgid "Eye Gaze Interaction"
+msgstr "கண் பார்வை தொடர்பு"
+
+msgid "Boot Splash"
+msgstr "துவக்க ச்பிளாச்"
+
+msgid "BG Color"
+msgstr "பி.சி நிறம்"
+
+msgid "Pen Tablet"
+msgstr "பென் டேப்லெட்"
+
+msgid "Environment"
+msgstr "சூழல்"
+
+msgid "Defaults"
+msgstr "இயல்புநிலை"
+
+msgid "Default Clear Color"
+msgstr "இயல்புநிலை தெளிவான நிறம்"
+
+msgid "Icon"
+msgstr "படவுரு"
+
+msgid "macOS Native Icon"
+msgstr "மேகோச் சொந்த படவுரு"
+
+msgid "Windows Native Icon"
+msgstr "சாளரங்கள் சொந்த படவுரு"
+
+msgid "Text Driver"
+msgstr "உரை இயக்கி"
+
+msgid "Search in File Extensions"
+msgstr "கோப்பு நீட்டிப்புகளில் தேடுங்கள்"
+
+msgid "Mouse Cursor"
+msgstr "மவுச் கர்சர்"
+
+msgid "Custom Image"
+msgstr "தனிப்பயன் படம்"
+
+msgid "Custom Image Hotspot"
+msgstr "தனிப்பயன் பட ஆட்ச்பாட்"
+
+msgid "Tooltip Position Offset"
+msgstr "உதவிக்குறிப்பு நிலை ஆஃப்செட்"
+
+msgid "Show Image"
+msgstr "படத்தைக் காட்டு"
+
+msgid "Image"
+msgstr "படம்"
+
+msgid "Fullsize"
+msgstr "ஃபுல்ச்"
+
+msgid "Use Filter"
+msgstr "வடிகட்டியைப் பயன்படுத்தவும்"
+
+msgid "Minimum Display Time"
+msgstr "குறைந்தபட்ச காட்சி நேரம்"
+
+msgid "Dotnet"
+msgstr "டாட்நெட்"
+
+msgid "Project"
+msgstr "திட்டம்"
+
+msgid "Assembly Name"
+msgstr "பேரவை பெயர்"
+
+msgid "Solution Directory"
+msgstr "தீர்வு அடைவு"
+
+msgid "Assembly Reload Attempts"
+msgstr "பேரவை மறுஏற்றம் முயற்சிகள்"
+
+msgid "Time"
+msgstr "நேரம்"
+
+msgid "Physics Process"
+msgstr "இயற்பியல் செயல்முறை"
+
+msgid "Navigation Process"
+msgstr "வழிசெலுத்தல் செயல்முறை"
+
+msgid "Static"
+msgstr "நிலையான"
+
+msgid "Static Max"
+msgstr "நிலையான அதிகபட்சம்"
+
+msgid "Msg Buf Max"
+msgstr "MSG BUF MAX"
+
+msgid "Object"
+msgstr "பொருள்"
+
+msgid "Objects"
+msgstr "பொருள்கள்"
+
+msgid "Resources"
+msgstr "வளங்கள்"
+
+msgid "Orphan Nodes"
+msgstr "அனாதை முனைகள்"
+
+msgid "Raster"
+msgstr "ராச்டர்"
+
+msgid "Total Objects Drawn"
+msgstr "வரையப்பட்ட மொத்த பொருள்கள்"
+
+msgid "Total Primitives Drawn"
+msgstr "மொத்த ஆதிமனிதர்கள் வரையப்பட்டவை"
+
+msgid "Total Draw Calls"
+msgstr "மொத்த டிரா அழைப்புகள்"
+
+msgid "Video"
+msgstr "ஒளிதோற்றம்"
+
+msgid "Video Mem"
+msgstr "வீடியோவில்"
+
+msgid "Texture Mem"
+msgstr "அமைப்பு மெம்"
+
+msgid "Buffer Mem"
+msgstr "இடையக மெம்"
+
+msgid "Physics 2D"
+msgstr "இயற்பியல் 2 டி"
+
+msgid "Active Objects"
+msgstr "செயலில் உள்ள பொருள்கள்"
+
+msgid "Collision Pairs"
+msgstr "மோதல் சோடிகள்"
+
+msgid "Islands"
+msgstr "தீவுகள்"
+
+msgid "Physics 3D"
+msgstr "இயற்பியல் 3D"
+
+msgid "Active Maps"
+msgstr "செயலில் வரைபடங்கள்"
+
+msgid "Regions"
+msgstr "பகுதிகள்"
+
+msgid "Agents"
+msgstr "முகவர்கள்"
+
+msgid "Links"
+msgstr "இணைப்புகள்"
+
+msgid "Polygons"
+msgstr "பலகோணங்கள்"
+
+msgid "Edges"
+msgstr "விளிம்புகள்"
+
+msgid "Edges Merged"
+msgstr "விளிம்புகள் ஒன்றிணைக்கப்பட்டன"
+
+msgid "Edges Connected"
+msgstr "விளிம்புகள் இணைக்கப்பட்டுள்ளன"
+
+msgid "Edges Free"
+msgstr "விளிம்புகள் இலவசம்"
+
+msgid "Operation"
+msgstr "செயல்பாடு"
+
+msgid "Calculate Tangents"
+msgstr "தொடுகோடுகளை கணக்கிடுங்கள்"
+
+msgid "Collision"
+msgstr "மோதுகை"
+
+msgid "Use Collision"
+msgstr "மோதல் பயன்படுத்தவும்"
+
+msgid "Collision Layer"
+msgstr "மோதல் அடுக்கு"
+
+msgid "Collision Mask"
+msgstr "மோதல் முகமூடி"
+
+msgid "Collision Priority"
+msgstr "மோதல் முன்னுரிமை"
+
+msgid "Flip Faces"
+msgstr "முகங்கள்"
+
+msgid "Mesh"
+msgstr "மெச்"
+
+msgid "Material"
+msgstr "பொருள்"
+
+msgid "Radial Segments"
+msgstr "ரேடியல் பிரிவுகள்"
+
+msgid "Rings"
+msgstr "மோதிரங்கள்"
+
+msgid "Smooth Faces"
+msgstr "மென்மையான முகங்கள்"
+
+msgid "Sides"
+msgstr "பக்கங்களும்"
+
+msgid "Cone"
+msgstr "கூம்பு"
+
+msgid "Inner Radius"
+msgstr "உள் ஆரம்"
+
+msgid "Outer Radius"
+msgstr "வெளிப்புற ஆரம்"
+
+msgid "Ring Sides"
+msgstr "மோதிர பக்கங்கள்"
+
+msgid "Polygon"
+msgstr "பலகோணம்"
+
+msgid "Depth"
+msgstr "ஆழம்"
+
+msgid "Spin Degrees"
+msgstr "சுழல் டிகிரி"
+
+msgid "Spin Sides"
+msgstr "சுழல் பக்கங்கள்"
+
+msgid "Path Node"
+msgstr "பாதை முனை"
+
+msgid "Path Interval Type"
+msgstr "பாதை இடைவெளி வகை"
+
+msgid "Path Interval"
+msgstr "பாதை இடைவெளி"
+
+msgid "Path Simplify Angle"
+msgstr "பாதை எளிமைப்படுத்தும் கோணத்தை எளிதாக்குகிறது"
+
+msgid "Path Rotation"
+msgstr "பாதை சுழற்சி"
+
+msgid "Path Local"
+msgstr "உள்ளக பாதை"
+
+msgid "Path Continuous U"
+msgstr "பாதை தொடர்ச்சியான யு"
+
+msgid "Path U Distance"
+msgstr "பாதை உ தூரம்"
+
+msgid "Path Joined"
+msgstr "பாதை இணைந்தது"
+
+msgid "Importer"
+msgstr "இறக்குமதியாளர்"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "வடிவியல் உதவி முனைகளை அனுமதிக்கவும்"
+
+msgid "Embedded Image Handling"
+msgstr "உட்பொதிக்கப்பட்ட படக் கையாளுதல்"
+
+msgid "FBX2glTF"
+msgstr "FBX2GLTF"
+
+msgid "GDScript"
+msgstr "GDSCRIPT"
+
+msgid "Function Definition Color"
+msgstr "செயல்பாட்டு வரையறை நிறம்"
+
+msgid "Global Function Color"
+msgstr "உலகளாவிய செயல்பாடு நிறம்"
+
+msgid "Node Path Color"
+msgstr "முனை பாதை நிறம்"
+
+msgid "Node Reference Color"
+msgstr "முனை குறிப்பு நிறம்"
+
+msgid "Annotation Color"
+msgstr "சிறுகுறிப்பு நிறம்"
+
+msgid "String Name Color"
+msgstr "சரம் பெயர் நிறம்"
+
+msgid "Comment Markers"
+msgstr "கருத்து குறிப்பான்கள்"
+
+msgid "Critical Color"
+msgstr "சிக்கலான நிறம்"
+
+msgid "Warning Color"
+msgstr "எச்சரிக்கை நிறம்"
+
+msgid "Notice Color"
+msgstr "வண்ணம் கவனிக்கவும்"
+
+msgid "Critical List"
+msgstr "சிக்கலான பட்டியல்"
+
+msgid "Warning List"
+msgstr "எச்சரிக்கை பட்டியல்"
+
+msgid "Notice List"
+msgstr "அறிவிப்பு பட்டியல்"
+
+msgid "Max Call Stack"
+msgstr "அதிகபட்ச அழைப்பு அடுக்கு"
+
+msgid "Exclude Addons"
+msgstr "துணை நிரல்களை விலக்கு"
+
+msgid "Language Server"
+msgstr "மொழி சேவையகம்"
+
+msgid "Enable Smart Resolve"
+msgstr "அறிவுள்ள தீர்மானத்தை இயக்கவும்"
+
+msgid "Show Native Symbols in Editor"
+msgstr "எடிட்டரில் சொந்த சின்னங்களைக் காட்டு"
+
+msgid "Use Thread"
+msgstr "நூல் பயன்படுத்தவும்"
+
+msgid "Poll Limit (µsec)"
+msgstr "வாக்கெடுப்பு வரம்பு (µsec)"
+
+msgid "Copyright"
+msgstr "பதிப்புரிமை"
+
+msgid "Bake FPS"
+msgstr "சுட்டுக்கொள்ள FPS"
+
+msgid "glTF"
+msgstr "gltf"
+
+msgid "Naming Version"
+msgstr "பெயரிடும் பதிப்பு"
+
+msgid "Color"
+msgstr "நிறம்"
+
+msgid "Intensity"
+msgstr "தீவிரம்"
+
+msgid "Light Type"
+msgstr "ஒளி வகை"
+
+msgid "Range"
+msgstr "வீச்சு"
+
+msgid "Inner Cone Angle"
+msgstr "உள் கூம்பு கோணம்"
+
+msgid "Outer Cone Angle"
+msgstr "வெளிப்புற கூம்பு கோணம்"
+
+msgid "Diffuse Img"
+msgstr "பரவாயில்லை"
+
+msgid "Diffuse Factor"
+msgstr "பரவலான காரணி"
+
+msgid "Gloss Factor"
+msgstr "பளபளப்பான காரணி"
+
+msgid "Specular Factor"
+msgstr "ஏகப்பட்ட காரணி"
+
+msgid "Spec Gloss Img"
+msgstr "ச்பெக் பளபளப்பான ஐ.எம்.சி."
+
+msgid "Mass"
+msgstr "நிறை"
+
+msgid "Linear Velocity"
+msgstr "நேரியல் விரைவு"
+
+msgid "Angular Velocity"
+msgstr "கோணத் திசைவேகம்"
+
+msgid "Center of Mass"
+msgstr "வெகுசன நடுவண்"
+
+msgid "Inertia Diagonal"
+msgstr "செயலற்ற மூலைவிட்ட"
+
+msgid "Inertia Orientation"
+msgstr "செயலற்ற நோக்குநிலை"
+
+msgid "Inertia Tensor"
+msgstr "செயலற்ற பத்துகள்"
+
+msgid "Is Trigger"
+msgstr "தூண்டுதல்"
+
+msgid "Mesh Index"
+msgstr "மெச் அட்டவணை"
+
+msgid "Importer Mesh"
+msgstr "இறக்குமதியாளர் கண்ணி"
+
+msgid "Image Format"
+msgstr "பட வடிவம்"
+
+msgid "Root Node Mode"
+msgstr "ரூட் முனை பயன்முறை"
+
+msgid "Json"
+msgstr "சேசன்"
+
+msgid "Major Version"
+msgstr "முக்கிய பதிப்பு"
+
+msgid "Minor Version"
+msgstr "சிறிய பதிப்பு"
+
+msgid "GLB Data"
+msgstr "சி.எல்.பி தரவு"
+
+msgid "Use Named Skin Binds"
+msgstr "பெயரிடப்பட்ட தோல் பிணைப்புகளைப் பயன்படுத்துங்கள்"
+
+msgid "Buffers"
+msgstr "இடையகங்கள்"
+
+msgid "Buffer Views"
+msgstr "இடையக காட்சிகள்"
+
+msgid "Accessors"
+msgstr "அணுகல்கள்"
+
+msgid "Materials"
+msgstr "பொருட்கள்"
+
+msgid "Scene Name"
+msgstr "காட்சி பெயர்"
+
+msgid "Base Path"
+msgstr "தள பாதை"
+
+msgid "Filename"
+msgstr "கோப்புப்பெயர்"
+
+msgid "Root Nodes"
+msgstr "ரூட் முனைகள்"
+
+msgid "Texture Samplers"
+msgstr "அமைப்பு மாதிரிகள்"
+
+msgid "Images"
+msgstr "படங்கள்"
+
+msgid "Cameras"
+msgstr "கேமராக்கள்"
+
+msgid "Lights"
+msgstr "விளக்குகள்"
+
+msgid "Unique Names"
+msgstr "தனித்துவமான பெயர்கள்"
+
+msgid "Unique Animation Names"
+msgstr "தனித்துவமான அனிமேசன் பெயர்கள்"
+
+msgid "Skeletons"
+msgstr "எலும்புக்கூடுகள்"
+
+msgid "Create Animations"
+msgstr "அனிமேசன்களை உருவாக்கவும்"
+
+msgid "Animations"
+msgstr "அனிமேசன்கள்"
+
+msgid "Handle Binary Image"
+msgstr "பைனரி படத்தைக் கையாளவும்"
+
+msgid "Buffer View"
+msgstr "இடையக பார்வை"
+
+msgid "Byte Offset"
+msgstr "மாற்று ஆஃப்செட்"
+
+msgid "Component Type"
+msgstr "கூறு வகை"
+
+msgid "Normalized"
+msgstr "இயல்பாக்கப்பட்டது"
+
+msgid "Count"
+msgstr "எண்ணுங்கள்"
+
+msgid "Accessor Type"
+msgstr "அணுகல் வகை"
+
+msgid "Min"
+msgstr "மணித்துளி"
+
+msgid "Max"
+msgstr "அதிகபட்சம்"
+
+msgid "Sparse Count"
+msgstr "சிதறிய எண்ணிக்கை"
+
+msgid "Sparse Indices Buffer View"
+msgstr "சிதறிய குறியீடுகள் இடையக பார்வை"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "சிதறிய குறியீடுகள் பைட் ஆஃப்செட்"
+
+msgid "Sparse Indices Component Type"
+msgstr "சிதறிய குறியீடுகள் கூறு வகை"
+
+msgid "Sparse Values Buffer View"
+msgstr "சிதறிய மதிப்புகள் இடையக பார்வை"
+
+msgid "Sparse Values Byte Offset"
+msgstr "சிதறிய மதிப்புகள் பைட் ஆஃப்செட்"
+
+msgid "Original Name"
+msgstr "அசல் பெயர்"
+
+msgid "Loop"
+msgstr "லூப்"
+
+msgid "Buffer"
+msgstr "இடையக"
+
+msgid "Byte Length"
+msgstr "பைட் நீளம்"
+
+msgid "Byte Stride"
+msgstr "பைட் ச்ட்ரைட்"
+
+msgid "Indices"
+msgstr "குறியீடுகள்"
+
+msgid "Vertex Attributes"
+msgstr "வெர்டெக்ச் பண்புக்கூறுகள்"
+
+msgid "Perspective"
+msgstr "முன்னோக்கு"
+
+msgid "FOV"
+msgstr "Fov"
+
+msgid "Size Mag"
+msgstr "அளவு மாக்"
+
+msgid "Depth Far"
+msgstr "ஆழமான ஆழம்"
+
+msgid "Depth Near"
+msgstr "அருகில் ஆழம்"
+
+msgid "Blend Weights"
+msgstr "எடைகளை கலக்கவும்"
+
+msgid "Instance Materials"
+msgstr "நிகழ்வு பொருட்கள்"
+
+msgid "Parent"
+msgstr "பெற்றோர்"
+
+msgid "Xform"
+msgstr "எக்ச்ஃபார்ம்"
+
+msgid "Skin"
+msgstr "தோல்"
+
+msgid "Children"
+msgstr "குழந்தைகள்"
+
+msgid "Light"
+msgstr "ஒளி"
+
+msgid "Joints"
+msgstr "மூட்டுகள்"
+
+msgid "Roots"
+msgstr "வேர்கள்"
+
+msgid "Godot Bone Node"
+msgstr "கோடோட் எலும்பு முனை"
+
+msgid "Skin Root"
+msgstr "தோல் வேர்"
+
+msgid "Joints Original"
+msgstr "மூட்டுகள் அசல்"
+
+msgid "Non Joints"
+msgstr "அல்லாத மூட்டுகள்"
+
+msgid "Godot Skin"
+msgstr "கோடோட் தோல்"
+
+msgid "Src Image"
+msgstr "எச்.ஆர்.சி படம்"
+
+msgid "Sampler"
+msgstr "மாதிரி"
+
+msgid "Mag Filter"
+msgstr "மேக் வடிகட்டி"
+
+msgid "Min Filter"
+msgstr "எனது வடிகட்டி"
+
+msgid "Wrap S"
+msgstr "மடக்கு கள்"
+
+msgid "Wrap T"
+msgstr "மடக்கு டி"
+
+msgid "Mesh Library"
+msgstr "மெச் நூலகம்"
+
+msgid "Physics Material"
+msgstr "இயற்பியல் பொருள்"
+
+msgid "Cell"
+msgstr "கலன்"
+
+msgid "Octant Size"
+msgstr "ஆக்டண்ட் அளவு"
+
+msgid "Center X"
+msgstr "நடுவண் ஃச்"
+
+msgid "Center Y"
+msgstr "நடுவண் மற்றும்"
+
+msgid "Center Z"
+msgstr "நடுவண் சட்"
+
+msgid "Priority"
+msgstr "முன்னுரிமை"
+
+msgid "Bake Navigation"
+msgstr "சுட்டுக்கொள்ள வழிசெலுத்தல்"
+
+msgid "Clip Count"
+msgstr "கிளிப் எண்ணிக்கை"
+
+msgid "Initial Clip"
+msgstr "தொடக்க கிளிப்"
+
+msgid "Shuffle"
+msgstr "கலக்கு"
+
+msgid "Fade Time"
+msgstr "மங்கலான நேரம்"
+
+msgid "Stream Count"
+msgstr "ச்ட்ரீம் எண்ணிக்கை"
+
+msgid "Lightmapping"
+msgstr "லைட்மாப்பிங்"
+
+msgid "Bake Quality"
+msgstr "சுட்டுக்கொள்ளும் தகுதி"
+
+msgid "Low Quality Ray Count"
+msgstr "குறைந்த தரமான கதிர் எண்ணிக்கை"
+
+msgid "Medium Quality Ray Count"
+msgstr "நடுத்தர தரமான கதிர் எண்ணிக்கை"
+
+msgid "High Quality Ray Count"
+msgstr "உயர் தரமான கதிர் எண்ணிக்கை"
+
+msgid "Ultra Quality Ray Count"
+msgstr "அல்ட்ரா தரமான கதிர் எண்ணிக்கை"
+
+msgid "Bake Performance"
+msgstr "சுட்டுக்கொள்ளும் செயல்திறன்"
+
+msgid "Max Rays per Pass"
+msgstr "பாசுக்கு அதிகபட்ச கதிர்கள்"
+
+msgid "Region Size"
+msgstr "பகுதி அளவு"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "குறைந்த தரமான ஆய்வு கதிர் எண்ணிக்கை"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "நடுத்தர தர ஆய்வு கதிர் எண்ணிக்கை"
+
+msgid "High Quality Probe Ray Count"
+msgstr "உயர் தரமான ஆய்வு கதிர் எண்ணிக்கை"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "அல்ட்ரா தர ஆய்வு கதிர் எண்ணிக்கை"
+
+msgid "Max Rays per Probe Pass"
+msgstr "ஆய்வு பாசுக்கு அதிகபட்ச கதிர்கள்"
+
+msgid "Denoising"
+msgstr "டெனோயிங்"
+
+msgid "Denoiser"
+msgstr "டெனோவர்"
+
+msgid "BPM"
+msgstr "பிபிஎம்"
+
+msgid "Beat Count"
+msgstr "பீட் எண்ணிக்கை"
+
+msgid "Bar Beats"
+msgstr "பார் துடிக்கிறது"
+
+msgid "Loop Offset"
+msgstr "லூப் ஆஃப்செட்"
+
+msgid "Eye Height"
+msgstr "கண் உயரம்"
+
+msgid "IOD"
+msgstr "அயோட்"
+
+msgid "Display Width"
+msgstr "காட்சி அகலம்"
+
+msgid "Display to Lens"
+msgstr "லென்சுக்குக் காண்பி"
+
+msgid "Offset Rect"
+msgstr "ஆஃப்செட் செவ்வகம்"
+
+msgid "Oversample"
+msgstr "மிகைப்படுத்தப்பட்ட மாதிரி"
+
+msgid "K1"
+msgstr "கே 1"
+
+msgid "K2"
+msgstr "கே 2"
+
+msgid "Vulkan VRS"
+msgstr "எரிமலை Vs"
+
+msgid "Min Radius"
+msgstr "குறைந்தபட்ச ஆரம்"
+
+msgid "Spawnable Scenes"
+msgstr "உருவான காட்சிகள்"
+
+msgid "Spawn Path"
+msgstr "ச்பான் பாதை"
+
+msgid "Spawn Limit"
+msgstr "ச்பான் வரம்பு"
+
+msgid "Root Path"
+msgstr "வேர் பாதை"
+
+msgid "Replication Interval"
+msgstr "பிரதி இடைவெளி"
+
+msgid "Delta Interval"
+msgstr "டெல்டா இடைவெளி"
+
+msgid "Visibility Update Mode"
+msgstr "தெரிவுநிலை புதுப்பிப்பு முறை"
+
+msgid "Public Visibility"
+msgstr "பொது தெரிவுநிலை"
+
+msgid "Auth Callback"
+msgstr "அங்கீகார திரும்பப்பெறுதல்"
+
+msgid "Auth Timeout"
+msgstr "அங்கீகார நேரம் முடிந்தது"
+
+msgid "Allow Object Decoding"
+msgstr "பொருள் டிகோடிங்கை அனுமதிக்கவும்"
+
+msgid "Refuse New Connections"
+msgstr "புதிய இணைப்புகளை மறுக்கவும்"
+
+msgid "Server Relay"
+msgstr "சேவையக ரிலே"
+
+msgid "Max Sync Packet Size"
+msgstr "அதிகபட்ச ஒத்திசைவு பாக்கெட் அளவு"
+
+msgid "Max Delta Packet Size"
+msgstr "அதிகபட்ச டெல்டா பாக்கெட் அளவு"
+
+msgid "Noise Type"
+msgstr "இரைச்சல் வகை"
+
+msgid "Frequency"
+msgstr "மீடிறன், மீள்திறன், நிகழ்வெண், நிகழ்வு"
+
+msgid "Fractal"
+msgstr "பின்னம்"
+
+msgid "Octaves"
+msgstr "ஆக்டேவ்ச்"
+
+msgid "Lacunarity"
+msgstr "லாகுனாரிட்டி"
+
+msgid "Gain"
+msgstr "பெருக்கம்"
+
+msgid "Weighted Strength"
+msgstr "எடையுள்ள வலிமை"
+
+msgid "Ping Pong Strength"
+msgstr "பிங் பாங் வலிமை"
+
+msgid "Cellular"
+msgstr "செல்லுலார்"
+
+msgid "Distance Function"
+msgstr "தூர செயல்பாடு"
+
+msgid "Jitter"
+msgstr "நடுக்கம்"
+
+msgid "Return Type"
+msgstr "திரும்ப வகை"
+
+msgid "Domain Warp"
+msgstr "டொமைன் வார்ப்"
+
+msgid "Amplitude"
+msgstr "வீச்சு"
+
+msgid "Fractal Type"
+msgstr "பின்னல் வகை"
+
+msgid "Fractal Octaves"
+msgstr "ஃப்ராக்டல் ஆக்டேவ்ச்"
+
+msgid "Fractal Lacunarity"
+msgstr "ஃப்ராக்டல் லாகுனாரிட்டி"
+
+msgid "Fractal Gain"
+msgstr "பின்னணி ஆதாயம்"
+
+msgid "Width"
+msgstr "அகலம்"
+
+msgid "Invert"
+msgstr "தலைகீழ்"
+
+msgid "In 3D Space"
+msgstr "3 டி இடத்தில்"
+
+msgid "Seamless"
+msgstr "தடையற்ற"
+
+msgid "Seamless Blend Skirt"
+msgstr "தடையற்ற கலப்பு பாவாடை"
+
+msgid "As Normal Map"
+msgstr "சாதாரண வரைபடமாக"
+
+msgid "Bump Strength"
+msgstr "பம்ப் வலிமை"
+
+msgid "Color Ramp"
+msgstr "வண்ண வளைவு"
+
+msgid "Noise"
+msgstr "இரைச்சல்"
+
+msgid "Localized Name"
+msgstr "உள்ளூர்மயமாக்கப்பட்ட பெயர்"
+
+msgid "Action Type"
+msgstr "செயல் வகை"
+
+msgid "Toplevel Paths"
+msgstr "டோப்ல்வெல் பாதைகள்"
+
+msgid "Interaction Profile Path"
+msgstr "தொடர்பு சுயவிவர பாதை"
+
+msgid "Runtime Paths"
+msgstr "இயக்க நேர பாதைகள்"
+
+msgid "Display Refresh Rate"
+msgstr "புதுப்பிப்பு வீதத்தைக் காண்பி"
+
+msgid "Render Target Size Multiplier"
+msgstr "இலக்கு அளவு பெருக்கி வழங்கவும்"
+
+msgid "Layer Viewport"
+msgstr "அடுக்கு வியாபோர்ட்"
+
+msgid "Sort Order"
+msgstr "வரிசைப்படுத்தும் முறை"
+
+msgid "Alpha Blend"
+msgstr "ஆல்பா கலவை"
+
+msgid "Enable Hole Punch"
+msgstr "துளை பஞ்சை இயக்கவும்"
+
+msgid "Aspect Ratio"
+msgstr "அம்ச விகிதம்"
+
+msgid "Central Angle"
+msgstr "மைய கோணம்"
+
+msgid "Fallback Segments"
+msgstr "குறைவடையும் பிரிவுகள்"
+
+msgid "Central Horizontal Angle"
+msgstr "மைய கிடைமட்ட கோணம்"
+
+msgid "Upper Vertical Angle"
+msgstr "மேல் செங்குத்து கோணம்"
+
+msgid "Lower Vertical Angle"
+msgstr "குறைந்த செங்குத்து கோணம்"
+
+msgid "Quad Size"
+msgstr "குவாட் அளவு"
+
+msgid "Hand"
+msgstr "கை"
+
+msgid "Motion Range"
+msgstr "இயக்க வீச்சு"
+
+msgid "Hand Skeleton"
+msgstr "கை எலும்புக்கூடு"
+
+msgid "Skeleton Rig"
+msgstr "எலும்புக்கூடு ரிக்"
+
+msgid "Bone Update"
+msgstr "எலும்பு புதுப்பிப்பு"
+
+msgid "Subject"
+msgstr "பொருள்"
+
+msgid "Names"
+msgstr "பெயர்கள்"
+
+msgid "Strings"
+msgstr "சரங்கள்"
+
+msgid "Discover Multicast If"
+msgstr "மல்டிகாச்டைக் கண்டறியவும்"
+
+msgid "Discover Local Port"
+msgstr "உள்ளக துறைமுகத்தைக் கண்டறியவும்"
+
+msgid "Discover IPv6"
+msgstr "ஐபிவி 6 ஐக் கண்டறியவும்"
+
+msgid "Description URL"
+msgstr "விளக்கம் முகவரி"
+
+msgid "Service Type"
+msgstr "பணி வகை"
+
+msgid "IGD Control URL"
+msgstr "IGD கட்டுப்பாட்டு முகவரி"
+
+msgid "IGD Service Type"
+msgstr "IGD பணி வகை"
+
+msgid "IGD Our Addr"
+msgstr "Igd எங்கள் addr"
+
+msgid "IGD Status"
+msgstr "IGD நிலை"
+
+msgid "WebRTC"
+msgstr "Webrtc"
+
+msgid "Max Channel in Buffer (KB)"
+msgstr "பஃப்பரில் அதிகபட்ச சேனல் (கேபி)"
+
+msgid "Write Mode"
+msgstr "எழுது முறை"
+
+msgid "Supported Protocols"
+msgstr "உதவி நெறிமுறைகள்"
+
+msgid "Handshake Headers"
+msgstr "ஏண்ட்சேக் தலைப்புகள்"
+
+msgid "Inbound Buffer Size"
+msgstr "உள்வரும் இடையக அளவு"
+
+msgid "Outbound Buffer Size"
+msgstr "வெளிச்செல்லும் இடையக அளவு"
+
+msgid "Handshake Timeout"
+msgstr "ஏண்ட்சேக் நேரம் முடிந்தது"
+
+msgid "Max Queued Packets"
+msgstr "அதிகபட்சம் வரிசைப்படுத்தப்பட்ட பாக்கெட்டுகள்"
+
+msgid "Session Mode"
+msgstr "அமர்வு முறை"
+
+msgid "Required Features"
+msgstr "தேவையான நற்பொருத்தங்கள்"
+
+msgid "Optional Features"
+msgstr "விருப்ப நற்பொருத்தங்கள்"
+
+msgid "Requested Reference Space Types"
+msgstr "கோரப்பட்ட குறிப்பு விண்வெளி வகைகள்"
+
+msgid "Reference Space Type"
+msgstr "குறிப்பு இட வகை"
+
+msgid "Enabled Features"
+msgstr "இயக்கப்பட்ட நற்பொருத்தங்கள்"
+
+msgid "Visibility State"
+msgstr "தெரிவுநிலை நிலை"
+
+msgid "Force System User"
+msgstr "படை கணினி பயனர்"
+
+msgid "Shutdown ADB on Exit"
+msgstr "வெளியேறும்போது ADB பணிநிறுத்தம்"
+
+msgid "One Click Deploy Clear Previous Install"
+msgstr "ஒரு சொடுக்கு செய்யவும் முந்தைய நிறுவலை அழிக்கவும்"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "தொலை பிழைத்திருத்தத்திற்கு வைஃபை பயன்படுத்தவும்"
+
+msgid "Wi-Fi Remote Debug Host"
+msgstr "வைஃபை ரிமோட் பிழைத்திருத்த புரவலன்"
+
+msgid "Launcher Icons"
+msgstr "துவக்கி சின்னங்கள்"
+
+msgid "Main 192 X 192"
+msgstr "முதன்மை 192 ஃச் 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "தகவமைப்பு முன்புறம் 432 ஃச் 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "தகவமைப்பு பின்னணி 432 ஃச் 432"
+
+msgid "Gradle Build"
+msgstr "கிரேடில் உருவாக்க"
+
+msgid "Use Gradle Build"
+msgstr "கிரேடில் கட்டமைப்பைப் பயன்படுத்தவும்"
+
+msgid "Gradle Build Directory"
+msgstr "கிரேடில் உருவாக்க கோப்பகம்"
+
+msgid "Android Source Template"
+msgstr "ஆண்ட்ராய்டு மூல வார்ப்புரு"
+
+msgid "Compress Native Libraries"
+msgstr "சொந்த நூலகங்களை சுருக்கவும்"
+
+msgid "Export Format"
+msgstr "ஏற்றுமதி வடிவம்"
+
+msgid "Min SDK"
+msgstr "என் எச்.டி.கே"
+
+msgid "Target SDK"
+msgstr "இலக்கு SDK"
+
+msgid "Plugins"
+msgstr "செருகுநிரல்கள்"
+
+msgid "Architectures"
+msgstr "கட்டமைப்புகள்"
+
+msgid "Keystore"
+msgstr "கீச்டோர்"
+
+msgid "Debug User"
+msgstr "பிழைத்திருத்த பயனர்"
+
+msgid "Debug Password"
+msgstr "கடவுச்சொல்லை பிழைத்திருத்த"
+
+msgid "Release User"
+msgstr "பயனரை விடுவிக்கவும்"
+
+msgid "Release Password"
+msgstr "கடவுச்சொல்லை வெளியிடுங்கள்"
+
+msgid "Code"
+msgstr "குறியீடு"
+
+msgid "Package"
+msgstr "தொகுப்பு"
+
+msgid "Unique Name"
+msgstr "தனித்துவமான பெயர்"
+
+msgid "Signed"
+msgstr "கையொப்பமிடப்பட்டது"
+
+msgid "App Category"
+msgstr "பயன்பாட்டு வகை"
+
+msgid "Retain Data on Uninstall"
+msgstr "நிறுவல் நீக்கம் குறித்த தரவைத் தக்க வைத்துக் கொள்ளுங்கள்"
+
+msgid "Exclude From Recents"
+msgstr "முன்னேற்றங்களிலிருந்து விலக்கு"
+
+msgid "Show in Android TV"
+msgstr "ஆண்ட்ராய்டு டிவியில் காண்பி"
+
+msgid "Show in App Library"
+msgstr "பயன்பாட்டு நூலகத்தில் காண்பி"
+
+msgid "Show as Launcher App"
+msgstr "லாஞ்சர் பயன்பாடாகக் காட்டு"
+
+msgid "Graphics"
+msgstr "கிராபிக்ச்"
+
+msgid "OpenGL Debug"
+msgstr "Opengl பிழைத்திருத்தம்"
+
+msgid "XR Features"
+msgstr "எக்ச்ஆர் நற்பொருத்தங்கள்"
+
+msgid "XR Mode"
+msgstr "எக்ச்ஆர் பயன்முறை"
+
+msgid "Screen"
+msgstr "திரை"
+
+msgid "Immersive Mode"
+msgstr "அதிவேக முறை"
+
+msgid "Support Small"
+msgstr "சிறியதை ஆதரிக்கவும்"
+
+msgid "Support Normal"
+msgstr "இயல்பை ஆதரிக்கவும்"
+
+msgid "Support Large"
+msgstr "பெரிய சான்று"
+
+msgid "Support Xlarge"
+msgstr "Xlarge ஐ ஆதரிக்கவும்"
+
+msgid "User Data Backup"
+msgstr "பயனர் தரவு காப்புப்பிரதி"
+
+msgid "Allow"
+msgstr "இசைவு"
+
+msgid "Command Line"
+msgstr "கட்டளை வரி"
+
+msgid "Extra Args"
+msgstr "கூடுதல் ஆர்க்ச்"
+
+msgid "APK Expansion"
+msgstr "APK விரிவாக்கம்"
+
+msgid "Salt"
+msgstr "உப்பு"
+
+msgid "Public Key"
+msgstr "பொது விசை"
+
+msgid "Permissions"
+msgstr "அனுமதிகள்"
+
+msgid "Custom Permissions"
+msgstr "தனிப்பயன் அனுமதிகள்"
+
+msgid "iOS Deploy"
+msgstr "ஐஇமு வரிசைப்படுத்துதல்"
+
+msgid "Icons"
+msgstr "சின்னங்கள்"
+
+msgid "Settings 58 X 58"
+msgstr "அமைப்புகள் 58 ஃச் 58"
+
+msgid "Settings 87 X 87"
+msgstr "அமைப்புகள் 87 ஃச் 87"
+
+msgid "Notification 40 X 40"
+msgstr "அறிவிப்பு 40 ஃச் 40"
+
+msgid "Notification 60 X 60"
+msgstr "அறிவிப்பு 60 ஃச் 60"
+
+msgid "Spotlight 80 X 80"
+msgstr "ச்பாட்லைட் 80 ஃச் 80"
+
+msgid "iPhone 120 X 120"
+msgstr "ஐபோன் 120 ஃச் 120"
+
+msgid "iPhone 180 X 180"
+msgstr "ஐபோன் 180 ஃச் 180"
+
+msgid "iPad 167 X 167"
+msgstr "ஐபாட் 167 ஃச் 167"
+
+msgid "iPad 152 X 152"
+msgstr "ஐபாட் 152 ஃச் 152"
+
+msgid "App Store 1024 X 1024"
+msgstr "ஆப் கடை 1024 ஃச் 1024"
+
+msgid "App Store Team ID"
+msgstr "ஆப் கடை குழு ஐடி"
+
+msgid "Export Method Debug"
+msgstr "ஏற்றுமதி முறை பிழைத்திருத்தம்"
+
+msgid "Code Sign Identity Debug"
+msgstr "குறியீடு அடையாள அடையாள பிழைத்திருத்தம்"
+
+msgid "Code Sign Identity Release"
+msgstr "குறியீடு அடையாளம் அடையாள வெளியீடு"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "வழங்கல் சுயவிவரம் UUID பிழைத்திருத்தம்"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "வழங்கல் சுயவிவரம் UUID வெளியீடு"
+
+msgid "Export Method Release"
+msgstr "ஏற்றுமதி முறை வெளியீடு"
+
+msgid "Targeted Device Family"
+msgstr "இலக்கு சாதன குடும்பம்"
+
+msgid "Bundle Identifier"
+msgstr "மூட்டை அடையாளங்காட்டி"
+
+msgid "Signature"
+msgstr "கையொப்பம்"
+
+msgid "Short Version"
+msgstr "குறுகிய பதிப்பு"
+
+msgid "Min iOS Version"
+msgstr "மணித்துளி ஐஇமு பதிப்பு"
+
+msgid "Additional Plist Content"
+msgstr "கூடுதல் பி.எல்.ஐ.எச்.டி உள்ளடக்கம்"
+
+msgid "Icon Interpolation"
+msgstr "படவுரு இடைக்கணிப்பு"
+
+msgid "Export Project Only"
+msgstr "ஏற்றுமதி திட்டம் மட்டுமே"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "பழைய ஏற்றுமதி கோப்புகளை நிபந்தனையின்றி நீக்கவும்"
+
+msgid "Entitlements"
+msgstr "உரிமைகள்"
+
+msgid "Push Notifications"
+msgstr "அறிவிப்புகளை அழுத்தவும்"
+
+msgid "Capabilities"
+msgstr "திறன்கள்"
+
+msgid "Access Wi-Fi"
+msgstr "வைஃபை அணுகவும்"
+
+msgid "Performance Gaming Tier"
+msgstr "செயல்திறன் கேமிங் அடுக்கு"
+
+msgid "Performance A 12"
+msgstr "செயல்திறன் ஒரு 12"
+
+msgid "User Data"
+msgstr "பயனர் தரவு"
+
+msgid "Accessible From Files App"
+msgstr "கோப்புகள் பயன்பாட்டிலிருந்து அணுகலாம்"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "ஐடியூன்ச் பகிர்விலிருந்து அணுகலாம்"
+
+msgid "Privacy"
+msgstr "தனியுரிமை"
+
+msgid "Camera Usage Description"
+msgstr "கேமரா பயன்பாட்டு விளக்கம்"
+
+msgid "Camera Usage Description Localized"
+msgstr "கேமரா பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Microphone Usage Description"
+msgstr "மைக்ரோஃபோன் பயன்பாட்டு விளக்கம்"
+
+msgid "Microphone Usage Description Localized"
+msgstr "மைக்ரோஃபோன் பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Photolibrary Usage Description"
+msgstr "ஒளிச்சேர்க்கை பயன்பாட்டு விளக்கம்"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "ஒளிச்சேர்க்கை பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Tracking Enabled"
+msgstr "கண்காணிப்பு இயக்கப்பட்டது"
+
+msgid "Tracking Domains"
+msgstr "கண்காணிப்பு களங்கள்"
+
+msgid "Storyboard"
+msgstr "ச்டோரிபோர்டு"
+
+msgid "Image Scale Mode"
+msgstr "பட அளவிலான பயன்முறை"
+
+msgid "Custom Image @2x"
+msgstr "தனிப்பயன் படம் @2x"
+
+msgid "Custom Image @3x"
+msgstr "தனிப்பயன் படம் @3x"
+
+msgid "Use Custom BG Color"
+msgstr "தனிப்பயன் பிசி வண்ணத்தைப் பயன்படுத்தவும்"
+
+msgid "Custom BG Color"
+msgstr "தனிப்பயன் பிசி நிறம்"
+
+msgid "Architecture"
+msgstr "கட்டிடக்கலை"
+
+msgid "SSH Remote Deploy"
+msgstr "பாஓடு ரிமோட் வரிசைப்படுத்தல்"
+
+msgid "Extra Args SSH"
+msgstr "கூடுதல் args பாஓடு"
+
+msgid "Extra Args SCP"
+msgstr "கூடுதல் ஆர்க்ச் எச்.சி.பி."
+
+msgid "Run Script"
+msgstr "ச்கிரிப்டை இயக்கவும்"
+
+msgid "Cleanup Script"
+msgstr "தூய்மைப்படுத்தும் ச்கிரிப்ட்"
+
+msgid "Distribution Type"
+msgstr "விநியோக வகை"
+
+msgid "Copyright Localized"
+msgstr "பதிப்புரிமை உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Export Angle"
+msgstr "ஏற்றுமதி கோணம்"
+
+msgid "High Res"
+msgstr "உயர் ரெச்"
+
+msgid "Xcode"
+msgstr "Xcode"
+
+msgid "Platform Build"
+msgstr "இயங்குதள உருவாக்க"
+
+msgid "SDK Version"
+msgstr "SDK பதிப்பு"
+
+msgid "SDK Build"
+msgstr "SDK உருவாக்க"
+
+msgid "SDK Name"
+msgstr "SDK பெயர்"
+
+msgid "Xcode Version"
+msgstr "Xcode பதிப்பு"
+
+msgid "Xcode Build"
+msgstr "XCODE உருவாக்க"
+
+msgid "Codesign"
+msgstr "குறியீட்டு"
+
+msgid "Installer Identity"
+msgstr "நிறுவி அடையாளம்"
+
+msgid "Apple Team ID"
+msgstr "ஆப்பிள் குழு ஐடி"
+
+msgid "Identity"
+msgstr "முற்றொருமை"
+
+msgid "Certificate File"
+msgstr "சான்றிதழ் கோப்பு"
+
+msgid "Certificate Password"
+msgstr "சான்றிதழ் கடவுச்சொல்"
+
+msgid "Provisioning Profile"
+msgstr "வழங்கல் சுயவிவரம்"
+
+msgid "Custom File"
+msgstr "தனிப்பயன் கோப்பு"
+
+msgid "Allow JIT Code Execution"
+msgstr "JIT குறியீடு செயல்படுத்தலை அனுமதிக்கவும்"
+
+msgid "Allow Unsigned Executable Memory"
+msgstr "கையொப்பமிடாத இயங்கக்கூடிய நினைவகத்தை அனுமதிக்கவும்"
+
+msgid "Allow Dyld Environment Variables"
+msgstr "டில்ட் சுற்றுச்சூழல் மாறிகள் அனுமதிக்கவும்"
+
+msgid "Disable Library Validation"
+msgstr "நூலக சரிபார்ப்பை முடக்கு"
+
+msgid "Audio Input"
+msgstr "ஆடியோ உள்ளீடு"
+
+msgid "Address Book"
+msgstr "முகவரி நூல்"
+
+msgid "Calendars"
+msgstr "காலெண்டர்கள்"
+
+msgid "Photos Library"
+msgstr "புகைப்பட நூலகம்"
+
+msgid "Apple Events"
+msgstr "ஆப்பிள் நிகழ்வுகள்"
+
+msgid "Debugging"
+msgstr "பிழைத்திருத்தம்"
+
+msgid "App Sandbox"
+msgstr "ஆப் சாண்ட்பாக்ச்"
+
+msgid "Network Server"
+msgstr "பிணைய சேவையகம்"
+
+msgid "Network Client"
+msgstr "பிணையம் வாங்கி"
+
+msgid "Device USB"
+msgstr "சாதனம் யூ.எச்.பி"
+
+msgid "Device Bluetooth"
+msgstr "சாதன ஊடலை"
+
+msgid "Files Downloads"
+msgstr "கோப்புகள் பதிவிறக்குகின்றன"
+
+msgid "Files Pictures"
+msgstr "கோப்புகள் படங்கள்"
+
+msgid "Files Music"
+msgstr "கோப்புகள் இசை"
+
+msgid "Files Movies"
+msgstr "கோப்புகள் திரைப்படங்கள்"
+
+msgid "Files User Selected"
+msgstr "கோப்புகள் பயனர் தேர்ந்தெடுக்கப்பட்டார்"
+
+msgid "Helper Executables"
+msgstr "உதவி இயங்கக்கூடியவை"
+
+msgid "Custom Options"
+msgstr "தனிப்பயன் விருப்பங்கள்"
+
+msgid "Notarization"
+msgstr "அறிவிப்பு"
+
+msgid "Apple ID Name"
+msgstr "ஆப்பிள் ஐடி பெயர்"
+
+msgid "Apple ID Password"
+msgstr "ஆப்பிள் ஐடி கடவுச்சொல்"
+
+msgid "API UUID"
+msgstr "பநிஇ uuid"
+
+msgid "API Key"
+msgstr "பநிஇ விசை"
+
+msgid "API Key ID"
+msgstr "பநிஇ விசை ஐடி"
+
+msgid "Location Usage Description"
+msgstr "இருப்பிட பயன்பாட்டு விளக்கம்"
+
+msgid "Location Usage Description Localized"
+msgstr "இருப்பிட பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Address Book Usage Description"
+msgstr "முகவரி புத்தக பயன்பாட்டு விளக்கம்"
+
+msgid "Address Book Usage Description Localized"
+msgstr "முகவரி புத்தக பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Calendar Usage Description"
+msgstr "காலண்டர் பயன்பாட்டு விளக்கம்"
+
+msgid "Calendar Usage Description Localized"
+msgstr "காலண்டர் பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Photos Library Usage Description"
+msgstr "புகைப்படங்கள் நூலக பயன்பாட்டு விளக்கம்"
+
+msgid "Photos Library Usage Description Localized"
+msgstr "புகைப்படங்கள் நூலக பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Desktop Folder Usage Description"
+msgstr "டெச்க்டாப் கோப்புறை பயன்பாட்டு விளக்கம்"
+
+msgid "Desktop Folder Usage Description Localized"
+msgstr "டெச்க்டாப் கோப்புறை பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Documents Folder Usage Description"
+msgstr "ஆவணங்கள் கோப்புறை பயன்பாட்டு விளக்கம்"
+
+msgid "Documents Folder Usage Description Localized"
+msgstr "ஆவணங்கள் கோப்புறை பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Downloads Folder Usage Description"
+msgstr "கோப்புறை பயன்பாட்டு விளக்கத்தை பதிவிறக்குகிறது"
+
+msgid "Downloads Folder Usage Description Localized"
+msgstr "பதிவிறக்கங்கள் கோப்புறை பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Network Volumes Usage Description"
+msgstr "பிணையம் தொகுதிகள் பயன்பாட்டு விளக்கம்"
+
+msgid "Network Volumes Usage Description Localized"
+msgstr "பிணையம் தொகுதிகள் பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Removable Volumes Usage Description"
+msgstr "நீக்கக்கூடிய தொகுதிகள் பயன்பாட்டு விளக்கம்"
+
+msgid "Removable Volumes Usage Description Localized"
+msgstr "நீக்கக்கூடிய தொகுதிகள் பயன்பாட்டு விளக்கம் உள்ளூர்மயமாக்கப்பட்டது"
+
+msgid "Web"
+msgstr "விரலிடைத் தோல்"
+
+msgid "HTTP Host"
+msgstr "HTTP புரவலன்"
+
+msgid "HTTP Port"
+msgstr "HTTP துறைமுகம்"
+
+msgid "Use TLS"
+msgstr "TLS ஐப் பயன்படுத்தவும்"
+
+msgid "TLS Key"
+msgstr "டி.எல்.எச் விசை"
+
+msgid "TLS Certificate"
+msgstr "டி.எல்.எச் சான்றிதழ்"
+
+msgid "Variant"
+msgstr "மாறுபாடு"
+
+msgid "Extensions Support"
+msgstr "நீட்டிப்புகள் உதவி"
+
+msgid "Thread Support"
+msgstr "நூல் உதவி"
+
+msgid "VRAM Texture Compression"
+msgstr "VRAM அமைப்பு சுருக்கம்"
+
+msgid "For Desktop"
+msgstr "டெச்க்டாப்பிற்கு"
+
+msgid "For Mobile"
+msgstr "மொபைலுக்கு"
+
+msgid "HTML"
+msgstr "உஉகுமொ"
+
+msgid "Export Icon"
+msgstr "ஏற்றுமதி படவுரு"
+
+msgid "Custom HTML Shell"
+msgstr "தனிப்பயன் உஉகுமொ செல்"
+
+msgid "Head Include"
+msgstr "தலை அடங்கும்"
+
+msgid "Canvas Resize Policy"
+msgstr "கேன்வாச் மறுஅளவிடுதல் கொள்கை"
+
+msgid "Focus Canvas on Start"
+msgstr "தொடக்கத்தில் கேன்வாசை மையப்படுத்தவும்"
+
+msgid "Experimental Virtual Keyboard"
+msgstr "சோதனை மெய்நிகர் விசைப்பலகை"
+
+msgid "Progressive Web App"
+msgstr "முற்போக்கான வலை பயன்பாடு"
+
+msgid "Ensure Cross Origin Isolation Headers"
+msgstr "குறுக்கு தோற்றம் தனிமைப்படுத்தும் தலைப்புகளை உறுதி செய்யுங்கள்"
+
+msgid "Offline Page"
+msgstr "இணைப்பில்லாத பக்கம்"
+
+msgid "Icon 144 X 144"
+msgstr "படவுரு 144 ஃச் 144"
+
+msgid "Icon 180 X 180"
+msgstr "படவுரு 180 ஃச் 180"
+
+msgid "Icon 512 X 512"
+msgstr "படவுரு 512 ஃச் 512"
+
+msgid "Identity Type"
+msgstr "அடையாள வகை"
+
+msgid "Timestamp"
+msgstr "நேர முத்திரை"
+
+msgid "Timestamp Server URL"
+msgstr "நேர முத்திரை சேவையக முகவரி"
+
+msgid "Digest Algorithm"
+msgstr "சீரணிக்கும் வழிமுறை"
+
+msgid "Modify Resources"
+msgstr "வளங்களை மாற்றவும்"
+
+msgid "Console Wrapper Icon"
+msgstr "கன்சோல் ரேப்பர் படவுரு"
+
+msgid "File Version"
+msgstr "கோப்பு பதிப்பு"
+
+msgid "Product Version"
+msgstr "தயாரிப்பு பதிப்பு"
+
+msgid "Company Name"
+msgstr "நிறுவனத்தின் பெயர்"
+
+msgid "Product Name"
+msgstr "தயாரிப்பு பெயர்"
+
+msgid "File Description"
+msgstr "கோப்பு விளக்கம்"
+
+msgid "Trademarks"
+msgstr "வர்த்தக முத்திரைகள்"
+
+msgid "Export D3D12"
+msgstr "ஏற்றுமதி D3D12"
+
+msgid "D3D12 Agility SDK Multiarch"
+msgstr "D3D12 சுறுசுறுப்பு SDK மல்டியார்ச்"
+
+msgid "Sprite Frames"
+msgstr "ச்பிரிட் பிரேம்கள்"
+
+msgid "Frame"
+msgstr "சட்டகம்"
+
+msgid "Speed Scale"
+msgstr "வேக அளவு"
+
+msgid "Centered"
+msgstr "மையப்படுத்தப்பட்ட"
+
+msgid "Flip H"
+msgstr "புரட்ட எச்"
+
+msgid "Flip V"
+msgstr "ஃபிளிப் வி"
+
+msgid "Current"
+msgstr "மின்னோட்ட்ம், ஓட்டம்"
+
+msgid "Volume dB"
+msgstr "தொகுதி டி.பி."
+
+msgid "Pitch Scale"
+msgstr "சுருதி அளவு"
+
+msgid "Playing"
+msgstr "விளையாடுவது"
+
+msgid "Autoplay"
+msgstr "ஆட்டோபிளே"
+
+msgid "Stream Paused"
+msgstr "ச்ட்ரீம் இடைநிறுத்தப்பட்டது"
+
+msgid "Max Distance"
+msgstr "அதிகபட்ச தூரம்"
+
+msgid "Attenuation"
+msgstr "மெலிப்பு"
+
+msgid "Max Polyphony"
+msgstr "அதிகபட்ச பாலிஃபோனி"
+
+msgid "Panning Strength"
+msgstr "வலிமை"
+
+msgid "Bus"
+msgstr "பச்"
+
+msgid "Area Mask"
+msgstr "பகுதி முகமூடி"
+
+msgid "Playback Type"
+msgstr "பின்னணி வகை"
+
+msgid "Copy Mode"
+msgstr "நகல் பயன்முறை"
+
+msgid "Rect"
+msgstr "செவ்வகம்"
+
+msgid "Anchor Mode"
+msgstr "நங்கூரம் பயன்முறை"
+
+msgid "Ignore Rotation"
+msgstr "சுழற்சியை புறக்கணிக்கவும்"
+
+msgid "Process Callback"
+msgstr "செயல்முறை கால்பேக்"
+
+msgid "Left"
+msgstr "இடது"
+
+msgid "Top"
+msgstr "மேலே"
+
+msgid "Right"
+msgstr "வலது"
+
+msgid "Bottom"
+msgstr "கீழே"
+
+msgid "Smoothed"
+msgstr "மென்மையாக்கப்பட்டது"
+
+msgid "Position Smoothing"
+msgstr "மென்மையான நிலை"
+
+msgid "Rotation Smoothing"
+msgstr "சுழற்சி மென்மையானது"
+
+msgid "Drag"
+msgstr "பின்னிழுப்பு, பின்னிழுவிசை"
+
+msgid "Horizontal Enabled"
+msgstr "கிடைமட்ட இயக்கப்பட்டது"
+
+msgid "Vertical Enabled"
+msgstr "செங்குத்து இயக்கப்பட்டது"
+
+msgid "Horizontal Offset"
+msgstr "கிடைமட்ட ஆஃப்செட்"
+
+msgid "Vertical Offset"
+msgstr "செங்குத்து ஆஃப்செட்"
+
+msgid "Left Margin"
+msgstr "இடது விளிம்பு"
+
+msgid "Top Margin"
+msgstr "மேல் விளிம்பு"
+
+msgid "Right Margin"
+msgstr "வலது விளிம்பு"
+
+msgid "Bottom Margin"
+msgstr "கீழ் விளிம்பு"
+
+msgid "Draw Screen"
+msgstr "திரை வரைய"
+
+msgid "Draw Limits"
+msgstr "வரம்புகளை வரையவும்"
+
+msgid "Draw Drag Margin"
+msgstr "இழுவை விளிம்பை வரையவும்"
+
+msgid "Tweaks"
+msgstr "மாற்றங்கள்"
+
+msgid "Fit Margin"
+msgstr "பொருத்தம் விளிம்பு"
+
+msgid "Clear Margin"
+msgstr "தெளிவான விளிம்பு"
+
+msgid "Use Mipmaps"
+msgstr "MIPMAPS ஐப் பயன்படுத்தவும்"
+
+msgid "Emitting"
+msgstr "உமிழும்"
+
+msgid "Lifetime"
+msgstr "வாழ்நாள்"
+
+msgid "One Shot"
+msgstr "ஒரு காட்சி"
+
+msgid "Preprocess"
+msgstr "முன் செயலாக்கம்"
+
+msgid "Explosiveness"
+msgstr "வெடிக்கும் தன்மை"
+
+msgid "Randomness"
+msgstr "சீரற்ற தன்மை"
+
+msgid "Lifetime Randomness"
+msgstr "வாழ்நாள் சீரற்ற தன்மை"
+
+msgid "Fixed FPS"
+msgstr "நிலையான FPS"
+
+msgid "Fract Delta"
+msgstr "பின்னம் டெல்டா"
+
+msgid "Drawing"
+msgstr "வரைதல்"
+
+msgid "Local Coords"
+msgstr "உள்ளக கோடுகள்"
+
+msgid "Draw Order"
+msgstr "வரிசையை வரைய"
+
+msgid "Emission Shape"
+msgstr "உமிழ்வு வடிவம்"
+
+msgid "Shape"
+msgstr "வடிவம்"
+
+msgid "Sphere Radius"
+msgstr "கோள ஆரம்"
+
+msgid "Rect Extents"
+msgstr "செவ்வக நீட்டிப்புகள்"
+
+msgid "Points"
+msgstr "பிரிவகம்"
+
+msgid "Normals"
+msgstr "நார்மர்ச்"
+
+msgid "Colors"
+msgstr "நிறங்கள்"
+
+msgid "Particle Flags"
+msgstr "துகள் கொடிகள்"
+
+msgid "Align Y"
+msgstr "ஒய் ஐ சீரமைத்தல்"
+
+msgid "Direction"
+msgstr "திசை"
+
+msgid "Spread"
+msgstr "பரவுதல்"
+
+msgid "Gravity"
+msgstr "ஈர்ப்பு"
+
+msgid "Initial Velocity"
+msgstr "தொடக்க விரைவு"
+
+msgid "Velocity Min"
+msgstr "விரைவு மணித்துளி"
+
+msgid "Velocity Max"
+msgstr "விரைவு அதிகபட்சம்"
+
+msgid "Velocity Curve"
+msgstr "விரைவு வளைவு"
+
+msgid "Orbit Velocity"
+msgstr "சுற்றுப்பாதை விரைவு"
+
+msgid "Linear Accel"
+msgstr "நேரியல் முடி"
+
+msgid "Accel Min"
+msgstr "ACCER MIN"
+
+msgid "Accel Max"
+msgstr "ஆக்சிங் மேக்ச்"
+
+msgid "Accel Curve"
+msgstr "முடி வளைவு"
+
+msgid "Radial Accel"
+msgstr "ரேடியல் முடி"
+
+msgid "Tangential Accel"
+msgstr "தொடுநிலை முடி"
+
+msgid "Damping"
+msgstr "ஒடுக்கல்"
+
+msgid "Damping Min"
+msgstr "என் நீராவி"
+
+msgid "Damping Max"
+msgstr "அதிகபட்சம்"
+
+msgid "Damping Curve"
+msgstr "அடர்த்தியான வளைவு"
+
+msgid "Angle"
+msgstr "கோணம்"
+
+msgid "Angle Min"
+msgstr "கோணம் மணித்துளி"
+
+msgid "Angle Max"
+msgstr "ஆங்கிள் அதிகபட்சம்"
+
+msgid "Angle Curve"
+msgstr "கோண வளைவு"
+
+msgid "Scale Amount Min"
+msgstr "அளவிலான அளவு மணித்துளி"
+
+msgid "Scale Amount Max"
+msgstr "அளவிலான அளவு அதிகபட்சம்"
+
+msgid "Scale Amount Curve"
+msgstr "அளவிலான அளவு வளைவு"
+
+msgid "Split Scale"
+msgstr "பிளவு அளவு"
+
+msgid "Scale Curve X"
+msgstr "அளவிலான வளைவு ஃச்"
+
+msgid "Scale Curve Y"
+msgstr "அளவிலான வளைவு ஒய்"
+
+msgid "Color Initial Ramp"
+msgstr "வண்ண ஆரம்ப வளைவு"
+
+msgid "Hue Variation"
+msgstr "சாயல் மாறுபாடு"
+
+msgid "Variation Min"
+msgstr "மாறுபாடு மணித்துளி"
+
+msgid "Variation Max"
+msgstr "மாறுபாடு அதிகபட்சம்"
+
+msgid "Variation Curve"
+msgstr "மாறுபாடு வளைவு"
+
+msgid "Speed Min"
+msgstr "விரைவு மணித்துளி"
+
+msgid "Speed Max"
+msgstr "விரைவு அதிகபட்சம்"
+
+msgid "Speed Curve"
+msgstr "வேக வளைவு"
+
+msgid "Offset Min"
+msgstr "ஆஃப்செட் மணித்துளி"
+
+msgid "Offset Max"
+msgstr "ஆஃப்செட் மேக்ச்"
+
+msgid "Offset Curve"
+msgstr "ஆஃப்செட் வளைவு"
+
+msgid "Amount Ratio"
+msgstr "அளவு விகிதம்"
+
+msgid "Sub Emitter"
+msgstr "துணை உமிழ்ப்பான்"
+
+msgid "Interp to End"
+msgstr "முடிவுக்கு உட்பட்டது"
+
+msgid "Interpolate"
+msgstr "இடைக்கணிப்பு"
+
+msgid "Base Size"
+msgstr "அடிப்படை அளவு"
+
+msgid "Visibility Rect"
+msgstr "தெரிவுநிலை செவ்வகம்"
+
+msgid "Trails"
+msgstr "தடங்கள்"
+
+msgid "Sections"
+msgstr "பிரிவுகள்"
+
+msgid "Section Subdivisions"
+msgstr "பிரிவு துணைப்பிரிவுகள்"
+
+msgid "Process Material"
+msgstr "செயல்முறை பொருள்"
+
+msgid "Editor Only"
+msgstr "ஆசிரியர் மட்டும்"
+
+msgid "Energy"
+msgstr "ஆற்றல்"
+
+msgid "Blend Mode"
+msgstr "கலப்பு பயன்முறை"
+
+msgid "Z Min"
+msgstr "சுரங்கங்களுடன்"
+
+msgid "Z Max"
+msgstr "சட் அதிகபட்சம்"
+
+msgid "Layer Min"
+msgstr "அடுக்கு மணித்துளி"
+
+msgid "Layer Max"
+msgstr "அடுக்கு அதிகபட்சம்"
+
+msgid "Item Cull Mask"
+msgstr "உருப்படி குல் மாச்க்"
+
+msgid "Shadow"
+msgstr "நிழல்"
+
+msgid "Filter Smooth"
+msgstr "மென்மையான வடிகட்டி"
+
+msgid "Texture Scale"
+msgstr "அமைப்பு அளவு"
+
+msgid "Closed"
+msgstr "மூடப்பட்டது"
+
+msgid "Cull Mode"
+msgstr "குல் பயன்முறை"
+
+msgid "SDF Collision"
+msgstr "எச்.டி.எஃப் மோதல்"
+
+msgid "Occluder Light Mask"
+msgstr "ஆக்லுடர் லைட் மாச்க்"
+
+msgid "Width Curve"
+msgstr "அகல வளைவு"
+
+msgid "Default Color"
+msgstr "இயல்புநிலை நிறம்"
+
+msgid "Fill"
+msgstr "நிரப்பவும்"
+
+msgid "Gradient"
+msgstr "சரிவு"
+
+msgid "Texture Mode"
+msgstr "அமைப்பு முறை"
+
+msgid "Capping"
+msgstr "கேப்பிங்"
+
+msgid "Joint Mode"
+msgstr "கூட்டு முறை"
+
+msgid "Begin Cap Mode"
+msgstr "தொப்பி பயன்முறையைத் தொடங்குங்கள்"
+
+msgid "End Cap Mode"
+msgstr "தொப்பி பயன்முறை"
+
+msgid "Border"
+msgstr "எல்லை"
+
+msgid "Sharp Limit"
+msgstr "கூர்மையான வரம்பு"
+
+msgid "Round Precision"
+msgstr "சுற்று துல்லியம்"
+
+msgid "Antialiased"
+msgstr "ஆன்டிலியச்"
+
+msgid "Gizmo Extents"
+msgstr "கிச்மோ நீட்டிப்புகள்"
+
+msgid "Multimesh"
+msgstr "மல்டிமெச்"
+
+msgid "Pathfinding"
+msgstr "பாத்ஃபைண்டிங்"
+
+msgid "Path Desired Distance"
+msgstr "பாதை விரும்பிய தூரம்"
+
+msgid "Target Desired Distance"
+msgstr "விரும்பிய தூரத்தை இலக்கு"
+
+msgid "Path Max Distance"
+msgstr "பாதை அதிகபட்ச தூரம்"
+
+msgid "Navigation Layers"
+msgstr "வழிசெலுத்தல் அடுக்குகள்"
+
+msgid "Pathfinding Algorithm"
+msgstr "பாத்ஃபைண்டிங் அல்காரிதம்"
+
+msgid "Path Postprocessing"
+msgstr "பாதை போச்ட்ரோசெசிங்"
+
+msgid "Path Metadata Flags"
+msgstr "பாதை மேனிலை தரவு கொடிகள்"
+
+msgid "Simplify Path"
+msgstr "பாதையை எளிதாக்குங்கள்"
+
+msgid "Simplify Epsilon"
+msgstr "எப்சிலனை எளிதாக்குங்கள்"
+
+msgid "Avoidance"
+msgstr "தவிர்ப்பு"
+
+msgid "Avoidance Enabled"
+msgstr "தவிர்ப்பு இயக்கப்பட்டது"
+
+msgid "Neighbor Distance"
+msgstr "அண்டை தூரம்"
+
+msgid "Max Neighbors"
+msgstr "அதிகபட்ச அயலவர்கள்"
+
+msgid "Time Horizon Agents"
+msgstr "டைம் ஒரைசன் முகவர்கள்"
+
+msgid "Time Horizon Obstacles"
+msgstr "நேர அடிவானம் தடைகள்"
+
+msgid "Max Speed"
+msgstr "அதிகபட்ச விரைவு"
+
+msgid "Avoidance Layers"
+msgstr "தவிர்ப்பு அடுக்குகள்"
+
+msgid "Avoidance Mask"
+msgstr "தவிர்ப்பு முகமூடி"
+
+msgid "Avoidance Priority"
+msgstr "தவிர்ப்பு முன்னுரிமை"
+
+msgid "Use Custom"
+msgstr "வழக்கத்தைப் பயன்படுத்துங்கள்"
+
+msgid "Path Custom Color"
+msgstr "பாதை தனிப்பயன் நிறம்"
+
+msgid "Path Custom Point Size"
+msgstr "பாதை தனிப்பயன் புள்ளி அளவு"
+
+msgid "Path Custom Line Width"
+msgstr "பாதை தனிப்பயன் வரி அகலம்"
+
+msgid "Bidirectional"
+msgstr "இருதரப்பு"
+
+msgid "Start Position"
+msgstr "தொடக்க நிலை"
+
+msgid "End Position"
+msgstr "இறுதி நிலை"
+
+msgid "Enter Cost"
+msgstr "செலவை உள்ளிடவும்"
+
+msgid "Travel Cost"
+msgstr "பயண செலவு"
+
+msgid "Vertices"
+msgstr "செங்குத்துகள்"
+
+msgid "NavigationMesh"
+msgstr "நேவிகேசன்மேச்"
+
+msgid "Affect Navigation Mesh"
+msgstr "வழிசெலுத்தல் கண்ணி பாதிக்கிறது"
+
+msgid "Carve Navigation Mesh"
+msgstr "வழிசெலுத்தல் கண்ணி செதுக்குதல்"
+
+msgid "Navigation Polygon"
+msgstr "வழிசெலுத்தல் பலகோணம்"
+
+msgid "Use Edge Connections"
+msgstr "விளிம்பு இணைப்புகளைப் பயன்படுத்தவும்"
+
+msgid "Skew"
+msgstr "இடைச்சுணக்கம்"
+
+msgid "Scroll Scale"
+msgstr "உருள் அளவு"
+
+msgid "Scroll Offset"
+msgstr "உருட்டல் ஆஃப்செட்"
+
+msgid "Repeat"
+msgstr "மீண்டும்"
+
+msgid "Repeat Size"
+msgstr "அளவு மீண்டும்"
+
+msgid "Autoscroll"
+msgstr "ஆட்டோச்க்ரோல்"
+
+msgid "Repeat Times"
+msgstr "நேரங்களை மீண்டும் செய்யவும்"
+
+msgid "Begin"
+msgstr "தொடங்கு"
+
+msgid "End"
+msgstr "முடிவு"
+
+msgid "Follow Viewport"
+msgstr "வியூபோர்ட்டைப் பின்தொடரவும்"
+
+msgid "Ignore Camera Scroll"
+msgstr "கேமரா சுருளை புறக்கணிக்கவும்"
+
+msgid "Screen Offset"
+msgstr "திரை ஆஃப்செட்"
+
+msgid "Scroll"
+msgstr "சுருள்"
+
+msgid "Base Offset"
+msgstr "அடிப்படை ஆஃப்செட்"
+
+msgid "Base Scale"
+msgstr "அடிப்படை அளவு"
+
+msgid "Limit Begin"
+msgstr "வரம்பு தொடங்குகிறது"
+
+msgid "Limit End"
+msgstr "வரம்பைக் கட்டுப்படுத்துங்கள்"
+
+msgid "Ignore Camera Zoom"
+msgstr "கேமரா சூம் புறக்கணிக்கவும்"
+
+msgid "Motion"
+msgstr "இயக்கம்"
+
+msgid "Mirroring"
+msgstr "பிரதிபலிப்பு"
+
+msgid "Curve"
+msgstr "வளைவு"
+
+msgid "Progress"
+msgstr "முன்னேற்றம்"
+
+msgid "Progress Ratio"
+msgstr "முன்னேற்ற விகிதம்"
+
+msgid "H Offset"
+msgstr "H ஆஃப்செட்"
+
+msgid "V Offset"
+msgstr "ஆஃப்செட்டில்"
+
+msgid "Rotates"
+msgstr "சுழலும்"
+
+msgid "Cubic Interp"
+msgstr "கன இன்டர்பி"
+
+msgid "Sync to Physics"
+msgstr "இயற்பியலுடன் ஒத்திசைக்கவும்"
+
+msgid "Monitoring"
+msgstr "கண்காணிப்பு"
+
+msgid "Monitorable"
+msgstr "கண்காணிக்கக்கூடிய"
+
+msgid "Space Override"
+msgstr "விண்வெளி மேலெழுதும்"
+
+msgid "Point"
+msgstr "புள்ளியம்"
+
+msgid "Point Unit Distance"
+msgstr "புள்ளி அலகு தூரம்"
+
+msgid "Point Center"
+msgstr "புள்ளி நடுவண்"
+
+msgid "Linear Damp"
+msgstr "நேரியல் ஈரமான"
+
+msgid "Angular Damp"
+msgstr "கோண ஈரமான"
+
+msgid "Audio Bus"
+msgstr "பச் ஆடியோ"
+
+msgid "Motion Mode"
+msgstr "இயக்க முறை"
+
+msgid "Up Direction"
+msgstr "மேல் திசை"
+
+msgid "Slide on Ceiling"
+msgstr "கூரையில் ச்லைடு"
+
+msgid "Wall Min Slide Angle"
+msgstr "சுவர் மின் ச்லைடு கோணம்"
+
+msgid "Floor"
+msgstr "தளம்"
+
+msgid "Stop on Slope"
+msgstr "சாய்வில் நிறுத்துங்கள்"
+
+msgid "Constant Speed"
+msgstr "நிலையான விரைவு"
+
+msgid "Block on Wall"
+msgstr "சுவரில் தொகுதி"
+
+msgid "Max Angle"
+msgstr "அதிகபட்ச கோணம்"
+
+msgid "Snap Length"
+msgstr "ச்னாப் நீளம்"
+
+msgid "Moving Platform"
+msgstr "நகரும் தளம்"
+
+msgid "On Leave"
+msgstr "விடுப்பில்"
+
+msgid "Floor Layers"
+msgstr "தரை அடுக்குகள்"
+
+msgid "Wall Layers"
+msgstr "சுவர் அடுக்குகள்"
+
+msgid "Safe Margin"
+msgstr "பாதுகாப்பான விளிம்பு"
+
+msgid "Disable Mode"
+msgstr "பயன்முறையை முடக்கு"
+
+msgid "Pickable"
+msgstr "தேர்ந்தெடுக்கக்கூடிய"
+
+msgid "Build Mode"
+msgstr "பயன்முறையை உருவாக்குங்கள்"
+
+msgid "Disabled"
+msgstr "முடக்கப்பட்டது"
+
+msgid "One Way Collision"
+msgstr "ஒரு வழி மோதல்"
+
+msgid "One Way Collision Margin"
+msgstr "ஒரு வழி மோதல் விளிம்பு"
+
+msgid "Debug Color"
+msgstr "பிழைத்திருத்த நிறம்"
+
+msgid "Length"
+msgstr "நீளம்"
+
+msgid "Rest Length"
+msgstr "ஓய்வு நீளம்"
+
+msgid "Stiffness"
+msgstr "விறைப்பு"
+
+msgid "Initial Offset"
+msgstr "ஆரம்ப ஆஃப்செட்"
+
+msgid "Node A"
+msgstr "முனை a"
+
+msgid "Node B"
+msgstr "முனை ஆ"
+
+msgid "Bias"
+msgstr "சார்பு"
+
+msgid "Disable Collision"
+msgstr "மோதலை முடக்கு"
+
+msgid "Softness"
+msgstr "மென்மையாகும்"
+
+msgid "Angular Limit"
+msgstr "கோண வரம்பு"
+
+msgid "Lower"
+msgstr "கீழ்"
+
+msgid "Upper"
+msgstr "மேல்"
+
+msgid "Motor"
+msgstr "மின்னோடி"
+
+msgid "Target Velocity"
+msgstr "இலக்கு விரைவு"
+
+msgid "Bone 2D Nodepath"
+msgstr "எலும்பு 2 டி நோட்பாத்"
+
+msgid "Bone 2D Index"
+msgstr "எலும்பு 2 டி அட்டவணை"
+
+msgid "Auto Configure Joint"
+msgstr "ஆட்டோ கூட்டு கட்டமை"
+
+msgid "Simulate Physics"
+msgstr "இயற்பியலை உருவகப்படுத்துங்கள்"
+
+msgid "Follow Bone When Simulating"
+msgstr "உருவகப்படுத்தும்போது எலும்பைப் பின்தொடரவும்"
+
+msgid "Exclude Parent"
+msgstr "பெற்றோரை விலக்கு"
+
+msgid "Target Position"
+msgstr "இலக்கு நிலை"
+
+msgid "Hit From Inside"
+msgstr "உள்ளே இருந்து அடியுங்கள்"
+
+msgid "Collide With"
+msgstr "உடன் மோதிக் கொள்ளுங்கள்"
+
+msgid "Areas"
+msgstr "பகுதிகள்"
+
+msgid "Bodies"
+msgstr "உடல்கள்"
+
+msgid "Gravity Scale"
+msgstr "ஈர்ப்பு அளவு"
+
+msgid "Mass Distribution"
+msgstr "வெகுசன வழங்கல்"
+
+msgid "Center of Mass Mode"
+msgstr "வெகுசன பயன்முறையின் நடுவண்"
+
+msgid "Inertia"
+msgstr "நிலைமம்"
+
+msgid "Deactivation"
+msgstr "செயலிழக்கச் செய்தல்"
+
+msgid "Sleeping"
+msgstr "தூக்கம்"
+
+msgid "Can Sleep"
+msgstr "தூங்க முடியும்"
+
+msgid "Lock Rotation"
+msgstr "பூட்டு சுழற்சி"
+
+msgid "Freeze"
+msgstr "முடக்கம்"
+
+msgid "Freeze Mode"
+msgstr "முடக்கம் பயன்முறை"
+
+msgid "Solver"
+msgstr "தீர்வி"
+
+msgid "Custom Integrator"
+msgstr "தனிப்பயன் ஒருங்கிணைப்பாளர்"
+
+msgid "Continuous CD"
+msgstr "தொடர்ச்சியான குறுவட்டு"
+
+msgid "Contact Monitor"
+msgstr "தொடர்பு கண்காணிப்பு"
+
+msgid "Max Contacts Reported"
+msgstr "அதிகபட்ச தொடர்புகள் தெரிவிக்கப்பட்டன"
+
+msgid "Linear"
+msgstr "நேரியல்"
+
+msgid "Damp Mode"
+msgstr "ஈரமான பயன்முறை"
+
+msgid "Damp"
+msgstr "ஈரமான"
+
+msgid "Angular"
+msgstr "கோண"
+
+msgid "Constant Forces"
+msgstr "மாறிலி சக்திகள்"
+
+msgctxt "Physics"
+msgid "Force"
+msgstr "ஆற்றல்"
+
+msgid "Torque"
+msgstr "விசைத்திருப்பம"
+
+msgid "Margin"
+msgstr "விளிம்பு"
+
+msgid "Constant Linear Velocity"
+msgstr "நிலையான நேரியல் விரைவு"
+
+msgid "Constant Angular Velocity"
+msgstr "நிலையான கோண விரைவு"
+
+msgid "UV"
+msgstr "யு.வி."
+
+msgid "Vertex Colors"
+msgstr "வெர்டெக்ச் வண்ணங்கள்"
+
+msgid "Internal Vertex Count"
+msgstr "உள் வெர்டெக்ச் எண்ணிக்கை"
+
+msgid "Remote Path"
+msgstr "தொலைநிலை பாதை"
+
+msgid "Use Global Coordinates"
+msgstr "உலகளாவிய ஆயத்தொலைவுகளைப் பயன்படுத்துங்கள்"
+
+msgid "Update"
+msgstr "புதுப்பிப்பு"
+
+msgid "Auto Calculate Length and Angle"
+msgstr "தானாக நீளம் மற்றும் கோணத்தைக் கணக்கிடுங்கள்"
+
+msgid "Bone Angle"
+msgstr "எலும்பு கோணம்"
+
+msgid "Editor Settings"
+msgstr "ஆசிரியர் அமைப்புகள்"
+
+msgid "Show Bone Gizmo"
+msgstr "எலும்பு கிச்மோவைக் காட்டு"
+
+msgid "Rest"
+msgstr "ஓய்வு"
+
+msgid "Modification Stack"
+msgstr "மாற்றியமைக்கும் அடுக்கு"
+
+msgid "Hframes"
+msgstr "Hframes"
+
+msgid "Vframes"
+msgstr "Vframes"
+
+msgid "Frame Coords"
+msgstr "பிரேம் கோல்ட்ச்"
+
+msgid "Filter Clip Enabled"
+msgstr "வடிகட்டி கிளிப் இயக்கப்பட்டது"
+
+msgid "Tile Set"
+msgstr "ஓடு தொகுப்பு"
+
+msgid "Rendering Quadrant Size"
+msgstr "இருபடி அளவை வழங்குதல்"
+
+msgid "Collision Animatable"
+msgstr "மோதல் அனிமேட்டபிள்"
+
+msgid "Collision Visibility Mode"
+msgstr "மோதல் தெரிவுநிலை முறை"
+
+msgid "Navigation Visibility Mode"
+msgstr "வழிசெலுத்தல் தெரிவுநிலை முறை"
+
+msgid "Y Sort Origin"
+msgstr "ஒய் வரிசை தோற்றம்"
+
+msgid "X Draw Order Reversed"
+msgstr "ஃச் டிரா ஆர்டர் தலைகீழானது"
+
+msgid "Collision Enabled"
+msgstr "மோதல் இயக்கப்பட்டது"
+
+msgid "Use Kinematic Bodies"
+msgstr "இயக்கவியல் உடல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Navigation Enabled"
+msgstr "வழிசெலுத்தல் இயக்கப்பட்டது"
+
+msgid "Texture Normal"
+msgstr "அமைப்பு இயல்பானது"
+
+msgid "Texture Pressed"
+msgstr "அமைப்பு அழுத்தியது"
+
+msgid "Bitmask"
+msgstr "பிச்"
+
+msgid "Shape Centered"
+msgstr "வடிவம் மையமாக"
+
+msgid "Shape Visible"
+msgstr "வடிவம் தெரியும்"
+
+msgid "Passby Press"
+msgstr "பாச்பி பிரச்"
+
+msgid "Visibility Mode"
+msgstr "தெரிவுநிலை பயன்முறை"
+
+msgid "Enabling"
+msgstr "செயல்படுத்துகிறது"
+
+msgid "Node Path"
+msgstr "முனை பாதை"
+
+msgid "Attenuation Model"
+msgstr "விழிப்புணர்வு மாதிரி"
+
+msgid "Unit Size"
+msgstr "அலகு அளவு"
+
+msgid "Max dB"
+msgstr "அதிகபட்ச டி.பி."
+
+msgid "Emission Angle"
+msgstr "உமிழ்வு கோணம்"
+
+msgid "Degrees"
+msgstr "டிகிரி"
+
+msgid "Filter Attenuation dB"
+msgstr "வடிகட்டி விழிப்புணர்வு db"
+
+msgid "Attenuation Filter"
+msgstr "விழிப்புணர்வு வடிகட்டி"
+
+msgid "Cutoff Hz"
+msgstr "கட்ஆஃப் எர்ட்ச்"
+
+msgid "dB"
+msgstr "டி.பி."
+
+msgid "Doppler"
+msgstr "டாப்ளர்"
+
+msgid "Tracking"
+msgstr "கண்காணிப்பு"
+
+msgid "Bone Name"
+msgstr "எலும்பு பெயர்"
+
+msgid "Bone Idx"
+msgstr "எலும்பு ஐடிஎக்ச்"
+
+msgid "Override Pose"
+msgstr "போசை மேலெழுதவும்"
+
+msgid "Keep Aspect"
+msgstr "அம்சத்தை வைத்திருங்கள்"
+
+msgid "Cull Mask"
+msgstr "குல் மாச்க்"
+
+msgid "Attributes"
+msgstr "பண்புக்கூறுகள்"
+
+msgid "Compositor"
+msgstr "தொகுப்பாளர்"
+
+msgid "Doppler Tracking"
+msgstr "டாப்ளர் கண்காணிப்பு"
+
+msgid "Projection"
+msgstr "திட்டம்"
+
+msgid "Frustum Offset"
+msgstr "ஆஃப்செட் துண்டு"
+
+msgid "Near"
+msgstr "அருகில்"
+
+msgid "Far"
+msgstr "தொலைவில்"
+
+msgid "Visibility AABB"
+msgstr "தெரிவுநிலை AABB"
+
+msgid "Box Extents"
+msgstr "பெட்டி நீட்டிப்புகள்"
+
+msgid "Ring Axis"
+msgstr "வளைய அச்சு"
+
+msgid "Ring Height"
+msgstr "வளைய உயரம்"
+
+msgid "Ring Radius"
+msgstr "வளைய ஆரம்"
+
+msgid "Ring Inner Radius"
+msgstr "வளைய உள் ஆரம்"
+
+msgid "Rotate Y"
+msgstr "ஒய் ஐ சுழற்றுங்கள்"
+
+msgid "Disable Z"
+msgstr "சட் ஐ முடக்கு"
+
+msgid "Flatness"
+msgstr "தட்டையானது"
+
+msgid "Scale Curve Z"
+msgstr "அளவிலான வளைவு சட்"
+
+msgid "Albedo"
+msgstr "ஆல்பெடோ"
+
+msgctxt "Geometry"
+msgid "Normal"
+msgstr "சாதாரண"
+
+msgid "Orm"
+msgstr "ORM"
+
+msgid "Emission"
+msgstr "உமிழ்வு"
+
+msgid "Parameters"
+msgstr "அளவுருக்கள்"
+
+msgid "Emission Energy"
+msgstr "உமிழ்வு ஆற்றல்"
+
+msgid "Modulate"
+msgstr "மாடுலேட்"
+
+msgid "Albedo Mix"
+msgstr "ஆல்பிடோ கலவை"
+
+msgid "Normal Fade"
+msgstr "சாதாரண மங்கல்"
+
+msgid "Vertical Fade"
+msgstr "செங்குத்து மங்கல்"
+
+msgid "Upper Fade"
+msgstr "மேல் மங்கல்"
+
+msgid "Lower Fade"
+msgstr "கீழ் மங்கல்"
+
+msgid "Distance Fade"
+msgstr "தூரம் மங்கிவிடும்"
+
+msgid "Transform Align"
+msgstr "சீரமை மாற்றவும்"
+
+msgid "Draw Passes"
+msgstr "பாச் டிரா"
+
+msgid "Passes"
+msgstr "பாச்"
+
+msgid "Thickness"
+msgstr "தடிமன்"
+
+msgid "Bake Mask"
+msgstr "சுட்டுக்கொள்ள முகமூடி"
+
+msgid "Update Mode"
+msgstr "புதுப்பிப்பு பயன்முறை"
+
+msgid "Follow Camera Enabled"
+msgstr "கேமராவைப் பின்தொடரவும்"
+
+msgid "Directionality"
+msgstr "திசை"
+
+msgid "Skeleton Path"
+msgstr "எலும்புக்கூடு பாதை"
+
+msgid "Layer Mask"
+msgstr "அடுக்கு முகமூடி"
+
+msgid "Visibility Range"
+msgstr "தெரிவுநிலை வரம்பு"
+
+msgid "Begin Margin"
+msgstr "விளிம்பு தொடங்கு"
+
+msgid "End Margin"
+msgstr "இறுதி விளிம்பு"
+
+msgid "Fade Mode"
+msgstr "மங்கல் பயன்முறை"
+
+msgid "Pixel Size"
+msgstr "படப்புள்ளி அளவு"
+
+msgid "Flags"
+msgstr "கொடிகள்"
+
+msgid "Billboard"
+msgstr "விளம்பர பலகை"
+
+msgid "Shaded"
+msgstr "நிழல்"
+
+msgid "Double Sided"
+msgstr "இரட்டை பக்க"
+
+msgid "No Depth Test"
+msgstr "ஆழ சோதனை இல்லை"
+
+msgid "Fixed Size"
+msgstr "நிலையான அளவு"
+
+msgid "Alpha Cut"
+msgstr "ஆல்பா வெட்டு"
+
+msgid "Alpha Scissor Threshold"
+msgstr "ஆல்பா கத்தரிக்கோல் வாசல்"
+
+msgid "Alpha Hash Scale"
+msgstr "ஆல்பா ஆச் அளவு"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "ஆல்பா ஆன்டிலிசிங் பயன்முறை"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "ஆல்பா ஆன்டியாலியாசிங் எட்ச்"
+
+msgid "Texture Filter"
+msgstr "அமைப்பு வடிகட்டி"
+
+msgid "Render Priority"
+msgstr "முன்னுரிமை வழங்கவும்"
+
+msgid "Outline Render Priority"
+msgstr "அவுட்லைன் வழங்கும் முன்னுரிமை"
+
+msgid "Text"
+msgstr "உரை"
+
+msgid "Outline Modulate"
+msgstr "அவுட்லைன் மாடுலேட்"
+
+msgid "Font"
+msgstr "எழுத்துரு"
+
+msgid "Font Size"
+msgstr "எழுத்துரு அளவு"
+
+msgid "Horizontal Alignment"
+msgstr "கிடைமட்ட சீரமைப்பு"
+
+msgid "Vertical Alignment"
+msgstr "செங்குத்து சீரமைப்பு"
+
+msgid "Uppercase"
+msgstr "பெரிய எழுத்து"
+
+msgid "Justification Flags"
+msgstr "நியாயப்படுத்தும் கொடிகள்"
+
+msgid "BiDi"
+msgstr "பீடி"
+
+msgid "Text Direction"
+msgstr "உரை திசை"
+
+msgid "Structured Text BiDi Override"
+msgstr "கட்டமைக்கப்பட்ட உரை பிடி மேலெழுதும்"
+
+msgid "Structured Text BiDi Override Options"
+msgstr "கட்டமைக்கப்பட்ட உரை பிடி விருப்பங்களை மீறுகிறது"
+
+msgid "Intensity Lumens"
+msgstr "தீவிரம் லுமன்ச்"
+
+msgid "Intensity Lux"
+msgstr "தீவிரம் லக்ச்"
+
+msgid "Temperature"
+msgstr "வெப்பநிலை"
+
+msgid "Indirect Energy"
+msgstr "மறைமுக ஆற்றல்"
+
+msgid "Volumetric Fog Energy"
+msgstr "அளவீட்டு மூடுபனி ஆற்றல்"
+
+msgid "Projector"
+msgstr "ப்ரொசெக்டர்"
+
+msgid "Angular Distance"
+msgstr "கோண தூரம்"
+
+msgid "Negative"
+msgstr "எதிர்மம்"
+
+msgid "Specular"
+msgstr "மென்"
+
+msgid "Bake Mode"
+msgstr "சுட்டுக்கொள்ள பயன்முறை"
+
+msgid "Normal Bias"
+msgstr "சாதாரண சார்பு"
+
+msgid "Reverse Cull Face"
+msgstr "தலைகீழ் முகம்"
+
+msgid "Transmittance Bias"
+msgstr "பரிமாற்ற சார்பு"
+
+msgid "Opacity"
+msgstr "ஒளிபுகாநிலை"
+
+msgid "Blur"
+msgstr "மங்கலானது"
+
+msgid "Directional Shadow"
+msgstr "திசை நிழல்"
+
+msgid "Split 1"
+msgstr "பிளவு 1"
+
+msgid "Split 2"
+msgstr "பிளவு 2"
+
+msgid "Split 3"
+msgstr "பிளவு 3"
+
+msgid "Blend Splits"
+msgstr "கலப்பு பிளவுகள்"
+
+msgid "Fade Start"
+msgstr "மங்கல் தொடக்க"
+
+msgid "Pancake Size"
+msgstr "பான்கேக் அளவு"
+
+msgid "Sky Mode"
+msgstr "ச்கை பயன்முறை"
+
+msgid "Omni"
+msgstr "ஆம்னி"
+
+msgid "Shadow Mode"
+msgstr "நிழல் பயன்முறை"
+
+msgid "Spot"
+msgstr "ச்பாட்"
+
+msgid "Angle Attenuation"
+msgstr "கோண விழிப்புணர்வு"
+
+msgid "Quality"
+msgstr "தகுதி"
+
+msgid "Bounces"
+msgstr "பவுன்ச்"
+
+msgid "Bounce Indirect Energy"
+msgstr "மறைமுக ஆற்றலை பவுன்ச் செய்யுங்கள்"
+
+msgid "Directional"
+msgstr "திசை"
+
+msgid "Use Texture for Bounces"
+msgstr "பவுன்ச் அமைப்புகளுக்கு அமைப்பைப் பயன்படுத்தவும்"
+
+msgid "Interior"
+msgstr "உட்புறம்"
+
+msgid "Use Denoiser"
+msgstr "டெனோசரை பயன்படுத்தவும்"
+
+msgid "Denoiser Strength"
+msgstr "டெனோசர் வலிமை"
+
+msgid "Denoiser Range"
+msgstr "டெனோசர் வரம்பு"
+
+msgid "Texel Scale"
+msgstr "டெக்செல் அளவுகோல்"
+
+msgid "Max Texture Size"
+msgstr "அதிகபட்ச அமைப்பு அளவு"
+
+msgid "Custom Sky"
+msgstr "தனிப்பயன் வானம்"
+
+msgid "Custom Color"
+msgstr "தனிப்பயன் நிறம்"
+
+msgid "Custom Energy"
+msgstr "தனிப்பயன் ஆற்றல்"
+
+msgid "Camera Attributes"
+msgstr "கேமரா பண்புக்கூறுகள்"
+
+msgid "Gen Probes"
+msgstr "செனரல் ஆய்வுகள்"
+
+msgid "Subdiv"
+msgstr "துணைப்பிரிவு"
+
+msgid "Light Data"
+msgstr "ஒளி தரவு"
+
+msgid "Target Node"
+msgstr "இலக்கு முனை"
+
+msgid "From"
+msgstr "இருந்து"
+
+msgid "Surface Material Override"
+msgstr "மேற்பரப்பு பொருள் மேலெழுதல்"
+
+msgid "Path Height Offset"
+msgstr "பாதை உயரம் ஆஃப்செட்"
+
+msgid "Use 3D Avoidance"
+msgstr "3D தவிர்ப்பதைப் பயன்படுத்தவும்"
+
+msgid "Keep Y Velocity"
+msgstr "ஒய் வேகத்தை வைத்திருங்கள்"
+
+msgid "Navigation Mesh"
+msgstr "வழிசெலுத்தல் கண்ணி"
+
+msgid "Quaternion"
+msgstr "நாலாந்தரவன்"
+
+msgid "Basis"
+msgstr "அடுக்களம்"
+
+msgid "Rotation Edit Mode"
+msgstr "சுழற்சி திருத்து பயன்முறை"
+
+msgid "Rotation Order"
+msgstr "சுழற்சி வரிசை"
+
+msgid "Top Level"
+msgstr "உயர் நிலை"
+
+msgid "Visibility"
+msgstr "விழிமை"
+
+msgid "Visible"
+msgstr "தெரியும்"
+
+msgid "Visibility Parent"
+msgstr "தெரிவுநிலை பெற்றோர்"
+
+msgid "Bake"
+msgstr "சுட்டுக்கொள்"
+
+msgid "Rotation Mode"
+msgstr "சுழற்சி முறை"
+
+msgid "Use Model Front"
+msgstr "மாதிரி முன் பயன்படுத்தவும்"
+
+msgid "Tilt Enabled"
+msgstr "சாய்வு இயக்கப்பட்டது"
+
+msgid "Wind"
+msgstr "காற்று"
+
+msgid "Force Magnitude"
+msgstr "ஆற்றல் அளவு"
+
+msgid "Attenuation Factor"
+msgstr "விழிப்புணர்வு காரணி"
+
+msgid "Source Path"
+msgstr "மூல பாதை"
+
+msgid "Reverb Bus"
+msgstr "ரெவெர்ப் பச்"
+
+msgid "Uniformity"
+msgstr "சீரான தன்மை"
+
+msgid "Ray Pickable"
+msgstr "ரே எடுக்கக்கூடிய"
+
+msgid "Capture on Drag"
+msgstr "இழுவில் பிடிக்கவும்"
+
+msgid "Swing Span"
+msgstr "ச்விங் ச்பான்"
+
+msgid "Twist Span"
+msgstr "திருப்பம்"
+
+msgid "Relaxation"
+msgstr "தளர்வு"
+
+msgid "Linear Limit"
+msgstr "நேரியல் வரம்பு"
+
+msgid "X"
+msgstr "ஃச்"
+
+msgid "Upper Distance"
+msgstr "மேல் தூரம்"
+
+msgid "Lower Distance"
+msgstr "குறைந்த தூரம்"
+
+msgid "Restitution"
+msgstr "மறுசீரமைப்பு"
+
+msgid "Y"
+msgstr "ஒய்"
+
+msgid "Z"
+msgstr "சட்"
+
+msgid "Linear Motor"
+msgstr "நேரியல் மின்னோடி"
+
+msgid "Force Limit"
+msgstr "ஆற்றல் வரம்பு"
+
+msgid "Linear Spring"
+msgstr "நேரியல் வேனில்"
+
+msgid "Equilibrium Point"
+msgstr "சமநிலை புள்ளி"
+
+msgid "Upper Angle"
+msgstr "மேல் கோணம்"
+
+msgid "Lower Angle"
+msgstr "கீழ் கோணம்"
+
+msgid "ERP"
+msgstr "எர்ப்"
+
+msgid "Angular Motor"
+msgstr "கோண மின்னோடி"
+
+msgid "Angular Spring"
+msgstr "கோண வேனில்"
+
+msgid "Params"
+msgstr "அளவுரு"
+
+msgid "Max Impulse"
+msgstr "அதிகபட்ச தூண்டுதல்"
+
+msgid "Solver Priority"
+msgstr "தீர்வி முன்னுரிமை"
+
+msgid "Exclude Nodes From Collision"
+msgstr "மோதலில் இருந்து முனைகளை விலக்கு"
+
+msgid "Impulse Clamp"
+msgstr "உந்துதல் கிளாம்ப்"
+
+msgid "Linear Motion"
+msgstr "நேரியல் இயக்கம்"
+
+msgid "Linear Ortho"
+msgstr "நேரியல் ஆர்த்தோ"
+
+msgid "Angular Motion"
+msgstr "கோண இயக்கம்"
+
+msgid "Angular Ortho"
+msgstr "கோண ஆர்த்தோ"
+
+msgid "Joint Constraints"
+msgstr "கூட்டு கட்டுப்பாடுகள்"
+
+msgid "Angular Limit Enabled"
+msgstr "கோண வரம்பு இயக்கப்பட்டது"
+
+msgid "Angular Limit Upper"
+msgstr "கோண வரம்பு மேல்"
+
+msgid "Angular Limit Lower"
+msgstr "கோண வரம்பு குறைவாக"
+
+msgid "Angular Limit Bias"
+msgstr "கோண வரம்பு சார்பு"
+
+msgid "Angular Limit Softness"
+msgstr "கோண வரம்பு மென்மையாகும்"
+
+msgid "Angular Limit Relaxation"
+msgstr "கோண வரம்பு தளர்வு"
+
+msgid "Linear Limit Upper"
+msgstr "நேரியல் வரம்பு மேல்"
+
+msgid "Linear Limit Lower"
+msgstr "நேரியல் வரம்பு குறைவாக"
+
+msgid "Linear Limit Softness"
+msgstr "நேரியல் வரம்பு மென்மையாகும்"
+
+msgid "Linear Limit Restitution"
+msgstr "நேரியல் வரம்பு மறுசீரமைப்பு"
+
+msgid "Linear Limit Damping"
+msgstr "நேரியல் வரம்பு ஈரமாக்குதல்"
+
+msgid "Angular Limit Restitution"
+msgstr "கோண வரம்பு மறுசீரமைப்பு"
+
+msgid "Angular Limit Damping"
+msgstr "கோண வரம்பு ஈரமாக்குதல்"
+
+msgid "Linear Limit Enabled"
+msgstr "நேரியல் வரம்பு இயக்கப்பட்டது"
+
+msgid "Linear Spring Enabled"
+msgstr "நேரியல் வேனில் இயக்கப்பட்டது"
+
+msgid "Linear Spring Stiffness"
+msgstr "நேரியல் வசந்த விறைப்பு"
+
+msgid "Linear Spring Damping"
+msgstr "நேரியல் வசந்த ஈரப்பதம்"
+
+msgid "Linear Equilibrium Point"
+msgstr "நேரியல் சமநிலை புள்ளி"
+
+msgid "Linear Restitution"
+msgstr "நேரியல் மறுசீரமைப்பு"
+
+msgid "Linear Damping"
+msgstr "நேரியல் ஈரப்பதம்"
+
+msgid "Angular Restitution"
+msgstr "கோண மறுசீரமைப்பு"
+
+msgid "Angular Damping"
+msgstr "கோண அரட்டை"
+
+msgid "Angular Spring Enabled"
+msgstr "கோண வேனில் இயக்கப்பட்டது"
+
+msgid "Angular Spring Stiffness"
+msgstr "கோண வசந்த விறைப்பு"
+
+msgid "Angular Spring Damping"
+msgstr "கோண வசந்த ஈரப்பதம்"
+
+msgid "Angular Equilibrium Point"
+msgstr "கோண சமநிலை புள்ளி"
+
+msgid "Body Offset"
+msgstr "உடல் ஆஃப்செட்"
+
+msgid "Friction"
+msgstr "உராய்வு"
+
+msgid "Bounce"
+msgstr "பவுன்ச்"
+
+msgid "Linear Damp Mode"
+msgstr "நேரியல் ஈரமான பயன்முறை"
+
+msgid "Angular Damp Mode"
+msgstr "கோண ஈரமான பயன்முறை"
+
+msgid "Axis Lock"
+msgstr "அச்சு பூட்டு"
+
+msgid "Linear X"
+msgstr "நேரியல் ஃச்"
+
+msgid "Linear Y"
+msgstr "நேரியல் ஒய்"
+
+msgid "Linear Z"
+msgstr "நேரியல் சட்"
+
+msgid "Angular X"
+msgstr "கோண ஃச்"
+
+msgid "Angular Y"
+msgstr "கோண மற்றும்"
+
+msgid "Angular Z"
+msgstr "கோண சட்"
+
+msgid "Hit Back Faces"
+msgstr "முகங்களை மீண்டும் அடியுங்கள்"
+
+msgid "Debug Shape"
+msgstr "பிழைத்திருத்த வடிவம்"
+
+msgid "Spring Length"
+msgstr "வசந்த நீளம்"
+
+msgid "Per-Wheel Motion"
+msgstr "ஒவ்வொரு சக்கர இயக்கம்"
+
+msgid "Engine Force"
+msgstr "எஞ்சின் படை"
+
+msgid "Brake"
+msgstr "நிறுத்தி"
+
+msgid "Steering"
+msgstr "சக்கரத்திருப்பி"
+
+msgid "VehicleBody3D Motion"
+msgstr "வாகன உடல் 3D இயக்கம்"
+
+msgid "Use as Traction"
+msgstr "இழுவைப் பயன்படுத்தவும்"
+
+msgid "Use as Steering"
+msgstr "திசைமாற்றி பயன்படுத்தவும்"
+
+msgid "Wheel"
+msgstr "சக்கரம்"
+
+msgid "Roll Influence"
+msgstr "ரோல் செல்வாக்கு"
+
+msgid "Friction Slip"
+msgstr "உராய்வு சீட்டு"
+
+msgid "Suspension"
+msgstr "தொங்கல்"
+
+msgid "Travel"
+msgstr "பயணம்"
+
+msgid "Max Force"
+msgstr "அதிகபட்ச ஆற்றல்"
+
+msgid "Origin Offset"
+msgstr "தோற்றம் ஆஃப்செட்"
+
+msgid "Box Projection"
+msgstr "பெட்டி திட்டம்"
+
+msgid "Enable Shadows"
+msgstr "நிழல்களை இயக்கவும்"
+
+msgid "Reflection Mask"
+msgstr "பிரதிபலிப்பு முகமூடி"
+
+msgid "Mesh LOD Threshold"
+msgstr "மெச் லாட் வாசல்"
+
+msgid "Ambient"
+msgstr "சுற்றுப்புறம்"
+
+msgid "Color Energy"
+msgstr "வண்ண ஆற்றல்"
+
+msgid "Profile"
+msgstr "சுயவிவரம்"
+
+msgid "Motion Scale"
+msgstr "இயக்க அளவு"
+
+msgid "Show Rest Only"
+msgstr "ஓய்வைக் காட்டு மட்டுமே"
+
+msgid "Modifier"
+msgstr "மாற்றியமைப்பாளர்"
+
+msgid "Callback Mode Process"
+msgstr "கால்பேக் பயன்முறை செயல்முறை"
+
+msgid "Deprecated"
+msgstr "மதிப்பிடப்பட்டது"
+
+msgid "Animate Physical Bones"
+msgstr "உடல் எலும்புகளை உயிரூட்டவும்"
+
+msgid "Root Bone"
+msgstr "வேர் எலும்பு"
+
+msgid "Tip Bone"
+msgstr "முனை எலும்பு"
+
+msgid "Target"
+msgstr "இலக்கு"
+
+msgid "Override Tip Basis"
+msgstr "முனை அடிப்படையில் மேலெழுதவும்"
+
+msgid "Use Magnet"
+msgstr "காந்தத்தைப் பயன்படுத்துங்கள்"
+
+msgid "Magnet"
+msgstr "காந்தம்"
+
+msgid "Min Distance"
+msgstr "மணித்துளி தூரம்"
+
+msgid "Max Iterations"
+msgstr "அதிகபட்ச மறு செய்கைகள்"
+
+msgid "Active"
+msgstr "செயலில்"
+
+msgid "Influence"
+msgstr "செல்வாக்கு"
+
+msgid "Pinned Points"
+msgstr "பின் புள்ளிகள்"
+
+msgid "Attachments"
+msgstr "இணைப்புகள்"
+
+msgid "Point Index"
+msgstr "புள்ளி அட்டவணை"
+
+msgid "Spatial Attachment Path"
+msgstr "இடஞ்சார்ந்த இணைப்பு பாதை"
+
+msgid "Parent Collision Ignore"
+msgstr "பெற்றோர் மோதல் புறக்கணிக்கவும்"
+
+msgid "Simulation Precision"
+msgstr "உருவகப்படுத்துதல் துல்லியம்"
+
+msgid "Total Mass"
+msgstr "மொத்த நிறை"
+
+msgid "Linear Stiffness"
+msgstr "நேரியல் விறைப்பு"
+
+msgid "Pressure Coefficient"
+msgstr "அழுத்தம் குணகம்"
+
+msgid "Damping Coefficient"
+msgstr "குறைக்கும் குணகம்"
+
+msgid "Drag Coefficient"
+msgstr "இழுவை குணகம்"
+
+msgid "Position Offset"
+msgstr "நிலை ஆஃப்செட்"
+
+msgid "Track Physics Step"
+msgstr "ட்ராக் இயற்பியல் படி"
+
+msgid "Sorting"
+msgstr "வரிசைப்படுத்துதல்"
+
+msgid "Use AABB Center"
+msgstr "AABB மையத்தைப் பயன்படுத்தவும்"
+
+msgid "Geometry"
+msgstr "வடிவியல்"
+
+msgid "Material Override"
+msgstr "பொருள் மேலெழுதல்"
+
+msgid "Material Overlay"
+msgstr "பொருள் மேலடுக்கு"
+
+msgid "Transparency"
+msgstr "வெளிப்படைத்தன்மை"
+
+msgid "Extra Cull Margin"
+msgstr "கூடுதல் குல் விளிம்பு"
+
+msgid "Custom AABB"
+msgstr "தனிப்பயன் AABB"
+
+msgid "LOD Bias"
+msgstr "லாட் சார்பு"
+
+msgid "Ignore Occlusion Culling"
+msgstr "மறைவை புறக்கணிக்கவும்"
+
+msgid "Global Illumination"
+msgstr "உலகளாவிய வெளிச்சம்"
+
+msgid "Lightmap Scale"
+msgstr "லைட்மேப் அளவுகோல்"
+
+msgid "Dynamic Range"
+msgstr "இயக்க வரம்பு"
+
+msgid "Propagation"
+msgstr "பரப்புதல்"
+
+msgid "Use Two Bounces"
+msgstr "இரண்டு பவுன்ச் பயன்படுத்தவும்"
+
+msgid "Body Tracker"
+msgstr "உடல் கண்காணிப்பு"
+
+msgid "Body Update"
+msgstr "உடல் புதுப்பிப்பு"
+
+msgid "Face Tracker"
+msgstr "ஃபேச் டிராக்கர்"
+
+msgid "Hand Tracker"
+msgstr "கை கண்காணிப்பு"
+
+msgid "Tracker"
+msgstr "கண்காணிப்பு"
+
+msgid "Pose"
+msgstr "போச்"
+
+msgid "Show When Tracked"
+msgstr "கண்காணிக்கும்போது காட்டு"
+
+msgid "World Scale"
+msgstr "உலக அளவு"
+
+msgid "Play Mode"
+msgstr "ப்ளே பயன்முறையில்"
+
+msgid "Use Custom Timeline"
+msgstr "தனிப்பயன் காலவரிசையைப் பயன்படுத்தவும்"
+
+msgid "Timeline Length"
+msgstr "காலவரிசை நீளம்"
+
+msgid "Stretch Time Scale"
+msgstr "நேர அளவை நீட்டவும்"
+
+msgid "Sync"
+msgstr "ஒத்திசைவு"
+
+msgid "Mix Mode"
+msgstr "கலவை முறை"
+
+msgid "Fadein Time"
+msgstr "ஃபேடீன் நேரம்"
+
+msgid "Fadein Curve"
+msgstr "ஃபடீன் வளைவு"
+
+msgid "Fadeout Time"
+msgstr "மங்கலான நேரம்"
+
+msgid "Fadeout Curve"
+msgstr "மங்கலான வளைவு"
+
+msgid "Break Loop at End"
+msgstr "முடிவில் வளையத்தை உடைக்கவும்"
+
+msgid "Auto Restart"
+msgstr "ஆட்டோ மறுதொடக்கம்"
+
+msgid "Autorestart"
+msgstr "ஆட்டார்ச்டார்ட்"
+
+msgid "Delay"
+msgstr "சுணக்கம்"
+
+msgid "Random Delay"
+msgstr "சீரற்ற நேரந்தவறுகை"
+
+msgid "Xfade Time"
+msgstr "Xfade நேரம்"
+
+msgid "Xfade Curve"
+msgstr "Xfade வளைவு"
+
+msgid "Allow Transition to Self"
+msgstr "சுயமாக மாற்ற அனுமதிக்கவும்"
+
+msgid "Input Count"
+msgstr "உள்ளீட்டு எண்ணிக்கை"
+
+msgid "Request"
+msgstr "கோரிக்கை"
+
+msgid "Internal Active"
+msgstr "உள் செயலில்"
+
+msgid "Add Amount"
+msgstr "தொகையைச் சேர்க்கவும்"
+
+msgid "Blend Amount"
+msgstr "கலப்பு தொகை"
+
+msgid "Sub Amount"
+msgstr "துணை தொகை"
+
+msgid "Seek Request"
+msgstr "கோரிக்கையைத் தேடுங்கள்"
+
+msgid "Current Index"
+msgstr "தற்போதைய அட்டவணை"
+
+msgid "Current State"
+msgstr "தற்போதைய நிலை"
+
+msgid "Transition Request"
+msgstr "மாற்றம் கோரிக்கை"
+
+msgid "Libraries"
+msgstr "நூலகங்கள்"
+
+msgid "Deterministic"
+msgstr "உறுதிப்ப‌டு நிலை"
+
+msgid "Reset on Save"
+msgstr "சேமிக்க மீட்டமைக்கவும்"
+
+msgid "Root Node"
+msgstr "ரூட் முனை"
+
+msgid "Root Motion"
+msgstr "வேர் இயக்கம்"
+
+msgid "Track"
+msgstr "மின்தடம்"
+
+msgid "Callback Mode"
+msgstr "திரும்பப்பெறுதல் பயன்முறை"
+
+msgid "Method"
+msgstr "முறை"
+
+msgid "Discrete"
+msgstr "தனித்துவமான"
+
+msgid "Reset"
+msgstr "மீட்டமை"
+
+msgid "Switch"
+msgstr "ஆளி, நிலைமாறி"
+
+msgid "Switch Mode"
+msgstr "சுவிட்ச் பயன்முறை"
+
+msgid "Advance"
+msgstr "முன்பணம்"
+
+msgid "Condition"
+msgstr "நிபந்தனை"
+
+msgid "Expression"
+msgstr "கோவை"
+
+msgid "State Machine Type"
+msgstr "மாநில இயந்திர வகை"
+
+msgid "Reset Ends"
+msgstr "மீட்டமை முனைகள்"
+
+msgid "Current Animation"
+msgstr "தற்போதைய அனிமேசன்"
+
+msgid "Playback Options"
+msgstr "பின்னணி விருப்பங்கள்"
+
+msgid "Auto Capture"
+msgstr "ஆட்டோ பிடிப்பு"
+
+msgid "Auto Capture Duration"
+msgstr "ஆட்டோ பிடிப்பு காலம்"
+
+msgid "Auto Capture Transition Type"
+msgstr "ஆட்டோ பிடிப்பு மாற்றம் வகை"
+
+msgid "Auto Capture Ease Type"
+msgstr "ஆட்டோ பிடிப்பு எளிதான வகை"
+
+msgid "Default Blend Time"
+msgstr "இயல்புநிலை கலவை நேரம்"
+
+msgid "Movie Quit on Finish"
+msgstr "திரைப்படம் முடிவடைந்தது"
+
+msgid "Tree Root"
+msgstr "மர வேர்"
+
+msgid "Advance Expression Base Node"
+msgstr "முன்கூட்டியே வெளிப்பாடு அடிப்படை முனை"
+
+msgid "Anim Player"
+msgstr "அனிம் பிளேயர்"
+
+msgid "Animation Path"
+msgstr "அனிமேசன் பாதை"
+
+msgid "Zero Y"
+msgstr "சுழிய ஒய்"
+
+msgid "Mix Target"
+msgstr "இலக்கு கலக்கவும்"
+
+msgid "Ratio"
+msgstr "விகிதம்"
+
+msgid "Stretch Mode"
+msgstr "நீட்டிப்பு பயன்முறை"
+
+msgid "Alignment"
+msgstr "இருப்புவழி"
+
+msgid "Button Pressed"
+msgstr "பொத்தான் அழுத்தியது"
+
+msgid "Action Mode"
+msgstr "செயல் முறை"
+
+msgid "Keep Pressed Outside"
+msgstr "வெளியே அழுத்திக் கொள்ளுங்கள்"
+
+msgid "Button Group"
+msgstr "பொத்தான் குழு"
+
+msgid "Shortcut Feedback"
+msgstr "குறுக்குவழி கருத்து"
+
+msgid "Shortcut in Tooltip"
+msgstr "உதவிக்குறிப்பில் குறுக்குவழி"
+
+msgid "Button Shortcut Feedback Highlight Time"
+msgstr "பொத்தான் குறுக்குவழி பின்னூட்டம் சிறப்பம்சமாக நேரம்"
+
+msgid "Allow Unpress"
+msgstr "அவிழ்க்க அனுமதிக்கவும்"
+
+msgid "Text Behavior"
+msgstr "உரை நடத்தை"
+
+msgid "Text Overrun Behavior"
+msgstr "உரை மீறுதல் நடத்தை"
+
+msgid "Clip Text"
+msgstr "கிளிப் உரை"
+
+msgid "Icon Behavior"
+msgstr "படவுரு நடத்தை"
+
+msgid "Icon Alignment"
+msgstr "படவுரு சீரமைப்பு"
+
+msgid "Vertical Icon Alignment"
+msgstr "செங்குத்து படவுரு சீரமைப்பு"
+
+msgid "Expand Icon"
+msgstr "ஐகானை விரிவாக்குங்கள்"
+
+msgid "Use Top Left"
+msgstr "மேல் இடது பயன்படுத்தவும்"
+
+msgid "Symbol Lookup on Click"
+msgstr "கிளிக்கில் குறியீட்டு தேடல்"
+
+msgid "Line Folding"
+msgstr "வரி மடிப்பு"
+
+msgid "Line Length Guidelines"
+msgstr "வரி நீள வழிகாட்டுதல்கள்"
+
+msgid "Draw Breakpoints Gutter"
+msgstr "பிரேக் பாயிண்ட்ச் குழியை வரையவும்"
+
+msgid "Draw Bookmarks"
+msgstr "புக்மார்க்குகளை வரையவும்"
+
+msgid "Draw Executing Lines"
+msgstr "செயல்படுத்தும் கோடுகளை வரையவும்"
+
+msgid "Draw Line Numbers"
+msgstr "வரி எண்களை வரையவும்"
+
+msgid "Zero Pad Line Numbers"
+msgstr "சுழிய பேட் வரி எண்கள்"
+
+msgid "Draw Fold Gutter"
+msgstr "மடிப்பு குழலை வரையவும்"
+
+msgid "Delimiters"
+msgstr "டிலிமிட்டர்கள்"
+
+msgid "Comments"
+msgstr "கருத்துகள்"
+
+msgid "Code Completion"
+msgstr "குறியீடு நிறைவு"
+
+msgid "Prefixes"
+msgstr "முன்னொட்டுகள்"
+
+msgid "Indentation"
+msgstr "உள்தள்ளல்"
+
+msgid "Use Spaces"
+msgstr "இடைவெளிகளைப் பயன்படுத்துங்கள்"
+
+msgid "Automatic"
+msgstr "தானியங்கி"
+
+msgid "Automatic Prefixes"
+msgstr "தானியங்கி முன்னொட்டுகள்"
+
+msgid "Auto Brace Completion"
+msgstr "ஆட்டோ அடைப்புக்குறி நிறைவு"
+
+msgid "Highlight Matching"
+msgstr "பொருத்தத்தை முன்னிலைப்படுத்தவும்"
+
+msgid "Pairs"
+msgstr "சோடிகள்"
+
+msgid "Edit Alpha"
+msgstr "ஆல்பாவைத் திருத்து"
+
+msgid "Color Mode"
+msgstr "வண்ண பயன்முறை"
+
+msgid "Deferred Mode"
+msgstr "ஒத்திவைக்கப்பட்ட பயன்முறை"
+
+msgid "Picker Shape"
+msgstr "பிக்கர் வடிவம்"
+
+msgid "Can Add Swatches"
+msgstr "ச்வாட்ச்களைச் சேர்க்கலாம்"
+
+msgid "Customization"
+msgstr "தனிப்பயனாக்கம்"
+
+msgid "Sampler Visible"
+msgstr "மாதிரி தெரியும்"
+
+msgid "Color Modes Visible"
+msgstr "வண்ண முறைகள் தெரியும்"
+
+msgid "Sliders Visible"
+msgstr "ச்லைடர்கள் தெரியும்"
+
+msgid "Hex Visible"
+msgstr "ஃச் தெரியும்"
+
+msgid "Presets Visible"
+msgstr "முன்னமைவுகள் தெரியும்"
+
+msgid "Theme Overrides"
+msgstr "கருப்பொருள் மேலெழுதும்"
+
+msgid "Constants"
+msgstr "மாறிலிகள்"
+
+msgid "Font Sizes"
+msgstr "எழுத்துரு அளவுகள்"
+
+msgid "Styles"
+msgstr "பாணிகள்"
+
+msgid "Clip Contents"
+msgstr "கிளிப் உள்ளடக்கங்கள்"
+
+msgid "Custom Minimum Size"
+msgstr "தனிப்பயன் குறைந்தபட்ச அளவு"
+
+msgid "Layout Direction"
+msgstr "தளவமைப்பு திசை"
+
+msgid "Layout Mode"
+msgstr "தளவமைப்பு பயன்முறை"
+
+msgid "Anchors Preset"
+msgstr "நங்கூரங்கள் முன்னமைவு"
+
+msgid "Anchor Points"
+msgstr "நங்கூரம் புள்ளிகள்"
+
+msgid "Anchor Offsets"
+msgstr "நங்கூரம் ஆஃப்செட்டுகள்"
+
+msgid "Grow Direction"
+msgstr "திசையை வளர்க்கவும்"
+
+msgid "Pivot Offset"
+msgstr "பிவோட் ஆஃப்செட்"
+
+msgid "Container Sizing"
+msgstr "கொள்கலன் அளவு"
+
+msgid "Stretch Ratio"
+msgstr "நீட்டிக்க விகிதம்"
+
+msgid "Localization"
+msgstr "உள்ளகமாக்கல்"
+
+msgid "Localize Numeral System"
+msgstr "எண் அமைப்பை உள்ளூர்மயமாக்கவும்"
+
+msgid "Tooltip"
+msgstr "உதவிக்குறிப்பு"
+
+msgid "Focus"
+msgstr "குவி"
+
+msgid "Neighbor Left"
+msgstr "அண்டை இடது"
+
+msgid "Neighbor Top"
+msgstr "அண்டை மேல்"
+
+msgid "Neighbor Right"
+msgstr "அண்டை உரிமை"
+
+msgid "Neighbor Bottom"
+msgstr "அண்டை கீழே"
+
+msgid "Next"
+msgstr "அடுத்தது"
+
+msgid "Previous"
+msgstr "முந்தைய"
+
+msgid "Mouse"
+msgstr "சுட்டி"
+
+msgid "Force Pass Scroll Events"
+msgstr "பாச் உருள் நிகழ்வுகள்"
+
+msgid "Default Cursor Shape"
+msgstr "இயல்புநிலை கர்சர் வடிவம்"
+
+msgid "Shortcut Context"
+msgstr "குறுக்குவழி சூழல்"
+
+msgid "Type Variation"
+msgstr "மாறுபாடு வகை"
+
+msgid "OK Button Text"
+msgstr "சரி பொத்தான் உரை"
+
+msgid "Dialog"
+msgstr "உரையாடல்"
+
+msgid "Hide on OK"
+msgstr "சரி மறைக்க"
+
+msgid "Close on Escape"
+msgstr "தப்பிக்க மூடு"
+
+msgid "Autowrap"
+msgstr "தன்னியக்கவாக்கம்"
+
+msgid "Cancel Button Text"
+msgstr "பொத்தான் உரையை ரத்துசெய்"
+
+msgid "Mode Overrides Title"
+msgstr "பயன்முறை தலைப்பை மீறுகிறது"
+
+msgid "Root Subfolder"
+msgstr "ரூட் சப் ஃபோல்டர்"
+
+msgid "Use Native Dialog"
+msgstr "சொந்த உரையாடலைப் பயன்படுத்தவும்"
+
+msgid "Last Wrap Alignment"
+msgstr "கடைசி மடக்கு சீரமைப்பு"
+
+msgid "Reverse Fill"
+msgstr "தலைகீழ் நிரப்பு"
+
+msgid "Show Grid"
+msgstr "கட்டத்தைக் காட்டு"
+
+msgid "Snapping Enabled"
+msgstr "ச்னாப்பிங் இயக்கப்பட்டது"
+
+msgid "Snapping Distance"
+msgstr "ச்னாப்பிங் தூரம்"
+
+msgid "Panning Scheme"
+msgstr "பானிங் திட்டம்"
+
+msgid "Right Disconnects"
+msgstr "சரியான துண்டிக்கிறது"
+
+msgid "Connection Lines"
+msgstr "இணைப்பு கோடுகள்"
+
+msgid "Curvature"
+msgstr "வளைமை"
+
+msgid "Zoom Min"
+msgstr "சூம் மணித்துளி"
+
+msgid "Zoom Max"
+msgstr "சூம் மேக்ச்"
+
+msgid "Zoom Step"
+msgstr "சூம் படி"
+
+msgid "Toolbar Menu"
+msgstr "கருவிப்பட்டி பட்டியல்"
+
+msgid "Show Menu"
+msgstr "மெனுவைக் காட்டு"
+
+msgid "Show Zoom Label"
+msgstr "சூம் லேபிளைக் காட்டு"
+
+msgid "Show Zoom Buttons"
+msgstr "சூம் பொத்தான்களைக் காட்டு"
+
+msgid "Show Grid Buttons"
+msgstr "கட்டம் பொத்தான்களைக் காட்டு"
+
+msgid "Show Minimap Button"
+msgstr "மினிமாப் பொத்தானைக் காட்டு"
+
+msgid "Show Arrange Button"
+msgstr "ஏற்பாடு பொத்தானைக் காட்டு"
+
+msgid "Draggable"
+msgstr "இழுக்கக்கூடிய"
+
+msgid "Selected"
+msgstr "தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Title"
+msgstr "தலைப்பு"
+
+msgid "Autoshrink Enabled"
+msgstr "ஆட்டோச்ரிங்க் இயக்கப்பட்டது"
+
+msgid "Autoshrink Margin"
+msgstr "ஆட்டோசிங்க் விளிம்பு"
+
+msgid "Drag Margin"
+msgstr "இழுவை விளிம்பு"
+
+msgid "Tint Color Enabled"
+msgstr "சாயல் வண்ணம் இயக்கப்பட்டது"
+
+msgid "Tint Color"
+msgstr "சாயல் நிறம்"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "தவறான இணைப்பு வகையை புறக்கணிக்கவும்"
+
+msgid "Select Mode"
+msgstr "பயன்முறையைத் தேர்ந்தெடுக்கவும்"
+
+msgid "Allow Reselect"
+msgstr "மீண்டும் தேர்வு செய்ய அனுமதிக்கவும்"
+
+msgid "Allow RMB Select"
+msgstr "RMB தேர்ந்தெடுக்க அனுமதிக்கவும்"
+
+msgid "Allow Search"
+msgstr "தேடலை அனுமதிக்கவும்"
+
+msgid "Max Text Lines"
+msgstr "அதிகபட்ச உரை கோடுகள்"
+
+msgid "Auto Height"
+msgstr "வாகன உயரம்"
+
+msgid "Items"
+msgstr "உருப்படிகள்"
+
+msgid "Max Columns"
+msgstr "அதிகபட்ச நெடுவரிசைகள்"
+
+msgid "Same Column Width"
+msgstr "அதே நெடுவரிசை அகலம்"
+
+msgid "Fixed Column Width"
+msgstr "நிலையான நெடுவரிசை அகலம்"
+
+msgid "Icon Mode"
+msgstr "படவுரு பயன்முறை"
+
+msgid "Icon Scale"
+msgstr "படவுரு அளவு"
+
+msgid "Fixed Icon Size"
+msgstr "நிலையான படவுரு அளவு"
+
+msgid "Label Settings"
+msgstr "சிட்டை அமைப்புகள்"
+
+msgid "Ellipsis Char"
+msgstr "நீள்வட்ட கரி"
+
+msgid "Tab Stops"
+msgstr "தாவல் நிறுத்தப்படும்"
+
+msgid "Displayed Text"
+msgstr "காட்டப்பட்ட உரை"
+
+msgid "Lines Skipped"
+msgstr "கோடுகள் தவிர்க்கப்பட்டன"
+
+msgid "Max Lines Visible"
+msgstr "அதிகபட்ச கோடுகள் தெரியும்"
+
+msgid "Visible Characters"
+msgstr "புலப்படும் எழுத்துக்கள்"
+
+msgid "Visible Characters Behavior"
+msgstr "புலப்படும் எழுத்துக்கள் நடத்தை"
+
+msgid "Visible Ratio"
+msgstr "புலப்படும் விகிதம்"
+
+msgid "Placeholder Text"
+msgstr "ஒதுக்கிட உரை"
+
+msgid "Max Length"
+msgstr "அதிகபட்ச நீளம்"
+
+msgid "Expand to Text Length"
+msgstr "உரை நீளத்திற்கு விரிவாக்குங்கள்"
+
+msgid "Context Menu Enabled"
+msgstr "சூழல் பட்டியல் இயக்கப்பட்டது"
+
+msgid "Virtual Keyboard Enabled"
+msgstr "மெய்நிகர் விசைப்பலகை இயக்கப்பட்டது"
+
+msgid "Virtual Keyboard Type"
+msgstr "மெய்நிகர் விசைப்பலகை வகை"
+
+msgid "Clear Button Enabled"
+msgstr "தெளிவான பொத்தானை இயக்கியது"
+
+msgid "Shortcut Keys Enabled"
+msgstr "குறுக்குவழி விசைகள் இயக்கப்பட்டன"
+
+msgid "Middle Mouse Paste Enabled"
+msgstr "நடுத்தர மவுச் பேச்ட் இயக்கப்பட்டது"
+
+msgid "Selecting Enabled"
+msgstr "இயக்கப்பட்டதைத் தேர்ந்தெடுப்பது"
+
+msgid "Deselect on Focus Loss Enabled"
+msgstr "கவனம் இழப்பு இயக்கப்பட்டதைத் தேர்வுசெய்க"
+
+msgid "Drag and Drop Selection Enabled"
+msgstr "தேர்வை இழுத்து விடுங்கள்"
+
+msgid "Right Icon"
+msgstr "சரியான படவுரு"
+
+msgid "Draw Control Chars"
+msgstr "கட்டுப்பாட்டு விளக்கப்படங்களை வரையவும்"
+
+msgid "Select All on Focus"
+msgstr "அனைத்தையும் கவனம் செலுத்துங்கள்"
+
+msgid "Blink"
+msgstr "கண் சிமிட்டுங்கள்"
+
+msgid "Blink Interval"
+msgstr "ஒளிரும் இடைவெளி"
+
+msgid "Column"
+msgstr "நெடுவரிசை"
+
+msgid "Force Displayed"
+msgstr "ஆற்றல் காட்டப்படும்"
+
+msgid "Mid Grapheme"
+msgstr "நடுப்பகுதியில் கிராஃபெம்"
+
+msgid "Secret"
+msgstr "மறைபொருள்"
+
+msgid "Secret Character"
+msgstr "ரகசிய எழுத்து"
+
+msgid "Underline"
+msgstr "அடிக்கோடிட்டு"
+
+msgid "URI"
+msgstr "யூரி"
+
+msgid "Start Index"
+msgstr "தொடக்க அட்டவணை"
+
+msgid "Switch on Hover"
+msgstr "ஓவர் மீது மாறவும்"
+
+msgid "Prefer Global Menu"
+msgstr "உலகளாவிய மெனுவை விரும்புங்கள்"
+
+msgid "Draw Center"
+msgstr "டிரா சென்டர்"
+
+msgid "Region Rect"
+msgstr "பகுதி செவ்வகம்"
+
+msgid "Patch Margin"
+msgstr "இணைப்பு விளிம்பு"
+
+msgid "Axis Stretch"
+msgstr "அச்சு நீட்சி"
+
+msgid "Fit to Longest Item"
+msgstr "நீண்ட உருப்படிக்கு பொருந்தும்"
+
+msgid "Hide on Item Selection"
+msgstr "உருப்படி தேர்வில் மறைக்கவும்"
+
+msgid "Hide on Checkable Item Selection"
+msgstr "சரிபார்க்கக்கூடிய உருப்படி தேர்வில் மறைக்கவும்"
+
+msgid "Hide on State Item Selection"
+msgstr "மாநில உருப்படி தேர்வில் மறைக்கவும்"
+
+msgid "Submenu Popup Delay"
+msgstr "துணை பாப்அப் நேரந்தவறுகை"
+
+msgid "System Menu ID"
+msgstr "கணினி பட்டியல் ஐடி"
+
+msgid "Prefer Native Menu"
+msgstr "சொந்த மெனுவை விரும்புங்கள்"
+
+msgid "Fill Mode"
+msgstr "பயன்முறை நிரப்பு"
+
+msgid "Show Percentage"
+msgstr "சதவீதத்தைக் காட்டு"
+
+msgid "Indeterminate"
+msgstr "உறுதியற்ற"
+
+msgid "Preview Indeterminate"
+msgstr "முன்னோட்டம் உறுதியற்றது"
+
+msgid "Min Value"
+msgstr "குறைந்தபட்ச மதிப்பு"
+
+msgid "Max Value"
+msgstr "அதிகபட்ச மதிப்பு"
+
+msgid "Step"
+msgstr "படி"
+
+msgid "Page"
+msgstr "பக்கம்"
+
+msgid "Exp Edit"
+msgstr "எக்ச்ப் திருத்து"
+
+msgid "Rounded"
+msgstr "வட்டமான"
+
+msgid "Allow Greater"
+msgstr "அதிகமாக அனுமதிக்கவும்"
+
+msgid "Allow Lesser"
+msgstr "குறைவாக அனுமதிக்கவும்"
+
+msgid "Border Color"
+msgstr "எல்லை நிறம்"
+
+msgid "Border Width"
+msgstr "எல்லை அகலம்"
+
+msgid "Elapsed Time"
+msgstr "கடந்த நேரம்"
+
+msgid "Outline"
+msgstr "அவுட்லைன்"
+
+msgid "Env"
+msgstr "Env"
+
+msgid "Glyph Index"
+msgstr "கிளிஃப் குறியீட்டு"
+
+msgid "Glyph Count"
+msgstr "கிளிஃப் எண்ணிக்கை"
+
+msgid "Glyph Flags"
+msgstr "கிளிஃப் கொடிகள்"
+
+msgid "Relative Index"
+msgstr "உறவினர் அட்டவணை"
+
+msgid "BBCode Enabled"
+msgstr "பிபி கோட் இயக்கப்பட்டது"
+
+msgid "Fit Content"
+msgstr "உள்ளடக்கத்திற்கு பொருந்தும்"
+
+msgid "Scroll Active"
+msgstr "உருட்டல் செயலில்"
+
+msgid "Scroll Following"
+msgstr "பின்வரும் உருட்டல்"
+
+msgid "Tab Size"
+msgstr "தாவல் அளவு"
+
+msgid "Markup"
+msgstr "மார்க்அப்"
+
+msgid "Custom Effects"
+msgstr "தனிப்பயன் விளைவுகள்"
+
+msgid "Meta Underlined"
+msgstr "மேவு அடிக்கோடிட்டுக் காட்டப்பட்டது"
+
+msgid "Hint Underlined"
+msgstr "குறிப்பு அடிக்கோடிட்டுக் காட்டப்பட்டுள்ளது"
+
+msgid "Threaded"
+msgstr "திரிக்கப்பட்ட"
+
+msgid "Progress Bar Delay"
+msgstr "முன்னேற்றப் பட்டை நேரந்தவறுகை"
+
+msgid "Text Selection"
+msgstr "உரை தேர்வு"
+
+msgid "Selection Enabled"
+msgstr "தேர்வு இயக்கப்பட்டது"
+
+msgid "Custom Step"
+msgstr "தனிப்பயன் படி"
+
+msgid "Follow Focus"
+msgstr "கவனம் செலுத்துங்கள்"
+
+msgid "Horizontal Custom Step"
+msgstr "கிடைமட்ட தனிப்பயன் படி"
+
+msgid "Vertical Custom Step"
+msgstr "செங்குத்து தனிப்பயன் படி"
+
+msgid "Horizontal Scroll Mode"
+msgstr "கிடைமட்ட உருள் பயன்முறை"
+
+msgid "Vertical Scroll Mode"
+msgstr "செங்குத்து உருள் பயன்முறை"
+
+msgid "Scroll Deadzone"
+msgstr "சுருள் டெட்சோன்"
+
+msgid "Default Scroll Deadzone"
+msgstr "இயல்புநிலை உருள் டெட்சோன்"
+
+msgid "Scrollable"
+msgstr "கீறப்பட்டது"
+
+msgid "Tick Count"
+msgstr "டிக் எண்ணிக்கை"
+
+msgid "Ticks on Borders"
+msgstr "எல்லைகளில் உண்ணி"
+
+msgid "Update on Text Changed"
+msgstr "உரையில் புதுப்பிப்பு மாற்றப்பட்டது"
+
+msgid "Custom Arrow Step"
+msgstr "தனிப்பயன் அம்பு படி"
+
+msgid "Split Offset"
+msgstr "பிளவு ஆஃப்செட்"
+
+msgid "Collapsed"
+msgstr "சரிந்தது"
+
+msgid "Dragger Visibility"
+msgstr "இழுவை தெரிவுநிலை"
+
+msgid "Stretch Shrink"
+msgstr "நீட்டிக்க வேண்டும்"
+
+msgid "Current Tab"
+msgstr "தற்போதைய தாவல்"
+
+msgid "Tab Alignment"
+msgstr "தாவல் சீரமைப்பு"
+
+msgid "Clip Tabs"
+msgstr "கிளிப் தாவல்கள்"
+
+msgid "Tab Close Display Policy"
+msgstr "தாவல் நெருக்கமான காட்சி கொள்கை"
+
+msgid "Max Tab Width"
+msgstr "அதிகபட்ச தாவல் அகலம்"
+
+msgid "Scrolling Enabled"
+msgstr "ச்க்ரோலிங் இயக்கப்பட்டது"
+
+msgid "Drag to Rearrange Enabled"
+msgstr "இயக்கப்பட்டதை மறுசீரமைக்க இழுக்கவும்"
+
+msgid "Tabs Rearrange Group"
+msgstr "தாவல்கள் குழுவை மறுசீரமைத்தல்"
+
+msgid "Scroll to Selected"
+msgstr "தேர்ந்தெடுக்கப்பட்டவருக்கு உருட்டவும்"
+
+msgid "Select With RMB"
+msgstr "RMB உடன் தேர்ந்தெடுக்கவும்"
+
+msgid "Deselect Enabled"
+msgstr "இயக்கப்பட்ட டெலிக்"
+
+msgid "Tabs"
+msgstr "தாவல்கள்"
+
+msgid "Tabs Position"
+msgstr "தாவல்கள் நிலை"
+
+msgid "Tabs Visible"
+msgstr "தாவல்கள் தெரியும்"
+
+msgid "All Tabs in Front"
+msgstr "அனைத்து தாவல்களும் முன்"
+
+msgid "Use Hidden Tabs for Min Size"
+msgstr "குறைந்தபட்ச அளவிற்கு மறைக்கப்பட்ட தாவல்களைப் பயன்படுத்தவும்"
+
+msgid "Tab Focus Mode"
+msgstr "தாவல் கவனம் முறை"
+
+msgid "Wrap Mode"
+msgstr "மடக்கு பயன்முறை"
+
+msgid "Smooth"
+msgstr "மென்மையான"
+
+msgid "Past End of File"
+msgstr "கோப்பின் கடந்த முடிவு"
+
+msgid "Fit Content Height"
+msgstr "உள்ளடக்க உயரத்திற்கு பொருந்தும்"
+
+msgid "Draw"
+msgstr "டிரா"
+
+msgid "Draw When Editable Disabled"
+msgstr "திருத்தக்கூடிய முடக்கப்பட்டபோது வரையவும்"
+
+msgid "Move on Right Click"
+msgstr "வலது கிளிக்கில் நகர்த்தவும்"
+
+msgid "Multiple"
+msgstr "நான்கு"
+
+msgid "Syntax Highlighter"
+msgstr "தொடரியல் ஐலைட்டர்"
+
+msgid "Visual Whitespace"
+msgstr "காட்சி இடைவெளி"
+
+msgid "Control Chars"
+msgstr "கட்டுப்பாட்டு எழுத்துக்கள்"
+
+msgid "Spaces"
+msgstr "இடங்கள்"
+
+msgid "Text Edit Idle Detect (sec)"
+msgstr "உரை திருத்து செயலற்ற கண்டறிதல் (நொடி)"
+
+msgid "Text Edit Undo Stack Max Size"
+msgstr "உரை திருத்து செயல்தவிர் அதிகபட்ச அளவை செயல்தவிர்க்கவும்"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "சாதாரண"
+
+msgid "Hover"
+msgstr "வட்டமானது"
+
+msgid "Focused"
+msgstr "கவனம் செலுத்தியது"
+
+msgid "Click Mask"
+msgstr "முகமூடி என்பதைக் சொடுக்கு செய்க"
+
+msgid "Ignore Texture Size"
+msgstr "அமைப்பு அளவைப் புறக்கணிக்கவும்"
+
+msgid "Radial Fill"
+msgstr "ரேடியல் நிரப்பு"
+
+msgid "Initial Angle"
+msgstr "தொடக்க கோணம்"
+
+msgid "Fill Degrees"
+msgstr "டிகிரி நிரப்பவும்"
+
+msgid "Center Offset"
+msgstr "சென்டர் ஆஃப்செட்"
+
+msgid "Nine Patch Stretch"
+msgstr "ஒன்பது ஒட்டு நீட்சி"
+
+msgid "Stretch Margin"
+msgstr "நீட்டிக்க விளிம்பு"
+
+msgid "Under"
+msgstr "கீழ்"
+
+msgid "Over"
+msgstr "வீச்சலகு"
+
+msgid "Progress Offset"
+msgstr "முன்னேற்றம் ஆஃப்செட்"
+
+msgid "Tint"
+msgstr "நிறம்"
+
+msgid "Expand Mode"
+msgstr "பயன்முறையை விரிவாக்கு"
+
+msgid "Custom Minimum Height"
+msgstr "தனிப்பயன் குறைந்தபட்ச உயரம்"
+
+msgid "Column Titles Visible"
+msgstr "நெடுவரிசை தலைப்புகள் தெரியும்"
+
+msgid "Hide Folding"
+msgstr "மடிப்பு மறைக்க"
+
+msgid "Enable Recursive Folding"
+msgstr "சுழல்நிலை மடிப்புகளை இயக்கவும்"
+
+msgid "Hide Root"
+msgstr "வேரை மறைக்க"
+
+msgid "Drop Mode Flags"
+msgstr "பயன்முறை கொடிகளை கைவிடுங்கள்"
+
+msgid "Scroll Horizontal Enabled"
+msgstr "உருட்டல் கிடைமட்ட இயக்கப்பட்டது"
+
+msgid "Scroll Vertical Enabled"
+msgstr "உருட்டல் செங்குத்து இயக்கப்பட்டது"
+
+msgid "Audio Track"
+msgstr "ஆடியோ டிராக்"
+
+msgid "Paused"
+msgstr "இடைநிறுத்தப்பட்டது"
+
+msgid "Expand"
+msgstr "விரிவாக்கு"
+
+msgid "Buffering Msec"
+msgstr "இடையக MSEC"
+
+msgid "Self Modulate"
+msgstr "தன்வய மாடுலேட்"
+
+msgid "Show Behind Parent"
+msgstr "பெற்றோரின் பின்னால் காட்டு"
+
+msgid "Clip Children"
+msgstr "குழந்தைகளை கிளிப் செய்யுங்கள்"
+
+msgid "Light Mask"
+msgstr "ஒளி முகமூடி"
+
+msgid "Visibility Layer"
+msgstr "பார்வை அடுக்கு"
+
+msgid "Ordering"
+msgstr "வரிசைப்படுத்துதல்"
+
+msgid "Z Index"
+msgstr "சட் அட்டவணை"
+
+msgid "Z as Relative"
+msgstr "உறவினராக சட்"
+
+msgid "Y Sort Enabled"
+msgstr "ஒய் வரிசை இயக்கப்பட்டது"
+
+msgid "Use Parent Material"
+msgstr "பெற்றோர் பொருளைப் பயன்படுத்துங்கள்"
+
+msgid "Diffuse"
+msgstr "பரவுகிறது"
+
+msgid "NormalMap"
+msgstr "இயல்பான வரைபடம்"
+
+msgid "Shininess"
+msgstr "ஒளி"
+
+msgid "Download File"
+msgstr "கோப்பைப் பதிவிறக்கவும்"
+
+msgid "Download Chunk Size"
+msgstr "துண்டின் அளவு பதிவிறக்கவும்"
+
+msgid "Accept Gzip"
+msgstr "GZIP ஐ ஏற்றுக்கொள்ளுங்கள்"
+
+msgid "Body Size Limit"
+msgstr "உடல் அளவு வரம்பு"
+
+msgid "Max Redirects"
+msgstr "அதிகபட்ச திருப்பிவிடுகிறது"
+
+msgid "Timeout"
+msgstr "நேரம் முடிந்தது"
+
+msgid "Transfer Mode"
+msgstr "பரிமாற்ற முறை"
+
+msgid "Transfer Channel"
+msgstr "பரிமாற்ற சேனல்"
+
+msgid "Node Name Num Separator"
+msgstr "முனை பெயர் எண் பிரிப்பான்"
+
+msgid "Node Name Casing"
+msgstr "முனை பெயர் உறை"
+
+msgid "Physics Priority"
+msgstr "இயற்பியல் முன்னுரிமை"
+
+msgid "Thread Group"
+msgstr "நூல் குழு"
+
+msgid "Group"
+msgstr "குழு"
+
+msgid "Group Order"
+msgstr "குழு ஒழுங்கு"
+
+msgid "Messages"
+msgstr "செய்திகள்"
+
+msgid "Auto Translate"
+msgstr "ஆட்டோ மொழிபெயர்ப்பு"
+
+msgid "Editor Description"
+msgstr "ஆசிரியர் விளக்கம்"
+
+msgid "Time Left"
+msgstr "நேரம் மீதமுள்ளது"
+
+msgid "Debug Collisions Hint"
+msgstr "பிழைத்திருத்த மோதல்கள் குறிப்பு"
+
+msgid "Debug Paths Hint"
+msgstr "பிழைத்திருத்த பாதைகள் குறிப்பு"
+
+msgid "Debug Navigation Hint"
+msgstr "பிழைத்திருத்த வழிசெலுத்தல் குறிப்பு"
+
+msgid "Multiplayer Poll"
+msgstr "மல்டிபிளேயர் வாக்கெடுப்பு"
+
+msgid "Shapes"
+msgstr "வடிவங்கள்"
+
+msgid "Shape Color"
+msgstr "வடிவ நிறம்"
+
+msgid "Contact Color"
+msgstr "தொடர்பு வண்ணம்"
+
+msgid "Paths"
+msgstr "பாதைகள்"
+
+msgid "Geometry Color"
+msgstr "வடிவியல் நிறம்"
+
+msgid "Geometry Width"
+msgstr "வடிவியல் அகலம்"
+
+msgid "Max Contacts Displayed"
+msgstr "அதிகபட்ச தொடர்புகள் காட்டப்படும்"
+
+msgid "Draw 2D Outlines"
+msgstr "2 டி திட்டவட்டங்களை வரையவும்"
+
+msgid "Anti Aliasing"
+msgstr "எதிர்ப்பு மாற்றுப்பெயர்"
+
+msgid "MSAA 2D"
+msgstr "மாலை"
+
+msgid "MSAA 3D"
+msgstr "மாலை எண்ணிக்கை"
+
+msgid "Viewport"
+msgstr "வியூபோர்ட்"
+
+msgid "Transparent Background"
+msgstr "வெளிப்படையான பின்னணி"
+
+msgid "HDR 2D"
+msgstr "எச்டிஆர் 2 டி"
+
+msgid "Screen Space AA"
+msgstr "திரை இடம் AA"
+
+msgid "Use TAA"
+msgstr "இதற்கு"
+
+msgid "Use Debanding"
+msgstr "பற்றாக்குறையைப் பயன்படுத்துங்கள்"
+
+msgid "Use Occlusion Culling"
+msgstr "மறைவைப் பயன்படுத்துங்கள்"
+
+msgid "Mesh LOD"
+msgstr "மேசம் சுமை"
+
+msgid "LOD Change"
+msgstr "லாட் மாற்றம்"
+
+msgid "Threshold Pixels"
+msgstr "வாசல் படப்புள்ளிகள்"
+
+msgid "Snap"
+msgstr "ச்னாப்"
+
+msgid "Snap 2D Transforms to Pixel"
+msgstr "ச்னாப் 2 டி பிக்சலுக்கு மாற்றுகிறது"
+
+msgid "Snap 2D Vertices to Pixel"
+msgstr "பிக்சலுக்கு 2 டி செங்குத்துகளை ச்னாப் செய்யுங்கள்"
+
+msgid "VRS"
+msgstr "வி.ஆர்.எச்"
+
+msgid "Lights and Shadows"
+msgstr "விளக்குகள் மற்றும் நிழல்கள்"
+
+msgid "Positional Shadow"
+msgstr "நிலை நிழல்"
+
+msgid "Atlas Size"
+msgstr "அட்லச் அளவு"
+
+msgid "Atlas 16 Bits"
+msgstr "அட்லச் 16 பிட்கள்"
+
+msgid "Atlas Quadrant 0 Subdiv"
+msgstr "அட்லச் குவாட்ரண்ட் 0 துணைப்பிரிவு"
+
+msgid "Atlas Quadrant 1 Subdiv"
+msgstr "அட்லச் குவாட்ரண்ட் 1 துணைப்பிரிவு"
+
+msgid "Atlas Quadrant 2 Subdiv"
+msgstr "அட்லச் குவாட்ரண்ட் 2 துணைப்பிரிவு"
+
+msgid "Atlas Quadrant 3 Subdiv"
+msgstr "அட்லச் குவாட்ரண்ட் 3 துணைப்பிரிவு"
+
+msgid "SDF"
+msgstr "எச்.டி.எஃப்"
+
+msgid "Oversize"
+msgstr "பெரிதாக்கவும்"
+
+msgid "Default Environment"
+msgstr "இயல்புநிலை சூழல்"
+
+msgid "Enable Object Picking"
+msgstr "பொருள் எடுப்பதை இயக்கவும்"
+
+msgid "Menu"
+msgstr "பட்டியல்"
+
+msgid "Wait Time"
+msgstr "நேரம் காத்திருங்கள்"
+
+msgid "Autostart"
+msgstr "ஆட்டோச்டார்ட்"
+
+msgid "Viewport Path"
+msgstr "வியூபோர்ட் பாதை"
+
+msgid "Disable 3D"
+msgstr "3D ஐ முடக்கு"
+
+msgid "Use XR"
+msgstr "எக்ச்ஆர் பயன்படுத்தவும்"
+
+msgid "Own World 3D"
+msgstr "சொந்த உலக 3 டி"
+
+msgid "World 3D"
+msgstr "உலக 3 டி"
+
+msgid "Transparent BG"
+msgstr "வெளிப்படையான பி.சி."
+
+msgid "Handle Input Locally"
+msgstr "உள்ளீட்டை உள்ளீட்டைக் கையாளவும்"
+
+msgid "Debug Draw"
+msgstr "பிழைத்திருத்த டிரா"
+
+msgid "Use HDR 2D"
+msgstr "HDR 2D ஐப் பயன்படுத்தவும்"
+
+msgid "Scaling 3D"
+msgstr "அளவிடுதல் 3D"
+
+msgid "Scaling 3D Mode"
+msgstr "3D பயன்முறையை அளவிடுதல்"
+
+msgid "Scaling 3D Scale"
+msgstr "3D அளவை அளவிடுதல்"
+
+msgid "Texture Mipmap Bias"
+msgstr "அமைப்பு MIPMAP சார்பு"
+
+msgid "Anisotropic Filtering Level"
+msgstr "அனிசோட்ரோபிக் வடிகட்டுதல் நிலை"
+
+msgid "FSR Sharpness"
+msgstr "FSR கூர்மை"
+
+msgid "Variable Rate Shading"
+msgstr "மாறி வீத நிழல்"
+
+msgid "Canvas Items"
+msgstr "கேன்வாச் உருப்படிகள்"
+
+msgid "Audio Listener"
+msgstr "ஆடியோ கேட்பவர்"
+
+msgid "Enable 2D"
+msgstr "2D ஐ இயக்கவும்"
+
+msgid "Enable 3D"
+msgstr "3D ஐ இயக்கவும்"
+
+msgid "Object Picking"
+msgstr "பொருள் எடுக்கும்"
+
+msgid "Object Picking Sort"
+msgstr "பொருள் எடுக்கும் வரிசை"
+
+msgid "Object Picking First Only"
+msgstr "பொருள் முதலில் மட்டுமே"
+
+msgid "Disable Input"
+msgstr "உள்ளீட்டை முடக்கு"
+
+msgid "Positional Shadow Atlas"
+msgstr "நிலை நிழல் அட்லச்"
+
+msgid "16 Bits"
+msgstr "16 பிட்கள்"
+
+msgid "Quad 0"
+msgstr "குவாட் 0"
+
+msgid "Quad 1"
+msgstr "குவாட் 1"
+
+msgid "Quad 2"
+msgstr "குவாட் 2"
+
+msgid "Quad 3"
+msgstr "குவாட் 3"
+
+msgid "Canvas Cull Mask"
+msgstr "கேன்வாச் குல் மாச்க்"
+
+msgid "Size 2D Override"
+msgstr "அளவு 2 டி மேலெழுதும்"
+
+msgid "Size 2D Override Stretch"
+msgstr "அளவு 2 டி மேலெழுதும் நீட்சி"
+
+msgid "Render Target"
+msgstr "இலக்கு வழங்கவும்"
+
+msgid "Clear Mode"
+msgstr "தெளிவான பயன்முறை"
+
+msgid "Current Screen"
+msgstr "தற்போதைய திரை"
+
+msgid "Mouse Passthrough Polygon"
+msgstr "மவுச் பாச்ட்ரூ பல்கான்"
+
+msgid "Wrap Controls"
+msgstr "மடக்கு கட்டுப்பாடுகள்"
+
+msgid "Transient"
+msgstr "மாறுநிலை"
+
+msgid "Transient to Focused"
+msgstr "கவனம் செலுத்துவதற்கு நிலையற்ற"
+
+msgid "Exclusive"
+msgstr "பிரத்தியேக"
+
+msgid "Unresizable"
+msgstr "அழிக்க முடியாதது"
+
+msgid "Unfocusable"
+msgstr "நம்பமுடியாத"
+
+msgid "Popup Window"
+msgstr "பாப் அப் சாளரம்"
+
+msgid "Mouse Passthrough"
+msgstr "மவுச் பாச்ட்ரூ"
+
+msgid "Force Native"
+msgstr "பூர்வீகத்தை கட்டாயப்படுத்துங்கள்"
+
+msgid "Min Size"
+msgstr "குறைந்தபட்ச அளவு"
+
+msgid "Max Size"
+msgstr "அதிகபட்ச அளவு"
+
+msgid "Keep Title Visible"
+msgstr "தலைப்பு தெரியும்"
+
+msgid "Content Scale"
+msgstr "உள்ளடக்க அளவு"
+
+msgid "Swap Cancel OK"
+msgstr "இடமாற்று சரி"
+
+msgid "Layer Names"
+msgstr "அடுக்கு பெயர்கள்"
+
+msgid "2D Render"
+msgstr "2 டி வழங்குதல்"
+
+msgid "3D Render"
+msgstr "3D வழங்குதல்"
+
+msgid "2D Physics"
+msgstr "2 டி இயற்பியல்"
+
+msgid "2D Navigation"
+msgstr "2 டி வழிசெலுத்தல்"
+
+msgid "3D Physics"
+msgstr "3 டி இயற்பியல்"
+
+msgid "3D Navigation"
+msgstr "3 டி வழிசெலுத்தல்"
+
+msgid "Segments"
+msgstr "பிரிவுகள்"
+
+msgid "Sampling"
+msgstr "மாதிரி எடுத்தல்"
+
+msgid "Partition Type"
+msgstr "பகிர்வு வகை"
+
+msgid "Parsed Geometry Type"
+msgstr "பாகுபடுத்தப்பட்ட வடிவியல் வகை"
+
+msgid "Parsed Collision Mask"
+msgstr "பாகுபடுத்தப்பட்ட மோதல் முகமூடி"
+
+msgid "Source Geometry Mode"
+msgstr "மூல வடிவியல் பயன்முறை"
+
+msgid "Source Geometry Group Name"
+msgstr "மூல வடிவியல் குழு பெயர்"
+
+msgid "Cells"
+msgstr "செல்கள்"
+
+msgid "Baking Rect"
+msgstr "பேக்கிங் செவ்வகம்"
+
+msgid "Baking Rect Offset"
+msgstr "பேக்கிங் ரெக்ட் ஆஃப்செட்"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Slide on Slope"
+msgstr "சாய்வில் ச்லைடு"
+
+msgid "Custom Solver Bias"
+msgstr "தனிப்பயன் தீர்வி சார்பு"
+
+msgid "Execution Mode"
+msgstr "செயல்படுத்தல் பயன்முறை"
+
+msgid "Target Nodepath"
+msgstr "இலக்கு நோட்பாத்"
+
+msgid "Tip Nodepath"
+msgstr "உதவிக்குறிப்பு நோட்பாத்"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK தரவு சங்கிலி நீளம்"
+
+msgid "FABRIK Data Chain Length"
+msgstr "ஃபேப்ரிக் தரவு சங்கிலி நீளம்"
+
+msgid "Jiggle Data Chain Length"
+msgstr "தரவு சங்கிலி நீளத்தை சிரிக்கவும்"
+
+msgid "Default Joint Settings"
+msgstr "இயல்புநிலை கூட்டு அமைப்புகள்"
+
+msgid "Use Gravity"
+msgstr "ஈர்ப்பு விசையைப் பயன்படுத்துங்கள்"
+
+msgid "Bone Index"
+msgstr "எலும்பு அட்டவணை"
+
+msgid "Bone 2D Node"
+msgstr "எலும்பு 2 டி முனை"
+
+msgid "Physical Bone Chain Length"
+msgstr "உடல் எலும்பு சங்கிலி நீளம்"
+
+msgid "Target Minimum Distance"
+msgstr "குறைந்தபட்ச தூரத்தை குறிவைக்கவும்"
+
+msgid "Target Maximum Distance"
+msgstr "அதிகபட்ச தூரத்தை இலக்கு"
+
+msgid "Flip Bend Direction"
+msgstr "வளைவு திசை"
+
+msgid "Modification Count"
+msgstr "மாற்றியமைக்கும் எண்ணிக்கை"
+
+msgid "Right Side"
+msgstr "வலது பக்கம்"
+
+msgid "Right Corner"
+msgstr "வலது மூலையில்"
+
+msgid "Bottom Right Side"
+msgstr "கீழ் வலது பக்கம்"
+
+msgid "Bottom Right Corner"
+msgstr "கீழ் வலது மூலையில்"
+
+msgid "Bottom Side"
+msgstr "கீழே"
+
+msgid "Bottom Corner"
+msgstr "கீழே மூலையில்"
+
+msgid "Bottom Left Side"
+msgstr "கீழ் இடது பக்கம்"
+
+msgid "Bottom Left Corner"
+msgstr "கீழ் இடது மூலையில்"
+
+msgid "Left Side"
+msgstr "இடது பக்கம்"
+
+msgid "Left Corner"
+msgstr "இடது மூலையில்"
+
+msgid "Top Left Side"
+msgstr "மேல் இடது பக்கம்"
+
+msgid "Top Left Corner"
+msgstr "மேல் இடது மூலையில்"
+
+msgid "Top Side"
+msgstr "மேல் பக்கம்"
+
+msgid "Top Corner"
+msgstr "மேல் மூலையில்"
+
+msgid "Top Right Side"
+msgstr "மேல் வலது பக்கம்"
+
+msgid "Top Right Corner"
+msgstr "மேல் வலது மூலையில்"
+
+msgid "Terrains"
+msgstr "நிலப்பரப்புகள்"
+
+msgid "Custom Data"
+msgstr "தனிப்பயன் தரவு"
+
+msgid "Tile Shape"
+msgstr "ஓடு வடிவம்"
+
+msgid "Tile Layout"
+msgstr "ஓடு தளவமைப்பு"
+
+msgid "Tile Offset Axis"
+msgstr "ஓடு ஆஃப்செட் அச்சு"
+
+msgid "Tile Size"
+msgstr "ஓடு அளவு"
+
+msgid "UV Clipping"
+msgstr "புற ஊதா கிளிப்பிங்"
+
+msgid "Occlusion Layers"
+msgstr "மறைவு அடுக்குகள்"
+
+msgid "Physics Layers"
+msgstr "இயற்பியல் அடுக்குகள்"
+
+msgid "Terrain Sets"
+msgstr "நிலப்பரப்பு செட்"
+
+msgid "Custom Data Layers"
+msgstr "தனிப்பயன் தரவு அடுக்குகள்"
+
+msgid "Scenes"
+msgstr "காட்சிகள்"
+
+msgid "Scene"
+msgstr "காட்சி"
+
+msgid "Display Placeholder"
+msgstr "இருப்பிடத்தைக் காண்பி"
+
+msgid "Polygons Count"
+msgstr "பலகோணங்கள் எண்ணிக்கை"
+
+msgid "One Way"
+msgstr "ஒரு வழி"
+
+msgid "One Way Margin"
+msgstr "ஒரு வழி விளிம்பு"
+
+msgid "Terrains Peering Bit"
+msgstr "நிலப்பரப்புகள் பியரிங் பிட்"
+
+msgid "Transpose"
+msgstr "இடமாற்றம்"
+
+msgid "Texture Origin"
+msgstr "அமைப்பு தோற்றம்"
+
+msgid "Terrain Set"
+msgstr "நிலப்பரப்பு தொகுப்பு"
+
+msgid "Terrain"
+msgstr "பரப்புக்கூறு"
+
+msgid "Miscellaneous"
+msgstr "மற்றவை"
+
+msgid "Probability"
+msgstr "நிகழ்தகவு"
+
+msgid "Distance"
+msgstr "தூரம்"
+
+msgid "Backface Collision"
+msgstr "பேக்ஃபேச் மோதல்"
+
+msgid "Density"
+msgstr "அடர்த்தி"
+
+msgid "Height Falloff"
+msgstr "உயரம் வீழ்ச்சி"
+
+msgid "Edge Fade"
+msgstr "எட்ச் மங்கலானது"
+
+msgid "Density Texture"
+msgstr "அடர்த்தி அமைப்பு"
+
+msgid "Map Width"
+msgstr "வரைபட அகலம்"
+
+msgid "Map Depth"
+msgstr "வரைபட ஆழம்"
+
+msgid "Map Data"
+msgstr "வரைபட தரவு"
+
+msgid "Item"
+msgstr "உருப்படி"
+
+msgid "Mesh Transform"
+msgstr "மெச் உருமாற்றம்"
+
+msgid "Navigation Mesh Transform"
+msgstr "வழிசெலுத்தல் கண்ணி உருமாற்றம்"
+
+msgid "Preview"
+msgstr "முன்னோட்டம்"
+
+msgid "Add UV2"
+msgstr "UV2 ஐச் சேர்க்கவும்"
+
+msgid "UV2 Padding"
+msgstr "UV2 திணிப்பு"
+
+msgid "Subdivide Width"
+msgstr "உட்பிரிவு அகலம்"
+
+msgid "Subdivide Height"
+msgstr "உட்பிரிவு உயரம்"
+
+msgid "Subdivide Depth"
+msgstr "ஆழமான ஆழம்"
+
+msgid "Top Radius"
+msgstr "மேல் ஆரம்"
+
+msgid "Bottom Radius"
+msgstr "கீழே ஆரம்"
+
+msgid "Cap Top"
+msgstr "தொப்பி மேல்"
+
+msgid "Cap Bottom"
+msgstr "தொப்பி கீழே"
+
+msgid "Left to Right"
+msgstr "இடமிருந்து வலமாக"
+
+msgid "Is Hemisphere"
+msgstr "அரைக்கோளம்"
+
+msgid "Ring Segments"
+msgstr "மோதிர பிரிவுகள்"
+
+msgid "Radial Steps"
+msgstr "ரேடியல் படிகள்"
+
+msgid "Section Length"
+msgstr "பிரிவு நீளம்"
+
+msgid "Section Rings"
+msgstr "பிரிவு மோதிரங்கள்"
+
+msgid "Section Segments"
+msgstr "பிரிவு பிரிவுகள்"
+
+msgid "Curve Step"
+msgstr "வளைவு படி"
+
+msgid "Bind Count"
+msgstr "பிணைப்பு எண்ணிக்கை"
+
+msgid "Bind"
+msgstr "பிணைப்பு"
+
+msgid "Bone"
+msgstr "எலும்பு"
+
+msgid "Sky"
+msgstr "வானம்"
+
+msgid "Top Color"
+msgstr "மேல் நிறம்"
+
+msgid "Horizon Color"
+msgstr "அடிவான நிறம்"
+
+msgid "Energy Multiplier"
+msgstr "ஆற்றல் பெருக்கி"
+
+msgid "Cover"
+msgstr "கவர்"
+
+msgid "Cover Modulate"
+msgstr "கவர் மாடுலேட்"
+
+msgid "Ground"
+msgstr "மைதானம்"
+
+msgid "Bottom Color"
+msgstr "கீழே நிறம்"
+
+msgid "Sun"
+msgstr "சூரியன்"
+
+msgid "Panorama"
+msgstr "பனோரமா"
+
+msgid "Rayleigh"
+msgstr "ரேலே"
+
+msgid "Coefficient"
+msgstr "கெழு"
+
+msgid "Mie"
+msgstr "மை"
+
+msgid "Eccentricity"
+msgstr "மையப்பிறழ்வு"
+
+msgid "Turbidity"
+msgstr "கொந்தளிப்பு"
+
+msgid "Sun Disk Scale"
+msgstr "சூரிய வட்டு அளவு"
+
+msgid "Ground Color"
+msgstr "நில வண்ணம்"
+
+msgid "Night Sky"
+msgstr "இரவு வானம்"
+
+msgid "Fallback Environment"
+msgstr "குறைவடையும் சூழல்"
+
+msgid "Plane"
+msgstr "தளம்"
+
+msgid "Frames"
+msgstr "சட்டங்கள்"
+
+msgid "Pause"
+msgstr "இடைநிறுத்தம்"
+
+msgid "Atlas"
+msgstr "அட்லச்"
+
+msgid "Filter Clip"
+msgstr "வடிகட்டி கிளிப்"
+
+msgid "Polyphony"
+msgstr "பாலிஃபோனி"
+
+msgid "Format"
+msgstr "வடிவம்"
+
+msgid "Mix Rate"
+msgstr "கலவை வீதம்"
+
+msgid "Stereo"
+msgstr "ச்டீரியோ"
+
+msgid "Bonemap"
+msgstr "போன்மேப்"
+
+msgid "Exposure"
+msgstr "நேரிடுவது"
+
+msgid "Sensitivity"
+msgstr "உணர்திறன்"
+
+msgid "Multiplier"
+msgstr "பெருக்கி"
+
+msgid "Auto Exposure"
+msgstr "ஆட்டோ வெளிப்பாடு"
+
+msgid "DOF Blur"
+msgstr "DOF மங்கலானது"
+
+msgid "Far Enabled"
+msgstr "தொலைதூர இயக்கப்பட்டது"
+
+msgid "Far Distance"
+msgstr "தூர தூரம்"
+
+msgid "Far Transition"
+msgstr "தொலைதூர மாற்றம்"
+
+msgid "Near Enabled"
+msgstr "இயக்கப்பட்டது"
+
+msgid "Near Distance"
+msgstr "தூரத்திற்கு அருகில்"
+
+msgid "Near Transition"
+msgstr "மாற்றத்திற்கு அருகில்"
+
+msgid "Min Sensitivity"
+msgstr "குறைந்தபட்ச உணர்திறன்"
+
+msgid "Max Sensitivity"
+msgstr "அதிகபட்ச உணர்திறன்"
+
+msgid "Frustum"
+msgstr "துண்டு"
+
+msgid "Focus Distance"
+msgstr "கவனம் தூரம்"
+
+msgid "Focal Length"
+msgstr "குவிநீளம், குவியத் தொலைவு"
+
+msgid "Aperture"
+msgstr "துளை"
+
+msgid "Shutter Speed"
+msgstr "சட்டர் விரைவு"
+
+msgid "Min Exposure Value"
+msgstr "மணித்துளி வெளிப்பாடு மதிப்பு"
+
+msgid "Max Exposure Value"
+msgstr "அதிகபட்ச வெளிப்பாடு மதிப்பு"
+
+msgid "Camera Feed ID"
+msgstr "கேமரா தீவன ஐடி"
+
+msgid "Which Feed"
+msgstr "எந்த ஊட்டமாகும்"
+
+msgid "Camera Is Active"
+msgstr "கேமரா செயலில் உள்ளது"
+
+msgid "Light Mode"
+msgstr "ஒளி பயன்முறை"
+
+msgid "Particles Animation"
+msgstr "துகள்கள் அனிமேசன்"
+
+msgid "Particles Anim H Frames"
+msgstr "துகள்கள் அனிம் எச் பிரேம்கள்"
+
+msgid "Particles Anim V Frames"
+msgstr "துகள்கள் அனிம் வி பிரேம்கள்"
+
+msgid "Particles Anim Loop"
+msgstr "துகள்கள் அனிம் லூப்"
+
+msgid "Effect Callback Type"
+msgstr "விளைவு அழைப்பு வகை"
+
+msgid "Access Resolved Color"
+msgstr "அணுகல் தீர்க்கப்பட்ட வண்ணம்"
+
+msgid "Access Resolved Depth"
+msgstr "அணுகல் தீர்க்கப்பட்ட ஆழம்"
+
+msgid "Needs Motion Vectors"
+msgstr "இயக்க திசையன்கள் தேவை"
+
+msgid "Needs Normal Roughness"
+msgstr "சாதாரண கடினத்தன்மை தேவை"
+
+msgid "Needs Separate Specular"
+msgstr "தனி ஊகத்திற்கு தேவை"
+
+msgid "Compositor Effects"
+msgstr "கூட்டு விளைவுகள்"
+
+msgid "Load Path"
+msgstr "சுமை பாதை"
+
+msgid "Bake Resolution"
+msgstr "சுட்டுக்கொள்ளும் தீர்மானம்"
+
+msgid "Bake Interval"
+msgstr "சுட்டுக்கொள்ள இடைவெளி"
+
+msgid "Up Vector"
+msgstr "மேலே திசையன்"
+
+msgid "Curve X"
+msgstr "வளைவு ஃச்"
+
+msgid "Curve Y"
+msgstr "வளைவு ஒய்"
+
+msgid "Curve Z"
+msgstr "வளைவு சட்"
+
+msgid "Background"
+msgstr "பின்னணி"
+
+msgid "Canvas Max Layer"
+msgstr "கேன்வாச் அதிகபட்ச அடுக்கு"
+
+msgid "Custom FOV"
+msgstr "தனிப்பயன் FOV"
+
+msgid "Ambient Light"
+msgstr "சுற்றுப்புற ஒளி"
+
+msgid "Source"
+msgstr "மூலம்"
+
+msgid "Sky Contribution"
+msgstr "வான பங்களிப்பு"
+
+msgid "Reflected Light"
+msgstr "பிரதிபலித்த ஒளி"
+
+msgid "Tonemap"
+msgstr "டன்மேப்"
+
+msgid "White"
+msgstr "வெள்ளை"
+
+msgid "SSR"
+msgstr "எச்.எச்.ஆர்"
+
+msgid "Fade In"
+msgstr "மங்கவும்"
+
+msgid "Fade Out"
+msgstr "மங்கிவிடும்"
+
+msgid "Depth Tolerance"
+msgstr "ஆழ சகிப்புத்தன்மை"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "Power"
+msgstr "விசை"
+
+msgid "Detail"
+msgstr "விவரம்"
+
+msgid "Horizon"
+msgstr "அடிவானம்"
+
+msgid "Sharpness"
+msgstr "கூர்மையானது"
+
+msgid "Light Affect"
+msgstr "ஒளி பாதிப்பு"
+
+msgid "AO Channel Affect"
+msgstr "AO சேனல் பாதிப்பு"
+
+msgid "SSIL"
+msgstr "Ssil"
+
+msgid "Normal Rejection"
+msgstr "சாதாரண நிராகரிப்பு"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Use Occlusion"
+msgstr "மறைவைப் பயன்படுத்துங்கள்"
+
+msgid "Read Sky Light"
+msgstr "ச்கை லைட் படிக்கவும்"
+
+msgid "Bounce Feedback"
+msgstr "பின்னூட்டம்"
+
+msgid "Cascades"
+msgstr "அடுக்கை"
+
+msgid "Min Cell Size"
+msgstr "குறைந்தபட்ச செல் அளவு"
+
+msgid "Cascade 0 Distance"
+msgstr "அடுக்கை 0 தூரம்"
+
+msgid "Y Scale"
+msgstr "ஒய் அளவு"
+
+msgid "Probe Bias"
+msgstr "ஆய்வு சார்பு"
+
+msgid "Glow"
+msgstr "பளபளப்பு"
+
+msgid "Levels"
+msgstr "நிலைகள்"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "கலக்க"
+
+msgid "Bloom"
+msgstr "பூக்கும்"
+
+msgid "HDR Threshold"
+msgstr "எச்.டி.ஆர் வாசல்"
+
+msgid "HDR Scale"
+msgstr "எச்டிஆர் அளவு"
+
+msgid "HDR Luminance Cap"
+msgstr "எச்.டி.ஆர் ஒளிரும் தொப்பி"
+
+msgid "Map Strength"
+msgstr "வரைபட வலிமை"
+
+msgid "Map"
+msgstr "வரைபடம்"
+
+msgid "Fog"
+msgstr "மூடுபனி"
+
+msgid "Light Color"
+msgstr "ஒளி நிறம்"
+
+msgid "Light Energy"
+msgstr "ஒளி ஆற்றல்"
+
+msgid "Sun Scatter"
+msgstr "சூரிய சிதறல்"
+
+msgid "Aerial Perspective"
+msgstr "வான்வழி முன்னோக்கு"
+
+msgid "Sky Affect"
+msgstr "வானம் பாதிக்கிறது"
+
+msgid "Height Density"
+msgstr "உயர அடர்த்தி"
+
+msgid "Depth Curve"
+msgstr "ஆழ வளைவு"
+
+msgid "Depth Begin"
+msgstr "ஆழம் தொடங்குகிறது"
+
+msgid "Depth End"
+msgstr "ஆழ இறுதியில்"
+
+msgid "Volumetric Fog"
+msgstr "அளவீட்டு மூடுபனி"
+
+msgid "GI Inject"
+msgstr "ஐயா ஊசி"
+
+msgid "Anisotropy"
+msgstr "அனிசோட்ரோபி"
+
+msgid "Detail Spread"
+msgstr "விவரம் பரவல்"
+
+msgid "Ambient Inject"
+msgstr "சுற்றுப்புற ஊசி"
+
+msgid "Temporal Reprojection"
+msgstr "தற்காலிக மறுபரிசீலனை"
+
+msgid "Adjustments"
+msgstr "சரிசெய்தல்"
+
+msgid "Brightness"
+msgstr "ஒளி"
+
+msgid "Contrast"
+msgstr "மாறுபாடு"
+
+msgid "Saturation"
+msgstr "தெவிட்டல்"
+
+msgid "Color Correction"
+msgstr "வண்ண திருத்தம்"
+
+msgid "Base Font"
+msgstr "அடிப்படை எழுத்துரு"
+
+msgid "Features"
+msgstr "நற்பொருத்தங்கள்"
+
+msgid "Extra Spacing"
+msgstr "கூடுதல் இடைவெளி"
+
+msgid "Glyph"
+msgstr "கிளிஃப்"
+
+msgid "Space"
+msgstr "இடைவெளி"
+
+msgid "Baseline"
+msgstr "அடிப்படை"
+
+msgid "Font Names"
+msgstr "எழுத்துரு பெயர்கள்"
+
+msgid "Font Italic"
+msgstr "எழுத்துரு சாய்வு"
+
+msgid "Font Weight"
+msgstr "எழுத்துரு எடை"
+
+msgid "Font Stretch"
+msgstr "எழுத்துரு நீட்சி"
+
+msgid "Interpolation"
+msgstr "இடைக்கணிப்பு"
+
+msgid "Color Space"
+msgstr "வண்ண இடம்"
+
+msgid "Raw Data"
+msgstr "மூல தரவு"
+
+msgid "Offsets"
+msgstr "ஆஃப்செட்டுகள்"
+
+msgid "Use HDR"
+msgstr "HDR ஐப் பயன்படுத்தவும்"
+
+msgid "To"
+msgstr "பெறுநர்"
+
+msgid "Next Pass"
+msgstr "அடுத்த பாச்"
+
+msgid "Shader"
+msgstr "சேடர்"
+
+msgid "Depth Draw Mode"
+msgstr "ஆழம் டிரா பயன்முறை"
+
+msgid "Shading"
+msgstr "நிழல்"
+
+msgid "Shading Mode"
+msgstr "நிழல் முறை"
+
+msgid "Diffuse Mode"
+msgstr "பரவல் பயன்முறை"
+
+msgid "Specular Mode"
+msgstr "ஏகப்பட்ட பயன்முறை"
+
+msgid "Disable Ambient Light"
+msgstr "சுற்றுப்புற ஒளியை முடக்கு"
+
+msgid "Disable Fog"
+msgstr "மூடுபனி முடக்கு"
+
+msgid "Vertex Color"
+msgstr "வெர்டெக்ச் நிறம்"
+
+msgid "Use as Albedo"
+msgstr "ஆல்பிடோவாக பயன்படுத்தவும்"
+
+msgid "Is sRGB"
+msgstr "SRGB"
+
+msgid "Texture Force sRGB"
+msgstr "அமைப்பு ஆற்றல் SRGB"
+
+msgid "Texture MSDF"
+msgstr "அமைப்பு MSDF"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "உலோகம்"
+
+msgid "Texture Channel"
+msgstr "அமைப்பு சேனல்"
+
+msgid "Operator"
+msgstr "ஆபரேட்டர்"
+
+msgid "On UV2"
+msgstr "UV2 இல்"
+
+msgid "Rim"
+msgstr "ரிம்"
+
+msgid "Clearcoat"
+msgstr "கிளியர் கோட்"
+
+msgid "Flowmap"
+msgstr "ஃப்ளோமேப்"
+
+msgid "Ambient Occlusion"
+msgstr "சுற்றுப்புற மறுப்பு"
+
+msgid "Deep Parallax"
+msgstr "ஆழமான இடமாறு"
+
+msgid "Min Layers"
+msgstr "குறைந்தபட்ச அடுக்குகள்"
+
+msgid "Max Layers"
+msgstr "அதிகபட்ச அடுக்குகள்"
+
+msgid "Flip Tangent"
+msgstr "ஃபிளிப் டேன்சென்ட்"
+
+msgid "Flip Binormal"
+msgstr "பினால் புரட்டவும்"
+
+msgid "Flip Texture"
+msgstr "அமைப்பு"
+
+msgid "Subsurface Scattering"
+msgstr "மேற்பரப்பு சிதறல்"
+
+msgid "Skin Mode"
+msgstr "தோல் பயன்முறை"
+
+msgid "Transmittance"
+msgstr "பரிமாற்றம்"
+
+msgid "Boost"
+msgstr "பூச்ட்"
+
+msgid "Back Lighting"
+msgstr "பின் விளக்குகள்"
+
+msgid "Backlight"
+msgstr "பின்னொளி"
+
+msgid "Refraction"
+msgstr "ஒளித்திரிபு"
+
+msgid "UV Layer"
+msgstr "புற ஊதா அடுக்கு"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "Triplanar"
+msgstr "மும்மடங்கு"
+
+msgid "Triplanar Sharpness"
+msgstr "டிரிப்ளனார் கூர்மை"
+
+msgid "World Triplanar"
+msgstr "உலக டிரிப்ளனார்"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "Shadows"
+msgstr "நிழல்கள்"
+
+msgid "Disable Receive Shadows"
+msgstr "பெறும் நிழல்களை முடக்கு"
+
+msgid "Shadow to Opacity"
+msgstr "ஒளிபுகாநிலைக்கு நிழல்"
+
+msgid "Keep Scale"
+msgstr "அளவை வைத்திருங்கள்"
+
+msgid "Particles Anim"
+msgstr "துகள்கள் அனிம்"
+
+msgid "H Frames"
+msgstr "எச் பிரேம்கள்"
+
+msgid "V Frames"
+msgstr "வி பிரேம்கள்"
+
+msgid "Grow"
+msgstr "வளர"
+
+msgid "Use Point Size"
+msgstr "புள்ளி அளவைப் பயன்படுத்தவும்"
+
+msgid "Point Size"
+msgstr "புள்ளி அளவு"
+
+msgid "Use Particle Trails"
+msgstr "துகள் தடங்களைப் பயன்படுத்துங்கள்"
+
+msgid "Proximity Fade"
+msgstr "அருகாமையில் மங்கிவிடும்"
+
+msgid "MSDF"
+msgstr "எம்.எச்.டி.எஃப்"
+
+msgid "Pixel Range"
+msgstr "படப்புள்ளி வரம்பு"
+
+msgid "Convex Hull Downsampling"
+msgstr "குவிந்த அல் வீழ்ச்சி"
+
+msgid "Convex Hull Approximation"
+msgstr "குவிந்த அல் தோராயமானது"
+
+msgid "Lightmap Size Hint"
+msgstr "லைட்மேப் அளவு குறிப்பு"
+
+msgid "Blend Shape Mode"
+msgstr "வடிவ பயன்முறையை கலக்கவும்"
+
+msgid "Shadow Mesh"
+msgstr "நிழல் கண்ணி"
+
+msgid "Base Texture"
+msgstr "அடிப்படை அமைப்பு"
+
+msgid "Image Size"
+msgstr "பட அளவு"
+
+msgid "Transform Format"
+msgstr "உருமாற்ற வடிவம்"
+
+msgid "Use Colors"
+msgstr "வண்ணங்களைப் பயன்படுத்துங்கள்"
+
+msgid "Use Custom Data"
+msgstr "தனிப்பயன் தரவைப் பயன்படுத்தவும்"
+
+msgid "Instance Count"
+msgstr "நிகழ்வு எண்ணிக்கை"
+
+msgid "Visible Instance Count"
+msgstr "புலப்படும் நிகழ்வு எண்ணிக்கை"
+
+msgid "Source Group Name"
+msgstr "மூல குழு பெயர்"
+
+msgid "Cell Height"
+msgstr "செல் உயரம்"
+
+msgid "Max Climb"
+msgstr "அதிகபட்ச ஏறுதல்"
+
+msgid "Max Slope"
+msgstr "அதிகபட்ச சாய்வு"
+
+msgid "Merge Size"
+msgstr "அளவு ஒன்றிணைக்கவும்"
+
+msgid "Max Error"
+msgstr "அதிகபட்ச பிழை"
+
+msgid "Vertices per Polygon"
+msgstr "பலகோணத்திற்கு செங்குத்துகள்"
+
+msgid "Details"
+msgstr "விவரங்கள்"
+
+msgid "Sample Distance"
+msgstr "மாதிரி தூரம்"
+
+msgid "Sample Max Error"
+msgstr "மாதிரி அதிகபட்ச பிழை"
+
+msgid "Low Hanging Obstacles"
+msgstr "குறைந்த தொங்கும் தடைகள்"
+
+msgid "Ledge Spans"
+msgstr "லெட்ச் பரவுகிறது"
+
+msgid "Walkable Low Height Spans"
+msgstr "நடக்கக்கூடிய குறைந்த உயரம் பரவுகிறது"
+
+msgid "Baking AABB"
+msgstr "பேக்கிங் ஆப்"
+
+msgid "Baking AABB Offset"
+msgstr "பேக்கிங் ஆப் ஆஃப்செட்"
+
+msgid "Damping as Friction"
+msgstr "உராய்வு என குறைத்தல்"
+
+msgid "Spawn"
+msgstr "ச்பான்"
+
+msgid "Emission Shape Offset"
+msgstr "உமிழ்வு வடிவம் ஆஃப்செட்"
+
+msgid "Emission Shape Scale"
+msgstr "உமிழ்வு வடிவ அளவு"
+
+msgid "Emission Sphere Radius"
+msgstr "உமிழ்வு கோள ஆரம்"
+
+msgid "Emission Box Extents"
+msgstr "உமிழ்வு பெட்டி நீட்டிப்புகள்"
+
+msgid "Emission Point Texture"
+msgstr "உமிழ்வு புள்ளி அமைப்பு"
+
+msgid "Emission Normal Texture"
+msgstr "உமிழ்வு சாதாரண அமைப்பு"
+
+msgid "Emission Color Texture"
+msgstr "உமிழ்வு வண்ண அமைப்பு"
+
+msgid "Emission Point Count"
+msgstr "உமிழ்வு புள்ளி எண்ணிக்கை"
+
+msgid "Emission Ring Axis"
+msgstr "உமிழ்வு வளைய அச்சு"
+
+msgid "Emission Ring Height"
+msgstr "உமிழ்வு வளைய உயரம்"
+
+msgid "Emission Ring Radius"
+msgstr "உமிழ்வு வளைய ஆரம்"
+
+msgid "Emission Ring Inner Radius"
+msgstr "உமிழ்வு மோதிரம் உள் ஆரம்"
+
+msgid "Inherit Velocity Ratio"
+msgstr "விரைவு விகிதம்"
+
+msgid "Velocity Pivot"
+msgstr "விரைவு முன்னிலை"
+
+msgid "Animated Velocity"
+msgstr "அனிமேசன் விரைவு"
+
+msgid "Velocity Limit"
+msgstr "திசைவேக வரம்பு"
+
+msgid "Directional Velocity"
+msgstr "திசை விரைவு"
+
+msgid "Radial Velocity"
+msgstr "ரேடியல் விரைவு"
+
+msgid "Velocity Limit Curve"
+msgstr "திசைவேக வரம்பு வளைவு"
+
+msgid "Accelerations"
+msgstr "முடுக்கம்"
+
+msgid "Attractor Interaction"
+msgstr "ஈர்க்கும் தொடர்பு"
+
+msgid "Scale Curve"
+msgstr "அளவிலான வளைவு"
+
+msgid "Scale Over Velocity"
+msgstr "விரைவு மீது அளவு"
+
+msgid "Scale over Velocity Curve"
+msgstr "விரைவு வளைவின் மீது அளவிடவும்"
+
+msgid "Color Curves"
+msgstr "வண்ண வளைவுகள்"
+
+msgid "Alpha Curve"
+msgstr "ஆல்பா வளைவு"
+
+msgid "Emission Curve"
+msgstr "உமிழ்வு வளைவு"
+
+msgid "Turbulence"
+msgstr "(காற்றுக்)கொந்தளிப்பு"
+
+msgid "Noise Strength"
+msgstr "இரைச்சல் வலிமை"
+
+msgid "Noise Scale"
+msgstr "இரைச்சல் அளவு"
+
+msgid "Noise Speed"
+msgstr "இரைச்சல் விரைவு"
+
+msgid "Noise Speed Random"
+msgstr "இரைச்சல் விரைவு சீரற்ற"
+
+msgid "Influence over Life"
+msgstr "வாழ்க்கையில் செல்வாக்கு"
+
+msgid "Use Scale"
+msgstr "அளவைப் பயன்படுத்துங்கள்"
+
+msgid "Amount at End"
+msgstr "இறுதியில் தொகை"
+
+msgid "Amount at Collision"
+msgstr "மோதலில் தொகை"
+
+msgid "Keep Velocity"
+msgstr "விரைவு வைத்திருங்கள்"
+
+msgid "Rough"
+msgstr "தோராயமான"
+
+msgid "Absorbent"
+msgstr "உறிஞ்சக்கூடிய"
+
+msgid "Size Override"
+msgstr "அளவு மேலெழுதும்"
+
+msgid "Keep Compressed Buffer"
+msgstr "சுருக்கப்பட்ட இடையகத்தை வைத்திருங்கள்"
+
+msgid "Scale Base Bone"
+msgstr "அளவிலான அடிப்படை எலும்பு"
+
+msgid "Group Size"
+msgstr "குழு அளவு"
+
+msgid "Bone Size"
+msgstr "எலும்பு அளவு"
+
+msgid "Sky Material"
+msgstr "வான பொருள்"
+
+msgid "Process Mode"
+msgstr "செயல்முறை பயன்முறை"
+
+msgid "Radiance Size"
+msgstr "பிரகாசமான அளவு"
+
+msgid "Content Margins"
+msgstr "உள்ளடக்க விளிம்புகள்"
+
+msgid "Blend"
+msgstr "கலப்பு"
+
+msgid "Top Left"
+msgstr "மேல் இடது"
+
+msgid "Top Right"
+msgstr "மேல் வலது"
+
+msgid "Bottom Right"
+msgstr "கீழே வலது"
+
+msgid "Bottom Left"
+msgstr "கீழே இடது"
+
+msgid "Corner Detail"
+msgstr "மூலையில் விவரம்"
+
+msgid "Expand Margins"
+msgstr "விளிம்புகளை விரிவாக்கு"
+
+msgid "Grow Begin"
+msgstr "வளர ஆரம்பிக்கவும்"
+
+msgid "Grow End"
+msgstr "முடிவை வளர்க்கவும்"
+
+msgid "Texture Margins"
+msgstr "அமைப்பு விளிம்புகள்"
+
+msgid "Sub-Region"
+msgstr "துணை பகுதி"
+
+msgid "Keyword Colors"
+msgstr "முக்கிய வண்ணங்கள்"
+
+msgid "Member Keyword Colors"
+msgstr "உறுப்பினர் முக்கிய வண்ணங்கள்"
+
+msgid "Color Regions"
+msgstr "வண்ண பகுதிகள்"
+
+msgid "Preserve Invalid"
+msgstr "தவறானது"
+
+msgid "Preserve Control"
+msgstr "கட்டுப்பாட்டைப் பாதுகாக்கவும்"
+
+msgid "Custom Punctuation"
+msgstr "தனிப்பயன் நிறுத்தற்குறி"
+
+msgid "Break Flags"
+msgstr "கொடிகளை உடைக்கவும்"
+
+msgid "Default Base Scale"
+msgstr "இயல்புநிலை அடிப்படை அளவு"
+
+msgid "Default Font"
+msgstr "இயல்புநிலை எழுத்துரு"
+
+msgid "Default Font Size"
+msgstr "இயல்புநிலை எழுத்துரு அளவு"
+
+msgid "File"
+msgstr "கோப்பு"
+
+msgid "Output Port for Preview"
+msgstr "முன்னோட்டத்திற்கான வெளியீட்டு துறை"
+
+msgid "Modes"
+msgstr "முறைகள்"
+
+msgid "Input Name"
+msgstr "உள்ளீட்டு பெயர்"
+
+msgid "Parameter Name"
+msgstr "அளவுரு பெயர்"
+
+msgid "Qualifier"
+msgstr "தகுதி"
+
+msgid "Autoshrink"
+msgstr "ஆட்டோசிங்க்"
+
+msgid "Varying Name"
+msgstr "மாறுபட்ட பெயர்"
+
+msgid "Varying Type"
+msgstr "மாறுபட்ட வகை"
+
+msgid "Op Type"
+msgstr "தட்டச்சு செய்க"
+
+msgid "Constant"
+msgstr "மாறா, மாறிலி"
+
+msgid "Texture Type"
+msgstr "அமைப்பு வகை"
+
+msgid "Texture Array"
+msgstr "அமைப்பு வரிசை"
+
+msgid "Cube Map"
+msgstr "கியூப் வரைபடம்"
+
+msgid "Function"
+msgstr "சார்பு"
+
+msgid "Hint"
+msgstr "குறிப்பு"
+
+msgid "Default Value Enabled"
+msgstr "இயல்புநிலை மதிப்பு இயக்கப்பட்டது"
+
+msgid "Default Value"
+msgstr "இயல்புநிலை மதிப்பு"
+
+msgid "Color Default"
+msgstr "வண்ண இயல்புநிலை"
+
+msgid "Texture Repeat"
+msgstr "அமைப்பு மீண்டும்"
+
+msgid "Texture Source"
+msgstr "அமைப்பு மூல"
+
+msgid "Billboard Type"
+msgstr "விளம்பர பலகை வகை"
+
+msgid "Mode 2D"
+msgstr "பயன்முறை 2 டி"
+
+msgid "Use All Surfaces"
+msgstr "அனைத்து மேற்பரப்புகளையும் பயன்படுத்தவும்"
+
+msgid "Surface Index"
+msgstr "மேற்பரப்பு அட்டவணை"
+
+msgid "Degrees Mode"
+msgstr "டிகிரி பயன்முறை"
+
+msgid "Font Pressed Color"
+msgstr "எழுத்துரு அழுத்தும் நிறம்"
+
+msgid "Font Hover Color"
+msgstr "எழுத்துரு வெப்ப வண்ணம்"
+
+msgid "Font Focus Color"
+msgstr "எழுத்துரு கவனம் நிறம்"
+
+msgid "Font Hover Pressed Color"
+msgstr "எழுத்துரு ஓவர் அழுத்தப்பட்ட வண்ணம்"
+
+msgid "Font Disabled Color"
+msgstr "எழுத்துரு முடக்கப்பட்ட நிறம்"
+
+msgid "Font Outline Color"
+msgstr "எழுத்துரு அவுட்லைன் நிறம்"
+
+msgid "Icon Normal Color"
+msgstr "படவுரு சாதாரண நிறம்"
+
+msgid "Icon Pressed Color"
+msgstr "படவுரு அழுத்தப்பட்ட வண்ணம்"
+
+msgid "Icon Hover Color"
+msgstr "படவுரு ஓவர் நிறம்"
+
+msgid "Icon Hover Pressed Color"
+msgstr "படவுரு ஓவர் அழுத்திய வண்ணம்"
+
+msgid "Icon Focus Color"
+msgstr "படவுரு கவனம் நிறம்"
+
+msgid "Icon Disabled Color"
+msgstr "படவுரு முடக்கப்பட்ட வண்ணம்"
+
+msgid "H Separation"
+msgstr "H பிரிப்பு"
+
+msgid "Icon Max Width"
+msgstr "படவுரு அதிகபட்ச அகலம்"
+
+msgid "Align to Largest Stylebox"
+msgstr "மிகப்பெரிய பாணி பாக்சுக்கு சீரமைக்கவும்"
+
+msgid "Underline Spacing"
+msgstr "இடைவெளியை அடிக்கோடிட்டுக் காட்டுங்கள்"
+
+msgid "Normal Mirrored"
+msgstr "சாதாரண பிரதிபலித்தது"
+
+msgid "Hover Mirrored"
+msgstr "ஓவர் பிரதிபலித்தது"
+
+msgid "Pressed Mirrored"
+msgstr "அழுத்தப்பட்ட பிரதிபலித்தது"
+
+msgid "Disabled Mirrored"
+msgstr "முடக்கப்பட்ட பிரதிபலித்தது"
+
+msgid "Arrow"
+msgstr "அம்பு"
+
+msgid "Arrow Margin"
+msgstr "அம்பு விளிம்பு"
+
+msgid "Modulate Arrow"
+msgstr "அம்புக்குறியை மாற்றியமைக்கவும்"
+
+msgid "Hover Pressed"
+msgstr "ஓவர் அழுத்தியது"
+
+msgid "Checked Disabled"
+msgstr "சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
+
+msgid "Unchecked"
+msgstr "தேர்வு செய்யப்படாதது"
+
+msgid "Unchecked Disabled"
+msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர்"
+
+msgid "Radio Checked"
+msgstr "ரேடியோ சரிபார்க்கப்பட்டது"
+
+msgid "Radio Checked Disabled"
+msgstr "ரேடியோ சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
+
+msgid "Radio Unchecked"
+msgstr "வானொலி தேர்வு செய்யப்படவில்லை"
+
+msgid "Radio Unchecked Disabled"
+msgstr "ரேடியோ தேர்வு செய்யப்படாத முடக்கப்பட்டுள்ளது"
+
+msgid "Check V Offset"
+msgstr "V ஆஃப்செட் சரிபார்க்கவும்"
+
+msgid "Checked Mirrored"
+msgstr "சரிபார்க்கப்பட்டது பிரதிபலித்தது"
+
+msgid "Checked Disabled Mirrored"
+msgstr "சரிபார்க்கப்பட்ட முடக்கப்பட்ட பிரதிபலித்தது"
+
+msgid "Unchecked Mirrored"
+msgstr "தேர்வு செய்யப்படாத பிரதிபலித்தது"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர் பிரதிபலிக்கப்பட்டது"
+
+msgid "Font Shadow Color"
+msgstr "எழுத்துரு நிழல் நிறம்"
+
+msgid "Shadow Offset X"
+msgstr "நிழல் ஆஃப்செட் ஃச்"
+
+msgid "Shadow Offset Y"
+msgstr "நிழல் ஆஃப்செட் ஒய்"
+
+msgid "Shadow Outline Size"
+msgstr "நிழல் அவுட்லைன் அளவு"
+
+msgid "Font Selected Color"
+msgstr "எழுத்துரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
+
+msgid "Font Uneditable Color"
+msgstr "எழுத்துரு படிக்காத நிறம்"
+
+msgid "Font Placeholder Color"
+msgstr "எழுத்துரு பிளேச்ஓல்டர் நிறம்"
+
+msgid "Clear Button Color"
+msgstr "பொத்தானை அழிக்கவும்"
+
+msgid "Clear Button Color Pressed"
+msgstr "பொத்தான் வண்ணம் அழுத்தியது"
+
+msgid "Minimum Character Width"
+msgstr "குறைந்தபட்ச எழுத்து அகலம்"
+
+msgid "Caret Width"
+msgstr "கேரட் அகலம்"
+
+msgid "Clear"
+msgstr "தெளிவான"
+
+msgid "Tab"
+msgstr "தாவல்"
+
+msgid "Font Readonly Color"
+msgstr "எழுத்துரு வாசனி நிறம்"
+
+msgid "Breakpoint"
+msgstr "பிரேக் பாயிண்ட்"
+
+msgid "Bookmark"
+msgstr "புத்தககுறி"
+
+msgid "Executing Line"
+msgstr "வரி செயல்படுத்துகிறது"
+
+msgid "Can Fold"
+msgstr "மடிக்க முடியும்"
+
+msgid "Folded"
+msgstr "மடிந்தது"
+
+msgid "Can Fold Code Region"
+msgstr "குறியீடு பகுதியை மடிக்க முடியும்"
+
+msgid "Folded Code Region"
+msgstr "மடிந்த குறியீடு பகுதி"
+
+msgid "Folded EOL Icon"
+msgstr "மடிந்த EOL படவுரு"
+
+msgid "Completion Lines"
+msgstr "நிறைவு கோடுகள்"
+
+msgid "Completion Max Width"
+msgstr "நிறைவு அதிகபட்ச அகலம்"
+
+msgid "Completion Scroll Width"
+msgstr "நிறைவு உருள் அகலம்"
+
+msgid "Scroll Focus"
+msgstr "உருள் கவனம்"
+
+msgid "Grabber"
+msgstr "கிராப்"
+
+msgid "Grabber Highlight"
+msgstr "கிராபர் சிறப்பம்சமாக"
+
+msgid "Grabber Pressed"
+msgstr "கிராப்பர் அழுத்தினார்"
+
+msgid "Increment"
+msgstr "அதிகரிப்பு"
+
+msgid "Increment Highlight"
+msgstr "அதிகரிப்பு சிறப்பியல்பு"
+
+msgid "Increment Pressed"
+msgstr "அதிகரிப்பு அழுத்தியது"
+
+msgid "Decrement"
+msgstr "குறைவு"
+
+msgid "Decrement Highlight"
+msgstr "குறைவு சிறப்பியல்பு"
+
+msgid "Decrement Pressed"
+msgstr "குறைவு அழுத்தியது"
+
+msgid "Slider"
+msgstr "ச்லைடர்"
+
+msgid "Grabber Area"
+msgstr "கிராபர் பகுதி"
+
+msgid "Grabber Area Highlight"
+msgstr "கிராபர் பகுதி சிறப்பம்சமாக"
+
+msgid "Grabber Disabled"
+msgstr "கிராப்பர் முடக்கப்பட்டது"
+
+msgid "Tick"
+msgstr "உண்ணி"
+
+msgid "Center Grabber"
+msgstr "மைய கிராப்பர்"
+
+msgid "Grabber Offset"
+msgstr "கிராபர் ஆஃப்செட்"
+
+msgid "Updown"
+msgstr "அப்டோடவுன்"
+
+msgid "Embedded Border"
+msgstr "உட்பொதிக்கப்பட்ட எல்லை"
+
+msgid "Embedded Unfocused Border"
+msgstr "கவனம் செலுத்தப்படாத எல்லை"
+
+msgid "Title Font"
+msgstr "தலைப்பு எழுத்துரு"
+
+msgid "Title Font Size"
+msgstr "தலைப்பு எழுத்துரு அளவு"
+
+msgid "Title Color"
+msgstr "தலைப்பு நிறம்"
+
+msgid "Title Outline Modulate"
+msgstr "தலைப்பு அவுட்லைன் மாடுலேட்"
+
+msgid "Title Outline Size"
+msgstr "தலைப்பு அவுட்லைன் அளவு"
+
+msgid "Title Height"
+msgstr "தலைப்பு உயரம்"
+
+msgid "Resize Margin"
+msgstr "மறுஅளவிடுதல் விளிம்பு"
+
+msgid "Close"
+msgstr "மூடு"
+
+msgid "Close Pressed"
+msgstr "மூடு அழுத்தியது"
+
+msgid "Close H Offset"
+msgstr "H ஆஃப்செட் மூடு"
+
+msgid "Close V Offset"
+msgstr "மூடு v ஆஃப்செட்"
+
+msgid "Buttons Separation"
+msgstr "பொத்தான்கள் பிரித்தல்"
+
+msgid "Parent Folder"
+msgstr "பெற்றோர் கோப்புறை"
+
+msgid "Back Folder"
+msgstr "பின் கோப்புறை"
+
+msgid "Forward Folder"
+msgstr "முன்னோக்கி கோப்புறை"
+
+msgid "Reload"
+msgstr "ஏற்றவும்"
+
+msgid "Toggle Hidden"
+msgstr "மறைத்து வைக்கவும்"
+
+msgid "Folder"
+msgstr "கோப்புறை"
+
+msgid "Create Folder"
+msgstr "கோப்புறையை உருவாக்கவும்"
+
+msgid "Folder Icon Color"
+msgstr "கோப்புறை படவுரு நிறம்"
+
+msgid "File Icon Color"
+msgstr "கோப்பு படவுரு நிறம்"
+
+msgid "File Disabled Color"
+msgstr "கோப்பு முடக்கப்பட்ட வண்ணம்"
+
+msgid "Separator"
+msgstr "பிரிப்பான்"
+
+msgid "Labeled Separator Left"
+msgstr "பெயரிடப்பட்ட பிரிப்பான் இடது"
+
+msgid "Labeled Separator Right"
+msgstr "பிரிப்பான் பெயரிடப்பட்டது"
+
+msgid "Submenu"
+msgstr "துணைமெனு"
+
+msgid "Submenu Mirrored"
+msgstr "துணை பிரதிபலித்தது"
+
+msgid "Font Separator"
+msgstr "எழுத்துரு பிரிப்பான்"
+
+msgid "Font Separator Size"
+msgstr "எழுத்துரு பிரிப்பான் அளவு"
+
+msgid "Font Accelerator Color"
+msgstr "எழுத்துரு முடுக்கி நிறம்"
+
+msgid "Font Separator Color"
+msgstr "எழுத்துரு பிரிப்பான் நிறம்"
+
+msgid "Font Separator Outline Color"
+msgstr "எழுத்துரு பிரிப்பான் அவுட்லைன் நிறம்"
+
+msgid "V Separation"
+msgstr "வி பிரிப்பு"
+
+msgid "Separator Outline Size"
+msgstr "பிரிப்பான் அவுட்லைன் அளவு"
+
+msgid "Item Start Padding"
+msgstr "பொருள் தொடக்க திணிப்பு"
+
+msgid "Item End Padding"
+msgstr "உருப்படி முடிவு திணிப்பு"
+
+msgid "Panel Selected"
+msgstr "குழு தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Titlebar"
+msgstr "தலைப்பு"
+
+msgid "Titlebar Selected"
+msgstr "Titlebar தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Slot"
+msgstr "ச்லாட்"
+
+msgid "Resizer"
+msgstr "மறுபரிசீலனை"
+
+msgid "Resizer Color"
+msgstr "மறுஅளவிடுதல் நிறம்"
+
+msgid "Port H Offset"
+msgstr "துறைமுகம் எச் ஆஃப்செட்"
+
+msgid "Hovered"
+msgstr "வட்டமிட்டது"
+
+msgid "Selected Focus"
+msgstr "தேர்ந்தெடுக்கப்பட்ட கவனம்"
+
+msgid "Cursor"
+msgstr "கர்சர்"
+
+msgid "Cursor Unfocused"
+msgstr "கர்சர் கவனம் செலுத்தவில்லை"
+
+msgid "Title Button Normal"
+msgstr "தலைப்பு பொத்தான் இயல்பானது"
+
+msgid "Title Button Pressed"
+msgstr "தலைப்பு பொத்தான் அழுத்தியது"
+
+msgid "Title Button Hover"
+msgstr "தலைப்பு பொத்தான் ஓவர்"
+
+msgid "Custom Button"
+msgstr "தனிப்பயன் பொத்தான்"
+
+msgid "Custom Button Pressed"
+msgstr "தனிப்பயன் பொத்தான் அழுத்தியது"
+
+msgid "Custom Button Hover"
+msgstr "தனிப்பயன் பொத்தான் ஓவர்"
+
+msgid "Indeterminate Disabled"
+msgstr "ஊனமுற்றோர் உறுதியற்றவர்கள்"
+
+msgid "Select Arrow"
+msgstr "அம்புக்குறியைத் தேர்ந்தெடுக்கவும்"
+
+msgid "Arrow Collapsed"
+msgstr "அம்பு சரிந்தது"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "அம்பு சரிந்தது பிரதிபலித்தது"
+
+msgid "Title Button Font"
+msgstr "தலைப்பு பொத்தான் எழுத்துரு"
+
+msgid "Title Button Font Size"
+msgstr "தலைப்பு பொத்தான் எழுத்துரு அளவு"
+
+msgid "Title Button Color"
+msgstr "தலைப்பு பொத்தான் நிறம்"
+
+msgid "Font Hovered Color"
+msgstr "எழுத்துரு வண்ணம்"
+
+msgid "Guide Color"
+msgstr "வழிகாட்டி நிறம்"
+
+msgid "Drop Position Color"
+msgstr "நிலை வண்ணத்தை கைவிடுங்கள்"
+
+msgid "Relationship Line Color"
+msgstr "உறவு வரி நிறம்"
+
+msgid "Parent HL Line Color"
+msgstr "பெற்றோர் எச்.எல் வரி நிறம்"
+
+msgid "Children HL Line Color"
+msgstr "குழந்தைகள் எச்.எல் வரி நிறம்"
+
+msgid "Custom Button Font Highlight"
+msgstr "தனிப்பயன் பொத்தான் எழுத்துரு சிறப்பம்சமாக"
+
+msgid "Item Margin"
+msgstr "பொருள் விளிம்பு"
+
+msgid "Inner Item Margin Bottom"
+msgstr "உள் உருப்படி விளிம்பு கீழே"
+
+msgid "Inner Item Margin Left"
+msgstr "உள் உருப்படி விளிம்பு இடது"
+
+msgid "Inner Item Margin Right"
+msgstr "உள் உருப்படி விளிம்பு வலது"
+
+msgid "Inner Item Margin Top"
+msgstr "உள் உருப்படி விளிம்பு மேல்"
+
+msgid "Button Margin"
+msgstr "பொத்தான் விளிம்பு"
+
+msgid "Draw Relationship Lines"
+msgstr "உறவு கோடுகளை வரையவும்"
+
+msgid "Relationship Line Width"
+msgstr "உறவு வரி அகலம்"
+
+msgid "Parent HL Line Width"
+msgstr "பெற்றோர் எச்.எல் வரி அகலம்"
+
+msgid "Children HL Line Width"
+msgstr "குழந்தைகள் எச்.எல் வரி அகலம்"
+
+msgid "Parent HL Line Margin"
+msgstr "பெற்றோர் எச்.எல் வரி விளிம்பு"
+
+msgid "Draw Guides"
+msgstr "வழிகாட்டிகளை வரையவும்"
+
+msgid "Scroll Border"
+msgstr "உருள் எல்லை"
+
+msgid "Scroll Speed"
+msgstr "உருள் விரைவு"
+
+msgid "Scrollbar Margin Left"
+msgstr "சுருள் விளிம்பு இடது"
+
+msgid "Scrollbar Margin Top"
+msgstr "சுருள் விளிம்பு மேல்"
+
+msgid "Scrollbar Margin Right"
+msgstr "சுருள் விளிம்பு வலது"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "சுருள் விளிம்பு கீழே"
+
+msgid "Scrollbar H Separation"
+msgstr "சுருள் எச் பிரிப்பு"
+
+msgid "Scrollbar V Separation"
+msgstr "சுருள் வி பிரிப்பு"
+
+msgid "Icon Margin"
+msgstr "படவுரு விளிம்பு"
+
+msgid "Tab Selected"
+msgstr "தாவல் தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Tab Hovered"
+msgstr "தாவல் வட்டமிட்டது"
+
+msgid "Tab Unselected"
+msgstr "தாவல் தேர்வு செய்யப்படாதது"
+
+msgid "Tab Disabled"
+msgstr "தாவல் முடக்கப்பட்டது"
+
+msgid "Tab Focus"
+msgstr "தாவல் கவனம்"
+
+msgid "Tabbar Background"
+msgstr "தபார் பின்னணி"
+
+msgid "Drop Mark"
+msgstr "துளி குறி"
+
+msgid "Menu Highlight"
+msgstr "பட்டி சிறப்பம்சமாக"
+
+msgid "Font Unselected Color"
+msgstr "எழுத்துரு தேர்வு செய்யப்படாத வண்ணம்"
+
+msgid "Drop Mark Color"
+msgstr "குறி நிறத்தை கைவிடுங்கள்"
+
+msgid "Side Margin"
+msgstr "பக்க விளிம்பு"
+
+msgid "Icon Separation"
+msgstr "படவுரு பிரிப்பு"
+
+msgid "Button Highlight"
+msgstr "பொத்தான் சிறப்பம்சமாக"
+
+msgid "SV Width"
+msgstr "எச்.வி அகலம்"
+
+msgid "SV Height"
+msgstr "எச்.வி உயரம்"
+
+msgid "H Width"
+msgstr "எச் அகலம்"
+
+msgid "Label Width"
+msgstr "சிட்டை அகலம்"
+
+msgid "Center Slider Grabbers"
+msgstr "சென்டர் ச்லைடர் கிராப்பர்கள்"
+
+msgid "Folded Arrow"
+msgstr "மடிந்த அம்பு"
+
+msgid "Expanded Arrow"
+msgstr "விரிவாக்கப்பட்ட அம்பு"
+
+msgid "Screen Picker"
+msgstr "திரை பிக்கர்"
+
+msgid "Shape Circle"
+msgstr "வடிவ வட்டம்"
+
+msgid "Shape Rect"
+msgstr "வடிவ ரெட்"
+
+msgid "Shape Rect Wheel"
+msgstr "வடிவ செவ்வக சக்கரம்"
+
+msgid "Add Preset"
+msgstr "முன்னமைவு சேர்க்கவும்"
+
+msgid "Sample BG"
+msgstr "மாதிரி பி.சி."
+
+msgid "Sample Revert"
+msgstr "மாதிரி மாற்றியமைத்தல்"
+
+msgid "Overbright Indicator"
+msgstr "ஓவர் பிரைட் காட்டி"
+
+msgid "Bar Arrow"
+msgstr "பார் அம்பு"
+
+msgid "Picker Cursor"
+msgstr "பிக்கர் கர்சர்"
+
+msgid "Color Hue"
+msgstr "வண்ண சாயல்"
+
+msgid "BG"
+msgstr "பி.சி."
+
+msgid "Preset FG"
+msgstr "முன்னமைக்கப்பட்ட FG"
+
+msgid "Preset BG"
+msgstr "முன்னமைக்கப்பட்ட பி.சி."
+
+msgid "Normal Font"
+msgstr "சாதாரண எழுத்துரு"
+
+msgid "Bold Font"
+msgstr "தைரியமான எழுத்துரு"
+
+msgid "Italics Font"
+msgstr "சாய்வு எழுத்துரு"
+
+msgid "Bold Italics Font"
+msgstr "தைரியமான சாய்வு எழுத்துரு"
+
+msgid "Mono Font"
+msgstr "மோனோ எழுத்துரு"
+
+msgid "Normal Font Size"
+msgstr "சாதாரண எழுத்துரு அளவு"
+
+msgid "Bold Font Size"
+msgstr "தைரியமான எழுத்துரு அளவு"
+
+msgid "Italics Font Size"
+msgstr "சாய்வு எழுத்துரு அளவு"
+
+msgid "Bold Italics Font Size"
+msgstr "தைரியமான சாய்வு எழுத்துரு அளவு"
+
+msgid "Mono Font Size"
+msgstr "மோனோ எழுத்துரு அளவு"
+
+msgid "Table H Separation"
+msgstr "அட்டவணை H பிரிப்பு"
+
+msgid "Table V Separation"
+msgstr "அட்டவணை V பிரிப்பு"
+
+msgid "Table Odd Row BG"
+msgstr "அட்டவணை ஒற்றைப்படை வரிசை பி.சி."
+
+msgid "Table Even Row BG"
+msgstr "அட்டவணை கூட வரிசை பி.சி."
+
+msgid "Table Border"
+msgstr "அட்டவணை எல்லை"
+
+msgid "Text Highlight H Padding"
+msgstr "உரை சிறப்பம்சமாக எச் திணிப்பு"
+
+msgid "Text Highlight V Padding"
+msgstr "உரை சிறப்பம்சமாக வி திணிப்பு"
+
+msgid "H Grabber"
+msgstr "H கிராப்பர்"
+
+msgid "V Grabber"
+msgstr "வி கிராப்பர்"
+
+msgid "Margin Left"
+msgstr "விளிம்பு இடது"
+
+msgid "Margin Top"
+msgstr "விளிம்பு மேல்"
+
+msgid "Margin Right"
+msgstr "விளிம்பு வலது"
+
+msgid "Margin Bottom"
+msgstr "விளிம்பு கீழே"
+
+msgid "Minimum Grab Thickness"
+msgstr "குறைந்தபட்ச கிராப் தடிமன்"
+
+msgid "Autohide"
+msgstr "ஆட்டோஐட்"
+
+msgid "Zoom Out"
+msgstr "சிறிதாக்கு"
+
+msgid "Zoom In"
+msgstr "பெரிதாக்கு"
+
+msgid "Zoom Reset"
+msgstr "பெரிதாக்கு மீட்டமைப்பு"
+
+msgid "Grid Toggle"
+msgstr "கட்டம் மாற்றவும்"
+
+msgid "Minimap Toggle"
+msgstr "மினிமாப் மாற்று"
+
+msgid "Snapping Toggle"
+msgstr "தடுமாறும்"
+
+msgid "Menu Panel"
+msgstr "பட்டி குழு"
+
+msgid "Grid Minor"
+msgstr "கட்டம் மைனர்"
+
+msgid "Grid Major"
+msgstr "கட்டம் மேசர்"
+
+msgid "Selection Fill"
+msgstr "தேர்வு நிரப்பு"
+
+msgid "Selection Stroke"
+msgstr "தேர்வு பக்கவாதம்"
+
+msgid "Activity"
+msgstr "செய்கைப்பாடு"
+
+msgid "Connection Hover Tint Color"
+msgstr "இணைப்பு ஓவர் சாயல் நிறம்"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "இணைப்பு செல்லுபடியாகும் இலக்கு நிறம்"
+
+msgid "Connection Rim Color"
+msgstr "இணைப்பு விளிம்பு நிறம்"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "துறைமுகம் ஆட்சோன் உள் அளவு"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "துறைமுகம் ஆட்சோன் வெளிப்புற அளவு"
+
+msgid "Node"
+msgstr "கணு"
+
+msgid "Default Theme Scale"
+msgstr "இயல்புநிலை கருப்பொருள் அளவு"
+
+msgid "Custom"
+msgstr "தனிப்பயன்"
+
+msgid "Custom Font"
+msgstr "தனிப்பயன் எழுத்துரு"
+
+msgid "Default Font Antialiasing"
+msgstr "இயல்புநிலை எழுத்துரு ஆன்டிலியாசிங்"
+
+msgid "Default Font Hinting"
+msgstr "இயல்புநிலை எழுத்துரு குறிப்பு"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "இயல்புநிலை எழுத்துரு சப் படப்புள்ளி பொருத்துதல்"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "இயல்புநிலை எழுத்துரு மல்டிசனல் கையொப்பமிடப்பட்ட தூர புலம்"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "இயல்புநிலை எழுத்துரு MIPMAPS ஐ உருவாக்குகிறது"
+
+msgid "LCD Subpixel Layout"
+msgstr "எல்சிடி சப் படப்புள்ளி தளவமைப்பு"
+
+msgid "Fallback values"
+msgstr "குறைவு மதிப்புகள்"
+
+msgid "Playback Mode"
+msgstr "பிளேபேக் பயன்முறை"
+
+msgid "Random Pitch"
+msgstr "சீரற்ற சுருதி"
+
+msgid "Random Volume Offset dB"
+msgstr "சீரற்ற தொகுதி ஆஃப்செட் டி.பி."
+
+msgid "Streams"
+msgstr "நீரோடைகள்"
+
+msgid "Buffer Length"
+msgstr "இடையக நீளம்"
+
+msgid "Voice Count"
+msgstr "குரல் எண்ணிக்கை"
+
+msgid "Dry"
+msgstr "உலர்"
+
+msgid "Wet"
+msgstr "ஈரமான"
+
+msgid "Voice"
+msgstr "குரல்"
+
+msgid "Delay (ms)"
+msgstr "நேரந்தவறுகை (எம்.எச்)"
+
+msgid "Rate Hz"
+msgstr "வீத Hz"
+
+msgid "Depth (ms)"
+msgstr "ஆழம் (எம்.எச்)"
+
+msgid "Level dB"
+msgstr "நிலை டி.பி."
+
+msgid "Pan"
+msgstr "பான்"
+
+msgid "Attack (µs)"
+msgstr "தாக்குதல் (µs)"
+
+msgid "Release (ms)"
+msgstr "வெளியீடு (எம்.எச்)"
+
+msgid "Sidechain"
+msgstr "சிட்செயின்"
+
+msgid "Tap 1"
+msgstr "தட்டவும் 1"
+
+msgid "Tap 2"
+msgstr "தட்டவும் 2"
+
+msgid "Feedback"
+msgstr "கருத்து"
+
+msgid "Low-pass"
+msgstr "குறைந்த பாச்"
+
+msgid "Pre Gain"
+msgstr "முன் ஆதாயம்"
+
+msgid "Keep Hf Hz"
+msgstr "HF HZ ஐ வைத்திருங்கள்"
+
+msgid "Drive"
+msgstr "ஓட்டு"
+
+msgid "Post Gain"
+msgstr "பிந்தைய ஆதாயம்"
+
+msgid "Resonance"
+msgstr "ஒத்திசை"
+
+msgid "Pre Gain dB"
+msgstr "முன் ஆதாய டி.பி."
+
+msgid "Ceiling dB"
+msgstr "உச்சவரம்பு டி.பி."
+
+msgid "Threshold dB"
+msgstr "த்ரெசோல்ட் டி.பி."
+
+msgid "Soft Clip dB"
+msgstr "மென்மையான கிளிப் டி.பி."
+
+msgid "Soft Clip Ratio"
+msgstr "மென்மையான கிளிப் விகிதம்"
+
+msgid "Range Min Hz"
+msgstr "வரம்பு மின் எர்ட்ச்"
+
+msgid "Range Max Hz"
+msgstr "வரம்பு அதிகபட்ச HZ"
+
+msgid "FFT Size"
+msgstr "FFT அளவு"
+
+msgid "Predelay"
+msgstr "வரம்புகள்"
+
+msgid "Msec"
+msgstr "Msec"
+
+msgid "Room Size"
+msgstr "அறை அளவு"
+
+msgid "High-pass"
+msgstr "உயர்-பாச்"
+
+msgid "Tap Back Pos"
+msgstr "போசைத் தட்டவும்"
+
+msgid "Pan Pullout"
+msgstr "பான் வெளியேறுதல்"
+
+msgid "Time Pullout (ms)"
+msgstr "நேர வெளியேறுதல் (எம்.எச்)"
+
+msgid "Surround"
+msgstr "சுற்று"
+
+msgid "Enable Input"
+msgstr "உள்ளீட்டை இயக்கவும்"
+
+msgid "Channel Disable Threshold dB"
+msgstr "சேனல் த்ரெசோல்ட் டி.பி."
+
+msgid "Channel Disable Time"
+msgstr "சேனல் நேரத்தை முடக்கு"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "வீடியோ தாமத இழப்பீடு (எம்.எச்)"
+
+msgid "Bus Count"
+msgstr "பச் எண்ணிக்கை"
+
+msgid "Output Device"
+msgstr "வெளியீட்டு சாதனம்"
+
+msgid "Input Device"
+msgstr "உள்ளீட்டு சாதனம்"
+
+msgid "Playback Speed Scale"
+msgstr "பிளேபேக் வேக அளவு"
+
+msgid "Feed"
+msgstr "தீவனம்"
+
+msgid "Is Active"
+msgstr "செயலில் உள்ளது"
+
+msgid "Movie Writer"
+msgstr "திரைப்பட எழுத்தாளர்"
+
+msgid "Speaker Mode"
+msgstr "அவைத்தலைவர் பயன்முறை"
+
+msgid "MJPEG Quality"
+msgstr "MJPEG தகுதி"
+
+msgid "Movie File"
+msgstr "திரைப்பட கோப்பு"
+
+msgid "Disable V-Sync"
+msgstr "வி-ஒத்திசைவை முடக்கு"
+
+msgid "Metadata Flags"
+msgstr "மேனிலை தரவு கொடிகள்"
+
+msgid "Path Types"
+msgstr "பாதை வகைகள்"
+
+msgid "Path Rids"
+msgstr "பாதை இடது"
+
+msgid "Path Owner IDs"
+msgstr "பாதை உரிமையாளர் ஐடிஎச்"
+
+msgid "Default Cell Size"
+msgstr "இயல்புநிலை செல் அளவு"
+
+msgid "Default Edge Connection Margin"
+msgstr "இயல்புநிலை விளிம்பு இணைப்பு விளிம்பு"
+
+msgid "Default Link Connection Radius"
+msgstr "இயல்புநிலை இணைப்பு இணைப்பு ஆரம்"
+
+msgid "Default Cell Height"
+msgstr "இயல்புநிலை செல் உயரம்"
+
+msgid "Default Up"
+msgstr "இயல்புநிலை"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "ராச்டரைசர் செல் அளவை ஒன்றிணைக்கவும்"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "தவிர்ப்பு பல நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "தவிர்ப்பு அதிக முன்னுரிமை நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Baking"
+msgstr "சுட்டுக்கொள்ளுதல்"
+
+msgid "Use Crash Prevention Checks"
+msgstr "செயலிழப்பு தடுப்பு காசோலைகளைப் பயன்படுத்தவும்"
+
+msgid "Baking Use Multiple Threads"
+msgstr "பேக்கிங் பல நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Baking Use High Priority Threads"
+msgstr "பேக்கிங் அதிக முன்னுரிமை நூல்களைப் பயன்படுத்துங்கள்"
+
+msgid "Edge Connection Color"
+msgstr "விளிம்பு இணைப்பு நிறம்"
+
+msgid "Geometry Edge Color"
+msgstr "வடிவியல் விளிம்பு நிறம்"
+
+msgid "Geometry Face Color"
+msgstr "வடிவியல் முகம் நிறம்"
+
+msgid "Geometry Edge Disabled Color"
+msgstr "வடிவியல் விளிம்பு முடக்கப்பட்ட நிறம்"
+
+msgid "Geometry Face Disabled Color"
+msgstr "வடிவியல் முகம் முடக்கப்பட்ட நிறம்"
+
+msgid "Link Connection Color"
+msgstr "இணைப்பு இணைப்பு நிறம்"
+
+msgid "Link Connection Disabled Color"
+msgstr "இணைப்பு இணைப்பு முடக்கப்பட்ட வண்ணம்"
+
+msgid "Agent Path Color"
+msgstr "முகவர் பாதை நிறம்"
+
+msgid "Enable Edge Connections"
+msgstr "விளிம்பு இணைப்புகளை இயக்கவும்"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "எக்ச்-ரே எட்ச் இணைப்புகளை இயக்கவும்"
+
+msgid "Enable Edge Lines"
+msgstr "விளிம்பு கோடுகளை இயக்கவும்"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "எக்ச்-ரே எட்ச் கோடுகளை இயக்கவும்"
+
+msgid "Enable Geometry Face Random Color"
+msgstr "வடிவியல் முகம் சீரற்ற நிறத்தை இயக்கவும்"
+
+msgid "Enable Link Connections"
+msgstr "இணைப்பு இணைப்புகளை இயக்கவும்"
+
+msgid "Enable Link Connections X-Ray"
+msgstr "இணைப்பு இணைப்புகளை இயக்கவும் எக்ச்ரே"
+
+msgid "Enable Agent Paths"
+msgstr "முகவர் பாதைகளை இயக்கவும்"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "முகவர் பாதைகளை எக்ச்ரே இயக்கவும்"
+
+msgid "Agent Path Point Size"
+msgstr "முகவர் பாதை புள்ளி அளவு"
+
+msgid "Agents Radius Color"
+msgstr "முகவர்கள் ஆரம் நிறம்"
+
+msgid "Obstacles Radius Color"
+msgstr "தடைகள் ஆரம் நிறம்"
+
+msgid "Obstacles Static Face Pushin Color"
+msgstr "தடைகள் நிலையான முகம் புசின் நிறம்"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "தடைகள் நிலையான விளிம்பு புசின் நிறம்"
+
+msgid "Obstacles Static Face Pushout Color"
+msgstr "தடைகள் நிலையான முகம் புச்அவுட் நிறம்"
+
+msgid "Obstacles Static Edge Pushout Color"
+msgstr "தடைகள் நிலையான விளிம்பு புச்அவுட் நிறம்"
+
+msgid "Enable Agents Radius"
+msgstr "முகவர்களின் ஆரம் இயக்கவும்"
+
+msgid "Enable Obstacles Radius"
+msgstr "தடைகள் ஆரம் இயக்கவும்"
+
+msgid "Enable Obstacles Static"
+msgstr "தடைகளை நிலையானது"
+
+msgid "Inverse Mass"
+msgstr "தலைகீழ் நிறை"
+
+msgid "Inverse Inertia"
+msgstr "மந்தநிலையை கண்டுபிடி"
+
+msgid "Total Angular Damp"
+msgstr "மொத்த கோண ஈரமான"
+
+msgid "Total Linear Damp"
+msgstr "மொத்த நேரியல் ஈரமான"
+
+msgid "Total Gravity"
+msgstr "மொத்த ஈர்ப்பு"
+
+msgid "Center of Mass Local"
+msgstr "வெகுசன உள்ளக நடுவண்"
+
+msgid "Exclude"
+msgstr "விலக்கு"
+
+msgid "Collide With Bodies"
+msgstr "உடல்களுடன் மோதுங்கள்"
+
+msgid "Collide With Areas"
+msgstr "பகுதிகளுடன் மோதுங்கள்"
+
+msgid "Canvas Instance ID"
+msgstr "கேன்வாச் நிகழ்வு ஐடி"
+
+msgid "Shape RID"
+msgstr "வடிவத்தை அகற்றவும்"
+
+msgid "Collide Separation Ray"
+msgstr "மோதல் பிரிப்பு கதிர்"
+
+msgid "Exclude Bodies"
+msgstr "உடல்களை விலக்கு"
+
+msgid "Exclude Objects"
+msgstr "பொருட்களை விலக்கு"
+
+msgid "Recovery as Collision"
+msgstr "மோதலாக மீட்பு"
+
+msgid "Default Gravity"
+msgstr "இயல்புநிலை ஈர்ப்பு"
+
+msgid "Default Gravity Vector"
+msgstr "இயல்புநிலை ஈர்ப்பு திசையன்"
+
+msgid "Default Linear Damp"
+msgstr "இயல்புநிலை நேரியல் ஈரமான"
+
+msgid "Default Angular Damp"
+msgstr "இயல்புநிலை கோண ஈடு"
+
+msgid "Sleep Threshold Linear"
+msgstr "தூக்க வாசல் நேரியல்"
+
+msgid "Sleep Threshold Angular"
+msgstr "தூக்க வாசல் கோண"
+
+msgid "Time Before Sleep"
+msgstr "தூக்கத்திற்கு முன் நேரம்"
+
+msgid "Solver Iterations"
+msgstr "தீர்வு மறு செய்கைகள்"
+
+msgid "Contact Recycle Radius"
+msgstr "மறுசுழற்சி ஆரம் தொடர்பு கொள்ளுங்கள்"
+
+msgid "Contact Max Separation"
+msgstr "அதிகபட்ச பிரிப்பைத் தொடர்பு கொள்ளுங்கள்"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "மேக்ச் அனுமதிக்கப்பட்ட ஊடுருவலை தொடர்பு கொள்ளவும்"
+
+msgid "Default Contact Bias"
+msgstr "இயல்புநிலை தொடர்பு சார்பு"
+
+msgid "Default Constraint Bias"
+msgstr "இயல்புநிலை கட்டுப்பாட்டு சார்பு"
+
+msgid "Physics Engine"
+msgstr "இயற்பியல் இயந்திரம்"
+
+msgid "Inverse Inertia Tensor"
+msgstr "டென்சர் மந்தநிலையை கண்டுபிடி"
+
+msgid "Principal Inertia Axes"
+msgstr "முதன்மை மந்தநிலை அச்சுகள்"
+
+msgid "Max Collisions"
+msgstr "அதிகபட்ச மோதல்கள்"
+
+msgid "Debug Redraw Time"
+msgstr "பிழைத்திருத்த நேரம்"
+
+msgid "Debug Redraw Color"
+msgstr "பிழைத்திருத்த வண்ணத்தை பிழைத்திருத்த"
+
+msgid "Tighter Shadow Caster Culling"
+msgstr "இறுக்கமான நிழல் காச்டர் கல்லிங்"
+
+msgid "Vertex"
+msgstr "வெர்டெக்ச்"
+
+msgid "Fragment"
+msgstr "துண்டு"
+
+msgid "Tesselation Control"
+msgstr "டெசெலேசன் கட்டுப்பாடு"
+
+msgid "Tesselation Evaluation"
+msgstr "டெசெலேசன் மதிப்பீடு"
+
+msgid "Compute"
+msgstr "கணக்கிடுங்கள்"
+
+msgid "Syntax"
+msgstr "தொடரியல்"
+
+msgid "Bytecode"
+msgstr "பைட்கோட்"
+
+msgid "Compile Error"
+msgstr "பிழையைத் தொகுக்கவும்"
+
+msgid "Base Error"
+msgstr "அடிப்படை பிழை"
+
+msgid "IDs"
+msgstr "ஐடிஎச்"
+
+msgid "Constant ID"
+msgstr "மாறிலி ஐடி"
+
+msgid "Sample Masks"
+msgstr "மாதிரி முகமூடிகள்"
+
+msgid "Depth Draw"
+msgstr "ஆழம் சமநிலை"
+
+msgid "Depth Prepass Alpha"
+msgstr "ஆழமான ப்ரீபாச் ஆல்பா"
+
+msgid "Depth Test Disabled"
+msgstr "ஆழ சோதனை முடக்கப்பட்டது"
+
+msgid "SSS Mode Skin"
+msgstr "SSS பயன்முறை தோல்"
+
+msgid "Cull"
+msgstr "குல்"
+
+msgid "Unshaded"
+msgstr "அசைக்கப்படாதது"
+
+msgid "Wireframe"
+msgstr "வயர்ஃப்ரேம்"
+
+msgid "Skip Vertex Transform"
+msgstr "வெர்டெக்ச் உருமாற்றத்தைத் தவிர்க்கவும்"
+
+msgid "World Vertex Coords"
+msgstr "உலக வெர்டெக்ச் கோடுகள்"
+
+msgid "Ensure Correct Normals"
+msgstr "சரியான இயல்புகளை உறுதிசெய்க"
+
+msgid "Shadows Disabled"
+msgstr "நிழல்கள் முடக்கப்பட்டன"
+
+msgid "Ambient Light Disabled"
+msgstr "சுற்றுப்புற ஒளி முடக்கப்பட்டுள்ளது"
+
+msgid "Vertex Lighting"
+msgstr "வெர்டெக்ச் லைட்டிங்"
+
+msgid "Particle Trails"
+msgstr "துகள் தடங்கள்"
+
+msgid "Alpha to Coverage"
+msgstr "கவரேச் ஆல்பா"
+
+msgid "Alpha to Coverage and One"
+msgstr "கவரேச் மற்றும் ஒன்று"
+
+msgid "Debug Shadow Splits"
+msgstr "பிழைத்திருத்த நிழல் பிளவுகள்"
+
+msgid "Fog Disabled"
+msgstr "மூடுபனி முடக்கப்பட்டது"
+
+msgid "Light Only"
+msgstr "ஒளி மட்டும்"
+
+msgid "Collision Use Scale"
+msgstr "மோதல் பயன்பாட்டு அளவு"
+
+msgid "Disable Force"
+msgstr "சக்தியை முடக்கு"
+
+msgid "Disable Velocity"
+msgstr "வேகத்தை முடக்கு"
+
+msgid "Keep Data"
+msgstr "தரவை வைத்திருங்கள்"
+
+msgid "Use Half Res Pass"
+msgstr "அரை ரெச் பாசைப் பயன்படுத்தவும்"
+
+msgid "Use Quarter Res Pass"
+msgstr "காலாண்டு ரெச் பாசைப் பயன்படுத்தவும்"
+
+msgid "Internal Size"
+msgstr "உள் அளவு"
+
+msgid "Target Size"
+msgstr "இலக்கு அளவு"
+
+msgid "View Count"
+msgstr "எண்ணிக்கை காண்க"
+
+msgid "Render Loop Enabled"
+msgstr "வழங்குதல் லூப் இயக்கப்பட்டது"
+
+msgid "VRAM Compression"
+msgstr "Vram சுருக்க"
+
+msgid "Import S3TC BPTC"
+msgstr "S3TC BPTC ஐ இறக்குமதி செய்க"
+
+msgid "Import ETC2 ASTC"
+msgstr "இறக்குமதி ETC2 ASTC"
+
+msgid "Lossless Compression"
+msgstr "இழப்பற்ற சுருக்க"
+
+msgid "Force PNG"
+msgstr "Prow png"
+
+msgid "WebP Compression"
+msgstr "வலை சுருக்க"
+
+msgid "Compression Method"
+msgstr "சுருக்க முறை"
+
+msgid "Lossless Compression Factor"
+msgstr "இழப்பற்ற சுருக்க காரணி"
+
+msgid "Time Rollover Secs"
+msgstr "டைம் ரோல்ஓவர் எச்.இ.சி."
+
+msgid "Use Physical Light Units"
+msgstr "உடல் ஒளி அலகுகளைப் பயன்படுத்துங்கள்"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "மென்மையான நிழல் வடிகட்டி தகுதி"
+
+msgid "Shadow Atlas"
+msgstr "நிழல் அட்லச்"
+
+msgid "Item Buffer Size"
+msgstr "பொருள் இடையக அளவு"
+
+msgid "Shader Compiler"
+msgstr "சேடர் கம்பைலர்"
+
+msgid "Shader Cache"
+msgstr "சேடர் கேச்"
+
+msgid "Use Zstd Compression"
+msgstr "ZSTD சுருக்கத்தைப் பயன்படுத்தவும்"
+
+msgid "Strip Debug"
+msgstr "துண்டு பிழைத்திருத்தம்"
+
+msgid "Reflections"
+msgstr "பிரதிபலிப்புகள்"
+
+msgid "Sky Reflections"
+msgstr "வான பிரதிபலிப்புகள்"
+
+msgid "Roughness Layers"
+msgstr "கரடுமுரடான அடுக்குகள்"
+
+msgid "Texture Array Reflections"
+msgstr "அமைப்பு வரிசை பிரதிபலிப்புகள்"
+
+msgid "GGX Samples"
+msgstr "சிசிஎக்ச் மாதிரிகள்"
+
+msgid "Fast Filter High Quality"
+msgstr "வேகமாக வடிகட்டி உயர் தகுதி"
+
+msgid "Reflection Atlas"
+msgstr "பிரதிபலிப்பு அட்லச்"
+
+msgid "Reflection Size"
+msgstr "பிரதிபலிப்பு அளவு"
+
+msgid "Reflection Count"
+msgstr "பிரதிபலிப்பு எண்ணிக்கை"
+
+msgid "GI"
+msgstr "ஐயா"
+
+msgid "Use Half Resolution"
+msgstr "அரை தெளிவுத்திறனைப் பயன்படுத்தவும்"
+
+msgid "Overrides"
+msgstr "மீறுகிறது"
+
+msgid "Force Vertex Shading"
+msgstr "ஃபோர்ச் வெர்டெக்ச் நிழல்"
+
+msgid "Force Lambert over Burley"
+msgstr "பர்லி மீது லம்பேர்ட்டை கட்டாயப்படுத்துங்கள்"
+
+msgid "Depth Prepass"
+msgstr "ஆழமான தயாரிப்பு"
+
+msgid "Disable for Vendors"
+msgstr "விற்பனையாளர்களுக்கு முடக்கு"
+
+msgid "Default Filters"
+msgstr "இயல்புநிலை வடிப்பான்கள்"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "அருகிலுள்ள MIPMAP வடிகட்டியைப் பயன்படுத்தவும்"
+
+msgid "Depth of Field"
+msgstr "புலத்தின் ஆழம்"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "புலம் பொக்கே வடிவத்தின் ஆழம்"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "புலம் பொக்கே தரத்தின் ஆழம்"
+
+msgid "Depth of Field Use Jitter"
+msgstr "புலத்தின் ஆழம் நடுக்கம் பயன்படுத்தவும்"
+
+msgid "Half Size"
+msgstr "அரை அளவு"
+
+msgid "Adaptive Target"
+msgstr "தகவமைப்பு இலக்கு"
+
+msgid "Blur Passes"
+msgstr "மங்கலானது"
+
+msgid "Fadeout From"
+msgstr "இருந்து மங்கலானது"
+
+msgid "Fadeout To"
+msgstr "Fadeout க்கு"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "திரை விண்வெளி கடினத்தன்மை வரம்பு"
+
+msgid "Decals"
+msgstr "டெக்கல்கள்"
+
+msgid "Light Projectors"
+msgstr "ஒளி ப்ரொசெக்டர்கள்"
+
+msgid "Occlusion Rays per Thread"
+msgstr "ஒரு நூலுக்கு மறைவு கதிர்கள்"
+
+msgid "Upscale Mode"
+msgstr "மேல்தட்டு பயன்முறை"
+
+msgid "Screen Space Reflection"
+msgstr "திரை விண்வெளி பிரதிபலிப்பு"
+
+msgid "Roughness Quality"
+msgstr "கடினத்தன்மை தகுதி"
+
+msgid "Subsurface Scattering Quality"
+msgstr "மேற்பரப்பு சிதறல் தகுதி"
+
+msgid "Subsurface Scattering Scale"
+msgstr "மேற்பரப்பு சிதறல் அளவு"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "மேற்பரப்பு சிதறல் ஆழம்"
+
+msgid "Global Shader Variables"
+msgstr "உலகளாவிய சேடர் மாறிகள்"
+
+msgid "Buffer Size"
+msgstr "இடையக அளவு"
+
+msgid "Probe Capture"
+msgstr "ஆய்வு பிடிப்பு"
+
+msgid "Update Speed"
+msgstr "புதுப்பிப்பு விரைவு"
+
+msgid "Primitive Meshes"
+msgstr "பழமையான மெச்கள்"
+
+msgid "Texel Size"
+msgstr "டெக்செல் அளவு"
+
+msgid "Probe Ray Count"
+msgstr "கதிர் எண்ணிக்கை ஆய்வு"
+
+msgid "Frames to Converge"
+msgstr "ஒன்றிணைக்க பிரேம்கள்"
+
+msgid "Frames to Update Lights"
+msgstr "விளக்குகளைப் புதுப்பிக்க பிரேம்கள்"
+
+msgid "Volume Size"
+msgstr "தொகுதி அளவு"
+
+msgid "Volume Depth"
+msgstr "தொகுதி ஆழம்"
+
+msgid "Spatial Indexer"
+msgstr "இடஞ்சார்ந்த குறியீட்டாளர்"
+
+msgid "Update Iterations per Frame"
+msgstr "ஒரு சட்டகத்திற்கு மறு செய்கைகளைப் புதுப்பிக்கவும்"
+
+msgid "Threaded Cull Minimum Instances"
+msgstr "திரிக்கப்பட்ட குல் குறைந்தபட்ச நிகழ்வுகள்"
+
+msgid "Cluster Builder"
+msgstr "கிளச்டர் பில்டர்"
+
+msgid "Max Clustered Elements"
+msgstr "அதிகபட்ச கொத்து கூறுகள்"
+
+msgid "OpenGL"
+msgstr "Opengl"
+
+msgid "Max Renderable Elements"
+msgstr "அதிகபட்சம் வழங்கக்கூடிய கூறுகள்"
+
+msgid "Max Renderable Lights"
+msgstr "அதிகபட்ச ரெண்டரபிள் விளக்குகள்"
+
+msgid "Max Lights per Object"
+msgstr "ஒரு பொருளுக்கு அதிகபட்ச விளக்குகள்"
+
+msgid "Shaders"
+msgstr "சேடர்ச்"
+
+msgid "Shader Language"
+msgstr "சேடர் மொழி"
+
+msgid "Treat Warnings as Errors"
+msgstr "எச்சரிக்கைகளை பிழைகளாகக் கருதுங்கள்"
+
+msgid "Has Tracking Data"
+msgstr "கண்காணிப்பு தரவைக் கொண்டுள்ளது"
+
+msgid "Body Flags"
+msgstr "உடல் கொடிகள்"
+
+msgid "Blend Shapes"
+msgstr "கலப்பு வடிவங்கள்"
+
+msgid "Hand Tracking Source"
+msgstr "கை கண்காணிப்பு மூல"
+
+msgid "Is Primary"
+msgstr "முதன்மை"
+
+msgid "Play Area Mode"
+msgstr "பகுதி பயன்முறையை விளையாடுங்கள்"
+
+msgid "AR"
+msgstr "Ar"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "நங்கூரம் கண்டறிதல் இயக்கப்பட்டது"
+
+msgid "Tracking Confidence"
+msgstr "நம்பிக்கையை கண்காணித்தல்"
+
+msgid "VRS Min Radius"
+msgstr "வி.ஆர்.எச் மணித்துளி ஆரம்"
+
+msgid "VRS Strength"
+msgstr "வி.ஆர்.எச் வலிமை"
+
+msgid "World Origin"
+msgstr "உலக தோற்றம்"
+
+msgid "Primary Interface"
+msgstr "முதன்மை இடைமுகம்"

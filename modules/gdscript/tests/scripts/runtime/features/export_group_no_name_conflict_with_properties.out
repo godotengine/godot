@@ -1,0 +1,8 @@
+GDTEST_OK
+Not shadowed: Resource
+var test_1: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+@export_category("test_1")
+  hint=NONE hint_string="" usage=CATEGORY class_name=&""
+var test_2: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""

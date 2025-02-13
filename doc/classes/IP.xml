@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IP" inherits="Object" keywords="dns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Internet protocol (IP) support functions such as DNS resolution.
+	</brief_description>
+	<description>
+		IP contains support functions for the Internet Protocol (IP). TCP/IP support is in different classes (see [StreamPeerTCP] and [TCPServer]). IP provides DNS hostname resolution support, both blocking and threaded.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_cache">
+			<return type="void" />
+			<param index="0" name="hostname" type="String" default="&quot;&quot;" />
+			<description>
+				Removes all of a [param hostname]'s cached references. If no [param hostname] is given, all cached IP addresses are removed.
+			</description>
+		</method>
+		<method name="erase_resolve_item">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Removes a given item [param id] from the queue. This should be used to free a queue after it has completed to enable more queries to happen.
+			</description>
+		</method>
+		<method name="get_local_addresses" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all the user's current IPv4 and IPv6 addresses as an array.
+			</description>
+		</method>
+		<method name="get_local_interfaces" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns all network adapters as an array.
+				Each adapter is a dictionary of the form:
+				[codeblock]
+				{
+				    "index": "1", # Interface index.
+				    "name": "eth0", # Interface name.
+				    "friendly": "Ethernet One", # A friendly name (might be empty).
+				    "addresses": ["192.168.1.101"], # An array of IP addresses associated to this interface.
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_resolve_item_address" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns a queued hostname's IP address, given its queue [param id]. Returns an empty string on error or if resolution hasn't happened yet (see [method get_resolve_item_status]).
+			</description>
+		</method>
+		<method name="get_resolve_item_addresses" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns resolved addresses, or an empty array if an error happened or resolution didn't happen yet (see [method get_resolve_item_status]).
+			</description>
+		</method>
+		<method name="get_resolve_item_status" qualifiers="const">
+			<return type="int" enum="IP.ResolverStatus" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns a queued hostname's status as a [enum ResolverStatus] constant, given its queue [param id].
+			</description>
+		</method>
+		<method name="resolve_hostname" keywords="dns">
+			<return type="String" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<description>
+				Returns a given hostname's IPv4 or IPv6 address when resolved (blocking-type method). The address type returned depends on the [enum Type] constant given as [param ip_type].
+			</description>
+		</method>
+		<method name="resolve_hostname_addresses">
+			<return type="PackedStringArray" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<description>
+				Resolves a given hostname in a blocking way. Addresses are returned as an [Array] of IPv4 or IPv6 addresses depending on [param ip_type].
+			</description>
+		</method>
+		<method name="resolve_hostname_queue_item">
+			<return type="int" />
+			<param index="0" name="host" type="String" />
+			<param index="1" name="ip_type" type="int" enum="IP.Type" default="3" />
+			<description>
+				Creates a queue item to resolve a hostname to an IPv4 or IPv6 address depending on the [enum Type] constant given as [param ip_type]. Returns the queue ID if successful, or [constant RESOLVER_INVALID_ID] on error.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="RESOLVER_STATUS_NONE" value="0" enum="ResolverStatus">
+			DNS hostname resolver status: No status.
+		</constant>
+		<constant name="RESOLVER_STATUS_WAITING" value="1" enum="ResolverStatus">
+			DNS hostname resolver status: Waiting.
+		</constant>
+		<constant name="RESOLVER_STATUS_DONE" value="2" enum="ResolverStatus">
+			DNS hostname resolver status: Done.
+		</constant>
+		<constant name="RESOLVER_STATUS_ERROR" value="3" enum="ResolverStatus">
+			DNS hostname resolver status: Error.
+		</constant>
+		<constant name="RESOLVER_MAX_QUERIES" value="256">
+			Maximum number of concurrent DNS resolver queries allowed, [constant RESOLVER_INVALID_ID] is returned if exceeded.
+		</constant>
+		<constant name="RESOLVER_INVALID_ID" value="-1">
+			Invalid ID constant. Returned if [constant RESOLVER_MAX_QUERIES] is exceeded.
+		</constant>
+		<constant name="TYPE_NONE" value="0" enum="Type">
+			Address type: None.
+		</constant>
+		<constant name="TYPE_IPV4" value="1" enum="Type">
+			Address type: Internet protocol version 4 (IPv4).
+		</constant>
+		<constant name="TYPE_IPV6" value="2" enum="Type">
+			Address type: Internet protocol version 6 (IPv6).
+		</constant>
+		<constant name="TYPE_ANY" value="3" enum="Type">
+			Address type: Any.
+		</constant>
+	</constants>
+</class>

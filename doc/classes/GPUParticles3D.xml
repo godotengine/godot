@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticles3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D particle emitter.
+	</brief_description>
+	<description>
+		3D particle node used to create a variety of particle systems and effects. [GPUParticles3D] features an emitter that generates some number of particles at a given rate.
+		Use [member process_material] to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
+	</description>
+	<tutorials>
+		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
+		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/performance/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+	</tutorials>
+	<methods>
+		<method name="capture_aabb" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
+			</description>
+		</method>
+		<method name="convert_from_particles">
+			<return type="void" />
+			<param index="0" name="particles" type="Node" />
+			<description>
+				Sets this node's properties to match a given [CPUParticles3D] node.
+			</description>
+		</method>
+		<method name="emit_particle">
+			<return type="void" />
+			<param index="0" name="xform" type="Transform3D" />
+			<param index="1" name="velocity" type="Vector3" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="custom" type="Color" />
+			<param index="4" name="flags" type="int" />
+			<description>
+				Emits a single particle. Whether [param xform], [param velocity], [param color] and [param custom] are applied depends on the value of [param flags]. See [enum EmitFlags].
+				The default ParticleProcessMaterial will overwrite [param color] and use the contents of [param custom] as [code](rotation, age, animation, lifetime)[/code].
+				[b]Note:[/b] [method emit_particle] is only supported on the Forward+ and Mobile rendering methods, not Compatibility.
+			</description>
+		</method>
+		<method name="get_draw_pass_mesh" qualifiers="const">
+			<return type="Mesh" />
+			<param index="0" name="pass" type="int" />
+			<description>
+				Returns the [Mesh] that is drawn at index [param pass].
+			</description>
+		</method>
+		<method name="request_particles_process">
+			<return type="void" />
+			<param index="0" name="process_time" type="float" />
+			<description>
+				Requests the particles to process for extra process time during a single frame.
+				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
+			</description>
+		</method>
+		<method name="restart">
+			<return type="void" />
+			<param index="0" name="keep_seed" type="bool" default="false" />
+			<description>
+				Restarts the particle emission cycle, clearing existing particles. To avoid particles vanishing from the viewport, wait for the [signal finished] signal before calling.
+				[b]Note:[/b] The [signal finished] signal is only emitted by [member one_shot] emitters.
+				If [param keep_seed] is [code]true[/code], the current random seed will be preserved. Useful for seeking and playback.
+			</description>
+		</method>
+		<method name="set_draw_pass_mesh">
+			<return type="void" />
+			<param index="0" name="pass" type="int" />
+			<param index="1" name="mesh" type="Mesh" />
+			<description>
+				Sets the [Mesh] that is drawn at index [param pass].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
+			The number of particles to emit in one emission cycle. The effective emission rate is [code](amount * amount_ratio) / lifetime[/code] particles per second. Higher values will increase GPU requirements, even if not all particles are visible at a given time or if [member amount_ratio] is decreased.
+			[b]Note:[/b] Changing this value will cause the particle system to restart. To avoid this, change [member amount_ratio] instead.
+		</member>
+		<member name="amount_ratio" type="float" setter="set_amount_ratio" getter="get_amount_ratio" default="1.0">
+			The ratio of particles that should actually be emitted. If set to a value lower than [code]1.0[/code], this will set the amount of emitted particles throughout the lifetime to [code]amount * amount_ratio[/code]. Unlike changing [member amount], changing [member amount_ratio] while emitting does not affect already-emitted particles and doesn't cause the particle system to restart. [member amount_ratio] can be used to create effects that make the number of emitted particles vary over time.
+			[b]Note:[/b] Reducing the [member amount_ratio] has no performance benefit, since resources need to be allocated and processed for the total [member amount] of particles regardless of the [member amount_ratio]. If you don't intend to change the number of particles emitted while the particles are emitting, make sure [member amount_ratio] is set to [code]1[/code] and change [member amount] to your liking instead.
+		</member>
+		<member name="collision_base_size" type="float" setter="set_collision_base_size" getter="get_collision_base_size" default="0.01">
+			The base diameter for particle collision in meters. If particles appear to sink into the ground when colliding, increase this value. If particles appear to float when colliding, decrease this value. Only effective if [member ParticleProcessMaterial.collision_mode] is [constant ParticleProcessMaterial.COLLISION_RIGID] or [constant ParticleProcessMaterial.COLLISION_HIDE_ON_CONTACT].
+			[b]Note:[/b] Particles always have a spherical collision shape.
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles3D.DrawOrder" default="0">
+			Particle draw order. Uses [enum DrawOrder] values.
+			[b]Note:[/b] [constant DRAW_ORDER_INDEX] is the only option that supports motion vectors for effects like TAA. It is suggested to use this draw order if the particles are opaque to fix ghosting artifacts.
+		</member>
+		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the first draw pass.
+		</member>
+		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the second draw pass.
+		</member>
+		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the third draw pass.
+		</member>
+		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
+			[Mesh] that is drawn for the fourth draw pass.
+		</member>
+		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" default="1">
+			The number of draw passes when rendering particles.
+		</member>
+		<member name="draw_skin" type="Skin" setter="set_skin" getter="get_skin">
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
+			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle unless all active particles have finished processing. Use the [signal finished] signal to be notified once all active particles finish processing.
+			[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the [signal finished] signal during which setting this to [code]true[/code] will not restart the emission cycle.
+			[b]Tip:[/b] If your [member one_shot] emitter needs to immediately restart emitting particles once [signal finished] signal is received, consider calling [method restart] instead of setting [member emitting].
+		</member>
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
+			Time ratio between each emission. If [code]0[/code], particles are emitted continuously. If [code]1[/code], all particles are emitted simultaneously.
+		</member>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="30">
+			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
+		</member>
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
+			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
+		</member>
+		<member name="interp_to_end" type="float" setter="set_interp_to_end" getter="get_interp_to_end" default="0.0">
+			Causes all the particles in this node to interpolate towards the end of their lifetime.
+			[b]Note:[/b] This only works when used with a [ParticleProcessMaterial]. It needs to be manually implemented for custom process shaders.
+		</member>
+		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
+			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
+			The amount of time each particle will exist (in seconds). The effective emission rate is [code](amount * amount_ratio) / lifetime[/code] particles per second.
+		</member>
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="false">
+			If [code]true[/code], particles use the parent node's coordinate space (known as local coordinates). This will cause particles to move and rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated. If [code]false[/code], particles use global coordinates; they will not move or rotate along the [GPUParticles3D] node (and its parents) when it is moved or rotated.
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
+			If [code]true[/code], only the number of particles equal to [member amount] will be emitted.
+		</member>
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
+			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.
+			[b]Note:[/b] This can be very expensive if set to a high number as it requires running the particle shader a number of times equal to the [member fixed_fps] (or 30, if [member fixed_fps] is 0) for every second. In extreme cases it can even lead to a GPU crash due to the volume of work done in a single frame.
+		</member>
+		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
+			[Material] for processing particles. Can be a [ParticleProcessMaterial] or a [ShaderMaterial].
+		</member>
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
+			Emission randomness ratio.
+		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Sets the random seed used by the particle system. Only effective if [member use_fixed_seed] is [code]true[/code].
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			Speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
+		</member>
+		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
+			Path to another [GPUParticles3D] node that will be used as a subemitter (see [member ParticleProcessMaterial.sub_emitter_mode]). Subemitters can be used to achieve effects such as fireworks, sparks on collision, bubbles popping into water drops, and more.
+			[b]Note:[/b] When [member sub_emitter] is set, the target [GPUParticles3D] node will no longer emit particles on its own.
+		</member>
+		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
+			If [code]true[/code], enables particle trails using a mesh skinning system. Designed to work with [RibbonTrailMesh] and [TubeTrailMesh].
+			[b]Note:[/b] [member BaseMaterial3D.use_particle_trails] must also be enabled on the particle mesh's material. Otherwise, setting [member trail_enabled] to [code]true[/code] will have no effect.
+			[b]Note:[/b] Unlike [GPUParticles2D], the number of trail sections and subdivisions is set in the [RibbonTrailMesh] or the [TubeTrailMesh]'s properties.
+		</member>
+		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
+			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].
+		</member>
+		<member name="transform_align" type="int" setter="set_transform_align" getter="get_transform_align" enum="GPUParticles3D.TransformAlign" default="0">
+		</member>
+		<member name="use_fixed_seed" type="bool" setter="set_use_fixed_seed" getter="get_use_fixed_seed" default="false">
+			If [code]true[/code], particles will use the same seed for every simulation using the seed defined in [member seed]. This is useful for situations where the visual outcome should be consistent across replays, for example when using Movie Maker mode.
+		</member>
+		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB(-4, -4, -4, 8, 8, 8)">
+			The [AABB] that determines the node's region which needs to be visible on screen for the particle system to be active. [member GeometryInstance3D.extra_cull_margin] is added on each of the AABB's axes. Particle collisions and attraction will only occur within this area.
+			Grow the box if particles suddenly appear/disappear when the node enters/exits the screen. The [AABB] can be grown via code or with the [b]Particles → Generate AABB[/b] editor tool.
+			[b]Note:[/b] [member visibility_aabb] is overridden by [member GeometryInstance3D.custom_aabb] if that property is set to a non-default value.
+		</member>
+	</members>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when all active particles have finished processing. To immediately restart the emission cycle, call [method restart].
+				This signal is never emitted when [member one_shot] is disabled, as particles will be emitted and processed continuously.
+				[b]Note:[/b] For [member one_shot] emitters, due to the particles being computed on the GPU, there may be a short period after receiving the signal during which setting [member emitting] to [code]true[/code] will not restart the emission cycle. This delay is avoided by instead calling [method restart].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
+			Particles are drawn in the order emitted.
+		</constant>
+		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
+		</constant>
+		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
+			Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
+		</constant>
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="3" enum="DrawOrder">
+			Particles are drawn in order of depth.
+		</constant>
+		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
+			Particle starts at the specified position.
+		</constant>
+		<constant name="EMIT_FLAG_ROTATION_SCALE" value="2" enum="EmitFlags">
+			Particle starts with specified rotation and scale.
+		</constant>
+		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
+			Particle starts with the specified velocity vector, which defines the emission direction and speed.
+		</constant>
+		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
+			Particle starts with specified color.
+		</constant>
+		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
+			Particle starts with specified [code]CUSTOM[/code] data.
+		</constant>
+		<constant name="MAX_DRAW_PASSES" value="4">
+			Maximum number of draw passes supported.
+		</constant>
+		<constant name="TRANSFORM_ALIGN_DISABLED" value="0" enum="TransformAlign">
+		</constant>
+		<constant name="TRANSFORM_ALIGN_Z_BILLBOARD" value="1" enum="TransformAlign">
+		</constant>
+		<constant name="TRANSFORM_ALIGN_Y_TO_VELOCITY" value="2" enum="TransformAlign">
+		</constant>
+		<constant name="TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY" value="3" enum="TransformAlign">
+		</constant>
+	</constants>
+</class>

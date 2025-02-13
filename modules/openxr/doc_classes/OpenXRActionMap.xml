@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRActionMap" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Collection of [OpenXRActionSet] and [OpenXRInteractionProfile] resources for the OpenXR module.
+	</brief_description>
+	<description>
+		OpenXR uses an action system similar to Godots Input map system to bind inputs and outputs on various types of XR controllers to named actions. OpenXR specifies more detail on these inputs and outputs than Godot supports.
+		Another important distinction is that OpenXR offers no control over these bindings. The bindings we register are suggestions, it is up to the XR runtime to offer users the ability to change these bindings. This allows the XR runtime to fill in the gaps if new hardware becomes available.
+		The action map therefore needs to be loaded at startup and can't be changed afterwards. This resource is a container for the entire action map.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_action_set">
+			<return type="void" />
+			<param index="0" name="action_set" type="OpenXRActionSet" />
+			<description>
+				Add an action set.
+			</description>
+		</method>
+		<method name="add_interaction_profile">
+			<return type="void" />
+			<param index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
+			<description>
+				Add an interaction profile.
+			</description>
+		</method>
+		<method name="create_default_action_sets">
+			<return type="void" />
+			<description>
+				Setup this action set with our default actions.
+			</description>
+		</method>
+		<method name="find_action_set" qualifiers="const">
+			<return type="OpenXRActionSet" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Retrieve an action set by name.
+			</description>
+		</method>
+		<method name="find_interaction_profile" qualifiers="const">
+			<return type="OpenXRInteractionProfile" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Find an interaction profile by its name (path).
+			</description>
+		</method>
+		<method name="get_action_set" qualifiers="const">
+			<return type="OpenXRActionSet" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Retrieve the action set at this index.
+			</description>
+		</method>
+		<method name="get_action_set_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Retrieve the number of actions sets in our action map.
+			</description>
+		</method>
+		<method name="get_interaction_profile" qualifiers="const">
+			<return type="OpenXRInteractionProfile" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Get the interaction profile at this index.
+			</description>
+		</method>
+		<method name="get_interaction_profile_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Retrieve the number of interaction profiles in our action map.
+			</description>
+		</method>
+		<method name="remove_action_set">
+			<return type="void" />
+			<param index="0" name="action_set" type="OpenXRActionSet" />
+			<description>
+				Remove an action set.
+			</description>
+		</method>
+		<method name="remove_interaction_profile">
+			<return type="void" />
+			<param index="0" name="interaction_profile" type="OpenXRInteractionProfile" />
+			<description>
+				Remove an interaction profile.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="action_sets" type="Array" setter="set_action_sets" getter="get_action_sets" default="[]">
+			Collection of [OpenXRActionSet]s that are part of this action map.
+		</member>
+		<member name="interaction_profiles" type="Array" setter="set_interaction_profiles" getter="get_interaction_profiles" default="[]">
+			Collection of [OpenXRInteractionProfile]s that are part of this action map.
+		</member>
+	</members>
+</class>

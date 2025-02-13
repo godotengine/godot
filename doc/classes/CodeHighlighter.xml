@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CodeHighlighter" inherits="SyntaxHighlighter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A syntax highlighter intended for code.
+	</brief_description>
+	<description>
+		By adjusting various properties of this resource, you can change the colors of strings, comments, numbers, and other text patterns inside a [TextEdit] control.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_color_region">
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<param index="1" name="end_key" type="String" />
+			<param index="2" name="color" type="Color" />
+			<param index="3" name="line_only" type="bool" default="false" />
+			<description>
+				Adds a color region (such as for comments or strings) from [param start_key] to [param end_key]. Both keys should be symbols, and [param start_key] must not be shared with other delimiters.
+				If [param line_only] is [code]true[/code] or [param end_key] is an empty [String], the region does not carry over to the next line.
+			</description>
+		</method>
+		<method name="add_keyword_color">
+			<return type="void" />
+			<param index="0" name="keyword" type="String" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the color for a keyword.
+				The keyword cannot contain any symbols except '_'.
+			</description>
+		</method>
+		<method name="add_member_keyword_color">
+			<return type="void" />
+			<param index="0" name="member_keyword" type="String" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the color for a member keyword.
+				The member keyword cannot contain any symbols except '_'.
+				It will not be highlighted if preceded by a '.'.
+			</description>
+		</method>
+		<method name="clear_color_regions">
+			<return type="void" />
+			<description>
+				Removes all color regions.
+			</description>
+		</method>
+		<method name="clear_keyword_colors">
+			<return type="void" />
+			<description>
+				Removes all keywords.
+			</description>
+		</method>
+		<method name="clear_member_keyword_colors">
+			<return type="void" />
+			<description>
+				Removes all member keywords.
+			</description>
+		</method>
+		<method name="get_keyword_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="keyword" type="String" />
+			<description>
+				Returns the color for a keyword.
+			</description>
+		</method>
+		<method name="get_member_keyword_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="member_keyword" type="String" />
+			<description>
+				Returns the color for a member keyword.
+			</description>
+		</method>
+		<method name="has_color_region" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="start_key" type="String" />
+			<description>
+				Returns [code]true[/code] if the start key exists, else [code]false[/code].
+			</description>
+		</method>
+		<method name="has_keyword_color" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="keyword" type="String" />
+			<description>
+				Returns [code]true[/code] if the keyword exists, else [code]false[/code].
+			</description>
+		</method>
+		<method name="has_member_keyword_color" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="member_keyword" type="String" />
+			<description>
+				Returns [code]true[/code] if the member keyword exists, else [code]false[/code].
+			</description>
+		</method>
+		<method name="remove_color_region">
+			<return type="void" />
+			<param index="0" name="start_key" type="String" />
+			<description>
+				Removes the color region that uses that start key.
+			</description>
+		</method>
+		<method name="remove_keyword_color">
+			<return type="void" />
+			<param index="0" name="keyword" type="String" />
+			<description>
+				Removes the keyword.
+			</description>
+		</method>
+		<method name="remove_member_keyword_color">
+			<return type="void" />
+			<param index="0" name="member_keyword" type="String" />
+			<description>
+				Removes the member keyword.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color_regions" type="Dictionary" setter="set_color_regions" getter="get_color_regions" default="{}">
+			Sets the color regions. All existing regions will be removed. The [Dictionary] key is the region start and end key, separated by a space. The value is the region color.
+		</member>
+		<member name="function_color" type="Color" setter="set_function_color" getter="get_function_color" default="Color(0, 0, 0, 1)">
+			Sets color for functions. A function is a non-keyword string followed by a '('.
+		</member>
+		<member name="keyword_colors" type="Dictionary" setter="set_keyword_colors" getter="get_keyword_colors" default="{}">
+			Sets the keyword colors. All existing keywords will be removed. The [Dictionary] key is the keyword. The value is the keyword color.
+		</member>
+		<member name="member_keyword_colors" type="Dictionary" setter="set_member_keyword_colors" getter="get_member_keyword_colors" default="{}">
+			Sets the member keyword colors. All existing member keyword will be removed. The [Dictionary] key is the member keyword. The value is the member keyword color.
+		</member>
+		<member name="member_variable_color" type="Color" setter="set_member_variable_color" getter="get_member_variable_color" default="Color(0, 0, 0, 1)">
+			Sets color for member variables. A member variable is non-keyword, non-function string proceeded with a '.'.
+		</member>
+		<member name="number_color" type="Color" setter="set_number_color" getter="get_number_color" default="Color(0, 0, 0, 1)">
+			Sets the color for numbers.
+		</member>
+		<member name="symbol_color" type="Color" setter="set_symbol_color" getter="get_symbol_color" default="Color(0, 0, 0, 1)">
+			Sets the color for symbols.
+		</member>
+	</members>
+</class>

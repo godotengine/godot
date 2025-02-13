@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeVectorFunc" inherits="VisualShaderNodeVectorBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A vector function to be used within the visual shader graph.
+	</brief_description>
+	<description>
+		A visual shader node able to perform different functions using vectors.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorFunc.Function" default="0">
+			The function to be performed. See [enum Function] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_NORMALIZE" value="0" enum="Function">
+			Normalizes the vector so that it has a length of [code]1[/code] but points in the same direction.
+		</constant>
+		<constant name="FUNC_SATURATE" value="1" enum="Function">
+			Clamps the value between [code]0.0[/code] and [code]1.0[/code].
+		</constant>
+		<constant name="FUNC_NEGATE" value="2" enum="Function">
+			Returns the opposite value of the parameter.
+		</constant>
+		<constant name="FUNC_RECIPROCAL" value="3" enum="Function">
+			Returns [code]1/vector[/code].
+		</constant>
+		<constant name="FUNC_ABS" value="4" enum="Function">
+			Returns the absolute value of the parameter.
+		</constant>
+		<constant name="FUNC_ACOS" value="5" enum="Function">
+			Returns the arc-cosine of the parameter.
+		</constant>
+		<constant name="FUNC_ACOSH" value="6" enum="Function">
+			Returns the inverse hyperbolic cosine of the parameter.
+		</constant>
+		<constant name="FUNC_ASIN" value="7" enum="Function">
+			Returns the arc-sine of the parameter.
+		</constant>
+		<constant name="FUNC_ASINH" value="8" enum="Function">
+			Returns the inverse hyperbolic sine of the parameter.
+		</constant>
+		<constant name="FUNC_ATAN" value="9" enum="Function">
+			Returns the arc-tangent of the parameter.
+		</constant>
+		<constant name="FUNC_ATANH" value="10" enum="Function">
+			Returns the inverse hyperbolic tangent of the parameter.
+		</constant>
+		<constant name="FUNC_CEIL" value="11" enum="Function">
+			Finds the nearest integer that is greater than or equal to the parameter.
+		</constant>
+		<constant name="FUNC_COS" value="12" enum="Function">
+			Returns the cosine of the parameter.
+		</constant>
+		<constant name="FUNC_COSH" value="13" enum="Function">
+			Returns the hyperbolic cosine of the parameter.
+		</constant>
+		<constant name="FUNC_DEGREES" value="14" enum="Function">
+			Converts a quantity in radians to degrees.
+		</constant>
+		<constant name="FUNC_EXP" value="15" enum="Function">
+			Base-e Exponential.
+		</constant>
+		<constant name="FUNC_EXP2" value="16" enum="Function">
+			Base-2 Exponential.
+		</constant>
+		<constant name="FUNC_FLOOR" value="17" enum="Function">
+			Finds the nearest integer less than or equal to the parameter.
+		</constant>
+		<constant name="FUNC_FRACT" value="18" enum="Function">
+			Computes the fractional part of the argument.
+		</constant>
+		<constant name="FUNC_INVERSE_SQRT" value="19" enum="Function">
+			Returns the inverse of the square root of the parameter.
+		</constant>
+		<constant name="FUNC_LOG" value="20" enum="Function">
+			Natural logarithm.
+		</constant>
+		<constant name="FUNC_LOG2" value="21" enum="Function">
+			Base-2 logarithm.
+		</constant>
+		<constant name="FUNC_RADIANS" value="22" enum="Function">
+			Converts a quantity in degrees to radians.
+		</constant>
+		<constant name="FUNC_ROUND" value="23" enum="Function">
+			Finds the nearest integer to the parameter.
+		</constant>
+		<constant name="FUNC_ROUNDEVEN" value="24" enum="Function">
+			Finds the nearest even integer to the parameter.
+		</constant>
+		<constant name="FUNC_SIGN" value="25" enum="Function">
+			Extracts the sign of the parameter, i.e. returns [code]-1[/code] if the parameter is negative, [code]1[/code] if it's positive and [code]0[/code] otherwise.
+		</constant>
+		<constant name="FUNC_SIN" value="26" enum="Function">
+			Returns the sine of the parameter.
+		</constant>
+		<constant name="FUNC_SINH" value="27" enum="Function">
+			Returns the hyperbolic sine of the parameter.
+		</constant>
+		<constant name="FUNC_SQRT" value="28" enum="Function">
+			Returns the square root of the parameter.
+		</constant>
+		<constant name="FUNC_TAN" value="29" enum="Function">
+			Returns the tangent of the parameter.
+		</constant>
+		<constant name="FUNC_TANH" value="30" enum="Function">
+			Returns the hyperbolic tangent of the parameter.
+		</constant>
+		<constant name="FUNC_TRUNC" value="31" enum="Function">
+			Returns a value equal to the nearest integer to the parameter whose absolute value is not larger than the absolute value of the parameter.
+		</constant>
+		<constant name="FUNC_ONEMINUS" value="32" enum="Function">
+			Returns [code]1.0 - vector[/code].
+		</constant>
+		<constant name="FUNC_MAX" value="33" enum="Function">
+			Represents the size of the [enum Function] enum.
+		</constant>
+	</constants>
+</class>

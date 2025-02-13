@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDExtension" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A native library for GDExtension.
+	</brief_description>
+	<description>
+		The [GDExtension] resource type represents a [url=https://en.wikipedia.org/wiki/Shared_library]shared library[/url] which can expand the functionality of the engine. The [GDExtensionManager] singleton is responsible for loading, reloading, and unloading [GDExtension] resources.
+		[b]Note:[/b] GDExtension itself is not a scripting language and has no relation to [GDScript] resources.
+	</description>
+	<tutorials>
+		<link title="GDExtension overview">$DOCS_URL/tutorials/scripting/gdextension/what_is_gdextension.html</link>
+		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/gdextension/gdextension_cpp_example.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_minimum_library_initialization_level" qualifiers="const">
+			<return type="int" enum="GDExtension.InitializationLevel" />
+			<description>
+				Returns the lowest level required for this extension to be properly initialized (see the [enum InitializationLevel] enum).
+			</description>
+		</method>
+		<method name="is_library_open" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this extension's library has been opened.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="INITIALIZATION_LEVEL_CORE" value="0" enum="InitializationLevel">
+			The library is initialized at the same time as the core features of the engine.
+		</constant>
+		<constant name="INITIALIZATION_LEVEL_SERVERS" value="1" enum="InitializationLevel">
+			The library is initialized at the same time as the engine's servers (such as [RenderingServer] or [PhysicsServer3D]).
+		</constant>
+		<constant name="INITIALIZATION_LEVEL_SCENE" value="2" enum="InitializationLevel">
+			The library is initialized at the same time as the engine's scene-related classes.
+		</constant>
+		<constant name="INITIALIZATION_LEVEL_EDITOR" value="3" enum="InitializationLevel">
+			The library is initialized at the same time as the engine's editor classes. Only happens when loading the GDExtension in the editor.
+		</constant>
+	</constants>
+</class>

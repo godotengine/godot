@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedByteArray" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A packed array of bytes.
+	</brief_description>
+	<description>
+		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
+		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="PackedByteArray">
+			<return type="PackedByteArray" />
+			<description>
+				Constructs an empty [PackedByteArray].
+			</description>
+		</constructor>
+		<constructor name="PackedByteArray">
+			<return type="PackedByteArray" />
+			<param index="0" name="from" type="PackedByteArray" />
+			<description>
+				Constructs a [PackedByteArray] as a copy of the given [PackedByteArray].
+			</description>
+		</constructor>
+		<constructor name="PackedByteArray">
+			<return type="PackedByteArray" />
+			<param index="0" name="from" type="Array" />
+			<description>
+				Constructs a new [PackedByteArray]. Optionally, you can pass in a generic [Array] that will be converted.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="append">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void" />
+			<param index="0" name="array" type="PackedByteArray" />
+			<description>
+				Appends a [PackedByteArray] at the end of this array.
+			</description>
+		</method>
+		<method name="bsearch">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="before" type="bool" default="true" />
+			<description>
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
+			</description>
+		</method>
+		<method name="compress" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="compression_mode" type="int" default="0" />
+			<description>
+				Returns a new [PackedByteArray] with the data compressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants.
+			</description>
+		</method>
+		<method name="count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Returns the number of times an element is in the array.
+			</description>
+		</method>
+		<method name="decode_double" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_float" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_half" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit floating-point number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0.0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_s8" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 8-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_s16" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_s32" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_s64" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit signed integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_u8" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 8-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_u16" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 16-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_u32" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 32-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_u64" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<description>
+				Decodes a 64-bit unsigned integer number from the bytes starting at [param byte_offset]. Fails if the byte count is insufficient. Returns [code]0[/code] if a valid number can't be decoded.
+			</description>
+		</method>
+		<method name="decode_var" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
+			<description>
+				Decodes a [Variant] from the bytes starting at [param byte_offset]. Returns [code]null[/code] if a valid variant can't be decoded or the value is [Object]-derived and [param allow_objects] is [code]false[/code].
+			</description>
+		</method>
+		<method name="decode_var_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
+			<description>
+				Decodes a size of a [Variant] from the bytes starting at [param byte_offset]. Requires at least 4 bytes of data starting at the offset, otherwise fails.
+			</description>
+		</method>
+		<method name="decompress" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer_size" type="int" />
+			<param index="1" name="compression_mode" type="int" default="0" />
+			<description>
+				Returns a new [PackedByteArray] with the data decompressed. Set [param buffer_size] to the size of the uncompressed data. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants.
+				[b]Note:[/b] Decompression is not guaranteed to work with data not compressed by Godot, for example if data compressed with the deflate compression mode lacks a checksum or header.
+			</description>
+		</method>
+		<method name="decompress_dynamic" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="max_output_size" type="int" />
+			<param index="1" name="compression_mode" type="int" default="0" />
+			<description>
+				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum FileAccess.CompressionMode]'s constants. [b]This method only accepts brotli, gzip, and deflate compression modes.[/b]
+				This method is potentially slower than [method decompress], as it may have to re-allocate its output buffer multiple times while decompressing, whereas [method decompress] knows it's output buffer size from the beginning.
+				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [param max_output_size]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
+				[b]Note:[/b] Decompression is not guaranteed to work with data not compressed by Godot, for example if data compressed with the deflate compression mode lacks a checksum or header.
+			</description>
+		</method>
+		<method name="duplicate">
+			<return type="PackedByteArray" />
+			<description>
+				Creates a copy of the array, and returns it.
+			</description>
+		</method>
+		<method name="encode_double">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 64-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of allocated space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_float">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 32-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_half">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Encodes a 16-bit floating-point number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_s8">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 8-bit signed integer number (signed byte) at the index of [param byte_offset] bytes. The array must have at least 1 byte of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_s16">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 16-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_s32">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 32-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_s64">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 64-bit signed integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_u8">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 8-bit unsigned integer number (byte) at the index of [param byte_offset] bytes. The array must have at least 1 byte of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_u16">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 16-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 2 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_u32">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 32-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 4 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_u64">
+			<return type="void" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Encodes a 64-bit unsigned integer number as bytes at the index of [param byte_offset] bytes. The array must have at least 8 bytes of space, starting at the offset.
+			</description>
+		</method>
+		<method name="encode_var">
+			<return type="int" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="allow_objects" type="bool" default="false" />
+			<description>
+				Encodes a [Variant] at the index of [param byte_offset] bytes. A sufficient space must be allocated, depending on the encoded variant's size. If [param allow_objects] is [code]false[/code], [Object]-derived values are not permitted and will instead be serialized as ID-only.
+			</description>
+		</method>
+		<method name="fill">
+			<return type="void" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Assigns the given value to all elements in the array. This can typically be used together with [method resize] to create an array with a given size and initialized elements.
+			</description>
+		</method>
+		<method name="find" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
+		<method name="get" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the byte at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
+		<method name="get_string_from_ascii" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts ASCII/Latin-1 encoded array to [String]. Fast alternative to [method get_string_from_utf8] if the content is ASCII/Latin-1 only. Unlike the UTF-8 function this function maps every byte to a character in the array. Multibyte sequences will not be interpreted correctly. For parsing user input always use [method get_string_from_utf8]. This is the inverse of [method String.to_ascii_buffer].
+			</description>
+		</method>
+		<method name="get_string_from_utf8" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string. This is the inverse of [method String.to_utf8_buffer].
+			</description>
+		</method>
+		<method name="get_string_from_utf16" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string. This is the inverse of [method String.to_utf16_buffer].
+			</description>
+		</method>
+		<method name="get_string_from_utf32" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string. This is the inverse of [method String.to_utf32_buffer].
+			</description>
+		</method>
+		<method name="get_string_from_wchar" qualifiers="const">
+			<return type="String" />
+			<description>
+				Converts wide character ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded array to [String]. Returns empty string if source array is not valid wide string. This is the inverse of [method String.to_wchar_buffer].
+			</description>
+		</method>
+		<method name="has" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Returns [code]true[/code] if the array contains [param value].
+			</description>
+		</method>
+		<method name="has_encoded_var" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="byte_offset" type="int" />
+			<param index="1" name="allow_objects" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if a valid [Variant] value can be decoded at the [param byte_offset]. Returns [code]false[/code] otherwise or when the value is [Object]-derived and [param allow_objects] is [code]false[/code].
+			</description>
+		</method>
+		<method name="hex_encode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a hexadecimal representation of this array as a [String].
+				[codeblocks]
+				[gdscript]
+				var array = PackedByteArray([11, 46, 255])
+				print(array.hex_encode()) # Prints "0b2eff"
+				[/gdscript]
+				[csharp]
+				byte[] array = [11, 46, 255];
+				GD.Print(array.HexEncode()); // Prints "0b2eff"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int" />
+			<param index="0" name="at_index" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="bool" />
+			<param index="0" name="value" type="int" />
+			<description>
+				Appends an element at the end of the array.
+			</description>
+		</method>
+		<method name="remove_at">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" />
+			<param index="0" name="new_size" type="int" />
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size. Calling [method resize] once and assigning the new values is faster than adding new elements one by one.
+			</description>
+		</method>
+		<method name="reverse">
+			<return type="void" />
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="rfind" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="int" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="value" type="int" />
+			<description>
+				Changes the byte at the given index.
+			</description>
+		</method>
+		<method name="size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="begin" type="int" />
+			<param index="1" name="end" type="int" default="2147483647" />
+			<description>
+				Returns the slice of the [PackedByteArray], from [param begin] (inclusive) to [param end] (exclusive), as a new [PackedByteArray].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void" />
+			<description>
+				Sorts the elements of the array in ascending order.
+			</description>
+		</method>
+		<method name="to_float32_array" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedFloat32Array], where each block of 4 bytes has been converted to a 32-bit float (C++ [code skip-lint]float[/code]).
+				The size of the input array must be a multiple of 4 (size of 32-bit float). The size of the new array will be [code]byte_array.size() / 4[/code].
+				If the original data can't be converted to 32-bit floats, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_float64_array" qualifiers="const">
+			<return type="PackedFloat64Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedFloat64Array], where each block of 8 bytes has been converted to a 64-bit float (C++ [code]double[/code], Godot [float]).
+				The size of the input array must be a multiple of 8 (size of 64-bit double). The size of the new array will be [code]byte_array.size() / 8[/code].
+				If the original data can't be converted to 64-bit floats, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_int32_array" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedInt32Array], where each block of 4 bytes has been converted to a signed 32-bit integer (C++ [code]int32_t[/code]).
+				The size of the input array must be a multiple of 4 (size of 32-bit integer). The size of the new array will be [code]byte_array.size() / 4[/code].
+				If the original data can't be converted to signed 32-bit integers, the resulting data is undefined.
+			</description>
+		</method>
+		<method name="to_int64_array" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns a copy of the data converted to a [PackedInt64Array], where each block of 8 bytes has been converted to a signed 64-bit integer (C++ [code]int64_t[/code], Godot [int]).
+				The size of the input array must be a multiple of 8 (size of 64-bit integer). The size of the new array will be [code]byte_array.size() / 8[/code].
+				If the original data can't be converted to signed 64-bit integers, the resulting data is undefined.
+			</description>
+		</method>
+	</methods>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedByteArray" />
+			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="PackedByteArray" />
+			<param index="0" name="right" type="PackedByteArray" />
+			<description>
+				Returns a new [PackedByteArray] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="PackedByteArray" />
+			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal bytes at the corresponding indices.
+			</description>
+		</operator>
+		<operator name="operator []">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the byte at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
+				Note that the byte is returned as a 64-bit [int].
+			</description>
+		</operator>
+	</operators>
+</class>

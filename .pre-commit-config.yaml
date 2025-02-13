@@ -1,0 +1,192 @@
+default_language_version:
+  python: python3
+
+exclude: |
+  (?x)^(
+    .*thirdparty/.*|
+    .*-so_wrap\.(h|c)|
+    platform/android/java/editor/src/main/java/com/android/.*|
+    platform/android/java/lib/src/com/google/.*
+  )$
+
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v19.1.3
+    hooks:
+      - id: clang-format
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
+        types_or: [text]
+        exclude: ^tests/python_build/.*
+      - id: clang-format
+        name: clang-format-glsl
+        files: \.glsl$
+        types_or: [text]
+        exclude: ^tests/python_build/.*
+        args: [-style=file:misc/utility/clang_format_glsl.yml]
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-tidy
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
+        args: [--fix, --quiet, --use-color]
+        types_or: [text]
+        exclude: ^tests/python_build/.*
+        additional_dependencies: [clang-tidy==19.1.0]
+        require_serial: true
+        stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: (\.py|SConstruct|SCsub)$
+        types_or: [text]
+      - id: ruff-format
+        files: (\.py|SConstruct|SCsub)$
+        types_or: [text]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: \.py$
+        types_or: [text]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        additional_dependencies: [tomli]
+
+  ### Requires Docker; look into alternative implementation.
+  # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
+  #   rev: 1.0.0
+  #   hooks:
+  #     - id: xmllint
+  #       language: docker
+  #       types_or: [text]
+  #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+  #       args: [--schema, doc/class.xsd]
+
+  - repo: local
+    hooks:
+      - id: make-rst
+        name: make-rst
+        language: python
+        entry: python doc/tools/make_rst.py
+        args: [doc/classes, modules, platform, --dry-run, --color]
+        pass_filenames: false
+        files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: doc-status
+        name: doc-status
+        language: python
+        entry: python doc/tools/doc_status.py
+        args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes, -c]
+        pass_filenames: false
+        files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: eslint
+        name: eslint
+        language: node
+        entry: eslint
+        files: ^(platform/web/js/|modules/|misc/dist/html/).*\.(js|html)$
+        args:
+          - --fix
+          - --no-warn-ignored
+          - --no-config-lookup
+          - --config
+          - platform/web/eslint.config.cjs
+        additional_dependencies:
+          - "@eslint/js@^9.3.0"
+          - "@html-eslint/eslint-plugin@^0.24.1"
+          - "@html-eslint/parser@^0.24.1"
+          - "@stylistic/eslint-plugin@^2.1.0"
+          - eslint@^9.3.0
+          - eslint-plugin-html@^8.1.1
+          - globals@^15.3.0
+          - espree@^10.0.1
+
+      - id: jsdoc
+        name: jsdoc
+        language: node
+        entry: jsdoc
+        files: ^platform/web/js/engine/(engine|config|features)\.js$
+        args:
+          - --template
+          - platform/web/js/jsdoc2rst/
+          - platform/web/js/engine/engine.js
+          - platform/web/js/engine/config.js
+          - platform/web/js/engine/features.js
+          - --destination
+          - ""
+          - -d
+          - dry-run
+        pass_filenames: false
+        additional_dependencies: [jsdoc@^4.0.3]
+
+      - id: svgo
+        name: svgo
+        language: node
+        entry: svgo
+        files: \.svg$
+        args: [--quiet, --config, misc/utility/svgo.config.mjs]
+        additional_dependencies: [svgo@3.3.2]
+
+      - id: copyright-headers
+        name: copyright-headers
+        language: python
+        entry: python misc/scripts/copyright_headers.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
+        exclude: |
+          (?x)^(
+            core/math/bvh_.*\.inc|
+            platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
+            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java|
+            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java|
+            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix\.java
+          )$
+
+      - id: header-guards
+        name: header-guards
+        language: python
+        entry: python misc/scripts/header_guards.py
+        files: \.(h|hpp|hh|hxx)$
+        exclude: ^.*/(dummy|thread|platform_config|platform_gl)\.h$
+
+      - id: file-format
+        name: file-format
+        language: python
+        entry: python misc/scripts/file_format.py
+        types_or: [text]
+        exclude: |
+          (?x)^(
+            .*\.test\.txt|
+            .*\.svg|
+            .*\.patch|
+            .*\.out|
+            modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines\.gd|
+            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.norun\.gd|
+            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.norun\.gd|
+            tests/data/.*\.bin
+          )$
+
+      - id: dotnet-format
+        name: dotnet-format
+        language: python
+        entry: python misc/scripts/dotnet_format.py
+        types_or: [c#]
+#
+# End of upstream Godot pre-commit hooks.
+#
+# Keep this separation to let downstream forks add their own hooks to this file,
+# without running into merge conflicts when rebasing on latest upstream.
+#
+# Start of downstream pre-commit hooks.
+#
+# This is still the "repo: local" scope, so new local hooks can be defined directly at this indentation:
+#     - id: new-local-hook
+# To add external repo hooks, bring the indentation back to:
+# - repo: my-remote-hook

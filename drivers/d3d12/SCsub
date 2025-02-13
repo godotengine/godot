@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import os
+from pathlib import Path
+
+import methods
+
+Import("env")
+
+env_d3d12_rdd = env.Clone()
+
+thirdparty_obj = []
+
+
+# DirectX Headers (must take precedence over Windows SDK's).
+
+env.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/directx"])
+env_d3d12_rdd.Prepend(CPPPATH=["#thirdparty/directx_headers/include/dxguids"])
+
+
+# Direct3D 12 Memory Allocator.
+
+env.Append(CPPPATH=["#thirdparty/d3d12ma"])
+env_d3d12_rdd.Append(CPPPATH=["#thirdparty/d3d12ma"])
+
+
+# Agility SDK.
+
+if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
+    env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_ENABLED"])
+    if env["agility_sdk_multiarch"]:
+        env_d3d12_rdd.Append(CPPDEFINES=["AGILITY_SDK_MULTIARCH_ENABLED"])
+
+
+# PIX.
+
+if env["use_pix"]:
+    env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
+    env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
+
+
+# Mesa (SPIR-V to DXIL functionality).
+
+mesa_dir = (env["mesa_libs"] + "/godot-mesa").replace("\\", "/")
+mesa_gen_dir = (env["mesa_libs"] + "/godot-mesa/generated").replace("\\", "/")
+mesa_absdir = Dir(mesa_dir).abspath
+mesa_gen_absdir = Dir(mesa_dir + "/generated").abspath
+
+custom_build_steps = [
+    [
+        "src/compiler",
+        "glsl/ir_expression_operation.py enum > %s/ir_expression_operation.h",
+        "ir_expression_operation.h",
+    ],
+    ["src/compiler/nir", "nir_builder_opcodes_h.py > %s/nir_builder_opcodes.h", "nir_builder_opcodes.h"],
+    ["src/compiler/nir", "nir_constant_expressions.py > %s/nir_constant_expressions.c", "nir_constant_expressions.c"],
+    ["src/compiler/nir", "nir_intrinsics_h.py --outdir %s", "nir_intrinsics.h"],
+    ["src/compiler/nir", "nir_intrinsics_c.py --outdir %s", "nir_intrinsics.c"],
+    ["src/compiler/nir", "nir_intrinsics_indices_h.py --outdir %s", "nir_intrinsics_indices.h"],
+    ["src/compiler/nir", "nir_opcodes_h.py > %s/nir_opcodes.h", "nir_opcodes.h"],
+    ["src/compiler/nir", "nir_opcodes_c.py > %s/nir_opcodes.c", "nir_opcodes.c"],
+    ["src/compiler/nir", "nir_opt_algebraic.py > %s/nir_opt_algebraic.c", "nir_opt_algebraic.c"],
+    ["src/compiler/spirv", "vtn_generator_ids_h.py spir-v.xml %s/vtn_generator_ids.h", "vtn_generator_ids.h"],
+    [
+        "src/microsoft/compiler",
+        "dxil_nir_algebraic.py -p ../../../src/compiler/nir > %s/dxil_nir_algebraic.c",
+        "dxil_nir_algebraic.c",
+    ],
+    ["src/util", "format_srgb.py > %s/format_srgb.c", "format_srgb.c"],
+    ["src/util/format", "u_format_table.py u_format.csv --header > %s/u_format_pack.h", "u_format_pack.h"],
+    ["src/util/format", "u_format_table.py u_format.csv > %s/u_format_table.c", "u_format_table.c"],
+]
+
+mesa_gen_include_paths = [mesa_gen_dir + "/src"]
+
+# See update_mesa.sh for explanation.
+for v in custom_build_steps:
+    subdir = v[0]
+    cmd = v[1]
+    gen_filename = v[2]
+
+    in_dir = str(Path(mesa_absdir + "/" + subdir))
+    out_full_path = mesa_dir + "/generated/" + subdir
+    out_file_full_path = out_full_path + "/" + gen_filename
+
+    if gen_filename.endswith(".h"):
+        mesa_gen_include_paths += [out_full_path.replace("\\", "/")]
+
+mesa_private_inc_paths = [v[0] for v in os.walk(mesa_absdir)]
+mesa_private_inc_paths = [v.replace(mesa_absdir, mesa_dir) for v in mesa_private_inc_paths]
+mesa_private_inc_paths = [v.replace("\\", "/") for v in mesa_private_inc_paths]
+# Avoid build results depending on if generated files already exist.
+mesa_private_inc_paths = [v for v in mesa_private_inc_paths if not v.startswith(mesa_gen_dir)]
+mesa_private_inc_paths.sort()
+# Include the list of the generated ones now, so out-of-the-box sources can include generated headers.
+mesa_private_inc_paths += mesa_gen_include_paths
+# We have to blacklist some because we are bindly adding every Mesa directory
+# to the include path and in some cases that causes the wrong header to be included.
+mesa_blacklist_inc_paths = [
+    "src/c11",
+]
+mesa_blacklist_inc_paths = [mesa_dir + "/" + v for v in mesa_blacklist_inc_paths]
+mesa_private_inc_paths = [v for v in mesa_private_inc_paths if v not in mesa_blacklist_inc_paths]
+
+# Added by ourselves.
+extra_defines = [
+    "WINDOWS_NO_FUTEX",
+]
+
+mesa_ver = Path(mesa_absdir + "/VERSION.info")
+if not mesa_ver.is_file():
+    mesa_ver = Path(mesa_absdir + "/VERSION")
+
+# These defines are inspired by the Meson build scripts in the original repo.
+extra_defines += [
+    "__STDC_CONSTANT_MACROS",
+    "__STDC_FORMAT_MACROS",
+    "__STDC_LIMIT_MACROS",
+    ("PACKAGE_VERSION", '\\"' + mesa_ver.read_text().strip() + '\\"'),
+    ("PACKAGE_BUGREPORT", '\\"https://gitlab.freedesktop.org/mesa/mesa/-/issues\\"'),
+    "PIPE_SUBSYSTEM_WINDOWS_USER",
+    ("_Static_assert", "static_assert"),
+]
+
+if env.msvc:
+    extra_defines += [
+        "_USE_MATH_DEFINES",
+        "VC_EXTRALEAN",
+        "_CRT_SECURE_NO_WARNINGS",
+        "_CRT_SECURE_NO_DEPRECATE",
+        "_SCL_SECURE_NO_WARNINGS",
+        "_SCL_SECURE_NO_DEPRECATE",
+        "_ALLOW_KEYWORD_MACROS",
+        ("_HAS_EXCEPTIONS", 0),
+        "NOMINMAX",
+        "HAVE_STRUCT_TIMESPEC",
+    ]
+else:
+    extra_defines += [
+        "HAVE_STRUCT_TIMESPEC",
+    ]
+    if methods.using_gcc(env) and methods.get_compiler_version(env)["major"] < 13:
+        # `region` & `endregion` not recognized as valid pragmas.
+        env_d3d12_rdd.Append(CCFLAGS=["-Wno-unknown-pragmas"])
+        env.Append(CCFLAGS=["-Wno-unknown-pragmas"])
+
+# This is needed since rendering_device_d3d12.cpp needs to include some Mesa internals.
+env_d3d12_rdd.Prepend(CPPPATH=mesa_private_inc_paths)
+# For the same reason as above, the defines must be the same as in the 3rd-party code itself.
+env_d3d12_rdd.Append(CPPDEFINES=extra_defines)
+
+
+# Add all.
+
+env.drivers_sources += thirdparty_obj
+
+
+# Godot source files.
+
+driver_obj = []
+env_d3d12_rdd.add_source_files(driver_obj, "*.cpp")
+env.drivers_sources += driver_obj
+
+# Needed to force rebuilding the driver files when the thirdparty code is updated.
+env.Depends(driver_obj, thirdparty_obj)

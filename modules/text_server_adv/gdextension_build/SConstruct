@@ -1,0 +1,766 @@
+#!/usr/bin/env python
+# ruff: noqa: F821
+
+import methods
+
+# For the reference:
+# - CCFLAGS are compilation flags shared between C and C++
+# - CFLAGS are for C-specific compilation flags
+# - CXXFLAGS are for C++-specific compilation flags
+# - CPPFLAGS are for pre-processor flags
+# - CPPDEFINES are for pre-processor defines
+# - LINKFLAGS are for linking flags
+
+env = SConscript("./godot-cpp/SConstruct")
+env.__class__.disable_warnings = methods.disable_warnings
+
+opts = Variables([], ARGUMENTS)
+opts.Add(BoolVariable("brotli_enabled", "Use Brotli library", True))
+opts.Add(BoolVariable("freetype_enabled", "Use FreeType library", True))
+opts.Add(BoolVariable("msdfgen_enabled", "Use MSDFgen library (require FreeType)", True))
+opts.Add(BoolVariable("graphite_enabled", "Use Graphite library (require FreeType)", True))
+opts.Add(BoolVariable("thorvg_enabled", "Use ThorVG library (require FreeType)", True))
+opts.Add(BoolVariable("static_icu_data", "Use built-in ICU data", True))
+opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
+
+opts.Update(env)
+
+if env["platform"] == "windows" and not env["use_mingw"]:
+    env.AppendUnique(CCFLAGS=["/utf-8"])  # Force to use Unicode encoding.
+
+# ThorVG
+if env["thorvg_enabled"] and env["freetype_enabled"]:
+    env_tvg = env.Clone()
+    env_tvg.disable_warnings()
+
+    thirdparty_tvg_dir = "../../../thirdparty/thorvg/"
+    thirdparty_tvg_sources = [
+        # common
+        "src/common/tvgCompressor.cpp",
+        "src/common/tvgLines.cpp",
+        "src/common/tvgMath.cpp",
+        "src/common/tvgStr.cpp",
+        # SVG parser
+        "src/loaders/svg/tvgSvgCssStyle.cpp",
+        "src/loaders/svg/tvgSvgLoader.cpp",
+        "src/loaders/svg/tvgSvgPath.cpp",
+        "src/loaders/svg/tvgSvgSceneBuilder.cpp",
+        "src/loaders/svg/tvgSvgUtil.cpp",
+        "src/loaders/svg/tvgXmlParser.cpp",
+        "src/loaders/raw/tvgRawLoader.cpp",
+        # image loaders
+        "src/loaders/external_png/tvgPngLoader.cpp",
+        "src/loaders/jpg/tvgJpgd.cpp",
+        "src/loaders/jpg/tvgJpgLoader.cpp",
+        # renderer common
+        "src/renderer/tvgAccessor.cpp",
+        # "src/renderer/tvgAnimation.cpp",
+        "src/renderer/tvgCanvas.cpp",
+        "src/renderer/tvgFill.cpp",
+        # "src/renderer/tvgGlCanvas.cpp",
+        "src/renderer/tvgInitializer.cpp",
+        "src/renderer/tvgLoader.cpp",
+        "src/renderer/tvgPaint.cpp",
+        "src/renderer/tvgPicture.cpp",
+        "src/renderer/tvgRender.cpp",
+        # "src/renderer/tvgSaver.cpp",
+        "src/renderer/tvgScene.cpp",
+        "src/renderer/tvgShape.cpp",
+        "src/renderer/tvgSwCanvas.cpp",
+        "src/renderer/tvgTaskScheduler.cpp",
+        "src/renderer/tvgText.cpp",
+        # "src/renderer/tvgWgCanvas.cpp",
+        # renderer sw_engine
+        "src/renderer/sw_engine/tvgSwFill.cpp",
+        "src/renderer/sw_engine/tvgSwImage.cpp",
+        "src/renderer/sw_engine/tvgSwMath.cpp",
+        "src/renderer/sw_engine/tvgSwMemPool.cpp",
+        "src/renderer/sw_engine/tvgSwRaster.cpp",
+        "src/renderer/sw_engine/tvgSwRenderer.cpp",
+        "src/renderer/sw_engine/tvgSwRle.cpp",
+        "src/renderer/sw_engine/tvgSwShape.cpp",
+        "src/renderer/sw_engine/tvgSwStroke.cpp",
+    ]
+    thirdparty_tvg_sources = [thirdparty_tvg_dir + file for file in thirdparty_tvg_sources]
+
+    env_tvg.Append(
+        CPPPATH=[
+            "../../../thirdparty/thorvg/inc",
+            "../../../thirdparty/thorvg/src/common",
+            "../../../thirdparty/thorvg/src/renderer",
+            "../../../thirdparty/thorvg/src/renderer/sw_engine",
+            "../../../thirdparty/thorvg/src/loaders/svg",
+            "../../../thirdparty/thorvg/src/loaders/raw",
+            "../../../thirdparty/thorvg/src/loaders/external_png",
+            "../../../thirdparty/thorvg/src/loaders/jpg",
+            "../../../thirdparty/libpng",
+        ]
+    )
+
+    # Enable ThorVG static object linking.
+    env_tvg.Append(CPPDEFINES=["TVG_STATIC"])
+
+    env.Append(
+        CPPPATH=[
+            "../../../thirdparty/thorvg/inc",
+            "../../../thirdparty/thorvg/src/common",
+            "../../../thirdparty/thorvg/src/renderer",
+        ]
+    )
+    env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
+
+    lib = env_tvg.Library(
+        f"tvg_builtin{env['suffix']}{env['LIBSUFFIX']}",
+        thirdparty_tvg_sources,
+    )
+    env.Append(LIBS=[lib])
+
+# MSDFGEN
+if env["msdfgen_enabled"] and env["freetype_enabled"]:
+    env_msdfgen = env.Clone()
+    env_msdfgen.disable_warnings()
+
+    thirdparty_msdfgen_dir = "../../../thirdparty/msdfgen/"
+    thirdparty_msdfgen_sources = [
+        "core/Contour.cpp",
+        "core/DistanceMapping.cpp",
+        "core/EdgeHolder.cpp",
+        "core/MSDFErrorCorrection.cpp",
+        "core/Projection.cpp",
+        "core/Scanline.cpp",
+        "core/Shape.cpp",
+        "core/contour-combiners.cpp",
+        "core/edge-coloring.cpp",
+        "core/edge-segments.cpp",
+        "core/edge-selectors.cpp",
+        "core/equation-solver.cpp",
+        # "core/export-svg.cpp",
+        "core/msdf-error-correction.cpp",
+        "core/msdfgen.cpp",
+        "core/rasterization.cpp",
+        "core/render-sdf.cpp",
+        # "core/save-bmp.cpp",
+        # "core/save-fl32.cpp",
+        # "core/save-rgba.cpp",
+        # "core/save-tiff.cpp",
+        "core/sdf-error-estimation.cpp",
+        "core/shape-description.cpp",
+    ]
+    thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
+
+    env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
+    env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
+    env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
+    env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
+
+    lib = env_msdfgen.Library(
+        f"msdfgen_builtin{env['suffix']}{env['LIBSUFFIX']}",
+        thirdparty_msdfgen_sources,
+    )
+    env.Append(LIBS=[lib])
+
+# FreeType
+if env["freetype_enabled"]:
+    env_freetype = env.Clone()
+    env_freetype.disable_warnings()
+
+    thirdparty_freetype_dir = "../../../thirdparty/freetype/"
+    thirdparty_freetype_sources = [
+        "src/autofit/autofit.c",
+        "src/base/ftbase.c",
+        "src/base/ftbbox.c",
+        "src/base/ftbdf.c",
+        "src/base/ftbitmap.c",
+        "src/base/ftcid.c",
+        "src/base/ftdebug.c",
+        "src/base/ftfstype.c",
+        "src/base/ftgasp.c",
+        "src/base/ftglyph.c",
+        "src/base/ftgxval.c",
+        "src/base/ftinit.c",
+        "src/base/ftmm.c",
+        "src/base/ftotval.c",
+        "src/base/ftpatent.c",
+        "src/base/ftpfr.c",
+        "src/base/ftstroke.c",
+        "src/base/ftsynth.c",
+        "src/base/ftsystem.c",
+        "src/base/fttype1.c",
+        "src/base/ftwinfnt.c",
+        "src/bdf/bdf.c",
+        "src/bzip2/ftbzip2.c",
+        "src/cache/ftcache.c",
+        "src/cff/cff.c",
+        "src/cid/type1cid.c",
+        "src/gxvalid/gxvalid.c",
+        "src/gzip/ftgzip.c",
+        "src/lzw/ftlzw.c",
+        "src/otvalid/otvalid.c",
+        "src/pcf/pcf.c",
+        "src/pfr/pfr.c",
+        "src/psaux/psaux.c",
+        "src/pshinter/pshinter.c",
+        "src/psnames/psnames.c",
+        "src/raster/raster.c",
+        "src/sdf/sdf.c",
+        "src/svg/svg.c",
+        "src/smooth/smooth.c",
+        "src/truetype/truetype.c",
+        "src/type1/type1.c",
+        "src/type42/type42.c",
+        "src/winfonts/winfnt.c",
+        "src/sfnt/sfnt.c",
+    ]
+    thirdparty_freetype_sources = [thirdparty_freetype_dir + file for file in thirdparty_freetype_sources]
+
+    thirdparty_png_dir = "../../../thirdparty/libpng/"
+    thirdparty_png_sources = [
+        "png.c",
+        "pngerror.c",
+        "pngget.c",
+        "pngmem.c",
+        "pngpread.c",
+        "pngread.c",
+        "pngrio.c",
+        "pngrtran.c",
+        "pngrutil.c",
+        "pngset.c",
+        "pngtrans.c",
+        "pngwio.c",
+        "pngwrite.c",
+        "pngwtran.c",
+        "pngwutil.c",
+    ]
+    thirdparty_freetype_sources += [thirdparty_png_dir + file for file in thirdparty_png_sources]
+
+    thirdparty_zlib_dir = "../../../thirdparty/zlib/"
+    thirdparty_zlib_sources = [
+        "adler32.c",
+        "compress.c",
+        "crc32.c",
+        "deflate.c",
+        "inffast.c",
+        "inflate.c",
+        "inftrees.c",
+        "trees.c",
+        "uncompr.c",
+        "zutil.c",
+    ]
+    thirdparty_freetype_sources += [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
+
+    if env["brotli_enabled"]:
+        thirdparty_brotli_dir = "../../../thirdparty/brotli/"
+        thirdparty_brotli_sources = [
+            "common/constants.c",
+            "common/context.c",
+            "common/dictionary.c",
+            "common/platform.c",
+            "common/shared_dictionary.c",
+            "common/transform.c",
+            "dec/bit_reader.c",
+            "dec/decode.c",
+            "dec/huffman.c",
+            "dec/state.c",
+        ]
+        thirdparty_freetype_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+        env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+        env.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+
+    env_freetype.Append(CPPPATH=[thirdparty_freetype_dir + "/include", thirdparty_zlib_dir, thirdparty_png_dir])
+    env.Append(CPPPATH=[thirdparty_freetype_dir + "/include"])
+
+    env_freetype.Append(
+        CPPDEFINES=[
+            "FT2_BUILD_LIBRARY",
+            "FT_CONFIG_OPTION_USE_PNG",
+            "FT_CONFIG_OPTION_SYSTEM_ZLIB",
+        ]
+    )
+    if env.dev_build:
+        env_freetype.Append(CPPDEFINES=["ZLIB_DEBUG"])
+
+    env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
+
+    lib = env_freetype.Library(
+        f"freetype_builtin{env['suffix']}{env['LIBSUFFIX']}",
+        thirdparty_freetype_sources,
+    )
+    env.Append(LIBS=[lib])
+
+# HarfBuzz
+env_harfbuzz = env.Clone()
+env_harfbuzz.disable_warnings()
+
+thirdparty_harfbuzz_dir = "../../../thirdparty/harfbuzz/"
+thirdparty_harfbuzz_sources = [
+    "src/hb-aat-layout.cc",
+    "src/hb-aat-map.cc",
+    "src/hb-blob.cc",
+    "src/hb-buffer-serialize.cc",
+    "src/hb-buffer-verify.cc",
+    "src/hb-buffer.cc",
+    # "src/hb-cairo-utils.cc",
+    # "src/hb-cairo.cc",
+    "src/hb-common.cc",
+    # "src/hb-coretext-font.cc",
+    # "src/hb-coretext-shape.cc",
+    # "src/hb-directwrite.cc",
+    "src/hb-draw.cc",
+    "src/hb-face-builder.cc",
+    "src/hb-face.cc",
+    "src/hb-fallback-shape.cc",
+    "src/hb-font.cc",
+    # "src/hb-gdi.cc",
+    # "src/hb-glib.cc",
+    # "src/hb-gobject-structs.cc",
+    "src/hb-icu.cc",
+    "src/hb-map.cc",
+    "src/hb-number.cc",
+    "src/hb-ot-cff1-table.cc",
+    "src/hb-ot-cff2-table.cc",
+    "src/hb-ot-color.cc",
+    "src/hb-ot-face.cc",
+    "src/hb-ot-font.cc",
+    "src/hb-ot-layout.cc",
+    "src/hb-ot-map.cc",
+    "src/hb-ot-math.cc",
+    "src/hb-ot-meta.cc",
+    "src/hb-ot-metrics.cc",
+    "src/hb-ot-name.cc",
+    "src/hb-ot-shaper-arabic.cc",
+    "src/hb-ot-shaper-default.cc",
+    "src/hb-ot-shaper-hangul.cc",
+    "src/hb-ot-shaper-hebrew.cc",
+    "src/hb-ot-shaper-indic-table.cc",
+    "src/hb-ot-shaper-indic.cc",
+    "src/hb-ot-shaper-khmer.cc",
+    "src/hb-ot-shaper-myanmar.cc",
+    "src/hb-ot-shaper-syllabic.cc",
+    "src/hb-ot-shaper-thai.cc",
+    "src/hb-ot-shaper-use.cc",
+    "src/hb-ot-shaper-vowel-constraints.cc",
+    "src/hb-ot-shape-fallback.cc",
+    "src/hb-ot-shape-normalize.cc",
+    "src/hb-ot-shape.cc",
+    "src/hb-ot-tag.cc",
+    "src/hb-ot-var.cc",
+    "src/hb-outline.cc",
+    "src/hb-paint-extents.cc",
+    "src/hb-paint.cc",
+    "src/hb-set.cc",
+    "src/hb-shape-plan.cc",
+    "src/hb-shape.cc",
+    "src/hb-shaper.cc",
+    "src/hb-static.cc",
+    "src/hb-style.cc",
+    "src/hb-subset-cff-common.cc",
+    "src/hb-subset-cff1.cc",
+    "src/hb-subset-cff2.cc",
+    "src/hb-subset-input.cc",
+    "src/hb-subset-instancer-iup.cc",
+    "src/hb-subset-instancer-solver.cc",
+    "src/hb-subset-plan.cc",
+    "src/hb-subset-repacker.cc",
+    "src/hb-subset.cc",
+    "src/hb-ucd.cc",
+    "src/hb-unicode.cc",
+    # "src/hb-uniscribe.cc",
+    "src/OT/Var/VARC/VARC.cc",
+]
+
+if env["freetype_enabled"]:
+    thirdparty_harfbuzz_sources += [
+        "src/hb-ft.cc",
+        "src/hb-graphite2.cc",
+    ]
+thirdparty_harfbuzz_sources = [thirdparty_harfbuzz_dir + file for file in thirdparty_harfbuzz_sources]
+
+env_harfbuzz.Append(
+    CPPPATH=[
+        "../../../thirdparty/harfbuzz/src",
+        "../../../thirdparty/icu4c/common/",
+        "../../../thirdparty/icu4c/i18n/",
+    ]
+)
+
+if env["freetype_enabled"]:
+    env_harfbuzz.Append(
+        CPPPATH=[
+            "../../../thirdparty/freetype/include",
+            "../../../thirdparty/graphite/include",
+        ]
+    )
+
+if env["platform"] == "android" or env["platform"] == "linuxbsd":
+    env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
+
+env_harfbuzz.Append(
+    CCFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
+        "-DHAVE_ICU_BUILTIN",
+        "-DHAVE_ICU",
+    ]
+)
+
+if env["freetype_enabled"]:
+    env_harfbuzz.Append(
+        CCFLAGS=[
+            "-DHAVE_FREETYPE",
+            "-DHAVE_GRAPHITE2",
+            "-DGRAPHITE2_STATIC",
+        ]
+    )
+
+env.Append(CPPPATH=["../../../thirdparty/harfbuzz/src"])
+
+lib = env_harfbuzz.Library(
+    f"harfbuzz_builtin{env['suffix']}{env['LIBSUFFIX']}",
+    thirdparty_harfbuzz_sources,
+)
+env.Prepend(LIBS=[lib])
+
+# Graphite
+if env["graphite_enabled"] and env["freetype_enabled"]:
+    env_graphite = env.Clone()
+    env_graphite.disable_warnings()
+
+    thirdparty_graphite_dir = "../../../thirdparty/graphite/"
+    thirdparty_graphite_sources = [
+        "src/gr_char_info.cpp",
+        "src/gr_face.cpp",
+        "src/gr_features.cpp",
+        "src/gr_font.cpp",
+        "src/gr_logging.cpp",
+        "src/gr_segment.cpp",
+        "src/gr_slot.cpp",
+        "src/CmapCache.cpp",
+        "src/Code.cpp",
+        "src/Collider.cpp",
+        "src/Decompressor.cpp",
+        "src/Face.cpp",
+        #'src/FileFace.cpp',
+        "src/FeatureMap.cpp",
+        "src/Font.cpp",
+        "src/GlyphCache.cpp",
+        "src/GlyphFace.cpp",
+        "src/Intervals.cpp",
+        "src/Justifier.cpp",
+        "src/NameTable.cpp",
+        "src/Pass.cpp",
+        "src/Position.cpp",
+        "src/Segment.cpp",
+        "src/Silf.cpp",
+        "src/Slot.cpp",
+        "src/Sparse.cpp",
+        "src/TtfUtil.cpp",
+        "src/UtfCodec.cpp",
+        "src/FileFace.cpp",
+        "src/json.cpp",
+    ]
+    if env["platform"] != "windows" or env["use_mingw"]:
+        thirdparty_graphite_sources += ["src/direct_machine.cpp"]
+    else:
+        thirdparty_graphite_sources += ["src/call_machine.cpp"]
+
+    thirdparty_graphite_sources = [thirdparty_graphite_dir + file for file in thirdparty_graphite_sources]
+
+    env_graphite.Append(CPPPATH=["../../../thirdparty/graphite/src", "../../../thirdparty/graphite/include"])
+    env_graphite.Append(
+        CCFLAGS=[
+            "-DGRAPHITE2_STATIC",
+            "-DGRAPHITE2_NTRACING",
+            "-DGRAPHITE2_NFILEFACE",
+        ]
+    )
+
+    lib = env_graphite.Library(
+        f"graphite_builtin{env['suffix']}{env['LIBSUFFIX']}",
+        thirdparty_graphite_sources,
+    )
+    env.Append(LIBS=[lib])
+
+# ICU
+env_icu = env.Clone()
+env_icu.disable_warnings()
+
+thirdparty_icu_dir = "../../../thirdparty/icu4c/"
+thirdparty_icu_sources = [
+    "common/appendable.cpp",
+    "common/bmpset.cpp",
+    "common/brkeng.cpp",
+    "common/brkiter.cpp",
+    "common/bytesinkutil.cpp",
+    "common/bytestream.cpp",
+    "common/bytestrie.cpp",
+    "common/bytestriebuilder.cpp",
+    "common/bytestrieiterator.cpp",
+    "common/caniter.cpp",
+    "common/characterproperties.cpp",
+    "common/chariter.cpp",
+    "common/charstr.cpp",
+    "common/cmemory.cpp",
+    "common/cstr.cpp",
+    "common/cstring.cpp",
+    "common/cwchar.cpp",
+    "common/dictbe.cpp",
+    "common/dictionarydata.cpp",
+    "common/dtintrv.cpp",
+    "common/edits.cpp",
+    "common/emojiprops.cpp",
+    "common/errorcode.cpp",
+    "common/filteredbrk.cpp",
+    "common/filterednormalizer2.cpp",
+    "common/icudataver.cpp",
+    "common/icuplug.cpp",
+    "common/loadednormalizer2impl.cpp",
+    "common/localebuilder.cpp",
+    "common/localematcher.cpp",
+    "common/localeprioritylist.cpp",
+    "common/locavailable.cpp",
+    "common/locbased.cpp",
+    "common/locdispnames.cpp",
+    "common/locdistance.cpp",
+    "common/locdspnm.cpp",
+    "common/locid.cpp",
+    "common/loclikely.cpp",
+    "common/loclikelysubtags.cpp",
+    "common/locmap.cpp",
+    "common/locresdata.cpp",
+    "common/locutil.cpp",
+    "common/lsr.cpp",
+    "common/lstmbe.cpp",
+    "common/messagepattern.cpp",
+    "common/mlbe.cpp",
+    "common/normalizer2.cpp",
+    "common/normalizer2impl.cpp",
+    "common/normlzr.cpp",
+    "common/parsepos.cpp",
+    "common/patternprops.cpp",
+    "common/pluralmap.cpp",
+    "common/propname.cpp",
+    "common/propsvec.cpp",
+    "common/punycode.cpp",
+    "common/putil.cpp",
+    "common/rbbi.cpp",
+    "common/rbbi_cache.cpp",
+    "common/rbbidata.cpp",
+    "common/rbbinode.cpp",
+    "common/rbbirb.cpp",
+    "common/rbbiscan.cpp",
+    "common/rbbisetb.cpp",
+    "common/rbbistbl.cpp",
+    "common/rbbitblb.cpp",
+    "common/resbund.cpp",
+    "common/resbund_cnv.cpp",
+    "common/resource.cpp",
+    "common/restrace.cpp",
+    "common/ruleiter.cpp",
+    "common/schriter.cpp",
+    "common/serv.cpp",
+    "common/servlk.cpp",
+    "common/servlkf.cpp",
+    "common/servls.cpp",
+    "common/servnotf.cpp",
+    "common/servrbf.cpp",
+    "common/servslkf.cpp",
+    "common/sharedobject.cpp",
+    "common/simpleformatter.cpp",
+    "common/static_unicode_sets.cpp",
+    "common/stringpiece.cpp",
+    "common/stringtriebuilder.cpp",
+    "common/uarrsort.cpp",
+    "common/ubidi.cpp",
+    "common/ubidi_props.cpp",
+    "common/ubidiln.cpp",
+    "common/ubiditransform.cpp",
+    "common/ubidiwrt.cpp",
+    "common/ubrk.cpp",
+    "common/ucase.cpp",
+    "common/ucasemap.cpp",
+    "common/ucasemap_titlecase_brkiter.cpp",
+    "common/ucat.cpp",
+    "common/uchar.cpp",
+    "common/ucharstrie.cpp",
+    "common/ucharstriebuilder.cpp",
+    "common/ucharstrieiterator.cpp",
+    "common/uchriter.cpp",
+    "common/ucln_cmn.cpp",
+    "common/ucmndata.cpp",
+    "common/ucnv.cpp",
+    "common/ucnv2022.cpp",
+    "common/ucnv_bld.cpp",
+    "common/ucnv_cb.cpp",
+    "common/ucnv_cnv.cpp",
+    "common/ucnv_ct.cpp",
+    "common/ucnv_err.cpp",
+    "common/ucnv_ext.cpp",
+    "common/ucnv_io.cpp",
+    "common/ucnv_lmb.cpp",
+    "common/ucnv_set.cpp",
+    "common/ucnv_u16.cpp",
+    "common/ucnv_u32.cpp",
+    "common/ucnv_u7.cpp",
+    "common/ucnv_u8.cpp",
+    "common/ucnvbocu.cpp",
+    "common/ucnvdisp.cpp",
+    "common/ucnvhz.cpp",
+    "common/ucnvisci.cpp",
+    "common/ucnvlat1.cpp",
+    "common/ucnvmbcs.cpp",
+    "common/ucnvscsu.cpp",
+    "common/ucnvsel.cpp",
+    "common/ucol_swp.cpp",
+    "common/ucptrie.cpp",
+    "common/ucurr.cpp",
+    "common/udata.cpp",
+    "common/udatamem.cpp",
+    "common/udataswp.cpp",
+    "common/uenum.cpp",
+    "common/uhash.cpp",
+    "common/uhash_us.cpp",
+    "common/uidna.cpp",
+    "common/uinit.cpp",
+    "common/uinvchar.cpp",
+    "common/uiter.cpp",
+    "common/ulist.cpp",
+    "common/uloc.cpp",
+    "common/uloc_keytype.cpp",
+    "common/uloc_tag.cpp",
+    "common/ulocale.cpp",
+    "common/ulocbuilder.cpp",
+    "common/umapfile.cpp",
+    "common/umath.cpp",
+    "common/umutablecptrie.cpp",
+    "common/umutex.cpp",
+    "common/unames.cpp",
+    "common/unifiedcache.cpp",
+    "common/unifilt.cpp",
+    "common/unifunct.cpp",
+    "common/uniset.cpp",
+    "common/uniset_closure.cpp",
+    "common/uniset_props.cpp",
+    "common/unisetspan.cpp",
+    "common/unistr.cpp",
+    "common/unistr_case.cpp",
+    "common/unistr_case_locale.cpp",
+    "common/unistr_cnv.cpp",
+    "common/unistr_props.cpp",
+    "common/unistr_titlecase_brkiter.cpp",
+    "common/unorm.cpp",
+    "common/unormcmp.cpp",
+    "common/uobject.cpp",
+    "common/uprops.cpp",
+    "common/ures_cnv.cpp",
+    "common/uresbund.cpp",
+    "common/uresdata.cpp",
+    "common/usc_impl.cpp",
+    "common/uscript.cpp",
+    "common/uscript_props.cpp",
+    "common/uset.cpp",
+    "common/uset_props.cpp",
+    "common/usetiter.cpp",
+    # "common/ushape.cpp",
+    "common/usprep.cpp",
+    "common/ustack.cpp",
+    "common/ustr_cnv.cpp",
+    "common/ustr_titlecase_brkiter.cpp",
+    "common/ustr_wcs.cpp",
+    "common/ustrcase.cpp",
+    "common/ustrcase_locale.cpp",
+    "common/ustrenum.cpp",
+    "common/ustrfmt.cpp",
+    "common/ustring.cpp",
+    "common/ustrtrns.cpp",
+    "common/utext.cpp",
+    "common/utf_impl.cpp",
+    "common/util.cpp",
+    "common/util_props.cpp",
+    "common/utrace.cpp",
+    "common/utrie.cpp",
+    "common/utrie2.cpp",
+    "common/utrie2_builder.cpp",
+    "common/utrie_swap.cpp",
+    "common/uts46.cpp",
+    "common/utypes.cpp",
+    "common/uvector.cpp",
+    "common/uvectr32.cpp",
+    "common/uvectr64.cpp",
+    "common/wintz.cpp",
+    "i18n/scriptset.cpp",
+    "i18n/ucln_in.cpp",
+    "i18n/uspoof.cpp",
+    "i18n/uspoof_impl.cpp",
+]
+thirdparty_icu_sources = [thirdparty_icu_dir + file for file in thirdparty_icu_sources]
+
+if env["static_icu_data"]:
+    env_icu.Depends("../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat")
+    env_icu.Command(
+        "../../../thirdparty/icu4c/icudata.gen.h", "../../../thirdparty/icu4c/icudt_godot.dat", methods.make_icu_data
+    )
+    env.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
+    env.Append(CPPPATH=["../../../thirdparty/icu4c/"])
+else:
+    thirdparty_icu_sources += ["../icu_data/icudata_stub.cpp"]
+
+env_icu.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
+env_icu.Append(
+    CXXFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
+        "-DU_COMMON_IMPLEMENTATION",
+        "-DUCONFIG_NO_COLLATION",
+        "-DUCONFIG_NO_CONVERSION",
+        "-DUCONFIG_NO_FORMATTING",
+        "-DUCONFIG_NO_SERVICE",
+        "-DUCONFIG_NO_IDNA",
+        "-DUCONFIG_NO_FILE_IO",
+        "-DUCONFIG_NO_TRANSLITERATION",
+        "-DPKGDATA_MODE=static",
+        "-DU_ENABLE_DYLOAD=0",
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
+    ]
+)
+env.Append(
+    CXXFLAGS=[
+        "-DU_STATIC_IMPLEMENTATION",
+        "-DU_HAVE_LIB_SUFFIX=1",
+        "-DU_LIB_SUFFIX_C_NAME=_godot",
+    ]
+)
+env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
+
+if env["platform"] == "windows":
+    env.Append(LIBS=["advapi32"])
+
+lib = env_icu.Library(f"icu_builtin{env['suffix']}{env['LIBSUFFIX']}", thirdparty_icu_sources)
+env.Append(LIBS=[lib])
+
+env.Append(CPPDEFINES=["GDEXTENSION"])
+env.Append(CPPPATH=["../"])
+sources = Glob("../*.cpp")
+
+if env["platform"] == "macos":
+    methods.write_macos_plist(
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework",
+        f"libtextserver_advanced.macos.{env['target']}",
+        "org.godotengine.textserver_advanced",
+        "ICU / HarfBuzz / Graphite Text Server",
+    )
+    library = env.SharedLibrary(
+        f"./bin/libtextserver_advanced.macos.{env['target']}.framework/libtextserver_advanced.macos.{env['target']}",
+        source=sources,
+    )
+else:
+    library = env.SharedLibrary(
+        f"./bin/libtextserver_advanced{env['suffix']}{env['SHLIBSUFFIX']}",
+        source=sources,
+    )
+
+Default(library)
+
+methods.prepare_timer()

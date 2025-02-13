@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebXRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		XR interface using WebXR.
+	</brief_description>
+	<description>
+		WebXR is an open standard that allows creating VR and AR applications that run in the web browser.
+		As such, this interface is only available when running in Web exports.
+		WebXR supports a wide range of devices, from the very capable (like Valve Index, HTC Vive, Oculus Rift and Quest) down to the much less capable (like Google Cardboard, Oculus Go, GearVR, or plain smartphones).
+		Since WebXR is based on JavaScript, it makes extensive use of callbacks, which means that [WebXRInterface] is forced to use signals, where other XR interfaces would instead use functions that return a result immediately. This makes [WebXRInterface] quite a bit more complicated to initialize than other XR interfaces.
+		Here's the minimum code required to start an immersive VR session:
+		[codeblock]
+		extends Node3D
+
+		var webxr_interface
+		var vr_supported = false
+
+		func _ready():
+		    # We assume this node has a button as a child.
+		    # This button is for the user to consent to entering immersive VR mode.
+		    $Button.pressed.connect(self._on_button_pressed)
+
+		    webxr_interface = XRServer.find_interface("WebXR")
+		    if webxr_interface:
+		        # WebXR uses a lot of asynchronous callbacks, so we connect to various
+		        # signals in order to receive them.
+		        webxr_interface.session_supported.connect(self._webxr_session_supported)
+		        webxr_interface.session_started.connect(self._webxr_session_started)
+		        webxr_interface.session_ended.connect(self._webxr_session_ended)
+		        webxr_interface.session_failed.connect(self._webxr_session_failed)
+
+		        # This returns immediately - our _webxr_session_supported() method
+		        # (which we connected to the "session_supported" signal above) will
+		        # be called sometime later to let us know if it's supported or not.
+		        webxr_interface.is_session_supported("immersive-vr")
+
+		func _webxr_session_supported(session_mode, supported):
+		    if session_mode == 'immersive-vr':
+		        vr_supported = supported
+
+		func _on_button_pressed():
+		    if not vr_supported:
+		        OS.alert("Your browser doesn't support VR")
+		        return
+
+		    # We want an immersive VR session, as opposed to AR ('immersive-ar') or a
+		    # simple 3DoF viewer ('viewer').
+		    webxr_interface.session_mode = 'immersive-vr'
+		    # 'bounded-floor' is room scale, 'local-floor' is a standing or sitting
+		    # experience (it puts you 1.6m above the ground if you have 3DoF headset),
+		    # whereas as 'local' puts you down at the XROrigin.
+		    # This list means it'll first try to request 'bounded-floor', then
+		    # fallback on 'local-floor' and ultimately 'local', if nothing else is
+		    # supported.
+		    webxr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
+		    # In order to use 'local-floor' or 'bounded-floor' we must also
+		    # mark the features as required or optional. By including 'hand-tracking'
+		    # as an optional feature, it will be enabled if supported.
+		    webxr_interface.required_features = 'local-floor'
+		    webxr_interface.optional_features = 'bounded-floor, hand-tracking'
+
+		    # This will return false if we're unable to even request the session,
+		    # however, it can still fail asynchronously later in the process, so we
+		    # only know if it's really succeeded or failed when our
+		    # _webxr_session_started() or _webxr_session_failed() methods are called.
+		    if not webxr_interface.initialize():
+		        OS.alert("Failed to initialize")
+		        return
+
+		func _webxr_session_started():
+		    $Button.visible = false
+		    # This tells Godot to start rendering to the headset.
+		    get_viewport().use_xr = true
+		    # This will be the reference space type you ultimately got, out of the
+		    # types that you requested above. This is useful if you want the game to
+		    # work a little differently in 'bounded-floor' versus 'local-floor'.
+		    print("Reference space type: ", webxr_interface.reference_space_type)
+		    # This will be the list of features that were successfully enabled
+		    # (except on browsers that don't support this property).
+		    print("Enabled features: ", webxr_interface.enabled_features)
+
+		func _webxr_session_ended():
+		    $Button.visible = true
+		    # If the user exits immersive mode, then we tell Godot to render to the web
+		    # page again.
+		    get_viewport().use_xr = false
+
+		func _webxr_session_failed(message):
+		    OS.alert("Failed to initialize: " + message)
+		[/codeblock]
+		There are a couple ways to handle "controller" input:
+		- Using [XRController3D] nodes and their [signal XRController3D.button_pressed] and [signal XRController3D.button_released] signals. This is how controllers are typically handled in XR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example.
+		- Using the [signal select], [signal squeeze] and related signals. This method will work for both advanced VR controllers, and non-traditional input sources like a tap on the screen, a spoken voice command or a button press on the device itself.
+		You can use both methods to allow your game or app to support a wider or narrower set of devices and input methods, or to allow more advanced interactions with more advanced devices.
+	</description>
+	<tutorials>
+		<link title="How to make a VR game for WebXR with Godot 4">https://www.snopekgames.com/tutorial/2023/how-make-vr-game-webxr-godot-4</link>
+	</tutorials>
+	<methods>
+		<method name="get_available_display_refresh_rates" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the web browser and after the interface has been initialized.
+			</description>
+		</method>
+		<method name="get_display_refresh_rate" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the display refresh rate for the current HMD. Not supported on all HMDs and browsers. It may not report an accurate value until after using [method set_display_refresh_rate].
+			</description>
+		</method>
+		<method name="get_input_source_target_ray_mode" qualifiers="const">
+			<return type="int" enum="WebXRInterface.TargetRayMode" />
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Returns the target ray mode for the given [param input_source_id].
+				This can help interpret the input coming from that input source. See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode]XRInputSource.targetRayMode[/url] for more information.
+			</description>
+		</method>
+		<method name="get_input_source_tracker" qualifiers="const">
+			<return type="XRControllerTracker" />
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Gets an [XRControllerTracker] for the given [param input_source_id].
+				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
+				Use this method to get information about the input source that triggered one of these signals:
+				- [signal selectstart]
+				- [signal select]
+				- [signal selectend]
+				- [signal squeezestart]
+				- [signal squeeze]
+				- [signal squeezestart]
+			</description>
+		</method>
+		<method name="is_input_source_active" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Returns [code]true[/code] if there is an active input source with the given [param input_source_id].
+			</description>
+		</method>
+		<method name="is_session_supported">
+			<return type="void" />
+			<param index="0" name="session_mode" type="String" />
+			<description>
+				Checks if the given [param session_mode] is supported by the user's browser.
+				Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
+				This method returns nothing, instead it emits the [signal session_supported] signal with the result.
+			</description>
+		</method>
+		<method name="set_display_refresh_rate">
+			<return type="void" />
+			<param index="0" name="refresh_rate" type="float" />
+			<description>
+				Sets the display refresh rate for the current HMD. Not supported on all HMDs and browsers. It won't take effect right away until after [signal display_refresh_rate_changed] is emitted.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
+			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
+			This may include features requested by setting [member required_features] and [member optional_features], and will only be available after [signal session_started] has been emitted.
+			[b]Note:[/b] This may not be support by all web browsers, in which case it will be an empty string.
+		</member>
+		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
+			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
+			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
+			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
+		</member>
+		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
+			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method XRInterface.initialize] when setting up the WebXR session.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+		</member>
+		<member name="requested_reference_space_types" type="String" setter="set_requested_reference_space_types" getter="get_requested_reference_space_types">
+			A comma-seperated list of reference space types used by [method XRInterface.initialize] when setting up the WebXR session.
+			The reference space types are requested in order, and the first one supported by the users device or browser will be used. The [member reference_space_type] property contains the reference space type that was ultimately selected.
+			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+		</member>
+		<member name="required_features" type="String" setter="set_required_features" getter="get_required_features">
+			A comma-seperated list of required features used by [method XRInterface.initialize] when setting up the WebXR session.
+			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
+			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url], or include other features like [code]"hand-tracking"[/code] to enable hand tracking.
+		</member>
+		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
+			The session mode used by [method XRInterface.initialize] when setting up the WebXR session.
+			This doesn't have any effect on the interface when already initialized.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSessionMode]WebXR's XRSessionMode[/url], including: [code]"immersive-vr"[/code], [code]"immersive-ar"[/code], and [code]"inline"[/code].
+		</member>
+		<member name="visibility_state" type="String" setter="" getter="get_visibility_state">
+			Indicates if the WebXR session's imagery is visible to the user.
+			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRVisibilityState]WebXR's XRVisibilityState[/url], including [code]"hidden"[/code], [code]"visible"[/code], and [code]"visible-blurred"[/code].
+		</member>
+	</members>
+	<signals>
+		<signal name="display_refresh_rate_changed">
+			<description>
+				Emitted after the display's refresh rate has changed.
+			</description>
+		</signal>
+		<signal name="reference_space_reset">
+			<description>
+				Emitted to indicate that the reference space has been reset or reconfigured.
+				When (or whether) this is emitted depends on the user's browser or device, but may include when the user has changed the dimensions of their play space (which you may be able to access via [method XRInterface.get_play_area]) or pressed/held a button to recenter their position.
+				See [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpace/reset_event]WebXR's XRReferenceSpace reset event[/url] for more information.
+			</description>
+		</signal>
+		<signal name="select">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted after one of the input sources has finished its "primary action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="selectend">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted when one of the input sources has finished its "primary action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="selectstart">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted when one of the input source has started its "primary action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="session_ended">
+			<description>
+				Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
+				At this point, you should do [code]get_viewport().use_xr = false[/code] to instruct Godot to resume rendering to the screen.
+			</description>
+		</signal>
+		<signal name="session_failed">
+			<param index="0" name="message" type="String" />
+			<description>
+				Emitted by [method XRInterface.initialize] if the session fails to start.
+				[param message] may optionally contain an error message from WebXR, or an empty string if no message is available.
+			</description>
+		</signal>
+		<signal name="session_started">
+			<description>
+				Emitted by [method XRInterface.initialize] if the session is successfully started.
+				At this point, it's safe to do [code]get_viewport().use_xr = true[/code] to instruct Godot to start rendering to the XR device.
+			</description>
+		</signal>
+		<signal name="session_supported">
+			<param index="0" name="session_mode" type="String" />
+			<param index="1" name="supported" type="bool" />
+			<description>
+				Emitted by [method is_session_supported] to indicate if the given [param session_mode] is supported or not.
+			</description>
+		</signal>
+		<signal name="squeeze">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted after one of the input sources has finished its "primary squeeze action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="squeezeend">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted when one of the input sources has finished its "primary squeeze action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="squeezestart">
+			<param index="0" name="input_source_id" type="int" />
+			<description>
+				Emitted when one of the input sources has started its "primary squeeze action".
+				Use [method get_input_source_tracker] and [method get_input_source_target_ray_mode] to get more information about the input source.
+			</description>
+		</signal>
+		<signal name="visibility_state_changed">
+			<description>
+				Emitted when [member visibility_state] has changed.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TARGET_RAY_MODE_UNKNOWN" value="0" enum="TargetRayMode">
+			We don't know the target ray mode.
+		</constant>
+		<constant name="TARGET_RAY_MODE_GAZE" value="1" enum="TargetRayMode">
+			Target ray originates at the viewer's eyes and points in the direction they are looking.
+		</constant>
+		<constant name="TARGET_RAY_MODE_TRACKED_POINTER" value="2" enum="TargetRayMode">
+			Target ray from a handheld pointer, most likely a VR touch controller.
+		</constant>
+		<constant name="TARGET_RAY_MODE_SCREEN" value="3" enum="TargetRayMode">
+			Target ray from touch screen, mouse or other tactile input device.
+		</constant>
+	</constants>
+</class>

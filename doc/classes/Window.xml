@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Window" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for all windows, dialogs, and popups.
+	</brief_description>
+	<description>
+		A node that creates a window. The window can either be a native system window or embedded inside another [Window] (see [member Viewport.gui_embed_subwindows]).
+		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using the [signal close_requested] signal (this applies both to pressing the close button and clicking outside of a popup).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_contents_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Overrides the value returned by [method get_contents_minimum_size].
+			</description>
+		</method>
+		<method name="add_theme_color_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Creates a local override for a theme [Color] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_color_override].
+				See also [method get_theme_color] and [method Control.add_theme_color_override] for more details.
+			</description>
+		</method>
+		<method name="add_theme_constant_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="constant" type="int" />
+			<description>
+				Creates a local override for a theme constant with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_constant_override].
+				See also [method get_theme_constant].
+			</description>
+		</method>
+		<method name="add_theme_font_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font" type="Font" />
+			<description>
+				Creates a local override for a theme [Font] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_override].
+				See also [method get_theme_font].
+			</description>
+		</method>
+		<method name="add_theme_font_size_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="font_size" type="int" />
+			<description>
+				Creates a local override for a theme font size with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_font_size_override].
+				See also [method get_theme_font_size].
+			</description>
+		</method>
+		<method name="add_theme_icon_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Creates a local override for a theme icon with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
+				See also [method get_theme_icon].
+			</description>
+		</method>
+		<method name="add_theme_stylebox_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="stylebox" type="StyleBox" />
+			<description>
+				Creates a local override for a theme [StyleBox] with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_stylebox_override].
+				See also [method get_theme_stylebox] and [method Control.add_theme_stylebox_override] for more details.
+			</description>
+		</method>
+		<method name="begin_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Prevents [code]*_theme_*_override[/code] methods from emitting [constant NOTIFICATION_THEME_CHANGED] until [method end_bulk_theme_override] is called.
+			</description>
+		</method>
+		<method name="can_draw" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the window is being drawn to the screen.
+			</description>
+		</method>
+		<method name="child_controls_changed">
+			<return type="void" />
+			<description>
+				Requests an update of the [Window] size to fit underlying [Control] nodes.
+			</description>
+		</method>
+		<method name="end_bulk_theme_override">
+			<return type="void" />
+			<description>
+				Ends a bulk theme override update. See [method begin_bulk_theme_override].
+			</description>
+		</method>
+		<method name="get_contents_minimum_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when child nodes have changed.
+				The value returned by this method can be overridden with [method _get_contents_minimum_size].
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="Window.Flags" />
+			<description>
+				Returns [code]true[/code] if the [param flag] is set.
+			</description>
+		</method>
+		<method name="get_layout_direction" qualifiers="const">
+			<return type="int" enum="Window.LayoutDirection" />
+			<description>
+				Returns layout direction and text writing direction.
+			</description>
+		</method>
+		<method name="get_position_with_decorations" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the window's position including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member position].
+			</description>
+		</method>
+		<method name="get_size_with_decorations" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the window's size including its border.
+				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member size].
+			</description>
+		</method>
+		<method name="get_theme_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for more details.
+			</description>
+		</method>
+		<method name="get_theme_constant" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for more details.
+			</description>
+		</method>
+		<method name="get_theme_default_base_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the default base scale value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_base_scale] value.
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font" qualifiers="const">
+			<return type="Font" />
+			<description>
+				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_default_font_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_font" qualifiers="const">
+			<return type="Font" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_font_size" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_stylebox" qualifiers="const">
+			<return type="StyleBox" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_window_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the window.
+			</description>
+		</method>
+		<method name="grab_focus">
+			<return type="void" />
+			<description>
+				Causes the window to grab focus, allowing it to receive user input.
+			</description>
+		</method>
+		<method name="has_focus" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window is focused.
+			</description>
+		</method>
+		<method name="has_theme_color" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a color item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_color_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [Color] with the specified [param name] in this [Control] node.
+				See [method add_theme_color_override].
+			</description>
+		</method>
+		<method name="has_theme_constant" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_constant_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme constant with the specified [param name] in this [Control] node.
+				See [method add_theme_constant_override].
+			</description>
+		</method>
+		<method name="has_theme_font" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_font_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [Font] with the specified [param name] in this [Control] node.
+				See [method add_theme_font_override].
+			</description>
+		</method>
+		<method name="has_theme_font_size" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_font_size_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme font size with the specified [param name] in this [Control] node.
+				See [method add_theme_font_size_override].
+			</description>
+		</method>
+		<method name="has_theme_icon" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_icon_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme icon with the specified [param name] in this [Control] node.
+				See [method add_theme_icon_override].
+			</description>
+		</method>
+		<method name="has_theme_stylebox" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="has_theme_stylebox_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme [StyleBox] with the specified [param name] in this [Control] node.
+				See [method add_theme_stylebox_override].
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void" />
+			<description>
+				Hides the window. This is not the same as minimized state. Hidden window can't be interacted with and needs to be made visible with [method show].
+			</description>
+		</method>
+		<method name="is_embedded" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window is currently embedded in another window.
+			</description>
+		</method>
+		<method name="is_layout_rtl" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if layout is right-to-left.
+			</description>
+		</method>
+		<method name="is_maximize_allowed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window can be maximized (the maximize button is enabled).
+			</description>
+		</method>
+		<method name="is_using_font_oversampling" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if font oversampling is enabled. See [method set_use_font_oversampling].
+			</description>
+		</method>
+		<method name="move_to_center">
+			<return type="void" />
+			<description>
+				Centers a native window on the current screen and an embedded window on its embedder [Viewport].
+			</description>
+		</method>
+		<method name="move_to_foreground" deprecated="Use [method Window.grab_focus] instead.">
+			<return type="void" />
+			<description>
+				Causes the window to grab focus, allowing it to receive user input.
+			</description>
+		</method>
+		<method name="popup">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Shows the [Window] and makes it transient (see [member transient]). If [param rect] is provided, it will be set as the [Window]'s size. Fails if called on the main window.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]true[/code] (single-window mode), [param rect]'s coordinates are global and relative to the main window's top-left corner (excluding window decorations). If [param rect]'s position coordinates are negative, the window will be located outside the main window and may not be visible as a result.
+				If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code] (multi-window mode), [param rect]'s coordinates are global and relative to the top-left corner of the leftmost screen. If [param rect]'s position coordinates are negative, the window will be placed at the top-left corner of the screen.
+				[b]Note:[/b] [param rect] must be in global coordinates if specified.
+			</description>
+		</method>
+		<method name="popup_centered">
+			<return type="void" />
+			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
+			</description>
+		</method>
+		<method name="popup_centered_clamped" keywords="minsize">
+			<return type="void" />
+			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="1" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
+			</description>
+		</method>
+		<method name="popup_centered_ratio">
+			<return type="void" />
+			<param index="0" name="ratio" type="float" default="0.8" />
+			<description>
+				If [Window] is embedded, popups the [Window] centered inside its embedder and sets its size as a [param ratio] of embedder's size.
+				If [Window] is a native window, popups the [Window] centered inside the screen of its parent [Window] and sets its size as a [param ratio] of the screen size.
+			</description>
+		</method>
+		<method name="popup_exclusive">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_clamped" keywords="minsize">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="2" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_clamped] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_centered_ratio">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="ratio" type="float" default="0.8" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_centered_ratio] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_exclusive_on_parent">
+			<return type="void" />
+			<param index="0" name="from_node" type="Node" />
+			<param index="1" name="parent_rect" type="Rect2i" />
+			<description>
+				Attempts to parent this dialog to the last exclusive window relative to [param from_node], and then calls [method Window.popup_on_parent] on it. The dialog must have no current parent, otherwise the method fails.
+				See also [method set_unparent_when_invisible] and [method Node.get_last_exclusive_window].
+			</description>
+		</method>
+		<method name="popup_on_parent">
+			<return type="void" />
+			<param index="0" name="parent_rect" type="Rect2i" />
+			<description>
+				Popups the [Window] with a position shifted by parent [Window]'s position. If the [Window] is embedded, has the same effect as [method popup].
+			</description>
+		</method>
+		<method name="remove_theme_color_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [Color] with the specified [param name] previously added by [method add_theme_color_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_constant_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme constant with the specified [param name] previously added by [method add_theme_constant_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_font_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [Font] with the specified [param name] previously added by [method add_theme_font_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_font_size_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme font size with the specified [param name] previously added by [method add_theme_font_size_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_icon_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_stylebox_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme [StyleBox] with the specified [param name] previously added by [method add_theme_stylebox_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="request_attention">
+			<return type="void" />
+			<description>
+				Tells the OS that the [Window] needs an attention. This makes the window stand out in some way depending on the system, e.g. it might blink on the task bar.
+			</description>
+		</method>
+		<method name="reset_size">
+			<return type="void" />
+			<description>
+				Resets the size to the minimum size, which is the max of [member min_size] and (if [member wrap_controls] is enabled) [method get_contents_minimum_size]. This is equivalent to calling [code]set_size(Vector2i())[/code] (or any size below the minimum).
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="Window.Flags" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets a specified window flag.
+			</description>
+		</method>
+		<method name="set_ime_active">
+			<return type="void" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				If [param active] is [code]true[/code], enables system's native IME (Input Method Editor).
+			</description>
+		</method>
+		<method name="set_ime_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2i" />
+			<description>
+				Moves IME to the given position.
+			</description>
+		</method>
+		<method name="set_layout_direction">
+			<return type="void" />
+			<param index="0" name="direction" type="int" enum="Window.LayoutDirection" />
+			<description>
+				Sets layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+			</description>
+		</method>
+		<method name="set_unparent_when_invisible">
+			<return type="void" />
+			<param index="0" name="unparent" type="bool" />
+			<description>
+				If [param unparent] is [code]true[/code], the window is automatically unparented when going invisible.
+				[b]Note:[/b] Make sure to keep a reference to the node, otherwise it will be orphaned. You also need to manually call [method Node.queue_free] to free the window if it's not parented.
+			</description>
+		</method>
+		<method name="set_use_font_oversampling">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Enables font oversampling. This makes fonts look better when they are scaled up.
+			</description>
+		</method>
+		<method name="show">
+			<return type="void" />
+			<description>
+				Makes the [Window] appear. This enables interactions with the [Window] and doesn't change any of its property other than visibility (unlike e.g. [method popup]).
+			</description>
+		</method>
+		<method name="start_drag">
+			<return type="void" />
+			<description>
+				Starts an interactive drag operation on the window, using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
+			</description>
+		</method>
+		<method name="start_resize">
+			<return type="void" />
+			<param index="0" name="edge" type="int" enum="DisplayServer.WindowResizeEdge" />
+			<description>
+				Starts an interactive resize operation on the window, using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's edge.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
+		</member>
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true" deprecated="Use [member Node.auto_translate_mode] instead.">
+			Toggles if any text should automatically change to its translated version depending on the current locale.
+		</member>
+		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window will have no borders.
+		</member>
+		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
+			Specifies how the content's aspect behaves when the [Window] is resized. The base aspect is determined by [member content_scale_size].
+		</member>
+		<member name="content_scale_factor" type="float" setter="set_content_scale_factor" getter="get_content_scale_factor" default="1.0">
+			Specifies the base scale of [Window]'s content when its [member size] is equal to [member content_scale_size]. See also [method Viewport.get_stretch_transform].
+		</member>
+		<member name="content_scale_mode" type="int" setter="set_content_scale_mode" getter="get_content_scale_mode" enum="Window.ContentScaleMode" default="0">
+			Specifies how the content is scaled when the [Window] is resized.
+		</member>
+		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
+			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
+		</member>
+		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
+			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
+		</member>
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen">
+			The screen the window is currently on.
+		</member>
+		<member name="exclude_from_capture" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+		</member>
+		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
+			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
+			Needs [member transient] enabled to work.
+		</member>
+		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
+			[b]Note:[/b] This property is implemented only on macOS.
+			[b]Note:[/b] This property only works with native windows.
+		</member>
+		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
+			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
+		</member>
+		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
+			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
+		</member>
+		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
+			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
+		</member>
+		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
+			If non-zero, the [Window] can't be resized to be bigger than this size.
+			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
+		</member>
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
+			If non-zero, the [Window] can't be resized to be smaller than this size.
+			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
+			Set's the window's current mode.
+			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
+			[b]Note:[/b] This method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+		</member>
+		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], all mouse events will be passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+			[b]Note:[/b] This property only works with native windows.
+		</member>
+		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
+			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+			Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+			[codeblocks]
+			[gdscript]
+			# Set region, using Path2D node.
+			$Window.mouse_passthrough_polygon = $Path2D.curve.get_baked_points()
+
+			# Set region, using Polygon2D node.
+			$Window.mouse_passthrough_polygon = $Polygon2D.polygon
+
+			# Reset region to default.
+			$Window.mouse_passthrough_polygon = []
+			[/gdscript]
+			[csharp]
+			// Set region, using Path2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints();
+
+			// Set region, using Polygon2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon;
+
+			// Reset region to default.
+			GetNode&lt;Window&gt;("Window").MousePassthroughPolygon = [];
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
+			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+		</member>
+		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
+		</member>
+		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
+			The window's position in pixels.
+			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
+			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
+		</member>
+		<member name="sharp_corners" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] will override the OS window style to display sharp corners.
+			[b]Note:[/b] This property is implemented only on Windows (11).
+			[b]Note:[/b] This property only works with native windows.
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
+			The window's size in pixels.
+		</member>
+		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
+			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
+		</member>
+		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
+			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect.
+		</member>
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
+			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+			Note that behavior might be different depending on the platform.
+		</member>
+		<member name="transient_to_focused" type="bool" setter="set_transient_to_focused" getter="is_transient_to_focused" default="false">
+			If [code]true[/code], and the [Window] is [member transient], this window will (at the time of becoming visible) become transient to the currently focused window instead of the immediate parent window in the hierarchy. Note that the transient parent is assigned at the time this window becomes visible, so changing it afterwards has no effect until re-shown.
+		</member>
+		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
+			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] This property has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+		</member>
+		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
+		</member>
+		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the window can't be resized. Minimize and maximize buttons are disabled.
+		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]true[/code], the window is visible.
+		</member>
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" default="false">
+			If [code]true[/code], the window's size will automatically update when a child node is added or removed, ignoring [member min_size] if the new size is bigger.
+			If [code]false[/code], you need to call [method child_controls_changed] manually.
+		</member>
+	</members>
+	<signals>
+		<signal name="about_to_popup">
+			<description>
+				Emitted right after [method popup] call, before the [Window] appears or does anything.
+			</description>
+		</signal>
+		<signal name="close_requested">
+			<description>
+				Emitted when the [Window]'s close button is pressed or when [member popup_window] is enabled and user clicks outside the window.
+				This signal can be used to handle window closing, e.g. by connecting it to [method hide].
+			</description>
+		</signal>
+		<signal name="dpi_changed">
+			<description>
+				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
+				[b]Note:[/b] Only implemented on macOS.
+			</description>
+		</signal>
+		<signal name="files_dropped">
+			<param index="0" name="files" type="PackedStringArray" />
+			<description>
+				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
+				[codeblock]
+				func _ready():
+				    get_window().files_dropped.connect(on_files_dropped)
+
+				func on_files_dropped(files):
+				    print(files)
+				[/codeblock]
+				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+			</description>
+		</signal>
+		<signal name="focus_entered">
+			<description>
+				Emitted when the [Window] gains focus.
+			</description>
+		</signal>
+		<signal name="focus_exited">
+			<description>
+				Emitted when the [Window] loses its focus.
+			</description>
+		</signal>
+		<signal name="go_back_requested">
+			<description>
+				Emitted when a go back request is sent (e.g. pressing the "Back" button on Android), right after [constant Node.NOTIFICATION_WM_GO_BACK_REQUEST].
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
+			</description>
+		</signal>
+		<signal name="theme_changed">
+			<description>
+				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
+			</description>
+		</signal>
+		<signal name="title_changed">
+			<description>
+				Emitted when window title bar text is changed.
+			</description>
+		</signal>
+		<signal name="titlebar_changed">
+			<description>
+				Emitted when window title bar decorations are changed, e.g. macOS window enter/exit full screen mode, or extend-to-title flag is changed.
+			</description>
+		</signal>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when [Window] is made visible or disappears.
+			</description>
+		</signal>
+		<signal name="window_input">
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument. The event's position, if present, is in the embedder's coordinate system.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="30">
+			Emitted when [Window]'s visibility changes, right before [signal visibility_changed].
+		</constant>
+		<constant name="NOTIFICATION_THEME_CHANGED" value="32">
+			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
+			- The [member theme] property is changed on this node or any of its ancestors.
+			- The [member theme_type_variation] property is changed on this node.
+			- The node enters the scene tree.
+			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
+		</constant>
+		<constant name="MODE_WINDOWED" value="0" enum="Mode">
+			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
+		</constant>
+		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
+			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
+		</constant>
+		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
+			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
+		</constant>
+		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
+			Full screen mode with full multi-window support.
+			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Android:[/b] This enables immersive mode.
+			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
+			[b]On macOS:[/b] A new desktop is used to display the running project.
+			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+		</constant>
+		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
+			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
+			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]On Android:[/b] This enables immersive mode.
+			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
+			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+		</constant>
+		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
+			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+		</constant>
+		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
+			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
+		</constant>
+		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
+			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
+		</constant>
+		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
+			The window background can be transparent. Set with [member transparent].
+			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+		</constant>
+		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
+			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
+		</constant>
+		<constant name="FLAG_POPUP" value="5" enum="Flags">
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
+			[b]Note:[/b] This flag has no effect in embedded windows (unless said window is a [Popup]).
+		</constant>
+		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
+			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
+			[b]Note:[/b] This flag is implemented only on macOS.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+		</constant>
+		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
+			All mouse events are passed to the underlying window of the same application.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+		</constant>
+		<constant name="FLAG_SHARP_CORNERS" value="8" enum="Flags">
+			Window style is overridden, forcing sharp corners.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented only on Windows (11).
+		</constant>
+		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
+			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+		</constant>
+		<constant name="FLAG_MAX" value="10" enum="Flags">
+			Max value of the [enum Flags].
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
+			The content will not be scaled to match the [Window]'s size.
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1" enum="ContentScaleMode">
+			The content will be rendered at the target size. This is more performance-expensive than [constant CONTENT_SCALE_MODE_VIEWPORT], but provides better results.
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_VIEWPORT" value="2" enum="ContentScaleMode">
+			The content will be rendered at the base size and then scaled to the target size. More performant than [constant CONTENT_SCALE_MODE_CANVAS_ITEMS], but results in pixelated image.
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_IGNORE" value="0" enum="ContentScaleAspect">
+			The aspect will be ignored. Scaling will simply stretch the content to fit the target size.
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP" value="1" enum="ContentScaleAspect">
+			The content's aspect will be preserved. If the target size has different aspect from the base one, the image will be centered and black bars will appear on left and right sides.
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP_WIDTH" value="2" enum="ContentScaleAspect">
+			The content can be expanded vertically. Scaling horizontally will result in keeping the width ratio and then black bars on left and right sides.
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP_HEIGHT" value="3" enum="ContentScaleAspect">
+			The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
+			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0" enum="ContentScaleStretch">
+			The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
+		</constant>
+		<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1" enum="ContentScaleStretch">
+			The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
+			Automatic layout direction, determined from the parent window layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1" enum="LayoutDirection">
+			Automatic layout direction, determined from the current locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
+			Left-to-right layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
+			Right-to-left layout direction.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
+			Automatic layout direction, determined from the system locale.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
+			Represents the size of the [enum LayoutDirection] enum.
+		</constant>
+		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection" deprecated="Use [constant LAYOUT_DIRECTION_APPLICATION_LOCALE] instead.">
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0" enum="WindowInitialPosition">
+			Initial window position is determined by [member position].
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
+			Initial window position is the center of the primary screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
+			Initial window position is the center of the main window screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
+			Initial window position is the center of [member current_screen] screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the mouse pointer.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
+			Initial window position is the center of the screen containing the window with the keyboard focus.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			The color of the title's text.
+		</theme_item>
+		<theme_item name="title_outline_modulate" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			The color of the title's text outline.
+		</theme_item>
+		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
+			Horizontal position offset of the close button.
+		</theme_item>
+		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
+			Vertical position offset of the close button.
+		</theme_item>
+		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
+			Defines the outside margin at which the window border can be grabbed with mouse and resized.
+		</theme_item>
+		<theme_item name="title_height" data_type="constant" type="int" default="36">
+			Height of the title bar.
+		</theme_item>
+		<theme_item name="title_outline_size" data_type="constant" type="int" default="0">
+			The size of the title outline.
+		</theme_item>
+		<theme_item name="title_font" data_type="font" type="Font">
+			The font used to draw the title.
+		</theme_item>
+		<theme_item name="title_font_size" data_type="font_size" type="int">
+			The size of the title font.
+		</theme_item>
+		<theme_item name="close" data_type="icon" type="Texture2D">
+			The icon for the close button.
+		</theme_item>
+		<theme_item name="close_pressed" data_type="icon" type="Texture2D">
+			The icon for the close button when it's being pressed.
+		</theme_item>
+		<theme_item name="embedded_border" data_type="style" type="StyleBox">
+			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].
+			[b]Note:[/b] The content background will not be visible unless [member transparent] is enabled.
+		</theme_item>
+		<theme_item name="embedded_unfocused_border" data_type="style" type="StyleBox">
+			The background style used when the [Window] is embedded and unfocused.
+		</theme_item>
+	</theme_items>
+</class>

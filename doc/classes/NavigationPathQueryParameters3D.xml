@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationPathQueryParameters3D" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Provides parameters for 3D navigation path queries.
+	</brief_description>
+	<description>
+		By changing various properties of this object, such as the start and target position, you can configure path queries to the [NavigationServer3D].
+	</description>
+	<tutorials>
+		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>
+	</tutorials>
+	<members>
+		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
+			The navigation map [RID] used in the path query.
+		</member>
+		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters3D.PathMetadataFlags" is_bitfield="true" default="7">
+			Additional information to include with the navigation path.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			The navigation layers the query will use (as a bitmask).
+		</member>
+		<member name="path_postprocessing" type="int" setter="set_path_postprocessing" getter="get_path_postprocessing" enum="NavigationPathQueryParameters3D.PathPostProcessing" default="0">
+			The path postprocessing applied to the raw path corridor found by the [member pathfinding_algorithm].
+		</member>
+		<member name="pathfinding_algorithm" type="int" setter="set_pathfinding_algorithm" getter="get_pathfinding_algorithm" enum="NavigationPathQueryParameters3D.PathfindingAlgorithm" default="0">
+			The pathfinding algorithm used in the path query.
+		</member>
+		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
+			The path simplification amount in worlds units.
+		</member>
+		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
+			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+			Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
+		</member>
+		<member name="start_position" type="Vector3" setter="set_start_position" getter="get_start_position" default="Vector3(0, 0, 0)">
+			The pathfinding start position in global coordinates.
+		</member>
+		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, 0, 0)">
+			The pathfinding target position in global coordinates.
+		</member>
+	</members>
+	<constants>
+		<constant name="PATHFINDING_ALGORITHM_ASTAR" value="0" enum="PathfindingAlgorithm">
+			The path query uses the default A* pathfinding algorithm.
+		</constant>
+		<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0" enum="PathPostProcessing">
+			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
+		</constant>
+		<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1" enum="PathPostProcessing">
+			Centers every path position in the middle of the traveled navigation mesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
+		</constant>
+		<constant name="PATH_POSTPROCESSING_NONE" value="2" enum="PathPostProcessing">
+			Applies no postprocessing and returns the raw path corridor as found by the pathfinding algorithm.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_NONE" value="0" enum="PathMetadataFlags" is_bitfield="true">
+			Don't include any additional metadata about the returned path.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_TYPES" value="1" enum="PathMetadataFlags" is_bitfield="true">
+			Include the type of navigation primitive (region or link) that each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_RIDS" value="2" enum="PathMetadataFlags" is_bitfield="true">
+			Include the [RID]s of the regions and links that each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_OWNERS" value="4" enum="PathMetadataFlags" is_bitfield="true">
+			Include the [code]ObjectID[/code]s of the [Object]s which manage the regions and links each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_ALL" value="7" enum="PathMetadataFlags" is_bitfield="true">
+			Include all available metadata about the returned path.
+		</constant>
+	</constants>
+</class>

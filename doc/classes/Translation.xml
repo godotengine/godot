@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Translation" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A language translation that maps a collection of strings to their individual translations.
+	</brief_description>
+	<description>
+		[Translation]s are resources that can be loaded and unloaded on demand. They map a collection of strings to their individual translations, and they also provide convenience methods for pluralization.
+	</description>
+	<tutorials>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
+	</tutorials>
+	<methods>
+		<method name="_get_message" qualifiers="virtual const">
+			<return type="StringName" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" />
+			<description>
+				Virtual method to override [method get_message].
+			</description>
+		</method>
+		<method name="_get_plural_message" qualifiers="virtual const">
+			<return type="StringName" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="src_plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" />
+			<description>
+				Virtual method to override [method get_plural_message].
+			</description>
+		</method>
+		<method name="add_message">
+			<return type="void" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="xlated_message" type="StringName" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Adds a message if nonexistent, followed by its translation.
+				An additional context could be used to specify the translation context or differentiate polysemic words.
+			</description>
+		</method>
+		<method name="add_plural_message">
+			<return type="void" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="xlated_messages" type="PackedStringArray" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Adds a message involving plural translation if nonexistent, followed by its translation.
+				An additional context could be used to specify the translation context or differentiate polysemic words.
+			</description>
+		</method>
+		<method name="erase_message">
+			<return type="void" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Erases a message.
+			</description>
+		</method>
+		<method name="get_message" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a message's translation.
+			</description>
+		</method>
+		<method name="get_message_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of existing messages.
+			</description>
+		</method>
+		<method name="get_message_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all the messages (keys).
+			</description>
+		</method>
+		<method name="get_plural_message" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="src_message" type="StringName" />
+			<param index="1" name="src_plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a message's translation involving plurals.
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+			</description>
+		</method>
+		<method name="get_translated_message_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all the messages (translated text).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
+			The locale of the translation.
+		</member>
+	</members>
+</class>

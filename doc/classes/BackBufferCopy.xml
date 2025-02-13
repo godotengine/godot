@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BackBufferCopy" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that copies a region of the screen to a buffer for access in shader code.
+	</brief_description>
+	<description>
+		Node for back-buffering the currently-displayed screen. The region defined in the [BackBufferCopy] node is buffered with the content of the screen it covers, or the entire screen according to the [member copy_mode]. It can be accessed in shader scripts using the screen texture (i.e. a uniform sampler with [code]hint_screen_texture[/code]).
+		[b]Note:[/b] Since this node inherits from [Node2D] (and not [Control]), anchors and margins won't apply to child [Control]-derived nodes. This can be problematic when resizing the window. To avoid this, add [Control]-derived nodes as [i]siblings[/i] to the [BackBufferCopy] node instead of adding them as children.
+	</description>
+	<tutorials>
+		<link title="Screen-reading shaders">$DOCS_URL/tutorials/shaders/screen-reading_shaders.html</link>
+	</tutorials>
+	<members>
+		<member name="copy_mode" type="int" setter="set_copy_mode" getter="get_copy_mode" enum="BackBufferCopy.CopyMode" default="1">
+			Buffer mode. See [enum CopyMode] constants.
+		</member>
+		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-100, -100, 200, 200)">
+			The area covered by the [BackBufferCopy]. Only used if [member copy_mode] is [constant COPY_MODE_RECT].
+		</member>
+	</members>
+	<constants>
+		<constant name="COPY_MODE_DISABLED" value="0" enum="CopyMode">
+			Disables the buffering mode. This means the [BackBufferCopy] node will directly use the portion of screen it covers.
+		</constant>
+		<constant name="COPY_MODE_RECT" value="1" enum="CopyMode">
+			[BackBufferCopy] buffers a rectangular region.
+		</constant>
+		<constant name="COPY_MODE_VIEWPORT" value="2" enum="CopyMode">
+			[BackBufferCopy] buffers the entire screen.
+		</constant>
+	</constants>
+</class>

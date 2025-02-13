@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectChorus" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Adds a chorus audio effect.
+	</brief_description>
+	<description>
+		Adds a chorus audio effect. The effect applies a filter with voices to duplicate the audio source and manipulate it through the filter.
+	</description>
+	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_voice_cutoff_hz" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voice_delay_ms" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voice_depth_ms" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voice_level_db" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voice_pan" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_voice_rate_hz" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="voice_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_cutoff_hz">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="cutoff_hz" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_delay_ms">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="delay_ms" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_depth_ms">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="depth_ms" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_level_db">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="level_db" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_pan">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="pan" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_voice_rate_hz">
+			<return type="void" />
+			<param index="0" name="voice_idx" type="int" />
+			<param index="1" name="rate_hz" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="dry" type="float" setter="set_dry" getter="get_dry" default="1.0">
+			The effect's raw signal.
+		</member>
+		<member name="voice/1/cutoff_hz" type="float" setter="set_voice_cutoff_hz" getter="get_voice_cutoff_hz" default="8000.0">
+			The voice's cutoff frequency.
+		</member>
+		<member name="voice/1/delay_ms" type="float" setter="set_voice_delay_ms" getter="get_voice_delay_ms" default="15.0">
+			The voice's signal delay.
+		</member>
+		<member name="voice/1/depth_ms" type="float" setter="set_voice_depth_ms" getter="get_voice_depth_ms" default="2.0">
+			The voice filter's depth.
+		</member>
+		<member name="voice/1/level_db" type="float" setter="set_voice_level_db" getter="get_voice_level_db" default="0.0">
+			The voice's volume.
+		</member>
+		<member name="voice/1/pan" type="float" setter="set_voice_pan" getter="get_voice_pan" default="-0.5">
+			The voice's pan level.
+		</member>
+		<member name="voice/1/rate_hz" type="float" setter="set_voice_rate_hz" getter="get_voice_rate_hz" default="0.8">
+			The voice's filter rate.
+		</member>
+		<member name="voice/2/cutoff_hz" type="float" setter="set_voice_cutoff_hz" getter="get_voice_cutoff_hz" default="8000.0">
+			The voice's cutoff frequency.
+		</member>
+		<member name="voice/2/delay_ms" type="float" setter="set_voice_delay_ms" getter="get_voice_delay_ms" default="20.0">
+			The voice's signal delay.
+		</member>
+		<member name="voice/2/depth_ms" type="float" setter="set_voice_depth_ms" getter="get_voice_depth_ms" default="3.0">
+			The voice filter's depth.
+		</member>
+		<member name="voice/2/level_db" type="float" setter="set_voice_level_db" getter="get_voice_level_db" default="0.0">
+			The voice's volume.
+		</member>
+		<member name="voice/2/pan" type="float" setter="set_voice_pan" getter="get_voice_pan" default="0.5">
+			The voice's pan level.
+		</member>
+		<member name="voice/2/rate_hz" type="float" setter="set_voice_rate_hz" getter="get_voice_rate_hz" default="1.2">
+			The voice's filter rate.
+		</member>
+		<member name="voice/3/cutoff_hz" type="float" setter="set_voice_cutoff_hz" getter="get_voice_cutoff_hz">
+			The voice's cutoff frequency.
+		</member>
+		<member name="voice/3/delay_ms" type="float" setter="set_voice_delay_ms" getter="get_voice_delay_ms">
+			The voice's signal delay.
+		</member>
+		<member name="voice/3/depth_ms" type="float" setter="set_voice_depth_ms" getter="get_voice_depth_ms">
+			The voice filter's depth.
+		</member>
+		<member name="voice/3/level_db" type="float" setter="set_voice_level_db" getter="get_voice_level_db">
+			The voice's volume.
+		</member>
+		<member name="voice/3/pan" type="float" setter="set_voice_pan" getter="get_voice_pan">
+			The voice's pan level.
+		</member>
+		<member name="voice/3/rate_hz" type="float" setter="set_voice_rate_hz" getter="get_voice_rate_hz">
+			The voice's filter rate.
+		</member>
+		<member name="voice/4/cutoff_hz" type="float" setter="set_voice_cutoff_hz" getter="get_voice_cutoff_hz">
+			The voice's cutoff frequency.
+		</member>
+		<member name="voice/4/delay_ms" type="float" setter="set_voice_delay_ms" getter="get_voice_delay_ms">
+			The voice's signal delay.
+		</member>
+		<member name="voice/4/depth_ms" type="float" setter="set_voice_depth_ms" getter="get_voice_depth_ms">
+			The voice filter's depth.
+		</member>
+		<member name="voice/4/level_db" type="float" setter="set_voice_level_db" getter="get_voice_level_db">
+			The voice's volume.
+		</member>
+		<member name="voice/4/pan" type="float" setter="set_voice_pan" getter="get_voice_pan">
+			The voice's pan level.
+		</member>
+		<member name="voice/4/rate_hz" type="float" setter="set_voice_rate_hz" getter="get_voice_rate_hz">
+			The voice's filter rate.
+		</member>
+		<member name="voice_count" type="int" setter="set_voice_count" getter="get_voice_count" default="2">
+			The number of voices in the effect.
+		</member>
+		<member name="wet" type="float" setter="set_wet" getter="get_wet" default="0.5">
+			The effect's processed signal.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionPolygon3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that provides a thickened polygon shape (a prism) to a [CollisionObject3D] parent.
+	</brief_description>
+	<description>
+		A node that provides a thickened polygon shape (a prism) to a [CollisionObject3D] parent and allows to edit it. The polygon can be concave or convex. This can give a detection shape to an [Area3D] or turn [PhysicsBody3D] into a solid object.
+		[b]Warning:[/b] A non-uniformly scaled [CollisionShape3D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its shape resource instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
+			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.
+			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 0)[/code] value documented here is a placeholder, and not the actual default debug color.
+		</member>
+		<member name="debug_fill" type="bool" setter="set_enable_debug_fill" getter="get_enable_debug_fill" default="true">
+			If [code]true[/code], when the shape is displayed, it will show a solid fill color in addition to its wireframe.
+		</member>
+		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
+			Length that the resulting collision extends in either direction perpendicular to its 2D polygon.
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
+			If [code]true[/code], no collision will be produced.
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
+			The collision margin for the generated [Shape3D]. See [member Shape3D.margin] for more details.
+		</member>
+		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
+			Array of vertices which define the 2D polygon in the local XY plane.
+		</member>
+	</members>
+</class>

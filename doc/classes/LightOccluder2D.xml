@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LightOccluder2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Occludes light cast by a Light2D, casting shadows.
+	</brief_description>
+	<description>
+		Occludes light cast by a Light2D, casting shadows. The LightOccluder2D must be provided with an [OccluderPolygon2D] in order for the shadow to be computed.
+	</description>
+	<tutorials>
+		<link title="2D lights and shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
+	</tutorials>
+	<members>
+		<member name="occluder" type="OccluderPolygon2D" setter="set_occluder_polygon" getter="get_occluder_polygon">
+			The [OccluderPolygon2D] used to compute the shadow.
+		</member>
+		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
+			The LightOccluder2D's occluder light mask. The LightOccluder2D will cast shadows only from Light2D(s) that have the same light mask(s).
+		</member>
+		<member name="sdf_collision" type="bool" setter="set_as_sdf_collision" getter="is_set_as_sdf_collision" default="true">
+			If enabled, the occluder will be part of a real-time generated signed distance field that can be used in custom shaders.
+		</member>
+	</members>
+</class>

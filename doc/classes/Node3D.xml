@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Node3D" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Most basic 3D game object, parent of all 3D-related nodes.
+	</brief_description>
+	<description>
+		Most basic 3D game object, with a [Transform3D] and visibility settings. All other 3D game objects inherit from [Node3D]. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Node3D] object is set as top-level. Affine operations in this coordinate system correspond to direct affine operations on the [Node3D]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Node3D] object itself is referred to as object-local coordinate system.
+		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg_to_rad].
+		[b]Note:[/b] Be aware that "Spatial" nodes are now called "Node3D" starting with Godot 4. Any Godot 3.x references to "Spatial" nodes refer to "Node3D" in Godot 4.
+	</description>
+	<tutorials>
+		<link title="Introduction to 3D">$DOCS_URL/tutorials/3d/introduction_to_3d.html</link>
+		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
+	</tutorials>
+	<methods>
+		<method name="add_gizmo">
+			<return type="void" />
+			<param index="0" name="gizmo" type="Node3DGizmo" />
+			<description>
+				Attach an editor gizmo to this [Node3D].
+				[b]Note:[/b] The gizmo object would typically be an instance of [EditorNode3DGizmo], but the argument type is kept generic to avoid creating a dependency on editor classes in [Node3D].
+			</description>
+		</method>
+		<method name="clear_gizmos">
+			<return type="void" />
+			<description>
+				Clear all gizmos attached to this [Node3D].
+			</description>
+		</method>
+		<method name="clear_subgizmo_selection">
+			<return type="void" />
+			<description>
+				Clears subgizmo selection for this node in the editor. Useful when subgizmo IDs become invalid after a property change.
+			</description>
+		</method>
+		<method name="force_update_transform">
+			<return type="void" />
+			<description>
+				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
+			</description>
+		</method>
+		<method name="get_gizmos" qualifiers="const">
+			<return type="Node3DGizmo[]" />
+			<description>
+				Returns all the gizmos attached to this [Node3D].
+			</description>
+		</method>
+		<method name="get_global_transform_interpolated">
+			<return type="Transform3D" />
+			<description>
+				When using physics interpolation, there will be circumstances in which you want to know the interpolated (displayed) transform of a node rather than the standard transform (which may only be accurate to the most recent physics tick).
+				This is particularly important for frame-based operations that take place in [method Node._process], rather than [method Node._physics_process]. Examples include [Camera3D]s focusing on a node, or finding where to fire lasers from on a frame rather than physics tick.
+				[b]Note:[/b] This function creates an interpolation pump on the [Node3D] the first time it is called, which can respond to physics interpolation resets. If you get problems with "streaking" when initially following a [Node3D], be sure to call [method get_global_transform_interpolated] at least once [i]before[/i] resetting the [Node3D] physics interpolation.
+			</description>
+		</method>
+		<method name="get_parent_node_3d" qualifiers="const">
+			<return type="Node3D" />
+			<description>
+				Returns the parent [Node3D], or [code]null[/code] if no parent exists, the parent is not of type [Node3D], or [member top_level] is [code]true[/code].
+				[b]Note:[/b] Calling this method is not equivalent to [code]get_parent() as Node3D[/code], which does not take [member top_level] into account.
+			</description>
+		</method>
+		<method name="get_world_3d" qualifiers="const">
+			<return type="World3D" />
+			<description>
+				Returns the current [World3D] resource this [Node3D] node is registered to.
+			</description>
+		</method>
+		<method name="global_rotate">
+			<return type="void" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Rotates the global (world) transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in global coordinate system.
+			</description>
+		</method>
+		<method name="global_scale">
+			<return type="void" />
+			<param index="0" name="scale" type="Vector3" />
+			<description>
+				Scales the global (world) transformation by the given [Vector3] scale factors.
+			</description>
+		</method>
+		<method name="global_translate">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector3" />
+			<description>
+				Moves the global (world) transformation by [Vector3] offset. The offset is in global coordinate system.
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void" />
+			<description>
+				Disables rendering of this node. Changes [member visible] to [code]false[/code].
+			</description>
+		</method>
+		<method name="is_local_transform_notification_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether node notifies about its local transformation changes. [Node3D] will not propagate this by default.
+			</description>
+		</method>
+		<method name="is_scale_disabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
+			</description>
+		</method>
+		<method name="is_transform_notification_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default.
+			</description>
+		</method>
+		<method name="is_visible_in_tree" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree.
+				Visibility is checked only in parent nodes that inherit from [Node3D]. If the parent is of any other type (such as [Node], [AnimationPlayer], or [Node2D]), it is assumed to be visible.
+				[b]Note:[/b] This method does not take [member VisualInstance3D.layers] into account, so even if this method returns [code]true[/code], the node might end up not being rendered.
+			</description>
+		</method>
+		<method name="look_at">
+			<return type="void" />
+			<param index="0" name="target" type="Vector3" />
+			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="2" name="use_model_front" type="bool" default="false" />
+			<description>
+				Rotates the node so that the local forward axis (-Z, [constant Vector3.FORWARD]) points toward the [param target] position.
+				The local up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the local forward axis. The resulting transform is orthogonal, and the scale is preserved. Non-uniform scaling may not work correctly.
+				The [param target] position cannot be the same as the node's position, the [param up] vector cannot be zero.
+				The [param target] and the [param up] cannot be [constant Vector3.ZERO], and shouldn't be colinear to avoid unintended rotation around local Z axis.
+				Operations take place in global space, which means that the node must be in the scene tree.
+				If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position. By default, the -Z axis (camera forward) is treated as forward (implies +X is right).
+			</description>
+		</method>
+		<method name="look_at_from_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="target" type="Vector3" />
+			<param index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="3" name="use_model_front" type="bool" default="false" />
+			<description>
+				Moves the node to the specified [param position], and then rotates the node to point toward the [param target] as per [method look_at]. Operations take place in global space.
+			</description>
+		</method>
+		<method name="orthonormalize">
+			<return type="void" />
+			<description>
+				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
+			</description>
+		</method>
+		<method name="rotate">
+			<return type="void" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians.
+			</description>
+		</method>
+		<method name="rotate_object_local">
+			<return type="void" />
+			<param index="0" name="axis" type="Vector3" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Rotates the local transformation around axis, a unit [Vector3], by specified angle in radians. The rotation axis is in object-local coordinate system.
+			</description>
+		</method>
+		<method name="rotate_x">
+			<return type="void" />
+			<param index="0" name="angle" type="float" />
+			<description>
+				Rotates the local transformation around the X axis by angle in radians.
+			</description>
+		</method>
+		<method name="rotate_y">
+			<return type="void" />
+			<param index="0" name="angle" type="float" />
+			<description>
+				Rotates the local transformation around the Y axis by angle in radians.
+			</description>
+		</method>
+		<method name="rotate_z">
+			<return type="void" />
+			<param index="0" name="angle" type="float" />
+			<description>
+				Rotates the local transformation around the Z axis by angle in radians.
+			</description>
+		</method>
+		<method name="scale_object_local">
+			<return type="void" />
+			<param index="0" name="scale" type="Vector3" />
+			<description>
+				Scales the local transformation by given 3D scale factors in object-local coordinate system.
+			</description>
+		</method>
+		<method name="set_disable_scale">
+			<return type="void" />
+			<param index="0" name="disable" type="bool" />
+			<description>
+				Sets whether the node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale. Changes to the local transformation scale are preserved.
+			</description>
+		</method>
+		<method name="set_identity">
+			<return type="void" />
+			<description>
+				Reset all transformations for this node (sets its [Transform3D] to the identity matrix).
+			</description>
+		</method>
+		<method name="set_ignore_transform_notification">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether the node ignores notification that its transformation (global or local) changed.
+			</description>
+		</method>
+		<method name="set_notify_local_transform">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Sets whether the node notifies about its local transformation changes. [Node3D] will not propagate this by default.
+			</description>
+		</method>
+		<method name="set_notify_transform">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				Sets whether the node notifies about its global and local transformation changes. [Node3D] will not propagate this by default, unless it is in the editor context and it has a valid gizmo.
+			</description>
+		</method>
+		<method name="set_subgizmo_selection">
+			<return type="void" />
+			<param index="0" name="gizmo" type="Node3DGizmo" />
+			<param index="1" name="id" type="int" />
+			<param index="2" name="transform" type="Transform3D" />
+			<description>
+				Set subgizmo selection for this node in the editor.
+				[b]Note:[/b] The gizmo object would typically be an instance of [EditorNode3DGizmo], but the argument type is kept generic to avoid creating a dependency on editor classes in [Node3D].
+			</description>
+		</method>
+		<method name="show">
+			<return type="void" />
+			<description>
+				Enables rendering of this node. Changes [member visible] to [code]true[/code].
+			</description>
+		</method>
+		<method name="to_global" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="local_point" type="Vector3" />
+			<description>
+				Transforms [param local_point] from this node's local space to world space.
+			</description>
+		</method>
+		<method name="to_local" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="global_point" type="Vector3" />
+			<description>
+				Transforms [param global_point] from world space to this node's local space.
+			</description>
+		</method>
+		<method name="translate">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector3" />
+			<description>
+				Changes the node's position by the given offset [Vector3].
+				Note that the translation [param offset] is affected by the node's scale, so if scaled by e.g. [code](10, 1, 1)[/code], a translation by an offset of [code](2, 0, 0)[/code] would actually add 20 ([code]2 * 10[/code]) to the X coordinate.
+			</description>
+		</method>
+		<method name="translate_object_local">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector3" />
+			<description>
+				Changes the node's position by the given offset [Vector3] in local space.
+			</description>
+		</method>
+		<method name="update_gizmos">
+			<return type="void" />
+			<description>
+				Updates all the [Node3D] gizmos attached to this node.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
+			Basis of the [member transform] property. Represents the rotation, scale, and shear of this node.
+		</member>
+		<member name="global_basis" type="Basis" setter="set_global_basis" getter="get_global_basis">
+			Global basis of this node. This is equivalent to [code]global_transform.basis[/code].
+		</member>
+		<member name="global_position" type="Vector3" setter="set_global_position" getter="get_global_position">
+			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
+		</member>
+		<member name="global_rotation" type="Vector3" setter="set_global_rotation" getter="get_global_rotation">
+			Rotation part of the global transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
+			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
+		</member>
+		<member name="global_rotation_degrees" type="Vector3" setter="set_global_rotation_degrees" getter="get_global_rotation_degrees">
+			Helper property to access [member global_rotation] in degrees instead of radians.
+		</member>
+		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
+			World3D space (global) [Transform3D] of this node.
+		</member>
+		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
+			Local position or translation of this node relative to the parent. This is equivalent to [code]transform.origin[/code].
+		</member>
+		<member name="quaternion" type="Quaternion" setter="set_quaternion" getter="get_quaternion">
+			Access to the node rotation as a [Quaternion]. This property is ideal for tweening complex rotations.
+		</member>
+		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation" default="Vector3(0, 0, 0)">
+			Rotation part of the local transformation in radians, specified in terms of Euler angles. The angles construct a rotation in the order specified by the [member rotation_order] property.
+			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
+			[b]Note:[/b] This property is edited in the inspector in degrees. If you want to use degrees in a script, use [member rotation_degrees].
+		</member>
+		<member name="rotation_degrees" type="Vector3" setter="set_rotation_degrees" getter="get_rotation_degrees">
+			Helper property to access [member rotation] in degrees instead of radians.
+		</member>
+		<member name="rotation_edit_mode" type="int" setter="set_rotation_edit_mode" getter="get_rotation_edit_mode" enum="Node3D.RotationEditMode" default="0">
+			Specify how rotation (and scale) will be presented in the editor.
+		</member>
+		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="EulerOrder" default="2">
+			Specify the axis rotation order of the [member rotation] property. The final orientation is constructed by rotating the Euler angles in the order specified by this property.
+		</member>
+		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
+			Scale part of the local transformation.
+			[b]Note:[/b] Mixed negative scales in 3D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, the scale values will either be all positive or all negative.
+			[b]Note:[/b] Not all nodes are visually scaled by the [member scale] property. For example, [Light3D]s are not visually affected by [member scale].
+		</member>
+		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
+			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.
+		</member>
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			Local space [Transform3D] of this node, with respect to the parent node.
+		</member>
+		<member name="visibility_parent" type="NodePath" setter="set_visibility_parent" getter="get_visibility_parent" default="NodePath(&quot;&quot;)">
+			Defines the visibility range parent for this node and its subtree. The visibility parent must be a GeometryInstance3D. Any visual instance will only be visible if the visibility parent (and all of its visibility ancestors) is hidden by being closer to the camera than its own [member GeometryInstance3D.visibility_range_begin]. Nodes hidden via the [member Node3D.visible] property are essentially removed from the visibility dependency tree, so dependent instances will not take the hidden node or its ancestors into account.
+		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]true[/code], this node is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+		</member>
+	</members>
+	<signals>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when node visibility changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
+			[Node3D] nodes receive this notification when their global transform changes. This means that either the current or a parent node changed its transform.
+			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform]. The notification is also sent if the node is in the editor context and it has at least one valid gizmo.
+		</constant>
+		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
+			[Node3D] nodes receive this notification when they are registered to new [World3D] resource.
+		</constant>
+		<constant name="NOTIFICATION_EXIT_WORLD" value="42">
+			[Node3D] nodes receive this notification when they are unregistered from current [World3D] resource.
+		</constant>
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
+			[Node3D] nodes receive this notification when their visibility changes.
+		</constant>
+		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="44">
+			[Node3D] nodes receive this notification when their local transform changes. This is not received when the transform of a parent node is changed.
+			In order for [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_local_transform].
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
+			The rotation is edited using [Vector3] Euler angles.
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
+			The rotation is edited using a [Quaternion].
+		</constant>
+		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
+			The rotation is edited using a [Basis]. In this mode, [member scale] can't be edited separately.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Shader" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A shader implemented in the Godot shading language.
+	</brief_description>
+	<description>
+		A custom shader program implemented in the Godot shading language, saved with the [code].gdshader[/code] extension.
+		This class is used by a [ShaderMaterial] and allows you to write your own custom behavior for rendering visual items or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
+	</description>
+	<tutorials>
+		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_default_texture_parameter" qualifiers="const">
+			<return type="Texture" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="index" type="int" default="0" />
+			<description>
+				Returns the texture that is set as default for the specified parameter.
+				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const">
+			<return type="int" enum="Shader.Mode" />
+			<description>
+				Returns the shader mode for the shader.
+			</description>
+		</method>
+		<method name="get_shader_uniform_list">
+			<return type="Array" />
+			<param index="0" name="get_groups" type="bool" default="false" />
+			<description>
+				Returns the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
+				If argument [param get_groups] is [code]true[/code], parameter grouping hints are also included in the list.
+			</description>
+		</method>
+		<method name="inspect_native_shader_code">
+			<return type="void" />
+			<description>
+				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Material.inspect_native_shader_code].
+			</description>
+		</method>
+		<method name="set_default_texture_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="texture" type="Texture" />
+			<param index="2" name="index" type="int" default="0" />
+			<description>
+				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].
+				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
+				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
+			Returns the shader's code as the user has written it, not the full generated code used internally.
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_SPATIAL" value="0" enum="Mode">
+			Mode used to draw all 3D objects.
+		</constant>
+		<constant name="MODE_CANVAS_ITEM" value="1" enum="Mode">
+			Mode used to draw all 2D objects.
+		</constant>
+		<constant name="MODE_PARTICLES" value="2" enum="Mode">
+			Mode used to calculate particle information on a per-particle basis. Not used for drawing.
+		</constant>
+		<constant name="MODE_SKY" value="3" enum="Mode">
+			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
+		</constant>
+		<constant name="MODE_FOG" value="4" enum="Mode">
+			Mode used for setting the color and density of volumetric fog effect.
+		</constant>
+	</constants>
+</class>

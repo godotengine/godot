@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBoxFlat" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A customizable [StyleBox] that doesn't use a texture.
+	</brief_description>
+	<description>
+		By configuring various properties of this style box, you can achieve many common looks without the need of a texture. This includes optionally rounded borders, antialiasing, shadows, and skew.
+		Setting corner radius to high values is allowed. As soon as corners overlap, the stylebox will switch to a relative system:
+		[codeblock lang=text]
+		height = 30
+		corner_radius_top_left = 50
+		corner_radius_bottom_left = 100
+		[/codeblock]
+		The relative system now would take the 1:2 ratio of the two left corners to calculate the actual corner width. Both corners added will [b]never[/b] be more than the height. Result:
+		[codeblock lang=text]
+		corner_radius_top_left: 10
+		corner_radius_bottom_left: 20
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_border_width" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the specified [enum Side]'s border width.
+			</description>
+		</method>
+		<method name="get_border_width_min" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the smallest border width out of all four borders.
+			</description>
+		</method>
+		<method name="get_corner_radius" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<description>
+				Returns the given [param corner]'s radius. See [enum Corner] for possible values.
+			</description>
+		</method>
+		<method name="get_expand_margin" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<description>
+				Returns the size of the specified [enum Side]'s expand margin.
+			</description>
+		</method>
+		<method name="set_border_width">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="width" type="int" />
+			<description>
+				Sets the specified [enum Side]'s border width to [param width] pixels.
+			</description>
+		</method>
+		<method name="set_border_width_all">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<description>
+				Sets the border width to [param width] pixels for all sides.
+			</description>
+		</method>
+		<method name="set_corner_radius">
+			<return type="void" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<param index="1" name="radius" type="int" />
+			<description>
+				Sets the corner radius to [param radius] pixels for the given [param corner]. See [enum Corner] for possible values.
+			</description>
+		</method>
+		<method name="set_corner_radius_all">
+			<return type="void" />
+			<param index="0" name="radius" type="int" />
+			<description>
+				Sets the corner radius to [param radius] pixels for all corners.
+			</description>
+		</method>
+		<method name="set_expand_margin">
+			<return type="void" />
+			<param index="0" name="margin" type="int" enum="Side" />
+			<param index="1" name="size" type="float" />
+			<description>
+				Sets the expand margin to [param size] pixels for the specified [enum Side].
+			</description>
+		</method>
+		<method name="set_expand_margin_all">
+			<return type="void" />
+			<param index="0" name="size" type="float" />
+			<description>
+				Sets the expand margin to [param size] pixels for all sides.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="anti_aliasing" type="bool" setter="set_anti_aliased" getter="is_anti_aliased" default="true">
+			Antialiasing draws a small ring around the edges, which fades to transparency. As a result, edges look much smoother. This is only noticeable when using rounded corners or [member skew].
+			[b]Note:[/b] When using beveled corners with 45-degree angles ([member corner_detail] = 1), it is recommended to set [member anti_aliasing] to [code]false[/code] to ensure crisp visuals and avoid possible visual glitches.
+		</member>
+		<member name="anti_aliasing_size" type="float" setter="set_aa_size" getter="get_aa_size" default="1.0">
+			This changes the size of the antialiasing effect. [code]1.0[/code] is recommended for an optimal result at 100% scale, identical to how rounded rectangles are rendered in web browsers and most vector drawing software.
+			[b]Note:[/b] Higher values may produce a blur effect but can also create undesired artifacts on small boxes with large-radius corners.
+		</member>
+		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">
+			The background color of the stylebox.
+		</member>
+		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
+			If [code]true[/code], the border will fade into the background color.
+		</member>
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0.8, 0.8, 0.8, 1)">
+			Sets the color of the border.
+		</member>
+		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
+			Border width for the bottom border.
+		</member>
+		<member name="border_width_left" type="int" setter="set_border_width" getter="get_border_width" default="0">
+			Border width for the left border.
+		</member>
+		<member name="border_width_right" type="int" setter="set_border_width" getter="get_border_width" default="0">
+			Border width for the right border.
+		</member>
+		<member name="border_width_top" type="int" setter="set_border_width" getter="get_border_width" default="0">
+			Border width for the top border.
+		</member>
+		<member name="corner_detail" type="int" setter="set_corner_detail" getter="get_corner_detail" default="8">
+			This sets the number of vertices used for each corner. Higher values result in rounder corners but take more processing power to compute. When choosing a value, you should take the corner radius ([method set_corner_radius_all]) into account.
+			For corner radii less than 10, [code]4[/code] or [code]5[/code] should be enough. For corner radii less than 30, values between [code]8[/code] and [code]12[/code] should be enough.
+			A corner detail of [code]1[/code] will result in chamfered corners instead of rounded corners, which is useful for some artistic effects.
+		</member>
+		<member name="corner_radius_bottom_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The bottom-left corner's radius. If [code]0[/code], the corner is not rounded.
+		</member>
+		<member name="corner_radius_bottom_right" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The bottom-right corner's radius. If [code]0[/code], the corner is not rounded.
+		</member>
+		<member name="corner_radius_top_left" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The top-left corner's radius. If [code]0[/code], the corner is not rounded.
+		</member>
+		<member name="corner_radius_top_right" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
+			The top-right corner's radius. If [code]0[/code], the corner is not rounded.
+		</member>
+		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
+			Toggles drawing of the inner part of the stylebox.
+		</member>
+		<member name="expand_margin_bottom" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the bottom edge. Useful in combination with [member border_width_bottom] to draw a border outside the control rect.
+			[b]Note:[/b] Unlike [member StyleBox.content_margin_bottom], [member expand_margin_bottom] does [i]not[/i] affect the size of the clickable area for [Control]s. This can negatively impact usability if used wrong, as the user may try to click an area of the StyleBox that cannot actually receive clicks.
+		</member>
+		<member name="expand_margin_left" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the left edge. Useful in combination with [member border_width_left] to draw a border outside the control rect.
+			[b]Note:[/b] Unlike [member StyleBox.content_margin_left], [member expand_margin_left] does [i]not[/i] affect the size of the clickable area for [Control]s. This can negatively impact usability if used wrong, as the user may try to click an area of the StyleBox that cannot actually receive clicks.
+		</member>
+		<member name="expand_margin_right" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the right edge. Useful in combination with [member border_width_right] to draw a border outside the control rect.
+			[b]Note:[/b] Unlike [member StyleBox.content_margin_right], [member expand_margin_right] does [i]not[/i] affect the size of the clickable area for [Control]s. This can negatively impact usability if used wrong, as the user may try to click an area of the StyleBox that cannot actually receive clicks.
+		</member>
+		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
+			Expands the stylebox outside of the control rect on the top edge. Useful in combination with [member border_width_top] to draw a border outside the control rect.
+			[b]Note:[/b] Unlike [member StyleBox.content_margin_top], [member expand_margin_top] does [i]not[/i] affect the size of the clickable area for [Control]s. This can negatively impact usability if used wrong, as the user may try to click an area of the StyleBox that cannot actually receive clicks.
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0.6)">
+			The color of the shadow. This has no effect if [member shadow_size] is lower than 1.
+		</member>
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset" default="Vector2(0, 0)">
+			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
+		</member>
+		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="0">
+			The shadow size in pixels.
+		</member>
+		<member name="skew" type="Vector2" setter="set_skew" getter="get_skew" default="Vector2(0, 0)">
+			If set to a non-zero value on either axis, [member skew] distorts the StyleBox horizontally and/or vertically. This can be used for "futuristic"-style UIs. Positive values skew the StyleBox towards the right (X axis) and upwards (Y axis), while negative values skew the StyleBox towards the left (X axis) and downwards (Y axis).
+			[b]Note:[/b] To ensure text does not touch the StyleBox's edges, consider increasing the [StyleBox]'s content margin (see [member StyleBox.content_margin_bottom]). It is preferable to increase the content margin instead of the expand margin (see [member expand_margin_bottom]), as increasing the expand margin does not increase the size of the clickable area for [Control]s.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpriteFrames" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Sprite frame library for AnimatedSprite2D and AnimatedSprite3D.
+	</brief_description>
+	<description>
+		Sprite frame library for an [AnimatedSprite2D] or [AnimatedSprite3D] node. Contains frames and animation data for playback.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_animation">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Adds a new [param anim] animation to the library.
+			</description>
+		</method>
+		<method name="add_frame">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="texture" type="Texture2D" />
+			<param index="2" name="duration" type="float" default="1.0" />
+			<param index="3" name="at_position" type="int" default="-1" />
+			<description>
+				Adds a frame to the [param anim] animation. If [param at_position] is [code]-1[/code], the frame will be added to the end of the animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Removes all frames from the [param anim] animation.
+			</description>
+		</method>
+		<method name="clear_all">
+			<return type="void" />
+			<description>
+				Removes all animations. An empty [code]default[/code] animation will be created.
+			</description>
+		</method>
+		<method name="duplicate_animation">
+			<return type="void" />
+			<param index="0" name="anim_from" type="StringName" />
+			<param index="1" name="anim_to" type="StringName" />
+			<description>
+				Duplicates the animation [param anim_from] to a new animation named [param anim_to]. Fails if [param anim_to] already exists, or if [param anim_from] does not exist.
+			</description>
+		</method>
+		<method name="get_animation_loop" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given animation is configured to loop when it finishes playing. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
+		<method name="get_animation_names" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
+			</description>
+		</method>
+		<method name="get_animation_speed" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Returns the speed in frames per second for the [param anim] animation.
+			</description>
+		</method>
+		<method name="get_frame_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Returns the number of frames for the [param anim] animation.
+			</description>
+		</method>
+		<method name="get_frame_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns a relative duration of the frame [param idx] in the [param anim] animation (defaults to [code]1.0[/code]). For example, a frame with a duration of [code]2.0[/code] is displayed twice as long as a frame with a duration of [code]1.0[/code]. You can calculate the absolute duration (in seconds) of a frame using the following formula:
+				[codeblock]
+				absolute_duration = relative_duration / (animation_fps * abs(playing_speed))
+				[/codeblock]
+				In this example, [code]playing_speed[/code] refers to either [method AnimatedSprite2D.get_playing_speed] or [method AnimatedSprite3D.get_playing_speed].
+			</description>
+		</method>
+		<method name="get_frame_texture" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the texture of the frame [param idx] in the [param anim] animation.
+			</description>
+		</method>
+		<method name="has_animation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [param anim] animation exists.
+			</description>
+		</method>
+		<method name="remove_animation">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Removes the [param anim] animation.
+			</description>
+		</method>
+		<method name="remove_frame">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Removes the [param anim] animation's frame [param idx].
+			</description>
+		</method>
+		<method name="rename_animation">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="newname" type="StringName" />
+			<description>
+				Changes the [param anim] animation's name to [param newname].
+			</description>
+		</method>
+		<method name="set_animation_loop">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="loop" type="bool" />
+			<description>
+				If [param loop] is [code]true[/code], the [param anim] animation will loop when it reaches the end, or the start if it is played in reverse.
+			</description>
+		</method>
+		<method name="set_animation_speed">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="fps" type="float" />
+			<description>
+				Sets the speed for the [param anim] animation in frames per second.
+			</description>
+		</method>
+		<method name="set_frame">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="texture" type="Texture2D" />
+			<param index="3" name="duration" type="float" default="1.0" />
+			<description>
+				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
+			</description>
+		</method>
+	</methods>
+</class>

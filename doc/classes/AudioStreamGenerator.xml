@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamGenerator" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An audio stream with utilities for procedural sound generation.
+	</brief_description>
+	<description>
+		[AudioStreamGenerator] is a type of audio stream that does not play back sounds on its own; instead, it expects a script to generate audio data for it. See also [AudioStreamGeneratorPlayback].
+		Here's a sample on how to use it to generate a sine wave:
+		[codeblocks]
+		[gdscript]
+		var playback # Will hold the AudioStreamGeneratorPlayback.
+		@onready var sample_hz = $AudioStreamPlayer.stream.mix_rate
+		var pulse_hz = 440.0 # The frequency of the sound wave.
+		var phase = 0.0
+
+		func _ready():
+		    $AudioStreamPlayer.play()
+		    playback = $AudioStreamPlayer.get_stream_playback()
+		    fill_buffer()
+
+		func fill_buffer():
+		    var increment = pulse_hz / sample_hz
+		    var frames_available = playback.get_frames_available()
+
+		    for i in range(frames_available):
+		        playback.push_frame(Vector2.ONE * sin(phase * TAU))
+		        phase = fmod(phase + increment, 1.0)
+		[/gdscript]
+		[csharp]
+		[Export] public AudioStreamPlayer Player { get; set; }
+
+		private AudioStreamGeneratorPlayback _playback; // Will hold the AudioStreamGeneratorPlayback.
+		private float _sampleHz;
+		private float _pulseHz = 440.0f; // The frequency of the sound wave.
+		private double phase = 0.0;
+
+		public override void _Ready()
+		{
+		    if (Player.Stream is AudioStreamGenerator generator) // Type as a generator to access MixRate.
+		    {
+		        _sampleHz = generator.MixRate;
+		        Player.Play();
+		        _playback = (AudioStreamGeneratorPlayback)Player.GetStreamPlayback();
+		        FillBuffer();
+		    }
+		}
+
+		public void FillBuffer()
+		{
+		    float increment = _pulseHz / _sampleHz;
+		    int framesAvailable = _playback.GetFramesAvailable();
+
+		    for (int i = 0; i &lt; framesAvailable; i++)
+		    {
+		        _playback.PushFrame(Vector2.One * (float)Mathf.Sin(phase * Mathf.Tau));
+		        phase = Mathf.PosMod(phase + increment, 1.0);
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
+		In the example above, the "AudioStreamPlayer" node must use an [AudioStreamGenerator] as its stream. The [code]fill_buffer[/code] function provides audio data for approximating a sine wave.
+		See also [AudioEffectSpectrumAnalyzer] for performing real-time audio spectrum analysis.
+		[b]Note:[/b] Due to performance constraints, this class is best used from C# or from a compiled language via GDExtension. If you still want to use this class from GDScript, consider using a lower [member mix_rate] such as 11,025 Hz or 22,050 Hz.
+	</description>
+	<tutorials>
+		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
+	</tutorials>
+	<members>
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">
+			The length of the buffer to generate (in seconds). Lower values result in less latency, but require the script to generate audio data faster, resulting in increased CPU usage and more risk for audio cracking if the CPU can't keep up.
+		</member>
+		<member name="mix_rate" type="float" setter="set_mix_rate" getter="get_mix_rate" default="44100.0">
+			The sample rate to use (in Hz). Higher values are more demanding for the CPU to generate, but result in better quality.
+			In games, common sample rates in use are [code]11025[/code], [code]16000[/code], [code]22050[/code], [code]32000[/code], [code]44100[/code], and [code]48000[/code].
+			According to the [url=https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem]Nyquist-Shannon sampling theorem[/url], there is no quality difference to human hearing when going past 40,000 Hz (since most humans can only hear up to ~20,000 Hz, often less). If you are generating lower-pitched sounds such as voices, lower sample rates such as [code]32000[/code] or [code]22050[/code] may be usable with no loss in quality.
+			[b]Note:[/b] [AudioStreamGenerator] is not automatically resampling input data, to produce expected result [member mix_rate_mode] should match the sampling rate of input data.
+			[b]Note:[/b] If you are using [AudioEffectCapture] as the source of your data, set [member mix_rate_mode] to [constant MIX_RATE_INPUT] or [constant MIX_RATE_OUTPUT] to automatically match current [AudioServer] mixing rate.
+		</member>
+		<member name="mix_rate_mode" type="int" setter="set_mix_rate_mode" getter="get_mix_rate_mode" enum="AudioStreamGenerator.AudioStreamGeneratorMixRate" default="2">
+			Mixing rate mode. If set to [constant MIX_RATE_CUSTOM], [member mix_rate] is used, otherwise current [AudioServer] mixing rate is used.
+		</member>
+	</members>
+	<constants>
+		<constant name="MIX_RATE_OUTPUT" value="0" enum="AudioStreamGeneratorMixRate">
+			Current [AudioServer] output mixing rate.
+		</constant>
+		<constant name="MIX_RATE_INPUT" value="1" enum="AudioStreamGeneratorMixRate">
+			Current [AudioServer] input mixing rate.
+		</constant>
+		<constant name="MIX_RATE_CUSTOM" value="2" enum="AudioStreamGeneratorMixRate">
+			Custom mixing rate, specified by [member mix_rate].
+		</constant>
+		<constant name="MIX_RATE_MAX" value="3" enum="AudioStreamGeneratorMixRate">
+			Maximum value for the mixing rate mode enum.
+		</constant>
+	</constants>
+</class>
