@@ -134,6 +134,11 @@ private:
 		Callable custom_draw_callback;
 	};
 
+	struct RegionStyle {
+		int64_t column;
+		Color color;
+	};
+
 	class Text {
 	public:
 		struct Gutter {
@@ -572,9 +577,9 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
+	HashMap<int, Vector<RegionStyle>> syntax_highlighting_cache;
 
-	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
+	Vector<RegionStyle> _get_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
 
 	/* Visual. */
