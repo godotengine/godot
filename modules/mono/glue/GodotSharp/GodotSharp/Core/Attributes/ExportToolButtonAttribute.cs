@@ -7,7 +7,7 @@ namespace Godot
     /// <summary>
     /// Exports the annotated <see cref="Callable"/> as a clickable button.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property)]
     public sealed class ExportToolButtonAttribute : Attribute
     {
         /// <summary>
