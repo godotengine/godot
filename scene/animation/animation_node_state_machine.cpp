@@ -1843,7 +1843,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "state_machine_type", PROPERTY_HINT_ENUM, "Root,Nested,Grouped"), "set_state_machine_type", "get_state_machine_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_ends"), "set_reset_ends", "are_ends_reset");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_transition", PROPERTY_HINT_RESOURCE_TYPE, ""), "set_default_transition", "get_default_transition");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_transition", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachineTransition"), "set_default_transition", "get_default_transition");
 
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
