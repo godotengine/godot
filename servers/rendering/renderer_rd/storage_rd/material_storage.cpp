@@ -1863,7 +1863,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 
 	pos += p_index;
 
-	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[pos], true); //instances always use linear color in this renderer
+	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[pos], value_type != Variant::COLOR);
 	_global_shader_uniform_mark_buffer_dirty(pos, 1);
 }
 
