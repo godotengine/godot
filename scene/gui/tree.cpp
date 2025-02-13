@@ -5845,6 +5845,14 @@ bool Tree::is_recursive_folding_enabled() const {
 	return enable_recursive_folding;
 }
 
+void Tree::set_enable_drag_unfolding(bool p_enable) {
+	enable_drag_unfolding = p_enable;
+}
+
+bool Tree::is_drag_unfolding_enabled() const {
+	return enable_drag_unfolding;
+}
+
 void Tree::set_drop_mode_flags(int p_flags) {
 	if (drop_mode_flags == p_flags) {
 		return;
@@ -5972,6 +5980,9 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_recursive_folding", "enable"), &Tree::set_enable_recursive_folding);
 	ClassDB::bind_method(D_METHOD("is_recursive_folding_enabled"), &Tree::is_recursive_folding_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_enable_drag_unfolding", "enable"), &Tree::set_enable_drag_unfolding);
+	ClassDB::bind_method(D_METHOD("is_drag_unfolding_enabled"), &Tree::is_drag_unfolding_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_drop_mode_flags", "flags"), &Tree::set_drop_mode_flags);
 	ClassDB::bind_method(D_METHOD("get_drop_mode_flags"), &Tree::get_drop_mode_flags);
 
@@ -5994,6 +6005,7 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_folding"), "set_hide_folding", "is_folding_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_recursive_folding"), "set_enable_recursive_folding", "is_recursive_folding_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_drag_unfolding"), "set_enable_drag_unfolding", "is_drag_unfolding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_root"), "set_hide_root", "is_root_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "drop_mode_flags", PROPERTY_HINT_FLAGS, "On Item,In Between"), "set_drop_mode_flags", "get_drop_mode_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");

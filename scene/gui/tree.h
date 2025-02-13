@@ -700,6 +700,8 @@ private:
 
 	bool enable_recursive_folding = true;
 
+	bool enable_drag_unfolding = true;
+
 	bool enable_auto_tooltip = true;
 
 	void _determine_hovered_item();
@@ -818,6 +820,9 @@ public:
 
 	void set_enable_recursive_folding(bool p_enable);
 	bool is_recursive_folding_enabled() const;
+
+	void set_enable_drag_unfolding(bool p_enable);
+	bool is_drag_unfolding_enabled() const;
 
 	void set_drop_mode_flags(int p_flags);
 	int get_drop_mode_flags() const;
