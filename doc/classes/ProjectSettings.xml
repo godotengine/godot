@@ -1429,9 +1429,14 @@
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] Use [method DisplayServer.tablet_set_current_driver] to switch tablet driver in runtime.
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
-			Override for [member input_devices/pen_tablet/driver] on Windows.
+			Override for [member input_devices/pen_tablet/driver] on Windows. Supported values are:
+			- [code]auto[/code] (default), uses [code]wintab[/code] if Windows Ink is disabled in the Wacom Tablet Properties or system settings, [code]winink[/code] otherwise.
+			- [code]winink[/code], uses Windows native "Windows Ink" driver.
+			- [code]wintab[/code], uses Wacom "WinTab" driver.
+			- [code]dummy[/code], tablet input is disabled.
 		</member>
 		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
