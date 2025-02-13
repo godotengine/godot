@@ -308,6 +308,8 @@ void FileAccessWindows::seek_end(int64_t p_position) {
 }
 
 uint64_t FileAccessWindows::get_position() const {
+	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
+
 	int64_t aux_position = _ftelli64(f);
 	if (aux_position < 0) {
 		check_errors();
