@@ -165,7 +165,7 @@ int64_t VideoStreamPlaybackTheora::seek_streams(double p_time, int64_t &cur_vide
 			ogg_page page;
 			uint64_t last_seek_pos = file->get_position() - oy.fill + oy.returned;
 			int ret = read_page(&page);
-			if (ret <= 0) { // Enf of file
+			if (ret <= 0) { // End of file.
 				if (seek_pos < stream_data_offset) { // We've already searched the whole file
 					return -1;
 				}
