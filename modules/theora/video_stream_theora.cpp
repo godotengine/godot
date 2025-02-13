@@ -426,17 +426,11 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	px_fmt = ti.pixel_fmt;
 	switch (ti.pixel_fmt) {
 		case TH_PF_420:
-			//printf(" 4:2:0 video\n");
-			break;
 		case TH_PF_422:
-			//printf(" 4:2:2 video\n");
-			break;
 		case TH_PF_444:
-			//printf(" 4:4:4 video\n");
 			break;
-		case TH_PF_RSVD:
 		default:
-			printf(" video\n  (UNKNOWN Chroma sampling!)\n");
+			WARN_PRINT(" video\n  (UNKNOWN Chroma sampling!)\n");
 			break;
 	}
 	th_decode_ctl(td, TH_DECCTL_GET_PPLEVEL_MAX, &pp_level_max, sizeof(pp_level_max));
