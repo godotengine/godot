@@ -517,7 +517,7 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 		ogg_packet op;
 
 		while (!audio_ready && !audio_done) {
-			// Send remaining frames
+			// Send remaining frames.
 			if (!send_audio()) {
 				audio_ready = true;
 				break;
