@@ -405,6 +405,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
 	Vector<String> tablet_drivers;
+	bool winink_disabled = false;
 
 	enum DriverID {
 		DRIVER_ID_COMPAT_OPENGL3 = 1 << 0,
