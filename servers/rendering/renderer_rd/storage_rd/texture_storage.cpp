@@ -2358,7 +2358,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
 		case RD::DATA_FORMAT_R32G32B32A32_SFLOAT: {
-			r_format.image_format = Image::FORMAT_RGBF;
+			r_format.image_format = Image::FORMAT_RGBAF;
 			r_format.rd_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
@@ -2531,7 +2531,6 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break;
-		/* already maps to FORMAT_ETC2_RGBA8
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RGBA8;
@@ -2542,7 +2541,6 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
-		*/
 		case RD::DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RGB8A1;
@@ -2553,6 +2551,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
+		/* already maps to FORMAT_ETC2_RGBA8
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RA_AS_RG;
@@ -2562,7 +2561,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
+		} break;*/
 		/* already maps to FORMAT_DXT5
 		case RD::DATA_FORMAT_BC3_UNORM_BLOCK:
 		case RD::DATA_FORMAT_BC3_SRGB_BLOCK: {
@@ -2598,6 +2597,10 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			// Q: Do we do as we do below, just create the sRGB variant?
 			r_format.image_format = Image::FORMAT_ASTC_8x8;
 			r_format.rd_format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case RD::DATA_FORMAT_ASTC_8x8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ASTC_8x8_HDR;
