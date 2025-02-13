@@ -527,6 +527,9 @@ void EditorNode::_update_from_settings() {
 
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	TranslationServer::get_singleton()->set_custom_language_codes(GLOBAL_GET("internationalization/locale/custom_language_codes"));
+	TranslationServer::get_singleton()->set_custom_country_codes(GLOBAL_GET("internationalization/locale/custom_country_codes"));
+
 	_update_translations();
 
 #ifdef DEBUG_ENABLED

@@ -33,6 +33,24 @@
 				Compares two locales and returns a similarity score between [code]0[/code] (no match) and [code]10[/code] (full match).
 			</description>
 		</method>
+		<method name="find_country" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="str" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="find_language" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="str" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="find_script" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="str" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="get_all_countries" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>

@@ -2555,6 +2555,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
+	// Load custom locale codes.
+	translation_server->set_custom_language_codes(GLOBAL_GET("internationalization/locale/custom_language_codes"));
+	translation_server->set_custom_country_codes(GLOBAL_GET("internationalization/locale/custom_country_codes"));
+
 #ifdef TOOLS_ENABLED
 	if (!force_res && project_manager) {
 		// Ensure splash screen size matches the project manager window size
