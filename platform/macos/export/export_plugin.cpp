@@ -63,6 +63,10 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		ERR_PRINT("Invalid architecture");
 	}
 
+	if (p_preset->get("shader_baker/export")) {
+		r_features->push_back("shader_baker");
+	}
+
 	if (architecture == "universal") {
 		r_features->push_back("x86_64");
 		r_features->push_back("arm64");
@@ -96,6 +100,12 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid bundle identifier:") + " " + pn_err;
+			}
+		}
+
+		if (p_name == "shader_baker/export") {
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
 			}
 		}
 
@@ -467,6 +477,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/export"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 

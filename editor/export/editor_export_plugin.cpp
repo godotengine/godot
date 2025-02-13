@@ -33,6 +33,14 @@
 #include "core/config/project_settings.h"
 #include "editor/export/editor_export_platform.h"
 
+void EditorExportPlugin::set_export_base_path(const String &p_export_base_path) {
+	export_base_path = p_export_base_path;
+}
+
+const String &EditorExportPlugin::get_export_base_path() const {
+	return export_base_path;
+}
+
 void EditorExportPlugin::set_export_preset(const Ref<EditorExportPreset> &p_preset) {
 	if (p_preset.is_valid()) {
 		export_preset = p_preset;

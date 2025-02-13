@@ -9111,18 +9111,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	int prop_index = 0;
 #ifdef DEBUG_ENABLED
 	uint64_t uniform_buffer_size = 0;
-	uint64_t max_uniform_buffer_size = 0;
+	uint64_t max_uniform_buffer_size = 65536;
 	int uniform_buffer_exceeded_line = -1;
-
-	bool check_device_limit_warnings = false;
-	{
-		RenderingDevice *device = RenderingDevice::get_singleton();
-		if (device != nullptr) {
-			check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
-
-			max_uniform_buffer_size = device->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
-		}
-	}
+	bool check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
 #endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
