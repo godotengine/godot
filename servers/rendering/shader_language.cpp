@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 #include "shader_types.h"
 
@@ -9111,17 +9112,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	int prop_index = 0;
 #ifdef DEBUG_ENABLED
 	uint64_t uniform_buffer_size = 0;
-	uint64_t max_uniform_buffer_size = 0;
+	uint64_t max_uniform_buffer_size = 65536;
 	int uniform_buffer_exceeded_line = -1;
-
-	bool check_device_limit_warnings = false;
-	{
-		RenderingDevice *device = RenderingDevice::get_singleton();
-		if (device != nullptr) {
-			check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
-
-			max_uniform_buffer_size = device->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
-		}
+	bool check_device_limit_warnings = check_warnings && HAS_WARNING(ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
+	// Can be false for internal shaders created in the process of initializing the engine.
+	if (RSG::utilities) {
+		max_uniform_buffer_size = RSG::utilities->get_maximum_uniform_buffer_size();
 	}
 #endif // DEBUG_ENABLED
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
@@ -10959,6 +10955,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 		tk = _get_token();
 	}
+	uint32_t varying_index = base_varying_index;
+	uint32_t max_varyings = 31;
+	// Can be false for internal shaders created in the process of initializing the engine.
+	if (RSG::utilities) {
+		max_varyings = RSG::utilities->get_maximum_shader_varyings();
+	}
 
 	for (const KeyValue<StringName, ShaderNode::Varying> &kv : shader->varyings) {
 		if (kv.value.stage != ShaderNode::Varying::STAGE_FRAGMENT && (kv.value.type > TYPE_BVEC4 && kv.value.type < TYPE_FLOAT) && kv.value.interpolation != INTERPOLATION_FLAT) {
@@ -10966,6 +10968,14 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			_set_error(vformat(RTR("Varying with integer data type must be declared with `%s` interpolation qualifier."), "flat"));
 			return ERR_PARSE_ERROR;
 		}
+
+		if (varying_index + kv.value.get_size() > max_varyings) {
+			_set_tkpos(kv.value.tkpos);
+			_set_error(vformat(RTR("Too many varyings used in shader (%d used, maximum supported is %d)."), varying_index + kv.value.get_size(), max_varyings));
+			return ERR_PARSE_ERROR;
+		}
+
+		varying_index += kv.value.get_size();
 	}
 
 #ifdef DEBUG_ENABLED
@@ -11183,6 +11193,7 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 	global_shader_uniform_get_type_func = p_info.global_shader_uniform_type_func;
 
 	varying_function_names = p_info.varying_function_names;
+	base_varying_index = p_info.base_varying_index;
 
 	nodes = nullptr;
 
