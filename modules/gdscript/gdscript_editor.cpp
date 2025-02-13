@@ -878,8 +878,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 		if (requires_type && !ClassDB::is_parent_class(p_dir->get_file_type(i), p_required_type)) {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
-		option.insert_text = option.display.quote(quote_style);
+		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i).quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
 		r_list.insert(option.display, option);
 	}
 
