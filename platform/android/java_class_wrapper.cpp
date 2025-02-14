@@ -517,6 +517,20 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		env->DeleteLocalRef(E);
 	}
 
+	jobject exception = env->ExceptionOccurred();
+	if (exception) {
+		env->ExceptionClear();
+
+		jclass java_class = env->GetObjectClass(exception);
+		Ref<JavaClass> java_class_wrapped = JavaClassWrapper::singleton->wrap_jclass(java_class);
+		env->DeleteLocalRef(java_class);
+
+		JavaClassWrapper::singleton->exception.instantiate(java_class_wrapped, exception);
+		env->DeleteLocalRef(exception);
+	} else {
+		JavaClassWrapper::singleton->exception.unref();
+	}
+
 	return success;
 }
 
