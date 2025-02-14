@@ -768,9 +768,10 @@ def show_progress(env):
 
             # Progress reporting is not available in non-TTY environments since it
             # messes with the output (for example, when writing to a file).
-            self.display = cast(bool, self.max and env["progress"] and sys.stdout.isatty())
+            self.display = cast(bool, env["progress"] and sys.stdout.isatty())
             if self.display and not self.max:
                 print_info("Performing initial build, progress percentage unavailable!")
+                self.display = False
 
         def __call__(self, node, *args, **kw):
             self.count += 1
@@ -853,9 +854,6 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
 
 
 def prepare_cache(env) -> None:
-    if env.GetOption("clean"):
-        return
-
     cache_path = ""
     if env["cache_path"]:
         cache_path = cast(str, env["cache_path"])
@@ -907,21 +905,19 @@ def prepare_timer():
     def print_elapsed_time(time_at_start: float):
         time_elapsed = time.time() - time_at_start
         time_formatted = time.strftime("%H:%M:%S", time.gmtime(time_elapsed))
-        time_centiseconds = round((time_elapsed % 1) * 100)
-        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds}")
+        time_centiseconds = (time_elapsed % 1) * 100
+        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds:02.0f}")
 
     atexit.register(print_elapsed_time, time.time())
 
 
 def dump(env):
-    # Dumps latest build information for debugging purposes and external tools.
-    from json import dump
+    """
+    Dumps latest build information for debugging purposes and external tools.
+    """
 
-    def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
-
-    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as f:
-        dump(env.Dictionary(), f, indent=4, default=non_serializable)
+    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as file:
+        file.write(env.Dump(format="json"))
 
 
 # Custom Visual Studio project generation logic that supports any platform that has a msvs.py
