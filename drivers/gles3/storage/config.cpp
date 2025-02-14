@@ -78,7 +78,7 @@ Config::Config() {
 #endif
 
 	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("EXT_texture_compression_bptc");
-	astc_supported = extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("GL_KHR_texture_compression_astc_hdr");
+	astc_supported = extensions.has("WEBGL_compressed_texture_astc") || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("GL_KHR_texture_compression_astc_hdr");
 	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
 	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 
