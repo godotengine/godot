@@ -705,6 +705,8 @@ Dictionary OpenXRInterface::get_system_info() {
 	if (openxr_api) {
 		dict[SNAME("XRRuntimeName")] = openxr_api->get_runtime_name();
 		dict[SNAME("XRRuntimeVersion")] = openxr_api->get_runtime_version();
+		dict[SNAME("OpenXRSystemName")] = openxr_api->get_system_name();
+		dict[SNAME("OpenXRVendorID")] = openxr_api->get_vendor_id();
 	}
 
 	return dict;
