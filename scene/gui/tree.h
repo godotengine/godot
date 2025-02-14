@@ -670,9 +670,18 @@ private:
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const;
-	int _get_item_h_offset(TreeItem *p_item) const;
 
-	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
+	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index, int &r_section) const;
+
+	struct FindColumnButtonResult {
+		int column_index = -1;
+		int button_index = -1;
+		int column_width = -1;
+		int column_offset = -1;
+		int pos_x = -1;
+	};
+
+	FindColumnButtonResult _find_column_and_button_at_pos(int p_x, const TreeItem *p_item, int p_x_ofs, int p_x_limit) const;
 
 	/*	float drag_speed;
 	float drag_accum;
