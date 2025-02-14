@@ -2257,7 +2257,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					buttons_width += button_texture->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
 				}
 
-				int total_ofs = ofs - theme_cache.offset.x;
+				double total_ofs = ofs - theme_cache.offset.x;
 
 				// If part of the column is beyond the right side of the control due to scrolling, clamp the label width
 				// so that all buttons attached to the cell remain within view.
