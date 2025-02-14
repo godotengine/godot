@@ -701,6 +701,8 @@ private:
 	bool enable_recursive_folding = true;
 
 	bool enable_drag_unfolding = true;
+	Timer *dropping_unfold_timer = nullptr;
+	void _on_dropping_unfold_timer_timeout();
 
 	bool enable_auto_tooltip = true;
 

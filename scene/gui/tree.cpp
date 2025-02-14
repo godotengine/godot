@@ -134,6 +134,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 
 		if (tree->drop_mode_over == this) {
 			tree->drop_mode_over = nullptr;
+			tree->dropping_unfold_timer->stop();
 		}
 
 		if (tree->single_select_defer == this) {
@@ -4145,6 +4146,8 @@ void Tree::_determine_hovered_item() {
 			if (drop_mode_flags) {
 				if (it != drop_mode_over) {
 					drop_mode_over = it;
+					dropping_unfold_timer->stop();
+					dropping_unfold_timer->start();
 					queue_redraw();
 				}
 				if (it && section != drop_mode_section) {
@@ -4187,6 +4190,12 @@ void Tree::_determine_hovered_item() {
 
 	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
 		queue_redraw();
+	}
+}
+
+void Tree::_on_dropping_unfold_timer_timeout() {
+	if (drop_mode_over && drop_mode_over->is_collapsed()) {
+		drop_mode_over->set_collapsed(false);
 	}
 }
 
@@ -5860,6 +5869,7 @@ void Tree::set_drop_mode_flags(int p_flags) {
 	drop_mode_flags = p_flags;
 	if (drop_mode_flags == 0) {
 		drop_mode_over = nullptr;
+		dropping_unfold_timer->stop();
 	}
 
 	queue_redraw();
@@ -6158,6 +6168,11 @@ Tree::Tree() {
 	range_click_timer = memnew(Timer);
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
+
+	dropping_unfold_timer = memnew(Timer);
+	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->connect("timeout", callable_mp(this, &Tree::_on_dropping_unfold_timer_timeout));
+	add_child(dropping_unfold_timer);
 
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
