@@ -574,7 +574,7 @@ SwSurface* SwRenderer::request(int channelSize, bool square)
         cmp->compositor->image.data = (pixel_t*)malloc(channelSize * w * h);
         cmp->w = cmp->compositor->image.w = w;
         cmp->h = cmp->compositor->image.h = h;
-        cmp->compositor->image.stride = w;
+        cmp->stride = cmp->compositor->image.stride = w;
         cmp->compositor->image.direct = true;
         cmp->compositor->valid = true;
         cmp->channelSize = cmp->compositor->image.channelSize = channelSize;
@@ -655,23 +655,31 @@ bool SwRenderer::endComposite(RenderCompositor* cmp)
 }
 
 
-bool SwRenderer::prepare(RenderEffect* effect)
+void SwRenderer::prepare(RenderEffect* effect, const Matrix& transform)
 {
     switch (effect->type) {
-        case SceneEffect::GaussianBlur: return effectGaussianBlurPrepare(static_cast<RenderEffectGaussianBlur*>(effect));
-        case SceneEffect::DropShadow: return effectDropShadowPrepare(static_cast<RenderEffectDropShadow*>(effect));
-        case SceneEffect::Fill: return effectFillPrepare(static_cast<RenderEffectFill*>(effect));
-        case SceneEffect::Tint: return effectTintPrepare(static_cast<RenderEffectTint*>(effect));
-        case SceneEffect::Tritone: return effectTritonePrepare(static_cast<RenderEffectTritone*>(effect));
+        case SceneEffect::GaussianBlur: effectGaussianBlurUpdate(static_cast<RenderEffectGaussianBlur*>(effect), transform); break;
+        case SceneEffect::DropShadow: effectDropShadowUpdate(static_cast<RenderEffectDropShadow*>(effect), transform); break;
+        case SceneEffect::Fill: effectFillUpdate(static_cast<RenderEffectFill*>(effect)); break;
+        case SceneEffect::Tint: effectTintUpdate(static_cast<RenderEffectTint*>(effect)); break;
+        case SceneEffect::Tritone: effectTritoneUpdate(static_cast<RenderEffectTritone*>(effect)); break;
+        default: break;
+    }
+}
+
+
+bool SwRenderer::region(RenderEffect* effect)
+{
+    switch (effect->type) {
+        case SceneEffect::GaussianBlur: return effectGaussianBlurRegion(static_cast<RenderEffectGaussianBlur*>(effect));
+        case SceneEffect::DropShadow: return effectDropShadowRegion(static_cast<RenderEffectDropShadow*>(effect));
         default: return false;
     }
 }
 
 
-bool SwRenderer::effect(RenderCompositor* cmp, const RenderEffect* effect, bool direct)
+bool SwRenderer::render(RenderCompositor* cmp, const RenderEffect* effect, bool direct)
 {
-    if (!effect->valid) return false;
-
     auto p = static_cast<SwCompositor*>(cmp);
 
     if (p->image.channelSize != sizeof(uint32_t)) {

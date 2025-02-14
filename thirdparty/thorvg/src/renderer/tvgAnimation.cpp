@@ -95,7 +95,7 @@ float Animation::duration() const noexcept
 
 Result Animation::segment(float begin, float end) noexcept
 {
-    if (begin < 0.0 || end > 1.0 || begin > end) return Result::InvalidArguments;
+    if (begin < 0.0f || end > 1.0f || begin > end) return Result::InvalidArguments;
 
     auto loader = pImpl->picture->pImpl->loader;
     if (!loader) return Result::InsufficientCondition;
