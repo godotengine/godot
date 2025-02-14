@@ -1035,12 +1035,17 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Typed wrapper around Godot's Array class, an array of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
+    /// Typed wrapper around Godot's Array class, an array of <typeparamref name="T"/>
+    /// annotated, Variant typed elements allocated in the engine in C++.
+    /// Useful when interfacing with the engine. Otherwise prefer .NET collections
     /// such as arrays or <see cref="List{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of the array.</typeparam>
+    /// <remarks>
+    /// While the elements are statically annotated to <typeparamref name="T"/>,
+    /// the underlying array still stores <see cref="Variant"/>, which has the same
+    /// memory footprint per element as an untyped <see cref="Array"/>.
+    /// </remarks>
     [DebuggerTypeProxy(typeof(ArrayDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
