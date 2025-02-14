@@ -248,6 +248,12 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 
 	if (light->type != RS::LIGHT_DIRECTIONAL) {
 		if (light->projector.is_valid()) {
+#ifdef TOOLS_ENABLED
+			TextureStorage::Texture *tex = TextureStorage::get_singleton()->get_texture(p_texture);
+			if (tex->detect_3d_callback) {
+				tex->detect_3d_callback(tex->detect_3d_callback_ud);
+			}
+#endif
 			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 		}
 		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
