@@ -234,8 +234,8 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 			} else if (l.begins_with("vw ")) {
 				Vector<String> parts = l.split(" ");
 				int vert_index = parts[1].to_int() - 1;
-				Vector4i joints;
-				Vector4 weights;
+				Vector4i joints = Vector4i(0, 0, 0, 0);
+				Vector4 weights = Vector4(0.0, 0.0, 0.0, 0.0);
 				int count = 0;
 
 				for (int i = 2; i < parts.size(); i += 2) {
@@ -248,7 +248,7 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 
 					String original_bone_name = parts[i];
 					if (bone_name_map.has(original_bone_name)) {
-						joints[count] = bone_name_map[original_bone_name];
+						joints[count] = bone_name_map[original_bone_name] + 1;
 						weights[count] = weight;
 						count++;
 					} else {
@@ -301,15 +301,15 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 						weights = joint_weights_map[pos_idx];
 					}
 
-					PackedInt32Array bone_array;
-					PackedFloat32Array weight_array;
-
-					bone_array.resize(4);
-					weight_array.resize(4);
+					Vector<int> bone_array;
+					Vector<float> weight_array;
 
 					for (int i = 0; i < 4; i++) {
-						bone_array.set(i, i < 4 ? joints[i] : 0);
-						weight_array.set(i, i < 4 ? weights[i] : 0.0f);
+						if (joints[i] <= 0) {
+							continue;
+						}
+						bone_array.append(joints[i] - 1);
+						weight_array.append(weights[i]);
 					}
 
 					surf_tool->set_normal(normal);
@@ -401,6 +401,10 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 		Vector4i joints = E.value;
 		for (int i = 0; i < 4; i++) {
 			int joint_idx = joints[i];
+			if (joint_idx <= 0) {
+				continue;
+			}
+			joint_idx -= 1;
 			if (joint_idx < 0 || joint_idx >= p_state->nodes.size()) {
 				ERR_PRINT(vformat("ERROR: Vertex %d uses invalid joint index %d",
 						E.key, joint_idx));
@@ -447,6 +451,10 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 			Vector4i joints = E.value;
 			for (int i = 0; i < 4; i++) {
 				int joint_idx = joints[i];
+				if (joint_idx <= 0) {
+					continue;
+				}
+				joint_idx -= 1;
 				if (joint_idx >= 0 && joint_idx < p_state->nodes.size() && !used_joints.has(joint_idx)) {
 					used_joints.push_back(joint_idx);
 				}
