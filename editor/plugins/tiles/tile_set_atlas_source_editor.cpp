@@ -971,40 +971,44 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 		tile_create_help->set_visible(tools_button_group->get_pressed_button() == tool_setup_atlas_source_button);
 	}
 
-	Vector2i pos;
-	Vector2 texture_region_base_size = tile_set_atlas_source->get_texture_region_size();
-	int texture_region_base_size_min = MIN(texture_region_base_size.x, texture_region_base_size.y);
-	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
-		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
-		int alternative_count = tile_set_atlas_source->get_alternative_tiles_count(tile_id);
-		if (alternative_count > 1) {
-			// Compute the right extremity of alternative.
-			int y_increment = 0;
-			pos.x = 0;
-			for (int j = 1; j < alternative_count; j++) {
-				int alternative_id = tile_set_atlas_source->get_alternative_tile_id(tile_id, j);
-				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(tile_id, alternative_id);
-				pos.x = MAX(pos.x, rect.get_end().x);
-				y_increment = MAX(y_increment, rect.size.y);
+	if (tools_button_group->get_pressed_button() != tool_paint_button) {
+		Vector2i pos;
+		Vector2 texture_region_base_size = tile_set_atlas_source->get_texture_region_size();
+		int texture_region_base_size_min = MIN(texture_region_base_size.x, texture_region_base_size.y);
+		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
+			Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
+			int alternative_count = tile_set_atlas_source->get_alternative_tiles_count(tile_id);
+			if (alternative_count > 1) {
+				// Compute the right extremity of alternative.
+				int y_increment = 0;
+				pos.x = 0;
+				for (int j = 1; j < alternative_count; j++) {
+					int alternative_id = tile_set_atlas_source->get_alternative_tile_id(tile_id, j);
+					Rect2i rect = tile_atlas_view->get_alternative_tile_rect(tile_id, alternative_id);
+					pos.x = MAX(pos.x, rect.get_end().x);
+					y_increment = MAX(y_increment, rect.size.y);
+				}
+
+				// Create and position the button.
+				Button *button = memnew(Button);
+				button->set_flat(true);
+				button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+				button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
+				button->add_theme_style_override(SceneStringName(hover), memnew(StyleBoxEmpty));
+				button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
+				button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
+				button->add_theme_constant_override("align_to_largest_stylebox", false);
+				button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+				button->connect(SceneStringName(pressed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_create_button_pressed).bind(tile_id));
+				button->set_rect(Rect2(Vector2(pos.x, pos.y + (y_increment - texture_region_base_size.y) / 2.0), Vector2(texture_region_base_size_min, texture_region_base_size_min)));
+				button->set_expand_icon(true);
+				alternative_tiles_control->add_child(button);
+
+				pos.y += y_increment;
 			}
-
-			// Create and position the button.
-			Button *button = memnew(Button);
-			button->set_flat(true);
-			button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			button->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
-			button->add_theme_style_override(SceneStringName(hover), memnew(StyleBoxEmpty));
-			button->add_theme_style_override("focus", memnew(StyleBoxEmpty));
-			button->add_theme_style_override(SceneStringName(pressed), memnew(StyleBoxEmpty));
-			button->connect(SceneStringName(pressed), callable_mp(tile_set_atlas_source, &TileSetAtlasSource::create_alternative_tile).bind(tile_id, TileSetSource::INVALID_TILE_ALTERNATIVE));
-			button->set_rect(Rect2(Vector2(pos.x, pos.y + (y_increment - texture_region_base_size.y) / 2.0), Vector2(texture_region_base_size_min, texture_region_base_size_min)));
-			button->set_expand_icon(true);
-			alternative_tiles_control->add_child(button);
-
-			pos.y += y_increment;
 		}
+		tile_atlas_view->set_padding(Side::SIDE_RIGHT, texture_region_base_size_min);
 	}
-	tile_atlas_view->set_padding(Side::SIDE_RIGHT, texture_region_base_size_min);
 
 	// Redraw everything.
 	tile_atlas_control->queue_redraw();
@@ -2007,6 +2011,17 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_mouse_exited() {
 	tile_atlas_control_unscaled->queue_redraw();
 	alternative_tiles_control->queue_redraw();
 	alternative_tiles_control_unscaled->queue_redraw();
+}
+
+void TileSetAtlasSourceEditor::_tile_alternatives_create_button_pressed(const Vector2i &p_atlas_coords) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	// FIXME: Doesn't undo changes to `next_alternative_id` counter.
+	undo_redo->create_action(TTR("Create tile alternatives"));
+	int next_id = tile_set_atlas_source->get_next_alternative_tile_id(p_atlas_coords);
+	undo_redo->add_do_method(tile_set_atlas_source, "create_alternative_tile", p_atlas_coords, next_id);
+	undo_redo->add_undo_method(tile_set_atlas_source, "remove_alternative_tile", p_atlas_coords, next_id);
+	undo_redo->commit_action();
 }
 
 void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
