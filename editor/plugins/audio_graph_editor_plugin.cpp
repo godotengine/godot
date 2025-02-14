@@ -1805,7 +1805,7 @@ void AudioGraphEditorPlugin::disconnect_nodes(int p_from_node, int p_from_port, 
 	if (audio_graph_editor->audio_graph) {
 		graph->disconnect_node(itos(p_from_node), p_from_port, itos(p_to_node), p_to_port);
 
-		for (const List<AudioStreamGraph::Connection>::Element *E = connections.front(); E; E = E->next()) {
+		for (List<AudioStreamGraph::Connection>::Element *E = connections.front(); E;) {
 			if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 				connections.erase(E);
 				break;

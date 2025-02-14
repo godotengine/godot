@@ -105,7 +105,7 @@ Error AudioStreamGraph::connect_nodes(int p_from_node, int p_from_port, int p_to
 }
 
 void AudioStreamGraph::disconnect_nodes(int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
-	for (const List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+	for (List<Connection>::Element *E = connections.front(); E;) {
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 			connections.erase(E);
 			nodes[p_from_node].next_connected_nodes.erase(p_to_node);

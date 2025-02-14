@@ -335,7 +335,6 @@ public:
 	void set_connections(const List<AudioStreamGraph::Connection> &p_connections);
 	void set_input_port_default_value(int p_node_id, int p_port_id, const Variant &p_value);
 
-	virtual String get_name() const override { return "AudioGraph"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
