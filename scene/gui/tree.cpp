@@ -4147,7 +4147,9 @@ void Tree::_determine_hovered_item() {
 				if (it != drop_mode_over) {
 					drop_mode_over = it;
 					dropping_unfold_timer->stop();
-					dropping_unfold_timer->start();
+					if (enable_drag_unfolding) {
+						dropping_unfold_timer->start();
+					}
 					queue_redraw();
 				}
 				if (it && section != drop_mode_section) {
