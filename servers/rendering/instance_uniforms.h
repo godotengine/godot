@@ -38,7 +38,7 @@ class InstanceUniforms {
 public:
 	void free(RID p_self);
 
-	void materials_start();
+	void materials_start(bool p_use_linear_color);
 	void materials_append(RID p_material);
 
 	// Assign location() to instance offset if materials_finish returns true.
@@ -65,6 +65,7 @@ private:
 	};
 	int32_t _location = -1;
 	HashMap<StringName, Item> _parameters;
+	bool _use_linear_color = {};
 
 	void _init_param(Item &r_item, const RendererMaterialStorage::InstanceShaderParam &p_param) const;
 	void _invalidate_items();

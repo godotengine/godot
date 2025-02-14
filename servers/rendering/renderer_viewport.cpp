@@ -1239,6 +1239,7 @@ void RendererViewport::viewport_attach_canvas(RID p_viewport, RID p_canvas) {
 	ERR_FAIL_NULL(canvas);
 
 	canvas->viewports.insert(p_viewport);
+	canvas->set_use_linear_color(viewport->use_hdr_2d);
 	viewport->canvas_map[p_canvas] = Viewport::CanvasData();
 	viewport->canvas_map[p_canvas].layer = 0;
 	viewport->canvas_map[p_canvas].sublayer = 0;
@@ -1339,6 +1340,12 @@ void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d
 	}
 	viewport->use_hdr_2d = p_use_hdr_2d;
 	RSG::texture_storage->render_target_set_use_hdr(viewport->render_target, p_use_hdr_2d);
+
+	for (KeyValue<RID, Viewport::CanvasData> &kv : viewport->canvas_map) {
+		RendererCanvasCull::Canvas *canvas = RSG::canvas->canvas_owner.get_or_null(kv.key);
+		ERR_FAIL_NULL(canvas);
+		canvas->set_use_linear_color(viewport->use_hdr_2d);
+	}
 }
 
 bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {

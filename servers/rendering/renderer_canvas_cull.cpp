@@ -593,10 +593,12 @@ void RendererCanvasCull::canvas_item_set_parent(RID p_item, RID p_parent) {
 			ci.item = canvas_item;
 			canvas->child_items.push_back(ci);
 			canvas->children_order_dirty = true;
+			canvas_item->use_linear_color = canvas->use_linear_color;
 		} else if (canvas_item_owner.owns(p_parent)) {
 			Item *item_owner = canvas_item_owner.get_or_null(p_parent);
 			item_owner->child_items.push_back(canvas_item);
 			item_owner->children_order_dirty = true;
+			canvas_item->use_linear_color = item_owner->use_linear_color;
 
 			if (item_owner->sort_y) {
 				_mark_ysort_dirty(item_owner);
@@ -2526,7 +2528,7 @@ void RendererCanvasCull::_update_dirty_item(Item *p_item) {
 
 		p_item->dependency_tracker.update_begin();
 
-		p_item->instance_uniforms.materials_start();
+		p_item->instance_uniforms.materials_start(p_item->use_linear_color);
 
 		if (material.is_valid()) {
 			p_item->instance_uniforms.materials_append(material);
@@ -2541,6 +2543,25 @@ void RendererCanvasCull::_update_dirty_item(Item *p_item) {
 	}
 	_item_update_list.remove(&p_item->update_item);
 	p_item->update_dependencies = false;
+}
+
+void RendererCanvasCull::Canvas::set_use_linear_color(bool p_use_linear_color) {
+	use_linear_color = p_use_linear_color;
+
+	for (ChildItem &child_item : child_items) {
+		_set_item_use_linear_color(child_item.item, use_linear_color);
+	}
+
+	RSG::canvas->update_dirty_items();
+}
+
+void RendererCanvasCull::Canvas::_set_item_use_linear_color(Item *item, bool p_use_linear_color) {
+	item->use_linear_color = p_use_linear_color;
+	RSG::canvas->_item_queue_update(item, true);
+
+	for (Item *child : item->child_items) {
+		_set_item_use_linear_color(child, p_use_linear_color);
+	}
 }
 
 void RendererCanvasCull::update() {

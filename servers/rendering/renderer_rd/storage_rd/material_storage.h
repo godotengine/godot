@@ -398,7 +398,7 @@ public:
 
 	virtual int32_t global_shader_parameters_instance_allocate(RID p_instance) override;
 	virtual void global_shader_parameters_instance_free(RID p_instance) override;
-	virtual void global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count = 0) override;
+	virtual void global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count = 0, bool p_use_linear_color = true) override;
 
 	RID global_shader_uniforms_get_storage_buffer() const;
 

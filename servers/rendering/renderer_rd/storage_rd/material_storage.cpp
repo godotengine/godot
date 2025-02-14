@@ -1805,7 +1805,7 @@ void MaterialStorage::global_shader_parameters_instance_free(RID p_instance) {
 	global_shader_uniforms.instance_buffer_pos.erase(p_instance);
 }
 
-void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count) {
+void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count, bool p_use_linear_color) {
 	if (!global_shader_uniforms.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
@@ -1863,7 +1863,7 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 
 	pos += p_index;
 
-	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[pos], true); //instances always use linear color in this renderer
+	_fill_std140_variant_ubo_value(datatype, 0, p_value, (uint8_t *)&global_shader_uniforms.buffer_values[pos], p_use_linear_color);
 	_global_shader_uniform_mark_buffer_dirty(pos, 1);
 }
 
