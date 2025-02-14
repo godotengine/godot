@@ -847,7 +847,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					if (last_end <= l_gl[start_pos].start) {
 						lines.push_back(l_gl[start_pos].start);
 						lines.push_back(l_gl[end_pos].end);
-						cur_safe_brk = end_pos;
+						cur_safe_brk = last_safe_break;
 						last_end = l_gl[end_pos].end;
 					}
 					trim_next = true;
@@ -1021,7 +1021,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 						if (p_width > indent) {
 							l_width = p_width - indent;
 						}
-						cur_safe_brk = end_pos;
+						cur_safe_brk = last_safe_break;
 						last_end = l_gl[end_pos].end;
 					}
 					trim_next = true;
