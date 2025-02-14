@@ -596,6 +596,19 @@ TEST_SUITE("[TextServer]") {
 					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
 				}
 
+				brks = ts->shaped_text_get_line_breaks(ctx, 35.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+				CHECK_FALSE_MESSAGE(brks.size() != 6, "Invalid line breaks number.");
+				if (brks.size() == 6) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[4] != 10, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
+				}
+
 				ts->free_rid(ctx);
 
 				for (int j = 0; j < font.size(); j++) {
