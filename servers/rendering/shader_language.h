@@ -631,6 +631,28 @@ public:
 			int array_size = 0;
 			TkPos tkpos;
 
+			uint32_t get_size() const {
+				uint32_t size = 1;
+				if (array_size > 0) {
+					size = (uint32_t)array_size;
+				}
+
+				switch (type) {
+					case TYPE_MAT2:
+						size *= 2;
+						break;
+					case TYPE_MAT3:
+						size *= 3;
+						break;
+					case TYPE_MAT4:
+						size *= 4;
+						break;
+					default:
+						break;
+				}
+				return size;
+			}
+
 			Varying() {}
 		};
 
@@ -1022,6 +1044,7 @@ private:
 	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
+	uint32_t base_varying_index = 0;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -1217,6 +1240,7 @@ public:
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
 		bool is_include = false;
+		uint32_t base_varying_index = 0;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
