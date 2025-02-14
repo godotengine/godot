@@ -944,7 +944,7 @@ Patches:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.8 (bd8c2fca7663a22fba7a339937cb60f2f6247a2e, 2025)
+- Version: 0.15.10 (bca94d244c67f573c6eddc27d783d9a6b1ef2f1b, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -955,7 +955,6 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-revert-tvglines-bezier-precision.patch` (GH-96658)
-- `0002-gcc15-include-fix.patch` (GH-102022)
 
 
 ## tinyexr
