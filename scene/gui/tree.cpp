@@ -4194,7 +4194,7 @@ void Tree::_determine_hovered_item() {
 }
 
 void Tree::_on_dropping_unfold_timer_timeout() {
-	if (drop_mode_over && drop_mode_over->is_collapsed()) {
+	if (drop_mode_over && drop_mode_section == 0 && drop_mode_over->is_collapsed()) {
 		drop_mode_over->set_collapsed(false);
 	}
 }
