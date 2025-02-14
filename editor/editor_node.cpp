@@ -789,6 +789,19 @@ void EditorNode::_notification(int p_what) {
 				EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 			}
 
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/tablet_driver")) {
+				String tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
+				int tablet_driver_idx = EDITOR_GET("interface/editor/tablet_driver");
+				if (tablet_driver_idx != -1) {
+					tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(tablet_driver_idx);
+				}
+				if (tablet_driver.is_empty()) {
+					tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);
+				}
+				DisplayServer::get_singleton()->tablet_set_current_driver(tablet_driver);
+				print_verbose("Using \"" + DisplayServer::get_singleton()->tablet_get_current_driver() + "\" pen tablet driver...");
+			}
+
 			if (EDITOR_GET("interface/editor/import_resources_when_unfocused")) {
 				scan_changes_timer->start();
 			} else {
