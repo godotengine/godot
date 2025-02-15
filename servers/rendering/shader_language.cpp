@@ -7276,8 +7276,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				}
 
-				if (!_validate_assign(expr, p_function_info)) {
-					_set_error(RTR("Invalid use of increment/decrement operator in a constant expression."));
+				String error;
+				if (!_validate_assign(expr, p_function_info, &error)) {
+					_set_error(error);
 					return nullptr;
 				}
 				expr = op;
@@ -7611,8 +7612,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
-				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info)) {
-					_set_error(RTR("Invalid use of increment/decrement operator in a constant expression."));
+
+				String error;
+				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info, &error)) {
+					_set_error(error);
 					return nullptr;
 				}
 				op->arguments.push_back(expression[i + 1].node);
