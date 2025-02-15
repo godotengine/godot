@@ -44,6 +44,7 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/2d/tile_map_layer.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
@@ -595,7 +596,17 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		n2d_rect.position.y = mmesh2d->get_global_position().y + mmesh->get_aabb().position.y * mmesh2d->get_global_scale().y;
 	}
 
-	// WIP: Need to work for TileMapLayer, Polygon2D, TouchScreenButton too.
+	if (p_node->is_class("TileMapLayer")) {
+		// NOTE: TileMapLayer::get_used_rect() only count cells, not their actual pixel size
+		TileMapLayer *tile_map = Object::cast_to<TileMapLayer>(p_node);
+		Size2 tile_size = Size2(tile_map->get_tile_set()->get_tile_size()); // tile map cell pixel size (x,y)
+		Rect2 tile_rect = Rect2(tile_map->get_used_rect()); // unit is in cells, not pixels!
+
+		n2d_rect.position = tile_map->get_global_position() + tile_rect.position * tile_size * tile_map->get_global_scale(); // accounts tilemap offset
+		n2d_rect.size = tile_rect.size * tile_size * tile_map->get_global_scale();
+	}
+
+	// WIP: Need to work for Polygon2D, TouchScreenButton too.
 
 	// Merge the calculated node 2d rect
 	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
