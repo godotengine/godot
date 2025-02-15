@@ -463,7 +463,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		Vector2 scene_true_center = scene_rect.get_center();
 		camera->set_position(Point2(scene_true_center));
 		uint16_t long_side = MAX(scene_rect.get_size().x, scene_rect.get_size().y);
-		long_side = CLAMP(long_side, MAX(p_size.x, p_size.y), 16384); // Do not render image larger than GPU can handle (16K)
+		long_side = CLAMP(long_side, MAX(p_size.x, p_size.y), 2048); // ** Magic number - Clamp viewport size to a sane value, avoid exploding the VRAM **
 		sub_viewport->set_size(Size2i(long_side, long_side));
 
 		_wait_frames(1);
