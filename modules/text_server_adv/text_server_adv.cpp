@@ -1319,10 +1319,15 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 		}
 
 		if (!outline) {
-			if (!p_font_data->msdf) {
-				error = FT_Render_Glyph(fd->face->glyph, aa_mode);
-			}
 			FT_GlyphSlot slot = fd->face->glyph;
+			bool from_svg = false;
+			if (slot->format == FT_GLYPH_FORMAT_SVG) {
+				// Need to check before FT_Render_Glyph as it will change format to bitmap
+				from_svg = true;
+			}
+			if (!p_font_data->msdf) {
+				error = FT_Render_Glyph(slot, aa_mode);
+			}
 			if (!error) {
 				if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
@@ -1334,6 +1339,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 				} else {
 					gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
 				}
+				gl.from_svg = from_svg;
 			}
 		} else {
 			FT_Stroker stroker;
@@ -3806,6 +3812,10 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				if (ffsd->textures[fgl.texture_idx].dirty) {
 					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 					Ref<Image> img = tex.image;
+					if (fgl.from_svg) {
+						// same as the "fix alpha border" process option when importing SVGs
+						img->fix_alpha_edges();
+					}
 					if (fd->mipmaps && !img->has_mipmaps()) {
 						img = tex.image->duplicate();
 						img->generate_mipmaps();
