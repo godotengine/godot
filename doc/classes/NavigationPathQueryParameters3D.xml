@@ -9,6 +9,23 @@
 	<tutorials>
 		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>
 	</tutorials>
+	<methods>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
 			The navigation map [RID] used in the path query.
@@ -18,6 +35,9 @@
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			The navigation layers the query will use (as a bitmask).
+		</member>
+		<member name="navigation_layers_cost_map" type="NavigationLayersCostMap" setter="set_navigation_layers_cost_map" getter="get_navigation_layers_cost_map">
+			The optional [NavigationLayersCostMap] resource used in path queries to override default costs of navigation layers.
 		</member>
 		<member name="path_postprocessing" type="int" setter="set_path_postprocessing" getter="get_path_postprocessing" enum="NavigationPathQueryParameters3D.PathPostProcessing" default="0">
 			The path postprocessing applied to the raw path corridor found by the [member pathfinding_algorithm].

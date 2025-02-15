@@ -38,8 +38,18 @@
 
 #include "core/math/geometry_3d.h"
 #include "servers/navigation/navigation_utilities.h"
+#include "servers/navigation_server_3d.h"
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
+
+float NavMeshQueries3D::_get_polygon_travel_cost(const gd::Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_costs_map) {
+	for (uint32_t i = 0; i < 32; i++) {
+		if ((p_polygon->navigation_layers & 1 << i) && (p_navigation_layers & 1 << i)) {
+			return p_costs_map[i];
+		}
+	}
+	return 1.0;
+}
 
 bool NavMeshQueries3D::emit_callback(const Callable &p_callback) {
 	ERR_FAIL_COND_V(!p_callback.is_valid(), false);
@@ -153,6 +163,15 @@ void NavMeshQueries3D::map_query_path(NavMap *map, const Ref<NavigationPathQuery
 	using namespace NavigationUtilities;
 
 	NavMeshQueries3D::NavMeshPathQueryTask3D query_task;
+
+	Ref<NavigationLayersCostMap> navigation_layers_cost_map = p_query_parameters->get_navigation_layers_cost_map();
+	if (!navigation_layers_cost_map.is_null()) {
+		query_task.navigation_layers_cost_map = navigation_layers_cost_map->get_navigation_layers_cost_map();
+	} else {
+		query_task.navigation_layers_cost_map = NavigationServer3D::global_get_navigation_layers_cost_map();
+	}
+	DEV_ASSERT(query_task.navigation_layers_cost_map.size() == 32);
+
 	query_task.start_position = p_query_parameters->get_start_position();
 	query_task.target_position = p_query_parameters->get_target_position();
 	query_task.navigation_layers = p_query_parameters->get_navigation_layers();
@@ -219,6 +238,9 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 
 		// Find the initial poly and the end poly on this map.
 		for (const gd::Polygon &p : region.get_navmesh_polygons()) {
+			if ((p_query_task.navigation_layers & p.navigation_layers) == 0) {
+				continue;
+			}
 			// Only consider the polygon if it in a region with compatible layers.
 			if ((p_query_task.navigation_layers & p.owner->get_navigation_layers()) == 0) {
 				continue;
@@ -281,11 +303,10 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	const gd::Polygon *reachable_end = nullptr;
 	real_t distance_to_reachable_end = FLT_MAX;
 	bool is_reachable = true;
-	real_t poly_enter_cost = 0.0;
 
 	while (true) {
 		const gd::NavigationPoly &least_cost_poly = navigation_polys[least_cost_id];
-		real_t poly_travel_cost = least_cost_poly.poly->owner->get_travel_cost();
+		real_t poly_travel_cost = _get_polygon_travel_cost(least_cost_poly.poly, p_navigation_layers, p_query_task.navigation_layers_cost_map);
 
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
 		for (const gd::Edge &edge : least_cost_poly.poly->edges) {
@@ -298,7 +319,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 				if ((p_navigation_layers & owner->get_navigation_layers()) != 0) {
 					Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 					const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly.entry, pathway);
-					const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + poly_enter_cost + least_cost_poly.traveled_distance;
+					const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + least_cost_poly.traveled_distance;
 
 					// Check if the neighbor polygon has already been processed.
 					gd::NavigationPoly &neighbor_poly = navigation_polys[connection.polygon->id];
@@ -325,7 +346,6 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			}
 		}
 
-		poly_enter_cost = 0;
 		// When the heap of traversable polygons is empty at this point it means the end polygon is
 		// unreachable.
 		if (traversable_polys.is_empty()) {
@@ -398,10 +418,6 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			if (navigation_polys[least_cost_id].poly == end_poly) {
 				found_route = true;
 				break;
-			}
-
-			if (navigation_polys[least_cost_id].poly->owner->get_self() != least_cost_poly.poly->owner->get_self()) {
-				poly_enter_cost = least_cost_poly.poly->owner->get_enter_cost();
 			}
 		}
 	}
