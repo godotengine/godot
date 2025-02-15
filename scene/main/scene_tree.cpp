@@ -49,7 +49,11 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
+
+#ifndef _2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // _2D_DISABLED
+
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/world_3d.h"
@@ -975,7 +979,9 @@ void SceneTree::set_pause(bool p_enabled) {
 #ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 #endif // _3D_DISABLED
+#ifndef _2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
+#endif // _2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
 	}
@@ -999,7 +1005,9 @@ void SceneTree::set_suspend(bool p_enabled) {
 #ifndef _3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled && !paused);
 #endif // _3D_DISABLED
+#ifndef _2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled && !paused);
+#endif // _2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_suspend_notification(p_enabled);
 	}
@@ -1885,7 +1893,9 @@ SceneTree::SceneTree() {
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
 
+#ifndef _2D_DISABLED
 	root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 	current_scene = nullptr;
 
 	const int msaa_mode_2d = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d");
