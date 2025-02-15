@@ -69,7 +69,7 @@ static const float earth_gravity = 9.80665;
 bool _is_initialized;
 - (GodotView<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName {
 	if (_is_initialized) {
-		return self;
+		return (GodotView<DisplayLayer> *)self;
 	}
 
 	if (![driverName isEqualToString:@"metal"]) {
@@ -79,7 +79,7 @@ bool _is_initialized;
 
 	// [self initializeDisplayLayer];
 	_is_initialized = YES;
-	return self;
+	return (GodotView<DisplayLayer> *)self;
 }
 
 - (instancetype)init {

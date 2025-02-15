@@ -2482,7 +2482,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 		cd->name = binary_data.shader_name;
 		cd->stage = shader_data.stage;
 		options.preserveInvariance = shader_data.is_position_invariant;
+#if VISIONOS
 		options.mathMode = MTLMathModeFast;
+#else
+		options.fastMathEnabled = YES;
+#endif
 		MDLibrary *library = [MDLibrary newLibraryWithCacheEntry:cd
 														  device:device
 														  source:source
