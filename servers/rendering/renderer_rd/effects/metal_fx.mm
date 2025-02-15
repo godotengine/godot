@@ -199,13 +199,13 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
 	obj->end();
 
+#if !defined(VISIONOS)
 	id<MTLTexture> src_texture = rid::get(p_userdata->src);
 	id<MTLTexture> depth = rid::get(p_userdata->depth);
 	id<MTLTexture> motion = rid::get(p_userdata->motion);
 	id<MTLTexture> exposure = rid::get(p_userdata->exposure);
 
 	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
-#if !defined(VISIONOS)
 	__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
 	scaler.reset = p_userdata->reset;
 	scaler.colorTexture = src_texture;

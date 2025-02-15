@@ -33,7 +33,7 @@ jobs:
                       cache-name: visionos-template-arm64
                       target: template_release
                       tests: false
-                      sconsflags: arch=arm64 visionos=yes visionos_simulator=yes opengl3=no vulkan=no metal=true
+                      sconsflags: arch=arm64 visionos_simulator=yes opengl3=no vulkan=no metal=true
                       cache-limit: 1
 
         steps:

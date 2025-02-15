@@ -152,6 +152,11 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 			setMSLVersion(3, 2);
 			break;
 #endif
+#if VISIONOS
+		case MTLLanguageVersion3_2:
+			setMSLVersion(3, 2);
+			break;
+#endif
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 || __TV_OS_VERSION_MAX_ALLOWED >= 170000
 		case MTLLanguageVersion3_1:
 			setMSLVersion(3, 1);
@@ -181,7 +186,7 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		case MTLLanguageVersion1_1:
 			setMSLVersion(1, 1);
 			break;
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST && !VISIONOS
 		case MTLLanguageVersion1_0:
 			setMSLVersion(1, 0);
 			break;
