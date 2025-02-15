@@ -2204,6 +2204,10 @@
 			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
+		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enable TLSv1.3 negotiation.
+			[b]Note:[/b] This is experimental, and may cause connections to fail in some cases (notably, if the remote server uses TLS handshake fragmentation).
+		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default rotational motion damping in 2D. Damping is used to gradually slow down physical objects over time. RigidBodies will fall back to this value when combining their own damping values and no area damping value is present.
 			Suggested values are in the range [code]0[/code] to [code]30[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Greater values will stop the object faster. A value equal to or greater than the physics tick rate ([member physics/common/physics_ticks_per_second]) will bring the object to a stop in one iteration.

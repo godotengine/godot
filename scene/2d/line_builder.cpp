@@ -112,7 +112,7 @@ void LineBuilder::build() {
 		}
 	}
 
-	if (Math::is_zero_approx(total_distance)) {
+	if (point_count < 2 || (distance_required && Math::is_zero_approx(total_distance))) {
 		// Zero-length line, nothing to build.
 		return;
 	}
