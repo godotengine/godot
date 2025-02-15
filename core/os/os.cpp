@@ -577,7 +577,7 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
-#if defined(IOS_SIMULATOR) || defined(VISION_SIMULATOR)
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
 	if (p_feature == "simulator") {
 		return true;
 	}
