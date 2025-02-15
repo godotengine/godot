@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+
 #if !defined(VISIONOS)
 #import "godot_view.h"
 
@@ -116,24 +117,24 @@ static const float earth_gravity = 9.80665;
 	return self;
 }
 
-- (CGSize)screen_get_size:(int)p_screen{
-	if(!self.renderingLayer){
+- (CGSize)screen_get_size:(int)p_screen {
+	if (!self.renderingLayer) {
 		return CGSizeMake(0, 0);
 	}
 	float scale = [UIScreen mainScreen].scale;
 	CGSize size = self.renderingLayer.bounds.size;
 	return CGSizeMake(size.width * scale, size.height * scale);
 }
-- (CGRect)get_display_safe_area{
+- (CGRect)get_display_safe_area {
 	UIEdgeInsets insets = UIEdgeInsetsZero;
 	if ([self respondsToSelector:@selector(safeAreaInsets)]) {
 		insets = [self safeAreaInsets];
 	}
 	float scale = [UIScreen mainScreen].scale;
 	CGPoint insets_position = CGPointMake(insets.left, insets.top);
-	CGSize insets_size = CGSizeMake((insets.left + insets.right) *scale, (insets.top + insets.bottom) * scale);
+	CGSize insets_size = CGSizeMake((insets.left + insets.right) * scale, (insets.top + insets.bottom) * scale);
 	CGSize size = [self screen_get_size:0];
-	return CGRectMake(insets_position.x,insets_position.y,size.width - insets_size.width,size.height - insets_size.height);
+	return CGRectMake(insets_position.x, insets_position.y, size.width - insets_size.width, size.height - insets_size.height);
 }
 - (instancetype)initWithFrame:(CGRect)frame {
 	self = [super initWithFrame:frame];

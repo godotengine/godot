@@ -41,7 +41,7 @@
 
 @end
 
-#if defined (VISIONOS)
+#if defined(VISIONOS)
 @interface GodotMetalLayer : GodotView <DisplayLayer>
 @end
 #else

@@ -225,11 +225,11 @@ public:
 
 RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
-	#if VISIONOS
+#if VISIONOS
 	Surface *surface = memnew(SurfaceLayer(wpd->layer, metal_device));
-	#else
+#else
 	Surface *surface = memnew(SurfaceLayer(wpd->layer, metal_device));
-	#endif
+#endif
 
 	return SurfaceID(surface);
 }

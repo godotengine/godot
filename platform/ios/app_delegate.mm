@@ -94,7 +94,6 @@ static GodotView *mainGodotView = nil;
 	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
 #endif
 
-
 	int err = ios_main(gargc, gargv);
 
 	if (err != 0) {
@@ -119,7 +118,6 @@ static GodotView *mainGodotView = nil;
 			   selector:@selector(onAudioInterruption:)
 				   name:AVAudioSessionInterruptionNotification
 				 object:[AVAudioSession sharedInstance]];
-
 
 	int sessionCategorySetting = GLOBAL_GET("audio/general/ios/session_category");
 
@@ -154,7 +152,7 @@ static GodotView *mainGodotView = nil;
 - (UISceneConfiguration *)application:(UIApplication *)application
 		configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
 									   options:(UISceneConnectionOptions *)options {
-	UISceneConfiguration * config = [[UISceneConfiguration alloc] initWithName:nil sessionRole:connectingSceneSession.role];
+	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:nil sessionRole:connectingSceneSession.role];
 	config.delegateClass = [self class];
 	return config;
 }

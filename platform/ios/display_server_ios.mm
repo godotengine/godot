@@ -71,11 +71,11 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	rendering_context = nullptr;
 	rendering_device = nullptr;
 
-	#if VISIONOS
+#if VISIONOS
 	GodotView *layer = nullptr;
-	#else
+#else
 	CALayer *layer = nullptr;
-	#endif
+#endif
 
 	union {
 #ifdef VULKAN_ENABLED
@@ -104,11 +104,11 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	if (rendering_driver == "metal") {
 		if (@available(iOS 14.0, *)) {
 			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
-			#if VISIONOS
+#if VISIONOS
 			wpd.metal.layer = (GodotView *)layer;
-			#else
+#else
 			wpd.metal.layer = (CAMetalLayer *)layer;
-			#endif
+#endif
 			rendering_context = memnew(RenderingContextDriverMetal);
 		} else {
 			OS::get_singleton()->alert("Metal is only supported on iOS 14.0 and later.");
@@ -467,9 +467,8 @@ void DisplayServerIOS::emit_system_theme_changed() {
 }
 
 Rect2i DisplayServerIOS::get_display_safe_area() const {
-
 	CGRect rect = [AppDelegate.viewController.godotView get_display_safe_area];
-	return Rect2i(Point2i(rect.origin.x,rect.origin.y),Size2i(rect.size.width,rect.size.height));
+	return Rect2i(Point2i(rect.origin.x, rect.origin.y), Size2i(rect.size.width, rect.size.height));
 }
 
 int DisplayServerIOS::get_screen_count() const {
@@ -512,11 +511,11 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 		}
 	}
 
-	// If device wasn't found in dictionary
-	// make a best guess from device metrics.
-	#if defined(VISIONOS)
+// If device wasn't found in dictionary
+// make a best guess from device metrics.
+#if defined(VISIONOS)
 	return 458; // @visionOS TODO
-	#else
+#else
 	CGFloat scale = [UIScreen mainScreen].scale;
 
 	UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
@@ -535,28 +534,28 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 		default:
 			return 72;
 	}
-	#endif
+#endif
 }
 
 float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
-	#if defined(VISIONOS)
+#if defined(VISIONOS)
 	return 90; // @visionOS TODO
-	#else
+#else
 	float fps = [UIScreen mainScreen].maximumFramesPerSecond;
 	if ([NSProcessInfo processInfo].lowPowerModeEnabled) {
 		fps = 60;
 	}
 	return fps;
-	#endif
+#endif
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
-	#if defined(VISIONOS)
+#if defined(VISIONOS)
 	//No need to do a scale on VisionOS
 	return 1;
-	#else
+#else
 	return [UIScreen mainScreen].scale;
-	#endif
+#endif
 }
 
 Vector<DisplayServer::WindowID> DisplayServerIOS::get_window_list() const {
@@ -644,13 +643,13 @@ void DisplayServerIOS::window_set_size(const Size2i p_size, WindowID p_window) {
 }
 
 Size2i DisplayServerIOS::window_get_size(WindowID p_window) const {
-	#if defined(VISIONOS)
-	CGSize size = [[AppDelegate viewController]godotView].bounds.size;
+#if defined(VISIONOS)
+	CGSize size = [[AppDelegate viewController] godotView].bounds.size;
 	return Size2i(size.width, size.height);
-	#else
+#else
 	CGRect screenBounds = [UIScreen mainScreen].bounds;
 	return Size2i(screenBounds.size.width, screenBounds.size.height) * screen_get_max_scale();
-	#endif
+#endif
 }
 
 Size2i DisplayServerIOS::window_get_size_with_decorations(WindowID p_window) const {
@@ -695,13 +694,13 @@ float DisplayServerIOS::screen_get_max_scale() const {
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
-	#if !defined(VISIONOS)
+#if !defined(VISIONOS)
 	if (@available(iOS 16.0, *)) {
 		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
 	} else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
-	#endif
+#endif
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {

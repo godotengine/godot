@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  view_controller.mm                                                    */
+/*  vision_view_controller.mm                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -27,26 +27,26 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+
 #if defined(VISIONOS)
 #import "vision_view_controller.h"
 
+#import "app_delegate.h"
 #import "display_server_ios.h"
-#import "godot_vision_view.h"
 #import "godot_view_renderer.h"
+#import "godot_vision_view.h"
 #import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
 #import "os_ios.h"
-#import "app_delegate.h"
 
 #include "core/config/project_settings.h"
 
 #import <AVFoundation/AVFoundation.h>
-#import <GameController/GameController.h>
 #import <Foundation/Foundation.h>
-
+#import <GameController/GameController.h>
 
 @interface RenderThread : NSThread {
-    cp_layer_renderer_t _layerRenderer;
+	cp_layer_renderer_t _layerRenderer;
 	// ViewController * _viewController;
 }
 
@@ -54,29 +54,26 @@
 @end
 @implementation RenderThread
 
-- (instancetype)initWithLayerRenderer:(cp_layer_renderer_t)layerRenderer
-{
-    if (self = [self init]) {
-        _layerRenderer = layerRenderer;
+- (instancetype)initWithLayerRenderer:(cp_layer_renderer_t)layerRenderer {
+	if (self = [self init]) {
+		_layerRenderer = layerRenderer;
 		// _viewController = [AppDelegate viewController];
-    }
-    return self;
+	}
+	return self;
 }
 
 - (void)main {
-    [[AppDelegate viewController] runLoop];
+	[[AppDelegate viewController] runLoop];
 }
 
-
 @end
-
 
 @interface ViewController () <GodotViewDelegate>
 
 @property(strong, nonatomic) GodotViewRenderer *renderer;
 @property(strong, nonatomic) GodotKeyboardInputView *keyboardView;
-@property(strong,readwrite, nonatomic) GodotView *view;
-@property (nonatomic, assign) cp_layer_renderer_t __unsafe_unretained layerRenderer;
+@property(strong, readwrite, nonatomic) GodotView *view;
+@property(nonatomic, assign) cp_layer_renderer_t __unsafe_unretained layerRenderer;
 
 // @property(strong, nonatomic) UIView *godotLoadingOverlay;
 
@@ -90,8 +87,8 @@
 - (BOOL)setup:(cp_layer_renderer_t)renderer {
 	self.layerRenderer = renderer;
 	RenderThread *renderThread = [[RenderThread alloc] initWithLayerRenderer:renderer];
-    renderThread.name = @"Spatial Renderer Thread";
-    [renderThread start];
+	renderThread.name = @"Spatial Renderer Thread";
+	[renderThread start];
 	return true;
 }
 
@@ -100,32 +97,31 @@
 	//TODO: Send this to the swift code
 }
 
--(void) viewDidAppear{
+- (void)viewDidAppear {
 	[self.swiftController setImmersiveSpace:true];
 }
 
- bool _running = true;
- -(void) runLoop {
-		[self.view setup:self.layerRenderer];
-        while (_running) {
-            @autoreleasepool {
-                switch (cp_layer_renderer_get_state(self.layerRenderer)) {
-                    case cp_layer_renderer_state_paused:
-                        cp_layer_renderer_wait_until_running(self.layerRenderer);
-                        break;
-                        
-                    case cp_layer_renderer_state_running:
-                        [self.view drawView];
-                        break;
-                        
-                        
-                    case cp_layer_renderer_state_invalidated:
-                        _running = false;
-                        break;
-                }
-            }
-        }
-    }
+bool _running = true;
+- (void)runLoop {
+	[self.view setup:self.layerRenderer];
+	while (_running) {
+		@autoreleasepool {
+			switch (cp_layer_renderer_get_state(self.layerRenderer)) {
+				case cp_layer_renderer_state_paused:
+					cp_layer_renderer_wait_until_running(self.layerRenderer);
+					break;
+
+				case cp_layer_renderer_state_running:
+					[self.view drawView];
+					break;
+
+				case cp_layer_renderer_state_invalidated:
+					_running = false;
+					break;
+			}
+		}
+	}
+}
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
 	// [super pressesBegan:presses withEvent:event];
@@ -219,8 +215,7 @@
 }
 
 - (BOOL)godotViewFinishedSetup:(GodotView *)view {
-	
-	if(self.swiftController) {
+	if (self.swiftController) {
 		[self.swiftController finishedLoading];
 	}
 	return YES;
@@ -231,12 +226,10 @@
 
 	self.renderer = nil;
 
-
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 // MARK: Orientation
-
 
 // MARK: Keyboard
 

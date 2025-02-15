@@ -290,11 +290,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// Usage.
 
 	MTLResourceOptions options = 0;
-	#if VISIONOS
+#if VISIONOS
 	const bool supports_memoryless = true;
-	#else
+#else
 	const bool supports_memoryless = (*device_properties).features.highestFamily >= MTLGPUFamilyApple2 && (*device_properties).features.highestFamily < MTLGPUFamilyMac1;
-	#endif
+#endif
 	if (supports_memoryless && p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) {
 		options = MTLResourceStorageModeMemoryless | MTLResourceHazardTrackingModeTracked;
 		desc.storageMode = MTLStorageModeMemoryless;
@@ -3501,7 +3501,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	// Rasterization.
 	desc.rasterizationEnabled = !p_rasterization_state.discard_primitives;
 #if !VISIONOS_SIMULATOR
-	 pipeline->raster_state.clip_mode = p_rasterization_state.enable_depth_clamp ? MTLDepthClipModeClamp : MTLDepthClipModeClip;
+	pipeline->raster_state.clip_mode = p_rasterization_state.enable_depth_clamp ? MTLDepthClipModeClamp : MTLDepthClipModeClip;
 #endif
 	pipeline->raster_state.fill_mode = p_rasterization_state.wireframe ? MTLTriangleFillModeLines : MTLTriangleFillModeFill;
 

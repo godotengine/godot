@@ -436,7 +436,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			spatial_upscaler = fsr;
 		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
-#if defined(METAL_ENABLED) && !defined (VISIONOS_SIMULATOR)
+#if defined(METAL_ENABLED) && !defined(VISIONOS_SIMULATOR)
 			spatial_upscaler = mfx_spatial;
 #endif
 		}

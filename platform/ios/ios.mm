@@ -167,14 +167,13 @@ void iOS::alert(const char *p_alert, const char *p_title) {
 
 		UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
 		UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
-														style:UIAlertActionStyleCancel
-													handler:^(id){
-													}];
+														 style:UIAlertActionStyleCancel
+													   handler:^(id){
+													   }];
 
 		[alert addAction:button];
 
 		[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
-
 	});
 }
 

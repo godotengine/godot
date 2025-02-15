@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view.mm                                                         */
+/*  godot_vision_view.mm                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+
 #if defined(VISIONOS)
 #import "godot_vision_view.h"
 
@@ -43,11 +44,9 @@
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 
-
 #import <CoreMotion/CoreMotion.h>
 
 static const float earth_gravity = 9.80665;
-
 
 @interface GodotView () {
 }
@@ -56,17 +55,16 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CMMotionManager *motionManager;
 
-
 @end
 
 @implementation GodotView
 
-- (CGSize)screen_get_size:(int)p_screen{
+- (CGSize)screen_get_size:(int)p_screen {
 	return self.size;
 }
-- (CGRect)get_display_safe_area{
+- (CGRect)get_display_safe_area {
 	CGSize s = [self screen_get_size:0];
-	return CGRectMake( 0,0,s.width,s.height);
+	return CGRectMake(0, 0, s.width, s.height);
 }
 bool _is_initialized;
 - (GodotView<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName {
@@ -84,8 +82,7 @@ bool _is_initialized;
 	return self;
 }
 
-
-- (instancetype)init{
+- (instancetype)init {
 	if (self) {
 		[self godot_commonInit];
 	}
@@ -97,7 +94,7 @@ bool _is_initialized;
 
 	self.renderer = nil;
 
-//TODO: Call into swift and remove the view
+	//TODO: Call into swift and remove the view
 	// if (self.renderingLayer) {
 	// 	[self.renderingLayer removeFromSuperlayer];
 	// 	self.renderingLayer = nil;
@@ -110,7 +107,6 @@ bool _is_initialized;
 }
 
 - (void)godot_commonInit {
-
 	// Configure and start accelerometer
 	if (!self.motionManager) {
 		self.motionManager = [[CMMotionManager alloc] init];
@@ -157,13 +153,13 @@ bool _is_initialized;
 - (void)drawView {
 	if (!self.isActive) {
 		print_verbose("Draw view not active!");
-//		return;
+		//		return;
 	}
 	RenderingDevice *rendering_device = RenderingDevice::get_singleton();
 	if (rendering_device) {
 		rendering_device->make_current();
 		// NSLog(@"RenderingDevice is now current.");
-//		return;
+		//		return;
 	}
 
 	if (!self.renderer) {
@@ -182,48 +178,45 @@ bool _is_initialized;
 			return;
 		}
 	}
-	
 
 	// [self handleMotion];
 	//VISIONOS STuff
 	//TODO: Move this to pre-draw in the
-	if(![self shouldDraw]){
+	if (![self shouldDraw]) {
 		NSLog(@"Should not draw");
 		return;
 	}
-	
+
 	[self.renderer renderOnView:nil];
 
 	cp_frame_end_submission(_frame);
 }
 
-
--(CGRect)bounds{
+- (CGRect)bounds {
 	CGSize s = self.size;
-	return CGRectMake(0,0,s.width,s.height);
+	return CGRectMake(0, 0, s.width, s.height);
 }
 
-
 CGSize _size = CGSizeZero;
-- (CGSize)size{
-	if(self.drawable){
+- (CGSize)size {
+	if (self.drawable) {
 		id<MTLTexture> texture = cp_drawable_get_color_texture(self.drawable, 0);
-		if(texture){
+		if (texture) {
 			_size = CGSizeMake(texture.width, texture.height);
 			return _size;
 		}
 	}
-	if(_size.width == 0 || _size.height == 0){
-		#if VISIONOS_SIMULATOR
+	if (_size.width == 0 || _size.height == 0) {
+#if VISIONOS_SIMULATOR
 		_size = CGSizeMake(2732, 2048);
-		#else
+#else
 		//The max size for the VisionPro on device is 1920x1824 when you create the display buffer
 		_size = CGSizeMake(1920, 1824);
-		#endif
+#endif
 	}
 	return _size;
 }
-- (void)setsize:(CGSize)newValue{
+- (void)setsize:(CGSize)newValue {
 	_size = newValue;
 }
 
@@ -233,11 +226,11 @@ CGSize _size = CGSizeZero;
 		return false;
 	}
 
-    // Query the next frame from the layer renderer
-    cp_frame_t __frame = cp_layer_renderer_query_next_frame(self.layerRenderer);
+	// Query the next frame from the layer renderer
+	cp_frame_t __frame = cp_layer_renderer_query_next_frame(self.layerRenderer);
 
 	_frame = __frame;
-	if(_frame == nullptr) {
+	if (_frame == nullptr) {
 		NSLog(@"Frame is null");
 		return false;
 	}
@@ -258,12 +251,10 @@ CGSize _size = CGSizeZero;
 	return true;
 	//TODO: We need to move this to the end of the drawing
 	//We need to hook into the end of the drawing and call cp_frame_end_submission(frame) to submit the frame
-//	cp_frame_end_submission(_frame);
+	//	cp_frame_end_submission(_frame);
 }
 
-
 - (bool)pre_draw_viewport {
-	
 	RenderingDevice *rendering_device = RenderingDevice::get_singleton();
 	if (!rendering_device) {
 		NSLog(@"RenderingDevice is null.");
@@ -271,9 +262,9 @@ CGSize _size = CGSizeZero;
 	}
 	rendering_device->make_current();
 	cp_frame_start_update(self.frame);
-	
+
 	cp_time_wait_until(cp_frame_timing_get_optimal_input_time(self.timing));
-	
+
 	cp_frame_start_submission(self.frame);
 	cp_drawable_t __drawable = cp_frame_query_drawable(self.frame);
 	if (__drawable == nullptr) {
@@ -290,7 +281,7 @@ CGSize _size = CGSizeZero;
 	//  NSLog(@"Viewport: %f %f %f %f %f %f", vp.originX, vp.originY, vp.width, vp.height, vp.znear, vp.zfar);
 	//We will setup and do the AR stuff in pre_draw_viewport
 	cp_frame_timing_t actualTiming = cp_drawable_get_frame_timing(self.drawable);
-	if(actualTiming == nullptr){
+	if (actualTiming == nullptr) {
 		return false;
 	}
 	self.timing = actualTiming;
@@ -299,7 +290,7 @@ CGSize _size = CGSizeZero;
 	cp_drawable_set_device_anchor(self.drawable, anchor);
 	return true;
 }
-- (void)stopRenderDisplayLayer{
+- (void)stopRenderDisplayLayer {
 	NSLog(@"stopRenderDisplayLayer");
 	cp_frame_end_submission(self.frame);
 }
@@ -368,7 +359,6 @@ bool _running = true;
 	DisplayServerIOS::get_singleton()->update_accelerometer(Vector3(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z));
 	DisplayServerIOS::get_singleton()->update_magnetometer(Vector3(magnetic.x, magnetic.y, magnetic.z));
 	DisplayServerIOS::get_singleton()->update_gyroscope(Vector3(rotation.x, rotation.y, rotation.z));
-
 }
 
 @end

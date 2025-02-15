@@ -39,7 +39,7 @@
 //@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 //#endif
 //#if defined(VULKAN_ENABLED)
-@interface AppDelegate : NSObject <UIApplicationDelegate,UISceneDelegate>
+@interface AppDelegate : NSObject <UIApplicationDelegate, UISceneDelegate>
 //#endif
 
 @property(strong, nonatomic) UIWindow *window;

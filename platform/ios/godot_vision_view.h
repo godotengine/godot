@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view.h                                                          */
+/*  godot_vision_view.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -27,14 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+
 #if defined(VISIONOS)
-#import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
 #import <CompositorServices/CompositorServices.h>
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
-
+#import <UIKit/UIKit.h>
 
 @class GodotView;
 
@@ -47,18 +46,18 @@
 
 @end
 
-
-@interface GodotView : NSObject{}
+@interface GodotView : NSObject {
+}
 
 @property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
 @property(assign, nonatomic) id<GodotViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
 
-@property (nonatomic, assign, assign) cp_frame_timing_t timing;
-@property (nonatomic, assign, assign) cp_frame_t frame;
-@property (nonatomic, assign, assign) cp_drawable_t drawable;
-@property (nonatomic, assign) cp_layer_renderer_t __unsafe_unretained layerRenderer;
+@property(nonatomic, assign, assign) cp_frame_timing_t timing;
+@property(nonatomic, assign, assign) cp_frame_t frame;
+@property(nonatomic, assign, assign) cp_drawable_t drawable;
+@property(nonatomic, assign) cp_layer_renderer_t __unsafe_unretained layerRenderer;
 
 @property(assign, readonly, nonatomic) CGRect bounds;
 

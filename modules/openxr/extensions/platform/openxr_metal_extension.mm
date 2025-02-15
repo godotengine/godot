@@ -112,15 +112,15 @@ void OpenXRMetalExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usabl
 	p_usable_swap_chains.push_back(MTLPixelFormatRGBA8Unorm_sRGB);
 	p_usable_swap_chains.push_back(MTLPixelFormatBGRA8Unorm_sRGB);
 	p_usable_swap_chains.push_back(MTLPixelFormatRGBA8Uint);
-	#ifdef VISIONOS
+#ifdef VISIONOS
 	p_usable_swap_chains.push_back(MTLPixelFormatRGBA16Float);
-	#endif
+#endif
 }
 
 void OpenXRMetalExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) {
-	#ifndef VISIONOS
+#ifndef VISIONOS
 	p_usable_swap_chains.push_back(MTLPixelFormatDepth24Unorm_Stencil8);
-	#endif
+#endif
 	p_usable_swap_chains.push_back(MTLPixelFormatDepth32Float_Stencil8);
 	p_usable_swap_chains.push_back(MTLPixelFormatDepth32Float);
 }

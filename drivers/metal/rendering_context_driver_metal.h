@@ -43,8 +43,8 @@
 
 #if VISIONOS
 #import "godot_vision_view.h"
-#import <MetalKit/MetalKit.h>
 #import <CompositorServices/CompositorServices.h>
+#import <MetalKit/MetalKit.h>
 #endif
 #import <Metal/Metal.h>
 #import <QuartzCore/CALayer.h>
@@ -95,7 +95,8 @@ public:
 	struct WindowPlatformData {
 #ifdef __OBJC__
 #ifdef VISIONOS
-		GodotView *__unsafe_unretained layer;;
+		GodotView *__unsafe_unretained layer;
+		;
 #else
 		CAMetalLayer *__unsafe_unretained layer;
 #endif
@@ -130,11 +131,11 @@ public:
 		}
 		virtual ~Surface() = default;
 
-		#if VISIONOS
+#if VISIONOS
 		MTLPixelFormat get_pixel_format() const { return MTLPixelFormatRGBA16Float; }
-		#else
+#else
 		MTLPixelFormat get_pixel_format() const { return MTLPixelFormatBGRA8Unorm; }
-		#endif
+#endif
 		virtual Error resize(uint32_t p_desired_framebuffer_count) = 0;
 		virtual RDD::FramebufferID acquire_next_frame_buffer() = 0;
 		virtual void present(MDCommandBuffer *p_cmd_buffer) = 0;

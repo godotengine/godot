@@ -117,7 +117,7 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 	features.multisampleLayeredRendering = [p_device supportsFamily:MTLGPUFamilyApple7];
 	features.tessellationShader = [p_device supportsFamily:MTLGPUFamilyApple3];
 #ifdef VISIONOS_SIMULATOR
-//Vision fails the check for MTLGpuFamily3, however it supports imageCubeArray
+	//Vision fails the check for MTLGpuFamily3, however it supports imageCubeArray
 	features.imageCubeArray = true;
 #else
 	features.imageCubeArray = [p_device supportsFamily:MTLGPUFamilyApple3];
@@ -325,10 +325,10 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 #endif
 
 	limits.maxDrawIndexedIndexValue = std::numeric_limits<uint32_t>::max() - 1;
-	#if defined(VISIONOS)
-		limits.temporalScalerInputContentMinScale = 1.0;
-		limits.temporalScalerInputContentMaxScale = 3.0;
-		#else
+#if defined(VISIONOS)
+	limits.temporalScalerInputContentMinScale = 1.0;
+	limits.temporalScalerInputContentMaxScale = 3.0;
+#else
 	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
 		limits.temporalScalerInputContentMinScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMinScaleForDevice:p_device];
 		limits.temporalScalerInputContentMaxScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMaxScaleForDevice:p_device];
@@ -337,7 +337,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 		limits.temporalScalerInputContentMinScale = 1.0;
 		limits.temporalScalerInputContentMaxScale = 3.0;
 	}
-	#endif
+#endif
 }
 
 MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {
