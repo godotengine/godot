@@ -1573,7 +1573,7 @@ void Node3DEditorViewport::_reset_transform(TransformType type) {
 				sp->set_rotation(Vector3(0, 0, 0));
 				break;
 			case TransformType::SCALE:
-			undo_redo->add_undo_method(sp, "set_scale", sp->get_scale());
+				undo_redo->add_undo_method(sp, "set_scale", sp->get_scale());
 				sp->set_scale(Vector3(1, 1, 1));
 				break;
 		}
