@@ -91,6 +91,8 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 
 	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+
+	img->fix_alpha_edges();
 #else
 	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
 	// 16 pixels is used as it's the most common base size for Godot icons.
