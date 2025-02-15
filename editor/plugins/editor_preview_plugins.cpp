@@ -560,7 +560,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 
 		n2d_rect.size.x = real_t(tex_width) * anim_sprite->get_global_scale().x;
 		n2d_rect.size.y = real_t(tex_height) * anim_sprite->get_global_scale().y;
-		n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() + anim_sprite->get_global_scale();
+		n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() * anim_sprite->get_global_scale();
 		if (anim_sprite->is_centered()) {
 			n2d_rect.position -= n2d_rect.size / 2.0f;
 		}
