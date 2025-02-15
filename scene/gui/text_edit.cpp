@@ -223,7 +223,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	if (p_text_changed) {
 		text_line.data_buf->add_string(text_with_ime, font, font_size, language);
 	}
-	if (bidi_override_with_ime.is_empty()) {
+	if (!bidi_override_with_ime.is_empty()) {
 		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
 	}
 
