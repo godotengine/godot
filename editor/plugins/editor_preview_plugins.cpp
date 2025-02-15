@@ -43,6 +43,7 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
+#include "scene/2d/polygon_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
 #include "scene/3d/light_3d.h"
@@ -606,7 +607,41 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		n2d_rect.size = tile_rect.size * tile_size * tile_map->get_global_scale();
 	}
 
-	// WIP: Need to work for Polygon2D, TouchScreenButton too.
+	if (p_node->is_class("Polygon2D")) {
+		Polygon2D *poly2d = Object::cast_to<Polygon2D>(p_node);
+		PackedVector2Array polygon = poly2d->get_polygon();
+
+		if (polygon.size() > 2) { // Abort if there's no surface (min = 3 verts)
+			// Calculate bounds
+			float max_x = polygon[0].x;
+			float min_x = polygon[0].x;
+			float max_y = polygon[0].y;
+			float min_y = polygon[0].y;
+			for (int i = 0; i < polygon.size(); i++) {
+				if (polygon[i].x > max_x) {
+					max_x = polygon[i].x;
+				}
+				if (polygon[i].x < min_x) {
+					min_x = polygon[i].x;
+				}
+
+				if (polygon[i].y > max_y) {
+					max_y = polygon[i].y;
+				}
+				if (polygon[i].y < min_y) {
+					min_y = polygon[i].y;
+				}
+			}
+
+			Rect2 poly_rect = Rect2(Point2(min_x, min_y), Size2(max_x - min_x, max_y - min_y));
+
+			n2d_rect.position = poly2d->get_global_position() + poly2d->get_offset() * poly2d->get_global_scale();
+			n2d_rect.position += poly_rect.position * poly2d->get_global_scale();
+			n2d_rect.size = poly_rect.size * poly2d->get_global_scale();
+		}
+	}
+
+	// WIP: Need to work for , TouchScreenButton too.
 
 	// Merge the calculated node 2d rect
 	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
