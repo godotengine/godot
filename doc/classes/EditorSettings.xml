@@ -181,6 +181,17 @@
 		</method>
 	</methods>
 	<members>
+		<member name="asset_library/favorites" type="Dictionary" setter="" getter="">
+			The Dictionary storing your favorite assets data. The keys are the asset's [code]asset_id[/code], and the values are Dictionaries containing:
+			- [code]asset_id[/code]: [int] (the id of the asset)
+			- [code]title_text[/code]: [String] (the name of the asset)
+			- [code]category_id[/code]: [int] (the id of the asset's category)
+			- [code]category[/code]: [String] (the name of the asset's category)
+			- [code]author_id[/code]: [int] (the id of the asset's author)
+			- [code]author[/code]: [String] (the name of the asset's author)
+			- [code]price[/code]: [String] (the price of the asset)
+			- [code]template_only[/code]: [bool] (whether the asset is a template or addon)
+		</member>
 		<member name="asset_library/use_threads" type="bool" setter="" getter="">
 			If [code]true[/code], the Asset Library uses multiple threads for its HTTP requests. This prevents the Asset Library from blocking the main thread for every loaded asset.
 		</member>
