@@ -148,7 +148,7 @@ static GodotView *mainGodotView = nil;
 
 	return YES;
 }
-
+#if defined(VISIONOS)
 - (UISceneConfiguration *)application:(UIApplication *)application
 		configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
 									   options:(UISceneConnectionOptions *)options {
@@ -156,6 +156,7 @@ static GodotView *mainGodotView = nil;
 	config.delegateClass = [self class];
 	return config;
 }
+#endif
 
 - (void)onAudioInterruption:(NSNotification *)notification {
 	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
@@ -196,12 +197,14 @@ static GodotView *mainGodotView = nil;
 - (void)applicationDidBecomeActive:(UIApplication *)application {
 	OS_IOS::get_singleton()->on_focus_in();
 }
+#if defined(VISIONOS)
 - (void)sceneDidBecomeActive:(UIScene *)scene {
 	OS_IOS::get_singleton()->on_focus_in();
 }
 - (void)sceneWillResignActive:(UIScene *)scene {
 	OS_IOS::get_singleton()->on_focus_out();
 }
+#endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 	OS_IOS::get_singleton()->on_enter_background();
