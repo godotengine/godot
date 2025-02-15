@@ -18,23 +18,26 @@ index 7af66602fd..a7e937667c 100644
      {
        error_callback (data, "lseek", errno);
        return 0;
-@@ -74,7 +67,10 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+@@ -72,9 +65,13 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+   view->len = size;
+ 
    got = 0;
++  void *ptr = view->base;
    while (got < size)
      {
 -      r = read (descriptor, view->base, size - got);
 +      uint64_t sz = size - got;
 +      if (sz > INT_MAX)
 +        sz = INT_MAX;
-+      r = _read (descriptor, view->base, sz);
++      r = _read (descriptor, ptr, sz);
        if (r < 0)
  	{
  	  error_callback (data, "read", errno);
-@@ -84,6 +80,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
+@@ -84,6 +81,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
        if (r == 0)
  	break;
        got += (uint64_t) r;
-+      view->base += r;
++      ptr += r;
      }
  
    if (got < size)
