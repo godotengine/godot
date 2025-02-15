@@ -128,6 +128,9 @@ private:
 	void _remove_deprecated_settings();
 #endif
 
+	// Bind helpers.
+	Vector<String> _get_shortcut_list();
+
 protected:
 	static void _bind_methods();
 
@@ -193,10 +196,12 @@ public:
 	String get_editor_layouts_config() const;
 	static float get_auto_display_scale();
 
-	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
-	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<Shortcut> get_shortcut(const String &p_name) const;
+	void _add_shortcut_default(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut);
+	void remove_shortcut(const String &p_path);
+	bool is_shortcut(const String &p_path, const Ref<InputEvent> &p_event) const;
+	bool has_shortcut(const String &p_path) const;
+	Ref<Shortcut> get_shortcut(const String &p_path) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
