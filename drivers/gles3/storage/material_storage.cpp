@@ -2025,7 +2025,7 @@ void MaterialStorage::global_shader_parameters_instance_free(RID p_instance) {
 	global_shader_uniforms.instance_buffer_pos.erase(p_instance);
 }
 
-void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count) {
+void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, int p_index, const Variant &p_value, int p_flags_count, bool p_use_linear_color) {
 	if (!global_shader_uniforms.instance_buffer_pos.has(p_instance)) {
 		return; //just not allocated, ignore
 	}
