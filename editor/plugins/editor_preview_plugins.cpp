@@ -41,6 +41,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -566,7 +567,19 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		}
 	}
 
-	// WIP: Need to work for MeshInstance2D, MultimeshInstance2D, TileMapLayer, Polygon2D, TouchScreenButton too.
+	if (p_node->is_class("MeshInstance2D")) {
+		// NOTE: Conversion is 1m = 1px (before 2d scale)
+		MeshInstance2D *mesh2d = Object::cast_to<MeshInstance2D>(p_node);
+		Ref<Mesh> mesh = mesh2d->get_mesh();
+
+		// Discard z axis (depth) and only get length of mesh in x,y axis
+		n2d_rect.size.x = (mesh->get_aabb().get_end() - mesh->get_aabb().position).x;
+		n2d_rect.size.y = (mesh->get_aabb().get_end() - mesh->get_aabb().position).y;
+		n2d_rect.size *= mesh2d->get_scale();
+		n2d_rect.position = mesh2d->get_global_position() - n2d_rect.size / 2.0f; // This node type is always centered with no offset
+	}
+
+	// WIP: Need to work for MultimeshInstance2D, TileMapLayer, Polygon2D, TouchScreenButton too.
 
 	// Merge the calculated node 2d rect
 	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
