@@ -244,5 +244,14 @@
 		<constant name="FILTER_BLEND" value="3" enum="FilterAction">
 			Paths matching the filter will be blended (by the blend value).
 		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_STARTED" value="0" enum="AnimationNodeNotification">
+			The node has started playback.
+		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_FINISHED" value="1" enum="AnimationNodeNotification">
+			The node has finished playback.
+		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_FADEOUT_STARTED" value="2" enum="AnimationNodeNotification">
+			The node has started to fadeout its current playback.
+		</constant>
 	</constants>
 </class>
