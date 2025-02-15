@@ -67,7 +67,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle to the given vector, in radians.
+				Returns the signed angle to the given vector, in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>

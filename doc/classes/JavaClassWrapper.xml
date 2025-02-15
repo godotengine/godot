@@ -15,10 +15,18 @@
 
 		print(datetime.format(formatter))
 		[/codeblock]
+		[b]Warning:[/b] When calling Java methods, be sure to check [method JavaClassWrapper.get_exception] to check if the method threw an exception.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_exception">
+			<return type="JavaObject" />
+			<description>
+				Returns the Java exception from the last call into a Java class. If there was no exception, it will return [code]null[/code].
+				[b]Note:[/b] This method only works on Android. On every other platform, this method will always return [code]null[/code].
+			</description>
+		</method>
 		<method name="wrap">
 			<return type="JavaClass" />
 			<param index="0" name="name" type="String" />

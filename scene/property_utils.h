@@ -46,6 +46,9 @@ public:
 	// in the tree, since every owner found while traversing towards the root gets a chance
 	// to override property values.)
 	static Vector<SceneState::PackState> get_node_states_stack(const Node *p_node, const Node *p_owner = nullptr, bool *r_instantiated_by_owner = nullptr);
+
+	static void assign_custom_type_script(Object *p_object, const Ref<Script> &p_script);
+	static Ref<Script> get_custom_type_script(const Object *p_object);
 };
 
 #endif // PROPERTY_UTILS_H

@@ -167,8 +167,6 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
-
-	String to_string() const;
 };
 
 #endif // JOLT_SOFT_BODY_3D_H

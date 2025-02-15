@@ -1002,7 +1002,8 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
-	const int max_region_size = p_bake_sh ? 512 : 1024;
+	const int user_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int max_region_size = p_bake_sh ? user_region_size / 2 : user_region_size;
 	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
 	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
 	for (int s = 0; s < p_atlas_slices; s++) {

@@ -110,6 +110,11 @@ Config::Config() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+	GLint max_vertex_output;
+	glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &max_vertex_output);
+	GLint max_fragment_input;
+	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &max_fragment_input);
+	max_shader_varyings = (uint32_t)MIN(max_vertex_output, max_fragment_input) / 4;
 
 	// sanity clamp buffer size to 16K..1MB
 	max_uniform_buffer_size = CLAMP(max_uniform_buffer_size, 16384, 1048576);

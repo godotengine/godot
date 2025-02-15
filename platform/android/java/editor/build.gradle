@@ -188,7 +188,7 @@ dependencies {
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
 
     // Meta dependencies
-    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:3.0.0-stable"
+    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
     // Pico dependencies
-    picoosImplementation "org.godotengine:godot-openxr-vendors-pico:3.0.1-stable"
+    picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
 }

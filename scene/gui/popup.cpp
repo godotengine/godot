@@ -247,8 +247,14 @@ void PopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
 
 		Ref<InputEventMouseButton> b = p_event;
 		// Hide it if the shadows have been clicked.
-		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT && !panel->get_global_rect().has_point(b->get_position())) {
-			_close_pressed();
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
+			Rect2 panel_area = panel->get_global_rect();
+			float win_scale = get_content_scale_factor();
+			panel_area.position *= win_scale;
+			panel_area.size *= win_scale;
+			if (!panel_area.has_point(b->get_position())) {
+				_close_pressed();
+			}
 		}
 	} else {
 		WARN_PRINT_ONCE("PopupPanel has received an invalid InputEvent. Consider filtering out invalid events.");

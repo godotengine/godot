@@ -64,6 +64,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
 	settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
 	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
+	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 	setup_data.append(settings);
 	p_session->send_message("scene:runtime_node_select_setup", setup_data);
 
@@ -243,20 +244,29 @@ void GameView::_show_update_window_wrapper() {
 	Size2i size = floating_window_rect.size;
 	int screen = floating_window_screen;
 
-	Size2 wrapped_margins_size = window_wrapper->get_margins_size();
-	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
-	offset_embedded_process.x += embedded_process->get_margin_size(SIDE_LEFT);
-	offset_embedded_process.y += embedded_process->get_margin_size(SIDE_TOP);
-
 	// Obtain the size around the embedded process control. Usually, the difference between the game view's get_size
 	// and the embedded control should work. However, when the control is hidden and has never been displayed,
 	// the size of the embedded control is not calculated.
 	Size2 old_min_size = embedded_process->get_custom_minimum_size();
 	embedded_process->set_custom_minimum_size(Size2i());
-	Size2 min_size = get_minimum_size();
+
+	Size2 embedded_process_min_size = get_minimum_size();
+	Size2 wrapped_margins_size = window_wrapper->get_margins_size();
+	Size2 wrapped_min_size = window_wrapper->get_minimum_size();
+	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
+
+	// On the first startup, the global position of the embedded process control is invalid because it was
+	// never displayed. We will calculated it manually using the minimum size of the window.
+	if (offset_embedded_process == Point2()) {
+		offset_embedded_process.y = wrapped_min_size.y;
+	}
+	offset_embedded_process.x += embedded_process->get_margin_size(SIDE_LEFT);
+	offset_embedded_process.y += embedded_process->get_margin_size(SIDE_TOP);
+	offset_embedded_process += window_wrapper->get_margins_top_left();
+
 	embedded_process->set_custom_minimum_size(old_min_size);
 
-	Point2 size_diff_embedded_process = Point2(0, min_size.y) + embedded_process->get_margins_size();
+	Point2 size_diff_embedded_process = Point2(0, embedded_process_min_size.y) + embedded_process->get_margins_size();
 
 	if (placement.position != Point2i(INT_MAX, INT_MAX)) {
 		position = placement.position - offset_embedded_process;
@@ -436,6 +446,10 @@ GameView::EmbedAvailability GameView::_get_embed_available() {
 	if (get_tree()->get_root()->is_embedding_subwindows()) {
 		return EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE;
 	}
+	String display_driver = GLOBAL_GET("display/display_server/driver");
+	if (display_driver == "headless" || display_driver == "wayland") {
+		return EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER;
+	}
 
 	EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
 	if (placement.force_fullscreen) {
@@ -479,7 +493,14 @@ void GameView::_update_ui() {
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			state_label->set_text(TTR("Game embedding not available on your OS."));
+			if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+				state_label->set_text(TTR("Game embedding not available on Wayland.\nWayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD > Prefer Wayland)."));
+			} else {
+				state_label->set_text(TTR("Game embedding not available on your OS."));
+			}
+			break;
+		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
+			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));
 			break;
 		case EMBED_NOT_AVAILABLE_MINIMIZED:
 			state_label->set_text(TTR("Game embedding not available when the game starts minimized.\nConsider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
@@ -614,6 +635,10 @@ void GameView::_notification(int p_what) {
 				// Embedding available.
 				int game_mode = EDITOR_GET("run/window_placement/game_embed_mode");
 				switch (game_mode) {
+					case -1: { // Disabled.
+						embed_on_play = false;
+						make_floating_on_play = false;
+					} break;
 					case 1: { // Embed.
 						embed_on_play = true;
 						make_floating_on_play = false;
@@ -621,10 +646,6 @@ void GameView::_notification(int p_what) {
 					case 2: { // Floating.
 						embed_on_play = true;
 						make_floating_on_play = true;
-					} break;
-					case 3: { // Disabled.
-						embed_on_play = false;
-						make_floating_on_play = false;
 					} break;
 					default: {
 						embed_on_play = EditorSettings::get_singleton()->get_project_metadata("game_view", "embed_on_play", true);
@@ -786,8 +807,21 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 
 	// Be sure to have the correct window size in the embedded_process control.
 	_update_embed_window_size();
-
 	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
+
+	// When using the floating window, we need to force the position and size from the
+	// editor/project settings, because the get_screen_embedded_window_rect of the
+	// embedded_process will be updated only on the next frame.
+	if (p_idx == 0 && window_wrapper->get_window_enabled()) {
+		EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
+		if (placement.position != Point2i(INT_MAX, INT_MAX)) {
+			rect.position = placement.position;
+		}
+		if (placement.size != Size2i()) {
+			rect.size = placement.size;
+		}
+	}
+
 	N = r_arguments.insert_after(N, "--position");
 	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
 	N = r_arguments.insert_after(N, "--resolution");
@@ -1027,18 +1061,23 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 
 ///////
 
+void GameViewPlugin::selected_notify() {
+	if (_is_window_wrapper_enabled()) {
+#ifdef ANDROID_ENABLED
+		notify_main_screen_changed(get_plugin_name());
+#else
+		window_wrapper->grab_window_focus();
+#endif
+		_focus_another_editor();
+	}
+}
+
+#ifndef ANDROID_ENABLED
 void GameViewPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		window_wrapper->show();
 	} else {
 		window_wrapper->hide();
-	}
-}
-
-void GameViewPlugin::selected_notify() {
-	if (window_wrapper->get_window_enabled()) {
-		window_wrapper->grab_window_focus();
-		_focus_another_editor();
 	}
 }
 
@@ -1057,6 +1096,11 @@ void GameViewPlugin::set_state(const Dictionary &p_state) {
 Dictionary GameViewPlugin::get_state() const {
 	return game_view->get_state();
 }
+
+void GameViewPlugin::_window_visibility_changed(bool p_visible) {
+	_focus_another_editor();
+}
+#endif
 
 void GameViewPlugin::_notification(int p_what) {
 	switch (p_what) {
@@ -1082,13 +1126,11 @@ void GameViewPlugin::_feature_profile_changed() {
 		debugger->set_is_feature_enabled(is_feature_enabled);
 	}
 
+#ifndef ANDROID_ENABLED
 	if (game_view) {
 		game_view->set_is_feature_enabled(is_feature_enabled);
 	}
-}
-
-void GameViewPlugin::_window_visibility_changed(bool p_visible) {
-	_focus_another_editor();
+#endif
 }
 
 void GameViewPlugin::_save_last_editor(const String &p_editor) {
@@ -1098,7 +1140,7 @@ void GameViewPlugin::_save_last_editor(const String &p_editor) {
 }
 
 void GameViewPlugin::_focus_another_editor() {
-	if (window_wrapper->get_window_enabled()) {
+	if (_is_window_wrapper_enabled()) {
 		if (last_editor.is_empty()) {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_2D);
 		} else {
@@ -1107,12 +1149,21 @@ void GameViewPlugin::_focus_another_editor() {
 	}
 }
 
+bool GameViewPlugin::_is_window_wrapper_enabled() const {
+#ifdef ANDROID_ENABLED
+	return true;
+#else
+	return window_wrapper->get_window_enabled();
+#endif
+}
+
 GameViewPlugin::GameViewPlugin() {
+	debugger.instantiate();
+
+#ifndef ANDROID_ENABLED
 	window_wrapper = memnew(WindowWrapper);
 	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Game Workspace")));
 	window_wrapper->set_margins_enabled(true);
-
-	debugger.instantiate();
 
 	game_view = memnew(GameView(debugger, window_wrapper));
 	game_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1123,6 +1174,7 @@ GameViewPlugin::GameViewPlugin() {
 	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	window_wrapper->hide();
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_window_visibility_changed));
+#endif
 
 	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewPlugin::_feature_profile_changed));
 }

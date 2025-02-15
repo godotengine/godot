@@ -62,6 +62,7 @@ public:
 	GLint max_texture_size = 0;
 	GLint max_viewport_size[2] = { 0, 0 };
 	GLint64 max_uniform_buffer_size = 0;
+	uint32_t max_shader_varyings = 0;
 
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;

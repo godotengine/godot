@@ -5886,6 +5886,10 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return vrs_capabilities.max_fragment_size.x;
 		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
 			return vrs_capabilities.max_fragment_size.y;
+		case LIMIT_MAX_SHADER_VARYINGS:
+			// The Vulkan spec states that built in varyings like gl_FragCoord should count against this, but in
+			// practice, that doesn't seem to be the case. The validation layers don't even complain.
+			return MIN(limits.maxVertexOutputComponents / 4, limits.maxFragmentInputComponents / 4);
 		default:
 			ERR_FAIL_V(0);
 	}

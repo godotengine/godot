@@ -30,6 +30,7 @@
 
 #include "jolt_object_3d.h"
 
+#include "../jolt_physics_server_3d.h"
 #include "../jolt_project_settings.h"
 #include "../spaces/jolt_layers.h"
 #include "../spaces/jolt_space_3d.h"
@@ -137,6 +138,12 @@ bool JoltObject3D::can_interact_with(const JoltObject3D &p_other) const {
 }
 
 String JoltObject3D::to_string() const {
+	static const String fallback_name = "<unknown>";
+
+	if (JoltPhysicsServer3D::get_singleton()->is_on_separate_thread()) {
+		return fallback_name; // Calling `Object::to_string` is not thread-safe.
+	}
+
 	Object *instance = get_instance();
-	return instance != nullptr ? instance->to_string() : "<unknown>";
+	return instance != nullptr ? instance->to_string() : fallback_name;
 }

@@ -156,6 +156,9 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	}
 
 	if (!method) {
+		if (r_error.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+			ERR_PRINT(vformat(R"(Cannot call static function "%s" on Java class "%s" directly. Make an instance instead.)", p_method, java_class_name));
+		}
 		return true; //no version convinces
 	}
 
@@ -512,6 +515,20 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 	for (jobject &E : to_free) {
 		env->DeleteLocalRef(E);
+	}
+
+	jobject exception = env->ExceptionOccurred();
+	if (exception) {
+		env->ExceptionClear();
+
+		jclass java_class = env->GetObjectClass(exception);
+		Ref<JavaClass> java_class_wrapped = JavaClassWrapper::singleton->wrap_jclass(java_class);
+		env->DeleteLocalRef(java_class);
+
+		JavaClassWrapper::singleton->exception.instantiate(java_class_wrapped, exception);
+		env->DeleteLocalRef(exception);
+	} else {
+		JavaClassWrapper::singleton->exception.unref();
 	}
 
 	return success;

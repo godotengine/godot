@@ -299,12 +299,12 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 		}
 	}
 
-	String name = language_map[lang_name];
+	String name = get_language_name(lang_name);
 	if (!script_name.is_empty()) {
-		name = name + " (" + script_map[script_name] + ")";
+		name = name + " (" + get_script_name(script_name) + ")";
 	}
 	if (!country_name.is_empty()) {
-		name = name + ", " + country_name_map[country_name];
+		name = name + ", " + get_country_name(country_name);
 	}
 	return name;
 }
@@ -320,7 +320,11 @@ Vector<String> TranslationServer::get_all_languages() const {
 }
 
 String TranslationServer::get_language_name(const String &p_language) const {
-	return language_map[p_language];
+	if (language_map.has(p_language)) {
+		return language_map[p_language];
+	} else {
+		return p_language;
+	}
 }
 
 Vector<String> TranslationServer::get_all_scripts() const {
@@ -334,7 +338,11 @@ Vector<String> TranslationServer::get_all_scripts() const {
 }
 
 String TranslationServer::get_script_name(const String &p_script) const {
-	return script_map[p_script];
+	if (script_map.has(p_script)) {
+		return script_map[p_script];
+	} else {
+		return p_script;
+	}
 }
 
 Vector<String> TranslationServer::get_all_countries() const {
@@ -348,7 +356,11 @@ Vector<String> TranslationServer::get_all_countries() const {
 }
 
 String TranslationServer::get_country_name(const String &p_country) const {
-	return country_name_map[p_country];
+	if (country_name_map.has(p_country)) {
+		return country_name_map[p_country];
+	} else {
+		return p_country;
+	}
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
@@ -503,7 +515,7 @@ String TranslationServer::get_tool_locale() {
 		// Look for best matching loaded translation.
 		Ref<Translation> t = main_domain->get_translation_object(locale);
 		if (t.is_null()) {
-			return "en";
+			return fallback;
 		}
 		return t->get_locale();
 	}

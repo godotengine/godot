@@ -502,6 +502,9 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			if (icon.is_empty()) {
 				WARN_PRINT(vformat("Could not load icon from UID for project at path \"%s\". Make sure UID cache exists.", p_path));
 			}
+		} else {
+			// Cache does not exist yet, so ignore and fallback to default icon.
+			icon = "";
 		}
 	}
 

@@ -878,8 +878,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 		if (requires_type && !ClassDB::is_parent_class(p_dir->get_file_type(i), p_required_type)) {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
-		option.insert_text = option.display.quote(quote_style);
+		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i).quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
 		r_list.insert(option.display, option);
 	}
 
@@ -889,7 +888,11 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
-	r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	ERR_FAIL_NULL(p_annotation);
+
+	if (p_annotation->info != nullptr) {
+		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	}
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.

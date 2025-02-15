@@ -2841,7 +2841,9 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 	TreeItem *c = p_current->first_child;
 
 	while (c) {
-		select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		if (c->is_visible()) {
+			select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		}
 		c = c->next;
 	}
 }
@@ -5629,7 +5631,7 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 	}
 
 	for (int i = 0; i < col; i++) {
-		const int col_w = get_column_width(i) + theme_cache.h_separation;
+		const int col_w = get_column_width(i);
 		pos.x -= col_w;
 		x_limit -= col_w;
 	}

@@ -1525,7 +1525,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		custom_list.append_array(export_plugins[i]->_get_export_features(Ref<EditorExportPlatform>(this), p_debug));
 	}
 
-	ProjectSettings::CustomMap custom_map;
+	ProjectSettings::CustomMap custom_map = get_custom_project_settings(p_preset);
 	if (path_remaps.size()) {
 		if (true) { //new remap mode, use always as it's friendlier with multiple .pck exports
 			for (int i = 0; i < path_remaps.size(); i += 2) {

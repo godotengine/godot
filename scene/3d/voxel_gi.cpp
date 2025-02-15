@@ -275,6 +275,7 @@ void VoxelGI::set_probe_data(const Ref<VoxelGIData> &p_data) {
 	}
 
 	probe_data = p_data;
+	update_configuration_warnings();
 }
 
 Ref<VoxelGIData> VoxelGI::get_probe_data() const {

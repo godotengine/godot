@@ -301,6 +301,7 @@ void ENetMultiplayerPeer::close() {
 	}
 	for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
 		E.value->flush();
+		E.value->destroy();
 	}
 
 	active_mode = MODE_NONE;
