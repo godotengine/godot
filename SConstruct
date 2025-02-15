@@ -236,6 +236,11 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add(
+    "run",
+    'If non-empty, run the compiled binary with the specified arguments on successful build. Try "--path /path/to/project" to run a project, append "-e" to edit it or use "-p" on its own for project manager',
+    "",
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -344,6 +349,21 @@ if env["platform"] not in platform_list:
 # Add platform-specific options.
 if env["platform"] in platform_opts:
     opts.AddVariables(*platform_opts[env["platform"]])
+
+if env["run"] != "":
+    import platform
+
+    if env["platform"] != "windows" and env["platform"] != "macos" and env["platform"] != "linuxbsd":
+        print_error("The `run` option is only supported for Windows, macOS, and Linux/BSD targets.")
+    elif env["platform"] == "windows" and platform.system() != "Windows":
+        print_error("Can't run Windows binary after compiling on a non-Windows platform.")
+        Exit(255)
+    elif env["platform"] == "macos" and platform.system() != "Darwin":
+        print_error("Can't run macOS binary after compiling on a non-macOS platform.")
+        Exit(255)
+    elif env["platform"] == "linuxbsd" and platform.system() != "Linux":
+        print_error("Can't run Linux binary after compiling on a non-Linux platform.")
+        Exit(255)
 
 # Platform-specific flags.
 # These can sometimes override default options, so they need to be processed
@@ -1090,3 +1110,11 @@ methods.show_progress(env)
 methods.dump(env)
 methods.prepare_purge(env)
 methods.prepare_timer()
+
+if env["run"] != "":
+    if os.name == "nt":
+        env["bin_path"] = f"bin\\godot{suffix}.exe"
+    else:
+        env["bin_path"] = f"bin/godot{suffix}"
+
+    methods.prepare_run(env)
