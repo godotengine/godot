@@ -536,11 +536,13 @@ void EditorPackedScenePreviewPlugin::_count_node_types(Node *p_node, int &c2d, i
 }
 
 void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &scene_rect) const {
-	// Note: There's no universal way to get the exact global rect as a Node2D, so we dig into subclasses one by one
+	// NOTE: There's no universal way to get the exact global rect as a Node2D, so we dig into subclasses one by one
 
-	// Note:
-	// Sprite2D::position, with 0 offset value, is at the **center** of the sprite
-	// Rect2::position is at the **left-up** of the rect
+	// NOTE:
+	// 1. Sprite2D::position by default is at the **center** of the sprite. (with offset == (0,0) AND centered == true)
+	// 2. Rect2::position is at the **up-left** of the rect
+	// 3. AABB::position is at the **bottom-left-forward** of the bounding box
+	//
 	// calculation below is done with these in mind.
 
 	Rect2 n2d_rect = Rect2(); // The rect of the current iterating node2d
@@ -573,18 +575,24 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		// Discard z axis (depth) and only get length of mesh in x,y axis
 		n2d_rect.size.x = (mesh->get_aabb().get_end() - mesh->get_aabb().position).x;
 		n2d_rect.size.y = (mesh->get_aabb().get_end() - mesh->get_aabb().position).y;
-		n2d_rect.size *= mesh2d->get_scale();
-		n2d_rect.position = mesh2d->get_global_position() - n2d_rect.size / 2.0f; // This node type is always centered with no offset
+		n2d_rect.size *= mesh2d->get_global_scale();
+
+		// Account for mesh offset in 3d space when calculating rect2
+		n2d_rect.position.x = mesh2d->get_global_position().x + mesh->get_aabb().position.x * mesh2d->get_global_scale().x; // AABB::position is bottom-left
+		n2d_rect.position.y = mesh2d->get_global_position().y + mesh->get_aabb().position.y * mesh2d->get_global_scale().y;
 	}
 
 	if (p_node->is_class("MultiMeshInstance2D")) {
-		// Basically the same as MeshInstance2D
+		// Basically the same procedure as MeshInstance2D.
 		MultiMeshInstance2D *mmesh2d = Object::cast_to<MultiMeshInstance2D>(p_node);
 		Ref<MultiMesh> mmesh = mmesh2d->get_multimesh();
+
 		n2d_rect.size.x = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).x;
 		n2d_rect.size.y = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).y;
-		n2d_rect.size *= mmesh2d->get_scale();
-		n2d_rect.position = mmesh2d->get_global_position();
+		n2d_rect.size *= mmesh2d->get_global_scale();
+
+		n2d_rect.position.x = mmesh2d->get_global_position().x + mmesh->get_aabb().position.x * mmesh2d->get_global_scale().x;
+		n2d_rect.position.y = mmesh2d->get_global_position().y + mmesh->get_aabb().position.y * mmesh2d->get_global_scale().y;
 	}
 
 	// WIP: Need to work for TileMapLayer, Polygon2D, TouchScreenButton too.
