@@ -42,7 +42,7 @@ def generate_bundle(target, source, env):
             shutil.copy(rel_target_bin, app_dir + "/libgodot.ios.release.xcframework/xros-arm64/libgodot.a")
         else:
             shutil.copy(rel_target_bin, app_dir + "/libgodot.ios.release.xcframework/ios-arm64/libgodot.a")
-        
+
     if dbg_target_bin != "":
         if env.get("visionos"):
             shutil.copy(dbg_target_bin, app_dir + "/libgodot.ios.debug.xcframework/xros-arm64/libgodot.a")

@@ -9,7 +9,7 @@ struct MetalLayerConfiguration: CompositorLayerConfiguration {
     {
         let supportsFoveation = capabilities.supportsFoveation
         let supportedLayouts = capabilities.supportedLayouts(options: supportsFoveation ? [.foveationEnabled] : [])
-        
+
         // The device supports the `dedicated` and `layered` layouts, and optionally `shared` when foveation is disabled
         // The simulator supports the `dedicated` and `shared` layouts.
         // However, since we use vertex amplification to implement shared rendering, it won't work on the simulator in this project.
@@ -87,10 +87,10 @@ struct ContentView: View {
         .onChange(of:isLoading) { old,newValue in
             if(!newValue){
                 dismiss()
-                
+
             }
         }
-            
+
     }
 }
 
@@ -98,28 +98,28 @@ struct ContentView: View {
 @objcMembers
 public class SwiftInterop: NSObject, SwiftVisionController {
 
-    
+
     @Binding var showImmersiveSpace: Bool
     @Binding var useMixedImmersion: Bool
     @Binding var isLoading: Bool
-    
+
     init(showImmersiveSpace: Binding<Bool>, useMixedImmersion: Binding<Bool>, isLoading: Binding<Bool>) {
         _showImmersiveSpace = showImmersiveSpace
         _useMixedImmersion = useMixedImmersion
         _isLoading = isLoading
     }
-    
-  
+
+
     public func finishedLoading() {
         isLoading = false;
     }
     public func setImmersiveSpace(_ immersive: Bool) {
         showImmersiveSpace = immersive
     }
-    
+
     public func present(_ viewControllerToPresent: UIViewController!) {
         //TODO: Present the view controller
     }
-    
+
 }
 #endif
