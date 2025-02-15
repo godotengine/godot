@@ -158,6 +158,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
+				resampler.flush();
 				if (loop) {
 					play();
 					return;
@@ -305,7 +306,6 @@ void VideoStreamPlayer::play() {
 	if (playback.is_null()) {
 		return;
 	}
-	playback->stop();
 	playback->play();
 	set_process_internal(true);
 	last_audio_time = 0;
@@ -434,7 +434,9 @@ double VideoStreamPlayer::get_stream_position() const {
 
 void VideoStreamPlayer::set_stream_position(double p_position) {
 	if (playback.is_valid()) {
+		resampler.flush();
 		playback->seek(p_position);
+		last_audio_time = 0;
 	}
 }
 
