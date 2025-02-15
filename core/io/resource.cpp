@@ -36,12 +36,30 @@
 #include "scene/main/node.h" //only so casting works
 
 void Resource::emit_changed() {
+	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
+		emit_changed_state = EMIT_CHANGED_BLOCKED_PENDING_EMIT;
+		return;
+	}
 	if (ResourceLoader::is_within_load() && !Thread::is_main_thread()) {
 		ResourceLoader::resource_changed_emit(this);
 		return;
 	}
 
 	emit_signal(CoreStringName(changed));
+}
+
+void Resource::_block_emit_changed() {
+	if (emit_changed_state == EMIT_CHANGED_UNBLOCKED) {
+		emit_changed_state = EMIT_CHANGED_BLOCKED;
+	}
+}
+
+void Resource::_unblock_emit_changed() {
+	bool emit = (emit_changed_state == EMIT_CHANGED_BLOCKED_PENDING_EMIT);
+	emit_changed_state = EMIT_CHANGED_UNBLOCKED;
+	if (emit) {
+		emit_changed();
+	}
 }
 
 void Resource::_resource_path_changed() {
@@ -205,6 +223,8 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 		return ERR_INVALID_PARAMETER;
 	}
 
+	_block_emit_changed();
+
 	reset_state(); // May want to reset state.
 
 	List<PropertyInfo> pi;
@@ -220,6 +240,9 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 
 		set(E.name, p_resource->get(E.name));
 	}
+
+	_unblock_emit_changed();
+
 	return OK;
 }
 
