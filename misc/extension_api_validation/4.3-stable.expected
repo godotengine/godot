@@ -326,3 +326,10 @@ GH-102796
 Validate extension JSON: Error: Field 'classes/GraphEdit/signals/frame_rect_changed/arguments/1': type changed value in new API, from "Vector2" to "Rect2".
 
 Previous type was incorrect. No compatibility system for signal arguments.
+
+
+GH-76560
+--------
+Validate extension JSON: Error: Field 'classes/Node/methods/set_name/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Change Node `set_name` to use StringName to improve performance.
