@@ -543,7 +543,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 	// Rect2::position is at the **left-up** of the rect
 	// calculation below is done with these in mind.
 
-	Rect2 n2d_rect = Rect2();
+	Rect2 n2d_rect = Rect2(); // The rect of the current iterating node2d
 
 	if (p_node->is_class("Sprite2D")) {
 		Sprite2D *sprite = Object::cast_to<Sprite2D>(p_node);
