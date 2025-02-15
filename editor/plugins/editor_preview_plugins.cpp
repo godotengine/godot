@@ -41,6 +41,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/2d/line_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -638,6 +639,42 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 			n2d_rect.position = poly2d->get_global_position() + poly2d->get_offset() * poly2d->get_global_scale();
 			n2d_rect.position += poly_rect.position * poly2d->get_global_scale();
 			n2d_rect.size = poly_rect.size * poly2d->get_global_scale();
+		}
+	}
+
+	if (p_node->is_class("Line2D")) {
+		// The same procedure as Polygon2D
+		Line2D *line2d = Object::cast_to<Line2D>(p_node);
+		PackedVector2Array points = line2d->get_points();
+
+		if (line2d->get_point_count() > 1) { // Abort if there's no line drawn
+			// Calculate bounds
+			float max_x = points[0].x;
+			float min_x = points[0].x;
+			float max_y = points[0].y;
+			float min_y = points[0].y;
+			for (int i = 0; i < points.size(); i++) {
+				if (points[i].x > max_x) {
+					max_x = points[i].x;
+				}
+				if (points[i].x < min_x) {
+					min_x = points[i].x;
+				}
+
+				if (points[i].y > max_y) {
+					max_y = points[i].y;
+				}
+				if (points[i].y < min_y) {
+					min_y = points[i].y;
+				}
+			}
+
+			Rect2 line2d_rect = Rect2(Point2(min_x, min_y), Size2(max_x - min_x, max_y - min_y));
+
+			n2d_rect.position = line2d->get_global_position();
+			n2d_rect.position += line2d_rect.position * line2d->get_global_scale();
+			n2d_rect.size = line2d_rect.size * line2d->get_global_scale();
+			n2d_rect.size += Size2(line2d->get_width(), line2d->get_width()) / 2.0f; // account for line width
 		}
 	}
 
