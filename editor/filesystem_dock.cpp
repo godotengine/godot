@@ -4149,6 +4149,7 @@ FileSystemDock::FileSystemDock() {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_custom_minimum_size(Size2(40 * EDSCALE, 15 * EDSCALE));
 	tree->set_column_clip_content(0, true);
+	tree->set_drag_unfold_wait_sec(EDITOR_GET("interface/inspector/drag_unfold_wait_seconds"));
 	split_box->add_child(tree);
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));

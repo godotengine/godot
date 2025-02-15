@@ -703,7 +703,7 @@ private:
 	bool enable_drag_unfolding = true;
 	Timer *dropping_unfold_timer = nullptr;
 	void _on_dropping_unfold_timer_timeout();
-	float drag_unfold_wait_sec = 0.6;
+	float drag_unfold_wait_sec = 0.5;
 
 	bool enable_auto_tooltip = true;
 
