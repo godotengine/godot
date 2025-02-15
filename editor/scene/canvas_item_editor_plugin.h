@@ -185,6 +185,12 @@ private:
 		GRID_VISIBILITY_HIDE,
 	};
 
+	enum TransformType {
+		POSITION,
+		ROTATION,
+		SCALE,
+	};
+
 	const String locked_transform_warning = TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed.");
 
 	bool selection_menu_additive_selection = false;
@@ -380,6 +386,9 @@ private:
 	Ref<Shortcut> set_pivot_shortcut;
 	Ref<Shortcut> multiply_grid_step_shortcut;
 	Ref<Shortcut> divide_grid_step_shortcut;
+	Ref<Shortcut> reset_transform_position_shortcut;
+	Ref<Shortcut> reset_transform_rotation_shortcut;
+	Ref<Shortcut> reset_transform_scale_shortcut;
 
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
@@ -419,6 +428,7 @@ private:
 	bool _is_grid_visible() const;
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
+	void _reset_transform(TransformType p_type);
 
 public:
 	enum ThemePreviewMode {
