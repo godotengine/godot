@@ -39,9 +39,9 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/sprite_2d.h"
-#include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
@@ -536,22 +536,19 @@ void EditorPackedScenePreviewPlugin::_count_node_types(Node *p_node, int &c2d, i
 void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &scene_rect) const {
 	// Note: There's no universal way to get the exact global rect as a Node2D, so we dig into subclasses one by one
 
-	if (p_node->is_class("Sprite2D")) {
-		// Note:
-		// Sprite2D::position, with 0 offset value, is at the **center** of the sprite
-		// Rect2::position is at the **left-up** of the rect
-		// calculation below is done with this in mind.
-		Sprite2D *sprite = Object::cast_to<Sprite2D>(p_node);
-		Rect2 local_rect = sprite->get_rect();
-		Rect2 global_rect = Rect2();
-		global_rect.size = sprite->get_global_scale() * local_rect.size;
-		global_rect.position = sprite->get_global_position() + sprite->get_offset() * sprite->get_global_scale() - (global_rect.size / 2.0f);
+	// Note:
+	// Sprite2D::position, with 0 offset value, is at the **center** of the sprite
+	// Rect2::position is at the **left-up** of the rect
+	// calculation below is done with these in mind.
 
-		// This avoids accounting scene origin (0,0) into global rect
-		if (scene_rect.get_size().x > 0 && scene_rect.get_size().y > 0) {
-			scene_rect = scene_rect.merge(global_rect);
-		} else {
-			scene_rect = global_rect;
+	Rect2 n2d_rect = Rect2();
+
+	if (p_node->is_class("Sprite2D")) {
+		Sprite2D *sprite = Object::cast_to<Sprite2D>(p_node);
+		n2d_rect.size = sprite->get_global_scale() * sprite->get_rect().size;
+		n2d_rect.position = sprite->get_global_position() + sprite->get_offset() * sprite->get_global_scale();
+		if (sprite->is_centered()) {
+			n2d_rect.position -= n2d_rect.size / 2.0f;
 		}
 	}
 
@@ -560,23 +557,23 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
 		int tex_width = current_frame_tex->get_width();
 		int tex_height = current_frame_tex->get_height();
-		
-		Rect2 global_rect = Rect2();
-		global_rect.size.x = real_t(tex_width) * anim_sprite->get_global_scale().x;
-		global_rect.size.y = real_t(tex_height) * anim_sprite->get_global_scale().y;
-		global_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() + anim_sprite->get_global_scale();
-		if (anim_sprite->is_centered()) {
-			global_rect.position -= global_rect.size / 2.0f;
-		}
 
-		if (scene_rect.get_size().x > 0 && scene_rect.get_size().y > 0) {
-			scene_rect = scene_rect.merge(global_rect);
-		} else {
-			scene_rect = global_rect;
+		n2d_rect.size.x = real_t(tex_width) * anim_sprite->get_global_scale().x;
+		n2d_rect.size.y = real_t(tex_height) * anim_sprite->get_global_scale().y;
+		n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() + anim_sprite->get_global_scale();
+		if (anim_sprite->is_centered()) {
+			n2d_rect.position -= n2d_rect.size / 2.0f;
 		}
 	}
 
 	// WIP: Need to work for MeshInstance2D, MultimeshInstance2D, TileMapLayer, Polygon2D, TouchScreenButton too.
+
+	// Merge the calculated node 2d rect
+	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
+		scene_rect = n2d_rect;
+	} else {
+		scene_rect = scene_rect.merge(n2d_rect);
+	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_calculate_scene_rect(p_node->get_child(i), scene_rect);
