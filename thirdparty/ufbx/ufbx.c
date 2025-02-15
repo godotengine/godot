@@ -600,7 +600,7 @@ extern "C" {
 	#endif
 #endif
 
-#if !defined(UFBX_STANDARD_C) && !defined(UFBX_NO_SSE) && (defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)) || ((defined(__GNUC__) || defined(__clang__)) && defined(__x86_64__)) || defined(UFBX_USE_SSE)
+#if defined(UFBX_USE_SSE) || (!defined(UFBX_STANDARD_C) && !defined(UFBX_NO_SSE) && ((defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)) || ((defined(__GNUC__) || defined(__clang__)) && defined(__x86_64__))))
 	#define UFBXI_HAS_SSE 1
 	#include <xmmintrin.h>
 	#include <emmintrin.h>
@@ -830,7 +830,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 15, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 16, 0)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
