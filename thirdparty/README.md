@@ -476,7 +476,7 @@ Patches:
 ## libbacktrace
 
 - Upstream: https://github.com/ianlancetaylor/libbacktrace
-- Version: git (1db85642e3fca189cf4e076f840a45d6934b2456, 2024)
+- Version: git (4d2dd0b172f2c9192f83ba93425f868f2a13c553, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
