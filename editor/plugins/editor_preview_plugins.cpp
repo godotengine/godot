@@ -41,6 +41,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/sprite_2d.h"
+#include "scene/2d/animated_sprite_2d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
@@ -533,12 +534,13 @@ void EditorPackedScenePreviewPlugin::_count_node_types(Node *p_node, int &c2d, i
 }
 
 void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &scene_rect) const {
-	// Note:
-	// Sprite2D::position, with 0 offset value, is at the **center** of the sprite
-	// Rect2::position is at the **left-up** of the rect
-	// calculation below is done with this in mind.
+	// Note: There's no universal way to get the exact global rect as a Node2D, so we dig into subclasses one by one
 
 	if (p_node->is_class("Sprite2D")) {
+		// Note:
+		// Sprite2D::position, with 0 offset value, is at the **center** of the sprite
+		// Rect2::position is at the **left-up** of the rect
+		// calculation below is done with this in mind.
 		Sprite2D *sprite = Object::cast_to<Sprite2D>(p_node);
 		Rect2 local_rect = sprite->get_rect();
 		Rect2 global_rect = Rect2();
@@ -553,7 +555,28 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		}
 	}
 
-	// WIP: Need to work for AnimatedSprite2D, MeshInstance2D, MultimeshInstance2D, TileMapLayer, Polygon2D, TouchScreenButton too.
+	if (p_node->is_class("AnimatedSprite2D")) {
+		AnimatedSprite2D *anim_sprite = Object::cast_to<AnimatedSprite2D>(p_node);
+		Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
+		int tex_width = current_frame_tex->get_width();
+		int tex_height = current_frame_tex->get_height();
+		
+		Rect2 global_rect = Rect2();
+		global_rect.size.x = real_t(tex_width) * anim_sprite->get_global_scale().x;
+		global_rect.size.y = real_t(tex_height) * anim_sprite->get_global_scale().y;
+		global_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() + anim_sprite->get_global_scale();
+		if (anim_sprite->is_centered()) {
+			global_rect.position -= global_rect.size / 2.0f;
+		}
+
+		if (scene_rect.get_size().x > 0 && scene_rect.get_size().y > 0) {
+			scene_rect = scene_rect.merge(global_rect);
+		} else {
+			scene_rect = global_rect;
+		}
+	}
+
+	// WIP: Need to work for MeshInstance2D, MultimeshInstance2D, TileMapLayer, Polygon2D, TouchScreenButton too.
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_calculate_scene_rect(p_node->get_child(i), scene_rect);
