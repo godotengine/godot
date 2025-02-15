@@ -47,6 +47,7 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
+#include "scene/2d/touch_screen_button.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
@@ -678,7 +679,15 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		}
 	}
 
-	// WIP: Need to work for , TouchScreenButton too.
+	if (p_node->is_class("TouchScreenButton")) {
+		TouchScreenButton *btn = Object::cast_to<TouchScreenButton>(p_node);
+		Ref<Texture2D> btn_tex = btn->get_texture_normal();
+
+		if (btn_tex != nullptr) { // Abort if there's no normal texture for this button (won't display anything)
+			n2d_rect.position = btn->get_global_position(); // It's not possible to offset image in this node
+			n2d_rect.size = btn_tex->get_size() * btn->get_global_scale();
+		}
+	}
 
 	// Merge the calculated node 2d rect
 	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
