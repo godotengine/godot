@@ -86,7 +86,7 @@ public:
 		} else if (w < r) {
 			space = r - w - 1;
 		} else {
-			space = (rb_len - r) + w - 1;
+			space = rb_len - w + r - 1;
 		}
 
 		return space;
@@ -150,6 +150,19 @@ public:
 					rb[(wp * 6) + 3] = read_buf[(i * 6) + 3];
 					rb[(wp * 6) + 4] = read_buf[(i * 6) + 4];
 					rb[(wp * 6) + 5] = read_buf[(i * 6) + 5];
+					wp = (wp + 1) & rb_mask;
+				}
+			} break;
+			case 8: {
+				for (uint32_t i = 0; i < p_frames; i++) {
+					rb[(wp << 3) + 0] = read_buf[(i << 3) + 0];
+					rb[(wp << 3) + 1] = read_buf[(i << 3) + 1];
+					rb[(wp << 3) + 2] = read_buf[(i << 3) + 2];
+					rb[(wp << 3) + 3] = read_buf[(i << 3) + 3];
+					rb[(wp << 3) + 4] = read_buf[(i << 3) + 4];
+					rb[(wp << 3) + 5] = read_buf[(i << 3) + 5];
+					rb[(wp << 3) + 6] = read_buf[(i << 3) + 6];
+					rb[(wp << 3) + 7] = read_buf[(i << 3) + 7];
 					wp = (wp + 1) & rb_mask;
 				}
 			} break;
