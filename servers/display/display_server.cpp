@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
-#include "servers/display_server_headless.h"
+#include "servers/display/display_server_headless.h"
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"

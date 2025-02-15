@@ -31,7 +31,7 @@
 #ifndef NAVIGATION_SERVER_2D_DUMMY_H
 #define NAVIGATION_SERVER_2D_DUMMY_H
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 class NavigationServer2DDummy : public NavigationServer2D {
 	GDCLASS(NavigationServer2DDummy, NavigationServer2D);

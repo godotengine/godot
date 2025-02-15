@@ -32,7 +32,7 @@
 #define RENDER_SCENE_BUFFERS_H
 
 #include "core/object/ref_counted.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RenderSceneBuffersConfiguration : public RefCounted {
 	GDCLASS(RenderSceneBuffersConfiguration, RefCounted);

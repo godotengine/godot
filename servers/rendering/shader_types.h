@@ -31,7 +31,7 @@
 #ifndef SHADER_TYPES_H
 #define SHADER_TYPES_H
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "shader_language.h"
 
 class ShaderTypes {

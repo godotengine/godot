@@ -37,7 +37,7 @@
 #include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 SurfaceUpgradeTool *SurfaceUpgradeTool::singleton = nullptr;
 

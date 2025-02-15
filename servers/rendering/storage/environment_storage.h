@@ -32,7 +32,7 @@
 #define ENVIRONMENT_STORAGE_H
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererEnvironmentStorage {
 private:

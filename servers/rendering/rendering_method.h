@@ -31,8 +31,8 @@
 #ifndef RENDERING_METHOD_H
 #define RENDERING_METHOD_H
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
-#include "servers/rendering_server.h"
 
 #ifdef _3D_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
