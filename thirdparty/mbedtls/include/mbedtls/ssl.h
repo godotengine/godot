@@ -1684,6 +1684,16 @@ struct mbedtls_ssl_config {
 #endif
 };
 
+/* We need to add more fields to ssl_context, but can't in this branch (3.6)
+ * since we're not allowed to change the ABI. So, put a pointer to this struct
+ * in place of on of the existing pointers in ssl_context - picked in_iv
+ * because it's one of the least used, so that minimizes the disruption. */
+typedef struct {
+    unsigned char *MBEDTLS_PRIVATE(in_iv);       /*!< ivlen-byte IV                    */
+    unsigned char *MBEDTLS_PRIVATE(in_hshdr);    /*!< original handshake header start  */
+    size_t MBEDTLS_PRIVATE(in_hsfraglen);        /*!< accumulated hs fragments length  */
+} mbedtls_ssl_context_in_ext;
+
 struct mbedtls_ssl_context {
     const mbedtls_ssl_config *MBEDTLS_PRIVATE(conf); /*!< configuration information          */
 
@@ -1795,7 +1805,7 @@ struct mbedtls_ssl_context {
                                                   *   (the end is marked by in_len).   */
 #endif /* MBEDTLS_SSL_DTLS_CONNECTION_ID */
     unsigned char *MBEDTLS_PRIVATE(in_len);      /*!< two-bytes message length field   */
-    unsigned char *MBEDTLS_PRIVATE(in_iv);       /*!< ivlen-byte IV                    */
+    unsigned char *MBEDTLS_PRIVATE(in_ext);      /*!< extension structure (ABI compat) */
     unsigned char *MBEDTLS_PRIVATE(in_msg);      /*!< message contents (in_iv+ivlen)   */
     unsigned char *MBEDTLS_PRIVATE(in_offt);     /*!< read offset in application data  */
 
