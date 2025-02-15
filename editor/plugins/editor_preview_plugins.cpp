@@ -556,11 +556,8 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 	if (p_node->is_class("AnimatedSprite2D")) {
 		AnimatedSprite2D *anim_sprite = Object::cast_to<AnimatedSprite2D>(p_node);
 		Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
-		int tex_width = current_frame_tex->get_width();
-		int tex_height = current_frame_tex->get_height();
 
-		n2d_rect.size.x = real_t(tex_width) * anim_sprite->get_global_scale().x;
-		n2d_rect.size.y = real_t(tex_height) * anim_sprite->get_global_scale().y;
+		n2d_rect.size = current_frame_tex->get_size() * anim_sprite->get_global_scale();
 		n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() * anim_sprite->get_global_scale();
 		if (anim_sprite->is_centered()) {
 			n2d_rect.position -= n2d_rect.size / 2.0f;
