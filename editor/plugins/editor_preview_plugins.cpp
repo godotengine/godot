@@ -562,12 +562,17 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 
 	if (p_node->is_class("AnimatedSprite2D")) {
 		AnimatedSprite2D *anim_sprite = Object::cast_to<AnimatedSprite2D>(p_node);
-		Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
 
-		n2d_rect.size = current_frame_tex->get_size() * anim_sprite->get_global_scale();
-		n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() * anim_sprite->get_global_scale();
-		if (anim_sprite->is_centered()) {
-			n2d_rect.position -= n2d_rect.size / 2.0f;
+		if (anim_sprite->get_sprite_frames() != nullptr) {
+			Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
+
+			if (current_frame_tex != nullptr) {
+				n2d_rect.size = current_frame_tex->get_size() * anim_sprite->get_global_scale();
+				n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() * anim_sprite->get_global_scale();
+				if (anim_sprite->is_centered()) {
+					n2d_rect.position -= n2d_rect.size / 2.0f;
+				}
+			}
 		}
 	}
 
@@ -576,14 +581,16 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		MeshInstance2D *mesh2d = Object::cast_to<MeshInstance2D>(p_node);
 		Ref<Mesh> mesh = mesh2d->get_mesh();
 
-		// Discard z axis (depth) and only get length of mesh in x,y axis
-		n2d_rect.size.x = (mesh->get_aabb().get_end() - mesh->get_aabb().position).x;
-		n2d_rect.size.y = (mesh->get_aabb().get_end() - mesh->get_aabb().position).y;
-		n2d_rect.size *= mesh2d->get_global_scale();
+		if (mesh != nullptr) {
+			// Discard z axis (depth) and only get length of mesh in x,y axis
+			n2d_rect.size.x = (mesh->get_aabb().get_end() - mesh->get_aabb().position).x;
+			n2d_rect.size.y = (mesh->get_aabb().get_end() - mesh->get_aabb().position).y;
+			n2d_rect.size *= mesh2d->get_global_scale();
 
-		// Account for mesh offset in 3d space when calculating rect2
-		n2d_rect.position.x = mesh2d->get_global_position().x + mesh->get_aabb().position.x * mesh2d->get_global_scale().x; // AABB::position is bottom-left
-		n2d_rect.position.y = mesh2d->get_global_position().y + mesh->get_aabb().position.y * mesh2d->get_global_scale().y;
+			// Account for mesh offset in 3d space when calculating rect2
+			n2d_rect.position.x = mesh2d->get_global_position().x + mesh->get_aabb().position.x * mesh2d->get_global_scale().x; // AABB::position is bottom-left
+			n2d_rect.position.y = mesh2d->get_global_position().y + mesh->get_aabb().position.y * mesh2d->get_global_scale().y;
+		}
 	}
 
 	if (p_node->is_class("MultiMeshInstance2D")) {
@@ -591,22 +598,27 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		MultiMeshInstance2D *mmesh2d = Object::cast_to<MultiMeshInstance2D>(p_node);
 		Ref<MultiMesh> mmesh = mmesh2d->get_multimesh();
 
-		n2d_rect.size.x = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).x;
-		n2d_rect.size.y = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).y;
-		n2d_rect.size *= mmesh2d->get_global_scale();
+		if (mmesh != nullptr) {
+			n2d_rect.size.x = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).x;
+			n2d_rect.size.y = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).y;
+			n2d_rect.size *= mmesh2d->get_global_scale();
 
-		n2d_rect.position.x = mmesh2d->get_global_position().x + mmesh->get_aabb().position.x * mmesh2d->get_global_scale().x;
-		n2d_rect.position.y = mmesh2d->get_global_position().y + mmesh->get_aabb().position.y * mmesh2d->get_global_scale().y;
+			n2d_rect.position.x = mmesh2d->get_global_position().x + mmesh->get_aabb().position.x * mmesh2d->get_global_scale().x;
+			n2d_rect.position.y = mmesh2d->get_global_position().y + mmesh->get_aabb().position.y * mmesh2d->get_global_scale().y;
+		}
 	}
 
 	if (p_node->is_class("TileMapLayer")) {
 		// NOTE: TileMapLayer::get_used_rect() only count cells, not their actual pixel size
 		TileMapLayer *tile_map = Object::cast_to<TileMapLayer>(p_node);
-		Size2 tile_size = Size2(tile_map->get_tile_set()->get_tile_size()); // tile map cell pixel size (x,y)
-		Rect2 tile_rect = Rect2(tile_map->get_used_rect()); // unit is in cells, not pixels!
 
-		n2d_rect.position = tile_map->get_global_position() + tile_rect.position * tile_size * tile_map->get_global_scale(); // accounts tilemap offset
-		n2d_rect.size = tile_rect.size * tile_size * tile_map->get_global_scale();
+		if (tile_map->get_tile_set() != nullptr) {
+			Size2 tile_size = Size2(tile_map->get_tile_set()->get_tile_size()); // tile map cell pixel size (x,y)
+			Rect2 tile_rect = Rect2(tile_map->get_used_rect()); // unit is in cells, not pixels!
+
+			n2d_rect.position = tile_map->get_global_position() + tile_rect.position * tile_size * tile_map->get_global_scale(); // accounts tilemap offset
+			n2d_rect.size = tile_rect.size * tile_size * tile_map->get_global_scale();
+		}
 	}
 
 	if (p_node->is_class("Polygon2D")) {
