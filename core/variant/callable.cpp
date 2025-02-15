@@ -603,3 +603,13 @@ bool CallableComparator::operator()(const Variant &p_l, const Variant &p_r) cons
 			"Error calling compare method: " + Variant::get_callable_error_text(func, args, 2, err));
 	return res;
 }
+
+bool CallablePredicate::operator()(const Variant &p) const {
+	const Variant *args[1] = { &p };
+	Callable::CallError err;
+	Variant res;
+	func.callp(args, 1, res, err);
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false,
+			"Error calling predicate method: " + Variant::get_callable_error_text(func, args, 1, err));
+	return res;
+}

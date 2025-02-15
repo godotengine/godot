@@ -329,6 +329,11 @@ void Array::erase(const Variant &p_value) {
 	_p->array.erase(value);
 }
 
+int Array::erase_custom(const Callable &p_callable) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, 0, "Array is in read-only state.");
+	return _p->array.erase_custom<CallablePredicate>(p_callable);
+}
+
 Variant Array::front() const {
 	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](0);

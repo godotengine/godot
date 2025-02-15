@@ -652,6 +652,21 @@ TEST_CASE("[Array] Test rfind_custom") {
 	CHECK_EQ(index, 4);
 }
 
+static bool _erase_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
+
+TEST_CASE("[Array] Test erase_custom") {
+	Array a1 = build_array(0, 1, 2, 3, 4, 5, 8, 9, 10);
+	// Removes 5 elements.
+	int removed = a1.erase_custom(callable_mp_static(_erase_custom_callable));
+	CHECK_EQ(removed, 5);
+	CHECK_EQ(a1[0], Variant(1));
+	CHECK_EQ(a1[1], Variant(3));
+	CHECK_EQ(a1[2], Variant(5));
+	CHECK_EQ(a1[3], Variant(9));
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

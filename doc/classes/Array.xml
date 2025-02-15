@@ -344,6 +344,20 @@
 				[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
 			</description>
 		</method>
+		<method name="erase_custom">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<description>
+				Finds and removes all the elements which satisfy the predicate [param func]. Returns the number of elements removed.
+				[codeblocks]
+				[gdscript]
+				var array: Array[int] = [ 0, 1, 2, 3, 10 ]
+				var remove_count: int = array.erase_custom(func(v: int): return v % 2 == 0)
+				print(remove_count, " ", array) # Prints 3 [1, 3]
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="fill">
 			<return type="void" />
 			<param index="0" name="value" type="Variant" />

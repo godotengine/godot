@@ -160,6 +160,7 @@ public:
 	bool has(const Variant &p_value) const;
 
 	void erase(const Variant &p_value);
+	int erase_custom(const Callable &p_callable);
 
 	void push_front(const Variant &p_value);
 	Variant pop_back();

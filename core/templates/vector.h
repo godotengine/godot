@@ -42,6 +42,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/cowdata.h"
+#include "core/templates/erase_array.h"
 #include "core/templates/search_array.h"
 #include "core/templates/sort_array.h"
 
@@ -84,6 +85,14 @@ public:
 			return true;
 		}
 		return false;
+	}
+	template <typename Predicate, typename... Args>
+	Size erase_custom(Args &&...args) {
+		EraseArray<T, Predicate> erase_array{ args... };
+		Size old_size = size();
+		Size new_size = erase_array.erase(ptrw(), size());
+		resize(new_size);
+		return old_size - new_size;
 	}
 
 	void reverse();

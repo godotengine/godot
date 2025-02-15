@@ -2365,6 +2365,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, remove_at, sarray("position"), varray());
 	bind_method(Array, fill, sarray("value"), varray());
 	bind_method(Array, erase, sarray("value"), varray());
+	bind_method(Array, erase_custom, sarray("func"), varray());
 	bind_method(Array, front, sarray(), varray());
 	bind_method(Array, back, sarray(), varray());
 	bind_method(Array, pick_random, sarray(), varray());
