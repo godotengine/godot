@@ -2014,39 +2014,49 @@ Control::FocusMode Control::get_focus_mode() const {
 	return data.focus_mode;
 }
 
-bool Control::has_focus() const {
+bool Control::has_focus(int p_player) const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
+	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this, p_player);
 }
 
-void Control::grab_focus() {
+void Control::grab_focus(int p_player) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_INDEX(p_player, PLAYERS_MAX);
+
+	auto ancestor_bit = get_ancestor_player_mask();
+	auto bit = InputEvent::player_id_to_mask(p_player);
+
+	if (!(ancestor_bit & bit)) {
+		// Can't grab focus if that player is not allowed.
+		return;
+	}
 
 	if (data.focus_mode == FOCUS_NONE) {
 		WARN_PRINT("This control can't grab focus. Use set_focus_mode() to allow a control to get focus.");
 		return;
 	}
 
-	get_viewport()->_gui_control_grab_focus(this);
+	get_viewport()->_gui_control_grab_focus(this, p_player);
 }
 
-void Control::grab_click_focus() {
+void Control::grab_click_focus(int p_player) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
+	// TODO: Use p_player parameter here?
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
-void Control::release_focus() {
+void Control::release_focus(int p_player) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (!has_focus()) {
+	if (!has_focus(p_player)) {
 		return;
 	}
 
-	get_viewport()->gui_release_focus();
+	get_viewport()->gui_release_focus(p_player);
 }
 
 static Control *_next_control(Control *p_from) {
@@ -2253,6 +2263,31 @@ NodePath Control::get_focus_previous() const {
 	return data.focus_prev;
 }
 
+void Control::set_player_mask(uint8_t p_mask) {
+	ERR_MAIN_THREAD_GUARD;
+	data.player_mask = p_mask;
+	// TODO: Check if this is necessary, since setting this at runtime should also change the focus accordingly.
+	queue_redraw();
+}
+
+uint8_t Control::get_player_mask() const {
+	ERR_READ_THREAD_GUARD_V(0U);
+	return data.player_mask;
+}
+
+// TODO: This value can be cached to avoid traversing the tree every time (or not?).
+// TODO: Change the name to a more appropriate one.
+uint8_t Control::get_ancestor_player_mask() const {
+	ERR_READ_THREAD_GUARD_V(0U);
+	uint8_t mask = get_player_mask();
+	Control *parent = Object::cast_to<Control>(get_parent());
+	while (parent) {
+		mask = mask & parent->get_player_mask();
+		parent = Object::cast_to<Control>(parent->get_parent());
+	}
+	return mask;
+}
+
 #define MAX_NEIGHBOR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
@@ -2271,6 +2306,10 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 			valid = false;
 		}
 		if (c->get_focus_mode() == FOCUS_NONE) {
+			valid = false;
+		}
+		// TODO: Is this necessary? Or adding the check in _window_find_focus_neighbor is enough?
+		if (!(c->data.player_mask & data.player_mask)) {
 			valid = false;
 		}
 		if (valid) {
@@ -2394,6 +2433,11 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Control *c = Object::cast_to<Control>(p_at);
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
+
+	bool is_player_mask_compatible = c->get_ancestor_player_mask() & get_ancestor_player_mask();
+	if (c && !is_player_mask_compatible) {
+		return;
+	}
 
 	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
 		Rect2 r_c = c->get_global_rect();
@@ -3519,7 +3563,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
-	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
+	ClassDB::bind_method(D_METHOD("grab_focus", "player"), &Control::grab_focus, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
@@ -3608,6 +3652,9 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
+
+	ClassDB::bind_method(D_METHOD("set_player_mask", "player"), &Control::set_player_mask);
+	ClassDB::bind_method(D_METHOD("get_player_mask"), &Control::get_player_mask);
 
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
@@ -3709,6 +3756,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_player_mask", PROPERTY_HINT_LAYERS_PLAYER_MASK), "set_player_mask", "get_player_mask");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");

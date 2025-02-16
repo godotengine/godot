@@ -54,6 +54,7 @@ class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
 	int device = 0;
+	uint8_t player = 1U << 0;
 
 protected:
 	bool canceled = false;
@@ -68,11 +69,19 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
+	void set_player(uint8_t p_player);
+	uint8_t get_player() const;
+	int get_player_index() const;
+	static uint8_t player_mask_to_id(uint8_t p_mask);
+	static uint8_t player_id_to_mask(uint8_t p_id);
+
+	bool check_player_mask(uint8_t p_player_mask) const;
+
 	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
-	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
-	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
-	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
-	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false, uint8_t p_player_mask = PLAYER_ALL) const;
+	bool is_action_released(const StringName &p_action, bool p_exact_match = false, uint8_t p_player_mask = PLAYER_ALL) const;
+	float get_action_strength(const StringName &p_action, bool p_exact_match = false, uint8_t p_player_mask = PLAYER_ALL) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false, uint8_t p_player_mask = PLAYER_ALL) const;
 
 	bool is_canceled() const;
 	bool is_pressed() const;
