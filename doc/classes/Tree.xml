@@ -545,6 +545,9 @@
 		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
+		<theme_item name="dragging_unfold_wait_msec" data_type="constant" type="int" default="500">
+			During a drag-and-drop, this is how many milliseconds to wait over a section before the section unfolds.
+		</theme_item>
 		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
 		</theme_item>

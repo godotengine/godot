@@ -4148,6 +4148,7 @@ void Tree::_determine_hovered_item() {
 					drop_mode_over = it;
 					dropping_unfold_timer->stop();
 					if (enable_drag_unfolding) {
+						dropping_unfold_timer->set_wait_time(static_cast<float>(theme_cache.dragging_unfold_wait_msec) / 1000.0);
 						dropping_unfold_timer->start();
 					}
 					queue_redraw();
@@ -5864,14 +5865,6 @@ bool Tree::is_drag_unfolding_enabled() const {
 	return enable_drag_unfolding;
 }
 
-void Tree::set_drag_unfold_wait_sec(float p_sec) {
-	drag_unfold_wait_sec = p_sec;
-}
-
-float Tree::get_drag_unfold_wait_sec() const {
-	return drag_unfold_wait_sec;
-}
-
 void Tree::set_drop_mode_flags(int p_flags) {
 	if (drop_mode_flags == p_flags) {
 		return;
@@ -6122,6 +6115,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, parent_hl_line_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, children_hl_line_color);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, dragging_unfold_wait_msec);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_border);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, scroll_speed);
 
@@ -6181,7 +6176,6 @@ Tree::Tree() {
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
 	dropping_unfold_timer = memnew(Timer);
-	dropping_unfold_timer->set_wait_time(drag_unfold_wait_sec);
 	dropping_unfold_timer->connect("timeout", callable_mp(this, &Tree::_on_dropping_unfold_timer_timeout));
 	add_child(dropping_unfold_timer);
 
