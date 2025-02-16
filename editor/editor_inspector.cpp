@@ -1953,7 +1953,7 @@ EditorInspectorSection::EditorInspectorSection() {
 	vbox = memnew(VBoxContainer);
 
 	dropping_unfold_timer = memnew(Timer);
-	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_unfold_wait_seconds"));
 	dropping_unfold_timer->set_one_shot(true);
 	add_child(dropping_unfold_timer);
 	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
