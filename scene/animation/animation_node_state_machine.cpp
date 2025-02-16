@@ -1053,11 +1053,18 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 		}
 		// There is no transition that ends at the next state in the state machine. We can use the default transition
 		next.node = path[0];
-		next.xfade = p_state_machine->teleport_transition->get_xfade_time();
-		next.curve = p_state_machine->teleport_transition->get_xfade_curve();
-		next.switch_mode = p_state_machine->teleport_transition->get_switch_mode();
-		next.is_reset = p_state_machine->teleport_transition->is_reset();
-		next.break_loop_at_end = p_state_machine->teleport_transition->is_loop_broken_at_end();
+		if (p_state_machine->teleport_transition == nullptr) {
+			next.xfade = 0;
+			next.switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
+			next.is_reset = false;
+			next.break_loop_at_end = false;
+		} else {
+			next.xfade = p_state_machine->teleport_transition->get_xfade_time();
+			next.curve = p_state_machine->teleport_transition->get_xfade_curve();
+			next.switch_mode = p_state_machine->teleport_transition->get_switch_mode();
+			next.is_reset = p_state_machine->teleport_transition->is_reset();
+			next.break_loop_at_end = p_state_machine->teleport_transition->is_loop_broken_at_end();
+		}
 		return next; // Once we have the information we need, we can actually just return that info
 	} else {
 		int auto_advance_to = -1;
@@ -1315,9 +1322,7 @@ bool AnimationNodeStateMachine::are_ends_reset() const {
 }
 
 void AnimationNodeStateMachine::set_teleport_transition(Ref<AnimationNodeStateMachineTransition> p_transition) {
-	if (p_transition != NULL) {
-		teleport_transition = p_transition->duplicate();
-	}
+	teleport_transition = p_transition;
 }
 
 Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachine::get_teleport_transition() {
@@ -1872,7 +1877,4 @@ AnimationNodeStateMachine::AnimationNodeStateMachine() {
 	end.node = e;
 	end.position = Vector2(900, 100);
 	states[SceneStringName(End)] = end;
-
-	Ref<AnimationNodeStateMachineTransition> t;
-	set_teleport_transition(t);
 }
