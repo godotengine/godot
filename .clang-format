@@ -36,9 +36,9 @@ AlignAfterOpenBracket: DontAlign
 #   AlignCaseColons: false
 # AlignEscapedNewlines: Right
 AlignOperands: DontAlign
-AlignTrailingComments:
-  Kind: Never
-  OverEmptyLines: 0
+# AlignTrailingComments:
+#   Kind: Never
+#   OverEmptyLines: 0
 # AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortBlocksOnASingleLine: Never
@@ -124,7 +124,7 @@ IndentCaseLabels: true
 # IndentRequiresClause: true
 IndentWidth: 4
 # IndentWrappedFunctionNames: false
-InsertBraces: true
+# InsertBraces: true
 # InsertNewlineAtEOF: false
 # InsertTrailingCommas: None
 # IntegerLiteralSeparator:
@@ -176,7 +176,7 @@ PackConstructorInitializers: NextLine
 # ReflowComments: true
 # RemoveBracesLLVM: false
 # RemoveParentheses: Leave
-RemoveSemicolon: true
+# RemoveSemicolon: true
 # RequiresClausePosition: OwnLine
 # RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave
