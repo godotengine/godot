@@ -136,7 +136,7 @@ private:
 		Ref<AnimationNodeStateMachineTransition> transition;
 	};
 
-	Ref<AnimationNodeStateMachineTransition> default_transition;
+	Ref<AnimationNodeStateMachineTransition> teleport_transition;
 	Vector<Transition> transitions;
 
 	StringName playback = "playback";
@@ -207,8 +207,8 @@ public:
 	void set_reset_ends(bool p_enable);
 	bool are_ends_reset() const;
 
-	void set_default_transition(Ref<AnimationNodeStateMachineTransition> p_transition);
-	Ref<AnimationNodeStateMachineTransition> get_default_transition();
+	void set_teleport_transition(Ref<AnimationNodeStateMachineTransition> p_transition);
+	Ref<AnimationNodeStateMachineTransition> get_teleport_transition();
 
 	bool can_edit_node(const StringName &p_name) const;
 
