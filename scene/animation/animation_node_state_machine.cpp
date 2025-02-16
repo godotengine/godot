@@ -1312,11 +1312,9 @@ bool AnimationNodeStateMachine::are_ends_reset() const {
 }
 
 void AnimationNodeStateMachine::set_teleport_transition(Ref<AnimationNodeStateMachineTransition> p_transition) {
-	teleport_transition.instantiate();
-	teleport_transition->set_xfade_time(0);
-	teleport_transition->set_reset(true);
-	teleport_transition->set_advance_mode(AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO);
-	teleport_transition->set_switch_mode(AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE);
+	if (p_transition != NULL) {
+		teleport_transition = p_transition->duplicate();
+	}
 }
 
 Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachine::get_teleport_transition() {
@@ -1871,4 +1869,7 @@ AnimationNodeStateMachine::AnimationNodeStateMachine() {
 	end.node = e;
 	end.position = Vector2(900, 100);
 	states[SceneStringName(End)] = end;
+
+	Ref<AnimationNodeStateMachineTransition> t;
+	set_teleport_transition(t);
 }
