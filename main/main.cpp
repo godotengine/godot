@@ -228,6 +228,7 @@ static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
 static int64_t init_embed_parent_window_id = 0;
+static bool init_hidden = false;
 static bool use_custom_res = true;
 static bool force_res = false;
 
@@ -589,6 +590,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--hidden", "Request a hidden window (supported only on Windows and Linux).\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1802,7 +1804,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing <window_id> argument for --wid <window_id>.\n");
 				goto error;
 			}
-
+		} else if (arg == "--hidden") {
+			init_hidden = true;
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
@@ -3000,6 +3003,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			// from --position and --resolution parameters.
 			window_mode = DisplayServer::WINDOW_MODE_WINDOWED;
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
+		}
+
+		if (init_hidden) {
+			window_flags |= DisplayServer::WINDOW_FLAG_HIDDEN_BIT;
 		}
 
 		// rendering_driver now held in static global String in main and initialized in setup()

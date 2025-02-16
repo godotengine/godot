@@ -207,6 +207,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool is_popup = false;
 		bool layered_window = false;
 		bool mpass = false;
+		bool hidden = false;
 
 		Window embed_parent = 0;
 
