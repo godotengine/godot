@@ -467,7 +467,11 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		}
 	}
 
+#ifdef USE_SH_LIGHTMAPS
+	attenuation *= sqrt(max(0.0, dot(p_normal, r_light_dir)));
+#else
 	attenuation *= max(0.0, dot(p_normal, r_light_dir));
+#endif
 	if (attenuation <= 0.0001) {
 		return;
 	}
