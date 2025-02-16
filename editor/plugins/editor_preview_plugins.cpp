@@ -48,6 +48,8 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
 #include "scene/2d/touch_screen_button.h"
+#include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/control.h"
@@ -302,6 +304,10 @@ EditorBitmapPreviewPlugin::EditorBitmapPreviewPlugin() {
 
 ///////////////////////////////////////////////////////////////////////////
 
+void EditorPackedScenePreviewPlugin::abort() {
+	draw_requester.abort();
+}
+
 bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "PackedScene");
 }
@@ -356,81 +362,76 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	_count_node_types(p_scene, count_2d, count_3d, count_light_3d);
 
 	if (count_3d > 0) { // Is 3d scene
-		SubViewport *sub_viewport = memnew(SubViewport);
-		sub_viewport->set_update_mode(SubViewport::UPDATE_ALWAYS);
-		sub_viewport->set_size(Vector2i(Math::round(p_size.x), Math::round(p_size.y)));
-		sub_viewport->set_transparent_background(false);
-		Ref<World3D> world;
-		world.instantiate();
-		sub_viewport->set_world_3d(world);
+		RS::get_singleton()->viewport_set_size(viewport, Math::round(p_size.x), Math::round(p_size.y));
+		RS::get_singleton()->viewport_set_transparent_background(viewport, false);
 
-		Node *preview_root = memnew(Node); // Nodes only used in preview is attached to this
-		preview_root->set_name("PreviewRoot");
-		sub_viewport->add_child(p_scene);
-		sub_viewport->add_child(preview_root);
+		RID environment = RS::get_singleton()->environment_create();
+		Color default_clear_color = GLOBAL_GET("rendering/environment/defaults/default_clear_color");
+		RS::get_singleton()->environment_set_background(environment, RenderingServer::EnvironmentBG::ENV_BG_CLEAR_COLOR);
+		RS::get_singleton()->environment_set_bg_color(environment, default_clear_color);
+		RS::get_singleton()->scenario_set_environment(scenario, environment);
 
-		// Preview environment
-		Ref<Environment> env;
-		env.instantiate();
-		env->set_background(Environment::BG_CLEAR_COLOR);
+		RID camera_3d = RS::get_singleton()->camera_create();
+		RID camera_attributes = RS::get_singleton()->camera_attributes_create();
 
-		// Preview camera
-		Ref<CameraAttributesPractical> camera_attributes;
-		camera_attributes.instantiate();
-		Camera3D *camera = memnew(Camera3D);
-		camera->set_environment(env);
-		camera->set_attributes(camera_attributes);
-		camera->set_name("ThumbnailCamera3D");
-		camera->set_perspective(30.0f, 0.05f, 10000.0f);
-		preview_root->add_child(camera);
-		camera->set_current(true);
+		RS::get_singleton()->viewport_attach_camera(viewport, camera_3d);
+		RS::get_singleton()->camera_set_perspective(camera_3d, preview_3d_fov, 0.05, 10000.0);
+		RS::get_singleton()->camera_set_camera_attributes(camera_3d, camera_attributes);
+
+		// Add scene to viewport
+		_construct_scene_3d(p_scene);
 
 		// Preview light
-		if (count_light_3d == 0) {
-			DirectionalLight3D *light = memnew(DirectionalLight3D);
-			light->set_name("Light");
-			DirectionalLight3D *light2 = memnew(DirectionalLight3D);
-			light2->set_name("Light2");
-			light2->set_color(Color(0.7, 0.7, 0.7, 1.0));
-			preview_root->add_child(light);
-			preview_root->add_child(light2);
-			light->set_basis(Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6));
-			light2->set_basis(Basis().rotated(Vector3(1, 0, 0), -Math_PI / 6));
-		}
+		RID light_1 = RS::get_singleton()->directional_light_create();
+		RID light_2 = RS::get_singleton()->directional_light_create();
+		RID light_inst_1 = RS::get_singleton()->instance_create();
+		RID light_inst_2 = RS::get_singleton()->instance_create();
 
-		// Attach subviewport deferred (thread safe)
-		EditorNode::get_singleton()->call_deferred("add_child", sub_viewport);
-		uint64_t pause_frame = Engine::get_singleton()->get_process_frames();
-		while (Engine::get_singleton()->get_process_frames() - pause_frame < 2) { // Wait for one frame ( == 2 delta frames)
-			continue;
+		if (count_light_3d == 0) {
+			RS::get_singleton()->instance_set_scenario(light_inst_1, scenario);
+			RS::get_singleton()->instance_set_scenario(light_inst_2, scenario);
+			RS::get_singleton()->instance_set_base(light_inst_1, light_1);
+			RS::get_singleton()->instance_set_base(light_inst_2, light_2);
+
+			RS::get_singleton()->light_set_color(light_1, Color(1.0, 1.0, 1.0, 1.0));
+			RS::get_singleton()->light_set_color(light_2, Color(0.7, 0.7, 0.7, 1.0));
+			RS::get_singleton()->instance_set_transform(light_inst_1, Transform3D(Basis().rotated(Vector3(0, 1, 0), -Math_PI / 6), Vector3(0.0, 0.0, 0.0)));
+			RS::get_singleton()->instance_set_transform(light_inst_2, Transform3D(Basis().rotated(Vector3(1, 0, 0), -Math_PI / 6), Vector3(0.0, 0.0, 0.0)));
 		}
 
 		// Move camera to fit scene
 		AABB scene_aabb;
 		_calculate_scene_aabb(p_scene, scene_aabb);
-		float bound_sphere_radius = scene_aabb.get_longest_axis_size() / 2.0f;
+		float bound_sphere_radius = (scene_aabb.get_end() - scene_aabb.get_position()).length() / 2.0f;
 		if (bound_sphere_radius <= 0.0f) {
 			// The scene has zero volume, so just it give a literal
 			bound_sphere_radius = 1.0f;
 		}
 
-		float fov = camera->get_fov();
-		float cam_distance = (bound_sphere_radius * 2.0f) / Math::tan(Math::deg_to_rad(fov) / 2.0f);
+		float cam_distance = bound_sphere_radius / Math::tan(Math::deg_to_rad(preview_3d_fov) / 2.0f);
 		Transform3D thumbnail_cam_trans_3d;
 		thumbnail_cam_trans_3d.set_origin(scene_aabb.get_center() + Vector3(1.0f, 0.25f, 1.0f).normalized() * cam_distance);
 		thumbnail_cam_trans_3d.set_look_at(thumbnail_cam_trans_3d.origin, scene_aabb.get_center());
-		RenderingServer::get_singleton()->camera_set_transform(camera->get_camera(), thumbnail_cam_trans_3d);
+		RS::get_singleton()->camera_set_transform(camera_3d, thumbnail_cam_trans_3d);
 
 		// Wait for scene render
-		pause_frame = Engine::get_singleton()->get_process_frames();
-		while (Engine::get_singleton()->get_process_frames() - pause_frame < 2) { // Wait for one frame ( == 2 delta frames)
-			continue;
-		}
+		draw_requester.request_and_wait(viewport);
+		draw_requester.request_and_wait(viewport); // HACK - This prevents thumbnail image to be incorrectly assigned to next the asset, don't know why.
 
 		// Retrieve thumbnail image
-		Ref<ImageTexture> thumbnail = ImageTexture::create_from_image(sub_viewport->get_texture()->get_image());
-		EditorNode::get_singleton()->call_deferred("remove_child", sub_viewport);
-		sub_viewport->call_deferred("queue_free");
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
+		Ref<ImageTexture> thumbnail = ImageTexture::create_from_image(img);
+
+		// Clean up
+		RS::get_singleton()->free(light_1);
+		RS::get_singleton()->free(light_inst_1);
+		RS::get_singleton()->free(light_2);
+		RS::get_singleton()->free(light_inst_2);
+		RS::get_singleton()->free(camera_attributes);
+		RS::get_singleton()->free(camera_3d);
+		RS::get_singleton()->free(environment);
+		p_scene->queue_free();
+
 		return thumbnail;
 	}
 
@@ -467,7 +468,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 		Vector2 scene_true_center = scene_rect.get_center();
 		camera->set_position(Point2(scene_true_center));
 		uint16_t long_side = MAX(scene_rect.get_size().x, scene_rect.get_size().y);
-		long_side = CLAMP(long_side, MAX(p_size.x, p_size.y), 2048); // ** Magic number - Clamp viewport size to a sane value, avoid exploding the VRAM **
+		long_side = CLAMP(long_side, MAX(p_size.x, p_size.y), preview_2d_max_viewport_size); // Clamp viewport size to a sane value, avoid exploding the VRAM
 		sub_viewport->set_size(Size2i(long_side, long_side));
 
 		_wait_frames(1);
@@ -522,6 +523,37 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 
 	// Is scene without any visuals (No Node2D, Node3D, Control found)
 	return Ref<Texture2D>();
+}
+
+void EditorPackedScenePreviewPlugin::_construct_scene_3d(Node *p_node) const {
+	// Create visual instance into scenario
+	if (p_node->is_class("VisualInstance3D")) {
+		VisualInstance3D *v3d = Object::cast_to<VisualInstance3D>(p_node);
+		RS::get_singleton()->instance_set_scenario(v3d->get_instance(), scenario);
+		RS::get_singleton()->instance_set_transform(v3d->get_instance(), _get_global_transform_3d(v3d));
+	}
+
+	// Specific class settings
+	if (p_node->is_class("CPUParticles3D")) {
+		CPUParticles3D *particles_node = Object::cast_to<CPUParticles3D>(p_node);
+		particles_node->set_one_shot(false);
+		particles_node->set_pre_process_time(particles_node->get_lifetime() * (1.5 - particles_node->get_explosiveness_ratio())); // Fast forward the particle emission to make it render something
+		particles_node->set_use_local_coordinates(true); // HACK - Now constructs scene outside of tree, using global coords will cause error, may cause visual bugs, but this is the best solution now
+		particles_node->restart(true); // Keep seed to make simulation persistent
+	}
+
+	if (p_node->is_class("GPUParticles3D")) {
+		// The same as CPUParticles
+		GPUParticles3D *particles_node = Object::cast_to<GPUParticles3D>(p_node);
+		particles_node->set_one_shot(false);
+		particles_node->set_pre_process_time(particles_node->get_lifetime() * (1.5 - particles_node->get_explosiveness_ratio()));
+		particles_node->set_use_local_coordinates(true);
+		particles_node->restart(true);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_construct_scene_3d(p_node->get_child(i));
+	}
 }
 
 void EditorPackedScenePreviewPlugin::_count_node_types(Node *p_node, int &c2d, int &c3d, int &clight3d) const {
@@ -752,14 +784,52 @@ void EditorPackedScenePreviewPlugin::_wait_frames(const uint64_t &n) const {
 }
 
 void EditorPackedScenePreviewPlugin::_calculate_scene_aabb(Node *p_node, AABB &aabb) const {
-	if (p_node->is_class("GeometryInstance3D")) {
-		GeometryInstance3D *v3d = Object::cast_to<GeometryInstance3D>(p_node);
-		AABB node_aabb = v3d->get_global_transform().xform(v3d->get_aabb());
+	if (p_node->is_class("GeometryInstance3D")) { // Use this because VisualInstance3D may have derived classes that are non-graphical (probes, volumes)
+		GeometryInstance3D *g3d = Object::cast_to<GeometryInstance3D>(p_node);
+		AABB node_aabb = _get_global_transform_3d(g3d).xform(g3d->get_aabb());
 		aabb.merge_with(node_aabb);
 	}
+
+	if (p_node->is_class("CPUParticles3D")) { // CPUParticles3D does not calculate AABB bounds, while GPUParticles does.
+		CPUParticles3D *particles = Object::cast_to<CPUParticles3D>(p_node);
+
+		// Account the furthest position where particles can go
+		Vector3 particle_destination = _get_global_transform_3d(particles).origin;
+		particle_destination += particles->get_direction() * particles->get_param_max(CPUParticles3D::PARAM_INITIAL_LINEAR_VELOCITY);
+		aabb.expand_to(particle_destination * 0.5);
+		aabb.expand_to(particle_destination * -0.5);
+	}
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_calculate_scene_aabb(p_node->get_child(i), aabb);
 	}
+}
+
+Transform3D EditorPackedScenePreviewPlugin::_get_global_transform_3d(Node3D *p_n3d) const {
+	// Designed to work even if node is outside the tree (is_inside_tree() != true)
+	Transform3D global_transform;
+	Array parents = Array();
+
+	Node *p_loop_node = p_n3d;
+	while (p_loop_node != nullptr) {
+		if (p_loop_node->is_class("Node3D")) {
+			parents.append(Object::cast_to<Node3D>(p_loop_node));
+		}
+		p_loop_node = p_loop_node->get_parent();
+	}
+
+	parents.reverse();
+
+	for (int i = 0; i < parents.size(); i++) {
+		Node3D *n3d = Object::cast_to<Node3D>(parents[i]);
+		if (i == 0) {
+			global_transform = n3d->get_transform();
+			continue;
+		}
+		global_transform *= n3d->get_transform();
+	}
+
+	return global_transform;
 }
 
 bool EditorPackedScenePreviewPlugin::_remove_scripts_from_packed_scene(Ref<PackedScene> pack) const {
@@ -811,6 +881,14 @@ bool EditorPackedScenePreviewPlugin::_remove_scripts_from_packed_scene(Ref<Packe
 }
 
 EditorPackedScenePreviewPlugin::EditorPackedScenePreviewPlugin() {
+	// Viewport
+	viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+
+	scenario = RS::get_singleton()->scenario_create();
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 }
 
 //////////////////////////////////////////////////////////////////
