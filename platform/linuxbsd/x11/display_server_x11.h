@@ -207,6 +207,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool is_popup = false;
 		bool layered_window = false;
 		bool mpass = false;
+		bool hidden = false;
 
 		Window embed_parent = 0;
 
@@ -385,7 +386,6 @@ class DisplayServerX11 : public DisplayServer {
 
 	struct EmbeddedProcessData {
 		Window process_window = 0;
-		bool visible = true;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData *> embedded_processes;
 

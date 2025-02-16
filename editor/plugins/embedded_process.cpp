@@ -341,6 +341,12 @@ void EmbeddedProcess::_check_focused_process_id() {
 		if (focused_process_id == current_process_id) {
 			// The embedded process got the focus.
 
+			// Refocus the editor when the embedded window has the focus but the control is not visible.
+			if (!is_visible_in_tree() && window) {
+				callable_mp(window, &Window::grab_focus).call_deferred();
+				return;
+			}
+
 			// Refocus the current model when focusing the embedded process.
 			Window *modal_window = _get_current_modal_window();
 			if (!modal_window) {

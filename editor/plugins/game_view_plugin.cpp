@@ -224,16 +224,28 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 	if (!is_feature_enabled) {
 		return;
 	}
-	if (p_idx == 0 && embed_on_play && make_floating_on_play && window_wrapper->is_window_available() && !window_wrapper->get_window_enabled() && _get_embed_available() == EMBED_AVAILABLE) {
+
+	if (p_idx != 0 || !embed_on_play || _get_embed_available() != EMBED_AVAILABLE) {
+		return;
+	}
+
+	if (!window_wrapper->get_window_enabled()) {
+		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
+	}
+
+	if (make_floating_on_play && window_wrapper->is_window_available() && !window_wrapper->get_window_enabled()) {
 		// Set the Floating Window default title. Always considered in DEBUG mode, same as in Window::set_title.
 		String appname = GLOBAL_GET("application/config/name");
 		appname = vformat("%s (DEBUG)", TranslationServer::get_singleton()->translate(appname));
 		window_wrapper->set_window_title(appname);
 
 		_show_update_window_wrapper();
-
-		embedded_process->grab_focus();
+	} else {
+		// Show to Game View before passing the arguments to be sure that the is_visible_in_tree is up to date.
+		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
 	}
+
+	embedded_process->grab_focus();
 
 	_update_arguments_for_instance(p_idx, r_arguments);
 }
@@ -288,20 +300,12 @@ void GameView::_play_pressed() {
 		return;
 	}
 
-	if (!window_wrapper->get_window_enabled()) {
-		screen_index_before_start = EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index();
-	}
-
 	if (embed_on_play && _get_embed_available() == EMBED_AVAILABLE) {
 		// It's important to disable the low power mode when unfocused because otherwise
 		// the button in the editor are not responsive and if the user moves the mouse quickly,
 		// the mouse clicks are not registered.
 		EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(false);
 		_update_embed_window_size();
-		if (!window_wrapper->get_window_enabled()) {
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
-			embedded_process->grab_focus();
-		}
 		embedded_process->embed_process(current_process_id);
 		_update_ui();
 	}
@@ -758,12 +762,14 @@ void GameView::_attach_script_debugger() {
 
 	if (embedded_script_debugger) {
 		embedded_script_debugger->connect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->connect("remote_window_ready", callable_mp(this, &GameView::_remote_window_ready));
 	}
 }
 
 void GameView::_detach_script_debugger() {
 	if (embedded_script_debugger) {
 		embedded_script_debugger->disconnect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->disconnect("remote_window_ready", callable_mp(this, &GameView::_remote_window_ready));
 		embedded_script_debugger = nullptr;
 	}
 }
@@ -772,11 +778,12 @@ void GameView::_remote_window_title_changed(String title) {
 	window_wrapper->set_window_title(title);
 }
 
-void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_arguments) {
-	if (p_idx != 0 || !embed_on_play || _get_embed_available() != EMBED_AVAILABLE) {
-		return;
-	}
+void GameView::_remote_window_ready() {
+	// Just to be sure that the visibility is the right one now that the game window is ready.
+	embedded_process->queue_update_embedded_process();
+}
 
+void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_arguments) {
 	// Remove duplicates/unwanted parameters.
 	List<String>::Element *E = r_arguments.front();
 	List<String>::Element *user_args_element = nullptr;
@@ -825,7 +832,10 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	N = r_arguments.insert_after(N, "--position");
 	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
 	N = r_arguments.insert_after(N, "--resolution");
-	r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+	N = r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+	if (!embedded_process->is_visible_in_tree()) {
+		r_arguments.insert_after(N, "--hidden");
+	}
 }
 
 void GameView::_window_close_request() {

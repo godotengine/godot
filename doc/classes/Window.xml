@@ -879,7 +879,12 @@
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
 			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
 		</constant>
-		<constant name="FLAG_MAX" value="10" enum="Flags">
+		<constant name="FLAG_HIDDEN" value="10" enum="Flags">
+			Window is hidden. The native window still exists but is not visible.
+			[b]Note:[/b] The method [method show] or setting [member position] to [code]true[/code] does not change the native window visibility when this flag is set.
+			[b]Note:[/b] This flag is implemented on Linux (x11) and Windows.
+		</constant>
+		<constant name="FLAG_MAX" value="11" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">

@@ -493,6 +493,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
+		bool hidden = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -618,7 +619,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<int64_t, Vector2> pointer_last_pos;
 
 	void _send_window_event(const WindowData &wd, WindowEvent p_event);
-	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex);
+	void _get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_hidden, DWORD &r_style, DWORD &r_style_ex);
 
 	MouseMode mouse_mode;
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
@@ -681,7 +682,6 @@ class DisplayServerWindows : public DisplayServer {
 	struct EmbeddedProcessData {
 		HWND window_handle = 0;
 		HWND parent_window_handle = 0;
-		bool is_visible = false;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData *> embedded_processes;
 
