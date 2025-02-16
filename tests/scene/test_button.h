@@ -65,7 +65,7 @@ TEST_CASE("[SceneTree][Button] is_hovered()") {
 TEST_CASE("[SceneTree][Button] Check toggle mode") {
 	Button *button = memnew(Button);
 
-	SUBCASE("button_pressed not works if toggle mode is off."){
+	SUBCASE("button_pressed stay false if toggle mode is off.") {
 		button->set_toggle_mode(false);
 		CHECK(button->is_toggle_mode() == false);
 	
@@ -75,7 +75,7 @@ TEST_CASE("[SceneTree][Button] Check toggle mode") {
 		CHECK(button->is_pressed() == false);
 	}
 
-	SUBCASE("button_pressed works if toggle mode is on."){
+	SUBCASE("button_pressed changes if toggle mode is on.") {
 		button->set_toggle_mode(true);
 		CHECK(button->is_toggle_mode() == true);
 	
@@ -85,7 +85,7 @@ TEST_CASE("[SceneTree][Button] Check toggle mode") {
 		CHECK(button->is_pressed() == false);
 	}
 
-	SUBCASE("Disabling toggle mode resets is_pressed to false."){
+	SUBCASE("Disabling toggle mode resets button_pressed to false.") {
 		button->set_toggle_mode(true);
 		button->set_pressed(true);
 		button->set_toggle_mode(false);
