@@ -595,10 +595,10 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 	if (p_node->is_class("AnimatedSprite2D")) {
 		AnimatedSprite2D *anim_sprite = Object::cast_to<AnimatedSprite2D>(p_node);
 
-		if (anim_sprite->get_sprite_frames() != nullptr) {
+		if (anim_sprite->get_sprite_frames().is_valid()) {
 			Ref<Texture2D> current_frame_tex = anim_sprite->get_sprite_frames()->get_frame_texture(anim_sprite->get_animation(), anim_sprite->get_frame());
 
-			if (current_frame_tex != nullptr) {
+			if (current_frame_tex.is_valid()) {
 				n2d_rect.size = current_frame_tex->get_size() * anim_sprite->get_global_scale();
 				n2d_rect.position = anim_sprite->get_global_position() + anim_sprite->get_offset() * anim_sprite->get_global_scale();
 				if (anim_sprite->is_centered()) {
@@ -613,7 +613,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		MeshInstance2D *mesh2d = Object::cast_to<MeshInstance2D>(p_node);
 		Ref<Mesh> mesh = mesh2d->get_mesh();
 
-		if (mesh != nullptr) {
+		if (mesh.is_valid()) {
 			// Discard z axis (depth) and only get length of mesh in x,y axis
 			n2d_rect.size.x = (mesh->get_aabb().get_end() - mesh->get_aabb().position).x;
 			n2d_rect.size.y = (mesh->get_aabb().get_end() - mesh->get_aabb().position).y;
@@ -630,7 +630,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		MultiMeshInstance2D *mmesh2d = Object::cast_to<MultiMeshInstance2D>(p_node);
 		Ref<MultiMesh> mmesh = mmesh2d->get_multimesh();
 
-		if (mmesh != nullptr) {
+		if (mmesh.is_valid()) {
 			n2d_rect.size.x = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).x;
 			n2d_rect.size.y = (mmesh->get_aabb().get_end() - mmesh->get_aabb().position).y;
 			n2d_rect.size *= mmesh2d->get_global_scale();
@@ -644,7 +644,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		// NOTE: TileMapLayer::get_used_rect() only count cells, not their actual pixel size
 		TileMapLayer *tile_map = Object::cast_to<TileMapLayer>(p_node);
 
-		if (tile_map->get_tile_set() != nullptr) {
+		if (tile_map->get_tile_set().is_valid()) {
 			Size2 tile_size = Size2(tile_map->get_tile_set()->get_tile_size()); // tile map cell pixel size (x,y)
 			Rect2 tile_rect = Rect2(tile_map->get_used_rect()); // unit is in cells, not pixels!
 
@@ -727,7 +727,7 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 		TouchScreenButton *btn = Object::cast_to<TouchScreenButton>(p_node);
 		Ref<Texture2D> btn_tex = btn->get_texture_normal();
 
-		if (btn_tex != nullptr) { // Abort if there's no normal texture for this button (won't display anything)
+		if (btn_tex.is_valid()) { // Abort if there's no normal texture for this button (won't display anything)
 			n2d_rect.position = btn->get_global_position(); // It's not possible to offset image in this node
 			n2d_rect.size = btn_tex->get_size() * btn->get_global_scale();
 		}
