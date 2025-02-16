@@ -825,7 +825,10 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	N = r_arguments.insert_after(N, "--position");
 	N = r_arguments.insert_after(N, itos(rect.position.x) + "," + itos(rect.position.y));
 	N = r_arguments.insert_after(N, "--resolution");
-	r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+	N = r_arguments.insert_after(N, itos(rect.size.x) + "x" + itos(rect.size.y));
+	if (!embedded_process->is_visible_in_tree()) {
+		r_arguments.insert_after(N, "--hidden");
+	}
 }
 
 void GameView::_window_close_request() {

@@ -1864,6 +1864,10 @@ void DisplayServerX11::show_window(WindowID p_id) {
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
+	if (wd.hidden) {
+		return;
+	}
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
@@ -3015,6 +3019,16 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			ERR_FAIL_COND_MSG(p_enabled && wd.embed_parent, "Embedded window can't be popup.");
 			wd.is_popup = p_enabled;
+		} break;
+		case WINDOW_FLAG_HIDDEN: {
+			if (wd.hidden != p_enabled) {
+				wd.hidden = p_enabled;
+				if (p_enabled) {
+					XUnmapWindow(x11_display, wd.x11_window);
+				} else {
+					show_window(p_window);
+				}
+			}
 		} break;
 		default: {
 		}
@@ -4752,7 +4766,7 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
+				WindowData &wd = windows[window_id];
 
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
@@ -4765,6 +4779,8 @@ void DisplayServerX11::process_events() {
 					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
+				wd.hidden = false;
+
 				// Have we failed to set fullscreen while the window was unmapped?
 				_validate_mode_on_map(window_id);
 
@@ -4774,6 +4790,15 @@ void DisplayServerX11::process_events() {
 				if (wd.embed_parent) {
 					XMapWindow(x11_display, wd.embed_parent);
 				}
+			} break;
+
+			case UnmapNotify: {
+				DEBUG_LOG_X11("[%u] UnmapNotify window=%lu (%u) \n", frame, event.xmap.window, window_id);
+				if (ime_window_event) {
+					break;
+				}
+				WindowData &wd = windows[window_id];
+				wd.hidden = true;
 			} break;
 
 			case Expose: {
@@ -6088,6 +6113,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
+	}
+
+	if (p_flags & WINDOW_FLAG_HIDDEN_BIT) {
+		wd.hidden = true;
 	}
 
 	// Setup for menu subwindows:
