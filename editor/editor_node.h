@@ -419,7 +419,7 @@ private:
 	bool script_distraction_free = false;
 
 	bool changing_scene = false;
-	bool cmdline_export_mode = false;
+	bool cmdline_mode = false;
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;
@@ -475,6 +475,8 @@ private:
 	bool was_window_windowed_last = false;
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
+
+	String build_profile_path;
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -900,6 +902,8 @@ public:
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
 	bool is_project_exporting() const;
+
+	void generate_build_profile(const String &p_path);
 
 	Control *get_gui_base() { return gui_base; }
 
