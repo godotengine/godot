@@ -82,11 +82,11 @@
 		<method name="travel">
 			<return type="void" />
 			<param index="0" name="to_node" type="StringName" />
-			<param index="1" name="reset_on_teleport" type="bool" default="true" />
+			<param index="1" name="force_teleport_transition" type="bool" default="false" />
 			<description>
 				Transitions from the current state to another one, following the shortest path.
 				If the path does not connect from the current state, the animation will play after the state teleports.
-				If [param reset_on_teleport] is [code]true[/code], the animation is played from the beginning when the travel cause a teleportation.
+				If [param force_teleport_transition] is [code]true[/code], the state machine will always use the teleport transition, skipping any animation nodes in between.
 			</description>
 		</method>
 	</methods>
