@@ -68,7 +68,7 @@ TEST_CASE("[SceneTree][Button] Check toggle mode") {
 	SUBCASE("button_pressed stay false if toggle mode is off.") {
 		button->set_toggle_mode(false);
 		CHECK(button->is_toggle_mode() == false);
-	
+
 		button->set_pressed(false);
 		CHECK(button->is_pressed() == false);
 		button->set_pressed(true);
@@ -78,7 +78,7 @@ TEST_CASE("[SceneTree][Button] Check toggle mode") {
 	SUBCASE("button_pressed changes if toggle mode is on.") {
 		button->set_toggle_mode(true);
 		CHECK(button->is_toggle_mode() == true);
-	
+
 		button->set_pressed(true);
 		CHECK(button->is_pressed() == true);
 		button->set_pressed(false);
