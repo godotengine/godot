@@ -101,6 +101,16 @@ bool ScrollContainer::_is_v_scroll_visible() const {
 	return v_scroll->is_visible() && v_scroll->get_parent() == this;
 }
 
+Rect2 ScrollContainer::_get_local_visible_rect() const {
+	const float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
+	const float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+
+	Point2 origin = Point2(is_layout_rtl() ? side_margin : 0.0f, 0.0f);
+	Size2 size = Size2(get_size().x - side_margin, get_size().y - bottom_margin);
+
+	return Rect2(origin, size);
+}
+
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -279,7 +289,9 @@ void ScrollContainer::_update_scrollbar_position() {
 
 void ScrollContainer::_gui_focus_changed(Control *p_control) {
 	if (follow_focus && is_ancestor_of(p_control)) {
+		following = true;
 		ensure_control_visible(p_control);
+		following = false;
 	}
 	if (draw_focus_border) {
 		const bool _should_draw_focus_border = has_focus() || child_has_focus();
@@ -292,20 +304,81 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 void ScrollContainer::ensure_control_visible(Control *p_control) {
 	ERR_FAIL_COND_MSG(!is_ancestor_of(p_control), "Must be an ancestor of the control.");
 
-	// Just eliminate the rotation of this ScrollContainer.
-	Transform2D other_in_this = get_global_transform().affine_inverse() * p_control->get_global_transform();
+	// The less scroll the better. We can assume that only the final visible area is transformed.
+	// This can reduce the amount of unnecessary scrolling caused by invisible parts.
 
-	Size2 size = get_size();
-	Rect2 other_rect = other_in_this.xform(Rect2(Point2(), p_control->get_size()));
+	scroll_diff = Vector2(); // Clear the cache.
 
-	float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
-	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+	Control *target = p_control;
+	Transform2D target_in_sc;
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - (is_layout_rtl() ? side_margin : 0.0f), 0.0f), other_rect.position.x + other_rect.size.x - size.x + (!is_layout_rtl() ? side_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y, 0.0f), other_rect.position.y + other_rect.size.y - size.y + bottom_margin));
+	// The rect of the visible area of p_control.
+	Rect2 target_rect_local = Rect2(Point2(), p_control->get_size());
 
-	set_h_scroll(get_h_scroll() + diff.x);
-	set_v_scroll(get_v_scroll() + diff.y);
+	CanvasItem *parent_item = p_control->get_parent_item();
+	while (parent_item) {
+		ScrollContainer *sc = Object::cast_to<ScrollContainer>(parent_item);
+		parent_item = parent_item->get_parent_item();
+
+		if (!sc) {
+			continue;
+		}
+
+		// The transformation of the target in sc.
+		target_in_sc = (sc->get_global_transform().affine_inverse() * target->get_global_transform()) * target_in_sc;
+
+		if (sc == this) {
+			break;
+		}
+
+		target = sc;
+
+		if (following) {
+			// For nested cases, the inner ScrollContainer will first call this method, but the control will not be transformed immediately.
+			// Here we need to take into account the transform that will be applied by the inner ScrollContainer scrolling.
+			target_in_sc = target_in_sc.translated(-sc->scroll_diff);
+		}
+
+		const Rect2 rect = sc->_get_local_visible_rect();
+		const Rect2 target_rect = target_in_sc.xform(target_rect_local);
+		const Rect2 rect_in_target = target_in_sc.affine_inverse().xform(rect);
+
+		if (!sc->follow_focus && (!target_rect_local.intersects(rect_in_target) || !rect.intersects(target_rect))) {
+			ERR_FAIL_MSG("Unable to make the control visible.");
+		}
+
+		// The result is not accurate enough when the p_control is rotated in sc.
+		// TODO: May need to implement Rect::intersection_transformed(xform, target_rect) for the cases of rotation.
+		const Vector2 clamp_diff = rect.intersection(target_rect).position - target_rect.position;
+		target_in_sc = target_in_sc.translated(clamp_diff); // Translation caused by sc clipping.
+
+		// It is possible that part of the visible area is covered by sc, so recalculate the size of the visible area of p_control.
+		target_rect_local.size = target_rect_local.size.min(target_rect_local.intersection(rect_in_target).size);
+	}
+
+	// Calculates the amount to scroll in this ScrollContainer.
+
+	const Rect2 visible_rect = _get_local_visible_rect();
+	const Rect2 target_rect = target_in_sc.xform(target_rect_local);
+
+	const Vector2 begin_diff = target_rect.position - visible_rect.position;
+	const Vector2 end_diff = target_rect.get_end() - visible_rect.get_end();
+
+	// In the horizontal direction.
+	if (visible_rect.size.x > target_rect.size.x) {
+		scroll_diff.x = begin_diff.x < 0.0f ? begin_diff.x : (end_diff.x > 0.0f ? end_diff.x : 0.0f);
+	} else {
+		scroll_diff.x = begin_diff.x > 0.0f ? begin_diff.x : (end_diff.x < 0.0f ? end_diff.x : 0.0f);
+	}
+	// In the vertical direction.
+	if (visible_rect.size.y > target_rect.size.y) {
+		scroll_diff.y = begin_diff.y < 0.0f ? begin_diff.y : (end_diff.y > 0.0f ? end_diff.y : 0.0f);
+	} else {
+		scroll_diff.y = begin_diff.y > 0.0f ? begin_diff.y : (end_diff.y < 0.0f ? end_diff.y : 0.0f);
+	}
+
+	set_h_scroll(get_h_scroll() + scroll_diff.x);
+	set_v_scroll(get_v_scroll() + scroll_diff.y);
 }
 
 void ScrollContainer::_reposition_children() {
