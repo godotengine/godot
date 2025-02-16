@@ -774,7 +774,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 			// Can't travel, then teleport.
 			if (p_state_machine->states.has(temp_travel_request)) {
 				path.clear();
-				if (current != temp_travel_request) {
+				if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
 					path.push_back(temp_travel_request);
 				}
 			} else {
@@ -786,21 +786,8 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (teleport_request) {
+		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 		teleport_request = false;
-		// // Clear fadeing on teleport.
-		// fading_from = StringName();
-		// fadeing_from_nti = AnimationNode::NodeTimeInfo();
-		// fading_pos = 0;
-		// // Init current length.
-		// pi.time = 0;
-		// pi.seeked = true;
-		// pi.is_external_seeking = false;
-		// pi.weight = 0;
-		// current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
-		// // Don't process first node if not necessary, instead process next node.
-		// _transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
-
-		// path.push_back(travel_request);
 	}
 
 	// Check current node existence.
