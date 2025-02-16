@@ -254,10 +254,10 @@ void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
 	is_grouped = p_is_grouped;
 }
 
-void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport) {
+void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_force_teleport_transition) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, p_reset_on_teleport);
+	_travel_main(p_state, p_force_teleport_transition);
 }
 
 void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_reset) {
@@ -276,9 +276,9 @@ void AnimationNodeStateMachinePlayback::stop() {
 	_stop_main();
 }
 
-void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_reset_on_teleport) {
+void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_force_teleport_transition) {
 	travel_request = p_state;
-	reset_request_on_teleport = p_reset_on_teleport;
+	teleport_request = p_force_teleport_transition;
 	stop_request = false;
 }
 
@@ -453,7 +453,7 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 			is_parent_same_state = is_current_same_state;
 
 			bool is_deepest_state = i == temp_path.size() - 1;
-			child_info.is_reset = is_deepest_state ? reset_request_on_teleport : false;
+			child_info.is_reset = is_deepest_state ? p_state_machine->teleport_transition->is_reset() : false;
 			playback->_travel_main(temp_path[i], child_info.is_reset);
 			if (playback->_make_travel_path(p_tree, anodesm.ptr(), is_deepest_state ? p_is_allow_transition_to_self : false, child_info.path, p_test_only)) {
 				found_route &= child_found_route;
@@ -463,7 +463,6 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 			}
 			children.push_back(child_info);
 		}
-		reset_request_on_teleport = false;
 	}
 
 	if (found_route) {
@@ -683,7 +682,6 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::process(const Str
 	start_request = StringName();
 	next_request = false;
 	stop_request = false;
-	reset_request_on_teleport = false;
 	return nti;
 }
 
@@ -1180,7 +1178,7 @@ Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachinePlayback::_get
 }
 
 void AnimationNodeStateMachinePlayback::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("travel", "to_node", "reset_on_teleport"), &AnimationNodeStateMachinePlayback::travel, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("travel", "to_node", "force_teleport_transition"), &AnimationNodeStateMachinePlayback::travel, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("start", "node", "reset"), &AnimationNodeStateMachinePlayback::start, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("next"), &AnimationNodeStateMachinePlayback::next);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimationNodeStateMachinePlayback::stop);
