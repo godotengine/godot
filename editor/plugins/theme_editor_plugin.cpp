@@ -1588,15 +1588,11 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 
 void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
-	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Remove Theme Type"));
 
-	new_snapshot->remove_type(p_theme_type);
-
-	ur->add_do_method(*edited_theme, "clear");
-	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
+	ur->add_do_method(*edited_theme, "remove_type", p_theme_type);
 	// If the type was empty, it cannot be restored with merge, but thankfully we can fake it.
 	ur->add_undo_method(*edited_theme, "add_type", p_theme_type);
 	ur->add_undo_method(*edited_theme, "merge_with", old_snapshot);
