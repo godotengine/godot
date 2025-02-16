@@ -1291,13 +1291,12 @@ void FileSystemDock::_tree_activate_file() {
 		String file_path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
 		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
-		bool is_folder = file_path.ends_with("/");
 
-		if ((!is_favorite && is_folder) || file_path == "Favorites") {
+		if ((!is_favorite && file_path.ends_with("/")) || file_path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
-			_select_file(file_path, is_favorite && !is_folder, is_favorite && is_folder);
+			_select_file(file_path, is_favorite && !file_path.ends_with("/"), false);
 		}
 	}
 }
@@ -1573,7 +1572,8 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		}
 	}
 
-	EditorNode::get_editor_data().script_class_save_global_classes();
+	ScriptServer::save_global_classes();
+	EditorNode::get_editor_data().script_class_save_icon_paths();
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 }
 
@@ -1707,7 +1707,8 @@ void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
 	const Ref<Script> &scr = p_resource;
 	if (scr.is_valid()) {
 		ScriptServer::remove_global_class_by_path(scr->get_path());
-		EditorNode::get_editor_data().script_class_save_global_classes();
+		ScriptServer::save_global_classes();
+		EditorNode::get_editor_data().script_class_save_icon_paths();
 		EditorFileSystem::get_singleton()->emit_signal(SNAME("script_classes_updated"));
 	}
 	emit_signal(SNAME("resource_removed"), p_resource);
@@ -2052,7 +2053,7 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion, bo
 	TreeItem *selected = tree->get_root();
 	selected = tree->get_next_selected(selected);
 	while (selected) {
-		if (selected != cursor_item && selected != favorites_item && selected->is_visible_in_tree()) {
+		if (selected != cursor_item && selected != favorites_item) {
 			selected_strings.push_back(selected->get_metadata(0));
 		}
 		selected = tree->get_next_selected(selected);
