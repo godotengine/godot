@@ -751,44 +751,49 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	}
 
 	if (travel_request != StringName()) {
-		// Fix path.
 		String travel_target = _validate_path(p_state_machine, travel_request);
 		Vector<String> travel_path = travel_target.split("/");
 		travel_request = travel_path[0];
 		StringName temp_travel_request = travel_request; // For the case that can't travel.
-		// Process children.
-		Vector<StringName> new_path;
-		bool can_travel = _make_travel_path(tree, p_state_machine, travel_path.size() <= 1 ? p_state_machine->is_allow_transition_to_self() : false, new_path, p_test_only);
-		if (travel_path.size()) {
+
+		// If we are already planning to teleport, we can skip the expensive A* attempt.
+		if (!teleport_request) {
+			// Fix path.
+			// Process children.
+			Vector<StringName> new_path;
+			bool can_travel = _make_travel_path(tree, p_state_machine, travel_path.size() <= 1 ? p_state_machine->is_allow_transition_to_self() : false, new_path, p_test_only);
+			if (travel_path.size()) {
+				if (can_travel) {
+					can_travel = _travel_children(tree, p_state_machine, travel_target, p_state_machine->is_allow_transition_to_self(), travel_path[0] == current, p_test_only);
+				} else {
+					_start_children(tree, p_state_machine, travel_target, p_test_only);
+				}
+			}
+
+			// Process to travel.
 			if (can_travel) {
-				can_travel = _travel_children(tree, p_state_machine, travel_target, p_state_machine->is_allow_transition_to_self(), travel_path[0] == current, p_test_only);
+				path = new_path;
 			} else {
-				_start_children(tree, p_state_machine, travel_target, p_test_only);
+				// Can't travel, then teleport.
+				if (p_state_machine->states.has(temp_travel_request)) {
+					teleport_request = true;
+				} else {
+					ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
+				}
 			}
 		}
 
-		// Process to travel.
-		if (can_travel) {
-			path = new_path;
-		} else {
-			// Can't travel, then teleport.
-			if (p_state_machine->states.has(temp_travel_request)) {
-				path.clear();
-				if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
-					path.push_back(temp_travel_request);
-				}
-			} else {
-				ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
+		if (teleport_request) {
+			path.clear();
+			if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
+				path.push_back(temp_travel_request);
 			}
+			_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
+			teleport_request = false;
 		}
 	}
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
-
-	if (teleport_request) {
-		_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
-		teleport_request = false;
-	}
 
 	// Check current node existence.
 	if (!p_state_machine->states.has(current)) {
