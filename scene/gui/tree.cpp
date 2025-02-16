@@ -4148,8 +4148,7 @@ void Tree::_determine_hovered_item() {
 					drop_mode_over = it;
 					dropping_unfold_timer->stop();
 					if (enable_drag_unfolding) {
-						dropping_unfold_timer->set_wait_time(static_cast<float>(theme_cache.dragging_unfold_wait_msec) / 1000.0);
-						dropping_unfold_timer->start();
+						dropping_unfold_timer->start(theme_cache.dragging_unfold_wait_msec * 0.001);
 					}
 					queue_redraw();
 				}
