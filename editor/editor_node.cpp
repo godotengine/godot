@@ -821,6 +821,8 @@ void EditorNode::_notification(int p_what) {
 				recent_scenes->reset_size();
 			}
 
+			theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_unfold_wait_seconds") * 1000);
+
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dock_tab_style")) {
 				editor_dock_manager->update_tab_styles();
 			}
