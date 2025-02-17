@@ -1846,6 +1846,7 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_neighbor_cell", "coords", "neighbor"), &TileMapLayer::get_neighbor_cell);
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &TileMapLayer::map_to_local);
 	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &TileMapLayer::local_to_map);
+	ClassDB::bind_method(D_METHOD("collision_to_map", "collision_position", "collision_normal"), &TileMapLayer::collision_to_map);
 
 	// --- Accessors ---
 	ClassDB::bind_method(D_METHOD("set_tile_map_data_from_array", "tile_map_layer_data"), &TileMapLayer::set_tile_map_data_from_array);
@@ -2740,6 +2741,10 @@ Vector2 TileMapLayer::map_to_local(const Vector2i &p_pos) const {
 Vector2i TileMapLayer::local_to_map(const Vector2 &p_pos) const {
 	ERR_FAIL_COND_V(tile_set.is_null(), Vector2i());
 	return tile_set->local_to_map(p_pos);
+}
+
+Vector2i TileMapLayer::collision_to_map(const Vector2 &p_collision_point, const Vector2 &p_collision_normal) const {
+	return local_to_map(to_local(p_collision_point - p_collision_normal));
 }
 
 void TileMapLayer::set_enabled(bool p_enabled) {

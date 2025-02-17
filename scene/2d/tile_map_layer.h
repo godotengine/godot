@@ -472,6 +472,7 @@ public:
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 	Vector2 map_to_local(const Vector2i &p_pos) const;
 	Vector2i local_to_map(const Vector2 &p_pos) const;
+	Vector2i collision_to_map(const Vector2 &p_collision_point, const Vector2 &p_collision_normal) const;
 
 	// --- Accessors ---
 	void set_tile_map_data_from_array(const Vector<uint8_t> &p_data);

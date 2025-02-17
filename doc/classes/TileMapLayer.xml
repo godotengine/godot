@@ -61,6 +61,23 @@
 				Clears all cells.
 			</description>
 		</method>
+		<method name="collision_to_map" qualifiers="const">
+			<return type="Vector2i" />
+			<param index="0" name="collision_position" type="Vector2" />
+			<param index="1" name="collision_normal" type="Vector2" />
+			<description>
+				Returns the cell coordinates corresponding to the given [param collision_position] (in global coordinates), assuming the collision data comes from a collision with this [TileMapLayer].
+				[codeblock]
+				extends RayCast2D
+
+				func _process(delta):
+				    # Look for collided tiles and delete them.
+				    if is_colliding() and get_collider() is TileMapLayer:
+				        var coords = get_collider().collision_to_map(get_collision_point(), get_collision_normal())
+				        get_collider().erase_cell(coords)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="erase_cell">
 			<return type="void" />
 			<param index="0" name="coords" type="Vector2i" />
