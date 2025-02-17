@@ -40,8 +40,12 @@ public:
 
 private:
 	HashMap<DisplayServer::WindowID, SurfaceID> window_surface_map;
+	bool colorspace_externally_managed;
 
 public:
+	void set_colorspace_externally_managed(bool p_externally_managed);
+	bool get_colorspace_externally_managed() const;
+
 	SurfaceID surface_get_from_window(DisplayServer::WindowID p_window) const;
 	Error window_create(DisplayServer::WindowID p_window, const void *p_platform_data);
 	void window_set_size(DisplayServer::WindowID p_window, uint32_t p_width, uint32_t p_height);
