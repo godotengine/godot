@@ -2207,6 +2207,7 @@
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enable TLSv1.3 negotiation.
 			[b]Note:[/b] This is experimental, and may cause connections to fail in some cases (notably, if the remote server uses TLS handshake fragmentation).
+			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default rotational motion damping in 2D. Damping is used to gradually slow down physical objects over time. RigidBodies will fall back to this value when combining their own damping values and no area damping value is present.
