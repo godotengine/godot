@@ -361,6 +361,7 @@ private:
 		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
 		VkFormat format = VK_FORMAT_UNDEFINED;
 		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		ColorSpace rdd_color_space;
 		TightLocalVector<VkImage> images;
 		TightLocalVector<VkImageView> image_views;
 		TightLocalVector<VkSemaphore> present_semaphores;
