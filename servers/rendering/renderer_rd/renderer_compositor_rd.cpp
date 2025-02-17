@@ -50,7 +50,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 
 	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(p_screen);
 	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(p_screen);
-	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance);
+	const float max_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_max_luminance(p_screen);
+	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance, max_luminance);
 
 	for (int i = 0; i < p_amount; i++) {
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
@@ -195,7 +196,7 @@ RendererCompositorRD::BlitPipelines RendererCompositorRD::_get_blit_pipelines_fo
 	return pipelines;
 }
 
-float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance) {
+float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance, const float p_max_luminance) {
 	switch (p_color_space) {
 		case RD::COLOR_SPACE_REC2020_NONLINEAR_ST2084:
 			// Max brightness of ST2084 is 10000 nits, we output from 0 to 1.
@@ -204,6 +205,9 @@ float RendererCompositorRD::_compute_reference_multiplier(RD::ColorSpace p_color
 #ifdef WINDOWS_ENABLED
 			// Windows expects multiples of 80 nits.
 			return p_reference_luminance / 80.0f;
+#elif WAYLAND_ENABLED
+			// "1" represents max luminance in Wayland.
+			return p_reference_luminance / p_max_luminance;
 #else
 			// Default to 100 nits.
 			return p_reference_luminance / 100.0f;
@@ -264,7 +268,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	const RD::ColorSpace color_space = RD::get_singleton()->screen_get_color_space(DisplayServer::MAIN_WINDOW_ID);
 	const float reference_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_reference_luminance(DisplayServer::MAIN_WINDOW_ID);
-	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance);
+	const float max_luminance = RD::get_singleton()->get_context_driver()->window_get_hdr_output_max_luminance(DisplayServer::MAIN_WINDOW_ID);
+	const float reference_multiplier = _compute_reference_multiplier(color_space, reference_luminance, max_luminance);
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(DisplayServer::MAIN_WINDOW_ID, p_color);
 

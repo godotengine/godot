@@ -1740,6 +1740,7 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
 				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+				[b]Note:[/b] On Linux (Wayland), this method will return the main window's max FALL.
 			</description>
 		</method>
 		<method name="screen_get_max_luminance" qualifiers="const">
@@ -1750,6 +1751,7 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
 				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+				[b]Note:[/b] On Linux (Wayland), this method will return the main window's max luminance.
 			</description>
 		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
@@ -1768,6 +1770,7 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
 				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+				[b]Note:[/b] On Linux (Wayland), this method will return the main window's minimum luminance.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1813,6 +1816,7 @@
 				This is the maximum brightness SDR content (such as UI) should be rendered at to match other applications on the display.
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+				[b]Note:[/b] On Linux (Wayland), this method will return the main window's reference luminance.
 			</description>
 		</method>
 		<method name="screen_get_refresh_rate" qualifiers="const">
@@ -1867,6 +1871,7 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
 				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+				[b]Note:[/b] On Linux (Wayland), this method will return whether the main window supports hdr output.
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
@@ -2309,6 +2314,7 @@
 			<description>
 				Returns whether the window specified by [param window_id] automatically adjusts the maximum luminance for HDR output based on the display's capabilities.
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] On Linux (Wayland), automatically adjusting maximum luminance is required.
 			</description>
 		</method>
 		<method name="window_is_hdr_output_auto_adjusting_reference_luminance" qualifiers="const">
@@ -2317,6 +2323,7 @@
 			<description>
 				Returns whether the window specified by [param window_id] automatically adjusts the reference luminance for HDR output based on the display's capabilities.
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] On Linux (Wayland), automatically adjusting reference luminance is required.
 			</description>
 		</method>
 		<method name="window_is_hdr_output_enabled" qualifiers="const">
@@ -2424,6 +2431,7 @@
 				Sets whether the window specified by [param window_id] should automatically adjust the maximum luminance for HDR content based on the display's brightness.
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] On Linux (Wayland), automatically adjusting maximum luminance is required.
 			</description>
 		</method>
 		<method name="window_set_hdr_output_auto_adjust_reference_luminance">
@@ -2434,6 +2442,7 @@
 				Sets whether the window specified by [param window_id] should automatically adjust the SDR reference luminance for HDR content based on the display's brightness.
 				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
 				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] On Linux (Wayland), automatically adjusting reference luminance is required.
 			</description>
 		</method>
 		<method name="window_set_hdr_output_enabled">
@@ -2793,7 +2802,7 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR" value="35" enum="Feature">
-			Display server supports HDR output. [b]Windows[/b]
+			Display server supports HDR output. [b]Windows, Linux (Wayland)[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.
