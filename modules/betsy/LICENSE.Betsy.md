@@ -12,6 +12,7 @@ This software uses code from:
 * [GPURealTimeBC6H](https://github.com/knarkowicz/GPURealTimeBC6H), under public domain. Modifications by Matias N. Goldberg
 * [rg-etc1](https://github.com/richgel999/rg-etc1/), Copyright (c) 2012 Rich Geldreich, zlib license. Extensive modifications by Matias N. Goldberg to adapt it as a compute shader
 * [stb_dxt](https://github.com/nothings/stb/blob/master/stb_dxt.h), under dual-license: A. MIT License
+* [astc_encoder](https://github.com/niepp/astc_encoder), under MIT License. Modifications by Stuart Carnie to convert the HLSL to a GLSL compute shader
 Copyright (c) 2017 Sean Barrett, B. Public Domain (www.unlicense.org). Original by fabian "ryg" giesen - ported to C by stb. Modifications by Matias N. Goldberg to adapt it as a compute shader
 * EAC loosely inspired on [etc2_encoder](https://github.com/titilambert/packaging-efl/blob/master/src/static_libs/rg_etc/etc2_encoder.c), Copyright (C) 2014 Jean-Philippe ANDRE, 2-clause BSD license
 * ETC2 T & H modes based on [etc2_encoder](https://github.com/titilambert/packaging-efl/blob/master/src/static_libs/rg_etc/etc2_encoder.c), Copyright (C) 2014 Jean-Philippe ANDRE, 2-clause BSD license. A couple minor bugfixes applied by Matias N. Goldberg. Modifications made by Matias N. Goldberg to adapt it as a compute shader

@@ -56,6 +56,9 @@ enum BetsyFormat {
 	BETSY_FORMAT_BC5_UNSIGNED,
 	BETSY_FORMAT_BC6_SIGNED,
 	BETSY_FORMAT_BC6_UNSIGNED,
+	BETSY_FORMAT_ASTC_4X4_RGB,
+	BETSY_FORMAT_ASTC_4X4_RGBA,
+	BETSY_FORMAT_ASTC_4X4_NORMAL,
 	BETSY_FORMAT_MAX,
 };
 
@@ -67,6 +70,9 @@ enum BetsyShaderType {
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
 	BETSY_SHADER_ALPHA_STITCH,
+	BETSY_SHADER_ASTC_4X4_RGB,
+	BETSY_SHADER_ASTC_4X4_RGBA,
+	BETSY_SHADER_ASTC_4X4_NORMAL,
 	BETSY_SHADER_MAX,
 };
 
@@ -86,10 +92,18 @@ struct BC4PushConstant {
 	uint32_t padding[3] = { 0 };
 };
 
+struct ASTC4x4PushConstant {
+	uint32_t texel_height;
+	uint32_t texel_width;
+	uint32_t group_num_x;
+	uint32_t pad;
+};
+
 void free_device();
 
 Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels);
 Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels);
+Error _betsy_compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::ASTCFormat p_astc_format);
 
 class BetsyCompressor : public Object {
 	mutable CommandQueueMT command_queue;
@@ -115,8 +129,12 @@ class BetsyCompressor : public Object {
 	void _thread_loop();
 	void _thread_exit();
 
-	Error _get_shader(BetsyFormat p_format, const String &p_version, BetsyShader &r_shader);
+	Error _compress_astc(BetsyFormat p_format, Image *r_img);
 	Error _compress(BetsyFormat p_format, Image *r_img);
+
+	static bool is_astc_format(BetsyFormat p_format) {
+		return p_format >= BETSY_FORMAT_ASTC_4X4_RGB && p_format <= BETSY_FORMAT_ASTC_4X4_NORMAL;
+	}
 
 public:
 	void init();
@@ -124,7 +142,11 @@ public:
 
 	Error compress(BetsyFormat p_format, Image *r_img) {
 		Error err;
-		command_queue.push_and_ret(this, &BetsyCompressor::_compress, &err, p_format, r_img);
+		if (is_astc_format(p_format)) {
+			command_queue.push_and_ret(this, &BetsyCompressor::_compress_astc, &err, p_format, r_img);
+		} else {
+			command_queue.push_and_ret(this, &BetsyCompressor::_compress, &err, p_format, r_img);
+		}
 		return err;
 	}
 };
