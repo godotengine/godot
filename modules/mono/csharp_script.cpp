@@ -1371,10 +1371,8 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
 		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
 
-		// May not me referenced yet, so we must use init_ref() instead of reference()
-		if (rc->init_ref()) {
-			CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
-		}
+		rc->reference();
+		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
 
 	// The object was just created, no script instance binding should have been attached
@@ -1699,11 +1697,9 @@ bool CSharpInstance::_reference_owner_unsafe() {
 	// but the managed instance is alive, the refcount will be 1 instead of 0.
 	// See: _unreference_owner_unsafe()
 
-	// May not be referenced yet, so we must use init_ref() instead of reference()
-	if (static_cast<RefCounted *>(owner)->init_ref()) {
-		CSharpLanguage::get_singleton()->post_unsafe_reference(owner);
-		unsafe_referenced = true;
-	}
+	static_cast<RefCounted *>(owner)->reference();
+	CSharpLanguage::get_singleton()->post_unsafe_reference(owner);
+	unsafe_referenced = true;
 
 	return unsafe_referenced;
 }

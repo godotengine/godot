@@ -499,9 +499,8 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; //nothing to do
 	}
 
-	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
-		_ptr = p_from._ptr;
-	}
+	p_from._get_refcount()->increment();
+	_ptr = p_from._ptr;
 }
 
 template <typename T>

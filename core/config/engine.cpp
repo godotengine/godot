@@ -439,7 +439,7 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const Stri
 		class_name(p_class_name) {
 #ifdef DEBUG_ENABLED
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
-	if (rc && !rc->is_referenced()) {
+	if (rc && rc->get_reference_count() == 0) {
 		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
 	}
 #endif

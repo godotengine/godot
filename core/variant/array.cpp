@@ -56,10 +56,7 @@ void Array::_ref(const Array &p_from) const {
 		return; // whatever it is, nothing to do here move along
 	}
 
-	bool success = _fp->refcount.ref();
-
-	ERR_FAIL_COND(!success); // should really not happen either
-
+	_fp->refcount.ref();
 	_unref();
 
 	_p = _fp;
@@ -836,7 +833,7 @@ const void *Array::id() const {
 
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
+	_p->refcount.init(1);
 	set_typed(p_type, p_class_name, p_script);
 	assign(p_from);
 }
@@ -915,7 +912,7 @@ Array::Array(const Array &p_from) {
 
 Array::Array() {
 	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
+	_p->refcount.init(1);
 }
 
 Array::~Array() {

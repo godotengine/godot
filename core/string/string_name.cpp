@@ -236,7 +236,8 @@ StringName &StringName::operator=(const StringName &p_name) {
 
 	unref();
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	if (p_name._data) {
+		p_name._data->refcount.ref();
 		_data = p_name._data;
 	}
 
@@ -248,7 +249,8 @@ StringName::StringName(const StringName &p_name) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	if (p_name._data) {
+		p_name._data->refcount.ref();
 		_data = p_name._data;
 	}
 }
@@ -283,7 +285,8 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
 		// exists
 		if (p_static) {
 			_data->static_count.increment();
@@ -298,7 +301,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
+	_data->refcount.init(1);
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
@@ -340,7 +343,8 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
 		// exists
 		if (p_static) {
 			_data->static_count.increment();
@@ -355,7 +359,7 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	_data = memnew(_Data);
 
-	_data->refcount.init();
+	_data->refcount.init(1);
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
@@ -397,7 +401,8 @@ StringName::StringName(const String &p_name, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
 		// exists
 		if (p_static) {
 			_data->static_count.increment();
@@ -412,7 +417,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
+	_data->refcount.init(1);
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
 	_data->idx = idx;
@@ -455,7 +460,8 @@ StringName StringName::search(const char *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
 #ifdef DEBUG_ENABLED
 		if (unlikely(debug_stringname)) {
 			_data->debug_references++;
@@ -490,7 +496,8 @@ StringName StringName::search(const char32_t *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
 		return StringName(_data);
 	}
 
@@ -514,7 +521,9 @@ StringName StringName::search(const String &p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data) {
+		_data->refcount.ref();
+
 #ifdef DEBUG_ENABLED
 		if (unlikely(debug_stringname)) {
 			_data->debug_references++;

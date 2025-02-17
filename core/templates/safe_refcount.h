@@ -134,18 +134,6 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ T conditional_increment() {
-		while (true) {
-			T c = value.load(std::memory_order_acquire);
-			if (c == 0) {
-				return 0;
-			}
-			if (value.compare_exchange_weak(c, c + 1, std::memory_order_acq_rel)) {
-				return c + 1;
-			}
-		}
-	}
-
 	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
 		set(p_value);
 	}
@@ -192,12 +180,12 @@ class SafeRefCount {
 #endif
 
 public:
-	_ALWAYS_INLINE_ bool ref() { // true on success
-		return count.conditional_increment() != 0;
+	_ALWAYS_INLINE_ void ref() {
+		count.increment();
 	}
 
-	_ALWAYS_INLINE_ uint32_t refval() { // none-zero on success
-		return count.conditional_increment();
+	_ALWAYS_INLINE_ uint32_t refval() { // returns the new refcount
+		return count.increment();
 	}
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
@@ -218,7 +206,7 @@ public:
 		return count.get();
 	}
 
-	_ALWAYS_INLINE_ void init(uint32_t p_value = 1) {
+	_ALWAYS_INLINE_ void init(uint32_t p_value) {
 		count.set(p_value);
 	}
 };

@@ -32,21 +32,11 @@
 
 #include "core/object/script_language.h"
 
-bool RefCounted::init_ref() {
-	if (reference()) {
-		if (!is_referenced() && refcount_init.unref()) {
-			unreference(); // first referencing is already 1, so compensate for the ref above
-		}
-
-		return true;
-	} else {
-		return false;
-	}
-}
-
 void RefCounted::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::init_ref);
-	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::reference_then_return_true);
+#endif
+	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference_then_return_true);
 	ClassDB::bind_method(D_METHOD("unreference"), &RefCounted::unreference);
 	ClassDB::bind_method(D_METHOD("get_reference_count"), &RefCounted::get_reference_count);
 }
@@ -55,11 +45,10 @@ int RefCounted::get_reference_count() const {
 	return refcount.get();
 }
 
-bool RefCounted::reference() {
+void RefCounted::reference() {
 	uint32_t rc_val = refcount.refval();
-	bool success = rc_val != 0;
 
-	if (success && rc_val <= 2 /* higher is not relevant */) {
+	if (rc_val <= 2 /* higher is not relevant */) {
 		if (get_script_instance()) {
 			get_script_instance()->refcount_incremented();
 		}
@@ -69,8 +58,6 @@ bool RefCounted::reference() {
 
 		_instance_binding_reference(true);
 	}
-
-	return success;
 }
 
 bool RefCounted::unreference() {
@@ -95,8 +82,7 @@ bool RefCounted::unreference() {
 
 RefCounted::RefCounted() :
 		Object(true) {
-	refcount.init();
-	refcount_init.init();
+	refcount.init(0);
 }
 
 Variant WeakRef::get_ref() const {
