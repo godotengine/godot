@@ -621,6 +621,12 @@ int Skeleton3D::add_bone(const String &p_name) {
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
+
+	// update ancellary data, see also: clear_bones()
+	bone_global_pose_dirty.push_back(true);
+	// ESTEE: this seems to work set to zero, but I'm not sure it is correct.
+	nested_set_offset_to_bone_index.push_back(0);
+
 	int new_idx = bones.size() - 1;
 	name_to_bone_index.insert(p_name, new_idx);
 	process_order_dirty = true;
@@ -838,6 +844,15 @@ bool Skeleton3D::is_show_rest_only() const {
 void Skeleton3D::clear_bones() {
 	bones.clear();
 	name_to_bone_index.clear();
+	
+	// clear ancellary data when bones are cleared,
+	// without this we end up with cache mismatches
+	// see also: add_bone()
+	skin_bindings.clear();
+	bone_global_pose_dirty.clear();
+	parentless_bones.clear();
+	nested_set_offset_to_bone_index.clear();
+
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
