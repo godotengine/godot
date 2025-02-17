@@ -2786,7 +2786,7 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
-			Display server supports HDR output. [b]macOS, iOS, visionOS, Windows[/b]
+			Display server supports HDR output. [b]Linux (Wayland), macOS, iOS, visionOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_PIP_MODE" value="36" enum="Feature">
 			Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
