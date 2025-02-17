@@ -460,6 +460,7 @@ Error QBODocument::_parse_qbo_data(Ref<FileAccess> f, Ref<GLTFState> p_state, ui
 			for (GLTFNodeIndex i = 0; i < p_state->nodes.size(); i++) {
 				Ref<GLTFNode> node = p_state->nodes[i];
 				GLTFNodeIndex parent = node->get_parent();
+				node->set_additional_data("GODOT_rest_transform", node->get_xform());
 				if (parent == -1) {
 					global_transforms.write[i] = node->get_xform();
 				} else {
