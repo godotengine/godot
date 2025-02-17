@@ -49,10 +49,14 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="open_console" type="bool" default="false" />
+			<param index="3" name="working_dir" type="String" default="&quot;&quot;" />
+			<param index="4" name="env" type="Dictionary" default="{}" />
 			<description>
 				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
 				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
+				If [param working_dir] is empty string, parent process working directory is used.
+				If [param env] is empty, parent process environment is used.
 				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
@@ -65,6 +69,8 @@
 				See [method execute] if you wish to run an external command and retrieve the results.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
+				[b]Note:[/b] On macOS, [param working_dir] is ignored for .app bundles.
+				[b]Note:[/b] On macOS, [param working_dir] and [param env] are ignored for sandboxed applications.
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -92,11 +98,15 @@
 			<param index="2" name="output" type="Array" default="[]" />
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
+			<param index="5" name="working_dir" type="String" default="&quot;&quot;" />
+			<param index="6" name="env" type="Dictionary" default="{}" />
 			<description>
 				Executes the given process in a [i]blocking[/i] way. The file specified in [param path] must exist and be executable. The system path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes.
 				If an [param output] array is provided, the complete shell output of the process is appended to [param output] as a single [String] element. If [param read_stderr] is [code]true[/code], the output to the standard error stream is also appended to the array.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window is opened.
 				This method returns the exit code of the command, or [code]-1[/code] if the process fails to execute.
+				If [param working_dir] is empty string, parent process working directory is used.
+				If [param env] is empty, parent process environment is used.
 				[b]Note:[/b] The main thread will be blocked until the executed command terminates. Use [Thread] to create a separate thread that will not block the main thread, or use [method create_process] to create a completely independent process.
 				For example, to retrieve a list of the working directory's contents:
 				[codeblocks]
@@ -125,6 +135,8 @@
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On macOS, [param working_dir] is ignored for .app bundles.
+				[b]Note:[/b] On macOS, [param working_dir] and [param env] are ignored for sandboxed applications.
 				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
 			</description>
 		</method>
@@ -133,6 +145,8 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="blocking" type="bool" default="true" />
+			<param index="3" name="working_dir" type="String" default="&quot;&quot;" />
+			<param index="4" name="env" type="Dictionary" default="{}" />
 			<description>
 				Creates a new process that runs independently of Godot with redirected IO. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				If [param blocking] is [code]false[/code], created pipes work in non-blocking mode, i.e. read and write operations will return immediately. Use [method FileAccess.get_error] to check if the last read/write operation was successful.
@@ -140,11 +154,15 @@
 				- [code]"stdio"[/code] - [FileAccess] to access the process stdin and stdout pipes (read/write).
 				- [code]"stderr"[/code] - [FileAccess] to access the process stderr pipe (read only).
 				- [code]"pid"[/code] - Process ID as an [int], which you can use to monitor the process (and potentially terminate it with [method kill]).
+				If [param working_dir] is empty string, parent process working directory is used.
+				If [param env] is empty, parent process environment is used.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
+				[b]Note:[/b] On macOS, [param working_dir] is ignored for .app bundles.
+				[b]Note:[/b] On macOS, [param working_dir] and [param env] are ignored for sandboxed applications.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
