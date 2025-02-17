@@ -593,7 +593,7 @@ void GameView::_debug_options_menu_id_pressed(int p_id) {
 		} break;
 		case VISIBLE_AVOIDANCE: {
 			visible_avoidance = !visible_avoidance;
-			menu->set_item_checked(p_id, visible_paths);
+			menu->set_item_checked(p_id, visible_avoidance);
 		} break;
 	}
 }
