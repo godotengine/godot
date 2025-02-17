@@ -750,6 +750,8 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		}
 	}
 
+	AnimationMixer::PlaybackInfo pi = p_playback_info;
+
 	if (travel_request != StringName()) {
 		String travel_target = _validate_path(p_state_machine, travel_request);
 		Vector<String> travel_path = travel_target.split("/");
@@ -774,9 +776,12 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 			if (can_travel) {
 				path = new_path;
 			} else {
-				// Can't travel, then teleport.
+				// Can't travel via explicit transitions, then travel directly (will use default_transition).
 				if (p_state_machine->states.has(temp_travel_request)) {
-					teleport_request = true;
+					path.clear();
+					if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
+						path.push_back(temp_travel_request);
+					}
 				} else {
 					ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
 				}
@@ -784,16 +789,21 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		}
 
 		if (teleport_request) {
-			path.clear();
-			if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
-				path.push_back(temp_travel_request);
-			}
-			_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 			teleport_request = false;
+			// Clear fadeing on teleport.
+			fading_from = StringName();
+			fadeing_from_nti = AnimationNode::NodeTimeInfo();
+			fading_pos = 0;
+			// Init current length.
+			pi.time = 0;
+			pi.seeked = true;
+			pi.is_external_seeking = false;
+			pi.weight = 0;
+			current_nti = p_state_machine->blend_node(p_state_machine->states[current].node, current, pi, AnimationNode::FILTER_IGNORE, true, true);
+			// Don't process first node if not necessary, instead process next node.
+			_transition_to_next_recursive(tree, p_state_machine, p_delta, p_test_only);
 		}
 	}
-
-	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	// Check current node existence.
 	if (!p_state_machine->states.has(current)) {
