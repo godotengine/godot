@@ -3262,6 +3262,25 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		swap_chain->color_space = color_space;
 	}
 
+	switch (swap_chain->color_space) {
+		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
+			swap_chain->rdd_color_space = COLOR_SPACE_SRGB_NONLINEAR;
+			break;
+		case VK_COLOR_SPACE_HDR10_ST2084_EXT:
+			swap_chain->rdd_color_space = COLOR_SPACE_HDR10_ST2084;
+			break;
+		case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT:
+			swap_chain->rdd_color_space = COLOR_SPACE_SRGB_LINEAR;
+			break;
+		default:
+			DEV_ASSERT(false && "Unknown swap chain color space.");
+			swap_chain->rdd_color_space = COLOR_SPACE_MAX;
+	}
+
+	//TODO obvious hack to use wp_color_management_surface_v1
+	// This will fail on windows and macos
+	swap_chain->color_space = VK_COLOR_SPACE_PASS_THROUGH_EXT;
+
 	VkSwapchainCreateInfoKHR swap_create_info = {};
 	swap_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swap_create_info.surface = surface->vk_surface;
@@ -3557,17 +3576,7 @@ RDD::ColorSpace RenderingDeviceDriverVulkan::swap_chain_get_color_space(SwapChai
 	DEV_ASSERT(p_swap_chain.id != 0);
 
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	switch (swap_chain->color_space) {
-		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
-			return COLOR_SPACE_SRGB_NONLINEAR;
-		case VK_COLOR_SPACE_HDR10_ST2084_EXT:
-			return COLOR_SPACE_HDR10_ST2084;
-		case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT:
-			return COLOR_SPACE_SRGB_LINEAR;
-		default:
-			DEV_ASSERT(false && "Unknown swap chain color space.");
-			return COLOR_SPACE_MAX;
-	}
+	return swap_chain->rdd_color_space;
 }
 
 void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
