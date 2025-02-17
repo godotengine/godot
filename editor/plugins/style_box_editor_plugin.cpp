@@ -112,6 +112,7 @@ StyleBoxPreview::StyleBoxPreview() {
 	grid_preview = memnew(Button);
 	// This theme variation works better than the normal theme because there's no focus highlight.
 	grid_preview->set_theme_type_variation("PreviewLightButton");
+	grid_preview->set_tooltip_text(TTRC("Toggle margins preview grid."));
 	grid_preview->set_toggle_mode(true);
 	grid_preview->connect(SceneStringName(toggled), callable_mp(this, &StyleBoxPreview::_grid_preview_toggled));
 	grid_preview->set_pressed(grid_preview_enabled);
