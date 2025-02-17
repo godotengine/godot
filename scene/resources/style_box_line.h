@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_line.h                                                      */
+/*  stylebox_line.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,7 +31,7 @@
 #ifndef STYLE_BOX_LINE_H
 #define STYLE_BOX_LINE_H
 
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 
 class StyleBoxLine : public StyleBox {
 	GDCLASS(StyleBoxLine, StyleBox);

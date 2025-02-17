@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_flat.h                                                      */
+/*  stylebox_flat.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,7 +31,7 @@
 #ifndef STYLE_BOX_FLAT_H
 #define STYLE_BOX_FLAT_H
 
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 
 class StyleBoxFlat : public StyleBox {
 	GDCLASS(StyleBoxFlat, StyleBox);

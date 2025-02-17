@@ -373,9 +373,9 @@
 				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
 			</description>
 		</method>
-		<method name="draw_style_box">
+		<method name="draw_stylebox">
 			<return type="void" />
-			<param index="0" name="style_box" type="StyleBox" />
+			<param index="0" name="stylebox" type="StyleBox" />
 			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Draws a styled rectangle.

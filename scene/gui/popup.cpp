@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #endif
 #include "scene/gui/panel.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 #include "scene/theme/theme_db.h"
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {

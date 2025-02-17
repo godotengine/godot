@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_texture.h                                                   */
+/*  stylebox_texture.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,7 +31,7 @@
 #ifndef STYLE_BOX_TEXTURE_H
 #define STYLE_BOX_TEXTURE_H
 
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 #include "scene/resources/texture.h"
 
 class StyleBoxTexture : public StyleBox {

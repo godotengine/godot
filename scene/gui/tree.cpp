@@ -2501,13 +2501,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					if (p_item->cells[i].custom_button) {
 						if (cache.hover_item == p_item && cache.hover_column == i) {
 							if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-								draw_style_box(theme_cache.custom_button_pressed, ir);
+								draw_stylebox(theme_cache.custom_button_pressed, ir);
 							} else {
-								draw_style_box(theme_cache.custom_button_hover, ir);
+								draw_stylebox(theme_cache.custom_button_hover, ir);
 								cell_color = theme_cache.custom_button_font_highlight;
 							}
 						} else {
-							draw_style_box(theme_cache.custom_button, ir);
+							draw_stylebox(theme_cache.custom_button, ir);
 						}
 						ir.size -= theme_cache.custom_button->get_minimum_size();
 						ir.position += theme_cache.custom_button->get_offset();

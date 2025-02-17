@@ -37,7 +37,7 @@
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/multimesh.h"
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 #include "scene/resources/world_2d.h"
 
 #define ERR_DRAW_GUARD \
@@ -870,13 +870,13 @@ void CanvasItem::draw_lcd_texture_rect_region(const Ref<Texture2D> &p_texture, c
 	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate);
 }
 
-void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect) {
+void CanvasItem::draw_stylebox(const Ref<StyleBox> &p_stylebox, const Rect2 &p_rect) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	ERR_FAIL_COND(p_style_box.is_null());
+	ERR_FAIL_COND(p_stylebox.is_null());
 
-	p_style_box->draw(canvas_item, p_rect);
+	p_stylebox->draw(canvas_item, p_rect);
 }
 
 void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
@@ -1316,7 +1316,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range", "scale"), &CanvasItem::draw_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_lcd_texture_rect_region", "texture", "rect", "src_rect", "modulate"), &CanvasItem::draw_lcd_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
+	ClassDB::bind_method(D_METHOD("draw_stylebox", "stylebox", "rect"), &CanvasItem::draw_stylebox);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()));
