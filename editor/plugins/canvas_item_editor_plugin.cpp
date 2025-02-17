@@ -4885,7 +4885,6 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 
 		// counting invisible items, for now
 		//if (!ci->is_visible_in_tree()) continue;
-		++count;
 
 		Rect2 item_rect;
 		if (ci->_edit_use_rect()) {
@@ -4899,9 +4898,13 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		real_t angle = ci->get_global_transform().get_rotation();
 		pos = ci->get_viewport()->get_popup_base_transform().xform(pos);
 
+		ERR_CONTINUE_MSG(!pos.is_finite() || !scale.is_finite() || !Math::is_finite(angle), vformat("\"%s\" has non-finite transform. Skipping it from focusing.", ci->get_name()));
+
 		Transform2D t(angle, Vector2(0.f, 0.f));
 		item_rect = t.xform(item_rect);
 		Rect2 canvas_item_rect(pos + scale * item_rect.position, scale * item_rect.size);
+
+		count++;
 		if (count == 1) {
 			rect = canvas_item_rect;
 		} else {
