@@ -69,6 +69,8 @@ env_svg.Prepend(CPPPATH=[thirdparty_dir + "inc"])
 
 # Enable ThorVG static object linking.
 env_svg.Append(CPPDEFINES=["TVG_STATIC"])
+# Explicit support for embedded images in svg.
+env_svg.Append(CPPDEFINES=["THORVG_FILE_IO_SUPPORT"])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()

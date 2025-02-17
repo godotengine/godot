@@ -1017,7 +1017,8 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(nbsp); // Otherwise icon borrows hyperlink from `_add_type()`.
 			_add_type(inherits);
 
-			inherits = doc->class_list[inherits].inherits;
+			const DocData::ClassDoc *base_class_doc = doc->class_list.getptr(inherits);
+			inherits = base_class_doc ? base_class_doc->inherits : String();
 
 			if (!inherits.is_empty()) {
 				class_desc->add_text(" < ");
@@ -3713,7 +3714,8 @@ void EditorHelpBit::_update_labels() {
 
 						_add_type_to_title({ inherits, String(), false });
 
-						inherits = class_list[inherits].inherits;
+						const DocData::ClassDoc *base_class_doc = class_list.getptr(inherits);
+						inherits = base_class_doc ? base_class_doc->inherits : String();
 					}
 
 					title->pop(); // font_size

@@ -132,8 +132,21 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 
 static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
+
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
-	Ref<Image> image = p_texture->get_image();
+	Ref<Image> image;
+	Ref<AtlasTexture> at = p_texture;
+	if (at.is_valid()) {
+		// The AtlasTexture tries to obtain the region from the atlas as an image,
+		// which will fail if it is a compressed format.
+		Ref<Texture2D> atlas = at->get_atlas();
+		if (atlas.is_valid()) {
+			image = atlas->get_image();
+		}
+	} else {
+		image = p_texture->get_image();
+	}
+
 	if (image.is_valid()) {
 		return image->get_mipmap_count();
 	}
