@@ -95,6 +95,13 @@ class GameView : public VBoxContainer {
 		EMBED_MAKE_FLOATING_ON_PLAY,
 	};
 
+	enum {
+		VISIBLE_COLLISION_SHAPES,
+		VISIBLE_PATHS,
+		VISIBLE_NAVIGATION,
+		VISIBLE_AVOIDANCE,
+	};
+
 	enum EmbedSizeMode {
 		SIZE_MODE_FIXED,
 		SIZE_MODE_KEEP_ASPECT,
@@ -135,6 +142,12 @@ class GameView : public VBoxContainer {
 
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+
+	bool visible_collision_shapes = false;
+	bool visible_paths = false;
+	bool visible_navigation = false;
+	bool visible_avoidance = false;
+	MenuButton *debug_options_menu = nullptr;
 
 	Button *hide_selection = nullptr;
 
@@ -183,6 +196,7 @@ class GameView : public VBoxContainer {
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
+	void _debug_options_menu_id_pressed(int p_id);
 
 	void _window_close_request();
 	void _update_floating_window_settings();

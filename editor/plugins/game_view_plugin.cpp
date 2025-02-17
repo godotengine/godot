@@ -575,6 +575,29 @@ void GameView::_camera_override_button_toggled(bool p_pressed) {
 	debugger->set_camera_override(p_pressed);
 }
 
+void GameView::_debug_options_menu_id_pressed(int p_id) {
+	PopupMenu *menu = debug_options_menu->get_popup();
+
+	switch (p_id) {
+		case VISIBLE_COLLISION_SHAPES: {
+			visible_collision_shapes = !visible_collision_shapes;
+			menu->set_item_checked(p_id, visible_collision_shapes);
+		} break;
+		case VISIBLE_PATHS: {
+			visible_paths = !visible_paths;
+			menu->set_item_checked(p_id, visible_paths);
+		} break;
+		case VISIBLE_NAVIGATION: {
+			visible_navigation = !visible_navigation;
+			menu->set_item_checked(p_id, visible_navigation);
+		} break;
+		case VISIBLE_AVOIDANCE: {
+			visible_avoidance = !visible_avoidance;
+			menu->set_item_checked(p_id, visible_paths);
+		} break;
+	}
+}
+
 void GameView::_camera_override_menu_id_pressed(int p_id) {
 	PopupMenu *menu = camera_override_menu->get_popup();
 	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
@@ -616,6 +639,7 @@ void GameView::_notification(int p_what) {
 #ifndef _3D_DISABLED
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 #endif // _3D_DISABLED
+			debug_options_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
@@ -919,6 +943,20 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTR("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
 #endif // _3D_DISABLED
+
+	debug_options_menu = memnew(MenuButton);
+	main_menu_hbox->add_child(debug_options_menu);
+	debug_options_menu->set_flat(false);
+	debug_options_menu->set_theme_type_variation("FlatMenuButton");
+	debug_options_menu->set_h_size_flags(SIZE_SHRINK_END);
+	debug_options_menu->set_tooltip_text(TTR("Debug options menu"));
+
+	PopupMenu *debug_options_popup = debug_options_menu->get_popup();
+	debug_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_debug_options_menu_id_pressed));
+	debug_options_popup->add_check_item(TTR("Visible Collision Shapes"), VISIBLE_COLLISION_SHAPES);
+	debug_options_popup->add_check_item(TTR("Visible Paths"), VISIBLE_PATHS);
+	debug_options_popup->add_check_item(TTR("Visible Navigation"), VISIBLE_NAVIGATION);
+	debug_options_popup->add_check_item(TTR("Visible Avoidance"), VISIBLE_AVOIDANCE);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
