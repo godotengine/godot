@@ -735,6 +735,9 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_pause() {
+		if (!this.isStarted) {
+			return;
+		}
 		this.isPaused = true;
 		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
 		this._source.stop();
