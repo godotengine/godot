@@ -254,10 +254,10 @@ void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
 	is_grouped = p_is_grouped;
 }
 
-void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport) {
+void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport, bool p_force_jump) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, p_reset_on_teleport);
+	_travel_main(p_state, p_reset_on_teleport, p_force_jump);
 }
 
 void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_reset) {
@@ -276,10 +276,11 @@ void AnimationNodeStateMachinePlayback::stop() {
 	_stop_main();
 }
 
-void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_reset_on_teleport) {
+void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_reset_on_teleport, bool p_force_jump) {
 	travel_request = p_state;
 	reset_request_on_teleport = p_reset_on_teleport;
 	stop_request = false;
+	jump_request = p_force_jump;
 }
 
 void AnimationNodeStateMachinePlayback::_start_main(const StringName &p_state, bool p_reset) {
@@ -758,8 +759,8 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		travel_request = travel_path[0];
 		StringName temp_travel_request = travel_request; // For the case that can't travel.
 
-		// If we are already planning to teleport, we can skip the expensive A* attempt.
-		if (!teleport_request) {
+		// If we are already not planning to use the pathfinder, we can skip the expensive A* attempt.
+		if (!teleport_request && !jump_request) {
 			// Fix path.
 			// Process children.
 			Vector<StringName> new_path;
@@ -777,14 +778,18 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 				path = new_path;
 			} else {
 				// Can't travel via explicit transitions, then travel directly (will use default_transition).
-				if (p_state_machine->states.has(temp_travel_request)) {
-					path.clear();
-					if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
-						path.push_back(temp_travel_request);
-					}
-				} else {
-					ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
+				jump_request = true;
+			}
+		}
+
+		if (jump_request) {
+			if (p_state_machine->states.has(temp_travel_request)) {
+				path.clear();
+				if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
+					path.push_back(temp_travel_request);
 				}
+			} else {
+				ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + temp_travel_request + "'");
 			}
 		}
 
