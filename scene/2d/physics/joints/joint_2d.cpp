@@ -249,6 +249,10 @@ void Joint2D::_bind_methods() {
 Joint2D::Joint2D() {
 	joint = PhysicsServer2D::get_singleton()->joint_create();
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
 
 Joint2D::~Joint2D() {
