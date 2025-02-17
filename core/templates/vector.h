@@ -124,6 +124,7 @@ public:
 
 	// Must take a copy instead of a reference (see GH-31736).
 	void append_array(Vector<T> p_other);
+	void append_buffer(const T *p_data, Size p_size);
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -327,8 +328,22 @@ void Vector<T>::append_array(Vector<T> p_other) {
 	}
 	const Size bs = size();
 	resize(bs + ds);
+	T *p = ptrw();
 	for (Size i = 0; i < ds; ++i) {
-		ptrw()[bs + i] = p_other[i];
+		p[bs + i] = p_other[i];
+	}
+}
+
+template <typename T>
+void Vector<T>::append_buffer(const T *p_data, Size p_size) {
+	if (p_size == 0) {
+		return;
+	}
+	const Size bs = size();
+	resize(bs + p_size);
+	T *p = ptrw();
+	for (Size i = 0; i < p_size; ++i) {
+		p[bs + i] = p_data[i];
 	}
 }
 

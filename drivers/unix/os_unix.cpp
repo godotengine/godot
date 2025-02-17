@@ -700,7 +700,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	return ret;
 }
 
-Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
+Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking, const String &p_working_dir, const Dictionary &p_env) {
 #define CLEAN_PIPES           \
 	if (pipe_in[0] >= 0) {    \
 		::close(pipe_in[0]);  \
@@ -763,6 +763,25 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 		}
 		args.push_back(0);
 
+		Vector<CharString> env_cs;
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+			env_cs.push_back(vformat("%s=%s", key_s, val_s).utf8());
+		}
+
+		Vector<char *> env;
+		for (int i = 0; i < env_cs.size(); i++) {
+			env.push_back((char *)env_cs[i].get_data());
+		}
+		env.push_back(0);
+
+		if (!p_working_dir.is_empty()) {
+			if (chdir(p_working_dir.utf8().get_data()) != 0) {
+				ERR_PRINT("Could not set working directory: " + p_working_dir);
+			}
+		}
+
 		::close(STDIN_FILENO);
 		::dup2(pipe_in[0], STDIN_FILENO);
 
@@ -774,7 +793,29 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 		CLEAN_PIPES
 
-		execvp(p_path.utf8().get_data(), &args[0]);
+		if (!p_env.is_empty()) {
+#if defined(__GLIBC__)
+			execvpe(p_path.utf8().get_data(), &args[0], &env[0]);
+#else
+			String path = p_path;
+			if (!p_path.contains_char('/') && access(p_path.utf8().get_data(), X_OK)) {
+				const char *env_path = getenv("PATH");
+				if (env_path) {
+					Vector<String> paths = String::utf8(env_path).split(":");
+					for (const String &p : paths) {
+						String pp = vformat("%s/%s", p, path);
+						if (!access(pp.utf8().get_data(), X_OK)) {
+							path = pp;
+							break;
+						}
+					}
+				}
+			}
+			execve(path.utf8().get_data(), &args[0], &env[0]);
+#endif
+		} else {
+			execvp(p_path.utf8().get_data(), &args[0]);
+		}
 		// The execvp() function only returns if an error occurs.
 		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
@@ -805,50 +846,35 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+
+#define CLEAN_PIPES           \
+	if (pipe_out[0] >= 0) {   \
+		::close(pipe_out[0]); \
+	}                         \
+	if (pipe_out[1] >= 0) {   \
+		::close(pipe_out[1]); \
+	}
+
+	int pipe_out[2] = { -1, -1 };
+
 	if (r_pipe) {
-		String command = "\"" + p_path + "\"";
-		for (const String &arg : p_arguments) {
-			command += String(" \"") + arg + "\"";
+		if (pipe(pipe_out) != 0) {
+			CLEAN_PIPES
+			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		} else {
-			command += " 2>/dev/null"; // Silence stderr
-		}
-
-		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			String pipe_out;
-			if (pipe_out.append_utf8(buf) == OK) {
-				(*r_pipe) += pipe_out;
-			} else {
-				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
-			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(rv);
-		}
-		return OK;
 	}
 
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	if (pid < 0) {
+		CLEAN_PIPES
+		ERR_FAIL_V(ERR_CANT_CREATE);
+	}
 
 	if (pid == 0) {
 		// The child process
@@ -864,10 +890,85 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		}
 		args.push_back(0);
 
-		execvp(p_path.utf8().get_data(), &args[0]);
+		Vector<CharString> env_cs;
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+			env_cs.push_back(vformat("%s=%s", key_s, val_s).utf8());
+		}
+
+		Vector<char *> env;
+		for (int i = 0; i < env_cs.size(); i++) {
+			env.push_back((char *)env_cs[i].get_data());
+		}
+		env.push_back(0);
+
+		if (!p_working_dir.is_empty()) {
+			if (chdir(p_working_dir.utf8().get_data()) != 0) {
+				ERR_PRINT("Could not set working directory: " + p_working_dir);
+			}
+		}
+
+		if (r_pipe) {
+			::close(STDOUT_FILENO);
+			::dup2(pipe_out[1], STDOUT_FILENO);
+
+			if (p_read_stderr) {
+				::close(STDERR_FILENO);
+				::dup2(pipe_out[1], STDERR_FILENO);
+			}
+
+			CLEAN_PIPES
+		}
+
+		if (!p_env.is_empty()) {
+#if defined(__GLIBC__)
+			execvpe(p_path.utf8().get_data(), &args[0], &env[0]);
+#else
+			String path = p_path;
+			if (!p_path.contains_char('/') && access(p_path.utf8().get_data(), X_OK)) {
+				const char *env_path = getenv("PATH");
+				if (env_path) {
+					Vector<String> paths = String::utf8(env_path).split(":");
+					for (const String &p : paths) {
+						String pp = vformat("%s/%s", p, path);
+						if (!access(pp.utf8().get_data(), X_OK)) {
+							path = pp;
+							break;
+						}
+					}
+				}
+			}
+			execve(path.utf8().get_data(), &args[0], &env[0]);
+#endif
+		} else {
+			execvp(p_path.utf8().get_data(), &args[0]);
+		}
 		// The execvp() function only returns if an error occurs.
 		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);
+	}
+
+	if (r_pipe) {
+		::close(pipe_out[1]);
+
+		char buf[65535];
+		while (::read(pipe_out[0], buf, 65535)) {
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			String pipe_out_str;
+			if (pipe_out_str.append_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out_str;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		}
+
+		::close(pipe_out[0]);
 	}
 
 	int status;
@@ -879,7 +980,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 #endif
 }
 
-Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
@@ -906,7 +1007,49 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 		}
 		args.push_back(0);
 
-		execvp(p_path.utf8().get_data(), &args[0]);
+		Vector<CharString> env_cs;
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+			env_cs.push_back(vformat("%s=%s", key_s, val_s).utf8());
+		}
+
+		Vector<char *> env;
+		for (int i = 0; i < env_cs.size(); i++) {
+			env.push_back((char *)env_cs[i].get_data());
+		}
+		env.push_back(0);
+
+		if (!p_working_dir.is_empty()) {
+			if (chdir(p_working_dir.utf8().get_data()) != 0) {
+				ERR_PRINT("Could not set working directory: " + p_working_dir);
+			}
+		}
+
+		if (!p_env.is_empty()) {
+#if defined(__GLIBC__)
+			execvpe(p_path.utf8().get_data(), &args[0], &env[0]);
+#else
+			String path = p_path;
+			if (!p_path.contains_char('/') && access(p_path.utf8().get_data(), X_OK)) {
+				const char *env_path = getenv("PATH");
+				if (env_path) {
+					Vector<String> paths = String::utf8(env_path).split(":");
+					for (const String &p : paths) {
+						String pp = vformat("%s/%s", p, path);
+						if (!access(pp.utf8().get_data(), X_OK)) {
+							path = pp;
+							break;
+						}
+					}
+				}
+			}
+			execve(path.utf8().get_data(), &args[0], &env[0]);
+#endif
+		} else {
+			execvp(p_path.utf8().get_data(), &args[0]);
+		}
+
 		// The execvp() function only returns if an error occurs.
 		ERR_PRINT("Could not create child process: " + p_path);
 		raise(SIGKILL);

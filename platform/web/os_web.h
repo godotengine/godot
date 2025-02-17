@@ -82,9 +82,9 @@ public:
 	MainLoop *get_main_loop() const override;
 	bool main_loop_iterate();
 
-	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
-	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
-	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
+	Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool p_read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary()) override;
+	Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary()) override;
+	Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary()) override;
 	Error kill(const ProcessID &p_pid) override;
 	int get_process_id() const override;
 	bool is_process_running(const ProcessID &p_pid) const override;
