@@ -31,8 +31,8 @@
 #ifndef TEST_STREAM_PEER_TLS_H
 #define TEST_STREAM_PEER_TLS_H
 
-#include "core/io/stream_peer_mbedtls.h"
 #include "core/io/stream_peer_tls.h"
+#include "modules/mbedtls/stream_peer_mbedtls.h"
 
 #include "tests/test_macros.h"
 
