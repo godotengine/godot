@@ -844,7 +844,7 @@ bool Skeleton3D::is_show_rest_only() const {
 void Skeleton3D::clear_bones() {
 	bones.clear();
 	name_to_bone_index.clear();
-	
+
 	// clear ancellary data when bones are cleared,
 	// without this we end up with cache mismatches
 	// see also: add_bone()
