@@ -2735,7 +2735,7 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR" value="35" enum="Feature">
-			Display server supports HDR output. [b]Windows[/b]
+			Display server supports HDR output. [b]Windows, Linux (Wayland)[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.
