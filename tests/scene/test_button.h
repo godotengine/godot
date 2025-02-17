@@ -37,8 +37,8 @@
 #include "tests/test_macros.h"
 
 namespace TestButton {
-TEST_CASE("[SceneTree][Button] is_hovered()") {
-	// Create new button instance.
+TEST_CASE("[SceneTree][Button] is_hovered() and press simulation") {
+	// Create new button instance.a
 	Button *button = memnew(Button);
 	CHECK(button != nullptr);
 	Window *root = SceneTree::get_singleton()->get_root();
@@ -59,6 +59,25 @@ TEST_CASE("[SceneTree][Button] is_hovered()") {
 	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(150, 150), MouseButtonMask::NONE, Key::NONE);
 	CHECK(button->is_hovered() == false);
 
+	// Move mouse back onto the button.
+	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
+	CHECK(button->is_hovered() == true);
+
+	// Watch for button press signal.
+	SIGNAL_WATCH(button, "pressed");
+
+	// Simulate button press (mouse down and up).
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2i(25, 25), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+
+	// This creates the [[]] structure which is what should return in the case of a button press
+	Array expected_signal_args;
+	expected_signal_args.push_back(Array());  
+	// Check if the button was pressed by verifying the "pressed" signal was emitted.
+	SIGNAL_CHECK("pressed", expected_signal_args);
+
+	// Cleanup
+	SIGNAL_UNWATCH(button, "pressed");
 	memdelete(button);
 }
 
