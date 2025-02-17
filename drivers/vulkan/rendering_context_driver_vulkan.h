@@ -155,6 +155,7 @@ public:
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const override;
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
+	virtual bool is_colorspace_externally_managed() const { return false; }
 	bool is_colorspace_supported() const;
 
 	// Vulkan-only methods.
