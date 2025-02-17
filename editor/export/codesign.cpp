@@ -102,61 +102,63 @@ void CodeSignCodeResources::add_rule2(const String &p_rule, const String &p_key,
 }
 
 CodeSignCodeResources::CRMatch CodeSignCodeResources::match_rules1(const String &p_path) const {
-	CRMatch found = CRMatch::CR_MATCH_NO;
-	int weight = 0;
-	for (int i = 0; i < rules1.size(); i++) {
-		RegEx regex = RegEx(rules1[i].file_pattern);
-		if (regex.search(p_path).is_valid()) {
-			if (rules1[i].key == "omit") {
-				return CRMatch::CR_MATCH_NO;
-			} else if (rules1[i].key == "nested") {
-				if (weight <= rules1[i].weight) {
-					found = CRMatch::CR_MATCH_NESTED;
-					weight = rules1[i].weight;
-				}
-			} else if (rules1[i].key == "optional") {
-				if (weight <= rules1[i].weight) {
-					found = CRMatch::CR_MATCH_OPTIONAL;
-					weight = rules1[i].weight;
-				}
-			} else {
-				if (weight <= rules1[i].weight) {
-					found = CRMatch::CR_MATCH_YES;
-					weight = rules1[i].weight;
-				}
-			}
-		}
-	}
-	return found;
+    CRMatch found = CRMatch::CR_MATCH_NO;
+    int weight = 0;
+    
+    for (const auto& rule : rules1) {
+        RegEx regex(rule.file_pattern);
+        if (!regex.search(p_path).is_valid()) continue;
+
+        if (rule.key == "omit") {
+            return CRMatch::CR_MATCH_NO;
+        }
+
+        CRMatch current_match;
+        if (rule.key == "nested") {
+            current_match = CRMatch::CR_MATCH_NESTED;
+        } else if (rule.key == "optional") {
+            current_match = CRMatch::CR_MATCH_OPTIONAL;
+        } else {
+            current_match = CRMatch::CR_MATCH_YES;
+        }
+
+        if (rule.weight >= weight) {
+            found = current_match;
+            weight = rule.weight;
+        }
+    }
+    
+    return found;
 }
 
 CodeSignCodeResources::CRMatch CodeSignCodeResources::match_rules2(const String &p_path) const {
-	CRMatch found = CRMatch::CR_MATCH_NO;
-	int weight = 0;
-	for (int i = 0; i < rules2.size(); i++) {
-		RegEx regex = RegEx(rules2[i].file_pattern);
-		if (regex.search(p_path).is_valid()) {
-			if (rules2[i].key == "omit") {
-				return CRMatch::CR_MATCH_NO;
-			} else if (rules2[i].key == "nested") {
-				if (weight <= rules2[i].weight) {
-					found = CRMatch::CR_MATCH_NESTED;
-					weight = rules2[i].weight;
-				}
-			} else if (rules2[i].key == "optional") {
-				if (weight <= rules2[i].weight) {
-					found = CRMatch::CR_MATCH_OPTIONAL;
-					weight = rules2[i].weight;
-				}
-			} else {
-				if (weight <= rules2[i].weight) {
-					found = CRMatch::CR_MATCH_YES;
-					weight = rules2[i].weight;
-				}
-			}
-		}
-	}
-	return found;
+    CRMatch found = CRMatch::CR_MATCH_NO;
+    int weight = 0;
+    
+    for (const auto& rule : rules2) {
+        RegEx regex(rule.file_pattern);
+        if (!regex.search(p_path).is_valid()) continue;
+
+        if (rule.key == "omit") {
+            return CRMatch::CR_MATCH_NO;
+        }
+
+        CRMatch current_match;
+        if (rule.key == "nested") {
+            current_match = CRMatch::CR_MATCH_NESTED;
+        } else if (rule.key == "optional") {
+            current_match = CRMatch::CR_MATCH_OPTIONAL;
+        } else {
+            current_match = CRMatch::CR_MATCH_YES;
+        }
+
+        if (rule.weight >= weight) {
+            found = current_match;
+            weight = rule.weight;
+        }
+    }
+    
+    return found;
 }
 
 bool CodeSignCodeResources::add_file1(const String &p_root, const String &p_path) {
@@ -279,72 +281,76 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 #undef CLEANUP
 }
 
-bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const String &p_path, const String &p_main_exe_path) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V(da.is_null(), false);
-	Error err = da->change_dir(p_root.path_join(p_path));
-	ERR_FAIL_COND_V(err != OK, false);
+bool CodeSignCodeResources::add_folder_recursive(const String& p_root, const String& p_path, const String& p_main_exe_path) {
+    Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+    ERR_FAIL_COND_V(da.is_null(), false);
+    
+    const String base_path = p_root.path_join(p_path);
+    ERR_FAIL_COND_V(da->change_dir(base_path) != OK, false);
 
-	bool ret = true;
-	da->list_dir_begin();
-	String n = da->get_next();
-	while (n != String()) {
-		if (n != "." && n != "..") {
-			String path = p_root.path_join(p_path).path_join(n);
-			if (path == p_main_exe_path) {
-				n = da->get_next();
-				continue; // Skip main executable.
-			}
-			if (da->current_is_dir()) {
-				CRMatch found = match_rules2(p_path.path_join(n));
-				String fmw_ver = "Current"; // Framework version (default).
-				String info_path;
-				String main_exe;
-				bool bundle = false;
-				if (da->file_exists(path.path_join("Contents/Info.plist"))) {
-					info_path = path.path_join("Contents/Info.plist");
-					main_exe = path.path_join("Contents/MacOS");
-					bundle = true;
-				} else if (da->file_exists(path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
-					info_path = path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
-					main_exe = path.path_join(vformat("Versions/%s", fmw_ver));
-					bundle = true;
-				} else if (da->file_exists(path.path_join("Resources/Info.plist"))) {
-					info_path = path.path_join("Resources/Info.plist");
-					main_exe = path;
-					bundle = true;
-				} else if (da->file_exists(path.path_join("Info.plist"))) {
-					info_path = path.path_join("Info.plist");
-					main_exe = path;
-					bundle = true;
-				}
-				if (bundle && found == CRMatch::CR_MATCH_NESTED && !info_path.is_empty()) {
-					// Read Info.plist.
-					PList info_plist;
-					if (info_plist.load_file(info_path)) {
-						if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("CFBundleExecutable")) {
-							main_exe = main_exe.path_join(String::utf8(info_plist.get_root()->data_dict["CFBundleExecutable"]->data_string.get_data()));
-						} else {
-							ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, no exe name.");
-						}
-					} else {
-						ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, can't load.");
-					}
-					ret = ret && add_nested_file(p_root, p_path.path_join(n), main_exe);
-				} else {
-					ret = ret && add_folder_recursive(p_root, p_path.path_join(n), p_main_exe_path);
-				}
-			} else {
-				ret = ret && add_file1(p_root, p_path.path_join(n));
-				ret = ret && add_file2(p_root, p_path.path_join(n));
-			}
-		}
+    bool success = true;
+    da->list_dir_begin();
 
-		n = da->get_next();
-	}
+    auto process_bundle = [&](const String& info_path, const String& main_exe_base) -> bool {
+        PList info_plist;
+        if (!info_plist.load_file(info_path)) {
+            ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, can't load.");
+        }
 
-	da->list_dir_end();
-	return ret;
+        auto* root = info_plist.get_root();
+        if (root->data_type != PList::PLNodeType::PL_NODE_TYPE_DICT || !root->data_dict.has("CFBundleExecutable")) {
+            ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, no exe name.");
+        }
+
+        const String main_exe = main_exe_base.path_join(
+            String::utf8(root->data_dict["CFBundleExecutable"]->data_string.get_data())
+        );
+        return add_nested_file(p_root, p_path.path_join(n), main_exe);
+    };
+
+    while (String n = da->get_next()) {
+        if (n == "." || n == "..") continue;
+
+        const String full_path = base_path.path_join(n);
+        if (full_path == p_main_exe_path) continue;
+
+        if (da->current_is_dir()) {
+            const CRMatch match = match_rules2(p_path.path_join(n));
+            String info_path, main_exe;
+            bool is_bundle = false;
+
+            // Check possible bundle locations
+            const String fmw_ver = "Current";
+            const String path_variants[] = {
+                path.path_join("Contents/Info.plist"),
+                path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)),
+                path.path_join("Resources/Info.plist"),
+                path.path_join("Info.plist")
+            };
+
+            for (const auto& variant : path_variants) {
+                if (da->file_exists(variant)) {
+                    info_path = variant;
+                    main_exe = variant.get_base_dir().get_base_dir(); // Adjust based on variant
+                    is_bundle = true;
+                    break;
+                }
+            }
+
+            if (is_bundle && match == CRMatch::CR_MATCH_NESTED && !info_path.is_empty()) {
+                success = process_bundle(info_path, main_exe) && success;
+            } else {
+                success = add_folder_recursive(p_root, p_path.path_join(n), p_main_exe_path) && success;
+            }
+        } else {
+            const String relative_path = p_path.path_join(n);
+            success = add_file1(p_root, relative_path) && success;
+            success = add_file2(p_root, relative_path) && success;
+        }
+    }
+
+    da->list_dir_end();
+    return success;
 }
 
 bool CodeSignCodeResources::save_to_file(const String &p_path) {
@@ -551,230 +557,194 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_date(uint32_t &r_pos, String &r
 #undef _R
 }
 
-_FORCE_INLINE_ bool CodeSignRequirements::_parse_match(uint32_t &r_pos, String &r_out, uint32_t p_rq_size) const {
-#define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
-	ERR_FAIL_COND_V_MSG(r_pos >= p_rq_size, false, "CodeSign/Requirements: Out of bounds.");
-	uint32_t match = _R(r_pos);
-	r_pos += 4;
-	switch (match) {
-		case 0x00000000: {
-			r_out += "exists";
-		} break;
-		case 0x00000001: {
-			r_out += "= ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000002: {
-			r_out += "~ ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000003: {
-			r_out += "= *";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000004: {
-			r_out += "= ";
-			_parse_value(r_pos, r_out, p_rq_size);
-			r_out += "*";
-		} break;
-		case 0x00000005: {
-			r_out += "< ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000006: {
-			r_out += "> ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000007: {
-			r_out += "<= ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000008: {
-			r_out += ">= ";
-			_parse_value(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x00000009: {
-			r_out += "= ";
-			_parse_date(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x0000000A: {
-			r_out += "< ";
-			_parse_date(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x0000000B: {
-			r_out += "> ";
-			_parse_date(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x0000000C: {
-			r_out += "<= ";
-			_parse_date(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x0000000D: {
-			r_out += ">= ";
-			_parse_date(r_pos, r_out, p_rq_size);
-		} break;
-		case 0x0000000E: {
-			r_out += "absent";
-		} break;
-		default: {
-			return false;
+_FORCE_INLINE_ bool CodeSignRequirements::_parse_match(uint32_t& r_pos, String& r_out, uint32_t p_rq_size) const {
+	#define READ_BE_UINT32(offset) BSWAP32(*reinterpret_cast<const uint32_t*>(blob.ptr() + (offset)))
+		
+		ERR_FAIL_COND_V_MSG(r_pos >= p_rq_size, false, "CodeSign/Requirements: Out of bounds.");
+		
+		const uint32_t match_op = READ_BE_UINT32(r_pos);
+		r_pos += 4;
+	
+		switch (match_op) {
+			// Simple existence checks
+			case 0x00000000: r_out += "exists"; break;
+			case 0x0000000E: r_out += "absent"; break;
+	
+			// Value comparisons
+			case 0x00000001: r_out += "= ";  _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000002: r_out += "~ ";  _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000003: r_out += "= *"; _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000004: {
+				r_out += "= ";
+				_parse_value(r_pos, r_out, p_rq_size);
+				r_out += "*";
+			} break;
+			case 0x00000005: r_out += "< ";  _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000006: r_out += "> ";  _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000007: r_out += "<= "; _parse_value(r_pos, r_out, p_rq_size); break;
+			case 0x00000008: r_out += ">= "; _parse_value(r_pos, r_out, p_rq_size); break;
+	
+			// Date comparisons
+			case 0x00000009: r_out += "= ";  _parse_date(r_pos, r_out, p_rq_size); break;
+			case 0x0000000A: r_out += "< ";  _parse_date(r_pos, r_out, p_rq_size); break;
+			case 0x0000000B: r_out += "> ";  _parse_date(r_pos, r_out, p_rq_size); break;
+			case 0x0000000C: r_out += "<= "; _parse_date(r_pos, r_out, p_rq_size); break;
+			case 0x0000000D: r_out += ">= "; _parse_date(r_pos, r_out, p_rq_size); break;
+	
+			default: return false;  // Unknown match operation
 		}
+	
+		return true;
+	
+	#undef READ_BE_UINT32
 	}
-	return true;
-#undef _R
-}
 
 Vector<String> CodeSignRequirements::parse_requirements() const {
-#define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
-	Vector<String> list;
+#define READ_BE_UINT32(offset) BSWAP32(*reinterpret_cast<const uint32_t*>(blob.ptr() + (offset)))
+    
+    Vector<String> requirements;
+    const uint32_t MIN_HEADER_SIZE = 12;
 
-	// Read requirements set header.
-	ERR_FAIL_COND_V_MSG(blob.size() < 12, list, "CodeSign/Requirements: Blob is too small.");
-	uint32_t magic = _R(0);
-	ERR_FAIL_COND_V_MSG(magic != 0xfade0c01, list, "CodeSign/Requirements: Invalid set magic.");
-	uint32_t size = _R(4);
-	ERR_FAIL_COND_V_MSG(size != (uint32_t)blob.size(), list, "CodeSign/Requirements: Invalid set size.");
-	uint32_t count = _R(8);
+    // Validate header
+    ERR_FAIL_COND_V_MSG(blob.size() < MIN_HEADER_SIZE, requirements, 
+                       "CodeSign/Requirements: Blob is too small.");
+    
+    const uint32_t header_magic = READ_BE_UINT32(0);
+    ERR_FAIL_COND_V_MSG(header_magic != 0xfade0c01, requirements,
+                       "CodeSign/Requirements: Invalid set magic.");
+    
+    const uint32_t blob_size = READ_BE_UINT32(4);
+    ERR_FAIL_COND_V_MSG(blob_size != static_cast<uint32_t>(blob.size()), requirements,
+                       "CodeSign/Requirements: Invalid set size.");
+    
+    const uint32_t requirement_count = READ_BE_UINT32(8);
 
-	for (uint32_t i = 0; i < count; i++) {
-		String out;
+    // Process each requirement
+    for (uint32_t i = 0; i < requirement_count; i++) {
+        const uint32_t req_header_offset = 12 + i * 8;
+        const uint32_t req_type = READ_BE_UINT32(req_header_offset);
+        const uint32_t req_offset = READ_BE_UINT32(req_header_offset + 4);
+        
+        ERR_FAIL_COND_V_MSG(req_offset + MIN_HEADER_SIZE > blob_size, requirements,
+                           "CodeSign/Requirements: Invalid requirement offset.");
 
-		// Read requirement header.
-		uint32_t rq_type = _R(12 + i * 8);
-		uint32_t rq_offset = _R(12 + i * 8 + 4);
-		ERR_FAIL_COND_V_MSG(rq_offset + 12 >= (uint32_t)blob.size(), list, "CodeSign/Requirements: Invalid requirement offset.");
-		switch (rq_type) {
-			case 0x00000001: {
-				out += "host => ";
-			} break;
-			case 0x00000002: {
-				out += "guest => ";
-			} break;
-			case 0x00000003: {
-				out += "designated => ";
-			} break;
-			case 0x00000004: {
-				out += "library => ";
-			} break;
-			case 0x00000005: {
-				out += "plugin => ";
-			} break;
-			default: {
-				ERR_FAIL_V_MSG(list, "CodeSign/Requirements: Invalid requirement type.");
-			}
-		}
-		uint32_t rq_magic = _R(rq_offset);
-		uint32_t rq_size = _R(rq_offset + 4);
-		uint32_t rq_ver = _R(rq_offset + 8);
-		uint32_t pos = rq_offset + 12;
-		ERR_FAIL_COND_V_MSG(rq_magic != 0xfade0c00, list, "CodeSign/Requirements: Invalid requirement magic.");
-		ERR_FAIL_COND_V_MSG(rq_ver != 0x00000001, list, "CodeSign/Requirements: Invalid requirement version.");
+        String requirement_str;
+        switch (req_type) {  // Requirement type prefix
+            case 0x00000001: requirement_str = "host => "; break;
+            case 0x00000002: requirement_str = "guest => "; break;
+            case 0x00000003: requirement_str = "designated => "; break;
+            case 0x00000004: requirement_str = "library => "; break;
+            case 0x00000005: requirement_str = "plugin => "; break;
+            default: ERR_FAIL_V_MSG(requirements, "CodeSign/Requirements: Invalid requirement type.");
+        }
 
-		// Read requirement tokens.
-		List<String> tokens;
-		while (pos < rq_offset + rq_size) {
-			uint32_t rq_tag = _R(pos);
-			pos += 4;
-			String token;
-			switch (rq_tag) {
-				case 0x00000000: {
-					token = "false";
-				} break;
-				case 0x00000001: {
-					token = "true";
-				} break;
-				case 0x00000002: {
-					token = "identifier ";
-					_parse_value(pos, token, rq_offset + rq_size);
-				} break;
-				case 0x00000003: {
-					token = "anchor apple";
-				} break;
-				case 0x00000004: {
-					_parse_certificate_slot(pos, token, rq_offset + rq_size);
-					token += " ";
-					_parse_hash_string(pos, token, rq_offset + rq_size);
-				} break;
-				case 0x00000005: {
-					token = "info";
-					_parse_key(pos, token, rq_offset + rq_size);
-					token += " = ";
-					_parse_value(pos, token, rq_offset + rq_size);
-				} break;
-				case 0x00000006: {
-					token = "and";
-				} break;
-				case 0x00000007: {
-					token = "or";
-				} break;
-				case 0x00000008: {
-					token = "cdhash ";
-					_parse_hash_string(pos, token, rq_offset + rq_size);
-				} break;
-				case 0x00000009: {
-					token = "!";
-				} break;
-				case 0x0000000A: {
-					token = "info";
-					_parse_key(pos, token, rq_offset + rq_size);
-					token += " ";
-					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
-				} break;
-				case 0x0000000B: {
-					_parse_certificate_slot(pos, token, rq_offset + rq_size);
-					_parse_key(pos, token, rq_offset + rq_size);
-					token += " ";
-					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
-				} break;
-				case 0x0000000C: {
-					_parse_certificate_slot(pos, token, rq_offset + rq_size);
-					token += " trusted";
-				} break;
-				case 0x0000000D: {
-					token = "anchor trusted";
-				} break;
-				case 0x0000000E: {
-					_parse_certificate_slot(pos, token, rq_offset + rq_size);
-					_parse_oid_key(pos, token, rq_offset + rq_size);
-					token += " ";
-					ERR_FAIL_COND_V_MSG(!_parse_match(pos, token, rq_offset + rq_size), list, "CodeSign/Requirements: Unsupported match suffix.");
-				} break;
-				case 0x0000000F: {
-					token = "anchor apple generic";
-				} break;
-				default: {
-					ERR_FAIL_V_MSG(list, "CodeSign/Requirements: Invalid requirement token.");
-				} break;
-			}
-			tokens.push_back(token);
-		}
+        // Validate requirement structure
+        const uint32_t req_magic = READ_BE_UINT32(req_offset);
+        const uint32_t req_size = READ_BE_UINT32(req_offset + 4);
+        const uint32_t req_version = READ_BE_UINT32(req_offset + 8);
+        
+        ERR_FAIL_COND_V_MSG(req_magic != 0xfade0c00, requirements,
+                           "CodeSign/Requirements: Invalid requirement magic.");
+        ERR_FAIL_COND_V_MSG(req_version != 0x00000001, requirements,
+                           "CodeSign/Requirements: Invalid requirement version.");
 
-		// Polish to infix notation (w/o bracket optimization).
-		for (List<String>::Element *E = tokens.back(); E; E = E->prev()) {
-			if (E->get() == "and") {
-				ERR_FAIL_COND_V_MSG(!E->next() || !E->next()->next(), list, "CodeSign/Requirements: Invalid token sequence.");
-				String token = "(" + E->next()->get() + " and " + E->next()->next()->get() + ")";
-				tokens.erase(E->next()->next());
-				tokens.erase(E->next());
-				E->get() = token;
-			} else if (E->get() == "or") {
-				ERR_FAIL_COND_V_MSG(!E->next() || !E->next()->next(), list, "CodeSign/Requirements: Invalid token sequence.");
-				String token = "(" + E->next()->get() + " or " + E->next()->next()->get() + ")";
-				tokens.erase(E->next()->next());
-				tokens.erase(E->next());
-				E->get() = token;
-			}
-		}
+        // Parse tokens
+        List<String> tokens;
+        uint32_t parse_pos = req_offset + 12;
+        const uint32_t req_end = req_offset + req_size;
 
-		if (tokens.size() == 1) {
-			list.push_back(out + tokens.front()->get());
-		} else {
-			ERR_FAIL_V_MSG(list, "CodeSign/Requirements: Invalid token sequence.");
-		}
-	}
+        while (parse_pos < req_end) {
+            const uint32_t token_tag = READ_BE_UINT32(parse_pos);
+            parse_pos += 4;
+            
+            String token;
+            switch (token_tag) {
+                // Basic tokens
+                case 0x00000000: token = "false"; break;
+                case 0x00000001: token = "true"; break;
+                case 0x00000003: token = "anchor apple"; break;
+                case 0x00000006: token = "and"; break;
+                case 0x00000007: token = "or"; break;
+                case 0x00000009: token = "!"; break;
+                case 0x0000000D: token = "anchor trusted"; break;
+                case 0x0000000F: token = "anchor apple generic"; break;
 
-	return list;
-#undef _R
+                // Complex tokens
+                case 0x00000002: 
+                    token = "identifier ";
+                    _parse_value(parse_pos, token, req_end);
+                    break;
+                case 0x00000004:
+                    _parse_certificate_slot(parse_pos, token, req_end);
+                    token += " ";
+                    _parse_hash_string(parse_pos, token, req_end);
+                    break;
+                case 0x00000005:
+                    token = "info";
+                    _parse_key(parse_pos, token, req_end);
+                    token += " = ";
+                    _parse_value(parse_pos, token, req_end);
+                    break;
+                case 0x00000008:
+                    token = "cdhash ";
+                    _parse_hash_string(parse_pos, token, req_end);
+                    break;
+                case 0x0000000A:
+                    token = "info";
+                    _parse_key(parse_pos, token, req_end);
+                    token += " ";
+                    ERR_FAIL_COND_V_MSG(!_parse_match(parse_pos, token, req_end), requirements,
+                                      "CodeSign/Requirements: Unsupported match suffix.");
+                    break;
+                case 0x0000000B:
+                    _parse_certificate_slot(parse_pos, token, req_end);
+                    _parse_key(parse_pos, token, req_end);
+                    token += " ";
+                    ERR_FAIL_COND_V_MSG(!_parse_match(parse_pos, token, req_end), requirements,
+                                      "CodeSign/Requirements: Unsupported match suffix.");
+                    break;
+                case 0x0000000C:
+                    _parse_certificate_slot(parse_pos, token, req_end);
+                    token += " trusted";
+                    break;
+                case 0x0000000E:
+                    _parse_certificate_slot(parse_pos, token, req_end);
+                    _parse_oid_key(parse_pos, token, req_end);
+                    token += " ";
+                    ERR_FAIL_COND_V_MSG(!_parse_match(parse_pos, token, req_end), requirements,
+                                      "CodeSign/Requirements: Unsupported match suffix.");
+                    break;
+                default:
+                    ERR_FAIL_V_MSG(requirements, "CodeSign/Requirements: Invalid requirement token.");
+            }
+            tokens.push_back(token);
+        }
+
+        // Convert to infix notation
+        for (List<String>::Element *elem = tokens.back(); elem; elem = elem->prev()) {
+            if (elem->get() == "and" || elem->get() == "or") {
+                ERR_FAIL_COND_V_MSG(!elem->next() || !elem->next()->next(), requirements,
+                                  "CodeSign/Requirements: Invalid token sequence.");
+                
+                const String op = elem->get();
+                const String expr = "(" + elem->next()->get() + " " + op + " " + elem->next()->next()->get() + ")";
+                
+                tokens.erase(elem->next()->next());
+                tokens.erase(elem->next());
+                elem->get() = expr;
+            }
+        }
+
+        // Final validation
+        if (tokens.size() == 1) {
+            requirements.push_back(requirement_str + tokens.front()->get());
+        } else {
+            ERR_FAIL_V_MSG(requirements, "CodeSign/Requirements: Invalid token sequence.");
+        }
+    }
+
+    return requirements;
+#undef READ_BE_UINT32
 }
 
 PackedByteArray CodeSignRequirements::get_hash_sha1() const {
@@ -1517,52 +1487,68 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 #undef CLEANUP
 }
 
-Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String &p_path, const String &p_ent_path, String &r_error_msg) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (da.is_null()) {
-		r_error_msg = TTR("Can't get filesystem access.");
-		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CodeSign: Can't get filesystem access.");
-	}
+Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String &p_path, 
+	const String &p_ent_path, String &r_error_msg) {
+Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+if (da.is_null()) {
+r_error_msg = TTR("Can't get filesystem access.");
+ERR_FAIL_V_MSG(ERR_CANT_CREATE, "CodeSign: Can't get filesystem access.");
+}
 
-	if (da->dir_exists(p_path)) {
-		String fmw_ver = "Current"; // Framework version (default).
-		String info_path;
-		String main_exe;
-		String bundle_path;
-		bool bundle = false;
-		bool ios_bundle = false;
-		if (da->file_exists(p_path.path_join("Contents/Info.plist"))) {
-			info_path = p_path.path_join("Contents/Info.plist");
-			main_exe = p_path.path_join("Contents/MacOS");
-			bundle_path = p_path.path_join("Contents");
-			bundle = true;
-		} else if (da->file_exists(p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
-			info_path = p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
-			main_exe = p_path.path_join(vformat("Versions/%s", fmw_ver));
-			bundle_path = p_path.path_join(vformat("Versions/%s", fmw_ver));
-			bundle = true;
-		} else if (da->file_exists(p_path.path_join("Resources/Info.plist"))) {
-			info_path = p_path.path_join("Resources/Info.plist");
-			main_exe = p_path;
-			bundle_path = p_path;
-			bundle = true;
-		} else if (da->file_exists(p_path.path_join("Info.plist"))) {
-			info_path = p_path.path_join("Info.plist");
-			main_exe = p_path;
-			bundle_path = p_path;
-			bundle = true;
-			ios_bundle = true;
-		}
-		if (bundle) {
-			return _codesign_file(p_use_hardened_runtime, p_force, info_path, main_exe, bundle_path, p_ent_path, ios_bundle, r_error_msg);
-		} else {
-			r_error_msg = TTR("Unknown bundle type.");
-			ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown bundle type.");
-		}
-	} else if (da->file_exists(p_path)) {
-		return _codesign_file(p_use_hardened_runtime, p_force, "", p_path, "", p_ent_path, false, r_error_msg);
-	} else {
-		r_error_msg = TTR("Unknown object type.");
-		ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown object type.");
-	}
+if (da->dir_exists(p_path)) {
+struct BundleConfig {
+String info_plist_path;
+String main_exe_path;
+String bundle_path;
+bool ios_bundle;
+};
+
+const String fmw_ver = "Current";
+static const Vector<BundleConfig> bundle_configs = {
+// macOS App Bundle
+{p_path.path_join("Contents/Info.plist"), 
+p_path.path_join("Contents/MacOS"),
+p_path.path_join("Contents"), 
+false},
+
+// Framework Bundle
+{p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)),
+p_path.path_join(vformat("Versions/%s", fmw_ver)),
+p_path.path_join(vformat("Versions/%s", fmw_ver)),
+false},
+
+// Resources Bundle
+{p_path.path_join("Resources/Info.plist"),
+p_path,
+p_path,
+false},
+
+// iOS-style Bundle
+{p_path.path_join("Info.plist"),
+p_path,
+p_path,
+true}
+};
+
+for (const BundleConfig &config : bundle_configs) {
+if (da->file_exists(config.info_plist_path)) {
+return _codesign_file(p_use_hardened_runtime, p_force, 
+				config.info_plist_path, config.main_exe_path,
+				config.bundle_path, p_ent_path, 
+				config.ios_bundle, r_error_msg);
+}
+}
+
+r_error_msg = TTR("Unknown bundle type.");
+ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown bundle type.");
+}
+
+if (da->file_exists(p_path)) {
+return _codesign_file(p_use_hardened_runtime, p_force, 
+		"", p_path, "", p_ent_path, 
+		false, r_error_msg);
+}
+
+r_error_msg = TTR("Unknown object type.");
+ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown object type.");
 }
