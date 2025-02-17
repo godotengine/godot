@@ -33,6 +33,14 @@
 RenderingContextDriver::~RenderingContextDriver() {
 }
 
+void RenderingContextDriver::set_colorspace_externally_managed(bool p_externally_managed) {
+	colorspace_externally_managed = p_externally_managed;
+}
+
+bool RenderingContextDriver::get_colorspace_externally_managed() const {
+	return colorspace_externally_managed;
+}
+
 RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServer::WindowID p_window) const {
 	HashMap<DisplayServer::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
 	if (it != window_surface_map.end()) {
