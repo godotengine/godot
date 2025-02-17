@@ -445,17 +445,30 @@ void EditorProperty::_notification(int p_what) {
 					checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
 				}
 
+				check_rect = Rect2(ofs, 0, checkbox->get_width() + padding, size.height);
+
+				Point2 rtl_pos;
+				if (rtl) {
+					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
+				}
+
 				Color color2(1, 1, 1);
 				if (check_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, check_rect.size));
+					} else {
+						draw_style_box(sb_hover, check_rect);
+					}
 				}
-				check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 				if (rtl) {
-					draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
+					draw_texture(checkbox, rtl_pos + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				} else {
-					draw_texture(checkbox, check_rect.position, color2);
+					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				}
 				int check_ofs = checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				ofs += check_ofs;
@@ -469,7 +482,7 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= reload_icon->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
 				}
@@ -531,7 +544,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				keying_rect = Rect2(ofs, 0, key->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - keying_rect.position.x - (key->get_width() + padding), keying_rect.position.y);
 				}
@@ -568,7 +581,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				delete_rect = Rect2(ofs, 0, close->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - delete_rect.position.x - (close->get_width() + padding), delete_rect.position.y);
 				}
