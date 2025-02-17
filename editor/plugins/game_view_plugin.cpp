@@ -42,6 +42,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/plugins/embedded_process.h"
 #include "editor/themes/editor_scale.h"
@@ -300,6 +301,8 @@ void GameView::_play_pressed() {
 		_update_embed_window_size();
 		if (!window_wrapper->get_window_enabled()) {
 			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+			// Reset the normal size of the bottom panel when fully expanded.
+			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
 			embedded_process->grab_focus();
 		}
 		embedded_process->embed_process(current_process_id);
