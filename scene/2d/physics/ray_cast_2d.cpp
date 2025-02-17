@@ -371,4 +371,8 @@ void RayCast2D::_bind_methods() {
 
 RayCast2D::RayCast2D() {
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
