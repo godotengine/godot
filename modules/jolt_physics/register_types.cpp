@@ -62,5 +62,6 @@ void uninitialize_jolt_physics_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;
 	}
+
 	jolt_deinitialize();
 }
