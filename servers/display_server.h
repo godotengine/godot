@@ -66,6 +66,7 @@ public:
 		WINDOW_MODE_MAXIMIZED,
 		WINDOW_MODE_FULLSCREEN,
 		WINDOW_MODE_EXCLUSIVE_FULLSCREEN,
+		WINDOW_MODE_OFFSCREEN,
 	};
 
 	// Keep the VSyncMode enum values in sync with the `display/window/vsync/vsync_mode`

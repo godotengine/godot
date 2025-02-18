@@ -40,6 +40,8 @@
 
 #include <windows.h>
 
+#include "drivers/gles3/rasterizer_gles3.h"
+
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
@@ -54,6 +56,10 @@ private:
 		HWND hwnd;
 
 		int gldisplay_id = 0;
+
+		GLuint fbo;
+		GLuint color_tex;
+		GLuint depth_rbo;
 	};
 
 	struct GLDisplay {

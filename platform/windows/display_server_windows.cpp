@@ -1686,6 +1686,20 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	} else if (wd.is_popup) {
 		ShowWindow(wd.hWnd, SW_SHOWNA);
 		SetFocus(wd.hWnd); // Set keyboard focus.
+	} else if (wd.offscreen) {
+		ShowWindow(wd.hWnd, SW_SHOW);
+		//SetForegroundWindow(wd.hWnd); // Slightly higher priority.
+		wd.rect_changed_callback.call(Rect2i(wd.last_pos.x, wd.last_pos.y, wd.width, wd.height));
+		//SetFocus(wd.hWnd); // Set keyboard focus.
+		// Size2i s = window_get_size();
+		// wd.width = s.x;
+		// wd.height = s.y;
+		// ITaskbarList *tbl = nullptr;
+		// if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
+		// if (SUCCEEDED(tbl->HrInit())) {
+		// tbl->DeleteTab(wd.hWnd);
+		// }
+		// }
 	} else {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
@@ -2215,7 +2229,7 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	// GetClientRect() returns a zero rect for a minimized window, so we need to get the size in another way.
-	if (wd.minimized) {
+	if (wd.minimized || wd.offscreen) {
 		return Size2(wd.width, wd.height);
 	}
 
@@ -2383,18 +2397,21 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
 		wd.minimized = false;
+		wd.offscreen = false;
 	}
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED) {
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
 		wd.minimized = false;
+		wd.offscreen = false;
 	}
 
 	if (p_mode == WINDOW_MODE_MINIMIZED) {
 		ShowWindow(wd.hWnd, SW_MINIMIZE);
 		wd.maximized = false;
 		wd.minimized = true;
+		wd.offscreen = false;
 		wd.was_fullscreen_pre_min = was_fullscreen;
 	}
 
@@ -2427,6 +2444,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.fullscreen = true;
 		wd.maximized = false;
 		wd.minimized = false;
+		wd.offscreen = false;
 
 		_update_window_style(p_window, false);
 
@@ -2438,6 +2456,25 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, nullptr, 0);
 		}
+	}
+	if (p_mode == WINDOW_MODE_OFFSCREEN) {
+		//ShowWindow(wd.hWnd, SW_MINIMIZE);
+		//SetForegroundWindow(wd.hWnd); // Slightly higher priority.
+		//SetFocus(wd.hWnd); // Set keyboard focus.
+		//ShowWindow(wd.hWnd, SW_NORMAL);
+		// Size2i s = window_get_size();
+		// wd.rect_changed_callback.call(Rect2i(wd.last_pos.x, wd.last_pos.y, s.x, s.y));
+		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+		ITaskbarList *tbl = nullptr;
+		if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
+			if (SUCCEEDED(tbl->HrInit())) {
+				tbl->DeleteTab(wd.hWnd);
+			}
+		}
+		wd.fullscreen = false;
+		wd.maximized = false;
+		wd.minimized = false;
+		wd.offscreen = true;
 	}
 }
 
@@ -2457,6 +2494,8 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 		return WINDOW_MODE_MINIMIZED;
 	} else if (wd.maximized) {
 		return WINDOW_MODE_MAXIMIZED;
+	} else if (wd.offscreen) {
+		return WINDOW_MODE_OFFSCREEN;
 	} else {
 		return WINDOW_MODE_WINDOWED;
 	}
@@ -5583,7 +5622,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					_update_window_style(window_id, false);
 				}
 
-				if (!window.minimized) {
+				if (!window.minimized && !window.offscreen) {
 					window.width = window_client_rect.size.width;
 					window.height = window_client_rect.size.height;
 
@@ -6311,6 +6350,20 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if (p_mode == WINDOW_MODE_MINIMIZED) {
 			wd.maximized = false;
 			wd.minimized = true;
+		}
+
+		if (p_mode == WINDOW_MODE_OFFSCREEN) {
+			ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+			ITaskbarList *tbl = nullptr;
+			if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
+				if (SUCCEEDED(tbl->HrInit())) {
+					tbl->DeleteTab(wd.hWnd);
+				}
+			}
+
+			wd.maximized = false;
+			wd.minimized = false;
+			wd.offscreen = true;
 		}
 
 		wd.last_pressure = 0;
