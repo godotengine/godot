@@ -140,6 +140,7 @@ public:
 		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
+		FILE_MULTI_SAVE_AS_SCENE,
 		FILE_QUICK_OPEN,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
@@ -295,6 +296,7 @@ private:
 
 	int tab_closing_idx = 0;
 	List<String> tabs_to_close;
+	List<int> scenes_to_save_as;
 	int tab_closing_menu_option = -1;
 
 	bool exiting = false;
@@ -611,6 +613,7 @@ private:
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
 	void _proceed_closing_scene_tabs();
+	void _proceed_save_asing_scene_tabs();
 	bool _is_closing_editor() const;
 	void _restart_editor(bool p_goto_project_manager = false);
 
