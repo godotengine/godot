@@ -472,27 +472,30 @@ void DisplayServerX11::_mouse_update_mode() {
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		//flush pending motion events
 		_flush_mouse_motion();
-		WindowID window_id = _get_focused_window_or_popup();
-		if (!windows.has(window_id)) {
-			window_id = MAIN_WINDOW_ID;
-		}
-		WindowData &window = windows[window_id];
 
-		if (XGrabPointer(
-					x11_display, window.x11_window, True,
-					ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-					GrabModeAsync, GrabModeAsync, window.x11_window, None, CurrentTime) != GrabSuccess) {
-			ERR_PRINT("NO GRAB");
-		}
+		if (app_focused) {
+			WindowID window_id = _get_focused_window_or_popup();
+			if (!windows.has(window_id)) {
+				window_id = MAIN_WINDOW_ID;
+			}
+			WindowData &window = windows[window_id];
 
-		if (mouse_mode == MOUSE_MODE_CAPTURED) {
-			center.x = window.size.width / 2;
-			center.y = window.size.height / 2;
+			if (XGrabPointer(
+						x11_display, window.x11_window, True,
+						ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+						GrabModeAsync, GrabModeAsync, window.x11_window, None, CurrentTime) != GrabSuccess) {
+				ERR_PRINT("NO GRAB");
+			}
 
-			XWarpPointer(x11_display, None, window.x11_window,
-					0, 0, 0, 0, (int)center.x, (int)center.y);
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				center.x = window.size.width / 2;
+				center.y = window.size.height / 2;
 
-			Input::get_singleton()->set_mouse_position(center);
+				XWarpPointer(x11_display, None, window.x11_window,
+						0, 0, 0, 0, (int)center.x, (int)center.y);
+
+				Input::get_singleton()->set_mouse_position(center);
+			}
 		}
 	} else {
 		do_mouse_warp = false;
@@ -1864,6 +1867,10 @@ void DisplayServerX11::show_window(WindowID p_id) {
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
+	if (wd.hidden) {
+		return;
+	}
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
@@ -3015,6 +3022,16 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			ERR_FAIL_COND_MSG((xwa.map_state == IsViewable) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
 			ERR_FAIL_COND_MSG(p_enabled && wd.embed_parent, "Embedded window can't be popup.");
 			wd.is_popup = p_enabled;
+		} break;
+		case WINDOW_FLAG_HIDDEN: {
+			if (wd.hidden != p_enabled) {
+				wd.hidden = p_enabled;
+				if (p_enabled) {
+					XUnmapWindow(x11_display, wd.x11_window);
+				} else {
+					show_window(p_window);
+				}
+			}
 		} break;
 		default: {
 		}
@@ -4752,7 +4769,7 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
-				const WindowData &wd = windows[window_id];
+				WindowData &wd = windows[window_id];
 
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
@@ -4765,6 +4782,8 @@ void DisplayServerX11::process_events() {
 					_set_input_focus(wd.x11_window, RevertToPointerRoot);
 				}
 
+				wd.hidden = false;
+
 				// Have we failed to set fullscreen while the window was unmapped?
 				_validate_mode_on_map(window_id);
 
@@ -4774,6 +4793,15 @@ void DisplayServerX11::process_events() {
 				if (wd.embed_parent) {
 					XMapWindow(x11_display, wd.embed_parent);
 				}
+			} break;
+
+			case UnmapNotify: {
+				DEBUG_LOG_X11("[%u] UnmapNotify window=%lu (%u) \n", frame, event.xmap.window, window_id);
+				if (ime_window_event) {
+					break;
+				}
+				WindowData &wd = windows[window_id];
+				wd.hidden = true;
 			} break;
 
 			case Expose: {
@@ -5811,7 +5839,7 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 		DEBUG_LOG_X11("Process %ld window found: %lu \n", p_pid, process_window);
 		ep = memnew(EmbeddedProcessData);
 		ep->process_window = process_window;
-		ep->visible = true;
+
 		XSetTransientForHint(x11_display, process_window, wd.x11_window);
 		_set_window_taskbar_pager_enabled(process_window, false);
 		embedded_processes.insert(p_pid, ep);
@@ -5899,13 +5927,10 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 		}
 	}
 
-	if (ep->visible != p_visible) {
-		if (p_visible) {
-			XMapWindow(x11_display, ep->process_window);
-		} else {
-			XUnmapWindow(x11_display, ep->process_window);
-		}
-		ep->visible = p_visible;
+	if (p_visible) {
+		XMapWindow(x11_display, ep->process_window);
+	} else {
+		XUnmapWindow(x11_display, ep->process_window);
 	}
 
 	if (p_grab_focus && p_visible) {
@@ -6088,6 +6113,10 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
+	}
+
+	if (p_flags & WINDOW_FLAG_HIDDEN_BIT) {
+		wd.hidden = true;
 	}
 
 	// Setup for menu subwindows:

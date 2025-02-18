@@ -829,6 +829,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "window:title") {
 		ERR_FAIL_COND(p_data.size() != 1);
 		emit_signal(SNAME("remote_window_title_changed"), p_data[0]);
+	} else if (p_msg == "window:ready") {
+		emit_signal(SNAME("remote_window_ready"));
 	} else {
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
@@ -1788,6 +1790,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
 	ADD_SIGNAL(MethodInfo("remote_tree_select_requested", PropertyInfo(Variant::NODE_PATH, "path")));
 	ADD_SIGNAL(MethodInfo("remote_window_title_changed", PropertyInfo(Variant::STRING, "title")));
+	ADD_SIGNAL(MethodInfo("remote_window_ready"));
 	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));

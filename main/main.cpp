@@ -228,6 +228,7 @@ static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
 static int64_t init_embed_parent_window_id = 0;
+static bool init_hidden = false;
 static bool use_custom_res = true;
 static bool force_res = false;
 
@@ -589,6 +590,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--hidden", "Request a hidden window (supported only on Windows and Linux).\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1802,7 +1804,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing <window_id> argument for --wid <window_id>.\n");
 				goto error;
 			}
-
+		} else if (arg == "--hidden") {
+			init_hidden = true;
 		} else if (arg == "--" || arg == "++") {
 			adding_user_args = true;
 		} else {
@@ -3002,6 +3005,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
 		}
 
+		if (init_hidden) {
+			window_flags |= DisplayServer::WINDOW_FLAG_HIDDEN_BIT;
+		}
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
@@ -3233,6 +3240,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 				DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
 			}
 		}
+
+#ifdef TOOLS_ENABLED
+		// Sends a message to the editor to inform it that the game window is ready.
+		// When the game is embedded, this visibility flag sent in the command line argument may be out of sync
+		// if the user has hidden or shown the game since startup.
+		if (EngineDebugger::is_active()) {
+			EngineDebugger::get_singleton()->send_message("window:ready", Array());
+		}
+#endif
 
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
