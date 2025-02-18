@@ -254,10 +254,16 @@ void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
 	is_grouped = p_is_grouped;
 }
 
-void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport, bool p_force_jump) {
+void AnimationNodeStateMachinePlayback::travel(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, p_reset_on_teleport, p_force_jump);
+	_travel_main(p_state, false, false);
+}
+
+void AnimationNodeStateMachinePlayback::jump(const StringName &p_state) {
+	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
+	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
+	_travel_main(p_state, false, true);
 }
 
 void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_reset) {

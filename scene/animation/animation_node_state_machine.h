@@ -329,7 +329,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void travel(const StringName &p_state, bool p_reset_on_teleport = true, bool p_force_jump = false);
+	void travel(const StringName &p_state);
+	void jump(const StringName &p_state);
 	void start(const StringName &p_state, bool p_reset = true);
 	void next();
 	void stop();
