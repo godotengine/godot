@@ -87,7 +87,7 @@ TEST_CASE("[SceneTree][Button] press simulation and signal check") {
 
 	// This creates the [[]] structure which is what should return in the case of a button press
 	Array expected_signal_args;
-	expected_signal_args.push_back(Array());  
+	expected_signal_args.push_back(Array());
 
 	// Check if the button was pressed by verifying the "pressed" signal was emitted.
 	SIGNAL_CHECK("pressed", expected_signal_args);
@@ -99,4 +99,3 @@ TEST_CASE("[SceneTree][Button] press simulation and signal check") {
 
 } //namespace TestButton
 #endif // TEST_BUTTON_H
-
