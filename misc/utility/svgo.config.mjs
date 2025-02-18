@@ -1,6 +1,10 @@
 export default {
 	multipass: true,
 	precision: 2,
+	js2svg: {
+		eol: "lf",
+		finalNewline: true,
+	},
 	plugins: [
 		{
 			name: "preset-default",
