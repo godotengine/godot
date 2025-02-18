@@ -760,10 +760,15 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (travel_request != StringName()) {
-		String travel_target = _validate_path(p_state_machine, travel_request);
+				String travel_target = _validate_path(p_state_machine, travel_request);
 		Vector<String> travel_path = travel_target.split("/");
 		travel_request = travel_path[0];
 		StringName temp_travel_request = travel_request; // For the case that can't travel.
+
+		// Do not use transitions to move to and from special states:
+		if (String(current).contains("/Start") || String(current).contains("/End") || String(temp_travel_request).contains("/Start") || String(temp_travel_request).contains("/End")) {
+			teleport_request = true;
+		}
 
 		// If we are already not planning to use the pathfinder, we can skip the expensive A* attempt.
 		if (!teleport_request && !jump_request) {
