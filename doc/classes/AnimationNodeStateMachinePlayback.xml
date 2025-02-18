@@ -84,14 +84,7 @@
 			<param index="0" name="to_node" type="StringName" />
 			<description>
 				Transitions from the current state to another one, following the shortest path.
-				If the path does not connect from the current state, the state machine's default transition will be used to jump to the destination state.
-			</description>
-		</method>
-		<method name="jump">
-			<return type="void" />
-			<param index="0" name="to_node" type="StringName" />
-			<description>
-				Transitions from the current state directly to another one, using the state machine's default transition if a direct connection is not available.
+				If the path does not connect from the current state, the state machine's default transition will be used to jump directly to the destination state.
 			</description>
 		</method>
 		<method name="queue_travel">
