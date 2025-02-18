@@ -287,6 +287,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _reset_request_for_fading_from = false;
 	bool next_request = false;
 	bool stop_request = false;
+	bool request_jump_instead = false;
 	bool teleport_request = false;
 	bool jump_request = false;
 	bool retain_path_request = false;
@@ -330,7 +331,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void travel(const StringName &p_state);
+	void travel(const StringName &p_state, bool p_reset_on_teleport = true);
 	void queue_travel(const StringName &p_state);
 	void queue(const StringName &p_state);
 	void start(const StringName &p_state, bool p_reset = true);

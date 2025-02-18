@@ -254,22 +254,30 @@ void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
 	is_grouped = p_is_grouped;
 }
 
-void AnimationNodeStateMachinePlayback::travel(const StringName &p_state) {
+void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, false, false, true);
+
+	reset_request_on_teleport = p_reset_on_teleport;
+
+	_travel_main(p_state, p_reset_on_teleport, false, false);
 }
 
 void AnimationNodeStateMachinePlayback::queue_travel(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, false, false, false);
+
+	// This might be able to be a parameter on both 'travel'
+	// It cannot be false in 'queue_travel' otherwise the teleport would delete the queue anyway...
+	request_jump_instead = true;
+
+	_travel_main(p_state, false, false, true);
 }
 
 void AnimationNodeStateMachinePlayback::queue(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, false, true, false);
+	_travel_main(p_state, false, true, true);
 }
 
 void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_reset) {
@@ -529,24 +537,31 @@ String AnimationNodeStateMachinePlayback::_validate_path(AnimationNodeStateMachi
 }
 
 bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, Vector<StringName> &r_path, bool p_test_only) {
-	StringName travel = travel_request;
+	StringName travel_from;
+	if (retain_path_request) {
+		travel_from = r_path[r_path.size() - 1];
+	} else {
+		travel_from = current;
+	}
+
+	StringName travel_to = travel_request;
 	travel_request = StringName();
 
 	if (!playing) {
 		_start(p_state_machine);
 	}
 
-	ERR_FAIL_COND_V(!p_state_machine->states.has(travel), false);
-	ERR_FAIL_COND_V(!p_state_machine->states.has(current), false);
+	ERR_FAIL_COND_V(!p_state_machine->states.has(travel_to), false);
+	ERR_FAIL_COND_V(!p_state_machine->states.has(travel_from), false);
 
-	if (current == travel) {
+	if (travel_from == travel_to) {
 		return !p_is_allow_transition_to_self;
 	}
 
 	Vector<StringName> new_path;
 
-	Vector2 current_pos = p_state_machine->states[current].position;
-	Vector2 target_pos = p_state_machine->states[travel].position;
+	Vector2 current_pos = p_state_machine->states[travel_from].position;
+	Vector2 target_pos = p_state_machine->states[travel_to].position;
 
 	bool found_route = false;
 	HashMap<StringName, AStarCost> cost_map;
@@ -559,16 +574,16 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 			continue;
 		}
 
-		if (p_state_machine->transitions[i].from == current) {
+		if (p_state_machine->transitions[i].from == travel_from) {
 			open_list.push_back(i);
 			float cost = p_state_machine->states[p_state_machine->transitions[i].to].position.distance_to(current_pos);
 			cost *= p_state_machine->transitions[i].transition->get_priority();
 			AStarCost ap;
-			ap.prev = current;
+			ap.prev = travel_from;
 			ap.distance = cost;
 			cost_map[p_state_machine->transitions[i].to] = ap;
 
-			if (p_state_machine->transitions[i].to == travel) { // Prematurely found it! :D
+			if (p_state_machine->transitions[i].to == travel_to) { // Prematurely found it! :D
 				found_route = true;
 				break;
 			}
@@ -581,7 +596,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 			break; // No path found.
 		}
 
-		// Find the last cost transition.
+		// Find the least cost transition.
 		List<int>::Element *least_cost_transition = nullptr;
 		float least_cost = 1e20;
 
@@ -626,7 +641,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 
 				open_list.push_back(i);
 
-				if (p_state_machine->transitions[i].to == travel) {
+				if (p_state_machine->transitions[i].to == travel_to) {
 					found_route = true;
 					break;
 				}
@@ -643,8 +658,8 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 	// Check child grouped state machine.
 	if (found_route) {
 		// Make path.
-		StringName at = travel;
-		while (at != current) {
+		StringName at = travel_to;
+		while (at != travel_from) {
 			new_path.push_back(at);
 			at = cost_map[at].prev;
 		}
@@ -653,7 +668,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 		// Check internal paths of child grouped state machine.
 		// For example:
 		// [current - End] - [Start - End] - [Start - End] - [Start - target]
-		String current_path = current;
+		String current_path = travel_from;
 		int len = new_path.size() + 1;
 		for (int i = 0; i < len; i++) {
 			Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(current_path);
@@ -800,8 +815,17 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 					path = new_path;
 				}
 			} else {
-				// Can't travel via explicit transitions, then travel directly (will use default_transition).
-				jump_request = true;
+				// Can't travel via explicit transitions, then travel directly...
+				if (request_jump_instead) {
+					// using 'default_transition'.
+					request_jump_instead = false;
+					jump_request = true;
+				} else {
+					// by teleporting immediately.
+					_set_current(p_state_machine, temp_travel_request);
+					reset_request = reset_request_on_teleport;
+					teleport_request = true;
+				}
 			}
 		}
 
