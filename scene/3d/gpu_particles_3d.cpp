@@ -51,6 +51,7 @@ void GPUParticles3D::set_emitting(bool p_emitting) {
 			signal_canceled = false;
 			emission_time = lifetime;
 			active_time = lifetime * (2 - explosiveness_ratio);
+			set_seed(Math::rand());
 		} else {
 			signal_canceled = true;
 		}
