@@ -33,26 +33,6 @@
 #include <cstdio>
 
 // ============================================================================
-// vmask4 operators and functions
-// ============================================================================
-
-/**
- * @brief True if any lanes are enabled, false otherwise.
- */
-ASTCENC_SIMD_INLINE bool any(vmask4 a)
-{
-	return mask(a) != 0;
-}
-
-/**
- * @brief True if all lanes are enabled, false otherwise.
- */
-ASTCENC_SIMD_INLINE bool all(vmask4 a)
-{
-	return mask(a) == 0xF;
-}
-
-// ============================================================================
 // vint4 operators and functions
 // ============================================================================
 
@@ -127,6 +107,22 @@ ASTCENC_SIMD_INLINE vint4 clamp(int minv, int maxv, vint4 a)
 ASTCENC_SIMD_INLINE int hadd_rgb_s(vint4 a)
 {
 	return a.lane<0>() + a.lane<1>() + a.lane<2>();
+}
+
+/**
+ * @brief Return the horizontal minimum of a vector.
+ */
+ASTCENC_SIMD_INLINE int hmin_s(vint4 a)
+{
+	return hmin(a).lane<0>();
+}
+
+/**
+ * @brief Return the horizontal maximum of a vector.
+ */
+ASTCENC_SIMD_INLINE int hmax_s(vint4 a)
+{
+	return hmax(a).lane<0>();
 }
 
 // ============================================================================
@@ -220,18 +216,6 @@ ASTCENC_SIMD_INLINE vfloat4 clamp(float minv, float maxv, vfloat4 a)
 {
 	// Do not reorder - second operand will return if either is NaN
 	return min(max(a, minv), maxv);
-}
-
-/**
- * @brief Return the clamped value between 0.0f and max.
- *
- * It is assumed that  @c max is not a NaN value. If @c a is NaN then zero will
- * be returned for that lane.
- */
-ASTCENC_SIMD_INLINE vfloat4 clampz(float maxv, vfloat4 a)
-{
-	// Do not reorder - second operand will return if either is NaN
-	return min(max(a, vfloat4::zero()), maxv);
 }
 
 /**

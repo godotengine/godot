@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2022 Arm Limited
+// Copyright 2019-2024 Arm Limited
 // Copyright 2008 Jose Fonseca
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -42,11 +42,12 @@
  *
  * With the current implementation ISA support is provided for:
  *
- *     * 1-wide for scalar reference.
- *     * 4-wide for Armv8-A NEON.
- *     * 4-wide for x86-64 SSE2.
- *     * 4-wide for x86-64 SSE4.1.
- *     * 8-wide for x86-64 AVX2.
+ *     * 1-wide for scalar reference
+ *     * 4-wide for Armv8-A NEON
+ *     * 4-wide for x86-64 SSE2
+ *     * 4-wide for x86-64 SSE4.1
+ *     * 8-wide for Armv8-A SVE
+ *     * 8-wide for x86-64 AVX2
  */
 
 #ifndef ASTC_VECMATHLIB_H_INCLUDED
@@ -54,7 +55,14 @@
 
 #if ASTCENC_SSE != 0 || ASTCENC_AVX != 0
 	#include <immintrin.h>
-#elif ASTCENC_NEON != 0
+#endif
+
+#if ASTCENC_SVE != 0
+	#include <arm_sve.h>
+	#include <arm_neon_sve_bridge.h>
+#endif
+
+#if ASTCENC_NEON != 0
 	#include <arm_neon.h>
 #endif
 
@@ -69,8 +77,10 @@
 	#define ASTCENC_NO_INLINE __attribute__ ((noinline))
 #endif
 
+template<typename T> T gatherf_byte_inds(const float* base, const uint8_t* indices);
+
 #if ASTCENC_AVX >= 2
-	/* If we have AVX2 expose 8-wide VLA. */
+	// If we have AVX2 expose 8-wide VLA.
 	#include "astcenc_vecmathlib_sse_4.h"
 	#include "astcenc_vecmathlib_common_4.h"
 	#include "astcenc_vecmathlib_avx2_8.h"
@@ -88,11 +98,15 @@
 	using vint = vint8;
 	using vmask = vmask8;
 
+	using vtable_16x8 = vtable8_16x8;
+	using vtable_32x8 = vtable8_32x8;
+	using vtable_64x8 = vtable8_64x8;
+
 	constexpr auto loada = vfloat8::loada;
 	constexpr auto load1 = vfloat8::load1;
 
 #elif ASTCENC_SSE >= 20
-	/* If we have SSE expose 4-wide VLA, and 4-wide fixed width. */
+	// If we have SSE expose 4-wide VLA, and 4-wide fixed width.
 	#include "astcenc_vecmathlib_sse_4.h"
 	#include "astcenc_vecmathlib_common_4.h"
 
@@ -103,11 +117,46 @@
 	using vint = vint4;
 	using vmask = vmask4;
 
+	using vtable_16x8 = vtable4_16x8;
+	using vtable_32x8 = vtable4_32x8;
+	using vtable_64x8 = vtable4_64x8;
+
 	constexpr auto loada = vfloat4::loada;
 	constexpr auto load1 = vfloat4::load1;
 
+#elif ASTCENC_SVE == 8
+	// Check the compiler is configured with fixed-length 256-bit SVE.
+	#if !defined(__ARM_FEATURE_SVE_BITS) || (__ARM_FEATURE_SVE_BITS != 256)
+		#error "__ARM_FEATURE_SVE_BITS is not set to 256 bits"
+	#endif
+
+	// If we have SVE configured as 8-wide, expose 8-wide VLA.
+	#include "astcenc_vecmathlib_neon_4.h"
+	#include "astcenc_vecmathlib_common_4.h"
+	#include "astcenc_vecmathlib_sve_8.h"
+
+	#define ASTCENC_SIMD_WIDTH 8
+
+	using vfloat = vfloat8;
+
+	#if defined(ASTCENC_NO_INVARIANCE)
+		using vfloatacc = vfloat8;
+	#else
+		using vfloatacc = vfloat4;
+	#endif
+
+	using vint = vint8;
+	using vmask = vmask8;
+
+	using vtable_16x8 = vtable8_16x8;
+	using vtable_32x8 = vtable8_32x8;
+	using vtable_64x8 = vtable8_64x8;
+
+	constexpr auto loada = vfloat8::loada;
+	constexpr auto load1 = vfloat8::load1;
+
 #elif ASTCENC_NEON > 0
-	/* If we have NEON expose 4-wide VLA. */
+	// If we have NEON expose 4-wide VLA.
 	#include "astcenc_vecmathlib_neon_4.h"
 	#include "astcenc_vecmathlib_common_4.h"
 
@@ -117,6 +166,10 @@
 	using vfloatacc = vfloat4;
 	using vint = vint4;
 	using vmask = vmask4;
+
+	using vtable_16x8 = vtable4_16x8;
+	using vtable_32x8 = vtable4_32x8;
+	using vtable_64x8 = vtable4_64x8;
 
 	constexpr auto loada = vfloat4::loada;
 	constexpr auto load1 = vfloat4::load1;
@@ -149,6 +202,10 @@
 	using vfloatacc = vfloat4;
 	using vint = vint4;
 	using vmask = vmask4;
+
+	using vtable_16x8 = vtable4_16x8;
+	using vtable_32x8 = vtable4_32x8;
+	using vtable_64x8 = vtable4_64x8;
 
 	constexpr auto loada = vfloat4::loada;
 	constexpr auto load1 = vfloat4::load1;
@@ -239,8 +296,8 @@ ASTCENC_SIMD_INLINE vfloat atan(vfloat x)
 ASTCENC_SIMD_INLINE vfloat atan2(vfloat y, vfloat x)
 {
 	vfloat z = atan(abs(y / x));
-	vmask xmask = vmask(float_as_int(x).m);
-	return change_sign(select_msb(z, vfloat(astc::PI) - z, xmask), y);
+	vmask xmask = x < vfloat::zero();
+	return change_sign(select(z, vfloat(astc::PI) - z, xmask), y);
 }
 
 /*
