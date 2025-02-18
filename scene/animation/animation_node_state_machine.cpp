@@ -1070,7 +1070,7 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 		}
 		// There is no transition that ends at the next state in the state machine. We can use the default transition
 		next.node = path[0];
-		if (p_state_machine->default_transition == nullptr) {
+		if (p_state_machine->default_transition.is_null()) {
 			next.xfade = 0;
 			next.switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 			next.is_reset = false;
