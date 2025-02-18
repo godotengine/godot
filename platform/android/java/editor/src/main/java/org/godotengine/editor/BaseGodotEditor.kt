@@ -258,12 +258,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		super.onGodotSetupCompleted()
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
+		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
 			}
 		}
 	}
@@ -481,6 +483,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
 	protected open fun overrideOrientationRequest() = true
+
+	protected open fun overrideVolumeButtons() = false
 
 	/**
 	 * Enable long press gestures for the Godot Android editor.
