@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <../directx_headers/include/dxguids/dxguids.h>
+
 namespace AMD {
 namespace AntiLag2DX12 {
 
@@ -112,6 +114,13 @@ namespace AntiLag2DX12 {
         unsigned __int64    uiiReserved[19];
     };
     static_assert(sizeof(APIData_v2) == 176, "Check structure packing compiler settings.");
+} // namespace AntiLag2DX12
+} // namespace AMD
+
+WINADAPTER_IID(AMD::AntiLag2DX12::IAmdExtAntiLagApi, 0x44085fbe, 0xe839, 0x40c5, 0xbf, 0x38, 0x0e, 0xbc, 0x5a, 0xb4, 0xd0, 0xa6);
+
+namespace AMD {
+namespace AntiLag2DX12 {
 
     inline HRESULT Initialize( Context* context, ID3D12Device* device )
     {
@@ -125,7 +134,7 @@ namespace AntiLag2DX12 {
                 PFNAmdExtD3DCreateInterface AmdExtD3DCreateInterface = reinterpret_cast<PFNAmdExtD3DCreateInterface>( (VOID*)GetProcAddress(hModule, "AmdExtD3DCreateInterface") );
                 if ( AmdExtD3DCreateInterface )
                 {
-                    hr = AmdExtD3DCreateInterface( device, __uuidof(IAmdExtAntiLagApi), (void**)&context->m_pAntiLagAPI );
+                    hr = AmdExtD3DCreateInterface( device, uuidof<IAmdExtAntiLagApi>(), (void**)&context->m_pAntiLagAPI );
                     if ( hr == S_OK && context->m_pAntiLagAPI )
                     {
                         APIData_v1 data = {};
