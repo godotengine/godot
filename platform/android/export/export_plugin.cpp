@@ -2974,7 +2974,11 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	}
 
 	if (!FileAccess::exists(keystore)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
+		if (p_debug) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not find debug keystore, unable to export."));
+		} else {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not find release keystore, unable to export."));
+		}
 		return ERR_FILE_CANT_OPEN;
 	}
 
@@ -3506,7 +3510,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					debug_keystore = OS::get_singleton()->get_resource_dir().path_join(debug_keystore).simplify_path();
 				}
 				if (!FileAccess::exists(debug_keystore)) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find debug keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
 				}
 
@@ -3522,7 +3526,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					release_keystore = OS::get_singleton()->get_resource_dir().path_join(release_keystore).simplify_path();
 				}
 				if (!FileAccess::exists(release_keystore)) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find keystore, unable to export."));
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find release keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
 				}
 
