@@ -271,7 +271,7 @@ void AnimationNodeStateMachinePlayback::queue_travel(const StringName &p_state) 
 	_travel_main(p_state, false, false, false);
 }
 
-void AnimationNodeStateMachinePlayback::queue_jump(const StringName &p_state) {
+void AnimationNodeStateMachinePlayback::queue(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
 	_travel_main(p_state, false, true, false);

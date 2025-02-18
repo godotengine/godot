@@ -102,11 +102,11 @@
 				If the path does not connect, the state machine's default transition will be used to jump to the destination state.
 			</description>
 		</method>
-		<method name="queue_jump">
+		<method name="queue">
 			<return type="void" />
 			<param index="0" name="to_node" type="StringName" />
 			<description>
-				Appends a single transition to the requested state to the end of the current state machine travel path, using the state machine's default transition if a direct connection is not available.
+				Queues the requested state, using the state machine's default transition if a direct connection is not available.
 			</description>
 		</method>
 	</methods>

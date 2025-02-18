@@ -333,7 +333,7 @@ public:
 	void travel(const StringName &p_state);
 	void jump(const StringName &p_state);
 	void queue_travel(const StringName &p_state);
-	void queue_jump(const StringName &p_state);
+	void queue(const StringName &p_state);
 	void start(const StringName &p_state, bool p_reset = true);
 	void next();
 	void stop();
