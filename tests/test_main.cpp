@@ -261,7 +261,11 @@ int test_main(int argc, char *argv[]) {
 		delete[] doctest_args;
 	}
 
-	return test_context.run();
+	int res = test_context.run();
+
+	print_coverage_testing_data_structure(rect2_coverage_testing_data_structure);
+
+	return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

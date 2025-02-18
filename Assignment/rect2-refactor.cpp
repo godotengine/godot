@@ -107,119 +107,75 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 	return true;
 }
 
-bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
-	rect2_coverage_testing_data_structure[1]++;
-
-#ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
-		if (unlikely(size.x < 0)) rect2_coverage_testing_data_structure[2]++;
-		if (unlikely(size.y < 0)) rect2_coverage_testing_data_structure[3]++;
-		if (unlikely(p_rect.size.x < 0)) rect2_coverage_testing_data_structure[4]++;
-		if (unlikely(p_rect.size.x < 0)) rect2_coverage_testing_data_structure[5]++;
-		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+bool Rect2::_itrans_over_limit_y(const Vector2 *xf_points) const { //1
+	if (xf_points[0]->y > position.y) {//2
+		return true;
 	}
-#endif
-	//SAT intersection between local and transformed rect2
-
-	Vector2 xf_points[4] = {
-		p_xform.xform(p_rect.position),
-		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y)),
-		p_xform.xform(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
-		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y + p_rect.size.y)),
-	};
-
-	real_t low_limit;
-
-	//base rect2 first (faster)
-
-	if (xf_points[0].y > position.y) {
-		rect2_coverage_testing_data_structure[6]++;
-		goto next1;
+	if (xf_points[1]->y > position.y) {//3
+		return true;
 	}
-	if (xf_points[1].y > position.y) {
-		rect2_coverage_testing_data_structure[7]++;
-		goto next1;
+	if (xf_points[2]->y > position.y) {//4
+		return true;
 	}
-	if (xf_points[2].y > position.y) {
-		rect2_coverage_testing_data_structure[8]++;
-		goto next1;
-	}
-	if (xf_points[3].y > position.y) {
-		rect2_coverage_testing_data_structure[9]++;
-		goto next1;
-	}
-
+	if (xf_points[3]->y > position.y) {//5
+		return true;
+	}	
 	return false;
+}
 
-next1:
+bool Rect2::_itrans_under_limit_y(const Vector2 *xf_points) const { // 1
+	real_t low_limit = position.y + size.y;
 
-	low_limit = position.y + size.y;
-
-	if (xf_points[0].y < low_limit) {
-		rect2_coverage_testing_data_structure[10]++;
-		goto next2;
+	if (xf_points[0]->y < low_limit) { // 2
+		return true;
 	}
-	if (xf_points[1].y < low_limit) {
-		rect2_coverage_testing_data_structure[11]++;
-		goto next2;
+	if (xf_points[1]->y < low_limit) { // 3
+		return true;
 	}
-	if (xf_points[2].y < low_limit) {
-		rect2_coverage_testing_data_structure[12]++;
-		goto next2;
+	if (xf_points[2]->y < low_limit) { // 4
+		return true;
 	}
-	if (xf_points[3].y < low_limit) {
-		rect2_coverage_testing_data_structure[13]++;
-		goto next2;
+	if (xf_points[3]->y < low_limit) { // 5
+		return true;
 	}
-
 	return false;
+}
 
-next2:
-
-	if (xf_points[0].x > position.x) {
-		rect2_coverage_testing_data_structure[14]++;
+bool Rect2::_itrans_over_limit_x(const Vector2 *xf_points) const { // 1
+	if (xf_points[0]->x > position.x) {//2
 		goto next3;
 	}
-	if (xf_points[1].x > position.x) {
-		rect2_coverage_testing_data_structure[15]++;
+	if (xf_points[1]->x > position.x) {//3
 		goto next3;
 	}
-	if (xf_points[2].x > position.x) {
-		rect2_coverage_testing_data_structure[16]++;
+	if (xf_points[2]->x > position.x) {//4
 		goto next3;
 	}
-	if (xf_points[3].x > position.x) {
-		rect2_coverage_testing_data_structure[17]++;
+	if (xf_points[3]->x > position.x) {//5
 		goto next3;
 	}
-
 	return false;
+}
 
-next3:
+bool Rect2::_itrans_under_limit_x(const Vector2 *xf_points) const { // 1
+	real_t low_limit = position.x + size.x;
 
-	low_limit = position.x + size.x;
-
-	if (xf_points[0].x < low_limit) {
-		rect2_coverage_testing_data_structure[18]++;
+	if (xf_points[0]->x < low_limit) {//2
 		goto next4;
 	}
-	if (xf_points[1].x < low_limit) {
-		rect2_coverage_testing_data_structure[19]++;
+	if (xf_points[1]->x < low_limit) {//3
 		goto next4;
 	}
-	if (xf_points[2].x < low_limit) {
-		rect2_coverage_testing_data_structure[20]++;
+	if (xf_points[2]->x < low_limit) {//4
 		goto next4;
 	}
-	if (xf_points[3].x < low_limit) {
-		rect2_coverage_testing_data_structure[21]++;
+	if (xf_points[3]->x < low_limit) {//5
 		goto next4;
 	}
-
 	return false;
+}
 
-next4:
-
+bool Rect2::_itrans_intersections(const Vector2 *xf_points) const { //1
 	Vector2 xf_points2[4] = {
 		position,
 		Vector2(position.x + size.x, position.y),
@@ -257,12 +213,10 @@ next4:
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	if (mina > maxb) {
-		rect2_coverage_testing_data_structure[22]++;
+	if (mina > maxb) {//2
 		return false;
 	}
-	if (minb > maxa) {
-		rect2_coverage_testing_data_structure[23]++;
+	if (minb > maxa) {//3
 		return false;
 	}
 
@@ -296,16 +250,42 @@ next4:
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	if (mina > maxb) {
-		rect2_coverage_testing_data_structure[24]++;
+	if (mina > maxb) {//4
 		return false;
 	}
-	if (minb > maxa) {
-		rect2_coverage_testing_data_structure[25]++;
+	if (minb > maxa) {//5
 		return false;
 	}
 
 	return true;
+}
+
+bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {//1
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) { //5
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+	//SAT intersection between local and transformed rect2
+
+	Vector2 xf_points[4] = {
+		p_xform.xform(p_rect.position),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y)),
+		p_xform.xform(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y + p_rect.size.y)),
+	};
+
+	//base rect2 first (faster)
+
+	if (!_itrans_over_limit_y(&xf_points)) return false; //6
+
+	if (!_itrans_under_limit_x(&xf_points)) return false; //7
+
+	if (!_itrans_over_limit_x(&xf_points)) return false; //8
+
+	if (!_itrans_under_limit_x(&xf_points)) return false; //9
+
+	return _itrans_intersections(&xf_points);
 }
 
 Rect2::operator String() const {

@@ -107,15 +107,9 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 	return true;
 }
 
-bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
-	rect2_coverage_testing_data_structure[1]++;
-
+bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const { //1
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
-		if (unlikely(size.x < 0)) rect2_coverage_testing_data_structure[2]++;
-		if (unlikely(size.y < 0)) rect2_coverage_testing_data_structure[3]++;
-		if (unlikely(p_rect.size.x < 0)) rect2_coverage_testing_data_structure[4]++;
-		if (unlikely(p_rect.size.x < 0)) rect2_coverage_testing_data_structure[5]++;
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) { //5
 		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
 	}
 #endif
@@ -132,20 +126,16 @@ bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_re
 
 	//base rect2 first (faster)
 
-	if (xf_points[0].y > position.y) {
-		rect2_coverage_testing_data_structure[6]++;
+	if (xf_points[0].y > position.y) { //6
 		goto next1;
 	}
-	if (xf_points[1].y > position.y) {
-		rect2_coverage_testing_data_structure[7]++;
+	if (xf_points[1].y > position.y) { //7
 		goto next1;
 	}
-	if (xf_points[2].y > position.y) {
-		rect2_coverage_testing_data_structure[8]++;
+	if (xf_points[2].y > position.y) { //8
 		goto next1;
 	}
-	if (xf_points[3].y > position.y) {
-		rect2_coverage_testing_data_structure[9]++;
+	if (xf_points[3].y > position.y) { //9
 		goto next1;
 	}
 
@@ -155,20 +145,16 @@ next1:
 
 	low_limit = position.y + size.y;
 
-	if (xf_points[0].y < low_limit) {
-		rect2_coverage_testing_data_structure[10]++;
+	if (xf_points[0].y < low_limit) { //10
 		goto next2;
 	}
-	if (xf_points[1].y < low_limit) {
-		rect2_coverage_testing_data_structure[11]++;
+	if (xf_points[1].y < low_limit) { //11
 		goto next2;
 	}
-	if (xf_points[2].y < low_limit) {
-		rect2_coverage_testing_data_structure[12]++;
+	if (xf_points[2].y < low_limit) { //12
 		goto next2;
 	}
-	if (xf_points[3].y < low_limit) {
-		rect2_coverage_testing_data_structure[13]++;
+	if (xf_points[3].y < low_limit) { //13
 		goto next2;
 	}
 
@@ -176,20 +162,16 @@ next1:
 
 next2:
 
-	if (xf_points[0].x > position.x) {
-		rect2_coverage_testing_data_structure[14]++;
+	if (xf_points[0].x > position.x) { //14
 		goto next3;
 	}
-	if (xf_points[1].x > position.x) {
-		rect2_coverage_testing_data_structure[15]++;
+	if (xf_points[1].x > position.x) { //15
 		goto next3;
 	}
-	if (xf_points[2].x > position.x) {
-		rect2_coverage_testing_data_structure[16]++;
+	if (xf_points[2].x > position.x) { //16
 		goto next3;
 	}
-	if (xf_points[3].x > position.x) {
-		rect2_coverage_testing_data_structure[17]++;
+	if (xf_points[3].x > position.x) { //17
 		goto next3;
 	}
 
@@ -199,20 +181,16 @@ next3:
 
 	low_limit = position.x + size.x;
 
-	if (xf_points[0].x < low_limit) {
-		rect2_coverage_testing_data_structure[18]++;
+	if (xf_points[0].x < low_limit) { //18
 		goto next4;
 	}
-	if (xf_points[1].x < low_limit) {
-		rect2_coverage_testing_data_structure[19]++;
+	if (xf_points[1].x < low_limit) { //19
 		goto next4;
 	}
-	if (xf_points[2].x < low_limit) {
-		rect2_coverage_testing_data_structure[20]++;
+	if (xf_points[2].x < low_limit) { //20
 		goto next4;
 	}
-	if (xf_points[3].x < low_limit) {
-		rect2_coverage_testing_data_structure[21]++;
+	if (xf_points[3].x < low_limit) { //21
 		goto next4;
 	}
 
@@ -257,12 +235,10 @@ next4:
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	if (mina > maxb) {
-		rect2_coverage_testing_data_structure[22]++;
+	if (mina > maxb) { //22
 		return false;
 	}
-	if (minb > maxa) {
-		rect2_coverage_testing_data_structure[23]++;
+	if (minb > maxa) { //23
 		return false;
 	}
 
@@ -296,12 +272,10 @@ next4:
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	if (mina > maxb) {
-		rect2_coverage_testing_data_structure[24]++;
+	if (mina > maxb) { //24
 		return false;
 	}
-	if (minb > maxa) {
-		rect2_coverage_testing_data_structure[25]++;
+	if (minb > maxa) { //25
 		return false;
 	}
 
