@@ -37,8 +37,6 @@
 #include "tests/test_macros.h"
 
 namespace TestButton {
-
-// Test case for checking the hover state of the button.
 TEST_CASE("[SceneTree][Button] is_hovered() simulation") {
 	// Create new button instance.
 	Button *button = memnew(Button);
@@ -69,7 +67,6 @@ TEST_CASE("[SceneTree][Button] is_hovered() simulation") {
 	memdelete(button);
 }
 
-// Test case for checking the button press event.
 TEST_CASE("[SceneTree][Button] press simulation and signal check") {
 	// Create new button instance.
 	Button *button = memnew(Button);
