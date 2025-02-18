@@ -1646,7 +1646,6 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		rendering_device->screen_create(window_id);
 	}
 #endif
-	wd.initialized = true;
 	return window_id;
 }
 
@@ -1674,6 +1673,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	if (p_id != MAIN_WINDOW_ID) {
 		_update_window_style(p_id);
 	}
+	wd.initialized = true;
 
 	if (wd.maximized) {
 		ShowWindow(wd.hWnd, SW_SHOWMAXIMIZED);
@@ -6998,7 +6998,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	windows[MAIN_WINDOW_ID].initialized = true;
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)
