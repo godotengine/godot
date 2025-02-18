@@ -35,6 +35,8 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
+#include "editor/editor_settings.h"
+#include "modules/regex/regex.h"
 #include "scene/theme/theme_db.h"
 
 void CodeEdit::_apply_project_settings() {
@@ -1872,7 +1874,11 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
+
+	String es = EditorSettings::get_singleton()->get("text_editor/behavior/comments/regex_code_region_excluded_suffixes");
+	RegEx re = RegEx("^\\s*" + code_region_start_string + "(?![" + es + "])");
+
+	return re.search(get_line(p_line)).is_valid();
 }
 
 bool CodeEdit::is_line_code_region_end(int p_line) const {
@@ -1883,7 +1889,11 @@ bool CodeEdit::is_line_code_region_end(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	return get_line(p_line).strip_edges().begins_with(code_region_end_string);
+
+	String es = EditorSettings::get_singleton()->get("text_editor/behavior/comments/regex_code_region_excluded_suffixes");
+	RegEx re = RegEx("^\\s*" + code_region_end_string + "(?![" + es + "])");
+
+	return re.search(get_line(p_line)).is_valid();
 }
 
 /* Delimiters */

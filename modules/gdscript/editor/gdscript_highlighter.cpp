@@ -38,6 +38,8 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
 
+#include "modules/regex/regex.h"
+
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
 
@@ -148,6 +150,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							if (start_key[k] != str[from + k]) {
 								match = false;
 								break;
+							}
+						}
+						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION) {
+							String es = EditorSettings::get_singleton()->get("text_editor/behavior/comments/regex_code_region_excluded_suffixes");
+							RegEx re_region = RegEx("^\\s*#region(?![" + es + "])");
+							RegEx re_endregion = RegEx("^\\s*#endregion(?![" + es + "])");
+
+							if (re_region.search(str).is_null() && re_endregion.search(str).is_null()) {
+								match = false;
 							}
 						}
 						if (!match) {

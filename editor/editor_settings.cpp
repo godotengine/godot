@@ -722,6 +722,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior: Documentation
 	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
 
+	// Behavior: Comments
+	_initial_set("text_editor/behavior/comments/regex_code_region_excluded_suffixes", "\\w=+\\-*\\/\\[.");
+
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true, true);
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false, true);
