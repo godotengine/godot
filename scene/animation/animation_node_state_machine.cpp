@@ -257,13 +257,24 @@ void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
 void AnimationNodeStateMachinePlayback::travel(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, false, false);
+	_travel_main(p_state, false, false, true);
 }
 
 void AnimationNodeStateMachinePlayback::jump(const StringName &p_state) {
 	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
 	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
-	_travel_main(p_state, false, true);
+	_travel_main(p_state, false, true, true);
+}
+void AnimationNodeStateMachinePlayback::queue_travel(const StringName &p_state) {
+	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
+	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
+	_travel_main(p_state, false, false, false);
+}
+
+void AnimationNodeStateMachinePlayback::queue_jump(const StringName &p_state) {
+	ERR_FAIL_COND_EDMSG(is_grouped, "Grouped AnimationNodeStateMachinePlayback must be handled by parent AnimationNodeStateMachinePlayback. You need to retrieve the parent Root/Nested AnimationNodeStateMachine.");
+	ERR_FAIL_COND_EDMSG(String(p_state).contains("/Start") || String(p_state).contains("/End"), "Grouped AnimationNodeStateMachinePlayback doesn't allow to play Start/End directly. Instead, play the prev or next state of group in the parent AnimationNodeStateMachine.");
+	_travel_main(p_state, false, true, false);
 }
 
 void AnimationNodeStateMachinePlayback::start(const StringName &p_state, bool p_reset) {
@@ -282,11 +293,12 @@ void AnimationNodeStateMachinePlayback::stop() {
 	_stop_main();
 }
 
-void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_reset_on_teleport, bool p_force_jump) {
+void AnimationNodeStateMachinePlayback::_travel_main(const StringName &p_state, bool p_reset_on_teleport, bool p_force_jump, bool p_retain_path) {
 	travel_request = p_state;
 	reset_request_on_teleport = p_reset_on_teleport;
 	stop_request = false;
 	jump_request = p_force_jump;
+	retain_path_request = p_retain_path;
 }
 
 void AnimationNodeStateMachinePlayback::_start_main(const StringName &p_state, bool p_reset) {
@@ -786,7 +798,12 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 
 			// Process to travel.
 			if (can_travel) {
-				path = new_path;
+				if (retain_path_request) {
+					retain_path_request = false;
+					path.append_array(new_path);
+				} else {
+					path = new_path;
+				}
 			} else {
 				// Can't travel via explicit transitions, then travel directly (will use default_transition).
 				jump_request = true;
@@ -795,7 +812,11 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 
 		if (jump_request) {
 			if (p_state_machine->states.has(temp_travel_request)) {
-				path.clear();
+				if (retain_path_request) {
+					retain_path_request = false;
+				} else {
+					path.clear();
+				}
 				if (p_state_machine->is_allow_transition_to_self() || current != temp_travel_request) {
 					path.push_back(temp_travel_request);
 				}

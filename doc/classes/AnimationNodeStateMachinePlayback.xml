@@ -91,7 +91,22 @@
 			<return type="void" />
 			<param index="0" name="to_node" type="StringName" />
 			<description>
-				Transitions from the current state to another one, using the state machine's default transition to jump to the destination state.
+				Transitions from the current state directly to another one, using the state machine's default transition if a direct connection is not available.
+			</description>
+		</method>
+		<method name="queue_travel">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<description>
+				Appends a series of transitions from the last state in the current travel path to another one, following the shortest path.
+				If the path does not connect, the state machine's default transition will be used to jump to the destination state.
+			</description>
+		</method>
+		<method name="queue_jump">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<description>
+				Appends a single transition to the requested state to the end of the current state machine travel path, using the state machine's default transition if a direct connection is not available.
 			</description>
 		</method>
 	</methods>
