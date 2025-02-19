@@ -847,6 +847,13 @@ private:
 
 	// Preview Sun and Environment
 
+	class PreviewSunEnvPopup : public PopupPanel {
+		GDCLASS(PreviewSunEnvPopup, PopupPanel);
+
+	protected:
+		virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	};
+
 	uint32_t world_env_count = 0;
 	uint32_t directional_light_count = 0;
 
@@ -860,12 +867,8 @@ private:
 	EditorSpinSlider *sun_angle_azimuth = nullptr;
 	ColorPickerButton *sun_color = nullptr;
 	EditorSpinSlider *sun_energy = nullptr;
-	EditorSpinSlider *sun_max_distance = nullptr;
+	EditorSpinSlider *sun_shadow_max_distance = nullptr;
 	Button *sun_add_to_scene = nullptr;
-
-	void _sun_direction_draw();
-	void _sun_direction_input(const Ref<InputEvent> &p_event);
-	void _sun_direction_angle_set();
 
 	Vector2 sun_rotation;
 
@@ -896,6 +899,22 @@ private:
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;
+
+	void _sun_direction_draw();
+	void _sun_direction_input(const Ref<InputEvent> &p_event);
+	void _sun_direction_set_altitude(float p_altitude);
+	void _sun_direction_set_azimuth(float p_azimuth);
+	void _sun_set_color(const Color &p_color);
+	void _sun_set_energy(float p_energy);
+	void _sun_set_shadow_max_distance(float p_shadow_max_distance);
+
+	void _environ_set_sky_color(const Color &p_color);
+	void _environ_set_ground_color(const Color &p_color);
+	void _environ_set_sky_energy(float p_energy);
+	void _environ_set_ao();
+	void _environ_set_glow();
+	void _environ_set_tonemap();
+	void _environ_set_gi();
 
 	void _load_default_preview_settings();
 	void _update_preview_environment();
