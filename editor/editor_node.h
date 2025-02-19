@@ -97,10 +97,7 @@ class ProgressDialog;
 class ProjectExportDialog;
 class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
-class SurfaceUpgradeTool;
-class SurfaceUpgradeDialog;
-class UIDUpgradeTool;
-class UIDUpgradeDialog;
+class ProjectUpgradeTool;
 
 struct EditorProgress {
 	String task;
@@ -166,8 +163,7 @@ public:
 
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
-		TOOLS_SURFACE_UPGRADE,
-		TOOLS_UID_UPGRADE,
+		TOOLS_PROJECT_UPGRADE,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -226,7 +222,6 @@ public:
 
 private:
 	friend class EditorSceneTabs;
-	friend class SurfaceUpgradeTool;
 
 	enum {
 		MAX_INIT_CALLBACKS = 128,
@@ -460,16 +455,8 @@ private:
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
 
-	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
-	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
-
-	bool run_surface_upgrade_tool = false;
-
-	UIDUpgradeTool *uid_upgrade_tool = nullptr;
-	UIDUpgradeDialog *uid_upgrade_dialog = nullptr;
-
-	bool run_uid_upgrade_tool = false;
-	bool should_prompt_uid_upgrade_tool = false;
+	ProjectUpgradeTool *project_upgrade_tool = nullptr;
+	bool run_project_upgrade_tool = false;
 
 	bool was_window_windowed_last = false;
 
