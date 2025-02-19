@@ -133,8 +133,7 @@ void TreeItem::_change_tree(Tree *p_tree) {
 		}
 
 		if (tree->drop_mode_over == this) {
-			tree->drop_mode_over = nullptr;
-			tree->dropping_unfold_timer->stop();
+			tree->_reset_drop_mode_over();
 		}
 
 		if (tree->single_select_defer == this) {
@@ -4067,6 +4066,13 @@ void Tree::_on_dropping_unfold_timer_timeout() {
 	}
 }
 
+void Tree::_reset_drop_mode_over() {
+	drop_mode_over = nullptr;
+	if (!dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->stop();
+	}
+}
+
 bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
 	ERR_FAIL_NULL_V_MSG(s, false, "No item selected.");
@@ -5751,8 +5757,7 @@ void Tree::set_drop_mode_flags(int p_flags) {
 	}
 	drop_mode_flags = p_flags;
 	if (drop_mode_flags == 0) {
-		drop_mode_over = nullptr;
-		dropping_unfold_timer->stop();
+		_reset_drop_mode_over();
 	}
 
 	queue_redraw();
