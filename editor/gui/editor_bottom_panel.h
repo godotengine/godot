@@ -86,6 +86,7 @@ public:
 	void move_item_to_end(Control *p_item);
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
+	void set_expanded(bool p_expanded);
 
 	EditorBottomPanel();
 };
