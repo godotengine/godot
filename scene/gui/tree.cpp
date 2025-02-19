@@ -4012,9 +4012,10 @@ void Tree::_determine_hovered_item() {
 		if (drop_mode_flags) {
 			if (it != drop_mode_over) {
 				drop_mode_over = it;
-				dropping_unfold_timer->stop();
 				if (enable_drag_unfolding) {
 					dropping_unfold_timer->start(theme_cache.dragging_unfold_wait_msec * 0.001);
+				} else if (!dropping_unfold_timer->is_stopped()) {
+					dropping_unfold_timer->stop();
 				}
 				queue_redraw();
 			}
