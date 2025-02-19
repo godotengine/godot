@@ -262,7 +262,7 @@ bool profile_gpu = false;
 // Constants.
 
 static const String NULL_DISPLAY_DRIVER("headless");
-static const String NULL_AUDIO_DRIVER("Dummy");
+static const String NULL_AUDIO_DRIVER("dummy");
 
 // The length of the longest column in the command-line help we should align to
 // (excluding the 2-space left and right margins).
@@ -2550,29 +2550,39 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
 
-	GLOBAL_DEF_NOVAL("display/display_server/driver", "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM_SUGGESTION, "default,windows,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
+	GLOBAL_DEF("display/display_server/driver", "default");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "display/display_server/driver.windows", PROPERTY_HINT_ENUM, "default,windows,headless"), "default");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM, "default,x11,wayland,headless"), "default");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM, "default,android,headless"), "default");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM, "default,ios,headless"), "default");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM, "default,macos,headless"), "default");
 
-	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
+	GLOBAL_DEF_RST("audio/driver/driver", "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.windows", PROPERTY_HINT_ENUM, "auto,wasapi,xaudio2,dummy"), "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.linuxbsd", PROPERTY_HINT_ENUM, "auto,pulseaudio,alsa,dummy"), "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.web", PROPERTY_HINT_ENUM, "auto,audioworklet,dummy"), "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.android", PROPERTY_HINT_ENUM, "auto,opensles,dummy"), "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.ios", PROPERTY_HINT_ENUM, "auto,coreaudio,dummy"), "auto");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "audio/driver/driver.macos", PROPERTY_HINT_ENUM, "auto,coreaudio,dummy"), "auto");
+
 	if (audio_driver.is_empty()) { // Specified in project.godot.
 		if (project_manager) {
 			// The project manager doesn't need to play sound (TTS audio output is not emitted by Godot, but by the system itself).
 			// Disable audio output so it doesn't appear in the list of applications outputting sound in the OS.
 			// On macOS, this also prevents the project manager from inhibiting suspend.
-			audio_driver = "Dummy";
+			audio_driver = "dummy";
 		} else {
 			audio_driver = GLOBAL_GET("audio/driver/driver");
+			if (audio_driver == "auto") {
+				audio_driver = String(AudioDriverManager::get_driver(0)->get_name()).to_lower();
+			}
 		}
 	}
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
-	DEV_ASSERT(NULL_AUDIO_DRIVER == AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name());
+	DEV_ASSERT(NULL_AUDIO_DRIVER == String(AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name()).to_lower());
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
-		if (audio_driver == AudioDriverManager::get_driver(i)->get_name()) {
+		if (audio_driver == String(AudioDriverManager::get_driver(i)->get_name()).to_lower()) {
 			audio_driver_idx = i;
 			break;
 		}
@@ -3120,8 +3130,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 	{
 		OS::get_singleton()->benchmark_begin_measure("Servers", "Tablet Driver");
 
-		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
-		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "auto,winink,wintab,dummy"), "");
+		GLOBAL_DEF_RST("input_devices/pen_tablet/driver", "");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "auto,winink,wintab,dummy"), "");
 
 		if (tablet_driver.is_empty()) { // specified in project.godot
 			tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
