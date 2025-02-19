@@ -4890,10 +4890,9 @@ void DisplayServerX11::process_events() {
 					MutexLock mutex_lock(events_mutex);
 					XUnsetICFocus(wd.xic);
 					XUnmapWindow(x11_display, wd.x11_xim_window);
-					wd.ime_active = false;
+					wd.ime_in_progress = false;
 					im_text = String();
 					im_selection = Vector2i();
-					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
 				wd.focused = false;
 
