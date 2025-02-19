@@ -1790,7 +1790,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_ENTER: {
 			if (dropping_for_unfold) {
-				dropping_unfold_timer->start(EDITOR_GET("interface/editor/dragging_unfold_wait_seconds"));
+				dropping_unfold_timer->start();
 			}
 			queue_redraw();
 		} break;
@@ -1801,6 +1801,12 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 			queue_redraw();
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+				dropping_unfold_timer->set_wait_time(EDITOR_GET("interface/editor/dragging_unfold_wait_seconds"));
+			}
+		}
 	}
 }
 
