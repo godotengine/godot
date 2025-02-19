@@ -2913,12 +2913,13 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 			r_current_batch->tex_info = tex_info;
 		}
 
+		_update_transform_2d_to_mat2x3(base_transform, world);
 		InstanceData *instance_data = new_instance_data(world, lights, base_flags, r_index, uniforms_ofs, tex_info);
 
 		Rect2 src_rect;
 		Rect2 dst_rect;
 
-		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		dst_rect = p_item->rect;
 		if (dst_rect.size.width < 0) {
 			dst_rect.position.x += dst_rect.size.width;
 			dst_rect.size.width *= -1;
