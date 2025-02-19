@@ -199,6 +199,12 @@
 #endif // _3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 
+void print_coverage_testing_data_structure(int coverage_array[100]) {
+	for (int i = 0; i < 100; i++) {
+		std::cout << "Path " << i << " was covered " << coverage_array[i] << " times." << std::endl;
+	}
+}
+
 int test_main(int argc, char *argv[]) {
 	bool run_tests = true;
 
@@ -264,6 +270,7 @@ int test_main(int argc, char *argv[]) {
 	int res = test_context.run();
 
 	print_coverage_testing_data_structure(rect2_coverage_testing_data_structure);
+	print_coverage_testing_data_structure(basis_coverage_testing_data_structure);
 
 	return res;
 }

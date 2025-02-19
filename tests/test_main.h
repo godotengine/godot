@@ -31,6 +31,8 @@
 #ifndef TEST_MAIN_H
 #define TEST_MAIN_H
 
+void print_coverage_testing_data_structure(int coverage_array[100]);
+
 int test_main(int argc, char *argv[]);
 
 #endif // TEST_MAIN_H

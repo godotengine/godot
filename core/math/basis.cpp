@@ -33,6 +33,8 @@
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 
+int basis_coverage_testing_data_structure[100];
+
 #define cofac(row1, col1, row2, col2) \
 	(rows[row1][col1] * rows[row2][col2] - rows[row1][col2] * rows[row2][col1])
 
@@ -460,8 +462,11 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 	// visually noticeable.
 	const real_t epsilon = 0.00000025;
 
+	basis_coverage_testing_data_structure[1]++;
+
 	switch (p_order) {
 		case EulerOrder::XYZ: {
+			basis_coverage_testing_data_structure[2]++;
 			// Euler angles in XYZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -472,8 +477,15 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			Vector3 euler;
 			real_t sy = rows[0][2];
 			if (sy < (1.0f - epsilon)) {
+				basis_coverage_testing_data_structure[3]++;
 				if (sy > -(1.0f - epsilon)) {
+					basis_coverage_testing_data_structure[4]++;
 					// is this a pure Y rotation?
+					if (rows[1][0] == 0) basis_coverage_testing_data_structure[5]++; // test
+					if (rows[0][1] == 0) basis_coverage_testing_data_structure[6]++;
+					if (rows[1][2] == 0) basis_coverage_testing_data_structure[7]++;
+					if (rows[2][1] == 0) basis_coverage_testing_data_structure[8]++;
+					if (rows[1][1] == 0) basis_coverage_testing_data_structure[9]++; // test
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[1][2] == 0 && rows[2][1] == 0 && rows[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
 						euler.x = 0;
@@ -497,6 +509,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		}
 		case EulerOrder::XZY: {
+			basis_coverage_testing_data_structure[10]++;
 			// Euler angles in XZY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -507,7 +520,9 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			Vector3 euler;
 			real_t sz = rows[0][1];
 			if (sz < (1.0f - epsilon)) {
+				basis_coverage_testing_data_structure[11]++;
 				if (sz > -(1.0f - epsilon)) {
+					basis_coverage_testing_data_structure[12]++;
 					euler.x = Math::atan2(rows[2][1], rows[1][1]);
 					euler.y = Math::atan2(rows[0][2], rows[0][0]);
 					euler.z = Math::asin(-sz);
@@ -526,6 +541,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		}
 		case EulerOrder::YXZ: {
+			basis_coverage_testing_data_structure[13]++;
 			// Euler angles in YXZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -538,8 +554,15 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			real_t m12 = rows[1][2];
 
 			if (m12 < (1 - epsilon)) {
+				basis_coverage_testing_data_structure[14]++;
 				if (m12 > -(1 - epsilon)) {
+					basis_coverage_testing_data_structure[15]++;
 					// is this a pure X rotation?
+					if (rows[1][0] == 0) basis_coverage_testing_data_structure[16]++; // test
+					if (rows[0][1] == 0) basis_coverage_testing_data_structure[17]++;
+					if (rows[0][2] == 0) basis_coverage_testing_data_structure[18]++;
+					if (rows[2][0] == 0) basis_coverage_testing_data_structure[19]++;
+					if (rows[0][0] == 0) basis_coverage_testing_data_structure[20]++; // test
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[0][2] == 0 && rows[2][0] == 0 && rows[0][0] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
 						euler.x = atan2(-m12, rows[1][1]);
@@ -564,6 +587,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		}
 		case EulerOrder::YZX: {
+			basis_coverage_testing_data_structure[21]++;
 			// Euler angles in YZX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -574,7 +598,9 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			Vector3 euler;
 			real_t sz = rows[1][0];
 			if (sz < (1.0f - epsilon)) {
+				basis_coverage_testing_data_structure[22]++;
 				if (sz > -(1.0f - epsilon)) {
+					basis_coverage_testing_data_structure[23]++;
 					euler.x = Math::atan2(-rows[1][2], rows[1][1]);
 					euler.y = Math::atan2(-rows[2][0], rows[0][0]);
 					euler.z = Math::asin(sz);
@@ -593,6 +619,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		} break;
 		case EulerOrder::ZXY: {
+			basis_coverage_testing_data_structure[24]++;
 			// Euler angles in ZXY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -602,7 +629,9 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			Vector3 euler;
 			real_t sx = rows[2][1];
 			if (sx < (1.0f - epsilon)) {
+				basis_coverage_testing_data_structure[25]++;
 				if (sx > -(1.0f - epsilon)) {
+					basis_coverage_testing_data_structure[26]++;
 					euler.x = Math::asin(sx);
 					euler.y = Math::atan2(-rows[2][0], rows[2][2]);
 					euler.z = Math::atan2(-rows[0][1], rows[1][1]);
@@ -621,6 +650,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		} break;
 		case EulerOrder::ZYX: {
+			basis_coverage_testing_data_structure[27]++;
 			// Euler angles in ZYX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -630,7 +660,9 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			Vector3 euler;
 			real_t sy = rows[2][0];
 			if (sy < (1.0f - epsilon)) {
+				basis_coverage_testing_data_structure[28]++;
 				if (sy > -(1.0f - epsilon)) {
+					basis_coverage_testing_data_structure[29]++;
 					euler.x = Math::atan2(rows[2][1], rows[2][2]);
 					euler.y = Math::asin(-sy);
 					euler.z = Math::atan2(rows[1][0], rows[0][0]);
@@ -649,6 +681,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			return euler;
 		}
 		default: {
+			basis_coverage_testing_data_structure[30]++;
 			ERR_FAIL_V_MSG(Vector3(), "Invalid parameter for get_euler(order)");
 		}
 	}
