@@ -4061,7 +4061,7 @@ void Tree::_determine_hovered_item() {
 }
 
 void Tree::_on_dropping_unfold_timer_timeout() {
-	if (drop_mode_over && drop_mode_section == 0) {
+	if (enable_drag_unfolding && drop_mode_over && drop_mode_section == 0) {
 		drop_mode_over->set_collapsed(false);
 	}
 }
@@ -5737,6 +5737,7 @@ bool Tree::is_recursive_folding_enabled() const {
 
 void Tree::set_enable_drag_unfolding(bool p_enable) {
 	enable_drag_unfolding = p_enable;
+	dropping_unfold_timer->stop();
 }
 
 bool Tree::is_drag_unfolding_enabled() const {
