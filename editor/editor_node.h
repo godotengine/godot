@@ -288,7 +288,6 @@ private:
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
-	OptionButton *renderer = nullptr;
 
 #ifdef ANDROID_ENABLED
 	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar and main_hbox.
@@ -296,8 +295,6 @@ private:
 	TouchActionsPanel *touch_actions_panel = nullptr;
 	void _touch_actions_panel_mode_changed();
 #endif
-
-	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	// Split containers.
 	DockSplitContainer *left_l_vsplit = nullptr;
@@ -623,11 +620,6 @@ private:
 	void _translation_resources_changed();
 	void _queue_translation_notification();
 	void _propagate_translation_notification();
-
-	void _renderer_selected(int p_index);
-	void _update_renderer_color();
-	String _to_rendering_method_display_name(const String &p_rendering_method) const;
-	void _set_renderer_name_save_and_restart(const String &p_rendering_method);
 
 	void _exit_editor(int p_exit_code);
 

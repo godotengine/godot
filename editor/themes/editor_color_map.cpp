@@ -171,6 +171,10 @@ void EditorColorMap::create() {
 	add_conversion_exception("EditorBoneHandle");
 	add_conversion_exception("Editor3DHandle");
 	add_conversion_exception("Godot");
+	add_conversion_exception("Vulkan");
+	add_conversion_exception("Direct3D12");
+	add_conversion_exception("Metal");
+	add_conversion_exception("OpenGL3");
 	add_conversion_exception("Sky");
 	add_conversion_exception("EditorControlAnchor");
 	add_conversion_exception("DefaultProjectIcon");
