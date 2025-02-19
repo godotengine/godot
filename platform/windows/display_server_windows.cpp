@@ -1646,7 +1646,6 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		rendering_device->screen_create(window_id);
 	}
 #endif
-	wd.initialized = true;
 	return window_id;
 }
 
@@ -1674,6 +1673,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	if (p_id != MAIN_WINDOW_ID) {
 		_update_window_style(p_id);
 	}
+	wd.initialized = true;
 
 	if (wd.maximized) {
 		ShowWindow(wd.hWnd, SW_SHOWMAXIMIZED);
@@ -4253,12 +4253,16 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			}
 		}
 	} else {
-		// Send to all windows.
-		for (const KeyValue<WindowID, WindowData> &E : windows) {
-			const Callable callable = E.value.input_event_callback;
+		// Send to all windows. Copy all pending callbacks, since callback can erase window.
+		Vector<Callable> cbs;
+		for (KeyValue<WindowID, WindowData> &E : windows) {
+			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call(p_event);
+				cbs.push_back(callable);
 			}
+		}
+		for (const Callable &cb : cbs) {
+			cb.call(p_event);
 		}
 	}
 
@@ -6998,7 +7002,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	windows[MAIN_WINDOW_ID].initialized = true;
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)
