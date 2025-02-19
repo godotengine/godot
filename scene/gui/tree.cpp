@@ -5487,15 +5487,14 @@ Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const
 			}
 		}
 
-		if (x > col_width) {
-			col_ofs += col_width;
-			x -= col_width;
-			limit_w -= col_width;
-			continue;
+		if (x < col_width) {
+			col = i;
+			break;
 		}
 
-		col = i;
-		break;
+		col_ofs += col_width;
+		x -= col_width;
+		limit_w -= col_width;
 	}
 
 	if (col >= 0) {
