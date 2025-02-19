@@ -6124,15 +6124,15 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			WindowRect.top = wpos.y;
 			WindowRect.bottom = wpos.y + p_rect.size.y;
 		}
+	}
 
-		WindowRect.left += offset.x;
-		WindowRect.right += offset.x;
-		WindowRect.top += offset.y;
-		WindowRect.bottom += offset.y;
+	WindowRect.left += offset.x;
+	WindowRect.right += offset.x;
+	WindowRect.top += offset.y;
+	WindowRect.bottom += offset.y;
 
-		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-			AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
-		}
+	if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
 	WindowID id = window_id_counter;
