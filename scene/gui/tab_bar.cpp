@@ -207,6 +207,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 
+		if (close_with_middle_mouse && mb->is_pressed() && mb->get_button_index() == MouseButton::MIDDLE) {
+			emit_signal(SNAME("tab_close_pressed"), hover);
+		}
+
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
 			Point2 pos = mb->get_position();
 
@@ -1834,6 +1838,14 @@ Rect2 TabBar::get_tab_rect(int p_tab) const {
 	}
 }
 
+void TabBar::set_close_with_middle_mouse(bool p_scroll_close) {
+	close_with_middle_mouse = p_scroll_close;
+}
+
+bool TabBar::get_close_with_middle_mouse() const {
+	return close_with_middle_mouse;
+}
+
 void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 	ERR_FAIL_INDEX(p_policy, CLOSE_BUTTON_MAX);
 
@@ -1975,6 +1987,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &TabBar::ensure_tab_visible);
 	ClassDB::bind_method(D_METHOD("get_tab_rect", "tab_idx"), &TabBar::get_tab_rect);
 	ClassDB::bind_method(D_METHOD("move_tab", "from", "to"), &TabBar::move_tab);
+	ClassDB::bind_method(D_METHOD("set_close_with_middle_mouse", "enabled"), &TabBar::set_close_with_middle_mouse);
+	ClassDB::bind_method(D_METHOD("get_close_with_middle_mouse"), &TabBar::get_close_with_middle_mouse);
 	ClassDB::bind_method(D_METHOD("set_tab_close_display_policy", "policy"), &TabBar::set_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("get_tab_close_display_policy"), &TabBar::get_tab_close_display_policy);
 	ClassDB::bind_method(D_METHOD("set_max_tab_width", "width"), &TabBar::set_max_tab_width);
@@ -2005,6 +2019,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_with_middle_mouse"), "set_close_with_middle_mouse", "get_close_with_middle_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");

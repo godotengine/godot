@@ -110,6 +110,7 @@ private:
 	int cb_hover = -1;
 	bool cb_pressing = false;
 	CloseButtonDisplayPolicy cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
+	bool close_with_middle_mouse = true;
 
 	int hover = -1; // Hovered tab.
 	int max_width = 0;
@@ -248,6 +249,9 @@ public:
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
 	CloseButtonDisplayPolicy get_tab_close_display_policy() const;
+
+	void set_close_with_middle_mouse(bool p_scroll_close);
+	bool get_close_with_middle_mouse() const;
 
 	void set_tab_count(int p_count);
 	int get_tab_count() const;

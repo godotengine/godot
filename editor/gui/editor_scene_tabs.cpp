@@ -121,15 +121,10 @@ void EditorSceneTabs::_scene_tab_exit() {
 }
 
 void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
-	int tab_id = scene_tabs->get_hovered_tab();
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (tab_id >= 0) {
-			if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_pressed()) {
-				_scene_tab_closed(tab_id);
-			}
-		} else if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 			int tab_buttons = 0;
 			if (scene_tabs->get_offset_buttons_visible()) {
 				tab_buttons = get_theme_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + get_theme_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
