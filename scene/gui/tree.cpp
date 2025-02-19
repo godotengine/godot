@@ -5744,7 +5744,9 @@ bool Tree::is_recursive_folding_enabled() const {
 
 void Tree::set_enable_drag_unfolding(bool p_enable) {
 	enable_drag_unfolding = p_enable;
-	dropping_unfold_timer->stop();
+	if (!dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->stop();
+	}
 }
 
 bool Tree::is_drag_unfolding_enabled() const {
