@@ -781,6 +781,10 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        if not env["use_llvm"]:
+            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
+            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
