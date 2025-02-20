@@ -37,7 +37,7 @@
 #include "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "main/main.h"
 
 #include <dlfcn.h>
