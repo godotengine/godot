@@ -211,8 +211,6 @@ def run(target, source, env):
 
 #include "core/object/script_instance.h"
 
-#include <utility>
-
 #ifdef TOOLS_ENABLED
 #define _GDVIRTUAL_TRACK(m_virtual, m_initialized)\\
 	if (_get_extension()->reloadable) {\\

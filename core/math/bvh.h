@@ -51,6 +51,8 @@
 // and pairable_mask is either 0 if static, or set to all if non static
 
 #include "bvh_tree.h"
+
+#include "core/math/geometry_3d.h"
 #include "core/os/mutex.h"
 
 #define BVHTREE_CLASS BVH_Tree<T, NUM_TREES, 2, MAX_ITEMS, USER_PAIR_TEST_FUNCTION, USER_CULL_TEST_FUNCTION, USE_PAIRS, BOUNDS, POINT>

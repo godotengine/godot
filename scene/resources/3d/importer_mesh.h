@@ -36,8 +36,6 @@
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 
-#include <cstdint>
-
 // The following classes are used by importers instead of ArrayMesh and MeshInstance3D
 // so the data is not registered (hence, quality loss), importing happens faster and
 // its easier to modify before saving
