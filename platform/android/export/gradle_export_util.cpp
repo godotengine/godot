@@ -169,18 +169,57 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_sparse) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
-	String path = p_path.simplify_path();
-	if (path.begins_with("uid://")) {
-		path = ResourceUID::uid_to_path(path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
 	}
-	const String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
 
-	print_verbose("Saving project files from " + path + " into " + dst_path);
-	Error err = store_file_at_path(dst_path, p_data);
+	Error err = OK;
+	if (p_sparse) {
+		Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
+		if (err != OK) {
+			return err;
+		}
+
+		EditorExportPlatform::SavedData sd;
+		sd.path_utf8 = simplified_path.trim_prefix("res://").utf8();
+		sd.ofs = 0;
+		sd.size = p_data.size();
+		err = EditorExportPlatform::_encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
+		if (err != OK) {
+			return err;
+		}
+
+		Vector<uint8_t> enc_data;
+		enc_data.resize(ftmp->get_length());
+		ftmp->seek(0);
+		ftmp->get_buffer(enc_data.ptrw(), enc_data.size());
+		ftmp.unref();
+
+		const String dst_path = export_data->assets_directory + String("/") + export_data->pd.path.get_basename() + "_" + simplified_path.trim_prefix("res://").sha256_text();
+		print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+		err = store_file_at_path(dst_path, enc_data);
+
+		// Store MD5 of original file.
+		{
+			unsigned char hash[16];
+			CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
+			sd.md5.resize(16);
+			for (int i = 0; i < 16; i++) {
+				sd.md5.write[i] = hash[i];
+			}
+		}
+
+		export_data->pd.file_ofs.push_back(sd);
+	} else {
+		const String dst_path = simplified_path.replace_first("res://", export_data->assets_directory + "/");
+		print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
+		err = store_file_at_path(dst_path, p_data);
+	}
 	return err;
 }
 
