@@ -2618,6 +2618,17 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 
 		} break; // astc 8x8
 
+		// DRS: Add support for the depth format we need to use.
+		case RD::DATA_FORMAT_D16_UNORM: {
+			// Not the real image format.
+			r_format.image_format = Image::FORMAT_RH;
+			r_format.rd_format = RD::DATA_FORMAT_D16_UNORM;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+
 		default: {
 			ERR_FAIL_MSG("Unsupported image format");
 		}

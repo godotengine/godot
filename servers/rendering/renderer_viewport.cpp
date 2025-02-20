@@ -837,6 +837,9 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
+				// DRS: Update materials so that changes we made to uniforms in xr_interface->pre_draw_viewport() take effect.
+				RSG::scene->update();
+
 				// and draw viewport
 				_draw_viewport(vp);
 
