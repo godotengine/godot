@@ -2261,10 +2261,6 @@ void OpenXRAPI::pre_render() {
 		create_main_swapchains(swapchain_size);
 	}
 
-	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		wrapper->on_pre_render();
-	}
-
 	void *view_locate_info_next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 		void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
@@ -2335,6 +2331,10 @@ void OpenXRAPI::pre_render() {
 
 	// Reset this, we haven't found a viewport for output yet
 	render_state.has_xr_viewport = false;
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_pre_render();
+	}
 }
 
 bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
