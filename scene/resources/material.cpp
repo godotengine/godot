@@ -1365,6 +1365,15 @@ void vertex() {)";
 )";
 	}
 
+	if (depth_offset_enabled) {
+		code += R"(
+	// Depth Offset: Enabled
+	VERTEX = VERTEX;
+	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
+	POSITION.z = mix(POSITION.z, POSITION.w, 0.001);
+)";
+	}
+
 	code += "}\n";
 
 	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -1404,21 +1413,6 @@ void fragment() {)";
 			code += "\n";
 		}
 		code += R"(	vec2 base_uv2 = UV2;
-)";
-	}
-
-	if (depth_offset_enabled) {
-		code += R"(
-	// Depth Offset: Enabled
-	// Force transparency on the material (required for depth offset).
-	ALPHA = 1.0;
-	vec4 view_position = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2. - 1.0, FRAGCOORD.z, 1.0);
-	vec3 view_direction = normalize(VIEW);
-	view_position.xyz /= view_position.w;
-	view_position.xyz -= depth_offset * view_direction;
-	vec4 ndc_position = PROJECTION_MATRIX * vec4(view_position.xyz, 1.0);
-	ndc_position.xyz /= ndc_position.w;
-	DEPTH = ndc_position.z;
 )";
 	}
 
