@@ -340,7 +340,17 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	int err = stat(file.utf8().get_data(), &status);
 
 	if (!err) {
-		return status.st_mtime;
+		uint64_t modified_time = status.st_mtime;
+#ifdef ANDROID_ENABLED
+		// Workaround for GH-101007
+		//FIXME: After saving, all timestamps (st_mtime, st_ctime, st_atime) are set to the same value.
+		// After exporting or after some time, only 'modified_time' resets to a past timestamp.
+		uint64_t created_time = status.st_ctime;
+		if (modified_time < created_time) {
+			modified_time = created_time;
+		}
+#endif
+		return modified_time;
 	} else {
 		return 0;
 	}
