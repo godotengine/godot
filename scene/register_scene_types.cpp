@@ -1006,13 +1006,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
 
-	// These classes are part of renderer_rd
+#ifdef RD_ENABLED
+	// These classes are part of renderer_rd.
 	GDREGISTER_CLASS(Texture2DRD);
 	GDREGISTER_ABSTRACT_CLASS(TextureLayeredRD);
 	GDREGISTER_CLASS(Texture2DArrayRD);
 	GDREGISTER_CLASS(TextureCubemapRD);
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
+#endif // RD_ENABLED
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
