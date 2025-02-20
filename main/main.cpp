@@ -2408,8 +2408,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Start with RenderingDevice-based backends.
 #ifdef RD_ENABLED
-	renderer_hints = "forward_plus,mobile";
+#ifdef FORWARD_RD_ENABLED
+	renderer_hints = "forward_plus";
+#endif // FORWARD_RD_ENABLED
+
+#ifdef MOBILE_RD_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "mobile";
 	default_renderer_mobile = "mobile";
+#endif // MOBILE_RD_ENABLED
 #endif
 
 	// And Compatibility next, or first if Vulkan is disabled.
@@ -2517,6 +2526,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef RD_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
 #ifdef VULKAN_ENABLED
 			available_drivers.push_back("vulkan");
@@ -2528,6 +2538,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("metal");
 #endif
 		}
+#endif // RD_ENABLED
+
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
@@ -3328,11 +3340,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
 	}
 
+#ifdef RD_ENABLED
 	// Max FPS needs to be set after the DisplayServer is created.
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(engine->get_max_fps());
 	}
+#endif // RD_ENABLED
 
 #ifdef TOOLS_ENABLED
 	// If the editor is running in windowed mode, ensure the window rect fits
@@ -4911,7 +4925,11 @@ bool Main::iteration() {
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	GodotProfileZoneGrouped(_profile_zone, "RenderingServer::draw");
+#ifdef RD_ENABLED
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
+#else
+	const bool has_pending_resources_for_processing = false;
+#endif // RD_ENABLED
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled();

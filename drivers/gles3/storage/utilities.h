@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/utilities.h"
 
 #include "platform_gl.h"
@@ -221,7 +222,9 @@ public:
 	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
+#ifdef RD_ENABLED
+	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;

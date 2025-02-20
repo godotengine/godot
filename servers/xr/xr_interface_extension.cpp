@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "xr_interface_extension.h"
+
+#ifdef RD_ENABLED
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#endif // RD_ENABLED
 
 void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
@@ -325,10 +328,14 @@ void XRInterfaceExtension::end_frame() {
 RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
 	// In due time this will need to be enhance to return the correct INTERNAL RID for the chosen rendering engine.
 	// So once a GLES driver is implemented we'll return that and the implemented plugin needs to handle this correctly too.
+#ifdef RD_ENABLED
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	ERR_FAIL_NULL_V_MSG(texture_storage, RID(), "Texture storage not setup");
 
 	return texture_storage->render_target_get_rd_texture(p_render_target);
+#else
+	return RID();
+#endif // RD_ENABLED
 }
 
 /*

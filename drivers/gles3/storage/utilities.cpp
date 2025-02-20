@@ -454,10 +454,6 @@ String Utilities::get_video_adapter_vendor() const {
 	return rendering_device_vendor.trim_suffix(" Corporation");
 }
 
-RenderingDevice::DeviceType Utilities::get_video_adapter_type() const {
-	return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER;
-}
-
 String Utilities::get_video_adapter_api_version() const {
 	return String::utf8((const char *)glGetString(GL_VERSION));
 }

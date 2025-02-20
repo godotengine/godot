@@ -1943,6 +1943,7 @@ Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_siz
 	return screenrect;
 }
 
+#ifdef RD_ENABLED
 RenderingDevice *RenderingServer::get_rendering_device() const {
 	// Return the rendering device we're using globally.
 	return RenderingDevice::get_singleton();
@@ -1955,6 +1956,7 @@ RenderingDevice *RenderingServer::create_local_rendering_device() const {
 	}
 	return device->create_local_device();
 }
+#endif // RD_ENABLED
 
 static Vector<Ref<Image>> _get_imgvec(const TypedArray<Image> &p_layers) {
 	Vector<Ref<Image>> images;
@@ -3542,8 +3544,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &RenderingServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &RenderingServer::get_video_adapter_vendor);
+#ifdef RD_ENABLED
 	ClassDB::bind_method(D_METHOD("get_video_adapter_type"), &RenderingServer::get_video_adapter_type);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_api_version"), &RenderingServer::get_video_adapter_api_version);
+#endif // RD_ENABLED
 
 	ClassDB::bind_method(D_METHOD("get_current_rendering_driver_name"), &RenderingServer::get_current_rendering_driver_name);
 	ClassDB::bind_method(D_METHOD("get_current_rendering_method"), &RenderingServer::get_current_rendering_method);
@@ -3602,8 +3606,10 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &RenderingServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &RenderingServer::draw, DEFVAL(true), DEFVAL(0.0));
+#ifdef RD_ENABLED
 	ClassDB::bind_method(D_METHOD("get_rendering_device"), &RenderingServer::get_rendering_device);
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
+#endif // RD_ENABLED
 
 	ClassDB::bind_method(D_METHOD("is_on_render_thread"), &RenderingServer::is_on_render_thread);
 	ClassDB::bind_method(D_METHOD("call_on_render_thread", "callable"), &RenderingServer::call_on_render_thread);

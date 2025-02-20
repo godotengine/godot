@@ -2416,17 +2416,23 @@ RS::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material)
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, RS::CULL_MODE_DISABLED);
 	ERR_FAIL_NULL_V(material->shader, RS::CULL_MODE_DISABLED);
+
 	if (material->shader->type == ShaderType::SHADER_TYPE_3D && material->shader->data) {
+#ifdef FORWARD_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *sd_clustered = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *>(material->shader->data);
 		if (sd_clustered) {
 			return (RS::CullMode)sd_clustered->cull_mode;
 		}
+#endif // FORWARD_RD_ENABLED
 
+#ifdef MOBILE_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *sd_mobile = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *>(material->shader->data);
 		if (sd_mobile) {
 			return (RS::CullMode)sd_mobile->cull_mode;
 		}
+#endif // MOBILE_RD_ENABLED
 	}
+
 	return RS::CULL_MODE_DISABLED;
 }
 
