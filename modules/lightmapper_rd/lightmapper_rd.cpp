@@ -1130,7 +1130,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 	if (rd == nullptr) {
-#if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
@@ -1140,7 +1139,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
-#endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {
 			err = rcd->initialize();

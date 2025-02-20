@@ -57,12 +57,14 @@
 #include "audio/effects/audio_stream_generator.h"
 #include "camera/camera_feed.h"
 #include "camera/camera_server.h"
+#include "core/object/class_db.h"
 #include "debugger/servers_debugger.h"
 #include "display/accessibility_server.h"
 #include "display/display_server.h"
 #include "display/native_menu.h"
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_pngwav.h"
+#ifdef RD_ENABLED
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
@@ -70,6 +72,7 @@
 #include "rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
+#endif // RD_ENABLED
 #include "rendering/rendering_server.h"
 #include "rendering/shader_include_db.h"
 #include "rendering/storage/render_data.h"
@@ -169,8 +172,6 @@ void register_server_types() {
 
 	GDREGISTER_CLASS(CameraServer);
 
-	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
-
 	GDREGISTER_CLASS(AudioStream);
 	GDREGISTER_CLASS(AudioStreamPlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
@@ -227,8 +228,19 @@ void register_server_types() {
 #endif
 	}
 
-	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderData);
+	GDREGISTER_CLASS(RenderDataExtension);
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
+	GDREGISTER_CLASS(RenderSceneDataExtension);
+
+	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
+	GDREGISTER_CLASS(RenderSceneBuffersExtension);
+
 	GDREGISTER_CLASS(ShaderIncludeDB);
+
+#ifdef RD_ENABLED
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
 	GDREGISTER_CLASS(RDAttachmentFormat);
@@ -246,21 +258,13 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDShaderFile);
 	GDREGISTER_CLASS(RDPipelineSpecializationConstant);
 
-	GDREGISTER_ABSTRACT_CLASS(RenderData);
-	GDREGISTER_CLASS(RenderDataExtension);
 	GDREGISTER_CLASS(RenderDataRD);
-
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
-	GDREGISTER_CLASS(RenderSceneDataExtension);
 	GDREGISTER_CLASS(RenderSceneDataRD);
 
-	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
-	GDREGISTER_CLASS(RenderSceneBuffersExtension);
 	GDREGISTER_CLASS(RenderSceneBuffersRD);
-
 	GDREGISTER_CLASS(FramebufferCacheRD);
 	GDREGISTER_CLASS(UniformSetCacheRD);
+#endif // RD_ENABLED
 
 	GDREGISTER_CLASS(CameraFeed);
 
