@@ -884,12 +884,10 @@ void TextEdit::_notification(int p_what) {
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 
-					if (line_background_color != theme_cache.background_color) {
-						// Make non-default background colors more visible, such as error markers.
-						line_background_color.a = 1.0;
-					} else {
-						line_background_color.a *= 0.6;
-					}
+					// Make non-default background colors more visible, such as error markers.
+					// If a line background color is being applied, like in an error marker, the alpha is set to 1.0.
+					// Else, it stays zero.
+					line_background_color.a = 1.0 * (line_background_color != Color(0, 0, 0, 0));
 
 					Color current_color = editable ? theme_cache.font_color : theme_cache.font_readonly_color;
 
