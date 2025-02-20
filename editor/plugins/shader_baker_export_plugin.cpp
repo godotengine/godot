@@ -54,9 +54,16 @@ bool ShaderBakerExportPlugin::_is_active(const Vector<String> &p_features) const
 }
 
 bool ShaderBakerExportPlugin::_initialize_container_format(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
-	shader_container_driver = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
-	if (shader_container_driver.is_empty()) {
-		shader_container_driver = GLOBAL_GET("rendering/rendering_device/driver");
+	Variant driver_variant = GLOBAL_GET("rendering/rendering_device/driver." + p_platform->get_os_name().to_lower());
+	if (!driver_variant.is_string()) {
+		driver_variant = GLOBAL_GET("rendering/rendering_device/driver");
+		if (!driver_variant.is_string()) {
+			return false;
+		} else {
+			shader_container_driver = driver_variant;
+		}
+	} else {
+		shader_container_driver = driver_variant;
 	}
 
 	for (Ref<ShaderBakerExportPluginPlatform> platform : platforms) {
@@ -142,7 +149,16 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 }
 
 bool ShaderBakerExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) {
-	return _is_active(p_features);
+	if (!_is_active(p_features)) {
+		return false;
+	}
+
+	if (shader_container_format == nullptr) {
+		// Resource customization failed to initialize.
+		return false;
+	}
+
+	return true;
 }
 
 void ShaderBakerExportPlugin::_end_customize_resources() {
