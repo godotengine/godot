@@ -41,6 +41,9 @@
 void GPUParticles2D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
+	if (p_emitting && p_emitting != emitting && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
 	if (p_emitting && one_shot) {
 		if (!active && !emitting) {
 			// Last cycle ended.
