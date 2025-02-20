@@ -45,10 +45,22 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
+	if (p_emitting && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
+
 	emitting = p_emitting;
 	if (emitting) {
-		active = true;
-		set_process_internal(true);
+		_set_emitting();
+	}
+}
+
+void CPUParticles2D::_set_emitting() {
+	active = true;
+	set_process_internal(true);
+	// first update before rendering to avoid one frame delay after emitting starts
+	if (time == 0) {
+		_update_internal();
 	}
 }
 
@@ -310,7 +322,8 @@ void CPUParticles2D::restart(bool p_keep_seed) {
 		seed = Math::rand();
 	}
 
-	set_emitting(true);
+	emitting = true;
+	_set_emitting();
 }
 
 void CPUParticles2D::set_direction(Vector2 p_direction) {
