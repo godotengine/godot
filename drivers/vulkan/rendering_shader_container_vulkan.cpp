@@ -78,6 +78,7 @@ bool RenderingShaderContainerVulkan::_set_code_from_spirv(const Vector<Rendering
 		shader.code_compression_flags = 0;
 		shader.code_compressed_bytes = code_bytes;
 #endif
+		shader.shader_stage = p_spirv[i].shader_stage;
 	}
 
 	return true;
