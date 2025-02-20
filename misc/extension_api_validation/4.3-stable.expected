@@ -326,3 +326,11 @@ GH-102796
 Validate extension JSON: Error: Field 'classes/GraphEdit/signals/frame_rect_changed/arguments/1': type changed value in new API, from "Vector2" to "Rect2".
 
 Previous type was incorrect. No compatibility system for signal arguments.
+
+GH-102943
+---------
+Validate extension JSON: Error: Field 'classes/OS/methods/execute_with_pipe/arguments': size changed value in new API, from 2 to 5.
+Validate extension JSON: Error: Field 'classes/OS/methods/create_process/arguments': size changed value in new API, from 3 to 5.
+Validate extension JSON: Error: Field 'classes/OS/methods/execute/arguments': size changed value in new API, from 5 to 7.
+
+Added optional 'working_dir' and 'env' arguments. Compatibility method registered.

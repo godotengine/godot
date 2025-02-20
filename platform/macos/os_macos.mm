@@ -644,7 +644,7 @@ String OS_MacOS::get_executable_path() const {
 	}
 }
 
-Error OS_MacOS::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+Error OS_MacOS::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	// Use NSWorkspace if path is an .app bundle.
 	NSURL *url = [NSURL fileURLWithPath:@(p_path.utf8().get_data())];
 	NSBundle *bundle = [NSBundle bundleWithURL:url];
@@ -653,12 +653,23 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
+
+		NSMutableDictionary *env = [[NSMutableDictionary alloc] init];
+		for (const Variant *key = p_env.next(nullptr); key; key = p_env.next(key)) {
+			const String &key_s = *key;
+			const String &val_s = p_env[*key];
+			[env setValue:[NSString stringWithUTF8String:key_s.utf8().get_data()] forKey:[NSString stringWithUTF8String:val_s.utf8().get_data()]];
+		}
+
 #if defined(__x86_64__)
 		if (@available(macOS 10.15, *)) {
 #endif
 			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
 			[configuration setArguments:arguments];
 			[configuration setCreatesNewApplicationInstance:YES];
+			if (!p_env.is_empty()) {
+				[configuration setEnvironment:env];
+			}
 			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
 			__block Error err = ERR_TIMEOUT;
 			__block pid_t pid = 0;
@@ -688,7 +699,12 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		} else {
 			Error err = ERR_TIMEOUT;
 			NSError *error = nullptr;
-			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
+			NSMutableDictionary *configuration = [[NSMutableDictionary alloc] init];
+			[configuration setValue:arguments forKey:NSWorkspaceLaunchConfigurationArguments];
+			if (!p_env.is_empty()) {
+				[configuration setValue:env forKey:NSWorkspaceLaunchConfigurationEnvironment];
+			}
+			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:configuration error:&error];
 			if (error) {
 				err = ERR_CANT_FORK;
 				NSLog(@"Failed to execute: %@", error.localizedDescription);
