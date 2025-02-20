@@ -1318,6 +1318,10 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 			Point2 pos = mb->get_position();
 			right_clicked_frame = frame_list->get_item_at_position(pos, true);
 			if (right_clicked_frame != -1) {
+				Ref<Texture2D> tex = frames->get_frame_texture(edited_anim, right_clicked_frame);
+				if (tex.is_null()) {
+					return;
+				}
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
