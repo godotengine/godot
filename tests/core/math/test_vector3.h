@@ -51,6 +51,7 @@ TEST_CASE("[Vector3] Angle methods") {
 	const Vector3 vector_x = Vector3(1, 0, 0);
 	const Vector3 vector_y = Vector3(0, 1, 0);
 	const Vector3 vector_yz = Vector3(0, 1, 1);
+	const Vector3 vector_out_of_plane = Vector3(-1, 1, 1);
 	CHECK_MESSAGE(
 			vector_x.angle_to(vector_y) == doctest::Approx((real_t)Math_TAU / 4),
 			"Vector3 angle_to should work as expected.");
@@ -72,6 +73,10 @@ TEST_CASE("[Vector3] Angle methods") {
 			"Vector3 signed_angle_to should work as expected.");
 	CHECK_MESSAGE(
 			vector_yz.signed_angle_to(vector_x, vector_y) == doctest::Approx((real_t)Math_TAU / 4),
+			"Vector3 signed_angle_to should work as expected.");
+
+	CHECK_MESSAGE(
+			vector_x.signed_angle_to(vector_out_of_plane, vector_y) == doctest::Approx((real_t)Math_PI * -0.75),
 			"Vector3 signed_angle_to should work as expected.");
 }
 
