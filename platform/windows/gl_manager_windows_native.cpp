@@ -41,8 +41,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "drivers/gles3/rasterizer_gles3.h"
-
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
 #define WGL_CONTEXT_FLAGS_ARB 0x2094
@@ -62,7 +60,6 @@ typedef BOOL(APIENTRY *PFNWGLDELETECONTEXT)(HGLRC);
 typedef BOOL(APIENTRY *PFNWGLMAKECURRENT)(HDC, HGLRC);
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 typedef void *(APIENTRY *PFNWGLGETPROCADDRESS)(LPCSTR);
-typedef void *(APIENTRY *PFNWGLGENFRAMEBUFFERS)(GLsizei, GLuint *);
 
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
@@ -356,7 +353,6 @@ PFNWGLCREATECONTEXT gd_wglCreateContext;
 PFNWGLMAKECURRENT gd_wglMakeCurrent;
 PFNWGLDELETECONTEXT gd_wglDeleteContext;
 PFNWGLGETPROCADDRESS gd_wglGetProcAddress;
-PFNWGLGENFRAMEBUFFERS gd_wglGenFramebuffers;
 
 Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_display) {
 	Error err = _configure_pixel_format(win.hDC);
@@ -372,7 +368,6 @@ Error GLManagerNative_Windows::_create_context(GLWindow &win, GLDisplay &gl_disp
 	gd_wglMakeCurrent = (PFNWGLMAKECURRENT)GetProcAddress(module, "wglMakeCurrent");
 	gd_wglDeleteContext = (PFNWGLDELETECONTEXT)GetProcAddress(module, "wglDeleteContext");
 	gd_wglGetProcAddress = (PFNWGLGETPROCADDRESS)GetProcAddress(module, "wglGetProcAddress");
-	gd_wglGenFramebuffers = (PFNWGLGENFRAMEBUFFERS)GetProcAddress(module, "wglGenFramebuffers");
 	if (!gd_wglCreateContext || !gd_wglMakeCurrent || !gd_wglDeleteContext || !gd_wglGetProcAddress) {
 		return ERR_CANT_CREATE;
 	}

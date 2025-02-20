@@ -1687,19 +1687,14 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		ShowWindow(wd.hWnd, SW_SHOWNA);
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else if (wd.offscreen) {
-		ShowWindow(wd.hWnd, SW_SHOW);
-		//SetForegroundWindow(wd.hWnd); // Slightly higher priority.
-		wd.rect_changed_callback.call(Rect2i(wd.last_pos.x, wd.last_pos.y, wd.width, wd.height));
-		//SetFocus(wd.hWnd); // Set keyboard focus.
-		// Size2i s = window_get_size();
-		// wd.width = s.x;
-		// wd.height = s.y;
-		// ITaskbarList *tbl = nullptr;
-		// if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
-		// if (SUCCEEDED(tbl->HrInit())) {
-		// tbl->DeleteTab(wd.hWnd);
-		// }
-		// }
+		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+		// Remove taskbar tab.
+		ITaskbarList *tbl = nullptr;
+		if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
+			if (SUCCEEDED(tbl->HrInit())) {
+				tbl->DeleteTab(wd.hWnd);
+			}
+		}
 	} else {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
@@ -2393,6 +2388,16 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		}
 	}
 
+	if (wd.offscreen && p_mode != WINDOW_MODE_OFFSCREEN) {
+		// Add taskbar tab.
+		ITaskbarList *tbl = nullptr;
+		if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
+			if (SUCCEEDED(tbl->HrInit())) {
+				tbl->AddTab(wd.hWnd);
+			}
+		}
+	}
+
 	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
@@ -2458,19 +2463,15 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		}
 	}
 	if (p_mode == WINDOW_MODE_OFFSCREEN) {
-		//ShowWindow(wd.hWnd, SW_MINIMIZE);
-		//SetForegroundWindow(wd.hWnd); // Slightly higher priority.
-		//SetFocus(wd.hWnd); // Set keyboard focus.
-		//ShowWindow(wd.hWnd, SW_NORMAL);
-		// Size2i s = window_get_size();
-		// wd.rect_changed_callback.call(Rect2i(wd.last_pos.x, wd.last_pos.y, s.x, s.y));
 		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+		// Remove taskbar tab.
 		ITaskbarList *tbl = nullptr;
 		if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
 			if (SUCCEEDED(tbl->HrInit())) {
 				tbl->DeleteTab(wd.hWnd);
 			}
 		}
+
 		wd.fullscreen = false;
 		wd.maximized = false;
 		wd.minimized = false;
@@ -6354,6 +6355,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		if (p_mode == WINDOW_MODE_OFFSCREEN) {
 			ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+			// Remove taskbar tab.
 			ITaskbarList *tbl = nullptr;
 			if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (LPVOID *)&tbl))) {
 				if (SUCCEEDED(tbl->HrInit())) {

@@ -1118,6 +1118,7 @@ void Window::_update_window_size() {
 				// Avoid an error if setting max_size to a value between min_size and the previous size_limit.
 				DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 			}
+
 			DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
 			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 			DisplayServer::get_singleton()->window_set_size(size, window_id);
@@ -1252,8 +1253,6 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	font_oversampling = content_scale_factor;
-
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
 	bool ci_updated = _set_size(final_size, final_size_override, allocate);
 
@@ -1365,10 +1364,6 @@ void Window::_notification(int p_what) {
 						embedder = nullptr; // Not yet since not visible.
 					}
 				}
-			}
-
-			if (get_mode() == MODE_OFFSCREEN) {
-				set_content_scale_mode(CONTENT_SCALE_MODE_VIEWPORT);
 			}
 
 			if (embedded) {

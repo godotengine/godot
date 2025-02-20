@@ -4136,13 +4136,10 @@ int Main::start() {
 			//standard helpers that can be changed from main config
 
 			String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
-			// if (init_offscreen){
-			// stretch_mode = "viewport";
-			// }
 			String stretch_aspect = GLOBAL_GET("display/window/stretch/aspect");
 			Size2i stretch_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"),
 					GLOBAL_GET("display/window/size/viewport_height"));
-			if (force_res && init_offscreen) {
+			if (force_res && init_offscreen && stretch_mode == "viewport") {
 				stretch_size = window_size;
 			}
 			real_t stretch_scale = GLOBAL_GET("display/window/stretch/scale");
