@@ -47,11 +47,11 @@
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
-#if defined(VULKAN_ENABLED)
+#ifdef RD_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
-#if defined(GLES3_ENABLED)
+#ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
