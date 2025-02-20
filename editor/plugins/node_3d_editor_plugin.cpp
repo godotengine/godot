@@ -5987,7 +5987,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (mouseover) {
+			if (mouseover && Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED) {
 				Ref<Texture2D> h_grabber = get_theme_icon(SNAME("grabber"), SNAME("HSplitContainer"));
 				Ref<Texture2D> v_grabber = get_theme_icon(SNAME("grabber"), SNAME("VSplitContainer"));
 
