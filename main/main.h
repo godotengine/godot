@@ -31,7 +31,6 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "core/error/error_list.h"
 #include "core/os/thread.h"
 #include "core/typedefs.h"
 

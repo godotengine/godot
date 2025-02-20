@@ -31,7 +31,6 @@
 #ifndef RENDERING_CONTEXT_DRIVER_D3D12_H
 #define RENDERING_CONTEXT_DRIVER_D3D12_H
 
-#include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"

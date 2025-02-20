@@ -31,11 +31,11 @@
 #ifndef D3D12_GODOT_NIR_BRIDGE_H
 #define D3D12_GODOT_NIR_BRIDGE_H
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdint.h>
 
 // This one leaves room for potentially extremely copious bindings in a set.
 static const uint32_t GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER = 100000000;
