@@ -59,6 +59,9 @@
 		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
 			If [code]true[/code], project resources are embedded into the executable.
 		</member>
+		<member name="binary_format/sparse_pck" type="bool" setter="" getter="">
+			If [code]true[/code], sparse pack is used.
+		</member>
 		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
 			Array of the additional command line arguments passed to the code signing tool. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
 		</member>

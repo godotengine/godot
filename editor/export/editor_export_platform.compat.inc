@@ -34,8 +34,33 @@ Vector<String> EditorExportPlatform::_get_forced_export_files_bind_compat_71542(
 	return get_forced_export_files(Ref<EditorExportPreset>());
 }
 
+Error EditorExportPlatform::export_pack_bind_compat_XXXXX(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	return export_pack(p_preset, p_debug, p_path, p_flags, false);
+}
+
+Error EditorExportPlatform::_export_project_files_bind_compat_XXXXX(const Ref<EditorExportPreset> &p_preset, bool p_debug, const Callable &p_save_func, const Callable &p_so_func) {
+	return _export_project_files(p_preset, p_debug, p_save_func, p_so_func, false);
+}
+
+Dictionary EditorExportPlatform::_save_pack_bind_compat_XXXXX(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, bool p_embed) {
+	return _save_pack(p_preset, p_debug, p_path, p_embed, false);
+}
+
+Error EditorExportPlatform::export_pack_patch_bind_compat_XXXXX(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	return export_pack_patch(p_preset, p_debug, p_path, p_patches, p_flags, false);
+}
+
+Dictionary EditorExportPlatform::_save_pack_patch_bind_compat_XXXXX(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path) {
+	return _save_pack_patch(p_preset, p_debug, p_path, false);
+}
+
 void EditorExportPlatform::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::_get_forced_export_files_bind_compat_71542);
+	ClassDB::bind_compatibility_method(D_METHOD("export_pack", "preset", "debug", "path", "flags"), &EditorExportPlatform::export_pack_bind_compat_XXXXX, DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("export_project_files", "preset", "debug", "save_cb", "shared_cb"), &EditorExportPlatform::_export_project_files_bind_compat_XXXXX, DEFVAL(Callable()));
+	ClassDB::bind_compatibility_method(D_METHOD("save_pack", "preset", "debug", "path", "embed"), &EditorExportPlatform::_save_pack_bind_compat_XXXXX, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("export_pack_patch", "preset", "debug", "path", "patches", "flags"), &EditorExportPlatform::export_pack_patch_bind_compat_XXXXX, DEFVAL(PackedStringArray()), DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("save_pack_patch", "preset", "debug", "path"), &EditorExportPlatform::_save_pack_patch_bind_compat_XXXXX);
 }
 
 #endif

@@ -129,14 +129,19 @@ public:
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 	GDVIRTUAL4R_REQUIRED(Error, _export_project, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>);
 
-	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
-	GDVIRTUAL4R(Error, _export_pack, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>);
-
+	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_sparse = false) override;
+	GDVIRTUAL5R(Error, _export_pack, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>, bool);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL4R_COMPAT(_export_pack_bind_compat_XXXXX, Error, _export_pack, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>);
+#endif
 	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 	GDVIRTUAL4R(Error, _export_zip, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>);
 
-	virtual Error export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
-	GDVIRTUAL5R(Error, _export_pack_patch, Ref<EditorExportPreset>, bool, const String &, const Vector<String> &, BitField<EditorExportPlatform::DebugFlags>);
+	virtual Error export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_sparse = false) override;
+	GDVIRTUAL6R(Error, _export_pack_patch, Ref<EditorExportPreset>, bool, const String &, const Vector<String> &, BitField<EditorExportPlatform::DebugFlags>, bool);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL5R_COMPAT(_export_pack_patch_bind_compat_XXXXX, Error, _export_pack_patch, Ref<EditorExportPreset>, bool, const String &, const Vector<String> &, BitField<EditorExportPlatform::DebugFlags>);
+#endif
 
 	virtual Error export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches = Vector<String>(), BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 	GDVIRTUAL5R(Error, _export_zip_patch, Ref<EditorExportPreset>, bool, const String &, const Vector<String> &, BitField<EditorExportPlatform::DebugFlags>);

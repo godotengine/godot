@@ -17,6 +17,9 @@
 		<member name="binary_format/embed_pck" type="bool" setter="" getter="">
 			If [code]true[/code], project resources are embedded into the executable.
 		</member>
+		<member name="binary_format/sparse_pck" type="bool" setter="" getter="">
+			If [code]true[/code], sparse pack is used.
+		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>
