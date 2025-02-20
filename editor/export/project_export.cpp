@@ -1265,8 +1265,14 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 		} else {
 			platform->export_pack(current, export_debug, p_path);
 		}
+	} else if (p_path.ends_with(".sparsepck")) {
+		if (export_as_patch) {
+			platform->export_pack_patch(current, export_debug, p_path, Vector<String>(), 0, true);
+		} else {
+			platform->export_pack(current, export_debug, p_path, 0, true);
+		}
 	} else {
-		ERR_FAIL_MSG("Path must end with .pck or .zip");
+		ERR_FAIL_MSG("Path must end with .pck, .sparsepck or .zip");
 	}
 }
 
@@ -1784,6 +1790,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip", TTR("ZIP File"));
 	export_pck_zip->add_filter("*.pck", TTR("Godot Project Pack"));
+	export_pck_zip->add_filter("*.sparsepck", TTR("Godot Sparse Project Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
