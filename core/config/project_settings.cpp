@@ -663,22 +663,31 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
 #ifdef MACOS_ENABLED
+		// Attempt to load PCK from macOS .app bundle resources.
 		if (!found) {
-			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
+		}
+		if (!found) {
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".sparsepck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".sparsepck"), false, 0, true);
 		}
 #endif
 
+		// Try to load data pack at the location of the executable.
+		// As mentioned above, we have two potential names to attempt.
 		if (!found) {
-			// Try to load data pack at the location of the executable.
-			// As mentioned above, we have two potential names to attempt.
 			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true);
 		}
-
 		if (!found) {
-			// If we couldn't find them next to the executable, we attempt
-			// the current working directory. Same story, two tests.
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".sparsepck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".sparsepck"), false, 0, true);
+		}
+
+		// If we couldn't find them next to the executable, we attempt
+		// the current working directory. Same story, two tests.
+		if (!found) {
 			found = _load_resource_pack(exec_basename + ".pck", false, 0, true) || _load_resource_pack(exec_filename + ".pck", false, 0, true);
+		}
+		if (!found) {
+			found = _load_resource_pack(exec_basename + ".sparsepck", false, 0, true) || _load_resource_pack(exec_filename + ".sparsepck", false, 0, true);
 		}
 
 		// If we opened our package, try and load our project.
@@ -693,6 +702,11 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			return err;
 		}
 	}
+
+#ifdef ANDROID_ENABLED
+	// Attempt to load sparse PCK assets.
+	_load_resource_pack("res://assets.sparsepck", false, 0, true);
+#endif
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
