@@ -142,19 +142,31 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			}
 
 			// Verify MetalFX upscaling support.
-			if (
-					(scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) ||
-					(scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL))) {
+			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL || scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+#ifdef RD_ENABLED
+				if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) ||
+						(scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL))) {
+					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+				}
+#else
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-				WARN_PRINT_ONCE("MetalFX upscaling is not supported in the current renderer. Falling back to bilinear 3D resolution scaling.");
+#endif // RD_ENABLED
+				if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_BILINEAR) {
+					WARN_PRINT_ONCE("MetalFX upscaling is not supported in the current renderer. Falling back to bilinear 3D resolution scaling.");
+				}
 			}
 
 			RS::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
 
 			// If MetalFX Temporal upscaling is supported, verify limits.
 			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
+#ifdef RD_ENABLED
 				double min_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE) / 1000'000.0;
 				double max_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE) / 1000'000.0;
+#else
+				double min_scale = 0;
+				double max_scale = 0;
+#endif // RD_ENABLED
 				if ((double)scaling_3d_scale < min_scale || (double)scaling_3d_scale > max_scale) {
 					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 					WARN_PRINT_ONCE(vformat("MetalFX temporal upscaling scale is outside limits; scale must be between %f and %f. Falling back to bilinear 3D resolution scaling.", min_scale, max_scale));
