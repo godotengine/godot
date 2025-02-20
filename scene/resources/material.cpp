@@ -1369,8 +1369,8 @@ void vertex() {)";
 		code += R"(
 	// Depth Offset: Enabled
 	VERTEX = VERTEX;
-	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0);
-	POSITION.z = mix(POSITION.z, POSITION.w, 0.001);
+	POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0) - vec4(0.0, 0.0, depth_offset, 0.0));
+	//POSITION = PROJECTION_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(VERTEX.xyz, 1.0) - PROJECTION_MATRIX * vec4(0.0, 0.0, depth_offset, 0.0);
 )";
 	}
 
