@@ -32,8 +32,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "thirdparty/misc/smolv.h"
 #include "vulkan_hooks.h"
+
+#if RENDERING_SHADER_CONTAINER_VULKAN_SMOLV
+#include "thirdparty/misc/smolv.h"
+#endif
 
 #if defined(ANDROID_ENABLED)
 #include "platform/android/java_godot_wrapper.h"
@@ -3465,6 +3468,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 	VkShaderModule vk_module;
 	for (int i = 0; i < shader_refl.stages_vector.size(); i++) {
 		const RenderingShaderContainer::Shader &shader = p_shader_container->shaders[i];
+#if RENDERING_SHADER_CONTAINER_VULKAN_COMPRESSION
 		bool requires_decompression = (shader.code_decompressed_size > 0);
 		if (requires_decompression) {
 			decompressed_code.resize(shader.code_decompressed_size);
@@ -3474,9 +3478,13 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				break;
 			}
 		}
+#else
+		bool requires_decompression = false;
+#endif
 
 		const uint8_t *smolv_input = requires_decompression ? decompressed_code.ptr() : shader.code_compressed_bytes.ptr();
 		uint32_t smolv_input_size = requires_decompression ? decompressed_code.size() : shader.code_compressed_bytes.size();
+#if RENDERING_SHADER_CONTAINER_VULKAN_SMOLV
 		decoded_spirv.resize(smolv::GetDecodedBufferSize(smolv_input, smolv_input_size));
 		if (decoded_spirv.is_empty()) {
 			error_text = vformat("Malformed smolv input on shader stage %s.", String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
@@ -3487,6 +3495,10 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 			error_text = vformat("Malformed smolv input on shader stage %s.", String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
 			break;
 		}
+#else
+		decoded_spirv.resize(smolv_input_size);
+		memcpy(decoded_spirv.ptrw(), smolv_input, decoded_spirv.size());
+#endif
 
 		VkShaderModuleCreateInfo shader_module_create_info = {};
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

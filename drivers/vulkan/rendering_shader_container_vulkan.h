@@ -33,6 +33,9 @@
 
 #include "servers/rendering/rendering_shader_container.h"
 
+#define RENDERING_SHADER_CONTAINER_VULKAN_COMPRESSION 1
+#define RENDERING_SHADER_CONTAINER_VULKAN_SMOLV 1
+
 class RenderingShaderContainerVulkan : public RenderingShaderContainer {
 public:
 	static const uint32_t FORMAT_VERSION;
