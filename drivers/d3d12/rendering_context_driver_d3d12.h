@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"

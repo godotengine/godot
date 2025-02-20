@@ -66,8 +66,6 @@
 #include "editor/node_dock.h"
 #endif
 
-#include <stdint.h>
-
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
