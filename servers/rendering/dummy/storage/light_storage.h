@@ -31,6 +31,7 @@
 #ifndef LIGHT_STORAGE_DUMMY_H
 #define LIGHT_STORAGE_DUMMY_H
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/light_storage.h"
 
 namespace RendererDummy {

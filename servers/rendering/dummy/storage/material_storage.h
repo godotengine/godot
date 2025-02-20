@@ -31,6 +31,7 @@
 #ifndef MATERIAL_STORAGE_DUMMY_H
 #define MATERIAL_STORAGE_DUMMY_H
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/shader_compiler.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/storage/material_storage.h"
