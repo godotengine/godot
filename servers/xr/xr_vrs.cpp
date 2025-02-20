@@ -104,8 +104,13 @@ void XRVRS::set_vrs_render_region(const Rect2i &p_vrs_render_region) {
 RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci) {
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
+#ifdef RD_ENABLED
 	int32_t texel_width = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_WIDTH);
 	int32_t texel_height = RD::get_singleton()->limit_get(RD::LIMIT_VRS_TEXEL_HEIGHT);
+#else
+	int32_t texel_width = 0;
+	int32_t texel_height = 0;
+#endif // RD_ENABLED
 
 	// Should return sensible data or graphics API does not support VRS.
 	ERR_FAIL_COND_V(texel_width < 1 || texel_height < 1, RID());

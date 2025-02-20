@@ -1,6 +1,6 @@
 def can_build(env, platform):
     if platform in ("linuxbsd", "windows", "android", "macos"):
-        return not env["disable_xr"]
+        return not env["disable_xr"] and env["rendering_device"]
     else:
         # Not supported on these platforms.
         return False

@@ -241,15 +241,25 @@ def configure(env: "SConsEnvironment"):
 
     extra_frameworks = set()
 
+    if env["rendering_device"]:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+    if not env["rendering_device"] or not (env["forward_mobile_renderer"] and env["forward_plus_renderer"]):
+        env["metal"] = False
+        env["vulkan"] = False
+
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("MetalKit")
         extra_frameworks.add("MetalFX")
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("IOSurface")
         if not env["use_volk"]:
