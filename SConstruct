@@ -194,6 +194,15 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
+opts.Add(
+    BoolVariable(
+        "rendering_device",
+        "Enable RenderingDevice abstraction for modern graphics APIs (use the `vulkan`, `d3d12`, and `metal` options to toggle individual drivers)",
+        True,
+    )
+)
+opts.Add(BoolVariable("forward_plus_renderer", "Enable the Forward+ renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("forward_mobile_renderer", "Enable the Mobile renderer (requires RenderingDevice)", True))
 opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
@@ -684,6 +693,22 @@ if env["scu_build"]:
         max_includes_per_scu = read_scu_limit
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
+
+if env["rendering_device"]:
+    if env["platform"] == "web":
+        # Not available in the web platform.
+        env["rendering_device"] = False
+    else:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+# These need to be set before platform detection.
+if not env["rendering_device"] or not (env["forward_mobile_renderer"] or env["forward_plus_renderer"]):
+    env["d3d12"] = False
+    env["metal"] = False
+    env["vulkan"] = False
 
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
