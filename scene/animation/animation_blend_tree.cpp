@@ -678,7 +678,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	if (!p_seek) {
-		if (Animation::is_less_or_equal_approx(os_nti.get_remain(break_loop_at_end), 0) || (is_fading_out && Animation::is_less_or_equal_approx(cur_fade_out_remaining, 0))) {
+		if (Animation::is_less_or_equal_approx(os_nti.get_remain(break_loop_at_end), 0) || (is_fading_out && Animation::is_less_or_equal_approx(cur_fade_out_remaining, 0) && os_nti.length == os_nti.position)) {
 			set_parameter(internal_active, false);
 			set_parameter(active, false);
 			if (auto_restart) {
