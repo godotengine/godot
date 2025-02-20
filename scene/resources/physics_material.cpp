@@ -50,6 +50,7 @@ void PhysicsMaterial::_bind_methods() {
 }
 
 void PhysicsMaterial::set_friction(real_t p_val) {
+	ERR_FAIL_COND(p_val > 1.0);
 	friction = p_val;
 	emit_changed();
 }
@@ -60,6 +61,7 @@ void PhysicsMaterial::set_rough(bool p_val) {
 }
 
 void PhysicsMaterial::set_bounce(real_t p_val) {
+	ERR_FAIL_COND(p_val > 1.0);
 	bounce = p_val;
 	emit_changed();
 }
